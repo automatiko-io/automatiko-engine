@@ -1,0 +1,20 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.automatik.platform</groupId>
+    <artifactId>addons</artifactId>
+    <version>0.0.0-SNAPSHOT</version>
+  </parent>
+
+  <groupId>io.automatik.platform.addons</groupId>
+  <artifactId>persistence</artifactId>
+  <packaging>pom</packaging>
+
+  <name>Automatik Platform Engine :: Add-Ons :: Persistence</name>
+  <description>Persistence Implementations for Automatik Platform Engine</description>
+
+  <modules>
+    <module>automatik-infinispan-persistence-addon</module>
+    <module>automatik-filesystem-persistence-addon</module>
+  </modules>
+</project>

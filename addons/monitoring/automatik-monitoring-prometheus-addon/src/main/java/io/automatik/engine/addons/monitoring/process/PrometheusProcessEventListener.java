@@ -1,0 +1,110 @@
+package io.automatik.engine.addons.monitoring.process;
+
+import io.automatik.engine.api.event.process.DefaultProcessEventListener;
+import io.automatik.engine.api.event.process.ProcessCompletedEvent;
+import io.automatik.engine.api.event.process.ProcessNodeLeftEvent;
+import io.automatik.engine.api.event.process.ProcessStartedEvent;
+import io.automatik.engine.api.event.process.SLAViolatedEvent;
+import io.automatik.engine.api.runtime.process.NodeInstance;
+import io.automatik.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
+import io.automatik.engine.workflow.process.instance.node.WorkItemNodeInstance;
+import io.prometheus.client.Counter;
+import io.prometheus.client.Gauge;
+import io.prometheus.client.Summary;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static java.lang.String.valueOf;
+
+public class PrometheusProcessEventListener extends DefaultProcessEventListener {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(PrometheusProcessEventListener.class);
+
+	protected static final Counter numberOfProcessInstancesStarted = Counter.build()
+			.name("kie_process_instance_started_total").help("Started Process Instances")
+			.labelNames("app_id", "process_id").register();
+
+	protected static final Counter numberOfSLAsViolated = Counter.build()
+			.name("kie_process_instance_sla_violated_total").help("Process Instances SLA Violated")
+			.labelNames("app_id", "process_id", "node_name").register();
+
+	protected static final Counter numberOfProcessInstancesCompleted = Counter.build()
+			.name("kie_process_instance_completed_total").help("Completed Process Instances")
+			.labelNames("app_id", "process_id", "status").register();
+
+	protected static final Gauge runningProcessInstances = Gauge.build().name("kie_process_instance_running_total")
+			.help("Running Process Instances").labelNames("app_id", "process_id").register();
+
+	protected static final Summary processInstancesDuration = Summary.build()
+			.name("kie_process_instance_duration_seconds").help("Process Instances Duration")
+			.labelNames("app_id", "process_id").register();
+
+	protected static final Summary workItemsDuration = Summary.build().name("kie_work_item_duration_seconds")
+			.help("Work Items Duration").labelNames("name").register();
+
+	protected static void recordRunningProcessInstance(String containerId, String processId) {
+		runningProcessInstances.labels(containerId, processId).inc();
+	}
+
+	private String identifier;
+
+	public PrometheusProcessEventListener(String identifier) {
+		this.identifier = identifier;
+	}
+
+	@Override
+	public void afterProcessStarted(ProcessStartedEvent event) {
+		LOGGER.debug("After process started event: {}", event);
+		final WorkflowProcessInstanceImpl processInstance = (WorkflowProcessInstanceImpl) event.getProcessInstance();
+		numberOfProcessInstancesStarted.labels(identifier, processInstance.getProcessId()).inc();
+		recordRunningProcessInstance(identifier, processInstance.getProcessId());
+	}
+
+	@Override
+	public void afterProcessCompleted(ProcessCompletedEvent event) {
+		LOGGER.debug("After process completed event: {}", event);
+		final WorkflowProcessInstanceImpl processInstance = (WorkflowProcessInstanceImpl) event.getProcessInstance();
+		runningProcessInstances.labels(identifier, processInstance.getProcessId()).dec();
+
+		numberOfProcessInstancesCompleted
+				.labels(identifier, processInstance.getProcessId(), valueOf(processInstance.getState())).inc();
+
+		if (processInstance.getStartDate() != null) {
+			final double duration = millisToSeconds(
+					processInstance.getEndDate().getTime() - processInstance.getStartDate().getTime());
+			processInstancesDuration.labels(identifier, processInstance.getProcessId()).observe(duration);
+			LOGGER.debug("Process Instance duration: {}s", duration);
+		}
+	}
+
+	@Override
+	public void beforeNodeLeft(ProcessNodeLeftEvent event) {
+		LOGGER.debug("Before Node left event: {}", event);
+		final NodeInstance nodeInstance = event.getNodeInstance();
+		if (nodeInstance instanceof WorkItemNodeInstance) {
+			WorkItemNodeInstance wi = (WorkItemNodeInstance) nodeInstance;
+			if (wi.getTriggerTime() != null) {
+				final String name = (String) wi.getWorkItem().getParameters().getOrDefault("TaskName",
+						wi.getWorkItem().getName());
+				final double duration = millisToSeconds(wi.getLeaveTime().getTime() - wi.getTriggerTime().getTime());
+				workItemsDuration.labels(name).observe(duration);
+				LOGGER.debug("Work Item {}, duration: {}s", name, duration);
+			}
+		}
+	}
+
+	@Override
+	public void afterSLAViolated(SLAViolatedEvent event) {
+		LOGGER.debug("After SLA violated event: {}", event);
+		final WorkflowProcessInstanceImpl processInstance = (WorkflowProcessInstanceImpl) event.getProcessInstance();
+		if (processInstance != null && event.getNodeInstance() != null) {
+			numberOfSLAsViolated
+					.labels(identifier, processInstance.getProcessId(), event.getNodeInstance().getNodeName()).inc();
+		}
+	}
+
+	protected static double millisToSeconds(long millis) {
+		return millis / 1000.0;
+	}
+}

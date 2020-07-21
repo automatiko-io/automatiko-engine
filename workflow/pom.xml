@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.automatik.platform</groupId>
+    <artifactId>automatik-platform-engine</artifactId>
+    <version>0.0.0-SNAPSHOT</version>
+  </parent>
+
+  <groupId>io.automatik.platform.workflow</groupId>
+  <artifactId>workflow</artifactId>
+  <packaging>pom</packaging>
+
+  <name>Automatik Platform Engine :: Workflow</name>
+  <description>Workflow support for Automatik Platform Engine</description>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.automatik.platform</groupId>
+        <artifactId>automatik-platform-engine-bom</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <modules>
+    <module>automatik-workflow-core</module>
+    <module>automatik-workflow-compiler</module>
+    <module>automatik-workflow-bpmn2</module>
+    <module>automatik-workflow-serverless</module>
+  </modules>
+
+</project>

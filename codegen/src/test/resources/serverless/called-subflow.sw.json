@@ -1,0 +1,20 @@
+{
+  "id": "calledsubflow",
+  "name": "calledsubflow",
+  "version": "1.0",
+  "states":[
+    {
+      "name":"InjectTestData",
+      "type":"inject",
+      "start": {
+        "kind": "default"
+      },
+      "data": {
+        "childData" : "childTestData"
+      },
+      "end": {
+        "kind": "terminate"
+      }
+    }
+  ]
+}

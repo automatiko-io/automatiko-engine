@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.automatik.platform.quarkus</groupId>
+    <artifactId>automatik-quarkus-parent</artifactId>
+    <version>0.0.0-SNAPSHOT</version>
+  </parent>
+
+  <groupId>io.automatik.platform.quarkus</groupId>
+  <artifactId>automatik-quarkus-bom</artifactId>
+  <packaging>pom</packaging>
+
+  <name>Automatik Platform Engine :: Quarkus Extension :: BOM</name>
+  <description>BOM for Quarkus Extension for Automatik Platform Engine</description>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.automatik.platform</groupId>
+        <artifactId>automatik-platform-engine-bom</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-bom</artifactId>
+        <version>${version.io.quarkus}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+</project>

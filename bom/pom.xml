@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.automatik.platform</groupId>
+    <artifactId>automatik-platform-engine</artifactId>
+    <version>0.0.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>automatik-platform-engine-bom</artifactId>
+  <packaging>pom</packaging>
+
+  <name>Automatik Platform Engine :: BOM</name>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.automatik.platform.engine</groupId>
+        <artifactId>automatik-engine-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.engine</groupId>
+        <artifactId>automatik-engine-api</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform</groupId>
+        <artifactId>automatik-engine-api</artifactId>
+        <version>${project.version}</version>
+        <classifier>javadoc</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>io.automatik.platform.engine</groupId>
+        <artifactId>automatik-engine-common</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.engine</groupId>
+        <artifactId>automatik-engine-common</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>io.automatik.platform.build</groupId>
+        <artifactId>automatik-engine-codegen</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.build</groupId>
+        <artifactId>automatik-engine-codegen</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-monitoring-prometheus-addon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-monitoring-prometheus-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-infinispan-persistence-addon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-infinispan-persistence-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-filesystem-persistence-addon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-filesystem-persistence-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-platform-events-reactive-messaging-addon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-platform-events-reactive-messaging-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>      
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-process-management-addon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-process-management-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-jobs-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-jobs-api</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-jobs-service</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-jobs-service</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-jobs-management-addon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-jobs-management-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-predictions-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-predictions-api</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-predictions-smile-addon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-predictions-smile-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+
+
+      <!-- workflow -->
+      <dependency>
+        <groupId>io.automatik.platform.workflow</groupId>
+        <artifactId>automatik-workflow-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.workflow</groupId>
+        <artifactId>automatik-workflow-core</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.workflow</groupId>
+        <artifactId>automatik-workflow-compiler</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.workflow</groupId>
+        <artifactId>automatik-workflow-compiler</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.workflow</groupId>
+        <artifactId>automatik-workflow-bpmn2</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform</groupId>
+        <artifactId>automatik-workflow-bpmn2</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.workflow</groupId>
+        <artifactId>automatik-workflow-serverless</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.workflow</groupId>
+        <artifactId>automatik-workflow-serverless</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+
+      <!-- decision -->
+      <dependency>
+        <groupId>io.automatik.platform.decision</groupId>
+        <artifactId>automatik-decision-dmn</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.decision</groupId>
+        <artifactId>automatik-decision-dmn</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+
+      <!-- Quarkus extension -->
+      <dependency>
+        <groupId>io.automatik.platform.quarkus</groupId>
+        <artifactId>automatik-quarkus</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.quarkus</groupId>
+        <artifactId>automatik-quarkus</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+    </dependencies>
+
+  </dependencyManagement>
+
+</project>

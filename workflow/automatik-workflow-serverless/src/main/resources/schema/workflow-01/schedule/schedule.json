@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "javaType": "io.automatik.engine.workflow.serverless.api.schedule.Schedule",
+  "description": "Start state schedule definition",
+  "properties": {
+    "interval": {
+      "type": "string",
+      "description":  "Time interval describing when the workflow starting state is active"
+    }
+  },
+  "required": [
+    "interval"
+  ]
+}

@@ -1,0 +1,374 @@
+
+package io.automatik.engine.workflow.process.instance.node;
+
+import static io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+
+import org.mvel2.MVEL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.automatik.engine.api.jobs.DurationExpirationTime;
+import io.automatik.engine.api.jobs.ExactExpirationTime;
+import io.automatik.engine.api.jobs.ExpirationTime;
+import io.automatik.engine.api.jobs.JobsService;
+import io.automatik.engine.api.jobs.ProcessInstanceJobDescription;
+import io.automatik.engine.api.runtime.process.EventListener;
+import io.automatik.engine.api.runtime.process.NodeInstance;
+import io.automatik.engine.services.time.TimerInstance;
+import io.automatik.engine.workflow.base.core.ContextContainer;
+import io.automatik.engine.workflow.base.core.context.variable.Variable;
+import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
+import io.automatik.engine.workflow.base.core.timer.DateTimeUtils;
+import io.automatik.engine.workflow.base.core.timer.Timer;
+import io.automatik.engine.workflow.base.instance.InternalProcessRuntime;
+import io.automatik.engine.workflow.base.instance.context.variable.VariableScopeInstance;
+import io.automatik.engine.workflow.base.instance.impl.Action;
+import io.automatik.engine.workflow.process.core.ProcessAction;
+import io.automatik.engine.workflow.process.core.node.StateBasedNode;
+import io.automatik.engine.workflow.process.instance.impl.ExtendedNodeInstanceImpl;
+import io.automatik.engine.workflow.process.instance.impl.NodeInstanceResolverFactory;
+import io.automatik.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
+import io.automatik.engine.workflow.util.PatternConstants;
+
+public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
+		implements EventBasedNodeInstanceInterface, EventListener {
+
+	private static final long serialVersionUID = 510l;
+
+	private static final Logger logger = LoggerFactory.getLogger(StateBasedNodeInstance.class);
+
+	private List<String> timerInstances;
+
+	public StateBasedNode getEventBasedNode() {
+		return (StateBasedNode) getNode();
+	}
+
+	@Override
+	public void internalTrigger(NodeInstance from, String type) {
+		super.internalTrigger(from, type);
+		// if node instance was cancelled, abort
+		if (getNodeInstanceContainer().getNodeInstance(getId()) == null) {
+			return;
+		}
+		// activate timers
+		Map<Timer, ProcessAction> timers = getEventBasedNode().getTimers();
+		if (timers != null) {
+			addTimerListener();
+			timerInstances = new ArrayList<>(timers.size());
+			JobsService jobService = getProcessInstance().getProcessRuntime().getJobsService();
+			for (Timer timer : timers.keySet()) {
+				ExpirationTime expirationTime = createTimerInstance(timer);
+				String jobId = jobService.scheduleProcessInstanceJob(ProcessInstanceJobDescription.of(timer.getId(),
+						expirationTime, getProcessInstance().getId(), getProcessInstance().getRootProcessInstanceId(),
+						getProcessInstance().getProcessId(), getProcessInstance().getRootProcessId()));
+				timerInstances.add(jobId);
+			}
+		}
+
+		((WorkflowProcessInstanceImpl) getProcessInstance())
+				.addActivatingNodeId((String) getNode().getMetaData().get("UniqueId"));
+	}
+
+	@Override
+	protected void configureSla() {
+		String slaDueDateExpression = (String) getNode().getMetaData().get("customSLADueDate");
+		if (slaDueDateExpression != null) {
+			TimerInstance timer = ((WorkflowProcessInstanceImpl) getProcessInstance())
+					.configureSLATimer(slaDueDateExpression);
+			if (timer != null) {
+				this.slaTimerId = timer.getId();
+				this.slaDueDate = new Date(System.currentTimeMillis() + timer.getDelay());
+				this.slaCompliance = io.automatik.engine.api.runtime.process.ProcessInstance.SLA_PENDING;
+				logger.debug("SLA for node instance {} is PENDING with due date {}", this.getId(), this.slaDueDate);
+				addTimerListener();
+			}
+		}
+	}
+
+	protected ExpirationTime createTimerInstance(Timer timer) {
+
+		return configureTimerInstance(timer);
+
+	}
+
+	protected ExpirationTime configureTimerInstance(Timer timer) {
+		String s = null;
+		long duration = -1;
+		switch (timer.getTimeType()) {
+		case Timer.TIME_CYCLE:
+			if (timer.getPeriod() != null) {
+
+				long actualDelay = DateTimeUtils.parseDuration(resolveVariable(timer.getDelay()));
+				if (timer.getPeriod() == null) {
+					return DurationExpirationTime.repeat(actualDelay, actualDelay, Integer.MAX_VALUE);
+				} else {
+					return DurationExpirationTime.repeat(actualDelay,
+							DateTimeUtils.parseDuration(resolveVariable(timer.getPeriod())), Integer.MAX_VALUE);
+				}
+			} else {
+				String resolvedDelay = resolveVariable(timer.getDelay());
+
+				// when using ISO date/time period is not set
+				long[] repeatValues = null;
+				try {
+					repeatValues = DateTimeUtils.parseRepeatableDateTime(timer.getDelay());
+				} catch (RuntimeException e) {
+					// cannot parse delay, trying to interpret it
+					repeatValues = DateTimeUtils.parseRepeatableDateTime(resolvedDelay);
+				}
+				if (repeatValues.length == 3) {
+					int parsedReapedCount = (int) repeatValues[0];
+					if (parsedReapedCount <= -1) {
+						parsedReapedCount = Integer.MAX_VALUE;
+					}
+
+					return DurationExpirationTime.repeat(repeatValues[1], repeatValues[2], parsedReapedCount);
+				} else if (repeatValues.length == 2) {
+					return DurationExpirationTime.repeat(repeatValues[0], repeatValues[1], Integer.MAX_VALUE);
+				} else {
+					return DurationExpirationTime.repeat(repeatValues[0], repeatValues[0], Integer.MAX_VALUE);
+				}
+
+			}
+
+		case Timer.TIME_DURATION:
+
+			try {
+				duration = DateTimeUtils.parseDuration(timer.getDelay());
+			} catch (RuntimeException e) {
+				// cannot parse delay, trying to interpret it
+				s = resolveVariable(timer.getDelay());
+				duration = DateTimeUtils.parseDuration(s);
+			}
+			return DurationExpirationTime.after(duration);
+
+		case Timer.TIME_DATE:
+			try {
+				return ExactExpirationTime.of(timer.getDate());
+			} catch (RuntimeException e) {
+				// cannot parse delay, trying to interpret it
+				s = resolveVariable(timer.getDate());
+				return ExactExpirationTime.of(s);
+			}
+		}
+		throw new UnsupportedOperationException("Not supported timer definition");
+
+	}
+
+	protected String resolveVariable(String s) {
+		if (s == null) {
+			return null;
+		}
+		// cannot parse delay, trying to interpret it
+		Map<String, String> replacements = new HashMap<>();
+		Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(s);
+		while (matcher.find()) {
+			String paramName = matcher.group(1);
+			if (replacements.get(paramName) == null) {
+				VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+						VariableScope.VARIABLE_SCOPE, paramName);
+				if (variableScopeInstance != null) {
+					Object variableValue = variableScopeInstance.getVariable(paramName);
+					String variableValueString = variableValue == null ? "" : variableValue.toString();
+					replacements.put(paramName, variableValueString);
+				} else {
+					try {
+						Object variableValue = MVEL.eval(paramName, new NodeInstanceResolverFactory(this));
+						String variableValueString = variableValue == null ? "" : variableValue.toString();
+						replacements.put(paramName, variableValueString);
+					} catch (Throwable t) {
+						logger.error("Could not find variable scope for variable {}", paramName);
+						logger.error("when trying to replace variable in processId for sub process {}", getNodeName());
+						logger.error("Continuing without setting process id.");
+					}
+				}
+			}
+		}
+		for (Map.Entry<String, String> replacement : replacements.entrySet()) {
+			s = s.replace("#{" + replacement.getKey() + "}", replacement.getValue());
+		}
+
+		return s;
+	}
+
+	protected void handleSLAViolation() {
+		if (slaCompliance == io.automatik.engine.api.runtime.process.ProcessInstance.SLA_PENDING) {
+			InternalProcessRuntime processRuntime = getProcessInstance().getProcessRuntime();
+			processRuntime.getProcessEventSupport().fireBeforeSLAViolated(getProcessInstance(), this, processRuntime);
+			logger.debug("SLA violated on node instance {}", getId());
+			this.slaCompliance = io.automatik.engine.api.runtime.process.ProcessInstance.SLA_VIOLATED;
+			this.slaTimerId = null;
+			processRuntime.getProcessEventSupport().fireAfterSLAViolated(getProcessInstance(), this, processRuntime);
+		}
+	}
+
+	@Override
+	public void signalEvent(String type, Object event) {
+		if ("timerTriggered".equals(type)) {
+			TimerInstance timerInstance = (TimerInstance) event;
+			if (timerInstances != null && timerInstances.contains(timerInstance.getId())) {
+				triggerTimer(timerInstance);
+			} else if (timerInstance.getId().equals(slaTimerId)) {
+				handleSLAViolation();
+			}
+		} else if (("slaViolation:" + getId()).equals(type)) {
+
+			handleSLAViolation();
+		}
+	}
+
+	private void triggerTimer(TimerInstance timerInstance) {
+		for (Map.Entry<Timer, ProcessAction> entry : getEventBasedNode().getTimers().entrySet()) {
+			if (entry.getKey().getId() == timerInstance.getTimerId()) {
+				if (timerInstance.getRepeatLimit() == 0) {
+					timerInstances.remove(timerInstance.getId());
+				}
+				executeAction((Action) entry.getValue().getMetaData("Action"));
+				return;
+			}
+		}
+	}
+
+	@Override
+	public String[] getEventTypes() {
+		return new String[] { "timerTriggered" };
+	}
+
+	public void triggerCompleted() {
+		triggerCompleted(CONNECTION_DEFAULT_TYPE, true);
+	}
+
+	@Override
+	public void addEventListeners() {
+		if (timerInstances != null && (!timerInstances.isEmpty())
+				|| (this.slaTimerId != null && !this.slaTimerId.trim().isEmpty())) {
+			addTimerListener();
+		}
+		if (slaCompliance == io.automatik.engine.api.runtime.process.ProcessInstance.SLA_PENDING) {
+			getProcessInstance().addEventListener("slaViolation:" + getId(), this, true);
+		}
+	}
+
+	protected void addTimerListener() {
+		getProcessInstance().addEventListener("timerTriggered", this, false);
+		getProcessInstance().addEventListener("timer", this, true);
+		getProcessInstance().addEventListener("slaViolation:" + getId(), this, true);
+	}
+
+	@Override
+	public void removeEventListeners() {
+		getProcessInstance().removeEventListener("timerTriggered", this, false);
+		getProcessInstance().removeEventListener("timer", this, true);
+		getProcessInstance().removeEventListener("slaViolation:" + getId(), this, true);
+	}
+
+	@Override
+	public void triggerCompleted(String type, boolean remove) {
+		if (this.slaCompliance == io.automatik.engine.api.runtime.process.ProcessInstance.SLA_PENDING) {
+			if (System.currentTimeMillis() > slaDueDate.getTime()) {
+				// completion of the node instance is after expected SLA due date, mark it
+				// accordingly
+				this.slaCompliance = io.automatik.engine.api.runtime.process.ProcessInstance.SLA_VIOLATED;
+			} else {
+				this.slaCompliance = io.automatik.engine.api.runtime.process.ProcessInstance.STATE_COMPLETED;
+			}
+		}
+		cancelSlaTimer();
+		((io.automatik.engine.workflow.process.instance.NodeInstanceContainer) getNodeInstanceContainer())
+				.setCurrentLevel(getLevel());
+		cancelTimers();
+		super.triggerCompleted(type, remove);
+	}
+
+	public List<String> getTimerInstances() {
+		return timerInstances;
+	}
+
+	public void internalSetTimerInstances(List<String> timerInstances) {
+		this.timerInstances = timerInstances;
+	}
+
+	@Override
+	public void cancel() {
+		if (this.slaCompliance == io.automatik.engine.api.runtime.process.ProcessInstance.SLA_PENDING) {
+			if (System.currentTimeMillis() > slaDueDate.getTime()) {
+				// completion of the process instance is after expected SLA due date, mark it
+				// accordingly
+				this.slaCompliance = io.automatik.engine.api.runtime.process.ProcessInstance.SLA_VIOLATED;
+			} else {
+				this.slaCompliance = io.automatik.engine.api.runtime.process.ProcessInstance.SLA_ABORTED;
+			}
+		}
+		cancelSlaTimer();
+		cancelTimers();
+		removeEventListeners();
+		super.cancel();
+	}
+
+	private void cancelTimers() {
+		// deactivate still active timers
+		if (timerInstances != null) {
+			JobsService jobService = getProcessInstance().getProcessRuntime().getJobsService();
+			for (String id : timerInstances) {
+				jobService.cancelJob(id);
+			}
+		}
+	}
+
+	private void cancelSlaTimer() {
+		if (this.slaTimerId != null && !this.slaTimerId.trim().isEmpty()) {
+			JobsService jobService = getProcessInstance().getProcessRuntime().getJobsService();
+			jobService.cancelJob(this.slaTimerId);
+			logger.debug("SLA Timer {} has been canceled", this.slaTimerId);
+		}
+	}
+
+	protected void mapDynamicOutputData(Map<String, Object> results) {
+		if (results != null && !results.isEmpty()) {
+			VariableScope variableScope = (VariableScope) ((ContextContainer) getProcessInstance().getProcess())
+					.getDefaultContext(VariableScope.VARIABLE_SCOPE);
+			VariableScopeInstance variableScopeInstance = (VariableScopeInstance) getProcessInstance()
+					.getContextInstance(VariableScope.VARIABLE_SCOPE);
+			for (Entry<String, Object> result : results.entrySet()) {
+				String variableName = result.getKey();
+				Variable variable = variableScope.findVariable(variableName);
+				if (variable != null) {
+					variableScopeInstance.getVariableScope().validateVariable(getProcessInstance().getProcessName(),
+							variableName, result.getValue());
+					variableScopeInstance.setVariable(this, variableName, result.getValue());
+				}
+			}
+		}
+	}
+
+	public Map<String, String> extractTimerEventInformation() {
+		if (getTimerInstances() != null) {
+			for (String id : getTimerInstances()) {
+				String[] ids = id.split("_");
+
+				for (Timer entry : getEventBasedNode().getTimers().keySet()) {
+					if (entry.getId() == Long.valueOf(ids[1])) {
+						Map<String, String> properties = new HashMap<>();
+						properties.put("TimerID", id);
+						properties.put("Delay", entry.getDelay());
+						properties.put("Period", entry.getPeriod());
+						properties.put("Date", entry.getDate());
+
+						return properties;
+					}
+
+				}
+			}
+		}
+
+		return null;
+	}
+}

@@ -1,0 +1,14 @@
+---
+name: "Automatik"
+metadata:
+  keywords:
+  - "automatic"
+  - "workflow"
+  - "processes"
+  - "decisions"
+  - "IoT"
+  - "automation"
+  guide: "https://quarkus.io/guides/automatik"
+  categories:
+  - "business-automation"
+  status: "preview"
