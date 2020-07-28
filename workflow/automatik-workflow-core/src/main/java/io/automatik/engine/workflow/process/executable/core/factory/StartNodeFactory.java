@@ -3,8 +3,11 @@ package io.automatik.engine.workflow.process.executable.core.factory;
 
 import io.automatik.engine.workflow.base.core.event.EventTypeFilter;
 import io.automatik.engine.workflow.base.core.timer.Timer;
+import io.automatik.engine.workflow.base.instance.impl.Action;
 import io.automatik.engine.workflow.process.core.Node;
 import io.automatik.engine.workflow.process.core.NodeContainer;
+import io.automatik.engine.workflow.process.core.ProcessAction;
+import io.automatik.engine.workflow.process.core.node.CompositeContextNode;
 import io.automatik.engine.workflow.process.core.node.EventTrigger;
 import io.automatik.engine.workflow.process.core.node.StartNode;
 import io.automatik.engine.workflow.process.executable.core.ExecutableNodeContainerFactory;
@@ -62,6 +65,14 @@ public class StartNodeFactory extends ExtendedNodeFactory {
 		timer.setTimeType(timeType);
 
 		getStartNode().setTimer(timer);
+		
+		if (nodeContainer instanceof CompositeContextNode) {
+			ProcessAction noop = new ProcessAction();
+
+			Action action = kcontext -> {};
+			noop.wire(action);
+			((CompositeContextNode) nodeContainer).addTimer(timer, noop);
+		}
 		return this;
 	}
 }

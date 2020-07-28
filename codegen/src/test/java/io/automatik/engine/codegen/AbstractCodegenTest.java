@@ -68,11 +68,6 @@ public class AbstractCodegenTest {
 				Collections.emptyList(), true);
 	}
 
-	protected Application generateRulesFromJava(String... javaSourceCode) throws Exception {
-		return generateCode(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-				Arrays.asList(javaSourceCode), true);
-	}
-
 	protected Application generateCode(List<String> processResources, List<String> rulesResources) throws Exception {
 		return generateCode(processResources, rulesResources, Collections.emptyList(), Collections.emptyList(), false);
 	}
@@ -109,6 +104,7 @@ public class AbstractCodegenTest {
 				continue;
 			}
 			sources.add(new SourceCode(fileName, new String(entry.contents())));
+			logger.debug(new String(entry.contents()));
 		}
 
 		if (logger.isDebugEnabled()) {

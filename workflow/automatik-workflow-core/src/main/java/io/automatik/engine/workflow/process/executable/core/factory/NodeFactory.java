@@ -12,7 +12,7 @@ public abstract class NodeFactory {
 	public static final String METHOD_DONE = "done";
 
 	private Node node;
-	private NodeContainer nodeContainer;
+	protected NodeContainer nodeContainer;
 	protected ExecutableNodeContainerFactory nodeContainerFactory;
 
 	protected NodeFactory(ExecutableNodeContainerFactory nodeContainerFactory, NodeContainer nodeContainer, long id) {

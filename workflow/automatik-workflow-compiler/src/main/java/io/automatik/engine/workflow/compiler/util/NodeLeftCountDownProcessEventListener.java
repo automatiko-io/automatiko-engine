@@ -21,7 +21,7 @@ public class NodeLeftCountDownProcessEventListener extends NodeCountDownProcessE
 	}
 
 	@Override
-	public void afterNodeLeft(ProcessNodeLeftEvent event) {
+	public void afterNodeLeft(ProcessNodeLeftEvent event) {		
 		if (nodeName.equals(event.getNodeInstance().getNodeName())) {
 			countDown();
 		}
