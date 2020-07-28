@@ -95,7 +95,7 @@ public class MessageProducerGenerator {
 					.filter(fd -> fd.getVariable(0).getNameAsString().equals("emitter")).get();
 			annotator.withInjection(emitterField);
 			annotator.withOutgoingMessage(emitterField, trigger.getName());
-			emitterField.getVariable(0).setType(annotator.emitterType("String"));
+			emitterField.getVariable(0).setType(annotator.emitterType("Message"));
 
 			MethodDeclaration produceMethod = template.findAll(MethodDeclaration.class).stream()
 					.filter(md -> md.getNameAsString().equals("produce")).findFirst().orElseThrow(

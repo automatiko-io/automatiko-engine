@@ -9,7 +9,8 @@ import io.automatik.engine.api.event.DataEvent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
-import com.github.javaparser.ast.body.MethodDeclaration;
+
+import org.eclipse.microprofile.reactive.messaging.Message;
 
 public class MessageProducer {
     
@@ -30,7 +31,7 @@ public class MessageProducer {
                
     }
 	    
-	private String marshall(ProcessInstance pi, $Type$ eventData) {
+	private Message<?> marshall(ProcessInstance pi, $Type$ eventData) {
 	    try {
 	        
 	        if (useCloudEvents.orElse(true)) {
@@ -45,9 +46,9 @@ public class MessageProducer {
         	    if (pi.getReferenceId() != null && !pi.getReferenceId().isEmpty()) {
         	        event.setAutomatikReferenceId(pi.getReferenceId());
         	    }
-        	    return json.writeValueAsString(event);
+        	    return Message.of(json.writeValueAsBytes(event));
 	        } else {
-	            return json.writeValueAsString(eventData);
+	            return Message.of(json.writeValueAsBytes(eventData));
 	        }
 	    } catch (Exception e) {
 	        throw new RuntimeException(e);

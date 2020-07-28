@@ -1,6 +1,7 @@
 package com.myspace.demo;
 
 import java.util.TimeZone;
+import java.util.concurrent.CompletionStage;
 import java.util.Optional;
 
 import io.automatik.engine.api.Application;
@@ -13,6 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
+
+import org.eclipse.microprofile.reactive.messaging.Message;
 
 public class $Type$MessageConsumer {
     
@@ -34,12 +37,12 @@ public class $Type$MessageConsumer {
 
     }
     
-	public void consume(String payload) {
+	public CompletionStage<Void> consume(Message<byte[]> msg) {
 	    final String trigger = "$Trigger$";
         try {
             
             if (useCloudEvents.orElse(true)) {
-                final $DataEventType$ eventData = json.readValue(payload, $DataEventType$.class);
+                final $DataEventType$ eventData = json.readValue(msg.getPayload(), $DataEventType$.class);
         	    final $Type$ model = new $Type$();
                 model.set$ModelRef$(eventData.getData());
                 io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
@@ -58,9 +61,9 @@ public class $Type$MessageConsumer {
                         }
                     }
                     return null;
-                });
+                });                
             } else {
-                final $DataType$ eventData = json.readValue(payload, $DataType$.class);
+                final $DataType$ eventData = json.readValue(msg.getPayload(), $DataType$.class);
                 final $Type$ model = new $Type$();
                 model.set$ModelRef$(eventData);
                 io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
@@ -72,9 +75,14 @@ public class $Type$MessageConsumer {
                     return null;
                 });
             }
+            
+            return msg.ack();
         } catch (Exception e) {
-            LOGGER.error("Error when consuming message for process {}", process.id(), e);
+        	LOGGER.error("Error when consuming message for process {}", process.id(), e);
+        	return msg.nack(e);            
         }
+        
+        
     }
 	    
 }

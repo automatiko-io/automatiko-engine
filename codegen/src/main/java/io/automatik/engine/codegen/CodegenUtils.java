@@ -89,7 +89,7 @@ public class CodegenUtils {
 	}
 
 	public static void interpolateTypeArguments(NodeList<Type> ta, Map<String, String> typeInterpolations) {
-		ta.stream().map(Type::asClassOrInterfaceType).forEach(t -> interpolateTypes(t, typeInterpolations));
+		ta.stream().filter(Type::isClassOrInterfaceType).map(Type::asClassOrInterfaceType).forEach(t -> interpolateTypes(t, typeInterpolations));
 	}
 
 	public static boolean isProcessField(FieldDeclaration fd) {

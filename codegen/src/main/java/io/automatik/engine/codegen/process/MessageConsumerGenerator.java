@@ -2,7 +2,6 @@
 package io.automatik.engine.codegen.process;
 
 import static com.github.javaparser.StaticJavaParser.parse;
-import static io.automatik.engine.codegen.CodegenUtils.interpolateArguments;
 import static io.automatik.engine.codegen.CodegenUtils.interpolateTypes;
 import static io.automatik.engine.codegen.CodegenUtils.isApplicationField;
 import static io.automatik.engine.codegen.CodegenUtils.isProcessField;
@@ -87,7 +86,7 @@ public class MessageConsumerGenerator {
 				.forEach(md -> md.addAnnotation("javax.annotation.PostConstruct"));
 		template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("consume"))
 				.forEach(md -> {
-					interpolateArguments(md, "String");
+					//interpolateArguments(md, "String");
 					md.findAll(StringLiteralExpr.class)
 							.forEach(str -> str.setString(str.asString().replace("$Trigger$", trigger.getName())));
 					md.findAll(ClassOrInterfaceType.class).forEach(
