@@ -40,29 +40,6 @@ public class ProcessInstanceResolverStrategy implements ObjectMarshallingStrateg
 		}
 	}
 
-	public void write(ObjectOutputStream os, Object object) throws IOException {
-		ProcessInstance processInstance = (ProcessInstance) object;
-
-		connectProcessInstanceToRuntimeAndProcess(processInstance, os);
-
-		os.writeUTF(processInstance.getId());
-	}
-
-	public Object read(ObjectInputStream is) throws IOException, ClassNotFoundException {
-		String processInstanceId = is.readUTF();
-		ProcessInstanceManager pim = retrieveProcessInstanceManager(is);
-		ProcessInstance processInstance = pim.getProcessInstance(processInstanceId);
-		if (processInstance == null) {
-			ExecutableProcessInstance result = new ExecutableProcessInstance();
-			result.setId(processInstanceId);
-			result.internalSetState(ProcessInstance.STATE_COMPLETED);
-			return result;
-		} else {
-			connectProcessInstanceToRuntimeAndProcess(processInstance, is);
-			return processInstance;
-		}
-	}
-
 	/**
 	 * Retrieve the {@link ProcessInstanceManager} object from the ObjectOutput- or
 	 * ObjectInputStream. The stream object will secretly also either be a

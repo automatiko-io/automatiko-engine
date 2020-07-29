@@ -10,11 +10,20 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Comparator;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.automatik.engine.addons.persistence.AbstractProcessInstancesFactory;
+import io.automatik.engine.addons.persistence.data.Address;
+import io.automatik.engine.addons.persistence.data.Person;
 import io.automatik.engine.api.auth.SecurityPolicy;
 import io.automatik.engine.api.uow.UnitOfWork;
 import io.automatik.engine.api.uow.UnitOfWorkManager;
@@ -34,7 +43,18 @@ import io.automatik.engine.workflow.bpmn2.BpmnVariables;
 
 public class FileSystemProcessInstancesTest {
 
+	private static final String PERSISTENCE_FOLDER = "target" + File.separator + "persistence-test";
+
 	private SecurityPolicy securityPolicy = SecurityPolicy.of(new StaticIdentityProvider("john"));
+
+	@BeforeEach
+	public void setup() throws IOException {
+		Path path = Paths.get(PERSISTENCE_FOLDER);
+
+		if (Files.exists(path)) {
+			Files.walk(path).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+		}
+	}
 
 	@Test
 	public void testBasicFlow() {
@@ -158,6 +178,52 @@ public class FileSystemProcessInstancesTest {
 		verify(fileSystemBasedStorage, times(1)).remove(any());
 	}
 
+	@Test
+	public void testComplexVariableFlow() {
+
+		BpmnProcess process = (BpmnProcess) BpmnProcess.from(new ClassPathResource("BPMN2-PersonUserTask.bpmn2"))
+				.get(0);
+		process.setProcessInstancesFactory(new FileSystemProcessInstancesFactory());
+		process.configure();
+
+		Person person = new Person("John", 30);
+		Address mainAddress = new Address("first", "Brisbane", "00000", "Australia", true);
+		Address secondaryAddress = new Address("second", "Syndey", "11111", "Australia", false);
+
+		person.addAddress(mainAddress);
+		person.addAddress(secondaryAddress);
+
+		ProcessInstance<BpmnVariables> processInstance = process
+				.createInstance(BpmnVariables.create(Collections.singletonMap("person", person)));
+
+		processInstance.start();
+
+		assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
+		assertThat(processInstance.description()).isEqualTo("User Task");
+
+		assertThat(process.instances().values()).hasSize(1);
+
+		FileSystemProcessInstances fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
+		verify(fileSystemBasedStorage, times(1)).create(any(), any());
+		verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_DESCRIPTION),
+				eq("User Task"));
+		verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_STATUS), eq("1"));
+
+		Person testVar = (Person) processInstance.variables().get("person");
+		assertThat(testVar).isEqualTo(person);
+
+		assertThat(processInstance.description()).isEqualTo("User Task");
+
+		WorkItem workItem = processInstance.workItems(securityPolicy).get(0);
+		assertThat(workItem).isNotNull();
+		assertThat(workItem.getParameters().get("ActorId")).isEqualTo("john");
+		processInstance.completeWorkItem(workItem.getId(), null, securityPolicy);
+		assertThat(processInstance.status()).isEqualTo(STATE_COMPLETED);
+
+		fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
+		verify(fileSystemBasedStorage, times(2)).remove(any());
+	}
+
 	private class FileSystemProcessInstancesFactory extends AbstractProcessInstancesFactory {
 
 		@Override
@@ -168,7 +234,7 @@ public class FileSystemProcessInstancesTest {
 
 		@Override
 		public String path() {
-			return "target";
+			return PERSISTENCE_FOLDER;
 		}
 	}
 }

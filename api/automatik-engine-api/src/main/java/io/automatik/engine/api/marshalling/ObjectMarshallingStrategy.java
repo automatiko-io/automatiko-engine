@@ -20,10 +20,6 @@ public interface ObjectMarshallingStrategy {
 
 	public boolean accept(Object object);
 
-	public void write(ObjectOutputStream os, Object object) throws IOException;
-
-	public Object read(ObjectInputStream os) throws IOException, ClassNotFoundException;
-
 	/**
 	 * This method is analogous to the write() method, but instead of writing the
 	 * object into an output stream, it returns the marshalled object as a byte[].

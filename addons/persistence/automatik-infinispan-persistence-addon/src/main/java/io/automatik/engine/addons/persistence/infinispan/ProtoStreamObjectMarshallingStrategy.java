@@ -94,14 +94,4 @@ public class ProtoStreamObjectMarshallingStrategy implements ObjectMarshallingSt
 	public Context createContext() {
 		return null;
 	}
-
-	@Override
-	public void write(ObjectOutputStream os, Object object) throws IOException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Object read(ObjectInputStream os) throws IOException, ClassNotFoundException {
-		throw new UnsupportedOperationException();
-	}
 }

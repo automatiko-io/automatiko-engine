@@ -21,6 +21,16 @@
       <groupId>io.automatik.platform.workflow</groupId>
       <artifactId>automatik-workflow-core</artifactId>
     </dependency>
+    
+    <!-- json based marshalling of variables -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
 
     <!-- test dependencies -->
     <dependency>

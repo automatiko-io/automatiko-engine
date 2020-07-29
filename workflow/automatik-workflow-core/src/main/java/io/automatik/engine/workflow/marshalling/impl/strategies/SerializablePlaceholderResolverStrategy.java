@@ -28,14 +28,6 @@ public class SerializablePlaceholderResolverStrategy implements ObjectMarshallin
 		this.index = index;
 	}
 
-	public Object read(ObjectInputStream os) throws IOException, ClassNotFoundException {
-		return os.readObject();
-	}
-
-	public void write(ObjectOutputStream os, Object object) throws IOException {
-		os.writeObject(object);
-	}
-
 	public boolean accept(Object object) {
 		return acceptor.accept(object);
 	}

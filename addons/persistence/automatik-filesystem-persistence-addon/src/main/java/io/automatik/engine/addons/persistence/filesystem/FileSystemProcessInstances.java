@@ -35,7 +35,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 	private ProcessInstanceMarshaller marshaller;
 
 	public FileSystemProcessInstances(Process<?> process, Path storage) {
-		this(process, storage, new ProcessInstanceMarshaller());
+		this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy()));
 	}
 
 	public FileSystemProcessInstances(Process<?> process, Path storage, ProcessInstanceMarshaller marshaller) {
