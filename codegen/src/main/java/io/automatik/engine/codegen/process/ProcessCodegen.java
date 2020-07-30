@@ -43,8 +43,8 @@ import io.automatik.engine.codegen.ApplicationSection;
 import io.automatik.engine.codegen.ConfigGenerator;
 import io.automatik.engine.codegen.DefaultResourceGeneratorFactory;
 import io.automatik.engine.codegen.GeneratedFile;
-import io.automatik.engine.codegen.ResourceGeneratorFactory;
 import io.automatik.engine.codegen.GeneratedFile.Type;
+import io.automatik.engine.codegen.ResourceGeneratorFactory;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatik.engine.codegen.process.config.ProcessConfigGenerator;
 import io.automatik.engine.workflow.base.core.resources.ByteArrayResource;
@@ -340,9 +340,9 @@ public class ProcessCodegen extends AbstractGenerator {
 								trigger).withDependencyInjection(annotator);
 						mdegs.add(msgDataEventGenerator);
 
-						megs.add(new MessageConsumerGenerator(workFlowProcess, modelClassGenerator.className(),
-								execModelGen.className(), applicationCanonicalName, msgDataEventGenerator.className(),
-								trigger).withDependencyInjection(annotator));
+						megs.add(new MessageConsumerGenerator(context(), workFlowProcess,
+								modelClassGenerator.className(), execModelGen.className(), applicationCanonicalName,
+								msgDataEventGenerator.className(), trigger).withDependencyInjection(annotator));
 					} else if (trigger.getType().equals(TriggerMetaData.TriggerType.ProduceMessage)) {
 
 						MessageDataEventGenerator msgDataEventGenerator = new MessageDataEventGenerator(workFlowProcess,

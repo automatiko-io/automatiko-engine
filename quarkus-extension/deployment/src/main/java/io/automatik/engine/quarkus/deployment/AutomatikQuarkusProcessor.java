@@ -245,7 +245,8 @@ public class AutomatikQuarkusProcessor {
 			dataEvents.forEach(
 					c -> reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, c.name().toString())));
 
-			writeGeneratedFiles(appPaths, getJsonSchemaFiles(index, appPaths.getFirstClassesPath()));
+			// writeGeneratedFiles(appPaths, getJsonSchemaFiles(index,
+			// appPaths.getFirstClassesPath()));
 		}
 	}
 

@@ -138,6 +138,7 @@ public class ServerlessWorkflowFactory {
 		startNode.setMetaData(Metadata.TRIGGER_MAPPING, DEFAULT_WORKFLOW_VAR);
 		startNode.setMetaData(Metadata.TRIGGER_TYPE, "ConsumeMessage");
 		startNode.setMetaData(Metadata.TRIGGER_REF, eventDefinition.getSource());
+		startNode.setMetaData(Metadata.TRIGGER_CORRELATION, eventDefinition.getCorrelationToken());
 		startNode.setMetaData(Metadata.MESSAGE_TYPE, JSON_NODE);
 		addTriggerToStartNode(startNode, JSON_NODE);
 

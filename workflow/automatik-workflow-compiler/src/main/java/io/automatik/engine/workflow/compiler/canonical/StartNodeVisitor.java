@@ -1,6 +1,20 @@
 
 package io.automatik.engine.workflow.compiler.canonical;
 
+import static io.automatik.engine.workflow.process.executable.core.Metadata.EVENT_TYPE_SIGNAL;
+import static io.automatik.engine.workflow.process.executable.core.Metadata.MESSAGE_TYPE;
+import static io.automatik.engine.workflow.process.executable.core.Metadata.TRIGGER_CORRELATION;
+import static io.automatik.engine.workflow.process.executable.core.Metadata.TRIGGER_CORRELATION_EXPR;
+import static io.automatik.engine.workflow.process.executable.core.Metadata.TRIGGER_MAPPING;
+import static io.automatik.engine.workflow.process.executable.core.Metadata.TRIGGER_REF;
+import static io.automatik.engine.workflow.process.executable.core.Metadata.TRIGGER_TYPE;
+import static io.automatik.engine.workflow.process.executable.core.factory.StartNodeFactory.METHOD_INTERRUPTING;
+import static io.automatik.engine.workflow.process.executable.core.factory.StartNodeFactory.METHOD_TIMER;
+import static io.automatik.engine.workflow.process.executable.core.factory.StartNodeFactory.METHOD_TRIGGER;
+
+import java.util.Map;
+import java.util.Map.Entry;
+
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
@@ -12,18 +26,6 @@ import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.core.timer.Timer;
 import io.automatik.engine.workflow.process.core.node.StartNode;
 import io.automatik.engine.workflow.process.executable.core.factory.StartNodeFactory;
-
-import static io.automatik.engine.workflow.process.executable.core.Metadata.EVENT_TYPE_SIGNAL;
-import static io.automatik.engine.workflow.process.executable.core.Metadata.MESSAGE_TYPE;
-import static io.automatik.engine.workflow.process.executable.core.Metadata.TRIGGER_MAPPING;
-import static io.automatik.engine.workflow.process.executable.core.Metadata.TRIGGER_REF;
-import static io.automatik.engine.workflow.process.executable.core.Metadata.TRIGGER_TYPE;
-import static io.automatik.engine.workflow.process.executable.core.factory.StartNodeFactory.METHOD_INTERRUPTING;
-import static io.automatik.engine.workflow.process.executable.core.factory.StartNodeFactory.METHOD_TIMER;
-import static io.automatik.engine.workflow.process.executable.core.factory.StartNodeFactory.METHOD_TRIGGER;
-
-import java.util.Map;
-import java.util.Map.Entry;
 
 public class StartNodeVisitor extends AbstractNodeVisitor<StartNode> {
 
@@ -50,9 +52,11 @@ public class StartNodeVisitor extends AbstractNodeVisitor<StartNode> {
 
 		} else if (node.getTriggers() != null && !node.getTriggers().isEmpty()) {
 			Map<String, Object> nodeMetaData = node.getMetaData();
-			metadata.addTrigger(new TriggerMetaData((String) nodeMetaData.get(TRIGGER_REF),
-					(String) nodeMetaData.get(TRIGGER_TYPE), (String) nodeMetaData.get(MESSAGE_TYPE),
-					(String) nodeMetaData.get(TRIGGER_MAPPING), String.valueOf(node.getId())).validate());
+			metadata.addTrigger(
+					new TriggerMetaData((String) nodeMetaData.get(TRIGGER_REF), (String) nodeMetaData.get(TRIGGER_TYPE),
+							(String) nodeMetaData.get(MESSAGE_TYPE), (String) nodeMetaData.get(TRIGGER_MAPPING),
+							String.valueOf(node.getId()), (String) nodeMetaData.get(TRIGGER_CORRELATION),
+							(String) nodeMetaData.get(TRIGGER_CORRELATION_EXPR)).validate());
 
 			handleSignal(node, nodeMetaData, body, variableScope, metadata);
 		} else {

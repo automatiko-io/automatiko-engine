@@ -9,6 +9,8 @@ public class Metadata {
 	public static final String MESSAGE_TYPE = "MessageType";
 	public static final String TRIGGER_TYPE = "TriggerType";
 	public static final String TRIGGER_MAPPING = "TriggerMapping";
+	public static final String TRIGGER_CORRELATION = "TriggerCorrelation";
+	public static final String TRIGGER_CORRELATION_EXPR = "TriggerCorrelationExpr";
 	public static final String MAPPING_VARIABLE = "MappingVariable";
 	public static final String EVENT_TYPE = "EventType";
 	public static final String EVENT_TYPE_TIMER = "Timer";

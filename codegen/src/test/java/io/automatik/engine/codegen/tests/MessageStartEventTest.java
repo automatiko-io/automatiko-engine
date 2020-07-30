@@ -2,11 +2,13 @@
 package io.automatik.engine.codegen.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.assertj.core.api.Condition;
@@ -14,11 +16,18 @@ import org.junit.jupiter.api.Test;
 
 import io.automatik.engine.api.Application;
 import io.automatik.engine.api.Model;
+import io.automatik.engine.api.auth.SecurityPolicy;
 import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
+import io.automatik.engine.api.workflow.WorkItem;
+import io.automatik.engine.api.workflow.workitem.Policy;
 import io.automatik.engine.codegen.AbstractCodegenTest;
+import io.automatik.engine.services.identity.StaticIdentityProvider;
+import io.automatik.engine.workflow.Sig;
 
 public class MessageStartEventTest extends AbstractCodegenTest {
+
+	private Policy<?> securityPolicy = SecurityPolicy.of(new StaticIdentityProvider("john"));
 
 	@Test
 	public void testMessageStartEventProcess() throws Exception {
@@ -141,5 +150,76 @@ public class MessageStartEventTest extends AbstractCodegenTest {
 		assertThat(result.toMap()).hasSize(2).containsKeys("customerId", "path");
 		assertThat(result.toMap().get("customerId")).isNotNull().isEqualTo("CUS-00998877");
 		assertThat(result.toMap().get("path")).isNotNull().isEqualTo("message");
+	}
+
+	@Test
+	public void testMultipleMessagesStartEventProcess() throws Exception {
+
+		Application app = generateCodeProcessesOnly("messagestartevent/MessageAndMessageStartEvent.bpmn2");
+		assertThat(app).isNotNull();
+
+		Process<? extends Model> p = app.processes().processById("MessageStartEvent");
+
+		Model m = p.createModel();
+		Map<String, Object> parameters = new HashMap<>();
+		parameters.put("customerId", "CUS-00998877");
+		m.fromMap(parameters);
+
+		ProcessInstance<?> processInstance = p.createInstance(m);
+		processInstance.start("customers", null);
+
+		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+		Model result = (Model) processInstance.variables();
+		assertThat(result.toMap()).hasSize(2).containsKeys("customerId");
+		assertThat(result.toMap().get("customerId")).isNotNull().isEqualTo("CUS-00998877");
+
+		processInstance.send(Sig.of("managers", "John the manager"));
+
+		List<WorkItem> workItems = processInstance.workItems(securityPolicy);
+		assertEquals(2, workItems.size());
+
+		result = (Model) processInstance.variables();
+		assertThat(result.toMap()).hasSize(2).containsKeys("customerId", "path");
+		assertThat(result.toMap().get("customerId")).isNotNull().isEqualTo("CUS-00998877");
+		assertThat(result.toMap().get("path")).isNotNull().isEqualTo("John the manager");
+
+		processInstance.abort();
+		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ABORTED);
+	}
+
+	@Test
+	public void testMultipleMessagesStartEventProcessCorrelationExpression() throws Exception {
+
+		Application app = generateCodeProcessesOnly(
+				"messagestartevent/MessageAndMessageStartEventCorrelationExpr.bpmn2");
+		assertThat(app).isNotNull();
+
+		Process<? extends Model> p = app.processes().processById("MessageStartEvent");
+
+		Model m = p.createModel();
+		Map<String, Object> parameters = new HashMap<>();
+		parameters.put("customerId", "CUS-00998877");
+		m.fromMap(parameters);
+
+		ProcessInstance<?> processInstance = p.createInstance(m);
+		processInstance.start("customers", null);
+
+		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+		Model result = (Model) processInstance.variables();
+		assertThat(result.toMap()).hasSize(2).containsKeys("customerId");
+		assertThat(result.toMap().get("customerId")).isNotNull().isEqualTo("CUS-00998877");
+
+		processInstance.send(Sig.of("managers", "John the manager"));
+
+		List<WorkItem> workItems = processInstance.workItems(securityPolicy);
+		assertEquals(2, workItems.size());
+
+		result = (Model) processInstance.variables();
+		assertThat(result.toMap()).hasSize(2).containsKeys("customerId", "path");
+		assertThat(result.toMap().get("customerId")).isNotNull().isEqualTo("CUS-00998877");
+		assertThat(result.toMap().get("path")).isNotNull().isEqualTo("John the manager");
+
+		processInstance.abort();
+		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ABORTED);
 	}
 }

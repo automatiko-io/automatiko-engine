@@ -38,6 +38,8 @@ public class StartEventHandler extends AbstractNodeHandler {
 	private static final String TRIGGER_REF = "TriggerRef";
 	private static final String MESSAGE_TYPE = "MessageType";
 	private static final String TRIGGER_TYPE = "TriggerType";
+	private static final String TRIGGER_CORRELATION = "TriggerCorrelation";
+	private static final String TRIGGER_CORRELATION_EXPR = "TriggerCorrelationExpr";
 
 	private DataTransformerRegistry transformerRegistry = DataTransformerRegistry.get();
 
@@ -130,6 +132,8 @@ public class StartEventHandler extends AbstractNodeHandler {
 				startNode.setMetaData(MESSAGE_TYPE, message.getType());
 				startNode.setMetaData(TRIGGER_TYPE, "ConsumeMessage");
 				startNode.setMetaData(TRIGGER_REF, message.getName());
+				startNode.setMetaData(TRIGGER_CORRELATION, message.getCorrelation());
+				startNode.setMetaData(TRIGGER_CORRELATION_EXPR, message.getCorrelationExpression());
 
 				addTriggerWithInMappings(startNode, "Message-" + message.getName());
 			} else if ("timerEventDefinition".equals(nodeName)) {

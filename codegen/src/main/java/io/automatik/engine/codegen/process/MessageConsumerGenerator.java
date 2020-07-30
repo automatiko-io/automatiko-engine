@@ -11,18 +11,25 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.codegen.BodyDeclarationComparator;
+import io.automatik.engine.codegen.GeneratorContext;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatik.engine.workflow.compiler.canonical.TriggerMetaData;
 import io.automatik.engine.workflow.util.StringUtils;
 
 public class MessageConsumerGenerator {
 	private final String relativePath;
+
+	private GeneratorContext context;
 
 	private WorkflowProcess process;
 	private final String packageName;
@@ -38,8 +45,9 @@ public class MessageConsumerGenerator {
 
 	private TriggerMetaData trigger;
 
-	public MessageConsumerGenerator(WorkflowProcess process, String modelfqcn, String processfqcn,
-			String appCanonicalName, String messageDataEventClassName, TriggerMetaData trigger) {
+	public MessageConsumerGenerator(GeneratorContext context, WorkflowProcess process, String modelfqcn,
+			String processfqcn, String appCanonicalName, String messageDataEventClassName, TriggerMetaData trigger) {
+		this.context = context;
 		this.process = process;
 		this.trigger = trigger;
 		this.packageName = process.getPackageName();
@@ -86,7 +94,6 @@ public class MessageConsumerGenerator {
 				.forEach(md -> md.addAnnotation("javax.annotation.PostConstruct"));
 		template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("consume"))
 				.forEach(md -> {
-					//interpolateArguments(md, "String");
 					md.findAll(StringLiteralExpr.class)
 							.forEach(str -> str.setString(str.asString().replace("$Trigger$", trigger.getName())));
 					md.findAll(ClassOrInterfaceType.class).forEach(
@@ -115,6 +122,37 @@ public class MessageConsumerGenerator {
 
 			template.findAll(FieldDeclaration.class, fd -> isApplicationField(fd))
 					.forEach(fd -> initializeApplicationField(fd, template));
+		}
+		BlockStmt body = new BlockStmt();
+		if (trigger.getCorrelation() != null) {
+
+			body.addStatement(new ReturnStmt(new StringLiteralExpr(trigger.getCorrelation())));
+
+		} else if (trigger.getCorrelationExpression() != null) {
+
+			body.addStatement(new ReturnStmt(new NameExpr(trigger.getCorrelationExpression())));
+		} else {
+			body.addStatement(new ReturnStmt(new NullLiteralExpr()));
+		}
+
+		boolean cloudEvents = Boolean
+				.parseBoolean(context.getApplicationProperty("automatik.messaging.as-cloudevents").orElse("false"));
+
+		if (cloudEvents) {
+
+			template.findAll(MethodDeclaration.class).stream()
+					.filter(md -> md.getNameAsString().equals("correlationEvent")).forEach(md -> {
+						md.setBody(body);
+						md.getParameters().forEach(p -> p.setType(messageDataEventClassName));
+					});
+		} else {
+
+			template.findAll(MethodDeclaration.class).stream()
+					.filter(md -> md.getNameAsString().equals("correlationPayload")).forEach(md -> {
+						md.setBody(body);
+						md.getParameters().forEach(p -> p.setType(trigger.getDataType()));
+					});
+
 		}
 		template.getMembers().sort(new BodyDeclarationComparator());
 		return clazz.toString();

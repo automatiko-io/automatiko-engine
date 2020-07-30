@@ -73,6 +73,7 @@ import io.automatik.engine.workflow.process.core.node.EndNode;
 import io.automatik.engine.workflow.process.core.node.EventNode;
 import io.automatik.engine.workflow.process.core.node.EventNodeInterface;
 import io.automatik.engine.workflow.process.core.node.EventSubProcessNode;
+import io.automatik.engine.workflow.process.core.node.EventTrigger;
 import io.automatik.engine.workflow.process.core.node.MilestoneNode;
 import io.automatik.engine.workflow.process.core.node.StartNode;
 import io.automatik.engine.workflow.process.core.node.StateBasedNode;
@@ -87,6 +88,7 @@ import io.automatik.engine.workflow.process.instance.node.EventNodeInstance;
 import io.automatik.engine.workflow.process.instance.node.EventNodeInstanceInterface;
 import io.automatik.engine.workflow.process.instance.node.EventSubProcessNodeInstance;
 import io.automatik.engine.workflow.process.instance.node.FaultNodeInstance;
+import io.automatik.engine.workflow.process.instance.node.StartNodeInstance;
 import io.automatik.engine.workflow.process.instance.node.StateBasedNodeInstance;
 import io.automatik.engine.workflow.util.PatternConstants;
 
@@ -603,6 +605,15 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
 									}
 								}
 							}
+						}
+					} else if (node instanceof StartNode && ((StartNode) node).getTriggers() != null) {
+						boolean accepted = ((StartNode) node).getTriggers().stream()
+								.filter(EventTrigger.class::isInstance).anyMatch(t -> ((EventTrigger) t)
+										.getEventFilters().stream().anyMatch(e -> e.acceptsEvent(type, event)));
+
+						if (accepted) {
+							StartNodeInstance startNodeInstance = (StartNodeInstance) getNodeInstance(node);
+							startNodeInstance.signalEvent(type, event);
 						}
 					}
 				}

@@ -12,6 +12,7 @@ import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.datatype.DataType;
 import io.automatik.engine.workflow.base.core.datatype.impl.type.StringDataType;
 import io.automatik.engine.workflow.bpmn2.core.Lane;
+import io.automatik.engine.workflow.bpmn2.core.Message;
 import io.automatik.engine.workflow.bpmn2.core.SequenceFlow;
 import io.automatik.engine.workflow.compiler.xml.BaseAbstractHandler;
 import io.automatik.engine.workflow.compiler.xml.ExtensibleXmlParser;
@@ -28,6 +29,7 @@ public class MetaDataHandler extends BaseAbstractHandler implements Handler {
 			this.validParents.add(Variable.class);
 			this.validParents.add(SequenceFlow.class);
 			this.validParents.add(Lane.class);
+			this.validParents.add(Message.class);
 
 			this.validPeers = new HashSet();
 			this.validPeers.add(null);
@@ -82,6 +84,8 @@ public class MetaDataHandler extends BaseAbstractHandler implements Handler {
 				return ((SequenceFlow) parent).getMetaData();
 			} else if (parent instanceof Lane) {
 				return ((Lane) parent).getMetaData();
+			} else if (parent instanceof Message) {
+				return ((Message) parent).getMetaData();
 			} else {
 				throw new IllegalArgumentException("Unknown parent " + parent);
 			}

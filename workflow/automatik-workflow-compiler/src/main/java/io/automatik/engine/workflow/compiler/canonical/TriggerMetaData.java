@@ -39,13 +39,23 @@ public class TriggerMetaData {
 	// reference to owner of the trigger usually node
 	private String ownerId;
 
+	// optional correlation to be used when trigger has be executed
+	private String correlation;
+	private String correlationExpression;
+
 	public TriggerMetaData(String name, String type, String dataType, String modelRef, String ownerId) {
-		super();
+		this(name, type, dataType, modelRef, ownerId, null, null);
+	}
+
+	public TriggerMetaData(String name, String type, String dataType, String modelRef, String ownerId,
+			String correlation, String correlationExpression) {
 		this.name = name;
 		this.type = TriggerType.valueOf(type);
 		this.dataType = dataType;
 		this.modelRef = modelRef;
 		this.ownerId = ownerId;
+		this.correlation = correlation;
+		this.correlationExpression = correlationExpression;
 	}
 
 	public String getName() {
@@ -86,6 +96,22 @@ public class TriggerMetaData {
 
 	public void setOwnerId(String ownerId) {
 		this.ownerId = ownerId;
+	}
+
+	public String getCorrelation() {
+		return correlation;
+	}
+
+	public void setCorrelation(String correlation) {
+		this.correlation = correlation;
+	}
+
+	public String getCorrelationExpression() {
+		return correlationExpression;
+	}
+
+	public void setCorrelationExpression(String correlationExpression) {
+		this.correlationExpression = correlationExpression;
 	}
 
 	public TriggerMetaData validate() {
