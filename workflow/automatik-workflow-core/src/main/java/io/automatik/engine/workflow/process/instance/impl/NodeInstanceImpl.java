@@ -186,6 +186,7 @@ public abstract class NodeInstanceImpl
 			internalTrigger(from, type);
 		} catch (Exception e) {
 			captureError(e);
+			runtime.getProcessEventSupport().fireAfterNodeInstanceFailed(getProcessInstance(), this, e, runtime);
 			// stop after capturing error
 			return;
 		}

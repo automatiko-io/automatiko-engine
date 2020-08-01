@@ -217,7 +217,7 @@ public abstract class AbstractResourceGenerator {
 		// trigger to start process instances
 		if ((!startable && !dynamic) || !isPublic()) {
 			Optional<MethodDeclaration> createResourceMethod = template.findFirst(MethodDeclaration.class)
-					.filter(md -> md.getNameAsString().equals("createResource_" + processName));
+					.filter(md -> md.getNameAsString().equals("create_" + processName));
 			createResourceMethod.ifPresent(template::remove);
 		}
 
@@ -226,6 +226,7 @@ public abstract class AbstractResourceGenerator {
 		}
 
 		enableValidation(template);
+		removeMetricsIfNotEnabled(template);
 
 		template.getMembers().sort(new BodyDeclarationComparator());
 		return clazz.toString();
@@ -256,6 +257,16 @@ public abstract class AbstractResourceGenerator {
 				.ifPresent(c -> template.findAll(Parameter.class).stream()
 						.filter(param -> param.getTypeAsString().equals(dataClazzName + "Input"))
 						.forEach(this::insertValidationAnnotations));
+	}
+
+	private void removeMetricsIfNotEnabled(ClassOrInterfaceDeclaration template) {
+		Optional.ofNullable(context).map(GeneratorContext::getBuildContext)
+				.filter(bc -> !bc.config().metrics().enabled())
+				.ifPresent(c -> template.findAll(MethodDeclaration.class).stream().forEach(md -> {
+					md.getAnnotationByName("Counted").ifPresent(a -> a.remove());
+					md.getAnnotationByName("Metered").ifPresent(a -> a.remove());
+					md.getAnnotationByName("Timed").ifPresent(a -> a.remove());
+				}));
 	}
 
 	private void insertValidationAnnotations(Parameter param) {

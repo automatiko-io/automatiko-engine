@@ -41,7 +41,7 @@ public class JacksonObjectMarshallingStrategy implements ObjectMarshallingStrate
 	public Object unmarshal(String dataType, Context context, ObjectInputStream is, byte[] object,
 			ClassLoader classloader) throws IOException, ClassNotFoundException {
 
-		return mapper.readValue(log(object), Class.forName(dataType));
+		return mapper.readValue(log(object), Object.class);
 	}
 
 	@Override

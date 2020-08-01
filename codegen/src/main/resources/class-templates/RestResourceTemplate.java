@@ -18,7 +18,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
-
 import io.automatik.engine.api.runtime.process.WorkItemNotFoundException;
 import io.automatik.engine.api.Application;
 import io.automatik.engine.api.auth.SecurityPolicy;
@@ -41,8 +40,11 @@ public class $Type$Resource {
 
     @POST()
     @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)    
-    public $Type$Output createResource_$name$(@Context HttpHeaders httpHeaders, @QueryParam("businessKey") String businessKey, $Type$Input resource) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    @org.eclipse.microprofile.metrics.annotation.Counted(name = "create $name$", description = "Number of new instances of $name$")
+    @org.eclipse.microprofile.metrics.annotation.Timed(name = "duration of creating $name$", description = "A measure of how long it takes to create new instance of $name$.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
+    @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of instances of $name$", description="Rate of new instances of $name$")
+    public $Type$Output create_$name$(@Context HttpHeaders httpHeaders, @QueryParam("businessKey") String businessKey, $Type$Input resource) {
         if (resource == null) {
             resource = new $Type$Input();
         }
@@ -50,7 +52,7 @@ public class $Type$Resource {
 
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.createInstance(businessKey, mapInput(value, new $Type$()));
-            String startFromNode = httpHeaders.getHeaderString("X-KOGITO-StartFromNode");
+            String startFromNode = httpHeaders.getHeaderString("X-AUTOMATIK-StartFromNode");
             
             if (startFromNode != null) {
                 pi.startFrom(startFromNode);
@@ -64,7 +66,7 @@ public class $Type$Resource {
 
     @GET()
     @Produces(MediaType.APPLICATION_JSON)
-    public List<$Type$Output> getResources_$name$() {
+    public List<$Type$Output> getAll_$name$() {
         return process.instances().values().stream()
                 .map(pi -> mapOutput(new $Type$Output(), pi.variables()))
                 .collect(Collectors.toList());
@@ -73,7 +75,7 @@ public class $Type$Resource {
     @GET()
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public $Type$Output getResource_$name$(@PathParam("id") String id) {
+    public $Type$Output get_$name$(@PathParam("id") String id) {
         return process.instances()
                 .findById(id)
                 .map(pi -> mapOutput(new $Type$Output(), pi.variables()))
@@ -83,7 +85,10 @@ public class $Type$Resource {
     @DELETE()
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public $Type$Output deleteResource_$name$(@PathParam("id") final String id) {
+    @org.eclipse.microprofile.metrics.annotation.Counted(name = "delete $name$", description = "Number of instances of $name$ deleted/aborted")
+    @org.eclipse.microprofile.metrics.annotation.Timed(name = "duration of deleting $name$", description = "A measure of how long it takes to delete instance of $name$.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
+    @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of deleted instances of $name$", description="Rate of deleted instances of $name$")    
+    public $Type$Output delete_$name$(@PathParam("id") final String id) {
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)

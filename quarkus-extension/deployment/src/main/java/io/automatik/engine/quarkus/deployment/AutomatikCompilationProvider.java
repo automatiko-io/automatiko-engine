@@ -20,13 +20,13 @@ import io.automatik.engine.codegen.Generator;
 import io.automatik.engine.codegen.GeneratorContext;
 import io.automatik.engine.codegen.context.QuarkusApplicationBuildContext;
 import io.automatik.engine.codegen.di.CDIDependencyInjectionAnnotator;
+import io.automatik.engine.quarkus.AutomatikBuildTimeConfig;
 import io.quarkus.deployment.dev.JavaCompilationProvider;
 
 public abstract class AutomatikCompilationProvider extends JavaCompilationProvider {
 
 	protected static Map<Path, Path> classToSource = new HashMap<>();
-
-	private String appPackageName = System.getProperty("automatik.codegen.packageName", "io.automatik.app");
+	protected static AutomatikBuildTimeConfig config;
 
 	@Override
 	public Set<String> handledSourcePaths() {
@@ -41,11 +41,12 @@ public abstract class AutomatikCompilationProvider extends JavaCompilationProvid
 			GeneratorContext generationContext = GeneratorContext
 					.ofResourcePath(context.getProjectDirectory().toPath().resolve("src/main/resources").toFile());
 			generationContext.withBuildContext(
-					new QuarkusApplicationBuildContext(className -> hasClassOnClasspath(context, className)));
+					new QuarkusApplicationBuildContext(config, className -> hasClassOnClasspath(context, className)));
 
-			ApplicationGenerator appGen = new ApplicationGenerator(appPackageName, outputDirectory)
-					.withDependencyInjection(new CDIDependencyInjectionAnnotator())
-					.withGeneratorContext(generationContext);
+			ApplicationGenerator appGen = new ApplicationGenerator(
+					config.packageName().orElse(AutomatikQuarkusProcessor.DEFAULT_PACKAGE_NAME), outputDirectory)
+							.withDependencyInjection(new CDIDependencyInjectionAnnotator())
+							.withGeneratorContext(generationContext);
 
 			addGenerator(appGen, filesToCompile, context);
 

@@ -17,6 +17,8 @@ import org.junit.jupiter.api.Test;
 import io.automatik.engine.api.Application;
 import io.automatik.engine.api.Model;
 import io.automatik.engine.api.auth.SecurityPolicy;
+import io.automatik.engine.api.config.AutomatikConfig;
+import io.automatik.engine.api.config.MessagingConfig;
 import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.api.workflow.WorkItem;
@@ -84,7 +86,7 @@ public class MessageStartEventTest extends AbstractCodegenTest {
 		assertNotNull(resourceClazz);
 		Method[] methods = resourceClazz.getMethods();
 		for (Method m : methods) {
-			if (m.getName().startsWith("createResource")) {
+			if (m.getName().startsWith("create")) {
 				fail("For processes without none start event there should not be create resource method");
 			}
 		}
@@ -100,8 +102,8 @@ public class MessageStartEventTest extends AbstractCodegenTest {
 				testClassLoader());
 		assertNotNull(resourceClazz);
 		Method[] methods = resourceClazz.getMethods();
-		assertThat(methods).haveAtLeast(1, new Condition<Method>(m -> m.getName().startsWith("createResource"),
-				"Must have method with name 'createResource'"));
+		assertThat(methods).haveAtLeast(1,
+				new Condition<Method>(m -> m.getName().startsWith("create"), "Must have method with name 'create'"));
 	}
 
 	@Test
@@ -189,6 +191,19 @@ public class MessageStartEventTest extends AbstractCodegenTest {
 
 	@Test
 	public void testMultipleMessagesStartEventProcessCorrelationExpression() throws Exception {
+
+		this.config = new AutomatikConfig() {
+			@Override
+			public MessagingConfig messaging() {
+				// TODO Auto-generated method stub
+				return new MessagingConfig() {
+					@Override
+					public boolean asCloudevents() {
+						return false;
+					}
+				};
+			}
+		};
 
 		Application app = generateCodeProcessesOnly(
 				"messagestartevent/MessageAndMessageStartEventCorrelationExpr.bpmn2");

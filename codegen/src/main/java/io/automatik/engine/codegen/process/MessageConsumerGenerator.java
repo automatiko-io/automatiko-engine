@@ -112,7 +112,7 @@ public class MessageConsumerGenerator {
 					.forEach(fd -> annotator.withInjection(fd));
 
 			template.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("useCloudEvents"))
-					.forEach(fd -> annotator.withConfigInjection(fd, "automatik.messaging.as-cloudevents"));
+					.forEach(fd -> annotator.withConfigInjection(fd, "quarkus.automatik.messaging.as-cloudevents"));
 
 			template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("consume"))
 					.forEach(md -> annotator.withIncomingMessage(md, trigger.getName()));
@@ -135,8 +135,7 @@ public class MessageConsumerGenerator {
 			body.addStatement(new ReturnStmt(new NullLiteralExpr()));
 		}
 
-		boolean cloudEvents = Boolean
-				.parseBoolean(context.getApplicationProperty("automatik.messaging.as-cloudevents").orElse("false"));
+		boolean cloudEvents = context.getBuildContext().config().messaging().asCloudevents();
 
 		if (cloudEvents) {
 

@@ -109,7 +109,7 @@ public class MessageProducerGenerator {
 			produceMethod.setBody(body);
 
 			template.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("useCloudEvents"))
-					.forEach(fd -> annotator.withConfigInjection(fd, "automatik.messaging.as-cloudevents"));
+					.forEach(fd -> annotator.withConfigInjection(fd, "quarkus.automatik.messaging.as-cloudevents"));
 
 		}
 		template.getMembers().sort(new BodyDeclarationComparator());

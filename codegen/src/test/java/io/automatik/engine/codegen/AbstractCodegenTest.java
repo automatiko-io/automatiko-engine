@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.automatik.engine.api.Application;
+import io.automatik.engine.api.config.AutomatikConfig;
 import io.automatik.engine.codegen.context.QuarkusApplicationBuildContext;
 import io.automatik.engine.codegen.decision.DecisionCodegen;
 import io.automatik.engine.codegen.process.ProcessCodegen;
@@ -43,6 +44,8 @@ public class AbstractCodegenTest {
 
 	private ClassLoader classloader;
 	private Path compilationOutcome;
+
+	protected AutomatikConfig config = new AutomatikConfig();
 
 	@AfterEach
 	public void cleanup() throws IOException {
@@ -77,7 +80,7 @@ public class AbstractCodegenTest {
 		GeneratorContext context = GeneratorContext.ofResourcePath(new File("src/test/resources"));
 
 		// Testing based on Quarkus as Default
-		context.withBuildContext(new QuarkusApplicationBuildContext((className -> true)));
+		context.withBuildContext(new QuarkusApplicationBuildContext(config, (className -> true)));
 
 		ApplicationGenerator appGen = new ApplicationGenerator(this.getClass().getPackage().getName(),
 				new File("target/codegen-tests")).withGeneratorContext(context).withRuleUnits(hasRuleUnit)
@@ -104,7 +107,7 @@ public class AbstractCodegenTest {
 				continue;
 			}
 			sources.add(new SourceCode(fileName, new String(entry.contents())));
-			logger.info(new String(entry.contents()));
+			logger.debug(new String(entry.contents()));
 		}
 
 		if (logger.isDebugEnabled()) {

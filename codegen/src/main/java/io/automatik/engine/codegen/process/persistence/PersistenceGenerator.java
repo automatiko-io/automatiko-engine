@@ -56,7 +56,8 @@ public class PersistenceGenerator extends AbstractGenerator {
 	private static final String PATH_NAME = "path";
 
 	private static final String APPLICATION_PROTO = "automatik-application.proto";
-	private static final String PERSISTENCE_FS_PATH_PROP = "automatik.persistence.filesystem.path";
+	private static final String PERSISTENCE_FS_PATH_PROP = "quarkus.automatik.persistence.filesystem.path";
+	private static final String PERSISTENCE_ISPN_TEMPLATE_PROP = "quarkus.automatik.persistence.infinispan.template";
 
 	private final File targetDirectory;
 	private final Collection<?> modelClasses;
@@ -100,7 +101,7 @@ public class PersistenceGenerator extends AbstractGenerator {
 
 	@Override
 	public Collection<GeneratedFile> generate() {
-		String persistenceType = context.getApplicationProperty("automatik.persistence.type")
+		String persistenceType = context.getBuildContext().config().persistence().type()
 				.orElse(DEFAULT_PERSISTENCE_TYPE);
 
 		List<GeneratedFile> generatedFiles = new ArrayList<>();
@@ -205,7 +206,7 @@ public class PersistenceGenerator extends AbstractGenerator {
 											NodeList.nodeList(
 													new ClassOrInterfaceType(null, String.class.getCanonicalName()))))
 									.setName(TEMPLATE_NAME));
-			annotator.withConfigInjection(templateNameField, "automatik.persistence.infinispan.template");
+			annotator.withConfigInjection(templateNameField, PERSISTENCE_ISPN_TEMPLATE_PROP);
 			// allow to inject template name for the cache
 			BlockStmt templateMethodBody = new BlockStmt();
 			templateMethodBody.addStatement(new ReturnStmt(

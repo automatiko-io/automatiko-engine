@@ -5,6 +5,7 @@ import java.util.List;
 
 import io.automatik.engine.api.event.process.ProcessCompletedEvent;
 import io.automatik.engine.api.event.process.ProcessEventListener;
+import io.automatik.engine.api.event.process.ProcessNodeInstanceFailedEvent;
 import io.automatik.engine.api.event.process.ProcessNodeLeftEvent;
 import io.automatik.engine.api.event.process.ProcessNodeTriggeredEvent;
 import io.automatik.engine.api.event.process.ProcessStartedEvent;
@@ -253,6 +254,21 @@ public class ProcessEventSupport extends AbstractEventSupport<ProcessEventListen
 			if (iter.hasNext()) {
 				do {
 					iter.next().afterWorkItemTransition(e);
+				} while (iter.hasNext());
+			}
+		}));
+	}
+
+	public void fireAfterNodeInstanceFailed(final ProcessInstance instance, NodeInstance nodeInstance,
+			Exception exception, ProcessRuntime runtime) {
+		final Iterator<ProcessEventListener> iter = getEventListenersIterator();
+
+		final ProcessNodeInstanceFailedEvent event = new ProcessNodeInstanceFailedEventImpl(instance, nodeInstance,
+				exception, runtime);
+		unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, (e) -> {
+			if (iter.hasNext()) {
+				do {
+					iter.next().afterNodeInstanceFailed(e);
 				} while (iter.hasNext());
 			}
 		}));

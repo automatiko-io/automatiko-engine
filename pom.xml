@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
@@ -104,6 +105,7 @@
     <version.io.quarkus>1.6.0.Final</version.io.quarkus>
     <version.io.restassured>4.3.0</version.io.restassured>
     <version.io.smallrye.reactive>2.1.1</version.io.smallrye.reactive>
+    <version.org.eclipse.microprofile.metrics>2.3</version.org.eclipse.microprofile.metrics>
 
     <version.org.antlr>3.5.2</version.org.antlr>
     <version.org.antlr4>4.8</version.org.antlr4>
@@ -159,7 +161,7 @@
 
   <dependencyManagement>
     <dependencies>
-    <dependency>
+      <dependency>
         <groupId>org.kie</groupId>
         <artifactId>kie-api</artifactId>
         <version>${version.org.kie7}</version>
@@ -335,7 +337,8 @@
         <scope>test</scope>
       </dependency>
 
-      <dependency> <!-- TODO move this dep into surefire-plugin when all modules are migrated to JUnit 5 -->
+      <dependency> <!-- TODO move this dep into surefire-plugin when all modules are migrated 
+          to JUnit 5 -->
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-engine</artifactId>
         <version>${version.org.junit.jupiter}</version>
@@ -529,6 +532,13 @@
         <artifactId>smallrye-reactive-messaging-provider</artifactId>
         <version>${version.io.smallrye.reactive}</version>
       </dependency>
+
+      <dependency>
+        <groupId>org.eclipse.microprofile.metrics</groupId>
+        <artifactId>microprofile-metrics-api</artifactId>
+        <version>${version.org.eclipse.microprofile.metrics}</version>
+      </dependency>
+
       <dependency>
         <groupId>javax.inject</groupId>
         <artifactId>javax.inject</artifactId>
@@ -614,10 +624,10 @@
         <version>${version.io.cloudevents}</version>
       </dependency>
 
-       <dependency>
-         <groupId>com.github.victools</groupId>
-         <artifactId>jsonschema-generator</artifactId>
-         <version>${version.com.github.victools}</version>
+      <dependency>
+        <groupId>com.github.victools</groupId>
+        <artifactId>jsonschema-generator</artifactId>
+        <version>${version.com.github.victools}</version>
       </dependency>
 
     </dependencies>
@@ -626,11 +636,11 @@
   <build>
     <pluginManagement>
       <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>license-maven-plugin</artifactId>
-        <version>2.0.0</version>
-                  <configuration>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>license-maven-plugin</artifactId>
+          <version>2.0.0</version>
+          <configuration>
             <!-- TODO this is buggy as it only works for first level modules -->
             <header>${basedir}/../LICENSE-ASL-2.0-HEADER.txt</header>
             <includes>
@@ -642,8 +652,8 @@
             </mapping>
             <encoding>UTF-8</encoding>
           </configuration>
-      </plugin>
-      
+        </plugin>
+
         <plugin>
           <artifactId>maven-archetype-plugin</artifactId>
           <version>${version.archetype.plugin}</version>
@@ -802,7 +812,8 @@
               <id>default-jar</id>
               <configuration>
                 <archive>
-                  <manifestEntries combine.children="append">
+                  <manifestEntries
+                    combine.children="append">
                     <Automatic-Module-Name>${java.module.name}</Automatic-Module-Name>
                   </manifestEntries>
                 </archive>
@@ -952,7 +963,8 @@
 
     <plugins>
       <plugin>
-        <!-- Entry needed to create test-jars even for packaging types war, bundle, ... -->
+        <!-- Entry needed to create test-jars even for packaging types war, 
+          bundle, ... -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
       </plugin>

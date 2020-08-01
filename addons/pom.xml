@@ -15,7 +15,6 @@
   <description>Various Add-Ons to the engine (administration, monitoring, etc)</description>
 
   <modules>
-    <module>monitoring</module>
     <module>persistence</module>
     <module>events</module>
     <module>jobs</module>

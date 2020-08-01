@@ -1,92 +1,100 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-      <groupId>io.automatik.platform.quarkus</groupId>
-      <artifactId>automatik-quarkus-parent</artifactId>
-      <version>0.0.0-SNAPSHOT</version>
-    </parent>
-
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
     <groupId>io.automatik.platform.quarkus</groupId>
-    <artifactId>automatik-quarkus-deployment</artifactId>
-    <name>Automatik Platform Engine :: Quarkus Extension :: Deployment</name>
-    <description>Deployment module for Quarkus Extension for Automatik Platform Engine</description>
+    <artifactId>automatik-quarkus-parent</artifactId>
+    <version>0.0.0-SNAPSHOT</version>
+  </parent>
 
-    <dependencies>
-        <!-- quarkus -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-development-mode-spi</artifactId>
-            <version>${version.io.quarkus}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-core-deployment</artifactId>
-            <version>${version.io.quarkus}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-arc-deployment</artifactId>
-            <version>${version.io.quarkus}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-deployment</artifactId>
-            <version>${version.io.quarkus}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-jackson-deployment</artifactId>
-            <version>${version.io.quarkus}</version>
-        </dependency>
+  <groupId>io.automatik.platform.quarkus</groupId>
+  <artifactId>automatik-quarkus-deployment</artifactId>
+  <name>Automatik Platform Engine :: Quarkus Extension :: Deployment</name>
+  <description>Deployment module for Quarkus Extension for Automatik Platform Engine</description>
 
-        <!-- automatik -->
-        <dependency>
-            <groupId>io.automatik.platform.quarkus</groupId>
-            <artifactId>automatik-quarkus</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.automatik.platform.build</groupId>
-            <artifactId>automatik-engine-codegen</artifactId>
-            <exclusions>
-                <exclusion>
-                  <groupId>javax.validation</groupId>
-                  <artifactId>validation-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+  <dependencies>
+    <!-- quarkus -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-development-mode-spi</artifactId>
+      <version>${version.io.quarkus}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-core-deployment</artifactId>
+      <version>${version.io.quarkus}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-arc-deployment</artifactId>
+      <version>${version.io.quarkus}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-resteasy-deployment</artifactId>
+      <version>${version.io.quarkus}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-resteasy-jackson-deployment</artifactId>
+      <version>${version.io.quarkus}</version>
+    </dependency>
 
-        <!-- test -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-junit5-internal</artifactId>
-            <version>${version.io.quarkus}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.rest-assured</groupId>
-            <artifactId>rest-assured</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+    <!-- automatik -->
+    <dependency>
+      <groupId>io.automatik.platform.quarkus</groupId>
+      <artifactId>automatik-quarkus</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.automatik.platform.build</groupId>
+      <artifactId>automatik-engine-codegen</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.validation</groupId>
+          <artifactId>validation-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
 
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>io.quarkus</groupId>
-                            <artifactId>quarkus-extension-processor</artifactId>
-                            <version>${version.io.quarkus}</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <!-- metrics -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-metrics-spi</artifactId>
+      <version>${version.io.quarkus}</version>
+    </dependency>
+
+    <!-- test -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit5-internal</artifactId>
+      <version>${version.io.quarkus}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <parameters>true</parameters>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>io.quarkus</groupId>
+              <artifactId>quarkus-extension-processor</artifactId>
+              <version>${version.io.quarkus}</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

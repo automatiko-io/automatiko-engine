@@ -43,7 +43,10 @@ public class $Type$ReactiveResource {
     @POST()
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)    
-    public CompletionStage<$Type$Output> createResource_$name$(@Context HttpHeaders httpHeaders, @QueryParam("businessKey") String businessKey, $Type$Input resource) {
+    @org.eclipse.microprofile.metrics.annotation.Counted(name = "Create $name$", description = "Number of new instances of $name$")
+    @org.eclipse.microprofile.metrics.annotation.Timed(name = "Duration of creating $name$", description = "A measure of how long it takes to create new instance of $name$.", unit = MetricUnits.MILLISECONDS)
+    @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of instances of $name$", description="Rate of new instances of $name$")
+    public CompletionStage<$Type$Output> create_$name$(@Context HttpHeaders httpHeaders, @QueryParam("businessKey") String businessKey, $Type$Input resource) {
         if (resource == null) {
             resource = new $Type$Input();
         }
@@ -51,7 +54,7 @@ public class $Type$ReactiveResource {
         return CompletableFuture.supplyAsync(() -> {
             return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 ProcessInstance<$Type$> pi = process.createInstance(businessKey, mapInput(value, new $Type$()));
-                String startFromNode = httpHeaders.getHeaderString("X-KOGITO-StartFromNode");
+                String startFromNode = httpHeaders.getHeaderString("X-AUTOMATIK-StartFromNode");
                 
                 if (startFromNode != null) {
                     pi.startFrom(startFromNode);
@@ -65,7 +68,7 @@ public class $Type$ReactiveResource {
 
     @GET()
     @Produces(MediaType.APPLICATION_JSON)
-    public CompletionStage<List<$Type$Output>> getResources_$name$() {
+    public CompletionStage<List<$Type$Output>> getAll_$name$() {
         return CompletableFuture.supplyAsync(() -> {
             return process.instances().values().stream()
                     .map(pi -> mapOutput(new $Type$Output(), pi.variables()))
@@ -76,7 +79,7 @@ public class $Type$ReactiveResource {
     @GET()
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public CompletionStage<$Type$Output> getResource_$name$(@PathParam("id") String id) {
+    public CompletionStage<$Type$Output> get_$name$(@PathParam("id") String id) {
         return CompletableFuture.supplyAsync(() -> {
             return process.instances()
                     .findById(id)
@@ -88,7 +91,10 @@ public class $Type$ReactiveResource {
     @DELETE()
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public CompletionStage<$Type$Output> deleteResource_$name$(@PathParam("id") final String id) {
+    @org.eclipse.microprofile.metrics.annotation.Counted(name = "Abort $name$", description = "Number of instances of $name$ aborted")
+    @org.eclipse.microprofile.metrics.annotation.Timed(name = "Duration of aborting $name$", description = "A measure of how long it takes to abort instance of $name$.", unit = MetricUnits.MILLISECONDS)
+    @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of aborted instances of $name$", description="Rate of aborted instances of $name$")       
+    public CompletionStage<$Type$Output> delete_$name$(@PathParam("id") final String id) {
         return CompletableFuture.supplyAsync(() -> {
             return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 ProcessInstance<$Type$> pi = process.instances()

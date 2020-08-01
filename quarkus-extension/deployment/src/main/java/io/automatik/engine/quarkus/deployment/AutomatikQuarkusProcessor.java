@@ -52,6 +52,7 @@ import io.automatik.engine.codegen.decision.DecisionCodegen;
 import io.automatik.engine.codegen.di.CDIDependencyInjectionAnnotator;
 import io.automatik.engine.codegen.process.ProcessCodegen;
 import io.automatik.engine.codegen.process.persistence.PersistenceGenerator;
+import io.automatik.engine.quarkus.AutomatikBuildTimeConfig;
 import io.automatik.engine.workflow.util.IoUtils;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
 import io.quarkus.bootstrap.BootstrapDependencyProcessingException;
@@ -75,16 +76,17 @@ import io.quarkus.runtime.LaunchMode;
 
 public class AutomatikQuarkusProcessor {
 
+	public static final String DEFAULT_PACKAGE_NAME = "io.automatik.app";
+
 	private static final String generatedResourcesDir = System.getProperty("io.automatik.codegen.resources.directory",
-			"target/generated-resources/kogito");
+			"target/generated-resources/automatik");
+
 	private static final String generatedSourcesDir = "target/generated-sources/automatik/";
 	private static final String generatedCustomizableSourcesDir = System
 			.getProperty("io.automatik.codegen.sources.directory", "target/generated-sources/automatik/");
 	private static final Logger logger = LoggerFactory.getLogger(AutomatikQuarkusProcessor.class);
 	private final transient String generatedClassesDir = System.getProperty("quarkus.debug.generated-classes-dir");
-	private final transient String appPackageName = "io.automatik.app";
 	private final transient String persistenceFactoryClass = "io.automatik.engine.addons.persistence.AbstractProcessInstancesFactory";
-	private final transient String metricsClass = "io.automatik.engine.addons.monitoring.rest.MetricsResource";
 
 	@BuildStep
 	CapabilityBuildItem capability() {
@@ -96,9 +98,10 @@ public class AutomatikQuarkusProcessor {
 		return new FeatureBuildItem("automatik");
 	}
 
-	private void generatePersistenceInfo(AppPaths appPaths, BuildProducer<GeneratedBeanBuildItem> generatedBeans,
-			IndexView index, LaunchModeBuildItem launchMode, BuildProducer<NativeImageResourceBuildItem> resource,
-			CurateOutcomeBuildItem curateOutcomeBuildItem) throws Exception, BootstrapDependencyProcessingException {
+	private void generatePersistenceInfo(AutomatikBuildTimeConfig config, AppPaths appPaths,
+			BuildProducer<GeneratedBeanBuildItem> generatedBeans, IndexView index, LaunchModeBuildItem launchMode,
+			BuildProducer<NativeImageResourceBuildItem> resource, CurateOutcomeBuildItem curateOutcomeBuildItem)
+			throws Exception, BootstrapDependencyProcessingException {
 
 		ClassInfo persistenceClass = index.getClassByName(createDotName(persistenceFactoryClass));
 		boolean usePersistence = persistenceClass != null;
@@ -112,7 +115,7 @@ public class AutomatikQuarkusProcessor {
 			}
 		}
 
-		Collection<GeneratedFile> generatedFiles = getGeneratedPersistenceFiles(appPaths, index, usePersistence,
+		Collection<GeneratedFile> generatedFiles = getGeneratedPersistenceFiles(config, appPaths, index, usePersistence,
 				parameters);
 
 		if (!generatedFiles.isEmpty()) {
@@ -126,9 +129,9 @@ public class AutomatikQuarkusProcessor {
 		}
 	}
 
-	private Collection<GeneratedFile> getGeneratedPersistenceFiles(AppPaths appPaths, IndexView index,
-			boolean usePersistence, List<String> parameters) {
-		GeneratorContext context = buildContext(appPaths, index);
+	private Collection<GeneratedFile> getGeneratedPersistenceFiles(AutomatikBuildTimeConfig config, AppPaths appPaths,
+			IndexView index, boolean usePersistence, List<String> parameters) {
+		GeneratorContext context = buildContext(config, appPaths, index);
 
 		Collection<ClassInfo> modelClasses = index
 				.getAllKnownImplementors(createDotName(Model.class.getCanonicalName()));
@@ -142,7 +145,7 @@ public class AutomatikQuarkusProcessor {
 							createDotName(VariableInfo.class.getCanonicalName())),
 					parameters);
 			persistenceGenerator.setDependencyInjection(new CDIDependencyInjectionAnnotator());
-			persistenceGenerator.setPackageName(appPackageName);
+			persistenceGenerator.setPackageName(config.packageName.orElse(DEFAULT_PACKAGE_NAME));
 			persistenceGenerator.setContext(context);
 
 			generatedFiles.addAll(persistenceGenerator.generate());
@@ -184,11 +187,14 @@ public class AutomatikQuarkusProcessor {
 	}
 
 	@BuildStep(loadsApplicationClasses = true)
-	public void generateModel(ArchiveRootBuildItem root, BuildProducer<GeneratedBeanBuildItem> generatedBeans,
-			CombinedIndexBuildItem combinedIndexBuildItem, LaunchModeBuildItem launchMode,
-			LiveReloadBuildItem liveReload, BuildProducer<NativeImageResourceBuildItem> resource,
+	public void generateModel(AutomatikBuildTimeConfig config, ArchiveRootBuildItem root,
+			BuildProducer<GeneratedBeanBuildItem> generatedBeans, CombinedIndexBuildItem combinedIndexBuildItem,
+			LaunchModeBuildItem launchMode, LiveReloadBuildItem liveReload,
+			BuildProducer<NativeImageResourceBuildItem> resource,
 			BuildProducer<ReflectiveClassBuildItem> reflectiveClass, CurateOutcomeBuildItem curateOutcomeBuildItem)
 			throws Exception, BootstrapDependencyProcessingException {
+
+		AutomatikCompilationProvider.config = config;
 
 		if (liveReload.isLiveReload()) {
 			return;
@@ -196,7 +202,7 @@ public class AutomatikQuarkusProcessor {
 
 		AppPaths appPaths = new AppPaths(root.getPaths());
 
-		ApplicationGenerator appGen = createApplicationGenerator(appPaths, combinedIndexBuildItem);
+		ApplicationGenerator appGen = createApplicationGenerator(config, appPaths, combinedIndexBuildItem);
 		Collection<GeneratedFile> generatedFiles = appGen.generate();
 
 		Collection<GeneratedFile> javaFiles = generatedFiles.stream().filter(f -> f.relativePath().endsWith(".java"))
@@ -214,7 +220,7 @@ public class AutomatikQuarkusProcessor {
 
 			Index index = automatikIndexer.complete();
 
-			generatePersistenceInfo(appPaths, generatedBeans,
+			generatePersistenceInfo(config, appPaths, generatedBeans,
 					CompositeIndex.create(combinedIndexBuildItem.getIndex(), index), launchMode, resource,
 					curateOutcomeBuildItem);
 
@@ -245,8 +251,8 @@ public class AutomatikQuarkusProcessor {
 			dataEvents.forEach(
 					c -> reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, c.name().toString())));
 
-			// writeGeneratedFiles(appPaths, getJsonSchemaFiles(index,
-			// appPaths.getFirstClassesPath()));
+			writeGeneratedFiles(appPaths, getJsonSchemaFiles(index, appPaths.getFirstClassesPath()));
+
 		}
 	}
 
@@ -350,19 +356,18 @@ public class AutomatikQuarkusProcessor {
 		}
 	}
 
-	private ApplicationGenerator createApplicationGenerator(AppPaths appPaths,
+	private ApplicationGenerator createApplicationGenerator(AutomatikBuildTimeConfig config, AppPaths appPaths,
 			CombinedIndexBuildItem combinedIndexBuildItem) throws IOException {
 
 		boolean usePersistence = combinedIndexBuildItem.getIndex()
 				.getClassByName(createDotName(persistenceFactoryClass)) != null;
-		boolean useMonitoring = combinedIndexBuildItem.getIndex().getClassByName(createDotName(metricsClass)) != null;
 
-		GeneratorContext context = buildContext(appPaths, combinedIndexBuildItem.getIndex());
+		GeneratorContext context = buildContext(config, appPaths, combinedIndexBuildItem.getIndex());
 
-		ApplicationGenerator appGen = new ApplicationGenerator(appPackageName,
+		ApplicationGenerator appGen = new ApplicationGenerator(config.packageName().orElse(DEFAULT_PACKAGE_NAME),
 				new File(appPaths.getFirstProjectPath().toFile(), "target"))
 						.withDependencyInjection(new CDIDependencyInjectionAnnotator()).withPersistence(usePersistence)
-						.withMonitoring(useMonitoring).withGeneratorContext(context);
+						.withMonitoring(config.metrics().enabled()).withGeneratorContext(context);
 
 		addProcessGenerator(appPaths, usePersistence, appGen);
 		// addDecisionGenerator(appPaths, appGen, useMonitoring);
@@ -450,9 +455,9 @@ public class AutomatikQuarkusProcessor {
 		return DotName.createComponentized(lastDollarName, name, true);
 	}
 
-	private GeneratorContext buildContext(AppPaths appPaths, IndexView index) {
+	private GeneratorContext buildContext(AutomatikBuildTimeConfig config, AppPaths appPaths, IndexView index) {
 		GeneratorContext context = GeneratorContext.ofResourcePath(appPaths.getResourceFiles());
-		context.withBuildContext(new QuarkusApplicationBuildContext(className -> {
+		context.withBuildContext(new QuarkusApplicationBuildContext(config, className -> {
 			DotName classDotName = createDotName(className);
 			return !index.getAnnotations(classDotName).isEmpty() || index.getClassByName(classDotName) != null;
 

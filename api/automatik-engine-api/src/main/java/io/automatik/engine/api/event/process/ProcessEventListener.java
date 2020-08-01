@@ -124,6 +124,16 @@ public interface ProcessEventListener extends EventListener {
 	 * @param event
 	 */
 	default void afterWorkItemTransition(ProcessWorkItemTransitionEvent event) {
-	};
+	}
+
+	/**
+	 * This listener method is invoked right after a node instance failed at
+	 * execution
+	 * 
+	 * @param event
+	 */
+	default void afterNodeInstanceFailed(ProcessNodeInstanceFailedEvent e) {
+
+	}
 
 }

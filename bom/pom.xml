@@ -61,18 +61,6 @@
 
       <dependency>
         <groupId>io.automatik.platform.addons</groupId>
-        <artifactId>automatik-monitoring-prometheus-addon</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.automatik.platform.addons</groupId>
-        <artifactId>automatik-monitoring-prometheus-addon</artifactId>
-        <version>${project.version}</version>
-        <classifier>sources</classifier>
-      </dependency>
-
-      <dependency>
-        <groupId>io.automatik.platform.addons</groupId>
         <artifactId>automatik-infinispan-persistence-addon</artifactId>
         <version>${project.version}</version>
       </dependency>
