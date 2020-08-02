@@ -31,7 +31,7 @@ public final class FloatDataType implements DataType {
 	}
 
 	public Object readValue(String value) {
-		return new Float(value);
+		return Float.parseFloat(value);
 	}
 
 	public String writeValue(Object value) {
@@ -41,5 +41,10 @@ public final class FloatDataType implements DataType {
 
 	public String getStringType() {
 		return "java.lang.Float";
+	}
+
+	@Override
+	public Class<?> getClassType() {
+		return Float.class;
 	}
 }

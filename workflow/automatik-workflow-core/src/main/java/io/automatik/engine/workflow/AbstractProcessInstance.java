@@ -131,10 +131,10 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 	}
 
 	public void start() {
-		start(null, null);
+		start(null, null, null);
 	}
 
-	public void start(String trigger, String referenceId) {
+	public void start(String trigger, String referenceId, Object data) {
 		if (this.status != ProcessInstance.STATE_PENDING) {
 			throw new IllegalStateException("Impossible to start process instance that already was started");
 		}
@@ -155,7 +155,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 		((WorkflowProcessInstance) processInstance).addEventListener("processInstanceCompleted:" + this.id,
 				completionEventListener, false);
 		io.automatik.engine.api.runtime.process.ProcessInstance processInstance = this.rt.startProcessInstance(this.id,
-				trigger);
+				trigger, data);
 		addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).create(pi.id(), pi));
 		unbind(variables, processInstance.getVariables());
 		if (this.processInstance != null) {

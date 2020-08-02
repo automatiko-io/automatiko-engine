@@ -45,8 +45,7 @@ public class $Type$MessageConsumer {
             
             if (useCloudEvents.orElse(true)) {
                 final $DataEventType$ eventData = json.readValue(msg.getPayload(), $DataEventType$.class);
-        	    final $Type$ model = new $Type$();
-                model.set$ModelRef$(eventData.getData());
+                final $Type$ model = new $Type$();   
                 io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                     
                     if (eventData.getAutomatikReferenceId() != null) {
@@ -65,21 +64,23 @@ public class $Type$MessageConsumer {
                     		}
                     		
                         } 
-                        LOGGER.debug("Received message without reference id and no correlation is set/matched, staring new process instance with trigger '{}'", trigger);
-                        ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
+                        LOGGER.debug("Received message without reference id and no correlation is set/matched, staring new process instance with trigger '{}'", trigger);                        
                         
                         if (eventData.getAutomatikStartFromNode() != null) {
+                        	model.set$ModelRef$(eventData.getData());
+                        	ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
+                        	
                             pi.startFrom(eventData.getAutomatikStartFromNode(), eventData.getAutomatikProcessinstanceId());
                         } else {
-                            pi.start(trigger, eventData.getAutomatikProcessinstanceId());
+                        	ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
+                        	pi.start(trigger, eventData.getAutomatikProcessinstanceId(), eventData.getData());
                         }
                     }
                     return null;
                 });                
             } else {
                 final $DataType$ eventData = json.readValue(msg.getPayload(), $DataType$.class);
-                final $Type$ model = new $Type$();
-                model.set$ModelRef$(eventData);
+                final $Type$ model = new $Type$();                
                 io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 	String correlation = correlationPayload(eventData);
                 	if (correlation != null) {
@@ -95,7 +96,7 @@ public class $Type$MessageConsumer {
                     } 
                     LOGGER.debug("Received message without reference id and no correlation is set/matched, staring new process instance with trigger '{}'", trigger);
                     ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
-                    pi.start(trigger, null);  
+                    pi.start(trigger, null, eventData);  
                     
                     return null;
                 });

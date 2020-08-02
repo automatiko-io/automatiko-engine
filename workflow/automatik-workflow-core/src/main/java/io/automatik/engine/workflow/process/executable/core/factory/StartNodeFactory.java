@@ -1,13 +1,18 @@
 
 package io.automatik.engine.workflow.process.executable.core.factory;
 
+import java.util.Arrays;
+import java.util.List;
+
 import io.automatik.engine.workflow.base.core.event.EventTypeFilter;
 import io.automatik.engine.workflow.base.core.timer.Timer;
 import io.automatik.engine.workflow.base.instance.impl.Action;
 import io.automatik.engine.workflow.process.core.Node;
 import io.automatik.engine.workflow.process.core.NodeContainer;
 import io.automatik.engine.workflow.process.core.ProcessAction;
+import io.automatik.engine.workflow.process.core.node.Assignment;
 import io.automatik.engine.workflow.process.core.node.CompositeContextNode;
+import io.automatik.engine.workflow.process.core.node.DataAssociation;
 import io.automatik.engine.workflow.process.core.node.EventTrigger;
 import io.automatik.engine.workflow.process.core.node.StartNode;
 import io.automatik.engine.workflow.process.executable.core.ExecutableNodeContainerFactory;
@@ -65,14 +70,26 @@ public class StartNodeFactory extends ExtendedNodeFactory {
 		timer.setTimeType(timeType);
 
 		getStartNode().setTimer(timer);
-		
+
 		if (nodeContainer instanceof CompositeContextNode) {
 			ProcessAction noop = new ProcessAction();
 
-			Action action = kcontext -> {};
+			Action action = kcontext -> {
+			};
 			noop.wire(action);
 			((CompositeContextNode) nodeContainer).addTimer(timer, noop);
 		}
+		return this;
+	}
+
+	public StartNodeFactory outMapping(String source, String target, String assignmentDialect, String assignmentFrom,
+			String assignmentTo) {
+		List<Assignment> assignments = null;
+		if (assignmentFrom != null && assignmentTo != null) {
+			assignments = Arrays.asList(new Assignment(assignmentDialect, assignmentFrom, assignmentTo));
+		}
+		DataAssociation dataAssociation = new DataAssociation(source, target, assignments, null);
+		getStartNode().addOutAssociation(dataAssociation);
 		return this;
 	}
 }

@@ -20,6 +20,8 @@ public interface ProcessConfig {
 
 	JobsService jobsService();
 
+	VariableInitializer variableInitializer();
+
 	// TODO refactor this
 	default Map<String, Process> processes() {
 		return Collections.emptyMap();

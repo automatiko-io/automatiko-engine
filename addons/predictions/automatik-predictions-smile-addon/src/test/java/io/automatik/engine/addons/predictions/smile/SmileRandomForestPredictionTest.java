@@ -12,9 +12,6 @@ import org.junit.jupiter.api.Test;
 
 import io.automatik.engine.addons.predictions.api.PredictionAwareHumanTaskLifeCycle;
 import io.automatik.engine.addons.predictions.api.PredictionService;
-import io.automatik.engine.addons.predictions.smile.AttributeType;
-import io.automatik.engine.addons.predictions.smile.RandomForestConfiguration;
-import io.automatik.engine.addons.predictions.smile.SmileRandomForest;
 import io.automatik.engine.api.Model;
 import io.automatik.engine.api.workflow.ProcessConfig;
 import io.automatik.engine.api.workflow.ProcessInstance;
@@ -24,6 +21,7 @@ import io.automatik.engine.workflow.CachedWorkItemHandlerConfig;
 import io.automatik.engine.workflow.DefaultProcessEventListenerConfig;
 import io.automatik.engine.workflow.StaticProcessConfig;
 import io.automatik.engine.workflow.base.core.resources.ClassPathResource;
+import io.automatik.engine.workflow.base.instance.context.variable.DefaultVariableInitializer;
 import io.automatik.engine.workflow.base.instance.impl.humantask.HumanTaskWorkItemHandler;
 import io.automatik.engine.workflow.bpmn2.BpmnProcess;
 import io.automatik.engine.workflow.bpmn2.BpmnVariables;
@@ -53,7 +51,8 @@ public class SmileRandomForestPredictionTest {
 		wiConfig.register("Human Task",
 				new HumanTaskWorkItemHandler(new PredictionAwareHumanTaskLifeCycle(predictionService)));
 		config = new StaticProcessConfig(wiConfig, new DefaultProcessEventListenerConfig(),
-				new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory()), null);
+				new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory()), null,
+				new DefaultVariableInitializer());
 
 		for (int i = 0; i < 10; i++) {
 			predictionService.train(null, Collections.singletonMap("ActorId", "john"),

@@ -18,12 +18,15 @@ import java.util.Map.Entry;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
+import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 
 import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.core.timer.Timer;
+import io.automatik.engine.workflow.process.core.node.Assignment;
+import io.automatik.engine.workflow.process.core.node.DataAssociation;
 import io.automatik.engine.workflow.process.core.node.StartNode;
 import io.automatik.engine.workflow.process.executable.core.factory.StartNodeFactory;
 
@@ -43,6 +46,22 @@ public class StartNodeVisitor extends AbstractNodeVisitor<StartNode> {
 						new BooleanLiteralExpr(node.isInterrupting())));
 
 		visitMetaData(node.getMetaData(), body, getNodeId(node));
+
+		for (DataAssociation entry : node.getOutAssociations()) {
+
+			if (entry.getAssignments() != null && !entry.getAssignments().isEmpty()) {
+				Assignment assignment = entry.getAssignments().get(0);
+				body.addStatement(getFactoryMethod(getNodeId(node), "outMapping",
+						new StringLiteralExpr(entry.getSources().get(0)), new NullLiteralExpr(),
+						new StringLiteralExpr(assignment.getDialect()), new StringLiteralExpr(assignment.getFrom()),
+						new StringLiteralExpr(assignment.getTo())));
+			} else {
+				body.addStatement(getFactoryMethod(getNodeId(node), "outMapping",
+						new StringLiteralExpr(entry.getSources().get(0)), new StringLiteralExpr(entry.getTarget()),
+						new NullLiteralExpr(), new NullLiteralExpr(), new NullLiteralExpr()));
+			}
+		}
+
 		body.addStatement(getDoneMethod(getNodeId(node)));
 		if (node.getTimer() != null) {
 			Timer timer = node.getTimer();
@@ -77,13 +96,13 @@ public class StartNodeVisitor extends AbstractNodeVisitor<StartNode> {
 				body.addStatement(getFactoryMethod(getNodeId(startNode), METHOD_TRIGGER,
 						new StringLiteralExpr((String) nodeMetaData.get(MESSAGE_TYPE)), getOrNullExpr(varInfo.getKey()),
 						getOrNullExpr(varInfo.getValue())));
-				variable = variableScope.findVariable(varInfo.getKey());
+				variable = variableScope.findVariable(varInfo.getValue());
 
 				if (variable == null) {
 					// check parent node container
 					VariableScope vscope = (VariableScope) startNode.resolveContext(VariableScope.VARIABLE_SCOPE,
 							varInfo.getKey());
-					variable = vscope.findVariable(varInfo.getKey());
+					variable = vscope.findVariable(varInfo.getValue());
 				}
 			} else {
 				body.addStatement(getFactoryMethod(getNodeId(startNode), METHOD_TRIGGER,

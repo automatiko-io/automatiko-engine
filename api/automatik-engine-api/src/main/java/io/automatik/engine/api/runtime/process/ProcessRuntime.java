@@ -79,10 +79,12 @@ public interface ProcessRuntime {
 	 *                          started
 	 * @param trigger           - type of trigger to locate proper start event, can
 	 *                          be null
+	 * @param triggerData       - data associated with the trigger, if trigger is
+	 *                          null data should be null - will be ignored anyway
 	 * @return the <code>ProcessInstance</code> that represents the instance of the
 	 *         process that was started
 	 */
-	ProcessInstance startProcessInstance(String processInstanceId, String trigger);
+	ProcessInstance startProcessInstance(String processInstanceId, String trigger, Object triggerData);
 
 	/**
 	 * Signals the engine that an event has occurred. The type parameter defines

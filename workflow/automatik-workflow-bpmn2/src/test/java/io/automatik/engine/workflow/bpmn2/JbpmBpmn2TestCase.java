@@ -43,9 +43,8 @@ import io.automatik.engine.workflow.StaticProcessConfig;
 import io.automatik.engine.workflow.base.core.resources.ClassPathResource;
 import io.automatik.engine.workflow.base.instance.InternalProcessRuntime;
 import io.automatik.engine.workflow.base.instance.ProcessRuntimeImpl;
+import io.automatik.engine.workflow.base.instance.context.variable.DefaultVariableInitializer;
 import io.automatik.engine.workflow.base.instance.impl.actions.SignalProcessInstanceAction;
-import io.automatik.engine.workflow.bpmn2.BpmnProcess;
-import io.automatik.engine.workflow.bpmn2.BpmnProcessCompiler;
 import io.automatik.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
 
 /**
@@ -102,7 +101,8 @@ public abstract class JbpmBpmn2TestCase {
 		DefaultProcessEventListenerConfig listenerConfig = new DefaultProcessEventListenerConfig();
 		listeners.forEach(h -> listenerConfig.register(h));
 		ProcessConfig config = new StaticProcessConfig(handlerConfig, listenerConfig,
-				new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory()), null);
+				new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory()), null,
+				new DefaultVariableInitializer());
 
 		return config;
 	}

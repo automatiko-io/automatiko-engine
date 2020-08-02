@@ -11,8 +11,10 @@ import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.instance.context.variable.VariableScopeInstance;
 import io.automatik.engine.workflow.process.instance.impl.NodeInstanceResolverFactory;
 import io.automatik.engine.workflow.util.PatternConstants;
+import io.automatik.engine.workflow.util.StringUtils;
 
 public class VariableUtil {
+
 	public static String resolveVariable(String s, NodeInstance nodeInstance) {
 		if (s == null) {
 			return null;
@@ -46,5 +48,30 @@ public class VariableUtil {
 		}
 
 		return s;
+	}
+
+	public static String transformDotNotation(String value, String object) {
+		if (value == null || !value.contains(".")) {
+			return value;
+		}
+
+		String[] items = value.split("\\.");
+
+		String setter = items[items.length - 1];
+		StringBuilder expression = new StringBuilder(items[0] + ".");
+		for (int i = 1; i < items.length - 1; i++) {
+			expression.append("get").append(StringUtils.capitalize(items[i])).append("().");
+		}
+		if (setter.endsWith("[]")) {
+			// considered ass add element to collection
+			if (items.length == 2) {
+				expression.append("get").append(StringUtils.capitalize(setter.substring(0, setter.length() - 2)))
+						.append("().");
+			}
+			expression.append("add").append("(").append(object).append(")");
+		} else {
+			expression.append("set").append(StringUtils.capitalize(setter)).append("(").append(object).append(")");
+		}
+		return expression.toString();
 	}
 }

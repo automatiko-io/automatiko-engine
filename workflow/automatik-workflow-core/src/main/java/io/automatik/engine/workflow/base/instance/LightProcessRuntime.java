@@ -19,6 +19,7 @@ import io.automatik.engine.api.runtime.process.EventListener;
 import io.automatik.engine.api.runtime.process.ProcessInstance;
 import io.automatik.engine.api.runtime.process.WorkItemManager;
 import io.automatik.engine.api.uow.UnitOfWorkManager;
+import io.automatik.engine.api.workflow.VariableInitializer;
 import io.automatik.engine.api.workflow.signal.SignalManager;
 import io.automatik.engine.services.correlation.CorrelationKey;
 import io.automatik.engine.services.jobs.impl.InMemoryJobService;
@@ -44,6 +45,7 @@ public class LightProcessRuntime implements InternalProcessRuntime {
 	private ProcessEventSupport processEventSupport;
 	private final WorkItemManager workItemManager;
 	private UnitOfWorkManager unitOfWorkManager;
+	private VariableInitializer variableInitializer;
 
 	public static LightProcessRuntime ofProcess(Process p) {
 		LightProcessRuntimeServiceProvider services = new LightProcessRuntimeServiceProvider();
@@ -56,6 +58,7 @@ public class LightProcessRuntime implements InternalProcessRuntime {
 	public LightProcessRuntime(ProcessRuntimeContext runtimeContext, ProcessRuntimeServiceProvider services) {
 		this.unitOfWorkManager = services.getUnitOfWorkManager();
 		this.runtimeContext = runtimeContext;
+		this.variableInitializer = services.getVariableInitializer();
 		this.processInstanceManager = services.getProcessInstanceManager();
 		this.signalManager = services.getSignalManager();
 		this.jobService = services.getJobsService() == null ? new InMemoryJobService(this, this.unitOfWorkManager)
@@ -92,14 +95,15 @@ public class LightProcessRuntime implements InternalProcessRuntime {
 	}
 
 	public ProcessInstance startProcess(String processId, Map<String, Object> parameters) {
-		return startProcess(processId, parameters, null);
+		return startProcess(processId, parameters, null, null);
 	}
 
-	public ProcessInstance startProcess(String processId, Map<String, Object> parameters, String trigger) {
+	public ProcessInstance startProcess(String processId, Map<String, Object> parameters, String trigger,
+			Object triggerData) {
 		ProcessInstance processInstance = createProcessInstance(processId, parameters);
 		if (processInstance != null) {
 			processInstanceManager.addProcessInstance(processInstance, null);
-			return startProcessInstance(processInstance.getId(), trigger);
+			return startProcessInstance(processInstance.getId(), trigger, triggerData);
 		}
 		return null;
 	}
@@ -108,18 +112,18 @@ public class LightProcessRuntime implements InternalProcessRuntime {
 		return createProcessInstance(processId, null, parameters);
 	}
 
-	public ProcessInstance startProcessInstance(String processInstanceId, String trigger) {
+	public ProcessInstance startProcessInstance(String processInstanceId, String trigger, Object triggerData) {
 
 		ProcessInstance processInstance = getProcessInstance(processInstanceId);
 		((io.automatik.engine.workflow.base.instance.ProcessInstance) processInstance).configureSLA();
 		getProcessEventSupport().fireBeforeProcessStarted(processInstance, this);
-		((io.automatik.engine.workflow.base.instance.ProcessInstance) processInstance).start(trigger);
+		((io.automatik.engine.workflow.base.instance.ProcessInstance) processInstance).start(trigger, triggerData);
 		getProcessEventSupport().fireAfterProcessStarted(processInstance, this);
 		return processInstance;
 	}
 
 	public ProcessInstance startProcessInstance(String processInstanceId) {
-		return startProcessInstance(processInstanceId, null);
+		return startProcessInstance(processInstanceId, null, null);
 	}
 
 	@Override
@@ -153,7 +157,7 @@ public class LightProcessRuntime implements InternalProcessRuntime {
 				correlationKey);
 
 		pi.setProcessRuntime(this);
-		runtimeContext.setupParameters(pi, parameters);
+		runtimeContext.setupParameters(pi, parameters, variableInitializer);
 		return pi;
 	}
 
@@ -301,14 +305,14 @@ public class LightProcessRuntime implements InternalProcessRuntime {
 					}
 				}
 			}
-			startProcessWithParamsAndTrigger(processId, params, type, false);
+			startProcessWithParamsAndTrigger(processId, params, type, false, event);
 		}
 	}
 
 	private void startProcessWithParamsAndTrigger(String processId, Map<String, Object> params, String type,
-			boolean dispose) {
+			boolean dispose, Object triggerData) {
 
-		startProcess(processId, params, type);
+		startProcess(processId, params, type, triggerData);
 	}
 
 	public void abortProcessInstance(String processInstanceId) {

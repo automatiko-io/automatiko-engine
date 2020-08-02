@@ -53,6 +53,7 @@ import io.automatik.engine.workflow.base.instance.impl.AssignmentAction;
 import io.automatik.engine.workflow.base.instance.impl.ContextInstanceFactory;
 import io.automatik.engine.workflow.base.instance.impl.ContextInstanceFactoryRegistry;
 import io.automatik.engine.workflow.base.instance.impl.ProcessInstanceImpl;
+import io.automatik.engine.workflow.base.instance.impl.util.VariableUtil;
 import io.automatik.engine.workflow.base.instance.impl.workitem.DefaultWorkItemManager;
 import io.automatik.engine.workflow.base.instance.impl.workitem.WorkItemHandlerNotFoundException;
 import io.automatik.engine.workflow.base.instance.impl.workitem.WorkItemImpl;
@@ -345,7 +346,7 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
 						if (matcher.find()) {
 							String paramName = matcher.group(1);
 
-							String expression = paramName + " = " + output;
+							String expression = VariableUtil.transformDotNotation(paramName, output);
 							NodeInstanceResolverFactory resolver = new NodeInstanceResolverFactory(this);
 							resolver.addExtraParameters(workItem.getResults());
 							Serializable compiled = MVEL.compileExpression(expression);

@@ -191,7 +191,7 @@ public class InMemoryJobService implements JobsService {
 					io.automatik.engine.api.workflow.ProcessInstance<?> pi = process
 							.createInstance(process.createModel());
 					if (pi != null) {
-						pi.start(TRIGGER, null);
+						pi.start(TRIGGER, null, null);
 					}
 
 					return null;
@@ -233,7 +233,7 @@ public class InMemoryJobService implements JobsService {
 				UnitOfWorkExecutor.executeInUnitOfWork(unitOfWorkManager, () -> {
 					ProcessInstance pi = processRuntime.createProcessInstance(processId, null);
 					if (pi != null) {
-						processRuntime.startProcessInstance(pi.getId(), TRIGGER);
+						processRuntime.startProcessInstance(pi.getId(), TRIGGER, null);
 					}
 
 					return null;

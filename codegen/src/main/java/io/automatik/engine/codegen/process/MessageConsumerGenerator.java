@@ -101,8 +101,15 @@ public class MessageConsumerGenerator {
 					md.findAll(ClassOrInterfaceType.class)
 							.forEach(t -> t.setName(t.getNameAsString().replace("$DataType$", trigger.getDataType())));
 				});
-		template.findAll(MethodCallExpr.class).forEach(this::interpolateStrings);
 
+		if (trigger.getModelRef().startsWith("#")) {
+			template.findAll(MethodCallExpr.class).stream().filter(m -> m.getNameAsString().endsWith("$ModelRef$"))
+					.forEach(m -> {
+						m.getParentNode().ifPresent(p -> p.removeForced());
+					});
+		} else {
+			template.findAll(MethodCallExpr.class).forEach(this::interpolateStrings);
+		}
 		if (useInjection()) {
 			annotator.withApplicationComponent(template);
 

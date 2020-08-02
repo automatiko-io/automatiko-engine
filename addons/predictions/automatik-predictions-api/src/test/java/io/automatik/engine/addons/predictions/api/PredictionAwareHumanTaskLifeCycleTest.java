@@ -14,9 +14,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import io.automatik.engine.addons.predictions.api.PredictionAwareHumanTaskLifeCycle;
-import io.automatik.engine.addons.predictions.api.PredictionOutcome;
-import io.automatik.engine.addons.predictions.api.PredictionService;
 import io.automatik.engine.api.Model;
 import io.automatik.engine.api.auth.SecurityPolicy;
 import io.automatik.engine.api.workflow.ProcessConfig;
@@ -30,6 +27,7 @@ import io.automatik.engine.workflow.CachedWorkItemHandlerConfig;
 import io.automatik.engine.workflow.DefaultProcessEventListenerConfig;
 import io.automatik.engine.workflow.StaticProcessConfig;
 import io.automatik.engine.workflow.base.core.resources.ClassPathResource;
+import io.automatik.engine.workflow.base.instance.context.variable.DefaultVariableInitializer;
 import io.automatik.engine.workflow.base.instance.impl.humantask.HumanTaskWorkItemHandler;
 import io.automatik.engine.workflow.bpmn2.BpmnProcess;
 import io.automatik.engine.workflow.bpmn2.BpmnVariables;
@@ -79,7 +77,8 @@ public class PredictionAwareHumanTaskLifeCycleTest {
 		wiConfig.register("Human Task",
 				new HumanTaskWorkItemHandler(new PredictionAwareHumanTaskLifeCycle(predictionService)));
 		config = new StaticProcessConfig(wiConfig, new DefaultProcessEventListenerConfig(),
-				new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory()), null);
+				new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory()), null,
+				new DefaultVariableInitializer());
 	}
 
 	@Test

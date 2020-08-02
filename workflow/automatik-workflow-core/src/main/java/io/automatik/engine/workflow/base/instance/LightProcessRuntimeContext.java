@@ -7,8 +7,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import io.automatik.engine.api.definition.process.Process;
+import io.automatik.engine.api.workflow.VariableInitializer;
 import io.automatik.engine.services.correlation.CorrelationKey;
 import io.automatik.engine.workflow.base.core.ContextContainer;
+import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.instance.context.variable.VariableScopeInstance;
 import io.automatik.engine.workflow.process.executable.instance.ExecutableProcessInstance;
@@ -50,7 +52,8 @@ public class LightProcessRuntimeContext implements ProcessRuntimeContext {
 	}
 
 	@Override
-	public void setupParameters(ProcessInstance processInstance, Map<String, Object> parameters) {
+	public void setupParameters(ProcessInstance processInstance, Map<String, Object> parameters,
+			VariableInitializer variableInitializer) {
 		Process process = processInstance.getProcess();
 		// set variable default values
 		// TODO: should be part of processInstanceImpl?
@@ -68,6 +71,15 @@ public class LightProcessRuntimeContext implements ProcessRuntimeContext {
 				}
 			} else {
 				throw new IllegalArgumentException("This process does not support parameters!");
+			}
+		}
+
+		for (Variable var : variableScope.getVariables()) {
+			if (var.hasTag(Variable.AUTO_INITIALIZED) && variableScopeInstance.getVariable(var.getName()) == null) {
+				Object value = variableInitializer.initialize(var.getType().getClassType());
+
+				variableScope.validateVariable(process.getName(), var.getName(), value);
+				variableScopeInstance.setVariable(var.getName(), value);
 			}
 		}
 

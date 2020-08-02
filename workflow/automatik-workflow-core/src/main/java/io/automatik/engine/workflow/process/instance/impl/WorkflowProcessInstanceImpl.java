@@ -447,11 +447,11 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
 
 	@Override
 	public void start() {
-		start(null);
+		start(null, null);
 	}
 
 	@Override
-	public void start(String trigger) {
+	public void start(String trigger, Object triggerData) {
 		synchronized (this) {
 			setStartDate(new Date());
 			registerExternalEventNodeListeners();
@@ -468,7 +468,7 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
 					}
 				}
 			}
-			super.start(trigger);
+			super.start(trigger, triggerData);
 		}
 	}
 
@@ -553,6 +553,7 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
 		synchronized (this) {
 			if (getState() != ProcessInstance.STATE_ACTIVE) {
 				return;
+
 			}
 
 			if ("timerTriggered".equals(type)) {

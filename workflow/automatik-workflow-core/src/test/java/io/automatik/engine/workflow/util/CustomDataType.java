@@ -37,4 +37,9 @@ public class CustomDataType implements DataType {
 	public String getStringType() {
 		return "java.lang.String";
 	}
+
+	@Override
+	public Class<?> getClassType() {
+		return String.class;
+	}
 }

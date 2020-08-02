@@ -36,7 +36,7 @@ public interface ProcessInstance
 
 	void start();
 
-	void start(String tigger);
+	void start(String tigger, Object triggerData);
 
 	String getOutcome();
 

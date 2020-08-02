@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 
+import org.mvel2.MVEL;
+
 import io.automatik.engine.api.jobs.JobsService;
 import io.automatik.engine.api.runtime.process.EventListener;
 import io.automatik.engine.api.runtime.process.NodeInstance;
@@ -24,9 +26,11 @@ import io.automatik.engine.workflow.base.core.event.EventTransformer;
 import io.automatik.engine.workflow.base.instance.InternalProcessRuntime;
 import io.automatik.engine.workflow.base.instance.ProcessInstance;
 import io.automatik.engine.workflow.base.instance.context.variable.VariableScopeInstance;
+import io.automatik.engine.workflow.base.instance.impl.util.VariableUtil;
 import io.automatik.engine.workflow.process.core.node.EventNode;
 import io.automatik.engine.workflow.process.instance.WorkflowProcessInstance;
 import io.automatik.engine.workflow.process.instance.impl.ExtendedNodeInstanceImpl;
+import io.automatik.engine.workflow.process.instance.impl.NodeInstanceResolverFactory;
 import io.automatik.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
 import io.automatik.engine.workflow.util.PatternConstants;
 
@@ -54,14 +58,31 @@ public class EventNodeInstance extends ExtendedNodeInstanceImpl
 			if (variableName != null) {
 				VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
 						VariableScope.VARIABLE_SCOPE, variableName);
-				if (variableScopeInstance == null) {
-					throw new IllegalArgumentException("Could not find variable for event node: " + variableName);
+				if (variableScopeInstance != null) {
+
+					EventTransformer transformer = getEventNode().getEventTransformer();
+					if (transformer != null) {
+						event = transformer.transformEvent(event);
+					}
+					variableScopeInstance.setVariable(this, variableName, event);
+				} else {
+					String output = "event";
+
+					Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(variableName);
+					if (matcher.find()) {
+						String paramName = matcher.group(1);
+
+						String expression = VariableUtil.transformDotNotation(paramName, output);
+						NodeInstanceResolverFactory resolver = new NodeInstanceResolverFactory(this);
+						resolver.addExtraParameters(Collections.singletonMap("event", event));
+						Serializable compiled = MVEL.compileExpression(expression);
+						MVEL.executeExpression(compiled, resolver);
+					} else {
+						logger.warn("Could not find variable scope for variable {}", variableName);
+						logger.warn("when trying to complete start node {}", getEventNode().getName());
+						logger.warn("Continuing without setting variable.");
+					}
 				}
-				EventTransformer transformer = getEventNode().getEventTransformer();
-				if (transformer != null) {
-					event = transformer.transformEvent(event);
-				}
-				variableScopeInstance.setVariable(this, variableName, event);
 			}
 			triggerCompleted();
 		}

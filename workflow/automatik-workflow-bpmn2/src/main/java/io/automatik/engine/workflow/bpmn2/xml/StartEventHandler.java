@@ -213,18 +213,21 @@ public class StartEventHandler extends AbstractNodeHandler {
 		if (dataOutputs.get(source) == null) {
 			throw new IllegalArgumentException("No dataOutput could be found for the dataOutputAssociation.");
 		}
-
+		String target = null;
+		Transformation transformation = null;
 		// targetRef
 		subNode = subNode.getNextSibling();
-		if (!"targetRef".equals(subNode.getNodeName())) {
-			throw new IllegalArgumentException("No targetRef found in dataOutputAssociation in startEvent");
-		}
-		String target = subNode.getTextContent();
-		startNode.setMetaData("TriggerMapping", target);
-		// transformation
-		Transformation transformation = null;
-		subNode = subNode.getNextSibling();
-		if (subNode != null && "transformation".equals(subNode.getNodeName())) {
+		if (subNode != null && "targetRef".equals(subNode.getNodeName())) {
+			target = subNode.getTextContent();
+			if (target != null) {
+				startNode.setMetaData("TriggerMapping", target);
+
+				startNode.addOutMapping(dataOutputs.get(source), target);
+			}
+			// transformation
+
+			subNode = subNode.getNextSibling();
+		} else if (subNode != null && "transformation".equals(subNode.getNodeName())) {
 			String lang = subNode.getAttributes().getNamedItem("language").getNodeValue();
 			String expression = subNode.getTextContent();
 			DataTransformer transformer = transformerRegistry.find(lang);
@@ -236,14 +239,20 @@ public class StartEventHandler extends AbstractNodeHandler {
 
 			startNode.setEventTransformer(new EventTransformerImpl(transformation));
 			subNode = subNode.getNextSibling();
+		} else if (subNode != null && "assignment".equals(subNode.getNodeName())) {
+
+			// assignments
+			while (subNode != null) {
+				org.w3c.dom.Node ssubNode = subNode.getFirstChild();
+				target = ssubNode.getNextSibling().getTextContent();
+				subNode = subNode.getNextSibling();
+
+			}
+			startNode.setMetaData("TriggerMapping", target);
+
+			startNode.addOutMapping(dataOutputs.get(source), target);
 		}
 
-		if (subNode != null) {
-			// no support for assignments
-			throw new UnsupportedOperationException(
-					subNode.getNodeName() + " elements in dataOutputAssociations are not yet supported.");
-		}
-		startNode.addOutMapping(target, dataOutputs.get(source));
 	}
 
 	// The results of this method are only used to check syntax

@@ -19,6 +19,8 @@ public class EnumDataType implements DataType {
 	private String className;
 	private transient Map<String, Object> valueMap;
 
+	private Class<?> clazz;
+
 	public EnumDataType() {
 	}
 
@@ -32,6 +34,11 @@ public class EnumDataType implements DataType {
 
 	public void setClassName(String className) {
 		this.className = className;
+		try {
+			this.clazz = Class.forName(className);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException("Error creating class of " + className, e);
+		}
 	}
 
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -109,5 +116,10 @@ public class EnumDataType implements DataType {
 
 		}
 		return this.valueMap;
+	}
+
+	@Override
+	public Class<?> getClassType() {
+		return clazz;
 	}
 }

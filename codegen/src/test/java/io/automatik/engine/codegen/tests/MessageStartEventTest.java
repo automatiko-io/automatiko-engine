@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.assertj.core.api.Condition;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.automatik.engine.api.Application;
@@ -31,6 +32,22 @@ public class MessageStartEventTest extends AbstractCodegenTest {
 
 	private Policy<?> securityPolicy = SecurityPolicy.of(new StaticIdentityProvider("john"));
 
+	@BeforeEach
+	public void setup() {
+
+		this.config = new AutomatikConfig() {
+			@Override
+			public MessagingConfig messaging() {
+				return new MessagingConfig() {
+					@Override
+					public boolean asCloudevents() {
+						return false;
+					}
+				};
+			}
+		};
+	}
+
 	@Test
 	public void testMessageStartEventProcess() throws Exception {
 
@@ -41,11 +58,10 @@ public class MessageStartEventTest extends AbstractCodegenTest {
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
-		parameters.put("customerId", "CUS-00998877");
 		m.fromMap(parameters);
 
 		ProcessInstance<?> processInstance = p.createInstance(m);
-		processInstance.start("customers", null);
+		processInstance.start("customers", null, "CUS-00998877");
 
 		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
 		Model result = (Model) processInstance.variables();
@@ -63,11 +79,10 @@ public class MessageStartEventTest extends AbstractCodegenTest {
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
-		parameters.put("customerId", "CUS-00998877");
 		m.fromMap(parameters);
 
 		ProcessInstance<?> processInstance = p.createInstance(m);
-		processInstance.start("customers", null);
+		processInstance.start("customers", null, "CUS-00998877");
 
 		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
 		Model result = (Model) processInstance.variables();
@@ -145,7 +160,7 @@ public class MessageStartEventTest extends AbstractCodegenTest {
 
 		// next start it via message start event
 		processInstance = p.createInstance(m);
-		processInstance.start("customers", null);
+		processInstance.start("customers", null, "CUS-00998877");
 
 		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
 		result = (Model) processInstance.variables();
@@ -164,11 +179,10 @@ public class MessageStartEventTest extends AbstractCodegenTest {
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
-		parameters.put("customerId", "CUS-00998877");
 		m.fromMap(parameters);
 
 		ProcessInstance<?> processInstance = p.createInstance(m);
-		processInstance.start("customers", null);
+		processInstance.start("customers", null, "CUS-00998877");
 
 		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
 		Model result = (Model) processInstance.variables();
@@ -192,19 +206,6 @@ public class MessageStartEventTest extends AbstractCodegenTest {
 	@Test
 	public void testMultipleMessagesStartEventProcessCorrelationExpression() throws Exception {
 
-		this.config = new AutomatikConfig() {
-			@Override
-			public MessagingConfig messaging() {
-				// TODO Auto-generated method stub
-				return new MessagingConfig() {
-					@Override
-					public boolean asCloudevents() {
-						return false;
-					}
-				};
-			}
-		};
-
 		Application app = generateCodeProcessesOnly(
 				"messagestartevent/MessageAndMessageStartEventCorrelationExpr.bpmn2");
 		assertThat(app).isNotNull();
@@ -213,11 +214,10 @@ public class MessageStartEventTest extends AbstractCodegenTest {
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
-		parameters.put("customerId", "CUS-00998877");
 		m.fromMap(parameters);
 
 		ProcessInstance<?> processInstance = p.createInstance(m);
-		processInstance.start("customers", null);
+		processInstance.start("customers", null, "CUS-00998877");
 
 		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
 		Model result = (Model) processInstance.variables();
@@ -236,5 +236,28 @@ public class MessageStartEventTest extends AbstractCodegenTest {
 
 		processInstance.abort();
 		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ABORTED);
+	}
+
+	@Test
+	public void testMessageStartEventIOExpressionProcess() throws Exception {
+
+		Application app = generateCodeProcessesOnly("messagestartevent/MessageStartEventIOExpression.bpmn2");
+		assertThat(app).isNotNull();
+
+		Process<? extends Model> p = app.processes().processById("MessageStartEvent");
+
+		Model m = p.createModel();
+		Map<String, Object> parameters = new HashMap<>();
+		parameters.put("customerId", "CUS-00998877");
+		m.fromMap(parameters);
+
+		ProcessInstance<?> processInstance = p.createInstance(m);
+
+		processInstance.start("customers", null, "CUS-00998877");
+
+		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+		Model result = (Model) processInstance.variables();
+		assertThat(result.toMap()).hasSize(2).containsKeys("customerId", "person");
+		assertThat(result.toMap().get("person")).isNotNull().extracting("name").isEqualTo("CUS-00998877");
 	}
 }

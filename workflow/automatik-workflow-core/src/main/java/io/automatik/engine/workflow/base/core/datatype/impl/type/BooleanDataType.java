@@ -28,7 +28,7 @@ public final class BooleanDataType implements DataType {
 	}
 
 	public Object readValue(String value) {
-		return new Boolean(value);
+		return Boolean.parseBoolean(value);
 	}
 
 	public String writeValue(Object value) {
@@ -37,5 +37,10 @@ public final class BooleanDataType implements DataType {
 
 	public String getStringType() {
 		return "java.lang.Boolean";
+	}
+
+	@Override
+	public Class<?> getClassType() {
+		return Boolean.class;
 	}
 }

@@ -4,15 +4,17 @@ package io.automatik.engine.workflow.base.instance;
 import java.util.Map;
 
 import io.automatik.engine.api.definition.process.Process;
+import io.automatik.engine.api.workflow.VariableInitializer;
 import io.automatik.engine.services.correlation.CorrelationKey;
 import io.automatik.engine.workflow.base.core.ContextContainer;
+import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.instance.context.variable.VariableScopeInstance;
 
 public abstract class AbstractProcessInstanceFactory implements ProcessInstanceFactory {
 
 	public ProcessInstance createProcessInstance(Process process, CorrelationKey correlationKey,
-			InternalProcessRuntime runtime, Map<String, Object> parameters) {
+			InternalProcessRuntime runtime, Map<String, Object> parameters, VariableInitializer variableInitializer) {
 		ProcessInstance processInstance = createProcessInstance();
 		processInstance.setProcessRuntime(runtime);
 		processInstance.setProcess(process);
@@ -41,6 +43,16 @@ public abstract class AbstractProcessInstanceFactory implements ProcessInstanceF
 				throw new IllegalArgumentException("This process does not support parameters!");
 			}
 		}
+
+		for (Variable var : variableScope.getVariables()) {
+			if (var.hasTag(Variable.AUTO_INITIALIZED) && variableScopeInstance.getVariable(var.getName()) == null) {
+				Object value = variableInitializer.initialize(var.getType().getClassType());
+
+				variableScope.validateVariable(process.getName(), var.getName(), value);
+				variableScopeInstance.setVariable(var.getName(), value);
+			}
+		}
+
 		variableScopeInstance.enforceRequiredVariables();
 
 		return processInstance;

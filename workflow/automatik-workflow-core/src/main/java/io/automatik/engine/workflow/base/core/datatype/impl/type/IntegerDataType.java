@@ -31,7 +31,7 @@ public class IntegerDataType implements DataType {
 	}
 
 	public Object readValue(String value) {
-		return new Integer(value);
+		return Integer.parseInt(value);
 	}
 
 	public String writeValue(Object value) {
@@ -41,6 +41,11 @@ public class IntegerDataType implements DataType {
 
 	public String getStringType() {
 		return "java.lang.Integer";
+	}
+
+	@Override
+	public Class<?> getClassType() {
+		return Integer.class;
 	}
 
 }

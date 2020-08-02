@@ -18,6 +18,7 @@ import io.automatik.engine.api.runtime.process.EventListener;
 import io.automatik.engine.api.runtime.process.ProcessInstance;
 import io.automatik.engine.api.runtime.process.WorkItemManager;
 import io.automatik.engine.api.uow.UnitOfWorkManager;
+import io.automatik.engine.api.workflow.VariableInitializer;
 import io.automatik.engine.api.workflow.signal.SignalManager;
 import io.automatik.engine.services.correlation.CorrelationKey;
 import io.automatik.engine.services.jobs.impl.InMemoryJobService;
@@ -30,6 +31,7 @@ import io.automatik.engine.workflow.base.core.event.ProcessEventSupport;
 import io.automatik.engine.workflow.base.core.timer.DateTimeUtils;
 import io.automatik.engine.workflow.base.core.timer.TimeUtils;
 import io.automatik.engine.workflow.base.core.timer.Timer;
+import io.automatik.engine.workflow.base.instance.context.variable.DefaultVariableInitializer;
 import io.automatik.engine.workflow.base.instance.event.DefaultSignalManagerFactory;
 import io.automatik.engine.workflow.base.instance.impl.DefaultProcessInstanceManagerFactory;
 import io.automatik.engine.workflow.base.instance.impl.workitem.DefaultWorkItemManager;
@@ -47,6 +49,7 @@ public class ProcessRuntimeImpl implements InternalProcessRuntime {
 	private ProcessEventSupport processEventSupport;
 	private UnitOfWorkManager unitOfWorkManager;
 	private WorkItemManager workItemManager;
+	private VariableInitializer variableInitializer = new DefaultVariableInitializer();
 
 	public ProcessRuntimeImpl(Map<String, Process> processes) {
 		this.processes = processes;
@@ -91,14 +94,15 @@ public class ProcessRuntimeImpl implements InternalProcessRuntime {
 	}
 
 	public ProcessInstance startProcess(String processId, Map<String, Object> parameters) {
-		return startProcess(processId, parameters, null);
+		return startProcess(processId, parameters, null, null);
 	}
 
-	public ProcessInstance startProcess(String processId, Map<String, Object> parameters, String trigger) {
+	public ProcessInstance startProcess(String processId, Map<String, Object> parameters, String trigger,
+			Object triggerData) {
 		ProcessInstance processInstance = createProcessInstance(processId, parameters);
 		if (processInstance != null) {
 			// start process instance
-			return startProcessInstance(processInstance.getId(), trigger);
+			return startProcessInstance(processInstance.getId(), trigger, triggerData);
 		}
 		return null;
 	}
@@ -107,17 +111,17 @@ public class ProcessRuntimeImpl implements InternalProcessRuntime {
 		return createProcessInstance(processId, null, parameters);
 	}
 
-	public ProcessInstance startProcessInstance(String processInstanceId, String trigger) {
+	public ProcessInstance startProcessInstance(String processInstanceId, String trigger, Object triggerData) {
 		ProcessInstance processInstance = getProcessInstance(processInstanceId);
 		((io.automatik.engine.workflow.base.instance.ProcessInstance) processInstance).configureSLA();
 		getProcessEventSupport().fireBeforeProcessStarted(processInstance, this);
-		((io.automatik.engine.workflow.base.instance.ProcessInstance) processInstance).start(trigger);
+		((io.automatik.engine.workflow.base.instance.ProcessInstance) processInstance).start(trigger, triggerData);
 		getProcessEventSupport().fireAfterProcessStarted(processInstance, this);
 		return processInstance;
 	}
 
 	public ProcessInstance startProcessInstance(String processInstanceId) {
-		return startProcessInstance(processInstanceId, null);
+		return startProcessInstance(processInstanceId, null, null);
 	}
 
 	@Override
@@ -151,7 +155,7 @@ public class ProcessRuntimeImpl implements InternalProcessRuntime {
 		if (conf == null) {
 			throw new IllegalArgumentException("Illegal process type: " + process.getClass());
 		}
-		return conf.createProcessInstance(process, correlationKey, this, parameters);
+		return conf.createProcessInstance(process, correlationKey, this, parameters, variableInitializer);
 	}
 
 	public ProcessInstanceManager getProcessInstanceManager() {
@@ -259,9 +263,9 @@ public class ProcessRuntimeImpl implements InternalProcessRuntime {
 	}
 
 	private void startProcessWithParamsAndTrigger(String processId, Map<String, Object> params, String type,
-			boolean dispose) {
+			boolean dispose, Object triggerData) {
 
-		startProcess(processId, params, type);
+		startProcess(processId, params, type, triggerData);
 	}
 
 	public void abortProcessInstance(String processInstanceId) {
@@ -388,7 +392,7 @@ public class ProcessRuntimeImpl implements InternalProcessRuntime {
 					}
 				}
 			}
-			startProcessWithParamsAndTrigger(processId, params, type, false);
+			startProcessWithParamsAndTrigger(processId, params, type, false, event);
 		}
 	}
 

@@ -213,6 +213,8 @@ public class IntermediateCatchEventHandler extends AbstractNodeHandler {
 				eventNode.setMetaData("MessageType", message.getType());
 				eventNode.setMetaData("TriggerType", "ConsumeMessage");
 				eventNode.setMetaData("TriggerRef", message.getName());
+				eventNode.setMetaData("TriggerCorrelation", message.getCorrelation());
+				eventNode.setMetaData("TriggerCorrelationExpr", message.getCorrelationExpression());
 				List<EventFilter> eventFilters = new ArrayList<EventFilter>();
 				EventTypeFilter eventFilter = new EventTypeFilter();
 				eventFilter.setType("Message-" + message.getName());
@@ -291,14 +293,17 @@ public class IntermediateCatchEventHandler extends AbstractNodeHandler {
 		// sourceRef
 		org.w3c.dom.Node subNode = xmlNode.getFirstChild();
 		String from = subNode.getTextContent();
+
+		String to = null;
+		Transformation transformation = null;
 		// targetRef
 		subNode = subNode.getNextSibling();
-		String to = subNode.getTextContent();
-		eventNode.setVariableName(to);
-		// transformation
-		Transformation transformation = null;
-		subNode = subNode.getNextSibling();
-		if (subNode != null && "transformation".equals(subNode.getNodeName())) {
+		if (subNode != null && "targetRef".equals(subNode.getNodeName())) {
+			to = subNode.getTextContent();
+			eventNode.setVariableName(to);
+
+			subNode = subNode.getNextSibling();
+		} else if (subNode != null && "transformation".equals(subNode.getNodeName())) {
 			String lang = subNode.getAttributes().getNamedItem("language").getNodeValue();
 			String expression = subNode.getTextContent();
 			DataTransformer transformer = transformerRegistry.find(lang);
@@ -309,6 +314,18 @@ public class IntermediateCatchEventHandler extends AbstractNodeHandler {
 			eventNode.setMetaData("Transformation", transformation);
 
 			eventNode.setEventTransformer(new EventTransformerImpl(transformation));
+		} else if (subNode != null && "assignment".equals(subNode.getNodeName())) {
+
+			// assignments
+			while (subNode != null) {
+				org.w3c.dom.Node ssubNode = subNode.getFirstChild();
+				to = ssubNode.getNextSibling().getTextContent();
+
+				subNode = subNode.getNextSibling();
+
+				eventNode.setVariableName(to);
+			}
+
 		}
 	}
 

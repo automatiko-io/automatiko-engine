@@ -31,6 +31,7 @@ import io.automatik.engine.api.event.process.ProcessEventListener;
 import io.automatik.engine.api.jobs.JobsService;
 import io.automatik.engine.api.uow.UnitOfWorkManager;
 import io.automatik.engine.api.workflow.ProcessEventListenerConfig;
+import io.automatik.engine.api.workflow.VariableInitializer;
 import io.automatik.engine.api.workflow.WorkItemHandlerConfig;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatik.engine.services.uow.CollectingUnitOfWorkFactory;
@@ -39,6 +40,7 @@ import io.automatik.engine.workflow.CachedProcessEventListenerConfig;
 import io.automatik.engine.workflow.DefaultProcessEventListenerConfig;
 import io.automatik.engine.workflow.DefaultWorkItemHandlerConfig;
 import io.automatik.engine.workflow.StaticProcessConfig;
+import io.automatik.engine.workflow.base.instance.context.variable.DefaultVariableInitializer;
 
 public class ProcessConfigGenerator {
 
@@ -46,15 +48,18 @@ public class ProcessConfigGenerator {
 	private static final String METHOD_EXTRACT_PROCESS_EVENT_LISTENER_CONFIG = "extract_processEventListenerConfig";
 	private static final String METHOD_EXTRACT_UNIT_OF_WORK_MANAGER = "extract_unitOfWorkManager";
 	private static final String METHOD_EXTRACT_WORK_ITEM_HANDLER_CONFIG = "extract_workItemHandlerConfig";
+	private static final String METHOD_EXTRACT_VARIABLE_INITIALIZER = "extract_variableInitializer";
 	private static final String METHOD_MERGE_PROCESS_EVENT_LISTENER_CONFIG = "merge_processEventListenerConfig";
 	private static final String VAR_DEFAULT_JOBS_SEVICE = "defaultJobsService";
 	private static final String VAR_DEFAULT_PROCESS_EVENT_LISTENER_CONFIG = "defaultProcessEventListenerConfig";
 	private static final String VAR_DEFAULT_UNIT_OF_WORK_MANAGER = "defaultUnitOfWorkManager";
+	private static final String VAR_DEFAULT_VARIABLE_INITIALIZER = "defaultVariableInitializer";
 	private static final String VAR_DEFAULT_WORK_ITEM_HANDLER_CONFIG = "defaultWorkItemHandlerConfig";
 	private static final String VAR_JOBS_SERVICE = "jobsService";
 	private static final String VAR_PROCESS_EVENT_LISTENER_CONFIGS = "processEventListenerConfigs";
 	private static final String VAR_PROCESS_EVENT_LISTENERS = "processEventListeners";
 	private static final String VAR_UNIT_OF_WORK_MANAGER = "unitOfWorkManager";
+	private static final String VAR_VARIABLE_INITIALIZER = "variableInitializer";
 	private static final String VAR_WORK_ITEM_HANDLER_CONFIG = "workItemHandlerConfig";
 
 	private DependencyInjectionAnnotator annotator;
@@ -67,13 +72,15 @@ public class ProcessConfigGenerator {
 					.addArgument(new MethodCallExpr(METHOD_EXTRACT_WORK_ITEM_HANDLER_CONFIG))
 					.addArgument(new MethodCallExpr(METHOD_EXTRACT_PROCESS_EVENT_LISTENER_CONFIG))
 					.addArgument(new MethodCallExpr(METHOD_EXTRACT_UNIT_OF_WORK_MANAGER))
-					.addArgument(new MethodCallExpr(METHOD_EXTRACT_JOBS_SERVICE));
+					.addArgument(new MethodCallExpr(METHOD_EXTRACT_JOBS_SERVICE))
+					.addArgument(new MethodCallExpr(METHOD_EXTRACT_VARIABLE_INITIALIZER));
 		} else {
 			return new ObjectCreationExpr().setType(StaticProcessConfig.class.getCanonicalName())
 					.addArgument(new NameExpr(VAR_DEFAULT_WORK_ITEM_HANDLER_CONFIG))
 					.addArgument(new NameExpr(VAR_DEFAULT_PROCESS_EVENT_LISTENER_CONFIG))
 					.addArgument(new NameExpr(VAR_DEFAULT_UNIT_OF_WORK_MANAGER))
-					.addArgument(new NameExpr(VAR_DEFAULT_JOBS_SEVICE));
+					.addArgument(new NameExpr(VAR_DEFAULT_JOBS_SEVICE))
+					.addArgument(new NameExpr(VAR_DEFAULT_VARIABLE_INITIALIZER));
 		}
 	}
 
@@ -98,6 +105,13 @@ public class ProcessConfigGenerator {
 								VAR_DEFAULT_JOBS_SEVICE, new NullLiteralExpr()));
 		members.add(defaultJobsServiceFieldDeclaration);
 
+		FieldDeclaration defaultVariableInitializerFieldDeclaration = new FieldDeclaration()
+				.setModifiers(Modifier.Keyword.PRIVATE)
+				.addVariable(new VariableDeclarator(
+						new ClassOrInterfaceType(null, VariableInitializer.class.getCanonicalName()),
+						VAR_DEFAULT_VARIABLE_INITIALIZER, newObject(DefaultVariableInitializer.class)));
+		members.add(defaultVariableInitializerFieldDeclaration);
+
 		if (annotator != null) {
 			FieldDeclaration wihcFieldDeclaration = annotator
 					.withInjection(new FieldDeclaration().addVariable(new VariableDeclarator(
@@ -115,6 +129,12 @@ public class ProcessConfigGenerator {
 					new VariableDeclarator(genericType(annotator.optionalInstanceInjectionType(), JobsService.class),
 							VAR_JOBS_SERVICE)));
 			members.add(jobsServiceFieldDeclaration);
+
+			FieldDeclaration viFieldDeclaration = annotator
+					.withInjection(new FieldDeclaration().addVariable(new VariableDeclarator(
+							genericType(annotator.optionalInstanceInjectionType(), VariableInitializer.class),
+							VAR_VARIABLE_INITIALIZER)));
+			members.add(viFieldDeclaration);
 
 			FieldDeclaration pelcFieldDeclaration = annotator
 					.withOptionalInjection(new FieldDeclaration().addVariable(new VariableDeclarator(
@@ -134,6 +154,8 @@ public class ProcessConfigGenerator {
 					VAR_DEFAULT_UNIT_OF_WORK_MANAGER, annotator));
 			members.add(extractOptionalInjection(JobsService.class.getCanonicalName(), VAR_JOBS_SERVICE,
 					VAR_DEFAULT_JOBS_SEVICE, annotator));
+			members.add(extractOptionalInjection(VariableInitializer.class.getCanonicalName(), VAR_VARIABLE_INITIALIZER,
+					VAR_DEFAULT_VARIABLE_INITIALIZER, annotator));
 
 			members.add(generateExtractEventListenerConfigMethod());
 			members.add(generateMergeEventListenerConfigMethod());

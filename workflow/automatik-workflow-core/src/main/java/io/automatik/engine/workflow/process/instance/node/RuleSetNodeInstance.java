@@ -31,6 +31,7 @@ import io.automatik.engine.workflow.base.instance.context.exception.ExceptionSco
 import io.automatik.engine.workflow.base.instance.context.variable.VariableScopeInstance;
 import io.automatik.engine.workflow.base.instance.impl.ContextInstanceFactory;
 import io.automatik.engine.workflow.base.instance.impl.ContextInstanceFactoryRegistry;
+import io.automatik.engine.workflow.base.instance.impl.util.VariableUtil;
 import io.automatik.engine.workflow.process.core.node.DataAssociation;
 import io.automatik.engine.workflow.process.core.node.RuleSetNode;
 import io.automatik.engine.workflow.process.core.node.Transformation;
@@ -186,7 +187,7 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
 						if (matcher.find()) {
 							String paramName = matcher.group(1);
 
-							String expression = paramName + " = " + output;
+							String expression = VariableUtil.transformDotNotation(paramName, output);
 							NodeInstanceResolverFactory resolver = new NodeInstanceResolverFactory(this);
 							resolver.addExtraParameters(objects);
 							Serializable compiled = MVEL.compileExpression(expression);

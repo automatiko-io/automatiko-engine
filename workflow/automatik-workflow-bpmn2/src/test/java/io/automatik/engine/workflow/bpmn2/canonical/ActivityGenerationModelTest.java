@@ -54,6 +54,7 @@ import io.automatik.engine.workflow.CachedWorkItemHandlerConfig;
 import io.automatik.engine.workflow.DefaultProcessEventListenerConfig;
 import io.automatik.engine.workflow.StaticProcessConfig;
 import io.automatik.engine.workflow.base.core.resources.ClassPathResource;
+import io.automatik.engine.workflow.base.instance.context.variable.DefaultVariableInitializer;
 import io.automatik.engine.workflow.base.instance.impl.demo.SystemOutWorkItemHandler;
 import io.automatik.engine.workflow.bpmn2.BpmnProcess;
 import io.automatik.engine.workflow.bpmn2.BpmnVariables;
@@ -551,7 +552,8 @@ public class ActivityGenerationModelTest extends JbpmBpmn2TestCase {
 			}
 
 			ProcessConfig config = new StaticProcessConfig(wiConfig, new DefaultProcessEventListenerConfig(),
-					new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory()), null);
+					new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory()), null,
+					new DefaultVariableInitializer());
 
 			URLClassLoader cl = new URLClassLoader(new URL[] { compilationOutcome.toUri().toURL() });
 			Map<String, BpmnProcess> processes = new HashMap<>();

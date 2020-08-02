@@ -22,4 +22,6 @@ public interface DataType extends Externalizable {
 	 */
 	String getStringType();
 
+	Class<?> getClassType();
+
 }

@@ -19,6 +19,8 @@ public class ObjectDataType implements DataType {
 
 	private ClassLoader classLoader;
 
+	private Class<?> clazz;
+
 	public ObjectDataType() {
 	}
 
@@ -27,8 +29,8 @@ public class ObjectDataType implements DataType {
 	}
 
 	public ObjectDataType(String className, ClassLoader classLoader) {
-		setClassName(className);
 		setClassLoader(classLoader);
+		setClassName(className);
 	}
 
 	public String getClassName() {
@@ -36,11 +38,15 @@ public class ObjectDataType implements DataType {
 	}
 
 	public void setClassName(String className) {
-		this.className = className;
+		this.className = className == null ? "java.lang.Object" : className;
+		try {
+			this.clazz = Class.forName(this.className, true, getClassLoader());
+		} catch (ClassNotFoundException e) {
+		}
 	}
 
 	public ClassLoader getClassLoader() {
-		return classLoader;
+		return classLoader == null ? this.getClass().getClassLoader() : classLoader;
 	}
 
 	public void setClassLoader(ClassLoader classLoader) {
@@ -59,14 +65,11 @@ public class ObjectDataType implements DataType {
 		if (value == null) {
 			return true;
 		}
-		try {
-			Class<?> clazz = Class.forName(className, true, value.getClass().getClassLoader());
-			if (clazz.isInstance(value)) {
-				return true;
-			}
-		} catch (ClassNotFoundException e) {
-			throw new IllegalArgumentException("Could not find data type " + className);
+
+		if (clazz.isInstance(value)) {
+			return true;
 		}
+
 		return false;
 	}
 
@@ -80,5 +83,10 @@ public class ObjectDataType implements DataType {
 
 	public String getStringType() {
 		return className == null ? "java.lang.Object" : className;
+	}
+
+	@Override
+	public Class<?> getClassType() {
+		return clazz == null ? Object.class : clazz;
 	}
 }

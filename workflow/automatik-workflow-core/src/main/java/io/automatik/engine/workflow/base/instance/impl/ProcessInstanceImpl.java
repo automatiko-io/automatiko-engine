@@ -193,20 +193,20 @@ public abstract class ProcessInstanceImpl implements ProcessInstance, Serializab
 	}
 
 	public void start() {
-		start(null);
+		start(null, null);
 	}
 
-	public void start(String trigger) {
+	public void start(String trigger, Object triggerData) {
 		synchronized (this) {
 			if (getState() != ProcessInstanceImpl.STATE_PENDING) {
 				throw new IllegalArgumentException("A process instance can only be started once");
 			}
 			setState(ProcessInstanceImpl.STATE_ACTIVE);
-			internalStart(trigger);
+			internalStart(trigger, triggerData);
 		}
 	}
 
-	protected abstract void internalStart(String trigger);
+	protected abstract void internalStart(String trigger, Object triggerData);
 
 	public void disconnect() {
 		runtime.getProcessInstanceManager().internalRemoveProcessInstance(this);

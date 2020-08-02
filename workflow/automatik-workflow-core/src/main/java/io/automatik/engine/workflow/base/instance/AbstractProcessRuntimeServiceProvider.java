@@ -8,6 +8,7 @@ import io.automatik.engine.api.jobs.JobsService;
 import io.automatik.engine.api.runtime.process.WorkItemManager;
 import io.automatik.engine.api.uow.UnitOfWorkManager;
 import io.automatik.engine.api.workflow.ProcessEventListenerConfig;
+import io.automatik.engine.api.workflow.VariableInitializer;
 import io.automatik.engine.api.workflow.WorkItemHandlerConfig;
 import io.automatik.engine.api.workflow.signal.SignalManager;
 import io.automatik.engine.api.workflow.signal.SignalManagerHub;
@@ -23,11 +24,13 @@ public class AbstractProcessRuntimeServiceProvider implements ProcessRuntimeServ
 	private final WorkItemManager workItemManager;
 	private final ProcessEventSupport eventSupport;
 	private final UnitOfWorkManager unitOfWorkManager;
+	private final VariableInitializer variableInitializer;
 
 	public AbstractProcessRuntimeServiceProvider(JobsService jobsService, WorkItemHandlerConfig workItemHandlerProvider,
 			ProcessEventListenerConfig processEventListenerProvider, SignalManagerHub compositeSignalManager,
-			UnitOfWorkManager unitOfWorkManager) {
+			UnitOfWorkManager unitOfWorkManager, VariableInitializer variableInitializer) {
 		this.unitOfWorkManager = unitOfWorkManager;
+		this.variableInitializer = variableInitializer;
 		processInstanceManager = new DefaultProcessInstanceManager();
 		signalManager = new LightSignalManager(id -> Optional.ofNullable(processInstanceManager.getProcessInstance(id)),
 				compositeSignalManager);
@@ -72,5 +75,10 @@ public class AbstractProcessRuntimeServiceProvider implements ProcessRuntimeServ
 	@Override
 	public UnitOfWorkManager getUnitOfWorkManager() {
 		return unitOfWorkManager;
+	}
+
+	@Override
+	public VariableInitializer getVariableInitializer() {
+		return variableInitializer;
 	}
 }

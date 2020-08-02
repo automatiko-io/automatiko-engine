@@ -46,4 +46,9 @@ public final class UndefinedDataType implements DataType {
 	public String getStringType() {
 		return "java.lang.Object";
 	}
+
+	@Override
+	public Class<?> getClassType() {
+		return Object.class;
+	}
 }

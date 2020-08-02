@@ -38,6 +38,7 @@ import io.automatik.engine.workflow.DefaultProcessEventListenerConfig;
 import io.automatik.engine.workflow.DefaultWorkItemHandlerConfig;
 import io.automatik.engine.workflow.StaticProcessConfig;
 import io.automatik.engine.workflow.base.core.resources.ClassPathResource;
+import io.automatik.engine.workflow.base.instance.context.variable.DefaultVariableInitializer;
 import io.automatik.engine.workflow.bpmn2.BpmnProcess;
 import io.automatik.engine.workflow.bpmn2.BpmnVariables;
 
@@ -132,7 +133,7 @@ public class FileSystemProcessInstancesTest {
 
 		UnitOfWorkManager uowManager = new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory());
 		ProcessConfig config = new StaticProcessConfig(new DefaultWorkItemHandlerConfig(),
-				new DefaultProcessEventListenerConfig(), uowManager, null);
+				new DefaultProcessEventListenerConfig(), uowManager, null, new DefaultVariableInitializer());
 		BpmnProcess process = (BpmnProcess) BpmnProcess.from(config, new ClassPathResource("BPMN2-UserTask.bpmn2"))
 				.get(0);
 		process.setProcessInstancesFactory(new FileSystemProcessInstancesFactory());

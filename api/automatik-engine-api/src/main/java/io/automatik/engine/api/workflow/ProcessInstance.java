@@ -43,7 +43,7 @@ public interface ProcessInstance<T> {
 	 * @param referenceId optional reference id that points to a another component
 	 *                    triggering this instance
 	 */
-	void start(String trigger, String referenceId);
+	void start(String trigger, String referenceId, Object data);
 
 	/**
 	 * Starts process instance from given node
