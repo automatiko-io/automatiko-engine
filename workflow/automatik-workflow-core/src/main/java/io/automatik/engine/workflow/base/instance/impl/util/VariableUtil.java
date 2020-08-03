@@ -52,6 +52,12 @@ public class VariableUtil {
 
 	public static String transformDotNotation(String value, String object) {
 		if (value == null || !value.contains(".")) {
+			if (value.endsWith("[]")) {
+				StringBuilder expression = new StringBuilder(value.substring(0, value.length() - 2) + ".");
+				// considered ass add element to collection
+				expression.append("add").append("(").append(object).append(")");
+				return expression.toString();
+			}
 			return value;
 		}
 

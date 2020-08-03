@@ -44,4 +44,12 @@ public class DotNotationChangeTest {
 		assertEquals("person.getName().add(event)", expression);
 	}
 
+	@Test
+	public void testCollectionItemDotNotation() {
+
+		String dotnotation = "firstName[]";
+
+		String expression = VariableUtil.transformDotNotation(dotnotation, "event");
+		assertEquals("firstName.add(event)", expression);
+	}
 }
