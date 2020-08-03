@@ -78,9 +78,8 @@ public class ProcessInstanceMarshaller {
 	}
 
 	public ProcessInstance<?> unmarshallProcessInstance(byte[] data, Process<?> process) {
-		Model m = (Model) process.createModel();
-		AbstractProcessInstance<?> processInstance = (AbstractProcessInstance<?>) process.createInstance(m);
-		return unmarshallProcessInstance(data, process, processInstance);
+
+		return unmarshallProcessInstance(data, process, null);
 	}
 
 	public ProcessInstance<?> unmarshallProcessInstance(byte[] data, Process<?> process,
@@ -97,6 +96,12 @@ public class ProcessInstanceMarshaller {
 			io.automatik.engine.api.runtime.process.ProcessInstance pi = marshaller.readProcessInstance(context);
 
 			context.close();
+
+			if (processInstance == null) {
+				Model m = (Model) process.createModel();
+				m.fromMap(pi.getVariables());
+				processInstance = (AbstractProcessInstance<?>) process.createInstance(m);
+			}
 
 			processInstance.internalSetProcessInstance(pi);
 
