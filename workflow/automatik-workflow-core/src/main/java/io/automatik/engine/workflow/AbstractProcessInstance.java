@@ -82,6 +82,22 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 				.createProcessInstance(processId, correlationKey, map));
 	}
 
+	/**
+	 * Without providing a ProcessRuntime the ProcessInstance can only be used as
+	 * read-only
+	 * 
+	 * @param process
+	 * @param variables
+	 * @param wpi
+	 */
+	public AbstractProcessInstance(AbstractProcess<T> process, T variables, WorkflowProcessInstance wpi) {
+		this.process = process;
+		this.variables = variables;
+		this.rt = null;
+		syncProcessInstance((WorkflowProcessInstance) wpi);
+		unbind(variables, processInstance.getVariables());
+	}
+
 	public AbstractProcessInstance(AbstractProcess<T> process, T variables, ProcessRuntime rt,
 			WorkflowProcessInstance wpi) {
 		this.process = process;
@@ -93,7 +109,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
 	protected void reconnect() {
 		if (((WorkflowProcessInstanceImpl) processInstance).getProcessRuntime() == null) {
-			((WorkflowProcessInstanceImpl) processInstance).setProcessRuntime(((InternalProcessRuntime) rt));
+			((WorkflowProcessInstanceImpl) processInstance)
+					.setProcessRuntime(((InternalProcessRuntime) getProcessRuntime()));
 		}
 		((WorkflowProcessInstanceImpl) processInstance).reconnect();
 		((WorkflowProcessInstanceImpl) processInstance).setMetaData("KogitoProcessInstance", this);
@@ -180,8 +197,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 			((WorkflowProcessInstanceImpl) processInstance).setReferenceId(referenceId);
 		}
 
-		((InternalProcessRuntime) rt).getProcessInstanceManager().addProcessInstance(this.processInstance,
-				this.correlationKey);
+		((InternalProcessRuntime) getProcessRuntime()).getProcessInstanceManager()
+				.addProcessInstance(this.processInstance, this.correlationKey);
 		this.id = processInstance.getId();
 		// this applies to business keys only as non business keys process instances id
 		// are always unique
@@ -189,8 +206,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 			throw new ProcessInstanceDuplicatedException(correlationKey.getName());
 		}
 		addCompletionEventListener();
-		io.automatik.engine.api.runtime.process.ProcessInstance processInstance = this.rt.startProcessInstance(this.id,
-				trigger, data);
+		io.automatik.engine.api.runtime.process.ProcessInstance processInstance = this.getProcessRuntime()
+				.startProcessInstance(this.id, trigger, data);
 		addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).create(pi.id(), pi));
 		unbind(variables, processInstance.getVariables());
 		if (this.processInstance != null) {
@@ -200,14 +217,14 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected void addToUnitOfWork(Consumer<ProcessInstance<T>> action) {
-		((InternalProcessRuntime) rt).getUnitOfWorkManager().currentUnitOfWork()
+		((InternalProcessRuntime) getProcessRuntime()).getUnitOfWorkManager().currentUnitOfWork()
 				.intercept(new ProcessInstanceWorkUnit(this, action));
 	}
 
 	public void abort() {
 		String pid = processInstance().getId();
 		unbind(variables, processInstance().getVariables());
-		this.rt.abortProcessInstance(pid);
+		this.getProcessRuntime().abortProcessInstance(pid);
 		this.status = processInstance.getState();
 		addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id()));
 	}
@@ -286,8 +303,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 	public void startFrom(String nodeId, String referenceId) {
 		((WorkflowProcessInstanceImpl) processInstance).setStartDate(new Date());
 		((WorkflowProcessInstanceImpl) processInstance).setState(STATE_ACTIVE);
-		((InternalProcessRuntime) rt).getProcessInstanceManager().addProcessInstance(this.processInstance,
-				this.correlationKey);
+		((InternalProcessRuntime) getProcessRuntime()).getProcessInstanceManager()
+				.addProcessInstance(this.processInstance, this.correlationKey);
 		this.id = processInstance.getId();
 		addCompletionEventListener();
 		if (referenceId != null) {
@@ -343,7 +360,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 			this.processInstance = reloadSupplier.get();
 			if (this.processInstance == null) {
 				throw new ProcessInstanceNotFoundException(id);
-			} else {
+			} else if (getProcessRuntime() != null) {
 				reconnect();
 			}
 		}
@@ -386,19 +403,19 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
 	@Override
 	public void completeWorkItem(String id, Map<String, Object> variables, Policy<?>... policies) {
-		this.rt.getWorkItemManager().completeWorkItem(id, variables, policies);
+		this.getProcessRuntime().getWorkItemManager().completeWorkItem(id, variables, policies);
 		removeOnFinish();
 	}
 
 	@Override
 	public void abortWorkItem(String id, Policy<?>... policies) {
-		this.rt.getWorkItemManager().abortWorkItem(id, policies);
+		this.getProcessRuntime().getWorkItemManager().abortWorkItem(id, policies);
 		removeOnFinish();
 	}
 
 	@Override
 	public void transitionWorkItem(String id, Transition<?> transition) {
-		this.rt.getWorkItemManager().transitionWorkItem(id, transition);
+		this.getProcessRuntime().getWorkItemManager().transitionWorkItem(id, transition);
 		removeOnFinish();
 	}
 
@@ -455,6 +472,9 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 	}
 
 	protected void unbind(T variables, Map<String, Object> vmap) {
+		if (vmap == null) {
+			return;
+		}
 		try {
 			for (Field f : variables.getClass().getDeclaredFields()) {
 				f.setAccessible(true);
@@ -496,6 +516,14 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 		} else if (!status.equals(other.status))
 			return false;
 		return true;
+	}
+
+	private ProcessRuntime getProcessRuntime() {
+		if (rt == null) {
+			throw new UnsupportedOperationException("Process instance is not connected to a Process Runtime");
+		} else {
+			return rt;
+		}
 	}
 
 	protected ProcessError buildProcessError() {

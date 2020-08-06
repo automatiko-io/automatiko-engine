@@ -17,6 +17,7 @@ import io.automatik.engine.api.workflow.MutableProcessInstances;
 import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessConfig;
 import io.automatik.engine.api.workflow.ProcessInstance;
+import io.automatik.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatik.engine.api.workflow.ProcessInstances;
 import io.automatik.engine.api.workflow.ProcessInstancesFactory;
 import io.automatik.engine.api.workflow.Signal;
@@ -73,7 +74,9 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
 		return createInstance(businessKey, m);
 	}
 
-	public abstract ProcessInstance<? extends Model> createInstance(WorkflowProcessInstance wpi);
+	public abstract ProcessInstance<T> createInstance(WorkflowProcessInstance wpi);
+
+	public abstract ProcessInstance<T> createReadOnlyInstance(WorkflowProcessInstance wpi);
 
 	@Override
 	public ProcessInstances<T> instances() {
@@ -82,7 +85,7 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
 
 	@Override
 	public <S> void send(Signal<S> signal) {
-		instances().values().forEach(pi -> pi.send(signal));
+		instances().values(ProcessInstanceReadMode.MUTABLE).forEach(pi -> pi.send(signal));
 	}
 
 	public Process<T> configure() {

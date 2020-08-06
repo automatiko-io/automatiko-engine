@@ -58,6 +58,8 @@ import io.automatik.engine.workflow.compiler.canonical.TriggerMetaData;
 public class ProcessGenerator {
 
 	private static final String BUSINESS_KEY = "businessKey";
+	private static final String CREATE_MODEL = "createModel";
+	private static final String WPI = "wpi";
 
 	private final String packageName;
 	private final WorkflowProcess process;
@@ -170,18 +172,39 @@ public class ProcessGenerator {
 
 		VariableDeclarationExpr modelField = new VariableDeclarationExpr(
 				new VariableDeclarator().setType(new ClassOrInterfaceType(null, modelTypeName)).setName("model")
-						.setInitializer(new MethodCallExpr(new ThisExpr(), "createModel")));
+						.setInitializer(new MethodCallExpr(new ThisExpr(), CREATE_MODEL)));
 
-		MethodCallExpr getVariablesMethod = new MethodCallExpr(new NameExpr("wpi"), "getVariables");
+		MethodCallExpr getVariablesMethod = new MethodCallExpr(new NameExpr(WPI), "getVariables");
 		MethodCallExpr fillVariablesMethod = new MethodCallExpr(new NameExpr("model"), "fromMap")
 				.addArgument(getVariablesMethod);
 
 		ReturnStmt returnStmt = new ReturnStmt(new ObjectCreationExpr().setType(processInstanceFQCN).setArguments(
-				NodeList.nodeList(new ThisExpr(), new NameExpr("model"), createProcessRuntime(), new NameExpr("wpi"))));
+				NodeList.nodeList(new ThisExpr(), new NameExpr("model"), createProcessRuntime(), new NameExpr(WPI))));
 		MethodDeclaration methodDeclaration = new MethodDeclaration();
 
 		methodDeclaration.setName("createInstance").addModifier(Modifier.Keyword.PUBLIC)
 				.addParameter(WorkflowProcessInstance.class.getCanonicalName(), "wpi").setType(processInstanceFQCN)
+				.setBody(new BlockStmt().addStatement(modelField).addStatement(fillVariablesMethod)
+						.addStatement(returnStmt));
+		return methodDeclaration;
+	}
+
+	private MethodDeclaration createReadOnlyInstanceGenericWithWorkflowInstanceMethod(String processInstanceFQCN) {
+		VariableDeclarationExpr modelField = new VariableDeclarationExpr(
+				new VariableDeclarator().setType(new ClassOrInterfaceType(null, modelTypeName)).setName("model")
+						.setInitializer(new MethodCallExpr(new ThisExpr(), CREATE_MODEL)));
+
+		MethodCallExpr getVariablesMethod = new MethodCallExpr(new NameExpr(WPI), "getVariables");
+		MethodCallExpr fillVariablesMethod = new MethodCallExpr(new NameExpr("model"), "fromMap")
+				.addArgument(getVariablesMethod);
+
+		ReturnStmt returnStmt = new ReturnStmt(new ObjectCreationExpr().setType(processInstanceFQCN)
+				.setArguments(NodeList.nodeList(new ThisExpr(), new NameExpr("model"), new NameExpr(WPI))));
+
+		MethodDeclaration methodDeclaration = new MethodDeclaration();
+
+		methodDeclaration.setName("createReadOnlyInstance").addModifier(Modifier.Keyword.PUBLIC)
+				.addParameter(WorkflowProcessInstance.class.getCanonicalName(), WPI).setType(processInstanceFQCN)
 				.setBody(new BlockStmt().addStatement(modelField).addStatement(fillVariablesMethod)
 						.addStatement(returnStmt));
 		return methodDeclaration;
@@ -365,6 +388,7 @@ public class ProcessGenerator {
 				.addMember(createInstanceGenericMethod(processInstanceFQCN))
 				.addMember(createInstanceGenericWithBusinessKeyMethod(processInstanceFQCN))
 				.addMember(createInstanceGenericWithWorkflowInstanceMethod(processInstanceFQCN))
+				.addMember(createReadOnlyInstanceGenericWithWorkflowInstanceMethod(processInstanceFQCN))
 				.addMember(internalConfigure(processMetaData)).addMember(internalRegisterListeners(processMetaData))
 				.addMember(process(processMetaData));
 

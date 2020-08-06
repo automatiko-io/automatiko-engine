@@ -8,18 +8,23 @@ import java.util.concurrent.ConcurrentHashMap;
 import io.automatik.engine.api.workflow.MutableProcessInstances;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.api.workflow.ProcessInstanceDuplicatedException;
+import io.automatik.engine.api.workflow.ProcessInstanceReadMode;
 
 class MapProcessInstances<T> implements MutableProcessInstances<T> {
 
 	private final ConcurrentHashMap<String, ProcessInstance<T>> instances = new ConcurrentHashMap<>();
 
+	public Integer size() {
+		return instances.size();
+	}
+
 	@Override
-	public Optional<? extends ProcessInstance<T>> findById(String id) {
+	public Optional<ProcessInstance<T>> findById(String id, ProcessInstanceReadMode mode) {
 		return Optional.ofNullable(instances.get(resolveId(id)));
 	}
 
 	@Override
-	public Collection<? extends ProcessInstance<T>> values() {
+	public Collection<ProcessInstance<T>> values(ProcessInstanceReadMode mode) {
 		return instances.values();
 	}
 

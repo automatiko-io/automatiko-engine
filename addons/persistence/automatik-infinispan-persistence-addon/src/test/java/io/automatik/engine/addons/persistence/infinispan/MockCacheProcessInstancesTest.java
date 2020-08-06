@@ -5,7 +5,9 @@ import static io.automatik.engine.api.runtime.process.ProcessInstance.STATE_ACTI
 import static io.automatik.engine.api.runtime.process.ProcessInstance.STATE_COMPLETED;
 import static io.automatik.engine.api.runtime.process.ProcessInstance.STATE_ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -31,6 +33,8 @@ import io.automatik.engine.api.runtime.process.ProcessContext;
 import io.automatik.engine.api.workflow.ProcessError;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.api.workflow.ProcessInstanceNotFoundException;
+import io.automatik.engine.api.workflow.ProcessInstanceReadMode;
+import io.automatik.engine.api.workflow.ProcessInstances;
 import io.automatik.engine.api.workflow.WorkItem;
 import io.automatik.engine.services.identity.StaticIdentityProvider;
 import io.automatik.engine.services.io.ClassPathResource;
@@ -85,6 +89,63 @@ public class MockCacheProcessInstancesTest {
 				return mockCache.get(key);
 			}
 		});
+		when(cache.remove(any())).then(invocation -> {
+			Object key = invocation.getArgument(0, Object.class);
+			return mockCache.remove(key);
+		});
+		when(cache.size()).then(invocation -> mockCache.size());
+	}
+
+	@Test
+	void testFindByIdReadMode() {
+		BpmnProcess process = BpmnProcess.from(new ClassPathResource("BPMN2-UserTask-Script.bpmn2")).get(0);
+		// workaround as BpmnProcess does not compile the scripts but just reads the xml
+		for (Node node : ((WorkflowProcess) process.process()).getNodes()) {
+			if (node instanceof ActionNode) {
+				ProcessAction a = ((ActionNode) node).getAction();
+				a.removeMetaData("Action");
+				a.setMetaData("Action", new Action() {
+
+					@Override
+					public void execute(ProcessContext kcontext) throws Exception {
+						System.out.println(
+								"The variable value is " + kcontext.getVariable("s") + " about to call toString on it");
+						kcontext.getVariable("s").toString();
+					}
+				});
+			}
+		}
+		process.setProcessInstancesFactory(new CacheProcessInstancesFactory(cacheManager));
+		process.configure();
+
+		ProcessInstance<BpmnVariables> mutablePi = process
+				.createInstance(BpmnVariables.create(Collections.singletonMap("var", "value")));
+
+		mutablePi.start();
+		assertThat(mutablePi.status()).isEqualTo(STATE_ERROR);
+		assertThat(mutablePi.error()).hasValueSatisfying(error -> {
+			assertThat(error.errorMessage()).endsWith("java.lang.NullPointerException - null");
+			assertThat(error.failedNodeId()).isEqualTo("ScriptTask_1");
+		});
+		assertThat(mutablePi.variables().toMap()).containsExactly(entry("var", "value"));
+
+		ProcessInstances<BpmnVariables> instances = process.instances();
+		assertThat(instances.size()).isOne();
+		ProcessInstance<BpmnVariables> pi = instances.findById(mutablePi.id(), ProcessInstanceReadMode.READ_ONLY).get();
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> pi.abort());
+
+		ProcessInstance<BpmnVariables> readOnlyPi = instances
+				.findById(mutablePi.id(), ProcessInstanceReadMode.READ_ONLY).get();
+		assertThat(readOnlyPi.status()).isEqualTo(STATE_ERROR);
+		assertThat(readOnlyPi.error()).hasValueSatisfying(error -> {
+			assertThat(error.errorMessage()).endsWith("java.lang.NullPointerException - null");
+			assertThat(error.failedNodeId()).isEqualTo("ScriptTask_1");
+		});
+		assertThat(readOnlyPi.variables().toMap()).containsExactly(entry("var", "value"));
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> readOnlyPi.abort());
+
+		instances.findById(mutablePi.id()).get().abort();
+		assertThat(instances.size()).isZero();
 	}
 
 	@Test

@@ -1,6 +1,8 @@
 
 package io.automatik.engine.addons.persistence.filesystem;
 
+import static io.automatik.engine.api.workflow.ProcessInstanceReadMode.MUTABLE;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -11,6 +13,7 @@ import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +22,7 @@ import io.automatik.engine.api.workflow.MutableProcessInstances;
 import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.api.workflow.ProcessInstanceDuplicatedException;
+import io.automatik.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatik.engine.workflow.AbstractProcessInstance;
 import io.automatik.engine.workflow.marshalling.ProcessInstanceMarshaller;
 
@@ -50,23 +54,35 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 		}
 	}
 
+	public Integer size() {
+		try (Stream<Path> stream = Files.walk(storage)) {
+			Long count = stream.filter(file -> !Files.isDirectory(file)).count();
+			return count.intValue();
+		} catch (IOException e) {
+			throw new RuntimeException("Unable to count process instances ", e);
+		}
+	}
+
 	@Override
-	public Optional findById(String id) {
+	public Optional findById(String id, ProcessInstanceReadMode mode) {
 		String resolvedId = resolveId(id);
 		Path processInstanceStorage = Paths.get(storage.toString(), resolvedId);
 
 		if (Files.notExists(processInstanceStorage)) {
 			return Optional.empty();
 		}
-		return Optional.of(marshaller.unmarshallProcessInstance(readBytesFromFile(processInstanceStorage), process));
+		byte[] data = readBytesFromFile(processInstanceStorage);
+		return Optional.of(mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process)
+				: marshaller.unmarshallReadOnlyProcessInstance(data, process));
 
 	}
 
 	@Override
-	public Collection values() {
-		try {
-			return Files.walk(storage).filter(file -> !Files.isDirectory(file))
-					.map(f -> marshaller.unmarshallProcessInstance(readBytesFromFile(f), process))
+	public Collection values(ProcessInstanceReadMode mode) {
+		try (Stream<Path> stream = Files.walk(storage)) {
+			return stream.filter(file -> !Files.isDirectory(file)).map(this::readBytesFromFile)
+					.map(b -> mode == MUTABLE ? marshaller.unmarshallProcessInstance(b, process)
+							: marshaller.unmarshallReadOnlyProcessInstance(b, process))
 					.collect(Collectors.toList());
 		} catch (IOException e) {
 			throw new RuntimeException("Unable to read process instances ", e);

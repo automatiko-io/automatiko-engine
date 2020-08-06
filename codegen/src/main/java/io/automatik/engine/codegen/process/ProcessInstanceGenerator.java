@@ -24,6 +24,8 @@ public class ProcessInstanceGenerator {
 	private static final String PROCESS = "process";
 	private static final String VALUE = "value";
 	private static final String PROCESS_RUNTIME = "processRuntime";
+	private static final String BUSINESS_KEY = "businessKey";
+	private static final String WPI = "wpi";
 
 	private final String packageName;
 	private final String typeName;
@@ -66,7 +68,8 @@ public class ProcessInstanceGenerator {
 				.addExtendedType(new ClassOrInterfaceType(null, AbstractProcessInstance.class.getCanonicalName())
 						.setTypeArguments(new ClassOrInterfaceType(null, model.getModelClassSimpleName())))
 				.addMember(constructorDecl()).addMember(constructorWithBusinessKeyDecl())
-				.addMember(constructorWithWorkflowInstanceDecl()).addMember(bind()).addMember(unbind());
+				.addMember(constructorWithWorkflowInstanceAndRuntimeDecl()).addMember(constructorWorkflowInstanceDecl())
+				.addMember(bind()).addMember(unbind());
 		classDecl.getMembers().sort(new BodyDeclarationComparator());
 		return classDecl;
 	}
@@ -107,20 +110,29 @@ public class ProcessInstanceGenerator {
 		return new ConstructorDeclaration().setName(targetTypeName).addModifier(Modifier.Keyword.PUBLIC)
 				.addParameter(ProcessGenerator.processType(canonicalName), PROCESS)
 				.addParameter(model.getModelClassSimpleName(), VALUE)
-				.addParameter(String.class.getCanonicalName(), "businessKey")
+				.addParameter(String.class.getCanonicalName(), BUSINESS_KEY)
 				.addParameter(ProcessRuntime.class.getCanonicalName(), PROCESS_RUNTIME)
 				.setBody(new BlockStmt().addStatement(new MethodCallExpr("super", new NameExpr(PROCESS),
-						new NameExpr(VALUE), new NameExpr("businessKey"), new NameExpr(PROCESS_RUNTIME))));
+						new NameExpr(VALUE), new NameExpr(BUSINESS_KEY), new NameExpr(PROCESS_RUNTIME))));
 	}
 
-	private ConstructorDeclaration constructorWithWorkflowInstanceDecl() {
+	private ConstructorDeclaration constructorWithWorkflowInstanceAndRuntimeDecl() {
 		return new ConstructorDeclaration().setName(targetTypeName).addModifier(Modifier.Keyword.PUBLIC)
 				.addParameter(ProcessGenerator.processType(canonicalName), PROCESS)
 				.addParameter(model.getModelClassSimpleName(), VALUE)
 				.addParameter(ProcessRuntime.class.getCanonicalName(), PROCESS_RUNTIME)
-				.addParameter(WorkflowProcessInstance.class.getCanonicalName(), "wpi")
+				.addParameter(WorkflowProcessInstance.class.getCanonicalName(), WPI)
 				.setBody(new BlockStmt().addStatement(new MethodCallExpr("super", new NameExpr(PROCESS),
-						new NameExpr(VALUE), new NameExpr(PROCESS_RUNTIME), new NameExpr("wpi"))));
+						new NameExpr(VALUE), new NameExpr(PROCESS_RUNTIME), new NameExpr(WPI))));
+	}
+
+	private ConstructorDeclaration constructorWorkflowInstanceDecl() {
+		return new ConstructorDeclaration().setName(targetTypeName).addModifier(Modifier.Keyword.PUBLIC)
+				.addParameter(ProcessGenerator.processType(canonicalName), PROCESS)
+				.addParameter(model.getModelClassSimpleName(), VALUE)
+				.addParameter(WorkflowProcessInstance.class.getCanonicalName(), WPI)
+				.setBody(new BlockStmt().addStatement(
+						new MethodCallExpr("super", new NameExpr(PROCESS), new NameExpr(VALUE), new NameExpr(WPI))));
 	}
 
 	public String targetTypeName() {

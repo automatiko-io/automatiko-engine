@@ -56,10 +56,17 @@ public class BpmnProcess extends AbstractProcess<BpmnVariables> {
 	}
 
 	@Override
-	public ProcessInstance<? extends Model> createInstance(WorkflowProcessInstance wpi) {
+	public ProcessInstance<BpmnVariables> createInstance(WorkflowProcessInstance wpi) {
 		BpmnVariables variablesModel = createModel();
 		variablesModel.fromMap(wpi.getVariables());
 		return new BpmnProcessInstance(this, variablesModel, this.createProcessRuntime(), wpi);
+	}
+
+	@Override
+	public ProcessInstance<BpmnVariables> createReadOnlyInstance(WorkflowProcessInstance wpi) {
+		BpmnVariables variablesModel = createModel();
+		variablesModel.fromMap(wpi.getVariables());
+		return new BpmnProcessInstance(this, variablesModel, wpi);
 	}
 
 	@Override
