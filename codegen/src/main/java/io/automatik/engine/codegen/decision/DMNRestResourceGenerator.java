@@ -31,7 +31,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.automatik.engine.codegen.BodyDeclarationComparator;
 import io.automatik.engine.codegen.CodegenUtils;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
-import io.automatik.engine.workflow.util.StringUtils;
+import io.automatik.engine.services.utils.StringUtils;
 
 public class DMNRestResourceGenerator {
 

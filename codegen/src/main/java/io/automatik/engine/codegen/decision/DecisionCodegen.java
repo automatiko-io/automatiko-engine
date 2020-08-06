@@ -2,9 +2,8 @@
 package io.automatik.engine.codegen.decision;
 
 import static io.automatik.engine.codegen.ApplicationGenerator.log;
-import static io.automatik.engine.codegen.ApplicationGenerator.logger;
+import static io.automatik.engine.services.utils.IoUtils.readBytesFromInputStream;
 import static java.util.stream.Collectors.toList;
-import static org.drools.core.util.IoUtils.readBytesFromInputStream;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,24 +15,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.drools.core.io.impl.ByteArrayResource;
-import org.drools.core.io.impl.FileSystemResource;
-import org.drools.core.io.internal.InternalResource;
-import org.kie.api.io.Resource;
-import org.kie.api.io.ResourceType;
-import org.kie.dmn.api.core.DMNModel;
 import org.kie.dmn.api.core.DMNRuntime;
-import org.kie.dmn.core.internal.utils.DMNRuntimeBuilder;
-import org.kie.dmn.typesafe.DMNAllTypesIndex;
-import org.kie.dmn.typesafe.DMNTypeSafePackageName;
-import org.kie.dmn.typesafe.DMNTypeSafeTypeGenerator;
 
+import io.automatik.engine.api.io.Resource;
 import io.automatik.engine.codegen.AbstractGenerator;
 import io.automatik.engine.codegen.ApplicationGenerator;
 import io.automatik.engine.codegen.ApplicationSection;
@@ -41,6 +30,10 @@ import io.automatik.engine.codegen.ConfigGenerator;
 import io.automatik.engine.codegen.GeneratedFile;
 import io.automatik.engine.codegen.decision.config.DecisionConfigGenerator;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
+import io.automatik.engine.decision.dmn.DmnRuntimeProvider;
+import io.automatik.engine.services.io.ByteArrayResource;
+import io.automatik.engine.services.io.FileSystemResource;
+import io.automatik.engine.services.io.InternalResource;
 
 public class DecisionCodegen extends AbstractGenerator {
 
@@ -53,8 +46,8 @@ public class DecisionCodegen extends AbstractGenerator {
 				Enumeration<? extends ZipEntry> entries = zipFile.entries();
 				while (entries.hasMoreElements()) {
 					ZipEntry entry = entries.nextElement();
-					ResourceType resourceType = ResourceType.determineResourceType(entry.getName());
-					if (resourceType == ResourceType.DMN) {
+
+					if (entry.getName().endsWith(".dmn")) {
 						InternalResource resource = new ByteArrayResource(
 								readBytesFromInputStream(zipFile.getInputStream(entry)));
 						resource.setSourcePath(entry.getName());
@@ -95,13 +88,9 @@ public class DecisionCodegen extends AbstractGenerator {
 	}
 
 	private static List<DMNResource> parseDecisions(Path path, List<Resource> resources) throws IOException {
-		DMNRuntime dmnRuntime = DMNRuntimeBuilder.fromDefaults().setRootClassLoader(null).buildConfiguration()
-				.fromResources(resources).getOrElseThrow(e -> new RuntimeException("Error compiling DMN model(s)", e));
+		DMNRuntime dmnRuntime = DmnRuntimeProvider.from(resources);
 		return dmnRuntime.getModels().stream().map(model -> new DMNResource(model, path)).collect(toList());
 	}
-
-	private static final String operationalDashboardDmnTemplate = "/grafana-dashboard-template/operational-dashboard-template.json";
-	private static final String domainDashboardDmnTemplate = "/grafana-dashboard-template/blank-dashboard.json";
 
 	private String packageName;
 	private String applicationCanonicalName;
@@ -139,43 +128,7 @@ public class DecisionCodegen extends AbstractGenerator {
 			return Collections.emptyList();
 		}
 
-		List<DMNRestResourceGenerator> rgs = new ArrayList<>(); // REST resources
-
-		for (DMNResource resource : resources) {
-			DMNModel model = resource.getDmnModel();
-			if (model.getName() == null || model.getName().isEmpty()) {
-				throw new RuntimeException("Model name should not be empty");
-			}
-
-			generateStronglyTypedInput(model);
-
-			DMNRestResourceGenerator resourceGenerator = new DMNRestResourceGenerator(model, applicationCanonicalName)
-					.withDependencyInjection(annotator).withMonitoring(useMonitoring).withStronglyTyped(true);
-			rgs.add(resourceGenerator);
-		}
-
-		for (DMNRestResourceGenerator resourceGenerator : rgs) {
-
-			storeFile(GeneratedFile.Type.REST, resourceGenerator.generatedFilePath(), resourceGenerator.generate());
-		}
-
 		return generatedFiles;
-	}
-
-	private void generateStronglyTypedInput(DMNModel model) {
-		try {
-			DMNTypeSafePackageName.Factory factory = m -> new DMNTypeSafePackageName("", m.getNamespace(), "");
-			DMNAllTypesIndex index = new DMNAllTypesIndex(factory, model);
-
-			Map<String, String> allTypesSourceCode = new DMNTypeSafeTypeGenerator(model, index, factory)
-					.withJacksonAnnotation().processTypes().generateSourceCodeOfAllTypes();
-
-			allTypesSourceCode.forEach((k, v) -> storeFile(GeneratedFile.Type.CLASS, k.replace(".", "/") + ".java", v));
-
-		} catch (Exception e) {
-			logger.error("Unable to generate Strongly Typed Input for: {} {}", model.getNamespace(), model.getName());
-			throw e;
-		}
 	}
 
 	@Override
@@ -200,11 +153,6 @@ public class DecisionCodegen extends AbstractGenerator {
 
 	public DecisionCodegen withMonitoring(boolean useMonitoring) {
 		this.useMonitoring = useMonitoring;
-		return this;
-	}
-
-	public DecisionCodegen withTracing(boolean useTracing) {
-		this.moduleGenerator.withTracing(useTracing);
 		return this;
 	}
 }

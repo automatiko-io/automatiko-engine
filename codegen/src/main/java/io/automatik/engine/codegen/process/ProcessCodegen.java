@@ -3,7 +3,7 @@ package io.automatik.engine.codegen.process;
 
 import static io.automatik.engine.api.io.ResourceType.determineResourceType;
 import static io.automatik.engine.codegen.ApplicationGenerator.log;
-import static org.drools.core.util.IoUtils.readBytesFromInputStream;
+import static io.automatik.engine.services.utils.IoUtils.readBytesFromInputStream;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,9 +47,10 @@ import io.automatik.engine.codegen.GeneratedFile.Type;
 import io.automatik.engine.codegen.ResourceGeneratorFactory;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatik.engine.codegen.process.config.ProcessConfigGenerator;
-import io.automatik.engine.workflow.base.core.resources.ByteArrayResource;
-import io.automatik.engine.workflow.base.core.resources.FileSystemResource;
-import io.automatik.engine.workflow.base.core.resources.InternalResource;
+import io.automatik.engine.services.io.ByteArrayResource;
+import io.automatik.engine.services.io.FileSystemResource;
+import io.automatik.engine.services.io.InternalResource;
+import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.bpmn2.xml.BPMNDISemanticModule;
 import io.automatik.engine.workflow.bpmn2.xml.BPMNExtensionsSemanticModule;
 import io.automatik.engine.workflow.bpmn2.xml.BPMNSemanticModule;
@@ -61,7 +62,6 @@ import io.automatik.engine.workflow.compiler.canonical.UserTaskModelMetaData;
 import io.automatik.engine.workflow.compiler.xml.SemanticModules;
 import io.automatik.engine.workflow.compiler.xml.XmlProcessReader;
 import io.automatik.engine.workflow.serverless.parser.ServerlessWorkflowParser;
-import io.automatik.engine.workflow.util.StringUtils;
 
 /**
  * Entry point to process code generation

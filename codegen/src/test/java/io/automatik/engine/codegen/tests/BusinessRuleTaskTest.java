@@ -6,9 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.automatik.engine.api.Application;
@@ -16,10 +14,7 @@ import io.automatik.engine.api.Model;
 import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.codegen.AbstractCodegenTest;
-import io.automatik.engine.codegen.data.Account;
-import io.automatik.engine.codegen.data.Person;
 
-@Disabled
 public class BusinessRuleTaskTest extends AbstractCodegenTest {
 
 	@Test
@@ -81,31 +76,5 @@ public class BusinessRuleTaskTest extends AbstractCodegenTest {
 
 			assertThat(result.toMap().get("vacationDays")).isNotNull().isEqualTo(BigDecimal.valueOf(30));
 		}
-	}
-
-	@Test
-	public void testBusinessRuleTaskWithIOExpression() throws Exception {
-
-		Application app = generateCode(Collections.singletonList("ruletask/BusinessRuleTaskWithIOExpression.bpmn2"),
-				Collections.singletonList("ruletask/BusinessRuleTask.drl"));
-		assertThat(app).isNotNull();
-
-		Process<? extends Model> p = app.processes().processById("BusinessRuleTask");
-
-		Model m = p.createModel();
-		Map<String, Object> params = new HashMap<>();
-		params.put("person", new Person("john", 25));
-		params.put("account", new Account());
-		m.fromMap(params);
-
-		ProcessInstance<?> processInstance = p.createInstance(m);
-		processInstance.start();
-
-		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
-		Model result = (Model) processInstance.variables();
-		assertThat(result.toMap()).hasSize(2).containsKeys("person", "account");
-		assertThat(result.toMap().get("person")).isNotNull().hasFieldOrPropertyWithValue("adult", true);
-		assertThat(result.toMap().get("account")).isNotNull();
-		assertThat(((Account) result.toMap().get("account")).getPerson()).isNotNull();
 	}
 }

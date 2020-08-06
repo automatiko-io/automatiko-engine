@@ -5,7 +5,7 @@ import java.util.Set;
 
 import io.automatik.engine.api.marshalling.ObjectMarshallingStrategy;
 import io.automatik.engine.api.marshalling.ObjectMarshallingStrategyStore;
-import io.automatik.engine.workflow.util.StringUtils;
+import io.automatik.engine.services.utils.StringUtils;
 
 public class ObjectMarshallingStrategyStoreImpl implements ObjectMarshallingStrategyStore {
 

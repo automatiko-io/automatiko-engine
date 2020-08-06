@@ -20,7 +20,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.UnknownType;
 
 import io.automatik.engine.api.definition.process.Node;
-import io.automatik.engine.workflow.util.StringUtils;
+import io.automatik.engine.services.utils.StringUtils;
 
 public class TriggerMetaData {
 

@@ -33,13 +33,13 @@ import com.github.javaparser.ast.type.UnknownType;
 
 import io.automatik.engine.api.definition.process.Connection;
 import io.automatik.engine.api.definition.process.Node;
+import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.base.core.context.variable.Mappable;
 import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.process.core.impl.ConnectionImpl;
 import io.automatik.engine.workflow.process.core.node.HumanTaskNode;
 import io.automatik.engine.workflow.process.core.node.StartNode;
-import io.automatik.engine.workflow.util.StringUtils;
 
 public abstract class AbstractNodeVisitor<T extends Node> extends AbstractVisitor {
 

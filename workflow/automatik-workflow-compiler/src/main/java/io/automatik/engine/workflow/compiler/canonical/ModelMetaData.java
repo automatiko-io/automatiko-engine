@@ -42,8 +42,8 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.automatik.engine.api.codegen.Generated;
 import io.automatik.engine.api.codegen.VariableInfo;
 import io.automatik.engine.api.definition.process.WorkflowProcess;
+import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.base.core.context.variable.Variable;
-import io.automatik.engine.workflow.util.StringUtils;
 
 public class ModelMetaData {
 

@@ -53,7 +53,7 @@ import io.automatik.engine.codegen.di.CDIDependencyInjectionAnnotator;
 import io.automatik.engine.codegen.process.ProcessCodegen;
 import io.automatik.engine.codegen.process.persistence.PersistenceGenerator;
 import io.automatik.engine.quarkus.AutomatikBuildTimeConfig;
-import io.automatik.engine.workflow.util.IoUtils;
+import io.automatik.engine.services.utils.IoUtils;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
 import io.quarkus.bootstrap.BootstrapDependencyProcessingException;
 import io.quarkus.bootstrap.model.AppDependency;
@@ -370,7 +370,7 @@ public class AutomatikQuarkusProcessor {
 						.withMonitoring(config.metrics().enabled()).withGeneratorContext(context);
 
 		addProcessGenerator(appPaths, usePersistence, appGen);
-		// addDecisionGenerator(appPaths, appGen, useMonitoring);
+		addDecisionGenerator(appPaths, appGen, false);
 
 		return appGen;
 	}

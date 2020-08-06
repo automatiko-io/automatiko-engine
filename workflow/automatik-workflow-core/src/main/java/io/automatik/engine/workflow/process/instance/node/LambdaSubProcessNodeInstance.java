@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import io.automatik.engine.api.definition.process.Node;
 import io.automatik.engine.api.runtime.process.EventListener;
 import io.automatik.engine.api.runtime.process.NodeInstance;
+import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.AbstractProcessInstance;
 import io.automatik.engine.workflow.base.core.Context;
 import io.automatik.engine.workflow.base.core.ContextContainer;
@@ -32,7 +33,6 @@ import io.automatik.engine.workflow.process.core.node.DataAssociation;
 import io.automatik.engine.workflow.process.core.node.SubProcessFactory;
 import io.automatik.engine.workflow.process.core.node.SubProcessNode;
 import io.automatik.engine.workflow.process.instance.impl.NodeInstanceResolverFactory;
-import io.automatik.engine.workflow.util.StringUtils;
 
 /**
  * Runtime counterpart of a SubFlow node.

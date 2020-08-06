@@ -3,9 +3,9 @@ package io.automatik.engine.codegen.process;
 
 import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.codegen.GeneratorContext;
+import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.compiler.canonical.ModelMetaData;
 import io.automatik.engine.workflow.compiler.canonical.ProcessToExecModelGenerator;
-import io.automatik.engine.workflow.util.StringUtils;
 
 public class ModelClassGenerator {
 

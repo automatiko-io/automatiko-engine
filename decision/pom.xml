@@ -13,6 +13,7 @@
   <description>Decision support for Automatik Platform Engine</description>
   <modules>
     <module>automatik-decision-dmn</module>
+    <module>automatik-decision-dmn-adapter</module>
   </modules>
 
   <dependencyManagement>

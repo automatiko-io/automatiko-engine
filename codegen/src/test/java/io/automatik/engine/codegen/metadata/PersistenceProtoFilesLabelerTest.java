@@ -13,9 +13,10 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
-import org.drools.core.util.IoUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import io.automatik.engine.services.utils.IoUtils;
 
 public class PersistenceProtoFilesLabelerTest {
 

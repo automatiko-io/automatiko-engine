@@ -56,6 +56,10 @@
       <groupId>io.automatik.platform.workflow</groupId>
       <artifactId>automatik-workflow-core</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.automatik.platform.decision</groupId>
+      <artifactId>automatik-decision-dmn</artifactId>
+    </dependency>
 
     <!-- metrics -->
     <dependency>

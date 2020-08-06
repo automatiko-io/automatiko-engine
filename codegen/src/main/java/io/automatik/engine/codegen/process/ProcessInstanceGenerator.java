@@ -1,10 +1,6 @@
 
 package io.automatik.engine.codegen.process;
 
-import java.nio.charset.StandardCharsets;
-
-import org.drools.compiler.compiler.io.memory.MemoryFileSystem;
-
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -50,10 +46,6 @@ public class ProcessInstanceGenerator {
 		this.targetCanonicalName = packageName + "." + targetTypeName;
 		this.generatedFilePath = targetCanonicalName.replace('.', '/') + ".java";
 		this.completePath = "src/main/java/" + generatedFilePath;
-	}
-
-	public void write(MemoryFileSystem srcMfs) {
-		srcMfs.write(completePath, generate().getBytes(StandardCharsets.UTF_8));
 	}
 
 	public String generate() {

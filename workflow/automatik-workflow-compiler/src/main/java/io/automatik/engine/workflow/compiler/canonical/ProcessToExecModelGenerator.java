@@ -15,11 +15,11 @@ import com.github.javaparser.ast.nodeTypes.NodeWithName;
 
 import io.automatik.engine.api.definition.process.Node;
 import io.automatik.engine.api.definition.process.WorkflowProcess;
+import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.base.core.ContextContainer;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.process.core.impl.WorkflowProcessImpl;
 import io.automatik.engine.workflow.process.core.node.HumanTaskNode;
-import io.automatik.engine.workflow.util.StringUtils;
 
 public class ProcessToExecModelGenerator {
 

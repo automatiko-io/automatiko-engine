@@ -22,7 +22,7 @@ import io.automatik.engine.api.auth.SecurityPolicy;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.api.workflow.WorkItem;
 import io.automatik.engine.services.identity.StaticIdentityProvider;
-import io.automatik.engine.workflow.base.core.resources.ClassPathResource;
+import io.automatik.engine.services.io.ClassPathResource;
 import io.automatik.engine.workflow.bpmn2.BpmnProcess;
 import io.automatik.engine.workflow.bpmn2.BpmnVariables;
 

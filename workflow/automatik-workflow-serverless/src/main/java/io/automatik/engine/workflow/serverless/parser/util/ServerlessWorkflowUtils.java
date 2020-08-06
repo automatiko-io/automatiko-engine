@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.serverless.api.Workflow;
 import io.automatik.engine.workflow.serverless.api.branches.Branch;
 import io.automatik.engine.workflow.serverless.api.events.EventDefinition;
@@ -25,7 +26,6 @@ import io.automatik.engine.workflow.serverless.api.states.ParallelState;
 import io.automatik.engine.workflow.serverless.api.states.SubflowState;
 import io.automatik.engine.workflow.serverless.api.switchconditions.DataCondition;
 import io.automatik.engine.workflow.serverless.parser.core.ServerlessWorkflowFactory;
-import io.automatik.engine.workflow.util.StringUtils;
 
 public class ServerlessWorkflowUtils {
 

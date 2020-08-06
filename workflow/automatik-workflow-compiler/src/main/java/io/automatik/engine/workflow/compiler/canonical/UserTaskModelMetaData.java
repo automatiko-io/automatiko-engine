@@ -38,12 +38,12 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.automatik.engine.api.UserTask;
 import io.automatik.engine.api.UserTaskParam;
 import io.automatik.engine.api.UserTaskParam.ParamType;
+import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
 import io.automatik.engine.workflow.process.core.node.HumanTaskNode;
 import io.automatik.engine.workflow.util.PatternConstants;
-import io.automatik.engine.workflow.util.StringUtils;
 
 public class UserTaskModelMetaData {
 

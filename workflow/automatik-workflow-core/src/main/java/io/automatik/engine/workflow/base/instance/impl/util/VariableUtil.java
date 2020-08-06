@@ -7,11 +7,11 @@ import java.util.regex.Matcher;
 import org.mvel2.MVEL;
 
 import io.automatik.engine.api.runtime.process.NodeInstance;
+import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.instance.context.variable.VariableScopeInstance;
 import io.automatik.engine.workflow.process.instance.impl.NodeInstanceResolverFactory;
 import io.automatik.engine.workflow.util.PatternConstants;
-import io.automatik.engine.workflow.util.StringUtils;
 
 public class VariableUtil {
 

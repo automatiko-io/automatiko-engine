@@ -23,6 +23,7 @@ import io.automatik.engine.api.runtime.process.ProcessRuntime;
 import io.automatik.engine.services.correlation.CorrelationAwareProcessRuntime;
 import io.automatik.engine.services.correlation.CorrelationKey;
 import io.automatik.engine.services.correlation.StringCorrelationKey;
+import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.base.core.Context;
 import io.automatik.engine.workflow.base.core.ContextContainer;
 import io.automatik.engine.workflow.base.core.context.exception.ExceptionScope;
@@ -45,7 +46,6 @@ import io.automatik.engine.workflow.process.instance.impl.NodeInstanceResolverFa
 import io.automatik.engine.workflow.process.instance.impl.VariableScopeResolverFactory;
 import io.automatik.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
 import io.automatik.engine.workflow.util.PatternConstants;
-import io.automatik.engine.workflow.util.StringUtils;
 
 /**
  * Runtime counterpart of a SubFlow node.

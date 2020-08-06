@@ -6,6 +6,8 @@ import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExpressionCompiler;
 
+import io.automatik.engine.services.utils.StringUtils;
+
 public class WidMVELEvaluator {
 
 	public static ParserContext WID_PARSER_CONTEXT;

@@ -23,8 +23,8 @@ import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.codegen.BodyDeclarationComparator;
 import io.automatik.engine.codegen.GeneratorContext;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
+import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.compiler.canonical.TriggerMetaData;
-import io.automatik.engine.workflow.util.StringUtils;
 
 public class MessageConsumerGenerator {
 	private final String relativePath;

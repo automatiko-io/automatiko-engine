@@ -35,8 +35,8 @@ import io.automatik.engine.codegen.CodegenUtils;
 import io.automatik.engine.codegen.GeneratorContext;
 import io.automatik.engine.codegen.context.ApplicationBuildContext;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
+import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.compiler.canonical.UserTaskModelMetaData;
-import io.automatik.engine.workflow.util.StringUtils;
 
 /**
  * AbstractResourceGenerator

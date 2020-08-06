@@ -4,7 +4,7 @@ package io.automatik.engine.workflow.compiler.canonical;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 
-import io.automatik.engine.workflow.util.StringUtils;
+import io.automatik.engine.services.utils.StringUtils;
 
 public class NodeValidator {
 

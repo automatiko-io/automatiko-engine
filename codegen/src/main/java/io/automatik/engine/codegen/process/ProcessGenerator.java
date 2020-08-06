@@ -1,15 +1,12 @@
 
 package io.automatik.engine.codegen.process;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 
 import javax.lang.model.SourceVersion;
-
-import org.drools.compiler.compiler.io.memory.MemoryFileSystem;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
@@ -45,10 +42,10 @@ import io.automatik.engine.api.runtime.process.WorkItemHandler;
 import io.automatik.engine.api.workflow.ProcessInstancesFactory;
 import io.automatik.engine.codegen.BodyDeclarationComparator;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
+import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.AbstractProcess;
 import io.automatik.engine.workflow.compiler.canonical.ProcessMetaData;
 import io.automatik.engine.workflow.compiler.canonical.TriggerMetaData;
-import io.automatik.engine.workflow.util.StringUtils;
 
 /**
  * Generates the Process&lt;T&gt; container for a process, which encapsulates
@@ -102,10 +99,6 @@ public class ProcessGenerator {
 
 	public String targetTypeName() {
 		return targetTypeName;
-	}
-
-	public void write(MemoryFileSystem srcMfs) {
-		srcMfs.write(completePath, generate().getBytes(StandardCharsets.UTF_8));
 	}
 
 	public String generate() {

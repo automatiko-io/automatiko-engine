@@ -36,7 +36,7 @@ import io.automatik.engine.api.Addons;
 import io.automatik.engine.codegen.decision.config.DecisionConfigGenerator;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatik.engine.codegen.process.config.ProcessConfigGenerator;
-import io.automatik.engine.workflow.util.StringUtils;
+import io.automatik.engine.services.utils.StringUtils;
 
 public class ConfigGenerator {
 

@@ -29,6 +29,9 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import io.automatik.engine.api.decision.DecisionEventListenerConfig;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
+import io.automatik.engine.decision.dmn.config.CachedDecisionEventListenerConfig;
+import io.automatik.engine.decision.dmn.config.DefaultDecisionEventListenerConfig;
+import io.automatik.engine.decision.dmn.config.StaticDecisionConfig;
 
 public class DecisionConfigGenerator {
 
