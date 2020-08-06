@@ -1116,4 +1116,21 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
 		}
 		return rootException;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof WorkflowProcessInstanceImpl)) {
+			return false;
+		}
+		WorkflowProcessInstanceImpl that = (WorkflowProcessInstanceImpl) o;
+		return getId().equals(that.getId()) && getState() == that.getState();
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getId(), getState());
+	}
 }
