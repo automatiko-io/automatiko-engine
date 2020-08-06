@@ -4,6 +4,7 @@ package io.automatik.engine.workflow.bpmn2;
 import java.util.Map;
 
 import io.automatik.engine.api.runtime.process.ProcessRuntime;
+import io.automatik.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatik.engine.workflow.AbstractProcess;
 import io.automatik.engine.workflow.AbstractProcessInstance;
 
@@ -16,6 +17,11 @@ public class BpmnProcessInstance extends AbstractProcessInstance<BpmnVariables> 
 	public BpmnProcessInstance(AbstractProcess<BpmnVariables> process, BpmnVariables variables, String businessKey,
 			ProcessRuntime rt) {
 		super(process, variables, businessKey, rt);
+	}
+
+	public BpmnProcessInstance(AbstractProcess<BpmnVariables> process, BpmnVariables variables, ProcessRuntime rt,
+			WorkflowProcessInstance wpi) {
+		super(process, variables, rt, wpi);
 	}
 
 	@Override

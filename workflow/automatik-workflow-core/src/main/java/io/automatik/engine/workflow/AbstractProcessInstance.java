@@ -19,6 +19,7 @@ import io.automatik.engine.api.definition.process.Node;
 import io.automatik.engine.api.runtime.process.EventListener;
 import io.automatik.engine.api.runtime.process.ProcessRuntime;
 import io.automatik.engine.api.runtime.process.WorkItemNotFoundException;
+import io.automatik.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatik.engine.api.workflow.EventDescription;
 import io.automatik.engine.api.workflow.MutableProcessInstances;
 import io.automatik.engine.api.workflow.NodeInstanceNotFoundException;
@@ -42,7 +43,6 @@ import io.automatik.engine.workflow.base.instance.InternalProcessRuntime;
 import io.automatik.engine.workflow.process.executable.core.ExecutableProcess;
 import io.automatik.engine.workflow.process.instance.NodeInstance;
 import io.automatik.engine.workflow.process.instance.NodeInstanceContainer;
-import io.automatik.engine.workflow.process.instance.WorkflowProcessInstance;
 import io.automatik.engine.workflow.process.instance.impl.NodeInstanceImpl;
 import io.automatik.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
 import io.automatik.engine.workflow.process.instance.node.WorkItemNodeInstance;
@@ -63,7 +63,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
 	protected Supplier<io.automatik.engine.api.runtime.process.ProcessInstance> reloadSupplier;
 
-	protected CompletionEventListener completionEventListener = new CompletionEventListener();
+	protected CompletionEventListener completionEventListener;
 
 	public AbstractProcessInstance(AbstractProcess<T> process, T variables, ProcessRuntime rt) {
 		this(process, variables, null, rt);
@@ -78,27 +78,26 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
 		Map<String, Object> map = bind(variables);
 		String processId = process.process().getId();
-		this.processInstance = ((CorrelationAwareProcessRuntime) rt).createProcessInstance(processId, correlationKey,
-				map);
-		this.description = ((WorkflowProcessInstanceImpl) processInstance).getDescription();
-		this.status = ProcessInstance.STATE_PENDING;
+		syncProcessInstance((WorkflowProcessInstance) ((CorrelationAwareProcessRuntime) rt)
+				.createProcessInstance(processId, correlationKey, map));
 	}
 
-	// for marshaller/persistence only
-	public void internalSetProcessInstance(io.automatik.engine.api.runtime.process.ProcessInstance processInstance) {
-		if (this.processInstance != null && this.status != ProcessInstance.STATE_PENDING) {
-			throw new IllegalStateException("Impossible to override process instance that already exists");
+	public AbstractProcessInstance(AbstractProcess<T> process, T variables, ProcessRuntime rt,
+			WorkflowProcessInstance wpi) {
+		this.process = process;
+		this.rt = rt;
+		this.variables = variables;
+		syncProcessInstance((WorkflowProcessInstance) wpi);
+		reconnect();
+	}
+
+	protected void reconnect() {
+		if (((WorkflowProcessInstanceImpl) processInstance).getProcessRuntime() == null) {
+			((WorkflowProcessInstanceImpl) processInstance).setProcessRuntime(((InternalProcessRuntime) rt));
 		}
-		this.processInstance = processInstance;
-		this.status = processInstance.getState();
-		this.id = processInstance.getId();
-		setCorrelationKey(((WorkflowProcessInstance) processInstance).getCorrelationKey());
-		this.description = ((WorkflowProcessInstanceImpl) processInstance).getDescription();
-		((WorkflowProcessInstanceImpl) this.processInstance).setProcessRuntime(((InternalProcessRuntime) rt));
-		((WorkflowProcessInstanceImpl) this.processInstance).reconnect();
-		((WorkflowProcessInstanceImpl) this.processInstance).setMetaData("KogitoProcessInstance", this);
-		((WorkflowProcessInstance) processInstance).addEventListener("processInstanceCompleted:" + this.id,
-				completionEventListener, false);
+		((WorkflowProcessInstanceImpl) processInstance).reconnect();
+		((WorkflowProcessInstanceImpl) processInstance).setMetaData("KogitoProcessInstance", this);
+		addCompletionEventListener();
 
 		for (io.automatik.engine.api.runtime.process.NodeInstance nodeInstance : ((WorkflowProcessInstance) processInstance)
 				.getNodeInstances()) {
@@ -108,6 +107,39 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 		}
 
 		unbind(variables, processInstance.getVariables());
+	}
+
+	private void addCompletionEventListener() {
+		if (completionEventListener == null) {
+			completionEventListener = new CompletionEventListener();
+			((WorkflowProcessInstanceImpl) processInstance).addEventListener("processInstanceCompleted:" + id,
+					completionEventListener, false);
+		}
+	}
+
+	private void removeCompletionListener() {
+		if (completionEventListener != null) {
+			((WorkflowProcessInstanceImpl) processInstance).removeEventListener("processInstanceCompleted:" + id,
+					completionEventListener, false);
+			completionEventListener = null;
+		}
+	}
+
+	protected void disconnect() {
+		if (processInstance == null) {
+			return;
+		}
+
+		((WorkflowProcessInstanceImpl) processInstance).disconnect();
+		((WorkflowProcessInstanceImpl) processInstance).setMetaData("KogitoProcessInstance", null);
+	}
+
+	private void syncProcessInstance(WorkflowProcessInstance wpi) {
+		processInstance = wpi;
+		status = wpi.getState();
+		id = wpi.getId();
+		description = ((WorkflowProcessInstanceImpl) wpi).getDescription();
+		setCorrelationKey(wpi.getCorrelationKey());
 	}
 
 	private void setCorrelationKey(String businessKey) {
@@ -127,7 +159,11 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 		if (this.status == STATE_ERROR) {
 			this.processError = buildProcessError();
 		}
-		this.processInstance = null;
+		removeCompletionListener();
+		if (((WorkflowProcessInstanceImpl) processInstance).getProcessRuntime() != null) {
+			disconnect();
+		}
+		processInstance = null;
 	}
 
 	public void start() {
@@ -141,7 +177,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 		this.status = ProcessInstance.STATE_ACTIVE;
 
 		if (referenceId != null) {
-			((WorkflowProcessInstance) processInstance).setReferenceId(referenceId);
+			((WorkflowProcessInstanceImpl) processInstance).setReferenceId(referenceId);
 		}
 
 		((InternalProcessRuntime) rt).getProcessInstanceManager().addProcessInstance(this.processInstance,
@@ -152,8 +188,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 		if (correlationKey != null && process.instances.exists(id)) {
 			throw new ProcessInstanceDuplicatedException(correlationKey.getName());
 		}
-		((WorkflowProcessInstance) processInstance).addEventListener("processInstanceCompleted:" + this.id,
-				completionEventListener, false);
+		addCompletionEventListener();
 		io.automatik.engine.api.runtime.process.ProcessInstance processInstance = this.rt.startProcessInstance(this.id,
 				trigger, data);
 		addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).create(pi.id(), pi));
@@ -180,7 +215,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 	@Override
 	public <S> void send(Signal<S> signal) {
 		if (signal.referenceId() != null) {
-			((WorkflowProcessInstance) processInstance()).setReferenceId(signal.referenceId());
+			((WorkflowProcessInstanceImpl) processInstance()).setReferenceId(signal.referenceId());
 		}
 		processInstance().signalEvent(signal.channel(), signal.payload());
 		removeOnFinish();
@@ -249,15 +284,14 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
 	@Override
 	public void startFrom(String nodeId, String referenceId) {
-		((WorkflowProcessInstance) processInstance).setStartDate(new Date());
-		((WorkflowProcessInstance) processInstance).setState(STATE_ACTIVE);
+		((WorkflowProcessInstanceImpl) processInstance).setStartDate(new Date());
+		((WorkflowProcessInstanceImpl) processInstance).setState(STATE_ACTIVE);
 		((InternalProcessRuntime) rt).getProcessInstanceManager().addProcessInstance(this.processInstance,
 				this.correlationKey);
 		this.id = processInstance.getId();
-		((WorkflowProcessInstance) processInstance).addEventListener("processInstanceCompleted:" + this.id,
-				completionEventListener, false);
+		addCompletionEventListener();
 		if (referenceId != null) {
-			((WorkflowProcessInstance) processInstance).setReferenceId(referenceId);
+			((WorkflowProcessInstanceImpl) processInstance).setReferenceId(referenceId);
 		}
 		triggerNode(nodeId);
 		addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
@@ -309,6 +343,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 			this.processInstance = reloadSupplier.get();
 			if (this.processInstance == null) {
 				throw new ProcessInstanceNotFoundException(id);
+			} else {
+				reconnect();
 			}
 		}
 
@@ -384,13 +420,11 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 	protected void removeOnFinish() {
 		if (processInstance.getState() != ProcessInstance.STATE_ACTIVE
 				&& processInstance.getState() != ProcessInstance.STATE_ERROR) {
-			((WorkflowProcessInstance) processInstance).removeEventListener(
+			((WorkflowProcessInstanceImpl) processInstance).removeEventListener(
 					"processInstanceCompleted:" + processInstance.getId(), completionEventListener, false);
 
-			this.status = processInstance.getState();
-			this.id = processInstance.getId();
-			setCorrelationKey(((WorkflowProcessInstance) processInstance).getCorrelationKey());
-			this.description = ((WorkflowProcessInstanceImpl) processInstance).getDescription();
+			removeCompletionListener();
+			syncProcessInstance((WorkflowProcessInstance) processInstance);
 
 			addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id()));
 
@@ -410,8 +444,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 		try {
 			for (Field f : variables.getClass().getDeclaredFields()) {
 				f.setAccessible(true);
-				Object v = null;
-				v = f.get(variables);
+				Object v = f.get(variables);
 				vmap.put(f.getName(), v);
 			}
 		} catch (IllegalAccessException e) {

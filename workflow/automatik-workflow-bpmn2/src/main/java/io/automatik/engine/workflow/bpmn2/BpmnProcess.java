@@ -8,6 +8,7 @@ import java.util.Objects;
 import io.automatik.engine.api.Model;
 import io.automatik.engine.api.definition.process.Process;
 import io.automatik.engine.api.io.Resource;
+import io.automatik.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatik.engine.api.workflow.ProcessConfig;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.workflow.AbstractProcess;
@@ -52,6 +53,13 @@ public class BpmnProcess extends AbstractProcess<BpmnVariables> {
 		BpmnVariables variablesModel = createModel();
 		variablesModel.fromMap(variables.toMap());
 		return new BpmnProcessInstance(this, variablesModel, this.createProcessRuntime());
+	}
+
+	@Override
+	public ProcessInstance<? extends Model> createInstance(WorkflowProcessInstance wpi) {
+		BpmnVariables variablesModel = createModel();
+		variablesModel.fromMap(wpi.getVariables());
+		return new BpmnProcessInstance(this, variablesModel, this.createProcessRuntime(), wpi);
 	}
 
 	@Override

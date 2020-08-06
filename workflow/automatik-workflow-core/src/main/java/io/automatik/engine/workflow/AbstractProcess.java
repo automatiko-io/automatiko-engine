@@ -12,6 +12,7 @@ import io.automatik.engine.api.jobs.ExpirationTime;
 import io.automatik.engine.api.jobs.ProcessJobDescription;
 import io.automatik.engine.api.runtime.process.EventListener;
 import io.automatik.engine.api.runtime.process.ProcessRuntime;
+import io.automatik.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatik.engine.api.workflow.MutableProcessInstances;
 import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessConfig;
@@ -71,6 +72,8 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
 	public ProcessInstance<T> createInstance(String businessKey, Model m) {
 		return createInstance(businessKey, m);
 	}
+
+	public abstract ProcessInstance<? extends Model> createInstance(WorkflowProcessInstance wpi);
 
 	@Override
 	public ProcessInstances<T> instances() {

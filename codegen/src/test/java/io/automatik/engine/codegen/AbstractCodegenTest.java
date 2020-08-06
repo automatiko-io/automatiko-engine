@@ -101,7 +101,7 @@ public class AbstractCodegenTest {
 				continue;
 			}
 			sources.add(new SourceCode(fileName, new String(entry.contents())));
-			logger.debug(new String(entry.contents()));
+			logger.info(new String(entry.contents()));
 		}
 
 		if (logger.isDebugEnabled()) {

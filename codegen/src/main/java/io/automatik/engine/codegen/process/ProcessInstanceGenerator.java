@@ -14,6 +14,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.VoidType;
 
 import io.automatik.engine.api.runtime.process.ProcessRuntime;
+import io.automatik.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatik.engine.codegen.BodyDeclarationComparator;
 import io.automatik.engine.workflow.AbstractProcessInstance;
 import io.automatik.engine.workflow.compiler.canonical.ModelMetaData;
@@ -64,8 +65,8 @@ public class ProcessInstanceGenerator {
 		classDecl
 				.addExtendedType(new ClassOrInterfaceType(null, AbstractProcessInstance.class.getCanonicalName())
 						.setTypeArguments(new ClassOrInterfaceType(null, model.getModelClassSimpleName())))
-				.addMember(constructorDecl()).addMember(constructorWithBusinessKeyDecl()).addMember(bind())
-				.addMember(unbind());
+				.addMember(constructorDecl()).addMember(constructorWithBusinessKeyDecl())
+				.addMember(constructorWithWorkflowInstanceDecl()).addMember(bind()).addMember(unbind());
 		classDecl.getMembers().sort(new BodyDeclarationComparator());
 		return classDecl;
 	}
@@ -110,6 +111,16 @@ public class ProcessInstanceGenerator {
 				.addParameter(ProcessRuntime.class.getCanonicalName(), PROCESS_RUNTIME)
 				.setBody(new BlockStmt().addStatement(new MethodCallExpr("super", new NameExpr(PROCESS),
 						new NameExpr(VALUE), new NameExpr("businessKey"), new NameExpr(PROCESS_RUNTIME))));
+	}
+
+	private ConstructorDeclaration constructorWithWorkflowInstanceDecl() {
+		return new ConstructorDeclaration().setName(targetTypeName).addModifier(Modifier.Keyword.PUBLIC)
+				.addParameter(ProcessGenerator.processType(canonicalName), PROCESS)
+				.addParameter(model.getModelClassSimpleName(), VALUE)
+				.addParameter(ProcessRuntime.class.getCanonicalName(), PROCESS_RUNTIME)
+				.addParameter(WorkflowProcessInstance.class.getCanonicalName(), "wpi")
+				.setBody(new BlockStmt().addStatement(new MethodCallExpr("super", new NameExpr(PROCESS),
+						new NameExpr(VALUE), new NameExpr(PROCESS_RUNTIME), new NameExpr("wpi"))));
 	}
 
 	public String targetTypeName() {

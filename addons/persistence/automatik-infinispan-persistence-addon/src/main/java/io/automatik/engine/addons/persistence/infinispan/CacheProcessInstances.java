@@ -91,8 +91,7 @@ public class CacheProcessInstances implements MutableProcessInstances {
 			((AbstractProcessInstance<?>) instance).internalRemoveProcessInstance(() -> {
 				byte[] reloaded = cache.get(resolvedId);
 				if (reloaded != null) {
-					return ((AbstractProcessInstance<?>) marshaller.unmarshallProcessInstance(reloaded, process,
-							(AbstractProcessInstance<?>) instance)).internalGetProcessInstance();
+					return marshaller.unmarshallWorkflowProcessInstance(reloaded, process);
 				}
 
 				return null;

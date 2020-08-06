@@ -8,9 +8,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.automatik.engine.api.Model;
 import io.automatik.engine.api.marshalling.ObjectMarshallingStrategy;
 import io.automatik.engine.api.runtime.EnvironmentName;
+import io.automatik.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.workflow.AbstractProcess;
@@ -77,13 +77,7 @@ public class ProcessInstanceMarshaller {
 		}
 	}
 
-	public ProcessInstance<?> unmarshallProcessInstance(byte[] data, Process<?> process) {
-
-		return unmarshallProcessInstance(data, process, null);
-	}
-
-	public ProcessInstance<?> unmarshallProcessInstance(byte[] data, Process<?> process,
-			AbstractProcessInstance<?> processInstance) {
+	public WorkflowProcessInstance unmarshallWorkflowProcessInstance(byte[] data, Process<?> process) {
 		try (ByteArrayInputStream bais = new ByteArrayInputStream(data)) {
 			MarshallerReaderContext context = new MarshallerReaderContext(bais, null,
 					Collections.singletonMap(process.id(), ((AbstractProcess<?>) process).process()), this.env);
@@ -93,21 +87,17 @@ public class ProcessInstanceMarshaller {
 			io.automatik.engine.workflow.marshalling.impl.ProcessInstanceMarshaller marshaller = ProcessMarshallerRegistry.INSTANCE
 					.getMarshaller(processInstanceType);
 
-			io.automatik.engine.api.runtime.process.ProcessInstance pi = marshaller.readProcessInstance(context);
+			WorkflowProcessInstance pi = (WorkflowProcessInstance) marshaller.readProcessInstance(context);
 
 			context.close();
 
-			if (processInstance == null) {
-				Model m = (Model) process.createModel();
-				m.fromMap(pi.getVariables());
-				processInstance = (AbstractProcessInstance<?>) process.createInstance(m);
-			}
-
-			processInstance.internalSetProcessInstance(pi);
-
-			return processInstance;
+			return pi;
 		} catch (Exception e) {
 			throw new RuntimeException("Error while unmarshalling process instance", e);
 		}
+	}
+
+	public ProcessInstance<?> unmarshallProcessInstance(byte[] data, Process<?> process) {
+		return ((AbstractProcess<?>) process).createInstance(unmarshallWorkflowProcessInstance(data, process));
 	}
 }
