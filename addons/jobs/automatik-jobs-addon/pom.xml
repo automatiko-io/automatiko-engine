@@ -9,10 +9,10 @@
   </parent>
 
   <groupId>io.automatik.platform.addons</groupId>
-  <artifactId>automatik-jobs-management-quarkus-addon</artifactId>
-  <name>Automatik Platform Engine :: Add-Ons :: Jobs :: Management Quarkus Addon</name>
+  <artifactId>automatik-jobs-addon</artifactId>
+  <name>Automatik Platform Engine :: Add-Ons :: Jobs :: Addon</name>
 
-  <description>Jobs Management Quarkus Addon to interact with Jobs Service</description>
+  <description>Jobs Addon to provide Jobs Service capabilities</description>
 
   <dependencies>
     <dependency>

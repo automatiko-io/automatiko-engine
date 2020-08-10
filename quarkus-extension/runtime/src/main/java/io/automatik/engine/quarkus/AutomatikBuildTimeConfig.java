@@ -3,6 +3,7 @@ package io.automatik.engine.quarkus;
 import java.util.Optional;
 
 import io.automatik.engine.api.config.AutomatikConfig;
+import io.automatik.engine.api.config.JobsConfig;
 import io.automatik.engine.api.config.MessagingConfig;
 import io.automatik.engine.api.config.MetricsConfig;
 import io.automatik.engine.api.config.PersistenceConfig;
@@ -12,6 +13,12 @@ import io.quarkus.runtime.annotations.ConfigRoot;
 
 @ConfigRoot(name = "automatik", phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
 public class AutomatikBuildTimeConfig extends AutomatikConfig {
+
+	/**
+	 * Specifies service url that can be used to reach out this service over http
+	 */
+	@ConfigItem
+	public Optional<String> serviceUrl;
 
 	/**
 	 * Specifies package name for generated classes
@@ -37,6 +44,17 @@ public class AutomatikBuildTimeConfig extends AutomatikConfig {
 	@ConfigItem
 	public PersistenceBuildTimeConfig persistence;
 
+	/**
+	 * Configures jobs
+	 */
+	@ConfigItem
+	public JobsBuildTimeConfig jobs;
+
+	@Override
+	public Optional<String> serviceUrl() {
+		return serviceUrl;
+	}
+
 	@Override
 	public Optional<String> packageName() {
 		return packageName;
@@ -55,6 +73,11 @@ public class AutomatikBuildTimeConfig extends AutomatikConfig {
 	@Override
 	public MessagingConfig messaging() {
 		return messaging;
+	}
+
+	@Override
+	public JobsConfig jobs() {
+		return jobs;
 	}
 
 }

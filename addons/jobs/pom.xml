@@ -15,6 +15,6 @@
 
   <modules>
     <module>automatik-jobs-api</module>
-    <module>automatik-jobs-management-quarkus-addon</module>
+    <module>automatik-jobs-addon</module>
   </modules>
 </project>

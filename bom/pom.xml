@@ -128,12 +128,12 @@
       </dependency>
       <dependency>
         <groupId>io.automatik.platform.addons</groupId>
-        <artifactId>automatik-jobs-management-addon</artifactId>
+        <artifactId>automatik-jobs-addon</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>io.automatik.platform.addons</groupId>
-        <artifactId>automatik-jobs-management-addon</artifactId>
+        <artifactId>automatik-jobs-addon</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>

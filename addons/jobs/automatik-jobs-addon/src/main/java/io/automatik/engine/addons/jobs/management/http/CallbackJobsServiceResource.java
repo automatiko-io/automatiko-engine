@@ -1,5 +1,5 @@
 
-package io.automatik.engine.addons.jobs.management.quarkus;
+package io.automatik.engine.addons.jobs.management.http;
 
 import java.util.Optional;
 

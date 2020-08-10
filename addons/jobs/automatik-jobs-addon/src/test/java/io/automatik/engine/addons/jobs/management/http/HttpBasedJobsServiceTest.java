@@ -1,5 +1,5 @@
 
-package io.automatik.engine.addons.jobs.management.quarkus;
+package io.automatik.engine.addons.jobs.management.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -29,7 +29,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import io.automatik.engine.addons.jobs.management.quarkus.VertxJobsService;
+import io.automatik.engine.addons.jobs.management.http.HttpBasedJobsService;
 import io.automatik.engine.api.jobs.ExactExpirationTime;
 import io.automatik.engine.api.jobs.ProcessInstanceJobDescription;
 import io.automatik.engine.api.jobs.ProcessJobDescription;
@@ -45,12 +45,12 @@ import io.vertx.ext.web.client.WebClient;
 
 @TestInstance(Lifecycle.PER_CLASS)
 @ExtendWith(MockitoExtension.class)
-public class VertxJobsServiceTest {
+public class HttpBasedJobsServiceTest {
 
 	public static final String CALLBACK_URL = "http://localhost";
 	public static final String JOB_SERVICE_URL = "http://localhost:8085";
 
-	private VertxJobsService tested;
+	private HttpBasedJobsService tested;
 
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -68,7 +68,7 @@ public class VertxJobsServiceTest {
 		when(instance.isResolvable()).thenReturn(true);
 		when(instance.get()).thenReturn(webClient);
 
-		tested = new VertxJobsService(JOB_SERVICE_URL, CALLBACK_URL, vertx, instance);
+		tested = new HttpBasedJobsService(JOB_SERVICE_URL, CALLBACK_URL, vertx, instance);
 		tested.initialize();
 	}
 
@@ -81,7 +81,7 @@ public class VertxJobsServiceTest {
 	void testInitialize() {
 		reset(instance);
 		when(instance.isResolvable()).thenReturn(false);
-		tested = new VertxJobsService(JOB_SERVICE_URL, CALLBACK_URL, vertx, instance);
+		tested = new HttpBasedJobsService(JOB_SERVICE_URL, CALLBACK_URL, vertx, instance);
 		tested.initialize();
 		verify(instance, never()).get();
 	}

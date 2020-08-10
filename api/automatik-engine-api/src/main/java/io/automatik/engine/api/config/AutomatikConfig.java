@@ -4,6 +4,10 @@ import java.util.Optional;
 
 public class AutomatikConfig {
 
+	public Optional<String> serviceUrl() {
+		return Optional.empty();
+	};
+
 	public Optional<String> packageName() {
 		return Optional.empty();
 	};
@@ -18,5 +22,9 @@ public class AutomatikConfig {
 
 	public MessagingConfig messaging() {
 		return new MessagingConfig();
+	}
+
+	public JobsConfig jobs() {
+		return new JobsConfig();
 	}
 }

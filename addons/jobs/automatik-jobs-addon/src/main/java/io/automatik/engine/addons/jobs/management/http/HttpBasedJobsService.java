@@ -1,8 +1,9 @@
 
-package io.automatik.engine.addons.jobs.management.quarkus;
+package io.automatik.engine.addons.jobs.management.http;
 
 import java.net.URI;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.PostConstruct;
@@ -17,21 +18,26 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import io.automatik.engine.api.jobs.JobsService;
 import io.automatik.engine.api.jobs.ProcessInstanceJobDescription;
 import io.automatik.engine.api.jobs.ProcessJobDescription;
 import io.automatik.engine.jobs.api.Job;
 import io.automatik.engine.jobs.api.JobBuilder;
 import io.automatik.engine.jobs.api.JobNotFoundException;
-import io.automatik.engine.jobs.management.RestJobsService;
+import io.automatik.engine.jobs.api.URIBuilder;
+import io.quarkus.arc.properties.IfBuildProperty;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 
+@IfBuildProperty(name = "quarkus.automatik.jobs.type", stringValue = "http")
 @ApplicationScoped
-public class VertxJobsService extends RestJobsService {
+public class HttpBasedJobsService implements JobsService {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(VertxJobsService.class);
+	public static final String JOBS_PATH = "/jobs";
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(HttpBasedJobsService.class);
 
 	private Vertx vertx;
 
@@ -39,16 +45,20 @@ public class VertxJobsService extends RestJobsService {
 
 	private WebClient client;
 
+	private URI jobsServiceUri;
+	private String callbackEndpoint;
+
 	@Inject
-	public VertxJobsService(@ConfigProperty(name = "kogito.jobs-service.url") String jobServiceUrl,
-			@ConfigProperty(name = "kogito.service.url") String callbackEndpoint, Vertx vertx,
+	public HttpBasedJobsService(@ConfigProperty(name = "quarkus.automatik.jobs.http.url") String jobServiceUrl,
+			@ConfigProperty(name = "quarkus.automatik.service-url") String callbackEndpoint, Vertx vertx,
 			Instance<WebClient> providedWebClient) {
-		super(jobServiceUrl, callbackEndpoint);
+		this.jobsServiceUri = Objects.nonNull(jobServiceUrl) ? buildJobsServiceURI(jobServiceUrl) : null;
+		this.callbackEndpoint = callbackEndpoint;
 		this.vertx = vertx;
 		this.providedWebClient = providedWebClient;
 	}
 
-	VertxJobsService() {
+	HttpBasedJobsService() {
 		this(null, null, null, null);
 	}
 
@@ -144,5 +154,18 @@ public class VertxJobsService extends RestJobsService {
 			throw new RuntimeException(e);
 		}
 
+	}
+
+	public String getCallbackEndpoint(ProcessInstanceJobDescription description) {
+		return URIBuilder.toURI(callbackEndpoint + "/management/jobs/" + description.processId() + "/instances/"
+				+ description.processInstanceId() + "/timers/" + description.id()).toString();
+	}
+
+	private URI buildJobsServiceURI(String jobServiceUrl) {
+		return URIBuilder.toURI(jobServiceUrl + JOBS_PATH);
+	}
+
+	public URI getJobsServiceUri() {
+		return jobsServiceUri;
 	}
 }
