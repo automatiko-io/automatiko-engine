@@ -1,9 +1,6 @@
 
 package io.automatik.engine.workflow.compiler.canonical;
 
-import static io.automatik.engine.workflow.process.executable.core.Metadata.HIDDEN;
-import static io.automatik.engine.workflow.process.executable.core.Metadata.LINK_NODE_HIDDEN;
-import static io.automatik.engine.workflow.process.executable.core.Metadata.UNIQUE_ID;
 import static io.automatik.engine.workflow.process.executable.core.ExecutableNodeContainerFactory.METHOD_CONNECTION;
 import static io.automatik.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_DYNAMIC;
 import static io.automatik.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_GLOBAL;
@@ -14,6 +11,9 @@ import static io.automatik.engine.workflow.process.executable.core.ExecutablePro
 import static io.automatik.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_VARIABLE;
 import static io.automatik.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_VERSION;
 import static io.automatik.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_VISIBILITY;
+import static io.automatik.engine.workflow.process.executable.core.Metadata.HIDDEN;
+import static io.automatik.engine.workflow.process.executable.core.Metadata.LINK_NODE_HIDDEN;
+import static io.automatik.engine.workflow.process.executable.core.Metadata.UNIQUE_ID;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +26,7 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
+import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -159,8 +160,8 @@ public class ProcessVisitor extends AbstractVisitor {
 				String tags = (String) variable.getMetaData(Variable.VARIABLE_TAGS);
 				ClassOrInterfaceType variableType = new ClassOrInterfaceType(null,
 						ObjectDataType.class.getSimpleName());
-				ObjectCreationExpr variableValue = new ObjectCreationExpr(null, variableType,
-						new NodeList<>(new StringLiteralExpr(variable.getType().getStringType())));
+				ObjectCreationExpr variableValue = new ObjectCreationExpr(null, variableType, new NodeList<>(
+						new ClassExpr(new ClassOrInterfaceType(null, variable.getType().getStringType()))));
 				body.addStatement(
 						getFactoryMethod(FACTORY_FIELD_NAME, METHOD_VARIABLE, new StringLiteralExpr(variable.getName()),
 								variableValue, new StringLiteralExpr(Variable.VARIABLE_TAGS),

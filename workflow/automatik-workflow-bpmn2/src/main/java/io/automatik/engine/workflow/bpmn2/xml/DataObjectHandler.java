@@ -89,10 +89,10 @@ public class DataObjectHandler extends BaseAbstractHandler implements Handler {
 
 					} else if ("java.lang.Object".equals(structureRef) || "Object".equals(structureRef)) {
 						// use FQCN of Object
-						dataType = new ObjectDataType("java.lang.Object");
+						dataType = new ObjectDataType(java.lang.Object.class);
 
 					} else {
-						dataType = new ObjectDataType(structureRef, parser.getClassLoader());
+						dataType = new ObjectDataType(constructClass(structureRef, parser.getClassLoader()));
 					}
 				}
 			}

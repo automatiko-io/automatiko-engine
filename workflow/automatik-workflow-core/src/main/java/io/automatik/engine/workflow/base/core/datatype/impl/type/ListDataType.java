@@ -20,7 +20,7 @@ public class ListDataType extends ObjectDataType implements TypeObject {
 	private DataType dataType;
 
 	public ListDataType() {
-		setClassName("java.util.List");
+		super(java.util.List.class);
 	}
 
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {

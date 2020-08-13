@@ -65,7 +65,8 @@ public class DataStoreHandler extends BaseAbstractHandler implements Handler {
 		if (itemDefinitions != null) {
 			ItemDefinition itemDefinition = itemDefinitions.get(localItemSubjectRef);
 			if (itemDefinition != null) {
-				dataType = new ObjectDataType(itemDefinition.getStructureRef(), parser.getClassLoader());
+				dataType = new ObjectDataType(
+						constructClass(itemDefinition.getStructureRef(), parser.getClassLoader()));
 			}
 		}
 		store.setType(dataType);

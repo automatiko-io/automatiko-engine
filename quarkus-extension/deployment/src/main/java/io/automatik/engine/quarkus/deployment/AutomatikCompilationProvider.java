@@ -38,8 +38,9 @@ public abstract class AutomatikCompilationProvider extends JavaCompilationProvid
 
 		File outputDirectory = context.getOutputDirectory();
 		try {
-			GeneratorContext generationContext = GeneratorContext
-					.ofResourcePath(context.getProjectDirectory().toPath().resolve("src/main/resources").toFile());
+			GeneratorContext generationContext = QuarkusGeneratorContext.ofResourcePath(
+					context.getProjectDirectory().toPath().resolve("src/main/resources").toFile(),
+					context.getProjectDirectory().toPath().resolve("target/classes").toFile());
 			generationContext.withBuildContext(
 					new QuarkusApplicationBuildContext(config, className -> hasClassOnClasspath(context, className)));
 
@@ -62,6 +63,7 @@ public abstract class AutomatikCompilationProvider extends JavaCompilationProvid
 				}
 			}
 			super.compile(generatedSourceFiles, context);
+
 		} catch (IOException e) {
 			throw new AutomatikCompilerException(e);
 		}

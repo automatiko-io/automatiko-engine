@@ -41,9 +41,9 @@ import io.automatik.engine.workflow.compiler.xml.ExtensibleXmlParser;
 import io.automatik.engine.workflow.compiler.xml.Handler;
 import io.automatik.engine.workflow.compiler.xml.ProcessBuildData;
 import io.automatik.engine.workflow.compiler.xml.XmlDumper;
-import io.automatik.engine.workflow.process.core.ProcessAction;
 import io.automatik.engine.workflow.process.core.Node;
 import io.automatik.engine.workflow.process.core.NodeContainer;
+import io.automatik.engine.workflow.process.core.ProcessAction;
 import io.automatik.engine.workflow.process.core.impl.ConsequenceAction;
 import io.automatik.engine.workflow.process.core.impl.ExtendedNodeImpl;
 import io.automatik.engine.workflow.process.core.node.ActionNode;
@@ -483,10 +483,10 @@ public abstract class AbstractNodeHandler extends BaseAbstractHandler implements
 				dataType = new StringDataType();
 
 			} else if ("java.lang.Object".equals(structureRef) || "Object".equals(structureRef)) {
-				dataType = new ObjectDataType(structureRef);
+				dataType = new ObjectDataType(constructClass(structureRef));
 
 			} else {
-				dataType = new ObjectDataType(structureRef, cl);
+				dataType = new ObjectDataType(constructClass(structureRef, cl));
 			}
 
 		}

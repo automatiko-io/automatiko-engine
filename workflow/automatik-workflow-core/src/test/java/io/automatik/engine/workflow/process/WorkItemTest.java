@@ -172,7 +172,7 @@ public class WorkItemTest extends AbstractBaseTest {
 		variables.add(variable);
 		variable = new Variable();
 		variable.setName("Person");
-		variable.setType(new ObjectDataType(Person.class.getName()));
+		variable.setType(new ObjectDataType(Person.class));
 		variables.add(variable);
 		variable = new Variable();
 		variable.setName("MyObject");

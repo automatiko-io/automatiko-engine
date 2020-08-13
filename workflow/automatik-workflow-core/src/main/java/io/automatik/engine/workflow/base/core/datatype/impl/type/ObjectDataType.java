@@ -24,13 +24,15 @@ public class ObjectDataType implements DataType {
 	public ObjectDataType() {
 	}
 
-	public ObjectDataType(String className) {
-		setClassName(className);
+	public ObjectDataType(Class<?> className) {
+		setClassName(className.getCanonicalName());
+		this.clazz = className;
 	}
 
-	public ObjectDataType(String className, ClassLoader classLoader) {
+	public ObjectDataType(Class<?> className, ClassLoader classLoader) {
 		setClassLoader(classLoader);
-		setClassName(className);
+		setClassName(className.getCanonicalName());
+		this.clazz = className;
 	}
 
 	public String getClassName() {
@@ -39,10 +41,6 @@ public class ObjectDataType implements DataType {
 
 	public void setClassName(String className) {
 		this.className = className == null ? "java.lang.Object" : className;
-		try {
-			this.clazz = Class.forName(this.className, true, getClassLoader());
-		} catch (ClassNotFoundException e) {
-		}
 	}
 
 	public ClassLoader getClassLoader() {

@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import io.automatik.engine.api.Model;
 import io.automatik.engine.api.UserTask;
+import io.automatik.engine.api.codegen.AutomatikConfigProperties;
 import io.automatik.engine.api.codegen.Generated;
 import io.automatik.engine.api.codegen.VariableInfo;
 import io.automatik.engine.codegen.ApplicationGenerator;
@@ -65,11 +66,13 @@ import io.quarkus.deployment.builditem.ArchiveRootBuildItem;
 import io.quarkus.deployment.builditem.CapabilityBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.builditem.LiveReloadBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyIgnoreWarningBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
 import io.quarkus.deployment.index.IndexingUtil;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.quarkus.runtime.LaunchMode;
@@ -191,7 +194,9 @@ public class AutomatikQuarkusProcessor {
 			BuildProducer<GeneratedBeanBuildItem> generatedBeans, CombinedIndexBuildItem combinedIndexBuildItem,
 			LaunchModeBuildItem launchMode, LiveReloadBuildItem liveReload,
 			BuildProducer<NativeImageResourceBuildItem> resource,
-			BuildProducer<ReflectiveClassBuildItem> reflectiveClass, CurateOutcomeBuildItem curateOutcomeBuildItem)
+			BuildProducer<ReflectiveClassBuildItem> reflectiveClass, CurateOutcomeBuildItem curateOutcomeBuildItem,
+			BuildProducer<GeneratedResourceBuildItem> resources,
+			BuildProducer<ServiceProviderBuildItem> providerProducer)
 			throws Exception, BootstrapDependencyProcessingException {
 
 		AutomatikCompilationProvider.config = config;
@@ -253,6 +258,14 @@ public class AutomatikQuarkusProcessor {
 
 			writeGeneratedFiles(appPaths, getJsonSchemaFiles(index, appPaths.getFirstClassesPath()));
 
+			reflectiveClass.produce(
+					new ReflectiveClassBuildItem(false, false, "org.mvel2.optimizers.dynamic.DynamicOptimizer"));
+			reflectiveClass.produce(new ReflectiveClassBuildItem(false, false,
+					"org.mvel2.optimizers.impl.refl.ReflectiveAccessorOptimizer"));
+			reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, ArrayList.class.getCanonicalName()));
+
+			providerProducer.produce(new ServiceProviderBuildItem(AutomatikConfigProperties.class.getCanonicalName(),
+					"io.automatik.application.app.GeneratedAutomatikConfigProperties"));
 		}
 	}
 
@@ -456,7 +469,8 @@ public class AutomatikQuarkusProcessor {
 	}
 
 	private GeneratorContext buildContext(AutomatikBuildTimeConfig config, AppPaths appPaths, IndexView index) {
-		GeneratorContext context = GeneratorContext.ofResourcePath(appPaths.getResourceFiles());
+		GeneratorContext context = QuarkusGeneratorContext.ofResourcePath(appPaths.getResourceFiles()[0],
+				appPaths.getFirstClassesPath().toFile());
 		context.withBuildContext(new QuarkusApplicationBuildContext(config, className -> {
 			DotName classDotName = createDotName(className);
 			return !index.getAnnotations(classDotName).isEmpty() || index.getClassByName(classDotName) != null;

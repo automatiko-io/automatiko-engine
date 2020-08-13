@@ -2,6 +2,8 @@
 package io.automatik.engine.codegen.process;
 
 import static com.github.javaparser.StaticJavaParser.parse;
+import static io.automatik.engine.codegen.CodeGenConstants.INCOMING_PROP_PREFIX;
+import static io.automatik.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
 import static io.automatik.engine.codegen.CodegenUtils.interpolateTypes;
 import static io.automatik.engine.codegen.CodegenUtils.isApplicationField;
 import static io.automatik.engine.codegen.CodegenUtils.isProcessField;
@@ -21,12 +23,14 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.codegen.BodyDeclarationComparator;
+import io.automatik.engine.codegen.CodegenUtils;
 import io.automatik.engine.codegen.GeneratorContext;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.compiler.canonical.TriggerMetaData;
 
 public class MessageConsumerGenerator {
+
 	private final String relativePath;
 
 	private GeneratorContext context;
@@ -80,7 +84,26 @@ public class MessageConsumerGenerator {
 		return this.annotator != null;
 	}
 
+	protected void appendConnectorSpecificProperties(String connector) {
+		if (connector.equals(MQTT_CONNECTOR)) {
+			String sanitizedName = CodegenUtils.triggerSanitizedName(trigger);
+			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".host", "localhost");
+			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".port", "1883");
+			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".client-id",
+					sanitizedName + "-consumer");
+			context.setApplicationProperty("quarkus.automatik.messaging.as-cloudevents", "false");
+		}
+	}
+
 	public String generate() {
+		String sanitizedName = CodegenUtils.triggerSanitizedName(trigger);
+		String connector = CodegenUtils.getConnector(context);
+		if (connector != null) {
+
+			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".connector", connector);
+			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".topic", trigger.getName());
+			appendConnectorSpecificProperties(connector);
+		}
 		CompilationUnit clazz = parse(
 				this.getClass().getResourceAsStream("/class-templates/MessageConsumerTemplate.java"));
 		clazz.setPackageDeclaration(process.getPackageName());
@@ -122,7 +145,7 @@ public class MessageConsumerGenerator {
 					.forEach(fd -> annotator.withConfigInjection(fd, "quarkus.automatik.messaging.as-cloudevents"));
 
 			template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("consume"))
-					.forEach(md -> annotator.withIncomingMessage(md, trigger.getName()));
+					.forEach(md -> annotator.withIncomingMessage(md, sanitizedName));
 		} else {
 			template.findAll(FieldDeclaration.class, fd -> isProcessField(fd))
 					.forEach(fd -> initializeProcessField(fd, template));

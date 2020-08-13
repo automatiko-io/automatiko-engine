@@ -45,8 +45,8 @@ public class ApplicationGenerator {
 
 	private static final String RESOURCE = "/class-templates/ApplicationTemplate.java";
 
-	public static final String DEFAULT_GROUP_ID = "io.automati.application";
-	public static final String DEFAULT_PACKAGE_NAME = "io.automati.application.app";
+	public static final String DEFAULT_GROUP_ID = "io.automatik.application";
+	public static final String DEFAULT_PACKAGE_NAME = "io.automatik.application.app";
 	public static final String APPLICATION_CLASS_NAME = "Application";
 
 	private final String packageName;
@@ -212,6 +212,19 @@ public class ApplicationGenerator {
 					.forEach(gen -> generateSectionClass(gen.section(), generatedFiles));
 		}
 		this.labelers.forEach(l -> MetaDataWriter.writeLabelsImageMetadata(targetDirectory, l.generateLabels()));
+
+		if (context != null) {
+			CompilationUnit cp = context.write(DEFAULT_PACKAGE_NAME);
+
+			String packageName = cp.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
+			String clazzName = packageName + "."
+					+ cp.findFirst(ClassOrInterfaceDeclaration.class).map(c -> c.getName().toString())
+							.orElseThrow(() -> new NoSuchElementException(
+									"Compilation unit doesn't contain a class or interface declaration!"));
+			generatedFiles.add(new GeneratedFile(GeneratedFile.Type.CLASS, clazzName.replace('.', '/') + ".java",
+					log(cp.toString()).getBytes(StandardCharsets.UTF_8)));
+		}
+
 		return generatedFiles;
 	}
 
@@ -293,5 +306,9 @@ public class ApplicationGenerator {
 	public ApplicationGenerator withClassLoader(ClassLoader projectClassLoader) {
 		this.configGenerator.withClassLoader(projectClassLoader);
 		return this;
+	}
+
+	public GeneratorContext context() {
+		return context;
 	}
 }

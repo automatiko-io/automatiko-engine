@@ -1,7 +1,17 @@
 
 package io.automatik.engine.workflow.compiler.canonical;
 
+import static io.automatik.engine.workflow.process.executable.core.factory.CompositeContextNodeFactory.METHOD_LINK_INCOMING_CONNECTIONS;
+import static io.automatik.engine.workflow.process.executable.core.factory.CompositeContextNodeFactory.METHOD_LINK_OUTGOING_CONNECTIONS;
+import static io.automatik.engine.workflow.process.executable.core.factory.CompositeContextNodeFactory.METHOD_VARIABLE;
+import static io.automatik.engine.workflow.process.executable.core.factory.ForEachNodeFactory.METHOD_COLLECTION_EXPRESSION;
+import static io.automatik.engine.workflow.process.executable.core.factory.ForEachNodeFactory.METHOD_OUTPUT_COLLECTION_EXPRESSION;
+import static io.automatik.engine.workflow.process.executable.core.factory.ForEachNodeFactory.METHOD_OUTPUT_VARIABLE;
+
+import java.util.Map;
+
 import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
@@ -13,15 +23,6 @@ import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
 import io.automatik.engine.workflow.process.core.node.ForEachNode;
 import io.automatik.engine.workflow.process.executable.core.factory.ForEachNodeFactory;
-
-import static io.automatik.engine.workflow.process.executable.core.factory.CompositeContextNodeFactory.METHOD_LINK_INCOMING_CONNECTIONS;
-import static io.automatik.engine.workflow.process.executable.core.factory.CompositeContextNodeFactory.METHOD_LINK_OUTGOING_CONNECTIONS;
-import static io.automatik.engine.workflow.process.executable.core.factory.CompositeContextNodeFactory.METHOD_VARIABLE;
-import static io.automatik.engine.workflow.process.executable.core.factory.ForEachNodeFactory.METHOD_COLLECTION_EXPRESSION;
-import static io.automatik.engine.workflow.process.executable.core.factory.ForEachNodeFactory.METHOD_OUTPUT_COLLECTION_EXPRESSION;
-import static io.automatik.engine.workflow.process.executable.core.factory.ForEachNodeFactory.METHOD_OUTPUT_VARIABLE;
-
-import java.util.Map;
 
 public class ForEachNodeVisitor extends AbstractCompositeNodeVisitor<ForEachNode> {
 
@@ -47,7 +48,8 @@ public class ForEachNodeVisitor extends AbstractCompositeNodeVisitor<ForEachNode
 						new StringLiteralExpr(node.getVariableName()),
 						new ObjectCreationExpr(null,
 								new ClassOrInterfaceType(null, ObjectDataType.class.getSimpleName()),
-								NodeList.nodeList(new StringLiteralExpr(node.getVariableType().getStringType())))));
+								NodeList.nodeList(new ClassExpr(
+										new ClassOrInterfaceType(null, node.getVariableType().getStringType()))))));
 
 		if (node.getOutputCollectionExpression() != null) {
 			body.addStatement(getFactoryMethod(getNodeId(node), METHOD_OUTPUT_COLLECTION_EXPRESSION,
@@ -56,8 +58,8 @@ public class ForEachNodeVisitor extends AbstractCompositeNodeVisitor<ForEachNode
 							new StringLiteralExpr(node.getOutputVariableName()),
 							new ObjectCreationExpr(null,
 									new ClassOrInterfaceType(null, ObjectDataType.class.getSimpleName()),
-									NodeList.nodeList(
-											new StringLiteralExpr(node.getOutputVariableType().getStringType())))));
+									NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(null,
+											node.getOutputVariableType().getStringType()))))));
 		}
 		// visit nodes
 		visitNodes(getNodeId(node), node.getNodes(), body,

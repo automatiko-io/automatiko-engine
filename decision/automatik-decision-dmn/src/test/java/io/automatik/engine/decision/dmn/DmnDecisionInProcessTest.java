@@ -77,7 +77,7 @@ public class DmnDecisionInProcessTest {
 		List<Variable> variables = new ArrayList<Variable>();
 		Variable variable1 = new Variable();
 		variable1.setName("person");
-		variable1.setType(new ObjectDataType(Person.class.getName()));
+		variable1.setType(new ObjectDataType(Person.class));
 		variables.add(variable1);
 
 		Variable variable2 = new Variable();

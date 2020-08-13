@@ -24,8 +24,9 @@ public class EnumDataType implements DataType {
 	public EnumDataType() {
 	}
 
-	public EnumDataType(String className) {
-		setClassName(className);
+	public EnumDataType(Class<?> className) {
+		setClassName(className.getCanonicalName());
+		this.clazz = className;
 	}
 
 	public String getClassName() {
@@ -34,11 +35,6 @@ public class EnumDataType implements DataType {
 
 	public void setClassName(String className) {
 		this.className = className;
-		try {
-			this.clazz = Class.forName(className);
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException("Error creating class of " + className, e);
-		}
 	}
 
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -95,8 +91,7 @@ public class EnumDataType implements DataType {
 				if (className == null) {
 					return null;
 				}
-				Class<?> clazz = classLoader == null ? Class.forName(className)
-						: Class.forName(className, true, classLoader);
+
 				if (!clazz.isEnum()) {
 					return null;
 				}
@@ -104,8 +99,6 @@ public class EnumDataType implements DataType {
 				for (Object value : values) {
 					this.valueMap.put(value.toString(), value);
 				}
-			} catch (ClassNotFoundException e) {
-				throw new IllegalArgumentException("Could not find data type " + className);
 			} catch (IllegalAccessException e) {
 				throw new IllegalArgumentException("IllegalAccessException " + e);
 			} catch (InvocationTargetException e) {

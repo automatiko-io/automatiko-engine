@@ -349,7 +349,7 @@ public class ProcessCodegen extends AbstractGenerator {
 								trigger).withDependencyInjection(annotator);
 						mdegs.add(msgDataEventGenerator);
 
-						mpgs.add(new MessageProducerGenerator(workFlowProcess, modelClassGenerator.className(),
+						mpgs.add(new MessageProducerGenerator(context(), workFlowProcess, modelClassGenerator.className(),
 								execModelGen.className(), msgDataEventGenerator.className(), trigger)
 										.withDependencyInjection(annotator));
 					}

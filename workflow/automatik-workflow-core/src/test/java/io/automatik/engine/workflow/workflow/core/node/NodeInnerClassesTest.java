@@ -16,6 +16,7 @@ import io.automatik.engine.workflow.base.instance.InternalProcessRuntime;
 import io.automatik.engine.workflow.process.core.node.CompositeNode;
 import io.automatik.engine.workflow.process.core.node.ForEachNode;
 import io.automatik.engine.workflow.process.executable.core.ExecutableProcess;
+import io.automatik.engine.workflow.process.test.Person;
 import io.automatik.engine.workflow.process.test.TestProcessEventListener;
 import io.automatik.engine.workflow.test.util.AbstractBaseTest;
 
@@ -36,8 +37,7 @@ public class NodeInnerClassesTest extends AbstractBaseTest {
 		List<Variable> variables = new ArrayList<Variable>();
 		Variable variable = new Variable();
 		variable.setName("event");
-		ObjectDataType personDataType = new ObjectDataType();
-		personDataType.setClassName("org.company.Person");
+		ObjectDataType personDataType = new ObjectDataType(Person.class);
 		variable.setType(personDataType);
 		variables.add(variable);
 		process.getVariableScope().setVariables(variables);

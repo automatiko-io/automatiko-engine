@@ -1,11 +1,10 @@
 
 package io.automatik.engine.workflow.compiler.canonical;
 
-import java.util.Map.Entry;
-
 import static io.automatik.engine.workflow.process.executable.core.factory.WorkItemNodeFactory.METHOD_WORK_NAME;
 import static io.automatik.engine.workflow.process.executable.core.factory.WorkItemNodeFactory.METHOD_WORK_PARAMETER;
 
+import java.util.Map.Entry;
 import java.util.Objects;
 
 import com.github.javaparser.ast.CompilationUnit;
@@ -27,7 +26,8 @@ public class WorkItemNodeVisitor<T extends WorkItemNode> extends AbstractNodeVis
 
 	private enum ParamType {
 		BOOLEAN(Boolean.class.getSimpleName()), INTEGER(Integer.class.getSimpleName()),
-		FLOAT(Float.class.getSimpleName());
+		FLOAT(Float.class.getSimpleName()), BOOLEANC(Boolean.class.getCanonicalName()),
+		INTEGERC(Integer.class.getCanonicalName()), FLOATC(Float.class.getCanonicalName());
 
 		final String name;
 
@@ -109,11 +109,14 @@ public class WorkItemNodeVisitor<T extends WorkItemNode> extends AbstractNodeVis
 		}
 		switch (pType) {
 		case BOOLEAN:
+		case BOOLEANC:
 			return new BooleanLiteralExpr(Boolean.parseBoolean(value));
 		case FLOAT:
+		case FLOATC:
 			return new MethodCallExpr().setScope(new NameExpr(Float.class.getName())).setName("parseFloat")
 					.addArgument(new StringLiteralExpr(value));
 		case INTEGER:
+		case INTEGERC:
 			return new IntegerLiteralExpr(Integer.parseInt(value));
 		default:
 			return new StringLiteralExpr(value);

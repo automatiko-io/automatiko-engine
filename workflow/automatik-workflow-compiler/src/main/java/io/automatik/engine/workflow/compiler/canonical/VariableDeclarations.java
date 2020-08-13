@@ -1,6 +1,7 @@
 
 package io.automatik.engine.workflow.compiler.canonical;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +59,7 @@ public class VariableDeclarations {
 			for (Entry<String, String> entry : vscope.entrySet()) {
 				Variable variable = new Variable();
 				variable.setName(entry.getKey());
-				variable.setType(new ObjectDataType(entry.getValue()));
+				variable.setType(new ObjectDataType(constructClass(entry.getValue())));
 				vs.put(entry.getKey(), variable);
 			}
 		}
@@ -82,5 +83,40 @@ public class VariableDeclarations {
 
 	public Map<String, Variable> getTypes() {
 		return vscope;
+	}
+
+	protected static Class<?> constructClass(String name) {
+		return constructClass(name, Thread.currentThread().getContextClassLoader());
+	}
+
+	protected static Class<?> constructClass(String name, ClassLoader cl) {
+		if (name == null) {
+			return Object.class;
+		}
+
+		switch (name) {
+		case "Object":
+			return Object.class;
+		case "Integer":
+			return Integer.class;
+		case "Double":
+			return Double.class;
+		case "Float":
+			return Float.class;
+		case "Boolean":
+			return Boolean.class;
+		case "String":
+			return String.class;
+		case "Date":
+			return Date.class;
+		default:
+			break;
+		}
+
+		try {
+			return Class.forName(name, true, cl);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException("Unable to construct variable from type", e);
+		}
 	}
 }

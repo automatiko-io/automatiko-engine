@@ -28,14 +28,14 @@ import io.automatik.engine.workflow.base.core.datatype.impl.type.UndefinedDataTy
 import io.automatik.engine.workflow.base.instance.impl.Action;
 import io.automatik.engine.workflow.bpmn2.core.Definitions;
 import io.automatik.engine.workflow.bpmn2.core.Interface;
-import io.automatik.engine.workflow.bpmn2.core.ItemDefinition;
 import io.automatik.engine.workflow.bpmn2.core.Interface.Operation;
+import io.automatik.engine.workflow.bpmn2.core.ItemDefinition;
 import io.automatik.engine.workflow.compiler.xml.BaseAbstractHandler;
 import io.automatik.engine.workflow.compiler.xml.ExtensibleXmlParser;
 import io.automatik.engine.workflow.compiler.xml.Handler;
 import io.automatik.engine.workflow.compiler.xml.ProcessBuildData;
-import io.automatik.engine.workflow.process.core.ProcessAction;
 import io.automatik.engine.workflow.process.core.NodeContainer;
+import io.automatik.engine.workflow.process.core.ProcessAction;
 import io.automatik.engine.workflow.process.core.impl.ConsequenceAction;
 import io.automatik.engine.workflow.process.core.node.ActionNode;
 import io.automatik.engine.workflow.process.core.node.ForEachNode;
@@ -190,10 +190,10 @@ public class DefinitionsHandler extends BaseAbstractHandler implements Handler {
 
 				} else if ("java.lang.Object".equals(structureRef) || "Object".equals(structureRef)) {
 					// use FQCN of Object
-					dataType = new ObjectDataType("java.lang.Object");
+					dataType = new ObjectDataType(java.lang.Object.class);
 
 				} else {
-					dataType = new ObjectDataType(structureRef, cl);
+					dataType = new ObjectDataType(constructClass(structureRef, cl));
 				}
 
 			}

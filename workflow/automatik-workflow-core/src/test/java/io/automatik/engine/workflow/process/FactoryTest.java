@@ -24,10 +24,10 @@ public class FactoryTest extends AbstractBaseTest {
 	@Test
 	public void test() {
 		ExecutableProcessFactory factory = ExecutableProcessFactory.createProcess("ExampleProcess");
-		factory.variable("x", new ObjectDataType("java.lang.String"));
-		factory.variable("y", new ObjectDataType("java.lang.String"));
-		factory.variable("list", new ObjectDataType("java.util.List"));
-		factory.variable("listOut", new ObjectDataType("java.util.List"));
+		factory.variable("x", new ObjectDataType(java.lang.String.class));
+		factory.variable("y", new ObjectDataType(java.lang.String.class));
+		factory.variable("list", new ObjectDataType(java.util.List.class));
+		factory.variable("listOut", new ObjectDataType(java.util.List.class));
 		factory.name("Example Process");
 		factory.packageName("org.company.bpmn2");
 		factory.dynamic(false);
@@ -40,7 +40,7 @@ public class FactoryTest extends AbstractBaseTest {
 				.metaData("x", 96).metaData("y", 16)
 				.activationExpression(
 						kcontext -> Objects.equals(kcontext.getVariable("x"), kcontext.getVariable("oldValue")))
-				.variable("x", new ObjectDataType("java.lang.String"))
+				.variable("x", new ObjectDataType(java.lang.String.class))
 				.exceptionHandler(RuntimeException.class.getName(), "java", "System.out.println(\"Error\");")
 				.autoComplete(true).language("java").done();
 

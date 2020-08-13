@@ -71,7 +71,8 @@ public class AbstractCodegenTest {
 
 	protected Application generateCode(List<String> processResources, List<String> rulesResources,
 			List<String> decisionResources, List<String> javaRulesResources, boolean hasRuleUnit) throws Exception {
-		GeneratorContext context = GeneratorContext.ofResourcePath(new File("src/test/resources"));
+		GeneratorContext context = GeneratorContext.ofResourcePath(new File("src/test/resources"),
+				new File("target/classes"));
 
 		// Testing based on Quarkus as Default
 		context.withBuildContext(new QuarkusApplicationBuildContext(config, (className -> true)));
@@ -101,11 +102,11 @@ public class AbstractCodegenTest {
 				continue;
 			}
 			sources.add(new SourceCode(fileName, new String(entry.contents())));
-			logger.info(new String(entry.contents()));
+			logger.debug(new String(entry.contents()));
 		}
 
 		if (logger.isDebugEnabled()) {
-			Path temp = Files.createTempDirectory("KOGITO_TESTS");
+			Path temp = Files.createTempDirectory("automatik-temp-dir");
 			logger.debug("Dumping generated files in " + temp);
 			for (GeneratedFile entry : generatedFiles) {
 				Path fpath = temp.resolve(entry.relativePath());

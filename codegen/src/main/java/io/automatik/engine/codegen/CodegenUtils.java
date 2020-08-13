@@ -1,6 +1,15 @@
 
 package io.automatik.engine.codegen;
 
+import static io.automatik.engine.codegen.CodeGenConstants.AMQP_CONNECTOR;
+import static io.automatik.engine.codegen.CodeGenConstants.AMQP_CONNECTOR_CLASS;
+import static io.automatik.engine.codegen.CodeGenConstants.CAMEL_CONNECTOR;
+import static io.automatik.engine.codegen.CodeGenConstants.CAMEL_CONNECTOR_CLASS;
+import static io.automatik.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR;
+import static io.automatik.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR_CLASS;
+import static io.automatik.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
+import static io.automatik.engine.codegen.CodeGenConstants.MQTT_CONNECTOR_CLASS;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,6 +29,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
+import io.automatik.engine.workflow.compiler.canonical.TriggerMetaData;
 
 public class CodegenUtils {
 
@@ -89,7 +99,8 @@ public class CodegenUtils {
 	}
 
 	public static void interpolateTypeArguments(NodeList<Type> ta, Map<String, String> typeInterpolations) {
-		ta.stream().filter(Type::isClassOrInterfaceType).map(Type::asClassOrInterfaceType).forEach(t -> interpolateTypes(t, typeInterpolations));
+		ta.stream().filter(Type::isClassOrInterfaceType).map(Type::asClassOrInterfaceType)
+				.forEach(t -> interpolateTypes(t, typeInterpolations));
 	}
 
 	public static boolean isProcessField(FieldDeclaration fd) {
@@ -110,6 +121,25 @@ public class CodegenUtils {
 				new ReturnStmt(new NameExpr(defaultMethod)));
 		body.addStatement(valueExists);
 		return extractMethod;
+	}
+
+	public static String getConnector(GeneratorContext context) {
+
+		if (context.getBuildContext().hasClassAvailable(MQTT_CONNECTOR_CLASS)) {
+			return MQTT_CONNECTOR;
+		} else if (context.getBuildContext().hasClassAvailable(KAFKA_CONNECTOR_CLASS)) {
+			return KAFKA_CONNECTOR;
+		} else if (context.getBuildContext().hasClassAvailable(AMQP_CONNECTOR_CLASS)) {
+			return AMQP_CONNECTOR;
+		} else if (context.getBuildContext().hasClassAvailable(CAMEL_CONNECTOR_CLASS)) {
+			return CAMEL_CONNECTOR;
+		}
+
+		return null;
+	}
+
+	public static String triggerSanitizedName(TriggerMetaData trigger) {
+		return trigger.getName().replaceAll("/", "-");
 	}
 
 }

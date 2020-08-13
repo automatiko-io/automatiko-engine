@@ -1,6 +1,9 @@
 
 package io.automatik.engine.workflow.compiler.canonical;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,13 +11,7 @@ import org.slf4j.LoggerFactory;
 import io.automatik.engine.api.definition.process.Process;
 import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
-import io.automatik.engine.workflow.compiler.canonical.ModelMetaData;
-import io.automatik.engine.workflow.compiler.canonical.ProcessMetaData;
-import io.automatik.engine.workflow.compiler.canonical.ProcessToExecModelGenerator;
 import io.automatik.engine.workflow.process.executable.core.ExecutableProcessFactory;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ProcessToExecModelGeneratorTest {
 
@@ -24,8 +21,8 @@ public class ProcessToExecModelGeneratorTest {
 	public void testScriptAndWorkItemGeneration() {
 
 		ExecutableProcessFactory factory = ExecutableProcessFactory.createProcess("demo.orders");
-		factory.variable("order", new ObjectDataType("com.myspace.demo.Order"))
-				.variable("approver", new ObjectDataType("String")).name("orders").packageName("com.myspace.demo")
+		factory.variable("order", new ObjectDataType(Integer.class))
+				.variable("approver", new ObjectDataType(String.class)).name("orders").packageName("com.myspace.demo")
 				.dynamic(false).version("1.0").workItemNode(1).name("Log").workName("Log").done().actionNode(2)
 				.name("Dump order").action("java", "System.out.println(\"Order has been created \" + order);").done()
 				.endNode(3).name("end").terminate(false).done().startNode(4).name("start").done().connection(2, 1)
@@ -51,8 +48,8 @@ public class ProcessToExecModelGeneratorTest {
 	public void testScriptAndWorkItemModelGeneration() {
 
 		ExecutableProcessFactory factory = ExecutableProcessFactory.createProcess("demo.orders");
-		factory.variable("order", new ObjectDataType("com.myspace.demo.Order"))
-				.variable("approver", new ObjectDataType("String")).name("orders").packageName("com.myspace.demo")
+		factory.variable("order", new ObjectDataType(Integer.class))
+				.variable("approver", new ObjectDataType(String.class)).name("orders").packageName("com.myspace.demo")
 				.dynamic(false).version("1.0").workItemNode(1).name("Log").workName("Log").done().actionNode(2)
 				.name("Dump order").action("java", "System.out.println(\"Order has been created \" + order);").done()
 				.endNode(3).name("end").terminate(false).done().startNode(4).name("start").done().connection(2, 1)

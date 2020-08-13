@@ -23,10 +23,10 @@ public class ForEachTest extends AbstractBaseTest {
 	@Test
 	public void test() {
 		ExecutableProcessFactory factory = ExecutableProcessFactory.createProcess("ParentProcess");
-		factory.variable("x", new ObjectDataType("java.lang.String"));
-		factory.variable("y", new ObjectDataType("java.lang.String"));
-		factory.variable("list", new ObjectDataType("java.util.List"));
-		factory.variable("listOut", new ObjectDataType("java.util.List"));
+		factory.variable("x", new ObjectDataType(java.lang.String.class));
+		factory.variable("y", new ObjectDataType(java.lang.String.class));
+		factory.variable("list", new ObjectDataType(java.util.List.class));
+		factory.variable("listOut", new ObjectDataType(java.util.List.class));
 		factory.name("Parent Process");
 		factory.packageName("org.company.bpmn2");
 		factory.dynamic(false);
@@ -46,9 +46,9 @@ public class ForEachTest extends AbstractBaseTest {
 		forEachNode2.metaData("MICollectionInput", "_2_input");
 		forEachNode2.metaData("height", 48);
 		forEachNode2.collectionExpression("list");
-		forEachNode2.variable("x", new ObjectDataType("java.lang.String"));
+		forEachNode2.variable("x", new ObjectDataType(java.lang.String.class));
 		forEachNode2.outputCollectionExpression("listOut");
-		forEachNode2.outputVariable("y", new ObjectDataType("java.lang.String"));
+		forEachNode2.outputVariable("y", new ObjectDataType(java.lang.String.class));
 
 		forEachNode2.actionNode(5).action((kcontext) -> System.out.println(kcontext.getVariable("x"))).done();
 		forEachNode2.linkIncomingConnections(5);

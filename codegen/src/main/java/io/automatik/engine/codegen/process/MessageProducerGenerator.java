@@ -2,6 +2,8 @@
 package io.automatik.engine.codegen.process;
 
 import static com.github.javaparser.StaticJavaParser.parse;
+import static io.automatik.engine.codegen.CodeGenConstants.INCOMING_PROP_PREFIX;
+import static io.automatik.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
 import static io.automatik.engine.codegen.CodegenUtils.interpolateTypes;
 
 import com.github.javaparser.ast.CompilationUnit;
@@ -16,6 +18,8 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.codegen.BodyDeclarationComparator;
+import io.automatik.engine.codegen.CodegenUtils;
+import io.automatik.engine.codegen.GeneratorContext;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.compiler.canonical.TriggerMetaData;
@@ -25,6 +29,8 @@ public class MessageProducerGenerator {
 	private static final String EVENT_DATA_VAR = "eventData";
 
 	private final String relativePath;
+
+	private GeneratorContext context;
 
 	private WorkflowProcess process;
 	private final String packageName;
@@ -36,8 +42,9 @@ public class MessageProducerGenerator {
 
 	private TriggerMetaData trigger;
 
-	public MessageProducerGenerator(WorkflowProcess process, String modelfqcn, String processfqcn,
-			String messageDataEventClassName, TriggerMetaData trigger) {
+	public MessageProducerGenerator(GeneratorContext context, WorkflowProcess process, String modelfqcn,
+			String processfqcn, String messageDataEventClassName, TriggerMetaData trigger) {
+		this.context = context;
 		this.process = process;
 		this.trigger = trigger;
 		this.packageName = process.getPackageName();
@@ -66,7 +73,28 @@ public class MessageProducerGenerator {
 		return this.annotator != null;
 	}
 
+	protected void appendConnectorSpecificProperties(String connector) {
+		if (connector.equals(MQTT_CONNECTOR)) {
+			String sanitizedName = CodegenUtils.triggerSanitizedName(trigger);
+			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".host", "localhost");
+			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".port", "1883");
+			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".client-id",
+					sanitizedName + "-consumer");
+			context.setApplicationProperty("quarkus.automatik.messaging.as-cloudevents", "false");
+		}
+	}
+
 	public String generate() {
+		
+		String sanitizedName = CodegenUtils.triggerSanitizedName(trigger);
+		String connector = CodegenUtils.getConnector(context);
+		if (connector != null) {
+
+			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".connector", connector);
+			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".topic", trigger.getName());
+			appendConnectorSpecificProperties(connector);
+		}
+		
 		CompilationUnit clazz = parse(
 				this.getClass().getResourceAsStream("/class-templates/MessageProducerTemplate.java"));
 		clazz.setPackageDeclaration(process.getPackageName());
@@ -94,7 +122,7 @@ public class MessageProducerGenerator {
 			FieldDeclaration emitterField = template.findFirst(FieldDeclaration.class)
 					.filter(fd -> fd.getVariable(0).getNameAsString().equals("emitter")).get();
 			annotator.withInjection(emitterField);
-			annotator.withOutgoingMessage(emitterField, trigger.getName());
+			annotator.withOutgoingMessage(emitterField, sanitizedName);
 			emitterField.getVariable(0).setType(annotator.emitterType("Message"));
 
 			MethodDeclaration produceMethod = template.findAll(MethodDeclaration.class).stream()
@@ -102,7 +130,7 @@ public class MessageProducerGenerator {
 							() -> new IllegalStateException("Cannot find produce methos in MessageProducerTemplate"));
 			BlockStmt body = new BlockStmt();
 			MethodCallExpr sendMethodCall = new MethodCallExpr(new NameExpr("emitter"), "send");
-			annotator.withMessageProducer(sendMethodCall, trigger.getName(),
+			annotator.withMessageProducer(sendMethodCall, sanitizedName,
 					new MethodCallExpr(new ThisExpr(), "marshall").addArgument(new NameExpr("pi"))
 							.addArgument(new NameExpr(EVENT_DATA_VAR)));
 			body.addStatement(sendMethodCall);

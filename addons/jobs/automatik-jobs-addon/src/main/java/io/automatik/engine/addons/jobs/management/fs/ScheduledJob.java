@@ -2,6 +2,9 @@ package io.automatik.engine.addons.jobs.management.fs;
 
 import java.time.ZonedDateTime;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public class ScheduledJob {
 
 	private String id;

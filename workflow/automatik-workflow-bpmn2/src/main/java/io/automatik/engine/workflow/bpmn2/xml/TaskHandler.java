@@ -97,7 +97,7 @@ public class TaskHandler extends AbstractNodeHandler {
 
 			ParameterDefinition parameterDefinition = new ParameterDefinitionImpl();
 			parameterDefinition.setName(entryInputTypes.getKey());
-			parameterDefinition.setType(new ObjectDataType(entryInputTypes.getValue()));
+			parameterDefinition.setType(new ObjectDataType(constructClass(entryInputTypes.getValue())));
 			work.addParameterDefinition(parameterDefinition);
 		}
 	}

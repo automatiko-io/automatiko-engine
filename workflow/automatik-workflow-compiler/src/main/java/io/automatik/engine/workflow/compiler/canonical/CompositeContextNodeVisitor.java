@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
+import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
@@ -90,8 +91,8 @@ public class CompositeContextNodeVisitor<T extends CompositeContextNode> extends
 				String tags = (String) variable.getMetaData(Variable.VARIABLE_TAGS);
 				ClassOrInterfaceType variableType = new ClassOrInterfaceType(null,
 						ObjectDataType.class.getSimpleName());
-				ObjectCreationExpr variableValue = new ObjectCreationExpr(null, variableType,
-						new NodeList<>(new StringLiteralExpr(variable.getType().getStringType())));
+				ObjectCreationExpr variableValue = new ObjectCreationExpr(null, variableType, new NodeList<>(
+						new ClassExpr(new ClassOrInterfaceType(null, variable.getType().getStringType()))));
 				body.addStatement(
 						getFactoryMethod(contextNode, METHOD_VARIABLE, new StringLiteralExpr(variable.getName()),
 								variableValue, new StringLiteralExpr(Variable.VARIABLE_TAGS),
