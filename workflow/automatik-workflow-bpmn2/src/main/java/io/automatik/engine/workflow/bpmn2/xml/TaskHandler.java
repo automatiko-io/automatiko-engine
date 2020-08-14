@@ -1,6 +1,7 @@
 
 package io.automatik.engine.workflow.bpmn2.xml;
 
+import static io.automatik.engine.workflow.compiler.util.ClassUtils.constructClass;
 import static io.automatik.engine.workflow.process.executable.core.Metadata.CONDITION;
 
 import java.util.ArrayList;
@@ -97,7 +98,8 @@ public class TaskHandler extends AbstractNodeHandler {
 
 			ParameterDefinition parameterDefinition = new ParameterDefinitionImpl();
 			parameterDefinition.setName(entryInputTypes.getKey());
-			parameterDefinition.setType(new ObjectDataType(constructClass(entryInputTypes.getValue())));
+			parameterDefinition.setType(
+					new ObjectDataType(constructClass(entryInputTypes.getValue()), entryInputTypes.getValue()));
 			work.addParameterDefinition(parameterDefinition);
 		}
 	}

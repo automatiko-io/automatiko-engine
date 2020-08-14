@@ -1,5 +1,7 @@
 package io.automatik.engine.workflow.bpmn2.xml;
 
+import static io.automatik.engine.workflow.compiler.util.ClassUtils.constructClass;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -65,8 +67,8 @@ public class DataStoreHandler extends BaseAbstractHandler implements Handler {
 		if (itemDefinitions != null) {
 			ItemDefinition itemDefinition = itemDefinitions.get(localItemSubjectRef);
 			if (itemDefinition != null) {
-				dataType = new ObjectDataType(
-						constructClass(itemDefinition.getStructureRef(), parser.getClassLoader()));
+				dataType = new ObjectDataType(constructClass(itemDefinition.getStructureRef(), parser.getClassLoader()),
+						itemDefinition.getStructureRef());
 			}
 		}
 		store.setType(dataType);

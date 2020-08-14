@@ -24,15 +24,15 @@ public class ObjectDataType implements DataType {
 	public ObjectDataType() {
 	}
 
-	public ObjectDataType(Class<?> className) {
-		setClassName(className.getCanonicalName());
-		this.clazz = className;
+	public ObjectDataType(Class<?> clazz) {
+		setClassName(clazz.getCanonicalName());
+		this.clazz = clazz;
 	}
 
-	public ObjectDataType(Class<?> className, ClassLoader classLoader) {
+	public ObjectDataType(Class<?> clazz, String className) {
 		setClassLoader(classLoader);
-		setClassName(className.getCanonicalName());
-		this.clazz = className;
+		setClassName(className);
+		this.clazz = clazz;
 	}
 
 	public String getClassName() {

@@ -161,7 +161,9 @@ public class ProcessVisitor extends AbstractVisitor {
 				ClassOrInterfaceType variableType = new ClassOrInterfaceType(null,
 						ObjectDataType.class.getSimpleName());
 				ObjectCreationExpr variableValue = new ObjectCreationExpr(null, variableType, new NodeList<>(
-						new ClassExpr(new ClassOrInterfaceType(null, variable.getType().getStringType()))));
+						new ClassExpr(
+								new ClassOrInterfaceType(null, variable.getType().getClassType().getCanonicalName())),
+						new StringLiteralExpr(variable.getType().getStringType())));
 				body.addStatement(
 						getFactoryMethod(FACTORY_FIELD_NAME, METHOD_VARIABLE, new StringLiteralExpr(variable.getName()),
 								variableValue, new StringLiteralExpr(Variable.VARIABLE_TAGS),

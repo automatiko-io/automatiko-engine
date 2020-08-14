@@ -4,6 +4,8 @@ package io.automatik.engine.workflow.compiler.canonical;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +51,7 @@ public class ProcessToExecModelGeneratorTest {
 
 		ExecutableProcessFactory factory = ExecutableProcessFactory.createProcess("demo.orders");
 		factory.variable("order", new ObjectDataType(Integer.class))
+				.variable("order", new ObjectDataType(List.class, "java.util.List<String>"))
 				.variable("approver", new ObjectDataType(String.class)).name("orders").packageName("com.myspace.demo")
 				.dynamic(false).version("1.0").workItemNode(1).name("Log").workName("Log").done().actionNode(2)
 				.name("Dump order").action("java", "System.out.println(\"Order has been created \" + order);").done()

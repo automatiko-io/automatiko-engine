@@ -42,24 +42,34 @@ public class ForEachNodeVisitor extends AbstractCompositeNodeVisitor<ForEachNode
 				getNodeKey(), new LongLiteralExpr(node.getId()))).addStatement(getNameMethod(node, "ForEach"));
 		visitMetaData(node.getMetaData(), body, getNodeId(node));
 
-		body.addStatement(getFactoryMethod(getNodeId(node), METHOD_COLLECTION_EXPRESSION,
-				new StringLiteralExpr(stripExpression(node.getCollectionExpression()))))
-				.addStatement(getFactoryMethod(getNodeId(node), METHOD_VARIABLE,
-						new StringLiteralExpr(node.getVariableName()),
-						new ObjectCreationExpr(null,
-								new ClassOrInterfaceType(null, ObjectDataType.class.getSimpleName()),
-								NodeList.nodeList(new ClassExpr(
-										new ClassOrInterfaceType(null, node.getVariableType().getStringType()))))));
+		body.addStatement(
+				getFactoryMethod(getNodeId(node), METHOD_COLLECTION_EXPRESSION,
+						new StringLiteralExpr(stripExpression(node.getCollectionExpression()))))
+				.addStatement(
+						getFactoryMethod(getNodeId(node), METHOD_VARIABLE,
+								new StringLiteralExpr(node.getVariableName()),
+								new ObjectCreationExpr(null,
+										new ClassOrInterfaceType(null, ObjectDataType.class.getSimpleName()), NodeList
+												.nodeList(
+														new ClassExpr(new ClassOrInterfaceType(null,
+																node.getVariableType().getClassType()
+																		.getCanonicalName())),
+														new StringLiteralExpr(
+																node.getVariableType().getStringType())))));
 
 		if (node.getOutputCollectionExpression() != null) {
 			body.addStatement(getFactoryMethod(getNodeId(node), METHOD_OUTPUT_COLLECTION_EXPRESSION,
-					new StringLiteralExpr(stripExpression(node.getOutputCollectionExpression()))))
-					.addStatement(getFactoryMethod(getNodeId(node), METHOD_OUTPUT_VARIABLE,
-							new StringLiteralExpr(node.getOutputVariableName()),
-							new ObjectCreationExpr(null,
-									new ClassOrInterfaceType(null, ObjectDataType.class.getSimpleName()),
-									NodeList.nodeList(new ClassExpr(new ClassOrInterfaceType(null,
-											node.getOutputVariableType().getStringType()))))));
+					new StringLiteralExpr(stripExpression(node.getOutputCollectionExpression())))).addStatement(
+							getFactoryMethod(getNodeId(node), METHOD_OUTPUT_VARIABLE,
+									new StringLiteralExpr(node.getOutputVariableName()),
+									new ObjectCreationExpr(null,
+											new ClassOrInterfaceType(null, ObjectDataType.class.getSimpleName()),
+											NodeList.nodeList(
+													new ClassExpr(new ClassOrInterfaceType(null,
+															node.getOutputVariableType().getClassType()
+																	.getCanonicalName())),
+													new StringLiteralExpr(
+															node.getOutputVariableType().getStringType())))));
 		}
 		// visit nodes
 		visitNodes(getNodeId(node), node.getNodes(), body,

@@ -2,13 +2,13 @@
 package io.automatik.engine.workflow.compiler.canonical;
 
 import static com.github.javaparser.StaticJavaParser.parse;
+import static io.automatik.engine.workflow.compiler.util.ClassUtils.constructClass;
 import static io.automatik.engine.workflow.process.executable.core.factory.SubProcessNodeFactory.METHOD_INDEPENDENT;
 import static io.automatik.engine.workflow.process.executable.core.factory.SubProcessNodeFactory.METHOD_PROCESS_ID;
 import static io.automatik.engine.workflow.process.executable.core.factory.SubProcessNodeFactory.METHOD_PROCESS_NAME;
 import static io.automatik.engine.workflow.process.executable.core.factory.SubProcessNodeFactory.METHOD_WAIT_FOR_COMPLETION;
 
 import java.io.InputStream;
-import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -149,7 +149,8 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
 				Map<String, String> dataOutputs = (Map<String, String>) subProcessNode.getMetaData("BPMN.OutputTypes");
 				Variable variable = new Variable();
 				variable.setName(topLevelVariable);
-				variable.setType(new ObjectDataType(constructClass(dataOutputs.get(e.getKey()))));
+				variable.setType(
+						new ObjectDataType(constructClass(dataOutputs.get(e.getKey())), dataOutputs.get(e.getKey())));
 
 				stmts.addStatement(makeAssignment(variableScope.findVariable(topLevelVariable)));
 				stmts.addStatement(makeAssignmentFromModel(variable, e.getKey()));
@@ -197,40 +198,5 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
 		}
 
 		return scope;
-	}
-
-	protected Class<?> constructClass(String name) {
-		return constructClass(name, Thread.currentThread().getContextClassLoader());
-	}
-
-	protected Class<?> constructClass(String name, ClassLoader cl) {
-		if (name == null) {
-			return Object.class;
-		}
-
-		switch (name) {
-		case "Object":
-			return Object.class;
-		case "Integer":
-			return Integer.class;
-		case "Double":
-			return Double.class;
-		case "Float":
-			return Float.class;
-		case "Boolean":
-			return Boolean.class;
-		case "String":
-			return String.class;
-		case "Date":
-			return Date.class;
-		default:
-			break;
-		}
-
-		try {
-			return Class.forName(name, true, cl);
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException("Unable to construct variable from type", e);
-		}
 	}
 }

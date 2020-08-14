@@ -1,6 +1,8 @@
 
 package io.automatik.engine.workflow.bpmn2.xml;
 
+import static io.automatik.engine.workflow.compiler.util.ClassUtils.constructClass;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -89,10 +91,11 @@ public class DataObjectHandler extends BaseAbstractHandler implements Handler {
 
 					} else if ("java.lang.Object".equals(structureRef) || "Object".equals(structureRef)) {
 						// use FQCN of Object
-						dataType = new ObjectDataType(java.lang.Object.class);
+						dataType = new ObjectDataType(java.lang.Object.class, structureRef);
 
 					} else {
-						dataType = new ObjectDataType(constructClass(structureRef, parser.getClassLoader()));
+						dataType = new ObjectDataType(constructClass(structureRef, parser.getClassLoader()),
+								structureRef);
 					}
 				}
 			}

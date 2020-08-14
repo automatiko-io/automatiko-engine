@@ -1,6 +1,7 @@
 
 package io.automatik.engine.workflow.bpmn2.xml;
 
+import static io.automatik.engine.workflow.compiler.util.ClassUtils.constructClass;
 import static io.automatik.engine.workflow.process.executable.core.Metadata.COMPLETION_CONDITION;
 
 import java.util.ArrayList;
@@ -483,10 +484,10 @@ public abstract class AbstractNodeHandler extends BaseAbstractHandler implements
 				dataType = new StringDataType();
 
 			} else if ("java.lang.Object".equals(structureRef) || "Object".equals(structureRef)) {
-				dataType = new ObjectDataType(constructClass(structureRef));
+				dataType = new ObjectDataType(constructClass(structureRef), structureRef);
 
 			} else {
-				dataType = new ObjectDataType(constructClass(structureRef, cl));
+				dataType = new ObjectDataType(constructClass(structureRef, cl), structureRef);
 			}
 
 		}

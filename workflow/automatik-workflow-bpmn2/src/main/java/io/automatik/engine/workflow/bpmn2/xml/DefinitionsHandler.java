@@ -1,6 +1,8 @@
 
 package io.automatik.engine.workflow.bpmn2.xml;
 
+import static io.automatik.engine.workflow.compiler.util.ClassUtils.constructClass;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -190,10 +192,10 @@ public class DefinitionsHandler extends BaseAbstractHandler implements Handler {
 
 				} else if ("java.lang.Object".equals(structureRef) || "Object".equals(structureRef)) {
 					// use FQCN of Object
-					dataType = new ObjectDataType(java.lang.Object.class);
+					dataType = new ObjectDataType(java.lang.Object.class, structureRef);
 
 				} else {
-					dataType = new ObjectDataType(constructClass(structureRef, cl));
+					dataType = new ObjectDataType(constructClass(structureRef, cl), structureRef);
 				}
 
 			}

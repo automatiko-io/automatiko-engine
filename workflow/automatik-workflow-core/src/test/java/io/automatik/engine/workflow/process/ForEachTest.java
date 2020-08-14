@@ -25,8 +25,8 @@ public class ForEachTest extends AbstractBaseTest {
 		ExecutableProcessFactory factory = ExecutableProcessFactory.createProcess("ParentProcess");
 		factory.variable("x", new ObjectDataType(java.lang.String.class));
 		factory.variable("y", new ObjectDataType(java.lang.String.class));
-		factory.variable("list", new ObjectDataType(java.util.List.class));
-		factory.variable("listOut", new ObjectDataType(java.util.List.class));
+		factory.variable("list", new ObjectDataType(java.util.List.class, "java.util.List<String>"));
+		factory.variable("listOut", new ObjectDataType(java.util.List.class, "java.util.List<String>"));
 		factory.name("Parent Process");
 		factory.packageName("org.company.bpmn2");
 		factory.dynamic(false);
