@@ -91,7 +91,16 @@ public class MessageConsumerGenerator {
 			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".port", "1883");
 			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".client-id",
 					sanitizedName + "-consumer");
+			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".failure-strategy", "ignore");
 			context.setApplicationProperty("quarkus.automatik.messaging.as-cloudevents", "false");
+		}
+	}
+
+	protected String consumerTemplate(String connector) {
+		if (connector.equals(MQTT_CONNECTOR)) {
+			return "/class-templates/MQTTMessageConsumerTemplate.java";
+		} else {
+			return "/class-templates/MessageConsumerTemplate.java";
 		}
 	}
 
@@ -104,8 +113,7 @@ public class MessageConsumerGenerator {
 			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".topic", trigger.getName());
 			appendConnectorSpecificProperties(connector);
 		}
-		CompilationUnit clazz = parse(
-				this.getClass().getResourceAsStream("/class-templates/MessageConsumerTemplate.java"));
+		CompilationUnit clazz = parse(this.getClass().getResourceAsStream(consumerTemplate(connector)));
 		clazz.setPackageDeclaration(process.getPackageName());
 		clazz.addImport(modelfqcn);
 
@@ -172,14 +180,14 @@ public class MessageConsumerGenerator {
 			template.findAll(MethodDeclaration.class).stream()
 					.filter(md -> md.getNameAsString().equals("correlationEvent")).forEach(md -> {
 						md.setBody(body);
-						md.getParameters().forEach(p -> p.setType(messageDataEventClassName));
+						md.getParameters().get(0).setType(messageDataEventClassName);
 					});
 		} else {
 
 			template.findAll(MethodDeclaration.class).stream()
 					.filter(md -> md.getNameAsString().equals("correlationPayload")).forEach(md -> {
 						md.setBody(body);
-						md.getParameters().forEach(p -> p.setType(trigger.getDataType()));
+						md.getParameters().get(0).setType(trigger.getDataType());
 					});
 
 		}

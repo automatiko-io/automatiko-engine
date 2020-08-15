@@ -135,11 +135,11 @@ public class CodegenUtils {
 			return CAMEL_CONNECTOR;
 		}
 
-		return null;
+		return "unknown";
 	}
 
 	public static String triggerSanitizedName(TriggerMetaData trigger) {
-		return trigger.getName().replaceAll("/", "-");
+		return trigger.getName().replaceAll("/", "-").replaceAll("\\+", "x").replaceAll("#", "any");
 	}
 
 }

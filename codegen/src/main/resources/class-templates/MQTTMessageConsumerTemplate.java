@@ -118,4 +118,23 @@ public class $Type$MessageConsumer {
 		
 		return null;
 	}
+	
+	protected String topic(Message<byte[]> message, int... items) {
+		String topic = ((io.smallrye.reactive.messaging.mqtt.MqttMessage<byte[]>) message).getTopic();
+		
+		if (items.length == 0) {
+			return topic;
+		}
+		
+		String[] topicElements = topic.split("/");
+		
+		StringBuilder builder = new StringBuilder();
+		
+		for (int item : items) {
+			builder.append(topicElements[item]).append("-");
+		}
+		builder.deleteCharAt(builder.length() - 1);
+		
+		return builder.toString();
+	}
 }
