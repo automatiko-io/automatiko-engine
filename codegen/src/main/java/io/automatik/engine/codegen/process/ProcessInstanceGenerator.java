@@ -1,23 +1,40 @@
 
 package io.automatik.engine.codegen.process;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map.Entry;
+
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.Modifier.Keyword;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.SimpleName;
+import com.github.javaparser.ast.expr.ThisExpr;
+import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.VoidType;
+import com.github.javaparser.ast.type.WildcardType;
 
+import io.automatik.engine.api.Model;
 import io.automatik.engine.api.runtime.process.ProcessRuntime;
 import io.automatik.engine.api.runtime.process.WorkflowProcessInstance;
+import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.codegen.BodyDeclarationComparator;
 import io.automatik.engine.workflow.AbstractProcessInstance;
 import io.automatik.engine.workflow.compiler.canonical.ModelMetaData;
+import io.automatik.engine.workflow.compiler.canonical.ProcessMetaData;
 
 public class ProcessInstanceGenerator {
 
@@ -36,11 +53,15 @@ public class ProcessInstanceGenerator {
 	private final String generatedFilePath;
 	private final String completePath;
 
+	private final ProcessExecutableModelGenerator processGenerator;
+
 	public static String qualifiedName(String packageName, String typeName) {
 		return packageName + "." + typeName + "ProcessInstance";
 	}
 
-	public ProcessInstanceGenerator(String packageName, String typeName, ModelMetaData model) {
+	public ProcessInstanceGenerator(ProcessExecutableModelGenerator processGenerator, String packageName,
+			String typeName, ModelMetaData model) {
+		this.processGenerator = processGenerator;
 		this.packageName = packageName;
 		this.typeName = typeName;
 		this.model = model;
@@ -70,6 +91,12 @@ public class ProcessInstanceGenerator {
 				.addMember(constructorDecl()).addMember(constructorWithBusinessKeyDecl())
 				.addMember(constructorWithWorkflowInstanceAndRuntimeDecl()).addMember(constructorWorkflowInstanceDecl())
 				.addMember(bind()).addMember(unbind());
+
+		ProcessMetaData processMetaData = processGenerator.generate();
+		if (!processMetaData.getSubProcesses().isEmpty()) {
+			classDecl.getMembers().add(subprocessesMethod(processMetaData));
+		}
+
 		classDecl.getMembers().sort(new BodyDeclarationComparator());
 		return classDecl;
 	}
@@ -133,6 +160,46 @@ public class ProcessInstanceGenerator {
 				.addParameter(WorkflowProcessInstance.class.getCanonicalName(), WPI)
 				.setBody(new BlockStmt().addStatement(
 						new MethodCallExpr("super", new NameExpr(PROCESS), new NameExpr(VALUE), new NameExpr(WPI))));
+	}
+
+	private MethodDeclaration subprocessesMethod(ProcessMetaData processMetaData) {
+
+		ClassOrInterfaceType collectionOfprocessInstanceType = new ClassOrInterfaceType(null,
+				new SimpleName(Collection.class.getCanonicalName()),
+				NodeList.nodeList(new ClassOrInterfaceType(null,
+						new SimpleName(ProcessInstance.class.getCanonicalName()), NodeList.nodeList(
+								new WildcardType(new ClassOrInterfaceType(null, Model.class.getCanonicalName()))))));
+
+		ClassOrInterfaceType listOfprocessInstanceType = new ClassOrInterfaceType(null,
+				new SimpleName(ArrayList.class.getCanonicalName()),
+				NodeList.nodeList(new ClassOrInterfaceType(null,
+						new SimpleName(ProcessInstance.class.getCanonicalName()), NodeList.nodeList(
+								new WildcardType(new ClassOrInterfaceType(null, Model.class.getCanonicalName()))))));
+
+		MethodDeclaration subprocessesMethod = new MethodDeclaration().setName("subprocesses")
+				.setModifiers(Keyword.PUBLIC).setType(collectionOfprocessInstanceType);
+		BlockStmt body = new BlockStmt();
+
+		VariableDeclarationExpr subprocessFieldDeclaration = new VariableDeclarationExpr(
+				new VariableDeclarator().setType(collectionOfprocessInstanceType).setName("subprocesses")
+						.setInitializer(new ObjectCreationExpr(null, listOfprocessInstanceType, NodeList.nodeList())));
+		body.addStatement(subprocessFieldDeclaration);
+		for (Entry<String, String> subProcess : processMetaData.getSubProcesses().entrySet()) {
+
+			String getterName = "getProcess" + subProcess.getKey();
+			// this.process().get....
+			MethodCallExpr fetchProcessInstance = new MethodCallExpr(
+					new EnclosedExpr(new CastExpr(ProcessGenerator.processType(canonicalName),
+							new MethodCallExpr(new ThisExpr(), "process"))),
+					getterName);
+
+			body.addStatement(new MethodCallExpr(new ThisExpr(), "populateChildProcesses")
+					.addArgument(fetchProcessInstance).addArgument(new NameExpr("subprocesses")));
+
+		}
+		body.addStatement(new ReturnStmt(new NameExpr("subprocesses")));
+		subprocessesMethod.setBody(body);
+		return subprocessesMethod;
 	}
 
 	public String targetTypeName() {

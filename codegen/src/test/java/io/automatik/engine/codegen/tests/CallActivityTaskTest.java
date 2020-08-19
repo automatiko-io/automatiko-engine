@@ -3,8 +3,10 @@ package io.automatik.engine.codegen.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -212,5 +214,71 @@ public class CallActivityTaskTest extends AbstractCodegenTest {
 		assertThat(result.toMap()).hasSize(2).containsKeys("x", "y");
 		assertThat(result.toMap().get("y")).isNotNull().isEqualTo("new value");
 		assertThat(result.toMap().get("x")).isNotNull().isEqualTo("a");
+	}
+
+	@Test
+	public void testCallActivityTaskWithSubprocesWait() throws Exception {
+
+		Application app = generateCodeProcessesOnly("subprocess/CallActivity.bpmn2",
+				"subprocess/CallActivitySubProcessHT.bpmn2", "subprocess/CallActivitySubProcessHT2.bpmn2");
+		assertThat(app).isNotNull();
+
+		Process<? extends Model> p = app.processes().processById("ParentProcess");
+
+		Model m = p.createModel();
+		Map<String, Object> parameters = new HashMap<>();
+		parameters.put("x", "a");
+		parameters.put("y", "b");
+		m.fromMap(parameters);
+
+		ProcessInstance<?> processInstance = p.createInstance(m);
+		processInstance.start();
+
+		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+		Model result = (Model) processInstance.variables();
+		assertThat(result.toMap()).hasSize(2).containsKeys("x", "y");
+
+		// check if tasks can be accessed via parent process instance even if they are
+		// in subprocesses
+		List<WorkItem> workItems = processInstance.workItems(securityPolicy);
+		assertEquals(1, workItems.size());
+		WorkItem wi = workItems.get(0);
+		assertEquals("User Task 1", wi.getName());
+		assertEquals(Active.ID, wi.getPhase());
+		assertEquals(Active.STATUS, wi.getPhaseStatus());
+		// following check shows that task(wi) comes from another process instance
+		assertNotEquals(processInstance.id(), wi.getProcessInstanceId());
+
+		Collection<ProcessInstance<? extends Model>> subprocesses = processInstance.subprocesses();
+		assertThat(subprocesses).hasSize(1);
+
+		ProcessInstance<?> childProcessInstance = subprocesses.iterator().next();
+
+		workItems = childProcessInstance.workItems(securityPolicy);
+		assertEquals(1, workItems.size());
+		wi = workItems.get(0);
+		assertEquals("User Task 1", wi.getName());
+		assertEquals(Active.ID, wi.getPhase());
+		assertEquals(Active.STATUS, wi.getPhaseStatus());
+
+		processInstance.transitionWorkItem(workItems.get(0).getReferenceId(),
+				new HumanTaskTransition(Complete.ID, null, securityPolicy));
+
+		workItems = processInstance.workItems(securityPolicy);
+		assertEquals(1, workItems.size());
+		wi = workItems.get(0);
+		assertEquals("User Task 2", wi.getName());
+		assertEquals(Active.ID, wi.getPhase());
+		assertEquals(Active.STATUS, wi.getPhaseStatus());
+		// following check shows that task(wi) comes from another process instance
+		assertNotEquals(processInstance.id(), wi.getProcessInstanceId());
+
+		subprocesses = childProcessInstance.subprocesses();
+		assertThat(subprocesses).hasSize(1);
+
+		ProcessInstance<?> subChildProcessInstance = subprocesses.iterator().next();
+		subChildProcessInstance.transitionWorkItem(workItems.get(0).getId(),
+				new HumanTaskTransition(Complete.ID, null, securityPolicy));
+		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
 	}
 }

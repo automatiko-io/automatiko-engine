@@ -1,9 +1,9 @@
 syntax = "proto2";
 
-package org.jbpm.marshalling;
+package io.automatik.engine.workflow.marshalling;
 
-option java_package = "org.jbpm.marshalling.impl";
-option java_outer_classname = "JBPMMessages";
+option java_package = "io.automatik.engine.workflow.marshalling.impl";
+option java_outer_classname = "AutomatikMessages";
 
 
 // WARNING: Before changing this file, make sure you know what you
@@ -29,7 +29,7 @@ option java_outer_classname = "JBPMMessages";
 message Header {
     extensions 100 to 199;
 
-    // Drools version for which this message was created
+    // version for which this message was created
     optional Version version = 1;
 
     // Signature to prevent security concerns
@@ -143,6 +143,13 @@ message ProcessInstance {
     repeated ExclusiveGroupInstance exclusive_group = 10;
     repeated string completedNodeIds = 13;
     repeated IterationLevel iterationLevels = 14;
+    
+    repeated ProcessInstanchChildren children = 28;
+        
+	message ProcessInstanchChildren {
+	    optional string process_id = 1;
+	    repeated string ids = 2;
+	}
 
     message SwimlaneContextInstance {
         optional string swimlane = 1;

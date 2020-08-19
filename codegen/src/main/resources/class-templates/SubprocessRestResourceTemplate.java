@@ -1,5 +1,6 @@
 package com.myspace.demo;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,85 +32,67 @@ import io.automatik.engine.workflow.Sig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path("/$name$")
+
 public class $Type$Resource {
 
-    Process<$Type$> process;
-    
-    Application application;
+    Process<$Type$> subprocess_$name$;
 
-    @POST()
+    @GET()
+    @Path("$prefix$/$name$")
     @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    @org.eclipse.microprofile.metrics.annotation.Counted(name = "create $name$", description = "Number of new instances of $name$")
-    @org.eclipse.microprofile.metrics.annotation.Timed(name = "duration of creating $name$", description = "A measure of how long it takes to create new instance of $name$.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
-    @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of instances of $name$", description="Rate of new instances of $name$")
-    public $Type$Output create_$name$(@Context HttpHeaders httpHeaders, @QueryParam("businessKey") String businessKey, $Type$Input resource) {
-        if (resource == null) {
-            resource = new $Type$Input();
+    public List<$Type$Output> getAll_$name$(@PathParam("id") String id) {
+        
+    	ProcessInstance parent = $parentprocess$.instances()
+                .findById($parentprocessid$)
+                .orElse(null);
+        if (parent != null) {
+    	
+        	return (List<$Type$Output>) parent.subprocesses().stream()
+                .map(pi -> mapOutput(new $Type$Output(), ($Type$) ((ProcessInstance)pi).variables()))
+                .collect(java.util.stream.Collectors.toList());
+        } else {
+        	return java.util.Collections.emptyList();
         }
-        final $Type$Input value = resource;
-
-        return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-            ProcessInstance<$Type$> pi = process.createInstance(businessKey, mapInput(value, new $Type$()));
-            String startFromNode = httpHeaders.getHeaderString("X-AUTOMATIK-StartFromNode");
-            
-            if (startFromNode != null) {
-                pi.startFrom(startFromNode);
-            } else {
-            
-                pi.start();
-            }
-            return getModel(pi);
-        });
     }
 
     @GET()
+    @Path("$prefix$/$name$/{id_$name$}")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<$Type$Output> getAll_$name$() {
-        return process.instances().values().stream()
-                .map(pi -> mapOutput(new $Type$Output(), pi.variables()))
-                .collect(Collectors.toList());
-    }
-
-    @GET()
-    @Path("/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public $Type$Output get_$name$(@PathParam("id") String id) {
-        return process.instances()
-                .findById(id)
+    public $Type$Output get_$name$(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$) {
+        return subprocess_$name$.instances()
+                .findById(id_$name$)
                 .map(pi -> mapOutput(new $Type$Output(), pi.variables()))
                 .orElse(null);
     }
 
     @DELETE()
-    @Path("/{id}")
+    @Path("$prefix$/$name$/{id_$name$}")
     @Produces(MediaType.APPLICATION_JSON)
     @org.eclipse.microprofile.metrics.annotation.Counted(name = "delete $name$", description = "Number of instances of $name$ deleted/aborted")
     @org.eclipse.microprofile.metrics.annotation.Timed(name = "duration of deleting $name$", description = "A measure of how long it takes to delete instance of $name$.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
     @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of deleted instances of $name$", description="Rate of deleted instances of $name$")    
-    public $Type$Output delete_$name$(@PathParam("id") final String id) {
+    public $Type$Output delete_$name$(@PathParam("id") String id, @PathParam("id_$name$") final String id_$name$) {
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-            ProcessInstance<$Type$> pi = process.instances()
-                    .findById(id)
+            ProcessInstance<$Type$> pi = subprocess_$name$.instances()
+                    .findById(id_$name$)
                     .orElse(null);
             if (pi == null) {
                 return null;
             } else {
                 pi.abort();
-                return getModel(pi);
+                return getSubModel_$name$(pi);
             }
         });
     }
     
     @POST()
-    @Path("/{id}")
+    @Path("$prefix$/$name$/{id_$name$}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public $Type$Output updateModel_$name$(@PathParam("id") String id, $Type$ resource) {
+    public $Type$Output updateModel_$name$(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$, $Type$ resource) {
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-            ProcessInstance<$Type$> pi = process.instances()
-                    .findById(id)
+            ProcessInstance<$Type$> pi = subprocess_$name$.instances()
+                    .findById(id_$name$)
                     .orElse(null);
             if (pi == null) {
                 return null;
@@ -121,35 +104,25 @@ public class $Type$Resource {
     }
     
     @GET()
-    @Path("/{id}/tasks")
+    @Path("$prefix$/$name$/{id_$name$}/tasks")
     @Produces(MediaType.APPLICATION_JSON)
-    public java.util.List<WorkItem.Descriptor> getTasks_$name$(@PathParam("id") String id, @QueryParam("user") final String user, @QueryParam("group") final List<String> groups) {
+    public java.util.List<WorkItem.Descriptor> getTasks_$name$(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$, @QueryParam("user") final String user, @QueryParam("group") final List<String> groups) {
         
-        return process.instances()
-                .findById(id)
+        return subprocess_$name$.instances()
+                .findById(id_$name$)
                 .map(pi -> pi.workItems(policies(user, groups)))
                 .map(l -> l.stream().map(WorkItem::toMap).collect(Collectors.toList()))
                 .orElse(null);
     }
     
-    protected $Type$Output getModel(ProcessInstance<$Type$> pi) {
+    protected $Type$Output getSubModel_$name$(ProcessInstance<$Type$> pi) {
         if (pi.status() == ProcessInstance.STATE_ERROR && pi.error().isPresent()) {
             throw new ProcessInstanceExecutionException(pi.id(), pi.error().get().failedNodeId(), pi.error().get().errorMessage());
         }
         
         return mapOutput(new $Type$Output(), pi.variables());
     }
-    
-    protected Policy[] policies(String user, List<String> groups) {
-        if (user == null) {
-            return new Policy[0];
-        } 
-        io.automatik.engine.api.auth.IdentityProvider identity = null;
-        if (user != null) {
-            identity = new io.automatik.engine.services.identity.StaticIdentityProvider(user, groups);
-        }
-        return new Policy[] {SecurityPolicy.of(identity)};
-    }
+
     
     protected $Type$ mapInput($Type$Input input, $Type$ resource) {
         resource.fromMap(input.toMap());

@@ -14,14 +14,14 @@ import com.google.protobuf.Message;
 
 import io.automatik.engine.api.marshalling.ObjectMarshallingStrategy;
 import io.automatik.engine.api.marshalling.ObjectMarshallingStrategy.Context;
-import io.automatik.engine.workflow.marshalling.impl.JBPMMessages.Header.StrategyIndex.Builder;
+import io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.Header.StrategyIndex.Builder;
 
 public class PersisterHelper {
 
 	public static void writeToStreamWithHeader(MarshallerWriteContext context, Message payload) throws IOException {
-		JBPMMessages.Header.Builder _header = JBPMMessages.Header.newBuilder();
-		_header.setVersion(
-				JBPMMessages.Version.newBuilder().setVersionMajor(1).setVersionMinor(0).setVersionRevision(0).build());
+		AutomatikMessages.Header.Builder _header = AutomatikMessages.Header.newBuilder();
+		_header.setVersion(AutomatikMessages.Version.newBuilder().setVersionMajor(1).setVersionMinor(0)
+				.setVersionRevision(0).build());
 
 		writeStrategiesIndex(context, _header);
 
@@ -32,10 +32,10 @@ public class PersisterHelper {
 		context.stream.write(_header.build().toByteArray());
 	}
 
-	private static void writeStrategiesIndex(MarshallerWriteContext context, JBPMMessages.Header.Builder _header)
+	private static void writeStrategiesIndex(MarshallerWriteContext context, AutomatikMessages.Header.Builder _header)
 			throws IOException {
 		for (Entry<ObjectMarshallingStrategy, Integer> entry : context.usedStrategies.entrySet()) {
-			Builder _strat = JBPMMessages.Header.StrategyIndex.newBuilder().setId(entry.getValue().intValue())
+			Builder _strat = AutomatikMessages.Header.StrategyIndex.newBuilder().setId(entry.getValue().intValue())
 					.setName(entry.getKey().getName());
 
 			Context ctx = context.strategyContext.get(entry.getKey());
@@ -49,8 +49,8 @@ public class PersisterHelper {
 		}
 	}
 
-	private static JBPMMessages.Header loadStrategiesCheckSignature(MarshallerReaderContext context,
-			JBPMMessages.Header _header) throws ClassNotFoundException, IOException {
+	private static AutomatikMessages.Header loadStrategiesCheckSignature(MarshallerReaderContext context,
+			AutomatikMessages.Header _header) throws ClassNotFoundException, IOException {
 		loadStrategiesIndex(context, _header);
 
 		byte[] sessionbuff = _header.getPayload().toByteArray();
@@ -60,12 +60,12 @@ public class PersisterHelper {
 		return _header;
 	}
 
-	public static JBPMMessages.Header readFromStreamWithHeaderPreloaded(MarshallerReaderContext context,
+	public static AutomatikMessages.Header readFromStreamWithHeaderPreloaded(MarshallerReaderContext context,
 			ExtensionRegistry registry) throws IOException, ClassNotFoundException {
 		// we preload the stream into a byte[] to overcome a message size limit
 		// imposed by protobuf
 		byte[] preloaded = preload(context.stream);
-		JBPMMessages.Header _header = JBPMMessages.Header.parseFrom(preloaded, registry);
+		AutomatikMessages.Header _header = AutomatikMessages.Header.parseFrom(preloaded, registry);
 
 		return loadStrategiesCheckSignature(context, _header);
 	}
@@ -82,9 +82,9 @@ public class PersisterHelper {
 		return preloaded.toByteArray();
 	}
 
-	private static void loadStrategiesIndex(MarshallerReaderContext context, JBPMMessages.Header _header)
+	private static void loadStrategiesIndex(MarshallerReaderContext context, AutomatikMessages.Header _header)
 			throws IOException, ClassNotFoundException {
-		for (JBPMMessages.Header.StrategyIndex _entry : _header.getStrategyList()) {
+		for (AutomatikMessages.Header.StrategyIndex _entry : _header.getStrategyList()) {
 			ObjectMarshallingStrategy strategyObject = context.resolverStrategyFactory
 					.getStrategyObject(_entry.getName());
 			if (strategyObject == null) {

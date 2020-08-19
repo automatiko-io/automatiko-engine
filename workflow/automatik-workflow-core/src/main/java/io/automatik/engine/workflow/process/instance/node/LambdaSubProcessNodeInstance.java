@@ -95,6 +95,7 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
 				|| processInstance.status() == ProcessInstance.STATE_ABORTED) {
 			triggerCompleted();
 		} else {
+			((ProcessInstanceImpl) getProcessInstance()).addChild(processInstance.process().id(), processInstance.id());
 			addProcessListener();
 		}
 	}
@@ -152,6 +153,8 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
 
 	public void processInstanceCompleted(ProcessInstance processInstance) {
 		removeEventListeners();
+		((ProcessInstanceImpl) getProcessInstance()).removeChild(processInstance.getProcess().getId(),
+				processInstance.getId());
 		handleOutMappings(processInstance);
 		if (processInstance.getState() == ProcessInstance.STATE_ABORTED) {
 			String faultName = processInstance.getOutcome() == null ? "" : processInstance.getOutcome();

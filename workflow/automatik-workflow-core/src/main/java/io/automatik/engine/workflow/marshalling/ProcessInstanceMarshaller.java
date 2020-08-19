@@ -15,8 +15,8 @@ import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.workflow.AbstractProcess;
 import io.automatik.engine.workflow.AbstractProcessInstance;
+import io.automatik.engine.workflow.marshalling.impl.AutomatikMessages;
 import io.automatik.engine.workflow.marshalling.impl.ClassObjectMarshallingStrategyAcceptor;
-import io.automatik.engine.workflow.marshalling.impl.JBPMMessages;
 import io.automatik.engine.workflow.marshalling.impl.MarshallerReaderContext;
 import io.automatik.engine.workflow.marshalling.impl.PersisterHelper;
 import io.automatik.engine.workflow.marshalling.impl.ProcessMarshallerRegistry;
@@ -66,7 +66,7 @@ public class ProcessInstanceMarshaller {
 
 			Object result = marshaller.writeProcessInstance(context, pi);
 			if (marshaller instanceof ProtobufRuleFlowProcessInstanceMarshaller && result != null) {
-				JBPMMessages.ProcessInstance _instance = (JBPMMessages.ProcessInstance) result;
+				AutomatikMessages.ProcessInstance _instance = (AutomatikMessages.ProcessInstance) result;
 				PersisterHelper.writeToStreamWithHeader(context, _instance);
 			}
 			context.close();

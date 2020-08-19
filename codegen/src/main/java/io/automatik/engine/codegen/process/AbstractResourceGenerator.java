@@ -4,6 +4,7 @@ package io.automatik.engine.codegen.process;
 import static com.github.javaparser.StaticJavaParser.parse;
 import static io.automatik.engine.codegen.CodegenUtils.interpolateTypes;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.github.javaparser.ast.CompilationUnit;
@@ -20,10 +23,14 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
+import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -37,29 +44,39 @@ import io.automatik.engine.codegen.context.ApplicationBuildContext;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.compiler.canonical.UserTaskModelMetaData;
+import io.automatik.engine.workflow.util.PatternConstants;
 
 /**
  * AbstractResourceGenerator
  */
 public abstract class AbstractResourceGenerator {
 
+	public static final Pattern PARAMETER_MATCHER = Pattern.compile("\\{([\\S|\\p{javaWhitespace}&&[^\\}]]+)\\}",
+			Pattern.DOTALL);
+
 	private final String relativePath;
 
 	private final GeneratorContext context;
 	private WorkflowProcess process;
+	private WorkflowProcess parentProcess;
 	private final String resourceClazzName;
 	private final String processClazzName;
 	private String processId;
 	private String dataClazzName;
 	private String modelfqcn;
 	private final String processName;
+	private String parentProcessName = "process";
+	private String parentProcessId = "id";
 	private final String appCanonicalName;
 	private DependencyInjectionAnnotator annotator;
+
+	private String pathPrefix = "{id}";
 
 	private boolean startable;
 	private boolean dynamic;
 	private List<UserTaskModelMetaData> userTasks;
 	private Map<String, String> signals;
+	private List<AbstractResourceGenerator> subprocesses;
 
 	public AbstractResourceGenerator(GeneratorContext context, WorkflowProcess process, String modelfqcn,
 			String processfqcn, String appCanonicalName) {
@@ -74,6 +91,17 @@ public abstract class AbstractResourceGenerator {
 		this.modelfqcn = modelfqcn + "Output";
 		this.dataClazzName = modelfqcn.substring(modelfqcn.lastIndexOf('.') + 1);
 		this.processClazzName = processfqcn;
+	}
+
+	public AbstractResourceGenerator withParentProcess(WorkflowProcess parentProcess) {
+		this.parentProcess = parentProcess;
+		if (this.parentProcess != null && !isParentPublic()) {
+			String processInfo = parentProcess.getId().substring(parentProcess.getId().lastIndexOf('.') + 1);
+
+			this.parentProcessName = "subprocess_" + processInfo;
+			this.parentProcessId = "id_" + processInfo;
+		}
+		return this;
 	}
 
 	public AbstractResourceGenerator withDependencyInjection(DependencyInjectionAnnotator annotator) {
@@ -97,6 +125,16 @@ public abstract class AbstractResourceGenerator {
 		return this;
 	}
 
+	public AbstractResourceGenerator withSubProcesses(List<AbstractResourceGenerator> subprocesses) {
+		this.subprocesses = subprocesses;
+		return this;
+	}
+
+	public AbstractResourceGenerator withPathPrefix(String pathPrefix) {
+		this.pathPrefix = pathPrefix;
+		return this;
+	}
+
 	public String className() {
 		return resourceClazzName;
 	}
@@ -104,6 +142,11 @@ public abstract class AbstractResourceGenerator {
 	protected abstract String getResourceTemplate();
 
 	public String generate() {
+
+		return generateCompilationUnit().toString();
+	}
+
+	public CompilationUnit generateCompilationUnit() {
 		CompilationUnit clazz = parse(this.getClass().getResourceAsStream(getResourceTemplate()));
 		clazz.setPackageDeclaration(process.getPackageName());
 		clazz.addImport(modelfqcn);
@@ -198,6 +241,9 @@ public abstract class AbstractResourceGenerator {
 		typeInterpolations.put("$Type$", dataClazzName);
 		template.findAll(ClassOrInterfaceType.class).forEach(cls -> interpolateTypes(cls, typeInterpolations));
 		template.findAll(MethodDeclaration.class).forEach(this::interpolateMethods);
+		template.findAll(FieldDeclaration.class).forEach(this::interpolateFields);
+		template.findAll(NameExpr.class).forEach(this::interpolateVariables);
+		template.findAll(MethodCallExpr.class).forEach(this::interpolateMethodCall);
 
 		if (useInjection()) {
 			template.findAll(FieldDeclaration.class, CodegenUtils::isProcessField)
@@ -225,11 +271,57 @@ public abstract class AbstractResourceGenerator {
 			annotator.withApplicationComponent(template);
 		}
 
+		for (AbstractResourceGenerator resourceGenerator : subprocesses) {
+
+			resourceGenerator.withPathPrefix(
+					parentProcess == null ? pathPrefix : pathPrefix + "/" + processId + "/{id_" + processId + "}");
+			CompilationUnit subunit = resourceGenerator.generateCompilationUnit();
+
+			subunit.findFirst(ClassOrInterfaceDeclaration.class).get().findAll(MethodDeclaration.class).forEach(md -> {
+				MethodDeclaration cloned = md.clone();
+
+				Optional<AnnotationExpr> pathAnotation = cloned.getAnnotationByName("Path");
+				if (pathAnotation.isPresent()) {
+					String v = pathAnotation.get().toString().replaceAll("\\{id", "#{id");
+					Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(v);
+					while (matcher.find()) {
+						String paramName = matcher.group(1);
+
+						if (cloned.getParameterByName(paramName).isEmpty()) {
+							cloned.addParameter(new Parameter().setName(paramName).setType(String.class)
+									.addAnnotation(new SingleMemberAnnotationExpr(new Name("javax.ws.rs.PathParam"),
+											new StringLiteralExpr(paramName))));
+						}
+					}
+				}
+				cloned.getParameters().sort(new Comparator<Parameter>() {
+
+					@Override
+					public int compare(Parameter o1, Parameter o2) {
+						if (o1.getAnnotations().isEmpty() && o1.getAnnotations().isEmpty()) {
+							return 0;
+						} else if (o1.getAnnotations().isEmpty() && !o1.getAnnotations().isEmpty()) {
+							return -1;
+						} else {
+							return 1;
+						}
+					}
+				});
+				template.addMember(cloned);
+			});
+
+			subunit.findFirst(ClassOrInterfaceDeclaration.class).get().findAll(FieldDeclaration.class).forEach(fd -> {
+				FieldDeclaration cloned = fd.clone();
+				template.addMember(cloned);
+			});
+		}
+
 		enableValidation(template);
 		removeMetricsIfNotEnabled(template);
 
 		template.getMembers().sort(new BodyDeclarationComparator());
-		return clazz.toString();
+
+		return clazz;
 	}
 
 	protected abstract String getSignalResourceTemplate();
@@ -285,8 +377,8 @@ public abstract class AbstractResourceGenerator {
 	private void interpolateStrings(StringLiteralExpr vv) {
 		String s = vv.getValue();
 		String documentation = process.getMetaData().getOrDefault("Documentation", processName).toString();
-		String interpolated = s.replace("$name$", processName).replace("$id$", processId).replace("$documentation$",
-				documentation);
+		String interpolated = s.replace("$name$", processName).replace("$id$", processId)
+				.replace("$documentation$", documentation).replace("$prefix$", pathPrefix);
 		vv.setString(interpolated);
 	}
 
@@ -307,6 +399,28 @@ public abstract class AbstractResourceGenerator {
 	}
 
 	private void interpolateMethods(MethodDeclaration m) {
+		SimpleName methodName = m.getName();
+		String interpolated = methodName.asString().replace("$name$", processName);
+		m.setName(interpolated);
+
+		m.getParameters().forEach(p -> p.setName(
+				p.getNameAsString().replace("$name$", processName).replace("$parentprocessid$", parentProcessId)));
+	}
+
+	private void interpolateFields(FieldDeclaration m) {
+		SimpleName methodName = m.getVariable(0).getName();
+		String interpolated = methodName.asString().replace("$name$", processName);
+		m.getVariable(0).setName(interpolated);
+	}
+
+	private void interpolateVariables(NameExpr m) {
+		SimpleName methodName = m.getName();
+		String interpolated = methodName.asString().replace("$name$", processName)
+				.replace("$parentprocess$", parentProcessName).replace("$parentprocessid$", parentProcessId);
+		m.setName(interpolated);
+	}
+
+	private void interpolateMethodCall(MethodCallExpr m) {
 		SimpleName methodName = m.getName();
 		String interpolated = methodName.asString().replace("$name$", processName);
 		m.setName(interpolated);
@@ -346,5 +460,9 @@ public abstract class AbstractResourceGenerator {
 
 	protected boolean isPublic() {
 		return WorkflowProcess.PUBLIC_VISIBILITY.equalsIgnoreCase(process.getVisibility());
+	}
+
+	protected boolean isParentPublic() {
+		return WorkflowProcess.PUBLIC_VISIBILITY.equalsIgnoreCase(parentProcess.getVisibility());
 	}
 }

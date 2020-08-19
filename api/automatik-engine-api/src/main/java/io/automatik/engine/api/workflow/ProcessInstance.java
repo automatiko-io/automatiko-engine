@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import io.automatik.engine.api.Model;
 import io.automatik.engine.api.runtime.process.WorkItemNotFoundException;
 import io.automatik.engine.api.workflow.flexible.AdHocFragment;
 import io.automatik.engine.api.workflow.flexible.Milestone;
@@ -91,6 +92,8 @@ public interface ProcessInstance<T> {
 	 * @return the current status
 	 */
 	int status();
+
+	Collection<ProcessInstance<? extends Model>> subprocesses();
 
 	/**
 	 * Completes work item belonging to this process instance with given variables

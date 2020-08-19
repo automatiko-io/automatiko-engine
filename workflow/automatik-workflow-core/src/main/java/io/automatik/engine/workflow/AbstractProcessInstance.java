@@ -3,6 +3,7 @@ package io.automatik.engine.workflow;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -239,6 +240,11 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 	}
 
 	@Override
+	public Collection<ProcessInstance<? extends Model>> subprocesses() {
+		return Collections.emptyList();
+	}
+
+	@Override
 	public Process<T> process() {
 		return process;
 	}
@@ -377,7 +383,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 						&& ((WorkItemNodeInstance) ni).getWorkItem().enforce(policies))
 				.findFirst().orElseThrow(() -> new WorkItemNotFoundException(
 						"Work item with id " + workItemId + " was not found in process instance " + id(), workItemId));
-		return new BaseWorkItem(workItemInstance.getId(), workItemInstance.getWorkItem().getId(),
+		return new BaseWorkItem(workItemInstance.getProcessInstance().getId(), workItemInstance.getId(),
+				workItemInstance.getWorkItem().getId(), workItemInstance.buildReferenceId(),
 				(String) workItemInstance.getWorkItem().getParameters().getOrDefault("TaskName",
 						workItemInstance.getNodeName()),
 				workItemInstance.getWorkItem().getState(), workItemInstance.getWorkItem().getPhaseId(),
@@ -387,9 +394,12 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
 	@Override
 	public List<WorkItem> workItems(Policy<?>... policies) {
-		return ((WorkflowProcessInstanceImpl) processInstance()).getNodeInstances(true).stream().filter(
-				ni -> ni instanceof WorkItemNodeInstance && ((WorkItemNodeInstance) ni).getWorkItem().enforce(policies))
-				.map(ni -> new BaseWorkItem(ni.getId(), ((WorkItemNodeInstance) ni).getWorkItemId(),
+		List<WorkItem> mainProcessInstance = ((WorkflowProcessInstanceImpl) processInstance()).getNodeInstances(true)
+				.stream()
+				.filter(ni -> ni instanceof WorkItemNodeInstance
+						&& ((WorkItemNodeInstance) ni).getWorkItem().enforce(policies))
+				.map(ni -> new BaseWorkItem(ni.getProcessInstance().getId(), ni.getId(),
+						((WorkItemNodeInstance) ni).getWorkItemId(), ((WorkItemNodeInstance) ni).buildReferenceId(),
 						(String) ((WorkItemNodeInstance) ni).getWorkItem().getParameters().getOrDefault("TaskName",
 								ni.getNodeName()),
 						((WorkItemNodeInstance) ni).getWorkItem().getState(),
@@ -399,24 +409,55 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 						((WorkItemNodeInstance) ni).getWorkItem().getResults()))
 				.collect(Collectors.toList());
 
+		subprocesses().forEach(pi -> mainProcessInstance.addAll(pi.workItems(policies)));
+
+		return mainProcessInstance;
+
 	}
 
 	@Override
 	public void completeWorkItem(String id, Map<String, Object> variables, Policy<?>... policies) {
-		this.getProcessRuntime().getWorkItemManager().completeWorkItem(id, variables, policies);
-		removeOnFinish();
+		String[] fragments = id.split("/");
+
+		if (fragments.length > 1) {
+			// comes from subprocess
+			subprocesses().stream().filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
+					.findFirst().ifPresent(pi -> pi.completeWorkItem(fragments[3], variables, policies));
+		} else {
+
+			this.getProcessRuntime().getWorkItemManager().completeWorkItem(id, variables, policies);
+			removeOnFinish();
+		}
 	}
 
 	@Override
 	public void abortWorkItem(String id, Policy<?>... policies) {
-		this.getProcessRuntime().getWorkItemManager().abortWorkItem(id, policies);
-		removeOnFinish();
+		String[] fragments = id.split("/");
+
+		if (fragments.length > 1) {
+			// comes from subprocess
+			subprocesses().stream().filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
+					.findFirst().ifPresent(pi -> pi.abortWorkItem(fragments[3], policies));
+		} else {
+
+			this.getProcessRuntime().getWorkItemManager().abortWorkItem(id, policies);
+			removeOnFinish();
+		}
 	}
 
 	@Override
 	public void transitionWorkItem(String id, Transition<?> transition) {
-		this.getProcessRuntime().getWorkItemManager().transitionWorkItem(id, transition);
-		removeOnFinish();
+		String[] fragments = id.split("/");
+
+		if (fragments.length > 1) {
+			// comes from subprocess
+			subprocesses().stream().filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
+					.findFirst().ifPresent(pi -> pi.transitionWorkItem(fragments[3], transition));
+		} else {
+
+			this.getProcessRuntime().getWorkItemManager().transitionWorkItem(id, transition);
+			removeOnFinish();
+		}
 	}
 
 	@Override
@@ -484,6 +525,19 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 			throw new Error(e);
 		}
 		vmap.put("$v", variables);
+	}
+
+	protected void populateChildProcesses(Process<?> process, Collection<ProcessInstance<? extends Model>> collection) {
+
+		WorkflowProcessInstanceImpl instance = (WorkflowProcessInstanceImpl) processInstance();
+
+		List<String> children = instance.getChildren().get(process.id());
+		if (children != null && !children.isEmpty()) {
+
+			for (String id : children) {
+				process.instances().findById(id).ifPresent(pi -> collection.add((ProcessInstance<? extends Model>) pi));
+			}
+		}
 	}
 
 	@Override

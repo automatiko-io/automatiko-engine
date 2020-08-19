@@ -8,6 +8,7 @@ import io.automatik.engine.api.workflow.WorkItem;
 public class BaseWorkItem implements WorkItem {
 
 	private final String id;
+	private final String processInstanceId;
 	private final String nodeInstanceId;
 	private final String name;
 
@@ -15,13 +16,17 @@ public class BaseWorkItem implements WorkItem {
 	private String phase;
 	private String phaseStatus;
 
+	private String referenceId;
+
 	private Map<String, Object> parameters;
 	private Map<String, Object> results;
 
-	public BaseWorkItem(String nodeInstanceId, String id, String name, int state, String phase, String phaseStatus,
-			Map<String, Object> results) {
+	public BaseWorkItem(String processInstanceId, String nodeInstanceId, String id, String referenceId, String name,
+			int state, String phase, String phaseStatus, Map<String, Object> results) {
 		this.id = id;
+		this.processInstanceId = processInstanceId;
 		this.nodeInstanceId = nodeInstanceId;
+		this.referenceId = referenceId;
 		this.name = name;
 		this.state = state;
 		this.phase = phase;
@@ -29,10 +34,12 @@ public class BaseWorkItem implements WorkItem {
 		this.results = results;
 	}
 
-	public BaseWorkItem(String nodeInstanceId, String id, String name, int state, String phase, String phaseStatus,
-			Map<String, Object> parameters, Map<String, Object> results) {
+	public BaseWorkItem(String processInstanceId, String nodeInstanceId, String id, String referenceId, String name,
+			int state, String phase, String phaseStatus, Map<String, Object> parameters, Map<String, Object> results) {
 		this.id = id;
+		this.processInstanceId = processInstanceId;
 		this.nodeInstanceId = nodeInstanceId;
+		this.referenceId = referenceId;
 		this.name = name;
 		this.state = state;
 		this.phase = phase;
@@ -79,6 +86,16 @@ public class BaseWorkItem implements WorkItem {
 	@Override
 	public String getNodeInstanceId() {
 		return nodeInstanceId;
+	}
+
+	@Override
+	public String getProcessInstanceId() {
+		return processInstanceId;
+	}
+
+	@Override
+	public String getReferenceId() {
+		return referenceId;
 	}
 
 	@Override

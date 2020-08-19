@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import io.automatik.engine.api.definition.process.Process;
 import io.automatik.engine.workflow.base.core.Context;
@@ -39,6 +40,8 @@ public abstract class ProcessInstanceImpl implements ProcessInstance, Serializab
 	private String rootProcessInstanceId;
 	private String description;
 	private String rootProcessId;
+
+	private Map<String, List<String>> children = new HashMap<String, List<String>>();
 
 	public void setId(final String id) {
 		this.id = id;
@@ -290,4 +293,19 @@ public abstract class ProcessInstanceImpl implements ProcessInstance, Serializab
 		this.description = description;
 	}
 
+	public Map<String, List<String>> getChildren() {
+		return this.children;
+	}
+
+	public void addChild(String processId, String processInstanceId) {
+		this.children.computeIfAbsent(processId, p -> new ArrayList<String>()).add(processInstanceId);
+	}
+
+	public void addChildren(String processId, List<String> processInstanceIds) {
+		this.children.computeIfAbsent(processId, p -> new ArrayList<String>()).addAll(processInstanceIds);
+	}
+
+	public void removeChild(String processId, String processInstanceId) {
+		Optional.ofNullable(this.children.get(processId)).ifPresent(l -> l.remove(processInstanceId));
+	}
 }

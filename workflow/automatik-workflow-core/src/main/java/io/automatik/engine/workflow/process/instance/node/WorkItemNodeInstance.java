@@ -689,4 +689,16 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
 		return Collections.singleton(new IOEventDescription("workItemCompleted", getNodeDefinitionId(), getNodeName(),
 				"workItem", getWorkItemId(), getProcessInstance().getId(), dataTypes));
 	}
+
+	public String buildReferenceId() {
+		if (getProcessInstance().getId().equals(getProcessInstance().getRootProcessInstanceId())) {
+			return getWorkItem().getId();
+		}
+		StringBuilder builder = new StringBuilder();
+		builder.append(getProcessInstance().getProcessId()).append("/").append(getProcessInstance().getId()).append("/")
+				.append(getWorkItem().getParameters().getOrDefault("TaskName", getNodeName())).append("/")
+				.append(getWorkItem().getId());
+
+		return builder.toString();
+	}
 }

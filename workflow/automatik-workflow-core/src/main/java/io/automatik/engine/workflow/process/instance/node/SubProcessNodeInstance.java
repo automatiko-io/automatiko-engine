@@ -195,6 +195,7 @@ public class SubProcessNodeInstance extends StateBasedNodeInstance implements Ev
 					StringUtils.isEmpty(getProcessInstance().getRootProcessId()) ? getProcessInstance().getProcessId()
 							: getProcessInstance().getRootProcessId());
 			((ProcessInstanceImpl) processInstance).setSignalCompletion(getSubProcessNode().isWaitForCompletion());
+			((ProcessInstanceImpl) processInstance).addChild(processInstance.getProcessId(), processInstance.getId());
 
 			kruntime.startProcessInstance(processInstance.getId());
 			if (!getSubProcessNode().isWaitForCompletion()) {
@@ -261,6 +262,8 @@ public class SubProcessNodeInstance extends StateBasedNodeInstance implements Ev
 
 	public void processInstanceCompleted(ProcessInstance processInstance) {
 		removeEventListeners();
+		((ProcessInstanceImpl) getProcessInstance()).removeChild(processInstance.getProcessId(),
+				processInstance.getId());
 		handleOutMappings(processInstance);
 		if (processInstance.getState() == ProcessInstance.STATE_ABORTED) {
 			String faultName = processInstance.getOutcome() == null ? "" : processInstance.getOutcome();

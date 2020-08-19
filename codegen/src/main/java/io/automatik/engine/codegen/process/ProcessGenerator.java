@@ -454,7 +454,7 @@ public class ProcessGenerator {
 				}
 
 				cls.addMember(subprocessFieldDeclaration);
-
+				subprocessFieldDeclaration.createGetter();
 			}
 		}
 
