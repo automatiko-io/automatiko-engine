@@ -206,6 +206,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 		if (correlationKey != null && process.instances.exists(id)) {
 			throw new ProcessInstanceDuplicatedException(correlationKey.getName());
 		}
+		((WorkflowProcessInstanceImpl) processInstance).setMetaData("KogitoProcessInstance", this);
 		addCompletionEventListener();
 		io.automatik.engine.api.runtime.process.ProcessInstance processInstance = this.getProcessRuntime()
 				.startProcessInstance(this.id, trigger, data);
@@ -316,6 +317,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 		if (referenceId != null) {
 			((WorkflowProcessInstanceImpl) processInstance).setReferenceId(referenceId);
 		}
+		((WorkflowProcessInstanceImpl) processInstance).setMetaData("KogitoProcessInstance", this);
 		triggerNode(nodeId);
 		addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
 		unbind(variables, processInstance.getVariables());
@@ -483,14 +485,15 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
 			removeCompletionListener();
 			syncProcessInstance((WorkflowProcessInstance) processInstance);
-
+			unbind(this.variables, processInstance().getVariables());
 			addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id()));
 
 		} else {
+			syncProcessInstance((WorkflowProcessInstance) processInstance);
+			unbind(this.variables, processInstance().getVariables());
 			addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
 		}
-		unbind(this.variables, processInstance().getVariables());
-		this.status = processInstance.getState();
+
 	}
 
 	// this must be overridden at compile time
