@@ -1,6 +1,8 @@
 
 package io.automatik.engine.codegen.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,8 +14,6 @@ import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.codegen.AbstractCodegenTest;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class VariableTest extends AbstractCodegenTest {
 
 	@Test
@@ -21,7 +21,7 @@ public class VariableTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly("servicetask/ServiceTaskWithReservedNameVariable.bpmn2");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("test");
+		Process<? extends Model> p = app.processes().processById("test_1_0");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();

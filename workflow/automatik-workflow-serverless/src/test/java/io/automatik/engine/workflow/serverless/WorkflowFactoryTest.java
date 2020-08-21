@@ -39,7 +39,7 @@ public class WorkflowFactoryTest extends BaseServerlessTest {
 		assertThat(process).isNotNull();
 		assertThat(process.getId()).isEqualTo("serverless");
 		assertThat(process.getName()).isEqualTo("workflow");
-		assertThat(process.getVersion()).isEqualTo("1.0");
+		assertThat(process.getVersion()).isNull();
 		assertThat(process.getPackageName()).isEqualTo("org.kie.kogito.serverless");
 		assertThat(process.isAutoComplete()).isTrue();
 		assertThat(process.getVisibility()).isEqualTo("Public");

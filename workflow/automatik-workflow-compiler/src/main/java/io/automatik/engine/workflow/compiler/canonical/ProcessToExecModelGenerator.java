@@ -42,7 +42,7 @@ public class ProcessToExecModelGenerator {
 		Optional<ClassOrInterfaceDeclaration> processClazzOptional = parsedClazzFile
 				.findFirst(ClassOrInterfaceDeclaration.class, sl -> true);
 
-		String extractedProcessId = extractProcessId(process.getId());
+		String extractedProcessId = extractProcessId(process.getId(), ModelMetaData.version(process.getVersion()));
 
 		if (!processClazzOptional.isPresent()) {
 			throw new NoSuchElementException("Cannot find class declaration in the template");
@@ -51,7 +51,7 @@ public class ProcessToExecModelGenerator {
 		processClazz.setName(StringUtils.capitalize(extractedProcessId + PROCESS_CLASS_SUFFIX));
 		String packageName = parsedClazzFile.getPackageDeclaration().map(NodeWithName::getNameAsString).orElse(null);
 		ProcessMetaData metadata = new ProcessMetaData(process.getId(), extractedProcessId, process.getName(),
-				process.getVersion(), packageName, processClazz.getNameAsString());
+				ModelMetaData.version(process.getVersion()), packageName, processClazz.getNameAsString());
 
 		Optional<MethodDeclaration> processMethod = parsedClazzFile.findFirst(MethodDeclaration.class,
 				sl -> sl.getName().asString().equals("process"));
@@ -67,11 +67,11 @@ public class ProcessToExecModelGenerator {
 		CompilationUnit clazz = parse(this.getClass().getResourceAsStream("/class-templates/ProcessTemplate.java"));
 		clazz.setPackageDeclaration(process.getPackageName());
 
-		String extractedProcessId = extractProcessId(process.getId());
+		String extractedProcessId = extractProcessId(process.getId(), process.getVersion());
 
 		String packageName = clazz.getPackageDeclaration().map(NodeWithName::getNameAsString).orElse(null);
 		ProcessMetaData metadata = new ProcessMetaData(process.getId(), extractedProcessId, process.getName(),
-				process.getVersion(), packageName, "process");
+				ModelMetaData.version(process.getVersion()), packageName, "process");
 
 		MethodDeclaration processMethod = new MethodDeclaration();
 		processVisitor.visitProcess(process, processMethod, metadata);
@@ -81,9 +81,10 @@ public class ProcessToExecModelGenerator {
 
 	public ModelMetaData generateModel(WorkflowProcess process) {
 		String packageName = process.getPackageName();
-		String name = extractModelClassName(process.getId());
+		String name = extractModelClassName(process.getId(), ModelMetaData.version(process.getVersion()));
 
-		return new ModelMetaData(process.getId(), packageName, name, process.getVisibility(),
+		return new ModelMetaData(process.getId(), ModelMetaData.version(process.getVersion()), packageName, name,
+				process.getVisibility(),
 				VariableDeclarations.of((VariableScope) ((io.automatik.engine.workflow.base.core.Process) process)
 						.getDefaultContext(VariableScope.VARIABLE_SCOPE)),
 				false);
@@ -91,9 +92,10 @@ public class ProcessToExecModelGenerator {
 
 	public ModelMetaData generateInputModel(WorkflowProcess process) {
 		String packageName = process.getPackageName();
-		String name = extractModelClassName(process.getId()) + "Input";
+		String name = extractModelClassName(process.getId(), process.getVersion()) + "Input";
 
-		return new ModelMetaData(process.getId(), packageName, name, process.getVisibility(),
+		return new ModelMetaData(process.getId(), ModelMetaData.version(process.getVersion()), packageName, name,
+				process.getVisibility(),
 				VariableDeclarations.ofInput((VariableScope) ((io.automatik.engine.workflow.base.core.Process) process)
 						.getDefaultContext(VariableScope.VARIABLE_SCOPE)),
 				true, "/class-templates/ModelNoIDTemplate.java");
@@ -101,16 +103,17 @@ public class ProcessToExecModelGenerator {
 
 	public ModelMetaData generateOutputModel(WorkflowProcess process) {
 		String packageName = process.getPackageName();
-		String name = extractModelClassName(process.getId()) + "Output";
+		String name = extractModelClassName(process.getId(), process.getVersion()) + "Output";
 
-		return new ModelMetaData(process.getId(), packageName, name, process.getVisibility(),
+		return new ModelMetaData(process.getId(), ModelMetaData.version(process.getVersion()), packageName, name,
+				process.getVisibility(),
 				VariableDeclarations.ofOutput((VariableScope) ((io.automatik.engine.workflow.base.core.Process) process)
 						.getDefaultContext(VariableScope.VARIABLE_SCOPE)),
 				true);
 	}
 
-	public static String extractModelClassName(String processId) {
-		return StringUtils.capitalize(extractProcessId(processId) + MODEL_CLASS_SUFFIX);
+	public static String extractModelClassName(String processId, String version) {
+		return StringUtils.capitalize(extractProcessId(processId, version) + MODEL_CLASS_SUFFIX);
 	}
 
 	public List<UserTaskModelMetaData> generateUserTaskModel(WorkflowProcess process) {
@@ -129,18 +132,23 @@ public class ProcessToExecModelGenerator {
 					nodeVariableScope = variableScope;
 				}
 				usertaskModels.add(new UserTaskModelMetaData(packageName, variableScope, nodeVariableScope,
-						humanTaskNode, process.getId()));
+						humanTaskNode, process.getId(), ModelMetaData.version(process.getVersion())));
 			}
 		}
 
 		return usertaskModels;
 	}
 
-	public static String extractProcessId(String processId) {
+	public static String extractProcessId(String processId, String version) {
+		String id = processId;
+
 		if (processId.contains(".")) {
-			return processId.substring(processId.lastIndexOf('.') + 1);
+			id = processId.substring(processId.lastIndexOf('.') + 1);
+		}
+		if (version != null && !version.trim().isEmpty()) {
+			id += version;
 		}
 
-		return processId;
+		return id;
 	}
 }

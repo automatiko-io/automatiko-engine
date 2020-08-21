@@ -43,6 +43,7 @@ import io.automatik.engine.api.runtime.process.WorkItemHandler;
 import io.automatik.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatik.engine.api.workflow.ProcessInstancesFactory;
 import io.automatik.engine.codegen.BodyDeclarationComparator;
+import io.automatik.engine.codegen.CodegenUtils;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.AbstractProcess;
@@ -74,6 +75,8 @@ public class ProcessGenerator {
 	private DependencyInjectionAnnotator annotator;
 	private boolean persistence;
 
+	private String versionSuffix = "";
+
 	private List<CompilationUnit> additionalClasses = new ArrayList<>();
 
 	public ProcessGenerator(WorkflowProcess process, ProcessExecutableModelGenerator processGenerator, String typeName,
@@ -90,6 +93,9 @@ public class ProcessGenerator {
 		this.targetCanonicalName = packageName + "." + targetTypeName;
 		this.generatedFilePath = targetCanonicalName.replace('.', '/') + ".java";
 		this.completePath = "src/main/java/" + generatedFilePath;
+		if (process.getVersion() != null && !process.getVersion().trim().isEmpty()) {
+			this.versionSuffix = CodegenUtils.version(process.getVersion());
+		}
 
 		if (!SourceVersion.isName(targetTypeName)) {
 			throw new IllegalArgumentException("Process id '" + typeName + "' is not valid");
@@ -339,7 +345,7 @@ public class ProcessGenerator {
 				.setModifiers(Modifier.Keyword.PUBLIC);
 
 		if (useInjection()) {
-			annotator.withNamedApplicationComponent(cls, process.getId());
+			annotator.withNamedApplicationComponent(cls, process.getId() + versionSuffix);
 
 			FieldDeclaration handlersInjectFieldDeclaration = new FieldDeclaration().addVariable(new VariableDeclarator(
 					new ClassOrInterfaceType(null, new SimpleName(annotator.multiInstanceInjectionType()),
@@ -498,6 +504,10 @@ public class ProcessGenerator {
 
 	public String processId() {
 		return process.getId();
+	}
+
+	public String version() {
+		return process.getVersion() == null ? "" : CodegenUtils.version(process.getVersion());
 	}
 
 	public List<CompilationUnit> getAdditionalClasses() {

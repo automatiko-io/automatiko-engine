@@ -1,6 +1,8 @@
 
 package io.automatik.engine.codegen.process;
 
+import static com.github.javaparser.StaticJavaParser.parse;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,8 +37,6 @@ import io.automatik.engine.api.workflow.Processes;
 import io.automatik.engine.codegen.AbstractApplicationSection;
 import io.automatik.engine.codegen.BodyDeclarationComparator;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
-
-import static com.github.javaparser.StaticJavaParser.parse;
 
 public class ProcessesContainerGenerator extends AbstractApplicationSection {
 
@@ -87,7 +87,7 @@ public class ProcessesContainerGenerator extends AbstractApplicationSection {
 		ObjectCreationExpr newProcess = new ObjectCreationExpr().setType(r.targetCanonicalName())
 				.addArgument("application");
 		IfStmt byProcessId = new IfStmt(
-				new MethodCallExpr(new StringLiteralExpr(r.processId()), "equals",
+				new MethodCallExpr(new StringLiteralExpr(r.processId() + r.version()), "equals",
 						NodeList.nodeList(new NameExpr("processId"))),
 				new ReturnStmt(new MethodCallExpr(newProcess, "configure")), null);
 

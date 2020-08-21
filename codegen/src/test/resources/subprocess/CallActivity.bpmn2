@@ -11,7 +11,7 @@
              xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
              xmlns:tns="http://www.jboss.org/drools">
   
-  <process processType="Public" isExecutable="true" id="ParentProcess" name="Parent Process" >
+  <process processType="Public" isExecutable="true" id="ParentProcess" tns:version="1" name="Parent Process" >
 
     <!-- process variables -->
     <property id="x" itemSubjectRef="_xItem"/>

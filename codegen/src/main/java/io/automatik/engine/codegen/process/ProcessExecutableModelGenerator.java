@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 import io.automatik.engine.api.definition.process.WorkflowProcess;
+import io.automatik.engine.codegen.CodegenUtils;
 import io.automatik.engine.workflow.compiler.canonical.ProcessMetaData;
 import io.automatik.engine.workflow.compiler.canonical.ProcessToExecModelGenerator;
 
@@ -62,11 +63,16 @@ public class ProcessExecutableModelGenerator {
 	}
 
 	public String extractedProcessId() {
-		return execModelGenerator.extractProcessId(workFlowProcess.getId());
+		return execModelGenerator.extractProcessId(workFlowProcess.getId(),
+				CodegenUtils.version(workFlowProcess.getVersion()));
 	}
 
 	public String getProcessId() {
-		return workFlowProcess.getId();
+		String version = "";
+		if (workFlowProcess.getVersion() != null) {
+			version = "_" + workFlowProcess.getVersion();
+		}
+		return workFlowProcess.getId() + version;
 	}
 
 	public WorkflowProcess process() {

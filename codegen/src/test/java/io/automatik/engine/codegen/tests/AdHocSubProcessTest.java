@@ -1,6 +1,9 @@
 
 package io.automatik.engine.codegen.tests;
 
+import static io.automatik.engine.codegen.tests.ProcessTestUtils.assertState;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,9 +17,6 @@ import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.api.workflow.WorkItem;
 import io.automatik.engine.codegen.AbstractCodegenTest;
 
-import static io.automatik.engine.codegen.tests.ProcessTestUtils.assertState;
-import static org.assertj.core.api.Assertions.assertThat;
-
 class AdHocSubProcessTest extends AbstractCodegenTest {
 
 	@Test
@@ -24,7 +24,7 @@ class AdHocSubProcessTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly("cases/ActivationAdHoc.bpmn");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("TestCase.ActivationAdHoc");
+		Process<? extends Model> p = app.processes().processById("TestCase.ActivationAdHoc_1_0");
 		Model model = p.createModel();
 		Map<String, Object> params = new HashMap<>();
 		params.put("favouriteColour", "yellow");
@@ -50,7 +50,7 @@ class AdHocSubProcessTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly("cases/CompletionAdHoc.bpmn");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("TestCase.CompletionAdHoc");
+		Process<? extends Model> p = app.processes().processById("TestCase.CompletionAdHoc_1_0");
 		Model model = p.createModel();
 		Map<String, Object> params = new HashMap<>();
 		params.put("favouriteColour", "yellow");

@@ -142,4 +142,11 @@ public class CodegenUtils {
 		return trigger.getName().replaceAll("/", "-").replaceAll("\\+", "x").replaceAll("#", "any");
 	}
 
+	public static String version(String version) {
+		if (version != null && !version.trim().isEmpty()) {
+			return "_" + version.replaceAll("\\.", "_");
+		}
+		return "";
+
+	}
 }

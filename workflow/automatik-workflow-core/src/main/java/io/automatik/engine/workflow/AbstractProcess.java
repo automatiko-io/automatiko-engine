@@ -57,11 +57,21 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
 
 	@Override
 	public String id() {
-		return process().getId();
+		if (version() != null) {
+			return process().getId() + "_" + version();
+		} else {
+			return process().getId();
+		}
 	}
 
+	@Override
 	public String name() {
 		return process().getName();
+	}
+
+	@Override
+	public String version() {
+		return process().getVersion();
 	}
 
 	@Override

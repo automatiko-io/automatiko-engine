@@ -102,9 +102,6 @@ public class ServerlessWorkflowFactory {
 
 		if (workflow.getVersion() != null && !workflow.getVersion().isEmpty()) {
 			process.setVersion(workflow.getVersion());
-		} else {
-			LOGGER.info("setting default version {}", DEFAULT_WORKFLOW_VERSION);
-			process.setVersion(DEFAULT_WORKFLOW_VERSION);
 		}
 
 		if (workflow.getMetadata() != null && workflow.getMetadata().get("package") != null) {

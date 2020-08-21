@@ -198,7 +198,11 @@ public class ProcessCodegen extends AbstractGenerator {
 	public ProcessCodegen(Collection<? extends Process> processes) {
 		this.processes = new HashMap<>();
 		for (Process process : processes) {
-			this.processes.put(process.getId(), (WorkflowProcess) process);
+			String version = "";
+			if (process.getVersion() != null) {
+				version = "_" + process.getVersion();
+			}
+			this.processes.put(process.getId() + version, (WorkflowProcess) process);
 		}
 
 		// set default package name
@@ -268,22 +272,22 @@ public class ProcessCodegen extends AbstractGenerator {
 		Map<String, ProcessMetaData> processIdToMetadata = new HashMap<>();
 
 		// first we generate all the data classes from variable declarations
-		for (WorkflowProcess workFlowProcess : processes.values()) {
-			ModelClassGenerator mcg = new ModelClassGenerator(context(), workFlowProcess);
-			processIdToModelGenerator.put(workFlowProcess.getId(), mcg);
-			processIdToModel.put(workFlowProcess.getId(), mcg.generate());
+		for (Entry<String, WorkflowProcess> entry : processes.entrySet()) {
+			ModelClassGenerator mcg = new ModelClassGenerator(context(), entry.getValue());
+			processIdToModelGenerator.put(entry.getKey(), mcg);
+			processIdToModel.put(entry.getKey(), mcg.generate());
 
-			InputModelClassGenerator imcg = new InputModelClassGenerator(context(), workFlowProcess);
-			processIdToInputModelGenerator.put(workFlowProcess.getId(), imcg);
+			InputModelClassGenerator imcg = new InputModelClassGenerator(context(), entry.getValue());
+			processIdToInputModelGenerator.put(entry.getKey(), imcg);
 
-			OutputModelClassGenerator omcg = new OutputModelClassGenerator(context(), workFlowProcess);
-			processIdToOutputModelGenerator.put(workFlowProcess.getId(), omcg);
+			OutputModelClassGenerator omcg = new OutputModelClassGenerator(context(), entry.getValue());
+			processIdToOutputModelGenerator.put(entry.getKey(), omcg);
 		}
 
 		// then we generate user task inputs and outputs if any
-		for (WorkflowProcess workFlowProcess : processes.values()) {
-			UserTasksModelClassGenerator utcg = new UserTasksModelClassGenerator(workFlowProcess);
-			processIdToUserTaskModel.put(workFlowProcess.getId(), utcg.generate());
+		for (Entry<String, WorkflowProcess> entry : processes.entrySet()) {
+			UserTasksModelClassGenerator utcg = new UserTasksModelClassGenerator(entry.getValue());
+			processIdToUserTaskModel.put(entry.getKey(), utcg.generate());
 		}
 
 		// then we can instantiate the exec model generator
@@ -291,11 +295,11 @@ public class ProcessCodegen extends AbstractGenerator {
 		ProcessToExecModelGenerator execModelGenerator = new ProcessToExecModelGenerator(contextClassLoader);
 
 		// collect all process descriptors (exec model)
-		for (WorkflowProcess workFlowProcess : processes.values()) {
-			ProcessExecutableModelGenerator execModelGen = new ProcessExecutableModelGenerator(workFlowProcess,
+		for (Entry<String, WorkflowProcess> entry : processes.entrySet()) {
+			ProcessExecutableModelGenerator execModelGen = new ProcessExecutableModelGenerator(entry.getValue(),
 					execModelGenerator);
-			String packageName = workFlowProcess.getPackageName();
-			String id = workFlowProcess.getId();
+			String packageName = entry.getValue().getPackageName();
+			String id = entry.getKey();
 			try {
 				ProcessMetaData generate = execModelGen.generate();
 				processIdToMetadata.put(id, generate);
@@ -319,7 +323,7 @@ public class ProcessCodegen extends AbstractGenerator {
 			ProcessInstanceGenerator pi = new ProcessInstanceGenerator(execModelGen, workFlowProcess.getPackageName(),
 					classPrefix, modelClassGenerator.generate());
 
-			ProcessMetaData metaData = processIdToMetadata.get(workFlowProcess.getId());
+			ProcessMetaData metaData = processIdToMetadata.get(execModelGen.getProcessId());
 
 			if (isPublic(workFlowProcess)) {
 
@@ -328,11 +332,11 @@ public class ProcessCodegen extends AbstractGenerator {
 						.create(context(), workFlowProcess, modelClassGenerator.className(), execModelGen.className(),
 								applicationCanonicalName)
 						.map(r -> r.withDependencyInjection(annotator).withParentProcess(null)
-								.withUserTasks(processIdToUserTaskModel.get(workFlowProcess.getId()))
+								.withUserTasks(processIdToUserTaskModel.get(execModelGen.getProcessId()))
 								.withPathPrefix("{id}").withSignals(metaData.getSignals())
 								.withTriggers(metaData.isStartable(), metaData.isDynamic())
 								.withSubProcesses(populateSubprocesses(workFlowProcess,
-										processIdToMetadata.get(workFlowProcess.getId()), processIdToMetadata,
+										processIdToMetadata.get(execModelGen.getProcessId()), processIdToMetadata,
 										processIdToModelGenerator, processExecutableModelGenerators,
 										processIdToUserTaskModel)))
 						.ifPresent(rgs::add);
@@ -486,11 +490,11 @@ public class ProcessCodegen extends AbstractGenerator {
 			Optional.of(new SubprocessResourceGenerator(context(), workFlowProcess, modelClassGenerator.className(),
 					execModelGen.className(), applicationCanonicalName))
 					.map(r -> r.withDependencyInjection(annotator).withParentProcess(parentProcess)
-							.withUserTasks(processIdToUserTaskModel.get(workFlowProcess.getId()))
+							.withUserTasks(processIdToUserTaskModel.get(execModelGen.getProcessId()))
 							.withSignals(metaData.getSignals())
 							.withTriggers(metaData.isStartable(), metaData.isDynamic())
 							.withSubProcesses(populateSubprocesses(workFlowProcess,
-									processIdToMetadata.get(workFlowProcess.getId()), processIdToMetadata,
+									processIdToMetadata.get(execModelGen.getProcessId()), processIdToMetadata,
 									processIdToModelGenerator, processExecutableModelGenerators,
 									processIdToUserTaskModel)))
 					.ifPresent(subprocesses::add);

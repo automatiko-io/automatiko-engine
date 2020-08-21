@@ -2,6 +2,7 @@
 package io.automatik.engine.codegen.process;
 
 import io.automatik.engine.api.definition.process.WorkflowProcess;
+import io.automatik.engine.codegen.CodegenUtils;
 import io.automatik.engine.codegen.GeneratorContext;
 import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.compiler.canonical.ModelMetaData;
@@ -17,7 +18,8 @@ public class ModelClassGenerator {
 
 	public ModelClassGenerator(GeneratorContext context, WorkflowProcess workFlowProcess) {
 		String pid = workFlowProcess.getId();
-		String name = ProcessToExecModelGenerator.extractProcessId(pid);
+		String name = ProcessToExecModelGenerator.extractProcessId(pid,
+				CodegenUtils.version(workFlowProcess.getVersion()));
 		this.modelClassName = workFlowProcess.getPackageName() + "." + StringUtils.capitalize(name) + "Model";
 
 		this.context = context;

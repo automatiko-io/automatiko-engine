@@ -30,7 +30,7 @@ public class DecisionProcessEndpointTest {
 	@Test
 	public void testProcessRestEndpoint() {
 
-		given().body("{\"age\":16, \"yearsOfService\":1}").contentType(ContentType.JSON).when().post("/DmnProcess")
+		given().body("{\"age\":16, \"yearsOfService\":1}").contentType(ContentType.JSON).when().post("/v1_0/DmnProcess")
 				.then().statusCode(200).body("$", hasKey("id"), "vacationDays", equalTo(27));
 	}
 }

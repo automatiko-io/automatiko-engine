@@ -1,6 +1,9 @@
 
 package io.automatik.engine.codegen.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,9 +17,6 @@ import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.codegen.AbstractCodegenTest;
 import io.automatik.engine.codegen.process.ProcessCodegenException;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ServiceTaskTest extends AbstractCodegenTest {
 
@@ -49,7 +49,7 @@ public class ServiceTaskTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly("servicetask/ServiceProcessDifferentOperations.bpmn2");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("ServiceProcessDifferentOperations");
+		Process<? extends Model> p = app.processes().processById("ServiceProcessDifferentOperations_1_0");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
@@ -72,7 +72,7 @@ public class ServiceTaskTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly("servicetask/ServiceProcessDifferentOperations.bpmn2");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("ServiceProcessDifferentOperations");
+		Process<? extends Model> p = app.processes().processById("ServiceProcessDifferentOperations_1_0");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
@@ -95,7 +95,7 @@ public class ServiceTaskTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly("servicetask/ServiceProcessSameOperations.bpmn2");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("ServiceProcessSameOperations");
+		Process<? extends Model> p = app.processes().processById("ServiceProcessSameOperations_1_0");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
@@ -205,7 +205,7 @@ public class ServiceTaskTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly("servicetask/MultiParamServiceProcessNoOutput.bpmn2");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("MultiParamServiceProcessNoOutput");
+		Process<? extends Model> p = app.processes().processById("MultiParamServiceProcessNoOutput_1_0");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
@@ -253,7 +253,7 @@ public class ServiceTaskTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly("servicetask/ServiceProcessOverloaded.bpmn2");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("ServiceProcessOverloaded");
+		Process<? extends Model> p = app.processes().processById("ServiceProcessOverloaded_1_0");
 		ProcessInstance<?> processInstance = p.createInstance(p.createModel());
 		processInstance.start();
 

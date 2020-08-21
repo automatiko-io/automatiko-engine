@@ -29,7 +29,7 @@ public class DecisionProcessTest {
 			.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml"));
 
 	@Inject
-	@Named("DmnProcess")
+	@Named("DmnProcess_1_0")
 	Process<? extends Model> process;
 
 	@Test

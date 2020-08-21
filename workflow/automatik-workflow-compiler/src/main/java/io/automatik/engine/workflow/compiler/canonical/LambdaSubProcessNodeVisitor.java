@@ -64,8 +64,8 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
 
 		Map<String, String> inputTypes = (Map<String, String>) node.getMetaData("BPMN.InputTypes");
 
-		String subProcessModelClassName = ProcessToExecModelGenerator.extractModelClassName(subProcessId);
-		ModelMetaData subProcessModel = new ModelMetaData(subProcessId, metadata.getPackageName(),
+		String subProcessModelClassName = ProcessToExecModelGenerator.extractModelClassName(subProcessId, null);
+		ModelMetaData subProcessModel = new ModelMetaData(subProcessId, null, metadata.getPackageName(),
 				subProcessModelClassName, WorkflowProcess.PRIVATE_VISIBILITY,
 				VariableDeclarations.ofRawInfo(inputTypes), false);
 
@@ -124,7 +124,7 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
 
 	private BlockStmt createInstance(SubProcessNode subProcessNode, ProcessMetaData metadata) {
 
-		String processId = ProcessToExecModelGenerator.extractProcessId(subProcessNode.getProcessId());
+		String processId = ProcessToExecModelGenerator.extractProcessId(subProcessNode.getProcessId(), null);
 		String processFielName = "process" + processId;
 
 		MethodCallExpr processInstanceSupplier = new MethodCallExpr(new NameExpr(processFielName), "createInstance")

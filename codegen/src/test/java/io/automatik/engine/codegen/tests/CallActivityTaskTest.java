@@ -40,7 +40,7 @@ public class CallActivityTaskTest extends AbstractCodegenTest {
 				"subprocess/CallActivitySubProcess.bpmn2");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("ParentProcess");
+		Process<? extends Model> p = app.processes().processById("ParentProcess_1");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
@@ -223,7 +223,7 @@ public class CallActivityTaskTest extends AbstractCodegenTest {
 				"subprocess/CallActivitySubProcessHT.bpmn2", "subprocess/CallActivitySubProcessHT2.bpmn2");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("ParentProcess");
+		Process<? extends Model> p = app.processes().processById("ParentProcess_1");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
@@ -261,7 +261,7 @@ public class CallActivityTaskTest extends AbstractCodegenTest {
 		assertEquals(Active.ID, wi.getPhase());
 		assertEquals(Active.STATUS, wi.getPhaseStatus());
 
-		processInstance.transitionWorkItem(workItems.get(0).getReferenceId(),
+		childProcessInstance.transitionWorkItem(workItems.get(0).getId(),
 				new HumanTaskTransition(Complete.ID, null, securityPolicy));
 
 		workItems = processInstance.workItems(securityPolicy);

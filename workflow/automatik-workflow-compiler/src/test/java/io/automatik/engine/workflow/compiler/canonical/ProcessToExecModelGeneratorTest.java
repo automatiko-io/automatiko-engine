@@ -37,11 +37,11 @@ public class ProcessToExecModelGeneratorTest {
 
 		logger.debug(processMetadata.getGeneratedClassModel().toString());
 
-		assertEquals("orders", processMetadata.getExtractedProcessId());
+		assertEquals("orders_1_0", processMetadata.getExtractedProcessId());
 		assertEquals("demo.orders", processMetadata.getProcessId());
 		assertEquals("orders", processMetadata.getProcessName());
-		assertEquals("1.0", processMetadata.getProcessVersion());
-		assertEquals("com.myspace.demo.OrdersProcess", processMetadata.getProcessClassName());
+		assertEquals("_1_0", processMetadata.getProcessVersion());
+		assertEquals("com.myspace.demo.Orders_1_0Process", processMetadata.getProcessClassName());
 		assertNotNull(processMetadata.getGeneratedClassModel());
 		assertEquals(1, processMetadata.getWorkItems().size());
 	}
@@ -63,8 +63,8 @@ public class ProcessToExecModelGeneratorTest {
 		ModelMetaData modelMetadata = ProcessToExecModelGenerator.INSTANCE.generateModel((WorkflowProcess) process);
 		assertNotNull(modelMetadata, "Dumper should return non null class for process");
 
-		logger.info(modelMetadata.generate());
-		assertEquals("com.myspace.demo.OrdersModel", modelMetadata.getModelClassName());
+		logger.debug(modelMetadata.generate());
+		assertEquals("com.myspace.demo.Orders_1_0Model", modelMetadata.getModelClassName());
 	}
 
 }

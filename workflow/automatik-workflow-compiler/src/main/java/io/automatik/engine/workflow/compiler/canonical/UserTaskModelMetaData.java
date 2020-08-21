@@ -61,6 +61,7 @@ public class UserTaskModelMetaData {
 	private final VariableScope variableScope;
 	private final HumanTaskNode humanTaskNode;
 	private final String processId;
+	private final String version;
 
 	private String inputModelClassName;
 	private String inputModelClassSimpleName;
@@ -69,19 +70,22 @@ public class UserTaskModelMetaData {
 	private String outputModelClassSimpleName;
 
 	public UserTaskModelMetaData(String packageName, VariableScope processVariableScope, VariableScope variableScope,
-			HumanTaskNode humanTaskNode, String processId) {
+			HumanTaskNode humanTaskNode, String processId, String version) {
 		this.packageName = packageName;
 		this.processVariableScope = processVariableScope;
 		this.variableScope = variableScope;
 		this.humanTaskNode = humanTaskNode;
 		this.processId = processId;
+		this.version = version;
 
-		this.inputModelClassSimpleName = StringUtils.capitalize(ProcessToExecModelGenerator.extractProcessId(processId)
-				+ "_" + humanTaskNode.getId() + "_" + TASK_INTPUT_CLASS_SUFFIX);
+		this.inputModelClassSimpleName = StringUtils
+				.capitalize(ProcessToExecModelGenerator.extractProcessId(processId, version) + "_"
+						+ humanTaskNode.getId() + "_" + TASK_INTPUT_CLASS_SUFFIX);
 		this.inputModelClassName = packageName + '.' + inputModelClassSimpleName;
 
-		this.outputModelClassSimpleName = StringUtils.capitalize(ProcessToExecModelGenerator.extractProcessId(processId)
-				+ "_" + humanTaskNode.getId() + "_" + TASK_OUTTPUT_CLASS_SUFFIX);
+		this.outputModelClassSimpleName = StringUtils
+				.capitalize(ProcessToExecModelGenerator.extractProcessId(processId, version) + "_"
+						+ humanTaskNode.getId() + "_" + TASK_OUTTPUT_CLASS_SUFFIX);
 		this.outputModelClassName = packageName + '.' + outputModelClassSimpleName;
 
 	}
@@ -144,9 +148,9 @@ public class UserTaskModelMetaData {
 		String taskName = (String) humanTaskNode.getWork().getParameter(TASK_NAME);
 		if (taskName == null)
 			taskName = humanTaskNode.getName();
-		modelClass.addAndGetAnnotation(UserTask.class).addPair("taskName", new StringLiteralExpr(taskName)).addPair(
-				"processName",
-				new StringLiteralExpr(StringUtils.capitalize(ProcessToExecModelGenerator.extractProcessId(processId))));
+		modelClass.addAndGetAnnotation(UserTask.class).addPair("taskName", new StringLiteralExpr(taskName))
+				.addPair("processName", new StringLiteralExpr(
+						StringUtils.capitalize(ProcessToExecModelGenerator.extractProcessId(processId, version))));
 	}
 
 	private void addUserTaskParamAnnotation(FieldDeclaration fd, UserTaskParam.ParamType paramType) {

@@ -1,6 +1,8 @@
 
 package io.automatik.engine.codegen.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -11,8 +13,6 @@ import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.codegen.AbstractCodegenTest;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 class WorkItemParamsTest extends AbstractCodegenTest {
 
 	@Test
@@ -20,7 +20,7 @@ class WorkItemParamsTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly("servicetask/WorkItemParams.bpmn");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("WorkItemParamsTest");
+		Process<? extends Model> p = app.processes().processById("WorkItemParamsTest_1_0");
 
 		ProcessInstance<?> processInstance = p.createInstance(p.createModel());
 		processInstance.start();

@@ -37,7 +37,7 @@
       <bpmn2:outMessageRef>Message_2</bpmn2:outMessageRef>
     </bpmn2:operation>
   </bpmn2:interface>
-  <bpmn2:process id="demo.orderItems" drools:packageName="io.automatik.engine.quarkus.ittests" drools:version="1.0" drools:adHoc="false" name="orderItems" isExecutable="true" processType="Private">
+  <bpmn2:process id="demo.orderItems" drools:packageName="io.automatik.engine.quarkus.ittests" drools:adHoc="false" name="orderItems" isExecutable="true" processType="Private">
     <bpmn2:extensionElements>
       <drools:import name="io.automatik.engine.quarkus.ittests.Order"/>
     </bpmn2:extensionElements>

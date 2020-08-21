@@ -2,6 +2,7 @@
 package io.automatik.engine.codegen.process;
 
 import io.automatik.engine.api.definition.process.WorkflowProcess;
+import io.automatik.engine.codegen.CodegenUtils;
 import io.automatik.engine.codegen.GeneratorContext;
 import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
@@ -20,7 +21,9 @@ public class InputModelClassGenerator {
 
 	public InputModelClassGenerator(GeneratorContext context, WorkflowProcess workFlowProcess) {
 		String pid = workFlowProcess.getId();
-		className = StringUtils.capitalize(ProcessToExecModelGenerator.extractProcessId(pid) + "ModelInput");
+		className = StringUtils.capitalize(
+				ProcessToExecModelGenerator.extractProcessId(pid, CodegenUtils.version(workFlowProcess.getVersion()))
+						+ "ModelInput");
 		this.modelClassName = workFlowProcess.getPackageName() + "." + className;
 
 		this.context = context;
@@ -31,8 +34,8 @@ public class InputModelClassGenerator {
 		// create model class for all variables
 		String packageName = workFlowProcess.getPackageName();
 
-		modelMetaData = new ModelMetaData(workFlowProcess.getId(), packageName, className,
-				workFlowProcess.getVisibility(),
+		modelMetaData = new ModelMetaData(workFlowProcess.getId(), CodegenUtils.version(workFlowProcess.getVersion()),
+				packageName, className, workFlowProcess.getVisibility(),
 				VariableDeclarations
 						.ofInput((VariableScope) ((io.automatik.engine.workflow.base.core.Process) workFlowProcess)
 								.getDefaultContext(VariableScope.VARIABLE_SCOPE)),

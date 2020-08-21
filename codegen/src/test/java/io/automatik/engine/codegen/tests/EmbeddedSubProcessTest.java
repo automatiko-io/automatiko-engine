@@ -44,7 +44,7 @@ public class EmbeddedSubProcessTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly("subprocess/EmbeddedSubProcessWithUserTask.bpmn2");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("embeddedWithUserTask");
+		Process<? extends Model> p = app.processes().processById("embeddedWithUserTask_1_0");
 		Person person = new Person("john", 25);
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();

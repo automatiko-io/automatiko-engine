@@ -26,7 +26,7 @@ public class EventSubProcessTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly("event-subprocess/EventSubprocessSignal.bpmn2");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("EventSubprocessSignal");
+		Process<? extends Model> p = app.processes().processById("EventSubprocessSignal_1");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
@@ -48,7 +48,7 @@ public class EventSubProcessTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly("event-subprocess/EventSubprocessSignalWithData.bpmn2");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("EventSubprocessSignal");
+		Process<? extends Model> p = app.processes().processById("EventSubprocessSignal_1");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
@@ -70,18 +70,17 @@ public class EventSubProcessTest extends AbstractCodegenTest {
 		assertThat(person.getName()).isEqualTo("john");
 
 	}
-	
+
 	@Test
 	public void testEventTimerSubProcess() throws Exception {
 
 		Application app = generateCodeProcessesOnly("event-subprocess/EventSubprocessTimer.bpmn2");
 		assertThat(app).isNotNull();
-		
+
 		NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("start-sub", 1);
 		((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
 
-
-		Process<? extends Model> p = app.processes().processById("EventSubprocessTimer");
+		Process<? extends Model> p = app.processes().processById("EventSubprocessTimer_1");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();

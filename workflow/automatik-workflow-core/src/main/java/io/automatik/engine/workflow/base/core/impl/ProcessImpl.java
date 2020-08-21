@@ -60,6 +60,9 @@ public class ProcessImpl implements Process, Serializable, ContextResolver {
 
 	public void setVersion(final String version) {
 		this.version = version;
+		if (this.version != null) {
+			this.version = version.trim().isEmpty() ? null : version.trim();
+		}
 	}
 
 	public String getVersion() {

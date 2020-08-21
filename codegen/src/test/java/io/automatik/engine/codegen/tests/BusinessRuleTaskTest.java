@@ -24,7 +24,7 @@ public class BusinessRuleTaskTest extends AbstractCodegenTest {
 				Collections.singletonList("decision/models/vacationDaysAlt/vacationDaysAlt.dmn"),
 				Collections.emptyList(), false);
 
-		Process<? extends Model> p = app.processes().processById("DmnProcess");
+		Process<? extends Model> p = app.processes().processById("DmnProcess_1_0");
 
 		// first run 16, 1 and expected days is 27
 		{

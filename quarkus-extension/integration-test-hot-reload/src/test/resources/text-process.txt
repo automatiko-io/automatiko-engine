@@ -5,7 +5,7 @@
   <bpmn2:interface id="_3CDC6E61-DCC5-4831-8BBB-417CFF517CB0_ServiceInterface" name="io.automatik.engine.quarkus.ittests.JbpmHotReloadTestHelper" implementationRef="io.automatik.engine.quarkus.ittests.JbpmHotReloadTestHelper">
     <bpmn2:operation id="_3CDC6E61-DCC5-4831-8BBB-417CFF517CB0_ServiceOperation" name="toUpper" implementationRef="toUpper"/>
   </bpmn2:interface>
-  <bpmn2:process id="text_process" drools:version="1.0" drools:adHoc="false" name="text_process" isExecutable="true" processType="Public">
+  <bpmn2:process id="text_process" drools:adHoc="false" name="text_process" isExecutable="true" processType="Public">
     <bpmn2:property id="mytext" itemSubjectRef="_mytextItem" name="mytext"/>
     <bpmn2:sequenceFlow id="_D764D3B4-1533-4962-A9E3-739A6DD9AEAB" sourceRef="_3CDC6E61-DCC5-4831-8BBB-417CFF517CB0" targetRef="_A6902151-5E9D-48F7-95E9-375E41CF3E6F">
       <bpmn2:extensionElements>

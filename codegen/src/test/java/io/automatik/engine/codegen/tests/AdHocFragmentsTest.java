@@ -1,6 +1,10 @@
 
 package io.automatik.engine.codegen.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,10 +27,6 @@ import io.automatik.engine.workflow.process.core.node.HumanTaskNode;
 import io.automatik.engine.workflow.process.core.node.MilestoneNode;
 import io.automatik.engine.workflow.process.core.node.WorkItemNode;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 class AdHocFragmentsTest extends AbstractCodegenTest {
 
 	@Test
@@ -34,7 +34,7 @@ class AdHocFragmentsTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly("cases/AdHocFragments.bpmn");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("TestCase.AdHocFragments");
+		Process<? extends Model> p = app.processes().processById("TestCase.AdHocFragments_1_0");
 		ProcessInstance<?> processInstance = p.createInstance(p.createModel());
 		Collection<AdHocFragment> adHocFragments = processInstance.adHocFragments();
 		List<AdHocFragment> expected = new ArrayList<>();
@@ -54,7 +54,7 @@ class AdHocFragmentsTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly("cases/AdHocFragments.bpmn");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("TestCase.AdHocFragments");
+		Process<? extends Model> p = app.processes().processById("TestCase.AdHocFragments_1_0");
 		ProcessInstance<? extends Model> processInstance = p.createInstance(p.createModel());
 		processInstance.start();
 
@@ -77,7 +77,7 @@ class AdHocFragmentsTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly("cases/AdHocFragments.bpmn");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("TestCase.AdHocFragments");
+		Process<? extends Model> p = app.processes().processById("TestCase.AdHocFragments_1_0");
 		ProcessInstance<? extends Model> processInstance = p.createInstance(p.createModel());
 		processInstance.start();
 		Map<String, Object> params = new HashMap<>();
@@ -95,7 +95,7 @@ class AdHocFragmentsTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly("cases/AdHocProcess.bpmn");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("AdHocProcess");
+		Process<? extends Model> p = app.processes().processById("AdHocProcess_1_0");
 		Model model = p.createModel();
 		Map<String, Object> params = new HashMap<>();
 		params.put("var1", "Pablo");

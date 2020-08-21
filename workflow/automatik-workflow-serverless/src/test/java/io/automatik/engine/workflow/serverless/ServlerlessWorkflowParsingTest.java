@@ -205,7 +205,7 @@ public class ServlerlessWorkflowParsingTest extends BaseServerlessTest {
 				.parseWorkFlow(classpathResourceReader(workflowLocation));
 		assertEquals("function", process.getId());
 		assertEquals("test-wf", process.getName());
-		assertEquals("1.0", process.getVersion());
+		assertEquals(null, process.getVersion());
 		assertEquals("org.kie.kogito.serverless", process.getPackageName());
 		assertEquals(ExecutableProcess.PUBLIC_VISIBILITY, process.getVisibility());
 
@@ -240,7 +240,7 @@ public class ServlerlessWorkflowParsingTest extends BaseServerlessTest {
 				.parseWorkFlow(classpathResourceReader(workflowLocation));
 		assertEquals("function", process.getId());
 		assertEquals("test-wf", process.getName());
-		assertEquals("1.0", process.getVersion());
+		assertEquals(null, process.getVersion());
 		assertEquals("org.kie.kogito.serverless", process.getPackageName());
 		assertEquals(ExecutableProcess.PUBLIC_VISIBILITY, process.getVisibility());
 
@@ -465,7 +465,7 @@ public class ServlerlessWorkflowParsingTest extends BaseServerlessTest {
 				.parseWorkFlow(classpathResourceReader(workflowLocation));
 		assertEquals("produceeventontransition", process.getId());
 		assertEquals("Produce Event On Transition", process.getName());
-		assertEquals("1.0", process.getVersion());
+		assertEquals(null, process.getVersion());
 		assertEquals("org.kie.kogito.serverless", process.getPackageName());
 		assertEquals(ExecutableProcess.PUBLIC_VISIBILITY, process.getVisibility());
 

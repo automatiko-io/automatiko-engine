@@ -1,6 +1,12 @@
 
 package io.automatik.engine.codegen.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -40,12 +46,6 @@ import io.automatik.engine.workflow.base.instance.impl.humantask.phases.Claim;
 import io.automatik.engine.workflow.base.instance.impl.humantask.phases.Release;
 import io.automatik.engine.workflow.base.instance.impl.workitem.Active;
 import io.automatik.engine.workflow.base.instance.impl.workitem.Complete;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class UserTaskTest extends AbstractCodegenTest {
 
@@ -928,5 +928,62 @@ public class UserTaskTest extends AbstractCodegenTest {
 		assertThat(processInstanceByBussinesKey.isPresent()).isTrue();
 		processInstance2 = (ProcessInstance<?>) processInstanceByBussinesKey.get();
 		processInstance2.abort();
+	}
+
+	@Test
+	public void testBasicUserTaskProcessVersioned() throws Exception {
+
+		Application app = generateCodeProcessesOnly("usertask/UserTasksProcessVersion.bpmn2",
+				"usertask/UserTasksProcessVersion2.bpmn2");
+		assertThat(app).isNotNull();
+		final List<String> workItemTransitionEvents = new ArrayList<>();
+		app.config().process().processEventListeners().listeners().add(new DefaultProcessEventListener() {
+
+			@Override
+			public void beforeWorkItemTransition(ProcessWorkItemTransitionEvent event) {
+				workItemTransitionEvents.add("BEFORE:: " + event);
+			}
+
+			@Override
+			public void afterWorkItemTransition(ProcessWorkItemTransitionEvent event) {
+				workItemTransitionEvents.add("AFTER:: " + event);
+			}
+		});
+		// verify that both versions have corresponding process definitions
+		assertThat(app.processes().processById("UserTasksProcess_2")).isNotNull();
+
+		Process<? extends Model> p = app.processes().processById("UserTasksProcess_1");
+		assertThat(p).isNotNull();
+
+		// verify that both version have corresponding data model classes
+		Class<?> model1Class = Class.forName("org.kie.kogito.test.UserTasksProcess_1Model", true, testClassLoader());
+		assertNotNull(model1Class);
+		Class<?> model2Class = Class.forName("org.kie.kogito.test.UserTasksProcess_2Model", true, testClassLoader());
+		assertNotNull(model2Class);
+
+		Model m = p.createModel();
+		Map<String, Object> parameters = new HashMap<>();
+		m.fromMap(parameters);
+
+		ProcessInstance<?> processInstance = p.createInstance(m);
+		processInstance.start();
+
+		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+		List<WorkItem> workItems = processInstance.workItems(securityPolicy);
+		assertEquals(1, workItems.size());
+		assertEquals("FirstTask", workItems.get(0).getName());
+
+		processInstance.completeWorkItem(workItems.get(0).getId(), null, securityPolicy);
+		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+		workItems = processInstance.workItems(securityPolicy);
+		assertEquals(1, workItems.size());
+		assertEquals("SecondTask", workItems.get(0).getName());
+
+		processInstance.completeWorkItem(workItems.get(0).getId(), null, securityPolicy);
+		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+
+		assertThat(workItemTransitionEvents).hasSize(8);
 	}
 }

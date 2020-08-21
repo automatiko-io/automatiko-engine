@@ -47,7 +47,7 @@ public class PublishEventTest extends AbstractCodegenTest {
 		UnitOfWork uow = app.unitOfWorkManager().newUnitOfWork();
 		uow.start();
 
-		Process<? extends Model> p = app.processes().processById("TestCase.SimpleMilestone");
+		Process<? extends Model> p = app.processes().processById("TestCase.SimpleMilestone_1_0");
 
 		ProcessInstance<?> processInstance = p.createInstance(p.createModel());
 		processInstance.start();
@@ -200,7 +200,7 @@ public class PublishEventTest extends AbstractCodegenTest {
 				"subprocess/CallActivitySubProcess.bpmn2");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("ParentProcess");
+		Process<? extends Model> p = app.processes().processById("ParentProcess_1");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
@@ -328,7 +328,7 @@ public class PublishEventTest extends AbstractCodegenTest {
 		UnitOfWork uow = app.unitOfWorkManager().newUnitOfWork();
 		uow.start();
 
-		Process<? extends Model> p = app.processes().processById("ServiceProcessDifferentOperations");
+		Process<? extends Model> p = app.processes().processById("ServiceProcessDifferentOperations_1_0");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();

@@ -62,6 +62,7 @@ public abstract class AbstractResourceGenerator {
 	private final String resourceClazzName;
 	private final String processClazzName;
 	private String processId;
+	private String version = "";
 	private String dataClazzName;
 	private String modelfqcn;
 	private final String processName;
@@ -84,13 +85,17 @@ public abstract class AbstractResourceGenerator {
 		this.process = process;
 		this.processId = process.getId();
 		this.processName = processId.substring(processId.lastIndexOf('.') + 1);
+		if (process.getVersion() != null && !process.getVersion().trim().isEmpty()) {
+			this.version = CodegenUtils.version(process.getVersion());
+		}
 		this.appCanonicalName = appCanonicalName;
 		String classPrefix = StringUtils.capitalize(processName);
-		this.resourceClazzName = classPrefix + "Resource";
+		this.resourceClazzName = classPrefix + "Resource" + version;
 		this.relativePath = process.getPackageName().replace(".", "/") + "/" + resourceClazzName + ".java";
 		this.modelfqcn = modelfqcn + "Output";
 		this.dataClazzName = modelfqcn.substring(modelfqcn.lastIndexOf('.') + 1);
 		this.processClazzName = processfqcn;
+
 	}
 
 	public AbstractResourceGenerator withParentProcess(WorkflowProcess parentProcess) {
@@ -143,7 +148,28 @@ public abstract class AbstractResourceGenerator {
 
 	public String generate() {
 
-		return generateCompilationUnit().toString();
+		CompilationUnit clazz = generateCompilationUnit();
+
+		if (version != null && !version.trim().isEmpty()) {
+			ClassOrInterfaceDeclaration template = clazz.findFirst(ClassOrInterfaceDeclaration.class)
+					.orElseThrow(() -> new NoSuchElementException(
+							"Compilation unit doesn't contain a class or interface declaration!"));
+
+			template.findAll(ClassOrInterfaceDeclaration.class, md -> md.getAnnotationByName("Path").isPresent())
+					.forEach(md -> {
+
+						AnnotationExpr pathAnotation = md.getAnnotationByName("Path").get();
+
+						String value = pathAnotation.asSingleMemberAnnotationExpr().getMemberValue()
+								.toStringLiteralExpr().get().getValue();
+
+						pathAnotation.asSingleMemberAnnotationExpr()
+								.setMemberValue(new StringLiteralExpr(version.replaceFirst("_", "/v") + value));
+
+					});
+		}
+
+		return clazz.toString();
 	}
 
 	public CompilationUnit generateCompilationUnit() {
@@ -247,7 +273,7 @@ public abstract class AbstractResourceGenerator {
 
 		if (useInjection()) {
 			template.findAll(FieldDeclaration.class, CodegenUtils::isProcessField)
-					.forEach(fd -> annotator.withNamedInjection(fd, processId));
+					.forEach(fd -> annotator.withNamedInjection(fd, processId + version));
 
 			template.findAll(FieldDeclaration.class, CodegenUtils::isApplicationField)
 					.forEach(fd -> annotator.withInjection(fd));

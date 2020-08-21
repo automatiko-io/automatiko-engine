@@ -39,7 +39,7 @@ public class ServerlessWorkflowTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly(processLocation);
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("function");
+		Process<? extends Model> p = app.processes().processById("function_1_0");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
@@ -62,7 +62,7 @@ public class ServerlessWorkflowTest extends AbstractCodegenTest {
 		NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("SmallDelay", 1);
 		((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
 
-		Process<? extends Model> p = app.processes().processById("function");
+		Process<? extends Model> p = app.processes().processById("function_1_0");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
@@ -124,7 +124,7 @@ public class ServerlessWorkflowTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly(processLocation);
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("singleservice");
+		Process<? extends Model> p = app.processes().processById("singleservice_1_0");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
@@ -158,7 +158,7 @@ public class ServerlessWorkflowTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly(processLocation);
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("singleinject");
+		Process<? extends Model> p = app.processes().processById("singleinject_1_0");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
@@ -192,7 +192,7 @@ public class ServerlessWorkflowTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly(processLocation);
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("switchworkflow");
+		Process<? extends Model> p = app.processes().processById("switchworkflow_1_0");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
@@ -226,7 +226,7 @@ public class ServerlessWorkflowTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly(processLocation);
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("switchworkflow");
+		Process<? extends Model> p = app.processes().processById("switchworkflow_1_0");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
@@ -260,7 +260,7 @@ public class ServerlessWorkflowTest extends AbstractCodegenTest {
 				"serverless/called-subflow.sw.json");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("singlesubflow");
+		Process<? extends Model> p = app.processes().processById("singlesubflow_1_0");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
@@ -297,7 +297,7 @@ public class ServerlessWorkflowTest extends AbstractCodegenTest {
 					"serverless/parallel-state-branch1.sw.json", "serverless/parallel-state-branch2.sw.json");
 			assertThat(app).isNotNull();
 
-			Process<? extends Model> p = app.processes().processById("parallelworkflow");
+			Process<? extends Model> p = app.processes().processById("parallelworkflow_1_0");
 
 			Model m = p.createModel();
 			Map<String, Object> parameters = new HashMap<>();
@@ -351,7 +351,7 @@ public class ServerlessWorkflowTest extends AbstractCodegenTest {
 			}
 		});
 
-		Process<? extends Model> p = app.processes().processById("decisionworkflow");
+		Process<? extends Model> p = app.processes().processById("decisionworkflow_1_0");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
@@ -421,7 +421,7 @@ public class ServerlessWorkflowTest extends AbstractCodegenTest {
 			}
 		});
 
-		Process<? extends Model> p = app.processes().processById("multidecisionworkflow");
+		Process<? extends Model> p = app.processes().processById("multidecisionworkflow_1_0");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();

@@ -48,6 +48,7 @@ import io.automatik.engine.workflow.base.core.context.variable.Variable;
 public class ModelMetaData {
 
 	private final String processId;
+	private final String version;
 	private final String packageName;
 	private final String modelClassSimpleName;
 	private final VariableDeclarations variableScope;
@@ -58,15 +59,16 @@ public class ModelMetaData {
 
 	private boolean supportsValidation;
 
-	public ModelMetaData(String processId, String packageName, String modelClassSimpleName, String visibility,
-			VariableDeclarations variableScope, boolean hidden) {
-		this(processId, packageName, modelClassSimpleName, visibility, variableScope, hidden,
+	public ModelMetaData(String processId, String version, String packageName, String modelClassSimpleName,
+			String visibility, VariableDeclarations variableScope, boolean hidden) {
+		this(processId, version, packageName, modelClassSimpleName, visibility, variableScope, hidden,
 				"/class-templates/ModelTemplate.java");
 	}
 
-	public ModelMetaData(String processId, String packageName, String modelClassSimpleName, String visibility,
-			VariableDeclarations variableScope, boolean hidden, String templateName) {
+	public ModelMetaData(String processId, String version, String packageName, String modelClassSimpleName,
+			String visibility, VariableDeclarations variableScope, boolean hidden, String templateName) {
 		this.processId = processId;
+		this.version = version;
 		this.packageName = packageName;
 		this.modelClassSimpleName = modelClassSimpleName;
 		this.variableScope = variableScope;
@@ -147,8 +149,8 @@ public class ModelMetaData {
 					NodeList.nodeList(new MemberValuePair("value", new StringLiteralExpr("kogito-codegen")),
 							new MemberValuePair("reference", new StringLiteralExpr(processId)),
 							new MemberValuePair("name",
-									new StringLiteralExpr(StringUtils
-											.capitalize(ProcessToExecModelGenerator.extractProcessId(processId)))),
+									new StringLiteralExpr(StringUtils.capitalize(
+											ProcessToExecModelGenerator.extractProcessId(processId, version)))),
 							new MemberValuePair("hidden", new BooleanLiteralExpr(hidden)))));
 		}
 		modelClass.setName(modelClassSimpleName);
@@ -268,5 +270,12 @@ public class ModelMetaData {
 	@Override
 	public String toString() {
 		return "ModelMetaData [modelClassName=" + modelClassName + "]";
+	}
+
+	public static String version(String version) {
+		if (version != null && !version.trim().isEmpty()) {
+			return "_" + version.replaceAll("\\.", "_");
+		}
+		return "";
 	}
 }
