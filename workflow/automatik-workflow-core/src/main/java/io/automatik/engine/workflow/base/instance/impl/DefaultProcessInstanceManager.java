@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import io.automatik.engine.api.runtime.process.ProcessInstance;
 import io.automatik.engine.services.correlation.CorrelationKey;
 import io.automatik.engine.workflow.base.instance.ProcessInstanceManager;
+import io.automatik.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
 
 public class DefaultProcessInstanceManager implements ProcessInstanceManager {
 
@@ -25,6 +26,7 @@ public class DefaultProcessInstanceManager implements ProcessInstanceManager {
 				throw new RuntimeException(correlationKey + " already exists");
 			}
 			processInstancesByCorrelationKey.put(correlationKey, processInstance);
+			((WorkflowProcessInstanceImpl) processInstance).setCorrelationKey(correlationKey.toExternalForm());
 		} else {
 			uuid = UUID.randomUUID().toString();
 		}

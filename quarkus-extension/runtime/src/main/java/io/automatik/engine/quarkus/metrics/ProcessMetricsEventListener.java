@@ -40,12 +40,25 @@ public class ProcessMetricsEventListener extends DefaultProcessEventListener {
 				.withDescription("Total count of started process instances").withType(MetricType.COUNTER).build();
 		Counter counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter(startedPIMetadata,
 				new Tag("application", application), new Tag("version", version),
-				new Tag("processId", processInstance.getProcessId()));
+				new Tag("processId", processInstance.getProcessId()),
+				new Tag("processVersion",
+						processInstance.getProcess().getVersion() == null ? "unknown"
+								: processInstance.getProcess().getVersion()),
+				new Tag("businessKey",
+						processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()));
 		counter.inc();
 
+		Metadata currentlyActivePIMetadata = Metadata.builder().withName("automatik.process.current.active.count")
+				.withDescription("Currently Active Process Instances").withType(MetricType.CONCURRENT_GAUGE).build();
+
 		ConcurrentGauge currentlyActive = MetricRegistries.get(MetricRegistry.Type.VENDOR).concurrentGauge(
-				"automatik.process.current.active.count", new Tag("application", application),
-				new Tag("version", version), new Tag("processId", processInstance.getProcessId()));
+				currentlyActivePIMetadata, new Tag("application", application), new Tag("version", version),
+				new Tag("processId", processInstance.getProcessId()),
+				new Tag("processVersion",
+						processInstance.getProcess().getVersion() == null ? "unknown"
+								: processInstance.getProcess().getVersion()),
+				new Tag("businessKey",
+						processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()));
 		currentlyActive.inc();
 	}
 
@@ -61,14 +74,24 @@ public class ProcessMetricsEventListener extends DefaultProcessEventListener {
 					.build();
 			counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter(completedPIMetadata,
 					new Tag("application", application), new Tag("version", version),
-					new Tag("processId", processInstance.getProcessId()));
+					new Tag("processId", processInstance.getProcessId()),
+					new Tag("processVersion",
+							processInstance.getProcess().getVersion() == null ? "unknown"
+									: processInstance.getProcess().getVersion()),
+					new Tag("businessKey",
+							processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()));
 		} else {
 			Metadata abortedPIMetadata = Metadata.builder().withName("automatik.process.aborted.count")
 					.withDescription("Displays total count of aborted process instances").withType(MetricType.COUNTER)
 					.build();
 			counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter(abortedPIMetadata,
 					new Tag("application", application), new Tag("version", version),
-					new Tag("processId", processInstance.getProcessId()));
+					new Tag("processId", processInstance.getProcessId()),
+					new Tag("processVersion",
+							processInstance.getProcess().getVersion() == null ? "unknown"
+									: processInstance.getProcess().getVersion()),
+					new Tag("businessKey",
+							processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()));
 		}
 
 		counter.inc();
@@ -81,7 +104,12 @@ public class ProcessMetricsEventListener extends DefaultProcessEventListener {
 
 			SimpleTimer instanceDuration = MetricRegistries.get(MetricRegistry.Type.VENDOR).simpleTimer(
 					processInstanceDurationMetadata, new Tag("application", application), new Tag("version", version),
-					new Tag("processId", processInstance.getProcessId()));
+					new Tag("processId", processInstance.getProcessId()),
+					new Tag("processVersion",
+							processInstance.getProcess().getVersion() == null ? "unknown"
+									: processInstance.getProcess().getVersion()),
+					new Tag("businessKey",
+							processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()));
 
 			final long duration = millisToSeconds(
 					processInstance.getEndDate().getTime() - processInstance.getStartDate().getTime());
@@ -94,7 +122,12 @@ public class ProcessMetricsEventListener extends DefaultProcessEventListener {
 
 		ConcurrentGauge currentlyActive = MetricRegistries.get(MetricRegistry.Type.VENDOR).concurrentGauge(
 				currentlyActivePIMetadata, new Tag("application", application), new Tag("version", version),
-				new Tag("processId", processInstance.getProcessId()));
+				new Tag("processId", processInstance.getProcessId()),
+				new Tag("processVersion",
+						processInstance.getProcess().getVersion() == null ? "unknown"
+								: processInstance.getProcess().getVersion()),
+				new Tag("businessKey",
+						processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()));
 		currentlyActive.dec();
 	}
 
@@ -110,6 +143,11 @@ public class ProcessMetricsEventListener extends DefaultProcessEventListener {
 		Counter counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter(erroredtMetadata,
 				new Tag("application", application), new Tag("version", version),
 				new Tag("processId", processInstance.getProcessId()),
+				new Tag("processVersion",
+						processInstance.getProcess().getVersion() == null ? "unknown"
+								: processInstance.getProcess().getVersion()),
+				new Tag("businessKey",
+						processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()),
 				new Tag("nodeName", event.getNodeInstance().getNodeName()));
 		counter.inc();
 	}
