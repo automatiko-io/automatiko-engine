@@ -12,6 +12,7 @@ public class SubProcessNodeFactory extends StateBasedNodeFactory implements Mapp
 
 	public static final String METHOD_PROCESS_ID = "processId";
 	public static final String METHOD_PROCESS_NAME = "processName";
+	public static final String METHOD_PROCESS_VERSION = "processVersion";
 	public static final String METHOD_WAIT_FOR_COMPLETION = "waitForCompletion";
 	public static final String METHOD_INDEPENDENT = "independent";
 
@@ -76,6 +77,11 @@ public class SubProcessNodeFactory extends StateBasedNodeFactory implements Mapp
 
 	public SubProcessNodeFactory processName(final String processName) {
 		getSubProcessNode().setProcessName(processName);
+		return this;
+	}
+
+	public SubProcessNodeFactory processVersion(final String version) {
+		getSubProcessNode().setProcessVersion(version);
 		return this;
 	}
 

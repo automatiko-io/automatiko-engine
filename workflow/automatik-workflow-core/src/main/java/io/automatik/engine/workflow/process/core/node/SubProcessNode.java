@@ -4,9 +4,9 @@ package io.automatik.engine.workflow.process.core.node;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import io.automatik.engine.api.definition.process.Connection;
 import io.automatik.engine.workflow.base.core.Context;
@@ -28,6 +28,7 @@ public class SubProcessNode extends StateBasedNode implements Mappable, ContextC
 	private ContextContainer contextContainer = new ContextContainerImpl();
 
 	private String processId;
+	private String processVersion;
 	private String processName;
 	private boolean waitForCompletion = true;
 
@@ -43,6 +44,14 @@ public class SubProcessNode extends StateBasedNode implements Mappable, ContextC
 
 	public String getProcessId() {
 		return this.processId;
+	}
+
+	public String getProcessVersion() {
+		return processVersion;
+	}
+
+	public void setProcessVersion(String processVersion) {
+		this.processVersion = processVersion;
 	}
 
 	public boolean isWaitForCompletion() {

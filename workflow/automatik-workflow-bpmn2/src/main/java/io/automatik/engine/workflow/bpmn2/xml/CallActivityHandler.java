@@ -54,6 +54,10 @@ public class CallActivityHandler extends AbstractNodeHandler {
 		if (independent != null && "false".equals(independent)) {
 			subProcessNode.setIndependent(false);
 		}
+		String version = element.getAttribute("version");
+		if (version != null && !version.trim().isEmpty()) {
+			subProcessNode.setProcessVersion(version);
+		}
 		Map<String, String> dataInputs = new HashMap<String, String>();
 		Map<String, String> dataOutputs = new HashMap<String, String>();
 		org.w3c.dom.Node xmlNode = element.getFirstChild();

@@ -22,11 +22,11 @@ import io.automatik.engine.api.workflow.WorkItem;
 public class OrdersProcessService {
 
 	@Inject
-	@Named("demo.orders_1_0")
+	@Named("orders_1_0")
 	Process<? extends Model> orderProcess;
 
 	@Inject
-	@Named("demo.orderItems")
+	@Named("orderItems")
 	Process<? extends Model> orderItemsProcess;
 
 	@GET

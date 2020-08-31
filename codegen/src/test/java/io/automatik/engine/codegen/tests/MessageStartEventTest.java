@@ -96,7 +96,7 @@ public class MessageStartEventTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly("messagestartevent/MessageStartEvent.bpmn2");
 		assertThat(app).isNotNull();
 
-		Class<?> resourceClazz = Class.forName("org.kie.kogito.test.MessageStartEventResource", true,
+		Class<?> resourceClazz = Class.forName("org.kie.kogito.test.MessageStartEventResource_1", true,
 				testClassLoader());
 		assertNotNull(resourceClazz);
 		Method[] methods = resourceClazz.getMethods();

@@ -444,7 +444,7 @@ public class ProcessGenerator {
 								new ClassOrInterfaceType(null, StringUtils.capitalize(subProcess.getKey() + "Model"))));
 				if (useInjection()) {
 					subprocessFieldDeclaration.addVariable(new VariableDeclarator(modelType, fieldName));
-					annotator.withInjection(subprocessFieldDeclaration);
+					annotator.withNamedInjection(subprocessFieldDeclaration, subProcess.getKey());
 				} else {
 					// app.processes().processById()
 					MethodCallExpr initSubProcessField = new MethodCallExpr(

@@ -281,4 +281,29 @@ public class CallActivityTaskTest extends AbstractCodegenTest {
 				new HumanTaskTransition(Complete.ID, null, securityPolicy));
 		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
 	}
+
+	@Test
+	public void testBasicCallActivityTaskVersioned() throws Exception {
+
+		Application app = generateCodeProcessesOnly("subprocess/CallActivityVersioned.bpmn2",
+				"subprocess/CallActivitySubProcessVersioned.bpmn2");
+		assertThat(app).isNotNull();
+
+		Process<? extends Model> p = app.processes().processById("ParentProcess_1");
+
+		Model m = p.createModel();
+		Map<String, Object> parameters = new HashMap<>();
+		parameters.put("x", "a");
+		parameters.put("y", "b");
+		m.fromMap(parameters);
+
+		ProcessInstance<?> processInstance = p.createInstance(m);
+		processInstance.start();
+
+		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+		Model result = (Model) processInstance.variables();
+		assertThat(result.toMap()).hasSize(2).containsKeys("x", "y");
+		assertThat(result.toMap().get("y")).isNotNull().isEqualTo("new value");
+		assertThat(result.toMap().get("x")).isNotNull().isEqualTo("a");
+	}
 }

@@ -37,7 +37,7 @@
       <bpmn2:outMessageRef>Message_2</bpmn2:outMessageRef>
     </bpmn2:operation>
   </bpmn2:interface>
-  <bpmn2:process id="demo.orderItems" drools:packageName="io.automatik.engine.quarkus.ittests" drools:adHoc="false" name="orderItems" isExecutable="true" processType="Private">
+  <bpmn2:process id="orderItems" drools:packageName="io.automatik.engine.quarkus.ittests" drools:adHoc="false" name="orderItems" isExecutable="true" processType="Private">
     <bpmn2:extensionElements>
       <drools:import name="io.automatik.engine.quarkus.ittests.Order"/>
     </bpmn2:extensionElements>
@@ -177,7 +177,7 @@
     <bpmn2:sequenceFlow id="SequenceFlow_4" drools:priority="1" sourceRef="UserTask_1" targetRef="_ACB2B473-2FCB-4E52-B96A-C0926782126F"/>
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="_TQTRw0cJEemyodG9iPy-Bw">
-    <bpmndi:BPMNPlane id="_TQTRxEcJEemyodG9iPy-Bw" bpmnElement="demo.orderItems">
+    <bpmndi:BPMNPlane id="_TQTRxEcJEemyodG9iPy-Bw" bpmnElement="orderItems">
       <bpmndi:BPMNShape id="shape__ACB2B473-2FCB-4E52-B96A-C0926782126F" bpmnElement="_ACB2B473-2FCB-4E52-B96A-C0926782126F">
         <dc:Bounds height="56.0" width="56.0" x="704.0" y="100.0"/>
         <bpmndi:BPMNLabel labelStyle="#//@definitions/@diagrams.0/@labelStyle.0"/>

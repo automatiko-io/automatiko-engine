@@ -4,7 +4,7 @@
   <bpmn2:itemDefinition id="_approverItem" structureRef="String"/>
   <bpmn2:itemDefinition id="__9484CB12-FE52-434C-AE9F-3C3C267D1C96_orderInputXItem" structureRef="io.automatik.engine.quarkus.ittests.Order"/>
   <bpmn2:itemDefinition id="__9484CB12-FE52-434C-AE9F-3C3C267D1C96_orderOutputXItem" structureRef="io.automatik.engine.quarkus.ittests.Order"/>
-  <bpmn2:process id="demo.orders" drools:packageName="io.automatik.engine.quarkus.ittests" drools:version="1.0" drools:adHoc="false" name="orders" isExecutable="true">
+  <bpmn2:process id="orders" drools:packageName="io.automatik.engine.quarkus.ittests" drools:version="1.0" drools:adHoc="false" name="orders" isExecutable="true">
     <bpmn2:documentation id="_gfw8oUcJEemyodG9iPy-Bw"><![CDATA[Deals with orders created by customer]]></bpmn2:documentation>
     <bpmn2:property id="order" itemSubjectRef="_orderItem" name="order"/>
     <bpmn2:property id="approver" itemSubjectRef="_approverItem" name="approver"/>
@@ -30,7 +30,7 @@
     <bpmn2:endEvent id="_2D876EF2-93F4-4CBE-959A-04EF7BFA9CED">
       <bpmn2:incoming>_8216C810-34D8-4BFA-B814-1AA01907810F</bpmn2:incoming>
     </bpmn2:endEvent>
-    <bpmn2:callActivity id="_9484CB12-FE52-434C-AE9F-3C3C267D1C96" drools:independent="false" drools:waitForCompletion="true" name="Add items" calledElement="demo.orderItems">
+    <bpmn2:callActivity id="_9484CB12-FE52-434C-AE9F-3C3C267D1C96" drools:independent="false" drools:waitForCompletion="true" name="Add items" calledElement="orderItems">
       <bpmn2:extensionElements>
         <drools:metaData name="elementname">
           <drools:metaValue><![CDATA[Add items]]></drools:metaValue>
@@ -62,7 +62,7 @@
     </bpmn2:startEvent>
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="_gfw8p0cJEemyodG9iPy-Bw">
-    <bpmndi:BPMNPlane id="_gfw8qEcJEemyodG9iPy-Bw" bpmnElement="demo.orders">
+    <bpmndi:BPMNPlane id="_gfw8qEcJEemyodG9iPy-Bw" bpmnElement="orders">
       <bpmndi:BPMNShape id="shape__B44545AB-8B78-4FE4-B6B9-1D467954C070" bpmnElement="_B44545AB-8B78-4FE4-B6B9-1D467954C070">
         <dc:Bounds height="56.0" width="56.0" x="100.0" y="100.0"/>
       </bpmndi:BPMNShape>

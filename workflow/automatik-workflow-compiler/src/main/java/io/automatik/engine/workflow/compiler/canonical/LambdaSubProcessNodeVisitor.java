@@ -6,6 +6,7 @@ import static io.automatik.engine.workflow.compiler.util.ClassUtils.constructCla
 import static io.automatik.engine.workflow.process.executable.core.factory.SubProcessNodeFactory.METHOD_INDEPENDENT;
 import static io.automatik.engine.workflow.process.executable.core.factory.SubProcessNodeFactory.METHOD_PROCESS_ID;
 import static io.automatik.engine.workflow.process.executable.core.factory.SubProcessNodeFactory.METHOD_PROCESS_NAME;
+import static io.automatik.engine.workflow.process.executable.core.factory.SubProcessNodeFactory.METHOD_PROCESS_VERSION;
 import static io.automatik.engine.workflow.process.executable.core.factory.SubProcessNodeFactory.METHOD_WAIT_FOR_COMPLETION;
 
 import java.io.InputStream;
@@ -49,6 +50,7 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
 		Optional<Expression> retValue = parse(resourceAsStream).findFirst(Expression.class);
 		String name = node.getName();
 		String subProcessId = node.getProcessId();
+		String subProcessVersion = ModelMetaData.version(node.getProcessVersion());
 
 		NodeValidator.of(getNodeKey(), name).notEmpty("subProcessId", subProcessId).validate();
 
@@ -57,6 +59,8 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
 				.addStatement(getFactoryMethod(getNodeId(node), METHOD_PROCESS_ID, new StringLiteralExpr(subProcessId)))
 				.addStatement(getFactoryMethod(getNodeId(node), METHOD_PROCESS_NAME,
 						new StringLiteralExpr(getOrDefault(node.getProcessName(), ""))))
+				.addStatement(getFactoryMethod(getNodeId(node), METHOD_PROCESS_VERSION,
+						new StringLiteralExpr(getOrDefault(node.getProcessVersion(), ""))))
 				.addStatement(getFactoryMethod(getNodeId(node), METHOD_WAIT_FOR_COMPLETION,
 						new BooleanLiteralExpr(node.isWaitForCompletion())))
 				.addStatement(getFactoryMethod(getNodeId(node), METHOD_INDEPENDENT,
@@ -64,8 +68,9 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
 
 		Map<String, String> inputTypes = (Map<String, String>) node.getMetaData("BPMN.InputTypes");
 
-		String subProcessModelClassName = ProcessToExecModelGenerator.extractModelClassName(subProcessId, null);
-		ModelMetaData subProcessModel = new ModelMetaData(subProcessId, null, metadata.getPackageName(),
+		String subProcessModelClassName = ProcessToExecModelGenerator.extractModelClassName(subProcessId,
+				subProcessVersion);
+		ModelMetaData subProcessModel = new ModelMetaData(subProcessId, subProcessVersion, metadata.getPackageName(),
 				subProcessModelClassName, WorkflowProcess.PRIVATE_VISIBILITY,
 				VariableDeclarations.ofRawInfo(inputTypes), false);
 
@@ -124,13 +129,15 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
 
 	private BlockStmt createInstance(SubProcessNode subProcessNode, ProcessMetaData metadata) {
 
-		String processId = ProcessToExecModelGenerator.extractProcessId(subProcessNode.getProcessId(), null);
+		String processId = ProcessToExecModelGenerator.extractProcessId(subProcessNode.getProcessId(),
+				ModelMetaData.version(subProcessNode.getProcessVersion()));
 		String processFielName = "process" + processId;
 
 		MethodCallExpr processInstanceSupplier = new MethodCallExpr(new NameExpr(processFielName), "createInstance")
 				.addArgument("model");
 
-		metadata.addSubProcess(processId, subProcessNode.getProcessId());
+		metadata.addSubProcess(processId,
+				subProcessNode.getProcessId() + ModelMetaData.version(subProcessNode.getProcessVersion()));
 
 		return new BlockStmt().addStatement(new ReturnStmt(processInstanceSupplier));
 	}
