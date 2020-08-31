@@ -4,7 +4,6 @@ package io.automatik.engine.workflow.marshalling;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,9 +77,12 @@ public class ProcessInstanceMarshaller {
 	}
 
 	public WorkflowProcessInstance unmarshallWorkflowProcessInstance(byte[] data, Process<?> process) {
+		Map<String, io.automatik.engine.api.definition.process.Process> processes = new HashMap<String, io.automatik.engine.api.definition.process.Process>();
+		io.automatik.engine.api.definition.process.Process p = ((AbstractProcess<?>) process).process();
+		processes.put(process.id(), p);// this can include version number in the id
+		processes.put(p.getId(), p);// this is raw process id as defined in bpmn or so
 		try (ByteArrayInputStream bais = new ByteArrayInputStream(data)) {
-			MarshallerReaderContext context = new MarshallerReaderContext(bais, null,
-					Collections.singletonMap(process.id(), ((AbstractProcess<?>) process).process()), this.env);
+			MarshallerReaderContext context = new MarshallerReaderContext(bais, null, processes, this.env);
 			ObjectInputStream stream = context.stream;
 			String processInstanceType = stream.readUTF();
 

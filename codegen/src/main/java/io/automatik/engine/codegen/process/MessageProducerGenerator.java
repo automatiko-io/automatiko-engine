@@ -50,7 +50,7 @@ public class MessageProducerGenerator {
 		this.packageName = process.getPackageName();
 		this.processId = process.getId();
 		this.processName = processId.substring(processId.lastIndexOf('.') + 1);
-		String classPrefix = StringUtils.capitalize(processName);
+		String classPrefix = StringUtils.capitalize(processName) + CodegenUtils.version(process.getVersion());
 		this.resourceClazzName = classPrefix + "MessageProducer_" + trigger.getOwnerId();
 		this.relativePath = packageName.replace(".", "/") + "/" + resourceClazzName + ".java";
 		this.messageDataEventClassName = messageDataEventClassName;
@@ -75,7 +75,7 @@ public class MessageProducerGenerator {
 
 	protected void appendConnectorSpecificProperties(String connector) {
 		if (connector.equals(MQTT_CONNECTOR)) {
-			String sanitizedName = CodegenUtils.triggerSanitizedName(trigger);
+			String sanitizedName = CodegenUtils.triggerSanitizedName(trigger, process.getVersion());
 			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".host", "localhost");
 			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".port", "1883");
 			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".client-id",
@@ -85,8 +85,8 @@ public class MessageProducerGenerator {
 	}
 
 	public String generate() {
-		
-		String sanitizedName = CodegenUtils.triggerSanitizedName(trigger);
+
+		String sanitizedName = CodegenUtils.triggerSanitizedName(trigger, process.getVersion());
 		String connector = CodegenUtils.getConnector(context);
 		if (connector != null) {
 
@@ -94,7 +94,7 @@ public class MessageProducerGenerator {
 			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".topic", trigger.getName());
 			appendConnectorSpecificProperties(connector);
 		}
-		
+
 		CompilationUnit clazz = parse(
 				this.getClass().getResourceAsStream("/class-templates/MessageProducerTemplate.java"));
 		clazz.setPackageDeclaration(process.getPackageName());
@@ -130,9 +130,8 @@ public class MessageProducerGenerator {
 							() -> new IllegalStateException("Cannot find produce methos in MessageProducerTemplate"));
 			BlockStmt body = new BlockStmt();
 			MethodCallExpr sendMethodCall = new MethodCallExpr(new NameExpr("emitter"), "send");
-			annotator.withMessageProducer(sendMethodCall, sanitizedName,
-					new MethodCallExpr(new ThisExpr(), "marshall").addArgument(new NameExpr("pi"))
-							.addArgument(new NameExpr(EVENT_DATA_VAR)));
+			annotator.withMessageProducer(sendMethodCall, sanitizedName, new MethodCallExpr(new ThisExpr(), "marshall")
+					.addArgument(new NameExpr("pi")).addArgument(new NameExpr(EVENT_DATA_VAR)));
 			body.addStatement(sendMethodCall);
 			produceMethod.setBody(body);
 

@@ -11,6 +11,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.codegen.BodyDeclarationComparator;
+import io.automatik.engine.codegen.CodegenUtils;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.compiler.canonical.TriggerMetaData;
@@ -33,7 +34,7 @@ public class MessageDataEventGenerator {
 		this.packageName = process.getPackageName();
 		this.processId = process.getId();
 		this.processName = processId.substring(processId.lastIndexOf('.') + 1);
-		String classPrefix = StringUtils.capitalize(processName);
+		String classPrefix = StringUtils.capitalize(processName) + CodegenUtils.version(process.getVersion());
 		this.resourceClazzName = classPrefix + "MessageDataEvent_" + trigger.getOwnerId();
 		this.relativePath = packageName.replace(".", "/") + "/" + resourceClazzName + ".java";
 	}

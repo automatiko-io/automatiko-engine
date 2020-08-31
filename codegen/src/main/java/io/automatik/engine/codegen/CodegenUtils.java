@@ -138,8 +138,8 @@ public class CodegenUtils {
 		return "unknown";
 	}
 
-	public static String triggerSanitizedName(TriggerMetaData trigger) {
-		return trigger.getName().replaceAll("/", "-").replaceAll("\\+", "x").replaceAll("#", "any");
+	public static String triggerSanitizedName(TriggerMetaData trigger, String version) {
+		return trigger.getName().replaceAll("/", "-").replaceAll("\\+", "x").replaceAll("#", "any") + version(version);
 	}
 
 	public static String version(String version) {

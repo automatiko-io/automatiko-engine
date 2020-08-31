@@ -57,7 +57,7 @@ public class MessageConsumerGenerator {
 		this.packageName = process.getPackageName();
 		this.processId = process.getId();
 		this.processName = processId.substring(processId.lastIndexOf('.') + 1);
-		String classPrefix = StringUtils.capitalize(processName);
+		String classPrefix = StringUtils.capitalize(processName) + CodegenUtils.version(process.getVersion());
 		this.resourceClazzName = classPrefix + "MessageConsumer_" + trigger.getOwnerId();
 		this.relativePath = packageName.replace(".", "/") + "/" + resourceClazzName + ".java";
 		this.modelfqcn = modelfqcn;
@@ -86,7 +86,7 @@ public class MessageConsumerGenerator {
 
 	protected void appendConnectorSpecificProperties(String connector) {
 		if (connector.equals(MQTT_CONNECTOR)) {
-			String sanitizedName = CodegenUtils.triggerSanitizedName(trigger);
+			String sanitizedName = CodegenUtils.triggerSanitizedName(trigger, process.getVersion());
 			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".host", "localhost");
 			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".port", "1883");
 			context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".client-id",
@@ -105,7 +105,7 @@ public class MessageConsumerGenerator {
 	}
 
 	public String generate() {
-		String sanitizedName = CodegenUtils.triggerSanitizedName(trigger);
+		String sanitizedName = CodegenUtils.triggerSanitizedName(trigger, process.getVersion());
 		String connector = CodegenUtils.getConnector(context);
 		if (connector != null) {
 

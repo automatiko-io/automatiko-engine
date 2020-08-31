@@ -54,7 +54,7 @@ public class MessageStartEventTest extends AbstractCodegenTest {
 		Application app = generateCodeProcessesOnly("messagestartevent/MessageStartEvent.bpmn2");
 		assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("MessageStartEvent");
+		Process<? extends Model> p = app.processes().processById("MessageStartEvent_1");
 
 		Model m = p.createModel();
 		Map<String, Object> parameters = new HashMap<>();
