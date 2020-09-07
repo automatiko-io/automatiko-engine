@@ -52,10 +52,10 @@ public class TimerNodeInstance extends StateBasedNodeInstance implements EventLi
 			addTimerListener();
 		}
 		JobsService jobService = getProcessInstance().getProcessRuntime().getJobsService();
-		timerId = jobService
-				.scheduleProcessInstanceJob(ProcessInstanceJobDescription.of(getTimerNode().getTimer().getId(),
-						expirationTime, getProcessInstance().getId(), getProcessInstance().getRootProcessInstanceId(),
-						getProcessInstance().getProcessId(), getProcessInstance().getRootProcessId()));
+		timerId = jobService.scheduleProcessInstanceJob(ProcessInstanceJobDescription.of(
+				getTimerNode().getTimer().getId(), expirationTime, getProcessInstance().getId(),
+				getProcessInstance().getRootProcessInstanceId(), getProcessInstance().getProcessId(),
+				getProcessInstance().getProcess().getVersion(), getProcessInstance().getRootProcessId()));
 	}
 
 	public void signalEvent(String type, Object event) {

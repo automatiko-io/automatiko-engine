@@ -29,7 +29,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import io.automatik.engine.addons.jobs.management.http.HttpBasedJobsService;
 import io.automatik.engine.api.jobs.ExactExpirationTime;
 import io.automatik.engine.api.jobs.ProcessInstanceJobDescription;
 import io.automatik.engine.api.jobs.ProcessJobDescription;
@@ -89,7 +88,7 @@ public class HttpBasedJobsServiceTest {
 	@Test
 	void testScheduleProcessJob() {
 		ProcessJobDescription processJobDescription = ProcessJobDescription.of(ExactExpirationTime.now(), 1,
-				"processId");
+				"processId", "1");
 		assertThatThrownBy(() -> tested.scheduleProcessJob(processJobDescription))
 				.isInstanceOf(UnsupportedOperationException.class);
 	}
@@ -99,7 +98,7 @@ public class HttpBasedJobsServiceTest {
 		when(webClient.post(anyString())).thenReturn(request);
 
 		ProcessInstanceJobDescription processInstanceJobDescription = ProcessInstanceJobDescription.of(123,
-				ExactExpirationTime.now(), "processInstanceId", "processId");
+				ExactExpirationTime.now(), "processInstanceId", "processId", "1");
 		tested.scheduleProcessInstanceJob(processInstanceJobDescription);
 		verify(webClient).post("/jobs");
 		ArgumentCaptor<Job> jobArgumentCaptor = forClass(Job.class);

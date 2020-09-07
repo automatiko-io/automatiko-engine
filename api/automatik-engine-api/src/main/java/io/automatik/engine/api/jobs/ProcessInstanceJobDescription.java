@@ -1,9 +1,9 @@
 
 package io.automatik.engine.api.jobs;
 
-import java.util.UUID;
-
 import static java.util.Objects.requireNonNull;
+
+import java.util.UUID;
 
 public class ProcessInstanceJobDescription implements JobDescription {
 
@@ -18,35 +18,40 @@ public class ProcessInstanceJobDescription implements JobDescription {
 	private final String processInstanceId;
 	private final String rootProcessInstanceId;
 	private final String processId;
+	private final String processVersion;
 	private final String rootProcessId;
 
 	private ProcessInstanceJobDescription(long timerId, ExpirationTime expirationTime, Integer priority,
-			String processInstanceId, String rootProcessInstanceId, String processId, String rootProcessId) {
+			String processInstanceId, String rootProcessInstanceId, String processId, String processVersion,
+			String rootProcessId) {
 		this.id = UUID.randomUUID().toString() + "_" + timerId;
 		this.expirationTime = requireNonNull(expirationTime);
 		this.priority = requireNonNull(priority);
 		this.processInstanceId = requireNonNull(processInstanceId);
 		this.rootProcessInstanceId = rootProcessInstanceId;
 		this.processId = processId;
+		this.processVersion = processVersion;
 		this.rootProcessId = rootProcessId;
 	}
 
 	public static ProcessInstanceJobDescription of(long timerId, ExpirationTime expirationTime,
-			String processInstanceId, String processId) {
-		return of(timerId, expirationTime, processInstanceId, null, processId, null);
+			String processInstanceId, String processId, String processVersion) {
+		return of(timerId, expirationTime, processInstanceId, null, processId, processVersion, null);
 	}
 
 	public static ProcessInstanceJobDescription of(long timerId, ExpirationTime expirationTime,
-			String processInstanceId, String rootProcessInstanceId, String processId, String rootProcessId) {
+			String processInstanceId, String rootProcessInstanceId, String processId, String processVersion,
+			String rootProcessId) {
 		return of(timerId, expirationTime, DEFAULT_PRIORITY, processInstanceId, rootProcessInstanceId, processId,
-				rootProcessId);
+				processVersion, rootProcessId);
 	}
 
 	public static ProcessInstanceJobDescription of(long timerId, ExpirationTime expirationTime, Integer priority,
-			String processInstanceId, String rootProcessInstanceId, String processId, String rootProcessId) {
+			String processInstanceId, String rootProcessInstanceId, String processId, String processVersion,
+			String rootProcessId) {
 
 		return new ProcessInstanceJobDescription(timerId, expirationTime, priority, processInstanceId,
-				rootProcessInstanceId, processId, rootProcessId);
+				rootProcessInstanceId, processId, processVersion, rootProcessId);
 	}
 
 	@Override
@@ -74,6 +79,10 @@ public class ProcessInstanceJobDescription implements JobDescription {
 
 	public String processId() {
 		return processId;
+	}
+
+	public String processVersion() {
+		return processVersion;
 	}
 
 	public String rootProcessId() {

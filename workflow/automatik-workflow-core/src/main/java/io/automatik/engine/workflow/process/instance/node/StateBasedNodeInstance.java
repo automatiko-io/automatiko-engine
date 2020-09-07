@@ -68,7 +68,8 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
 				ExpirationTime expirationTime = createTimerInstance(timer);
 				String jobId = jobService.scheduleProcessInstanceJob(ProcessInstanceJobDescription.of(timer.getId(),
 						expirationTime, getProcessInstance().getId(), getProcessInstance().getRootProcessInstanceId(),
-						getProcessInstance().getProcessId(), getProcessInstance().getRootProcessId()));
+						getProcessInstance().getProcessId(), getProcessInstance().getProcess().getVersion(),
+						getProcessInstance().getRootProcessId()));
 				timerInstances.add(jobId);
 			}
 		}

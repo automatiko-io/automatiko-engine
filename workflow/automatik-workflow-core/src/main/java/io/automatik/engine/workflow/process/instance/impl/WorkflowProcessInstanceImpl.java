@@ -502,7 +502,7 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
 		timerInstance.setPeriod(0);
 		if (useTimerSLATracking()) {
 			ProcessInstanceJobDescription description = ProcessInstanceJobDescription.of(-1L,
-					DurationExpirationTime.after(duration), getId(), getProcessId());
+					DurationExpirationTime.after(duration), getId(), getProcessId(), getProcess().getVersion());
 			timerInstance.setId(getProcessRuntime().getJobsService().scheduleProcessInstanceJob(description));
 		}
 		return timerInstance;

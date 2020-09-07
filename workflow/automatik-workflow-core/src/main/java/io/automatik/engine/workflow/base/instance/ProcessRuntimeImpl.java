@@ -73,8 +73,8 @@ public class ProcessRuntimeImpl implements InternalProcessRuntime {
 
 				for (StartNode startNode : startNodes) {
 					if (startNode != null && startNode.getTimer() != null) {
-						jobService.scheduleProcessJob(
-								ProcessJobDescription.of(createTimerInstance(startNode.getTimer()), p.getId()));
+						jobService.scheduleProcessJob(ProcessJobDescription
+								.of(createTimerInstance(startNode.getTimer()), p.getId(), p.getVersion()));
 					}
 				}
 			}

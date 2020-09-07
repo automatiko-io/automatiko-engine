@@ -145,8 +145,7 @@ public class ProcessesContainerGenerator extends AbstractApplicationSection {
 							new SimpleName(annotator.multiInstanceInjectionType()),
 							NodeList.nodeList(new ClassOrInterfaceType(null,
 									new SimpleName(io.automatik.engine.api.workflow.Process.class.getCanonicalName()),
-									NodeList.nodeList(new WildcardType(
-											new ClassOrInterfaceType(null, Model.class.getCanonicalName())))))));
+									NodeList.nodeList(new WildcardType())))));
 				});
 
 		annotator.withApplicationComponent(cls);

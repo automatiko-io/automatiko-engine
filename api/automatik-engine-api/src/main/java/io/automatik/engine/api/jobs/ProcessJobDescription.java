@@ -1,11 +1,11 @@
 
 package io.automatik.engine.api.jobs;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.UUID;
 
 import io.automatik.engine.api.workflow.Process;
-
-import static java.util.Objects.requireNonNull;
 
 public class ProcessJobDescription implements JobDescription {
 
@@ -19,13 +19,17 @@ public class ProcessJobDescription implements JobDescription {
 
 	private String processId;
 
+	private String processVersion;
+
 	private Process<?> process;
 
-	private ProcessJobDescription(ExpirationTime expirationTime, Integer priority, String processId) {
+	private ProcessJobDescription(ExpirationTime expirationTime, Integer priority, String processId,
+			String processVersion) {
 		this.id = UUID.randomUUID().toString();
 		this.expirationTime = requireNonNull(expirationTime);
 		this.priority = requireNonNull(priority);
 		this.processId = requireNonNull(processId);
+		this.processVersion = processVersion;
 	}
 
 	public ProcessJobDescription(ExpirationTime expirationTime, Integer priority, Process<?> process) {
@@ -33,19 +37,21 @@ public class ProcessJobDescription implements JobDescription {
 		this.expirationTime = requireNonNull(expirationTime);
 		this.priority = requireNonNull(priority);
 		this.process = requireNonNull(process);
+		this.processVersion = process.version();
 	}
 
 	public static ProcessJobDescription of(ExpirationTime expirationTime, Process<?> process) {
 		return new ProcessJobDescription(expirationTime, DEFAULT_PRIORITY, process);
 	}
 
-	public static ProcessJobDescription of(ExpirationTime expirationTime, String processId) {
-		return of(expirationTime, DEFAULT_PRIORITY, processId);
+	public static ProcessJobDescription of(ExpirationTime expirationTime, String processId, String processVersion) {
+		return of(expirationTime, DEFAULT_PRIORITY, processId, processVersion);
 	}
 
-	public static ProcessJobDescription of(ExpirationTime expirationTime, Integer priority, String processId) {
+	public static ProcessJobDescription of(ExpirationTime expirationTime, Integer priority, String processId,
+			String processVersion) {
 
-		return new ProcessJobDescription(expirationTime, priority, processId);
+		return new ProcessJobDescription(expirationTime, priority, processId, processVersion);
 	}
 
 	@Override
@@ -65,6 +71,10 @@ public class ProcessJobDescription implements JobDescription {
 
 	public String processId() {
 		return processId;
+	}
+
+	public String processVersion() {
+		return processVersion;
 	}
 
 	public Process<?> process() {

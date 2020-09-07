@@ -58,7 +58,7 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
 	@Override
 	public String id() {
 		if (version() != null) {
-			return process().getId() + "_" + version();
+			return process().getId() + "_" + version().replaceAll("\\.", "_");
 		} else {
 			return process().getId();
 		}

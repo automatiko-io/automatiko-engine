@@ -12,18 +12,17 @@ public class ApplicationProcesses implements Processes {
 
     Object processes;
         
-    private Map<String, Process<? extends Model>> mappedProcesses = new HashMap<>();
+    private Map<String, Process<?>> mappedProcesses = new HashMap<>();
 
     @javax.annotation.PostConstruct
     public void setup() {
-        
-        for (Process<? extends Model> process : processes) {
+        for (Process<?> process : processes) {
             mappedProcesses.put(process.id(), process);
         }
     }
     
     public Process<? extends Model> processById(String processId) {
-        return mappedProcesses.get(processId);
+        return (Process<? extends Model>)mappedProcesses.get(processId);
     }
     
     public Collection<String> processIds() {
