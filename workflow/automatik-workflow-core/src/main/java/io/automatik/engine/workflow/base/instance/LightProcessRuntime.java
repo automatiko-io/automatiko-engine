@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import io.automatik.engine.api.definition.process.Node;
 import io.automatik.engine.api.definition.process.Process;
@@ -34,6 +35,7 @@ import io.automatik.engine.workflow.process.core.node.EventTrigger;
 import io.automatik.engine.workflow.process.core.node.StartNode;
 import io.automatik.engine.workflow.process.core.node.Trigger;
 import io.automatik.engine.workflow.process.executable.core.ExecutableProcess;
+import io.automatik.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
 
 public class LightProcessRuntime implements InternalProcessRuntime {
 
@@ -157,6 +159,15 @@ public class LightProcessRuntime implements InternalProcessRuntime {
 				correlationKey);
 
 		pi.setProcessRuntime(this);
+		String uuid;
+		if (correlationKey != null) {
+			uuid = UUID.nameUUIDFromBytes(correlationKey.toExternalForm().getBytes()).toString();
+			((WorkflowProcessInstanceImpl) pi).setCorrelationKey(correlationKey.toExternalForm());
+		} else {
+			uuid = UUID.randomUUID().toString();
+		}
+
+		pi.setId(uuid);
 		runtimeContext.setupParameters(pi, parameters, variableInitializer);
 		return pi;
 	}

@@ -4,7 +4,9 @@ package io.automatik.engine.addons.persistence.infinispan;
 import static io.automatik.engine.api.workflow.ProcessInstanceReadMode.MUTABLE;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.infinispan.client.hotrod.RemoteCache;
@@ -27,6 +29,8 @@ public class CacheProcessInstances implements MutableProcessInstances {
 
 	private io.automatik.engine.api.workflow.Process<?> process;
 
+	private Map<String, ProcessInstance> cachedInstances = new ConcurrentHashMap<>();
+
 	public CacheProcessInstances(Process<?> process, RemoteCacheManager cacheManager, String templateName, String proto,
 			MessageMarshaller<?>... marshallers) {
 		this.process = process;
@@ -42,7 +46,12 @@ public class CacheProcessInstances implements MutableProcessInstances {
 
 	@Override
 	public Optional<? extends ProcessInstance> findById(String id, ProcessInstanceReadMode mode) {
-		byte[] data = cache.get(resolveId(id));
+		String resolvedId = resolveId(id);
+		if (cachedInstances.containsKey(resolvedId)) {
+			return Optional.of(cachedInstances.get(resolvedId));
+		}
+
+		byte[] data = cache.get(resolvedId);
 		if (data == null) {
 			return Optional.empty();
 		}
@@ -66,7 +75,9 @@ public class CacheProcessInstances implements MutableProcessInstances {
 
 	@Override
 	public void remove(String id) {
-		cache.remove(resolveId(id));
+		String resolvedId = resolveId(id);
+		cache.remove(resolvedId);
+		cachedInstances.remove(resolvedId);
 	}
 
 	protected String ignoreNullOrEmpty(String value) {
@@ -85,8 +96,9 @@ public class CacheProcessInstances implements MutableProcessInstances {
 
 	@SuppressWarnings("unchecked")
 	protected void updateStorage(String id, ProcessInstance instance, boolean checkDuplicates) {
+		String resolvedId = resolveId(id);
 		if (isActive(instance)) {
-			String resolvedId = resolveId(id);
+
 			byte[] data = marshaller.marhsallProcessInstance(instance);
 
 			if (checkDuplicates) {
@@ -106,6 +118,13 @@ public class CacheProcessInstances implements MutableProcessInstances {
 
 				return null;
 			});
+			cachedInstances.remove(resolvedId);
+		} else if (isPending(instance)) {
+			if (cachedInstances.putIfAbsent(resolvedId, instance) != null) {
+				throw new ProcessInstanceDuplicatedException(id);
+			}
+		} else {
+			cachedInstances.remove(resolvedId);
 		}
 	}
 

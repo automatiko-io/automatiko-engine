@@ -19,7 +19,7 @@ public class GreetingsTest {
             .accept(ContentType.JSON)
             .body("{}")
         .when()
-            .post("/greetings")
+            .post("/v1_0/greetings")
         .then()
             .statusCode(200)
             .body("id", notNullValue());    

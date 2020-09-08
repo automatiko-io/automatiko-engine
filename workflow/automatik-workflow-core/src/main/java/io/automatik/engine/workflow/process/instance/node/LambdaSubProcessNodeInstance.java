@@ -192,7 +192,7 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
 		ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
 		context.setNodeInstance(this);
 		io.automatik.engine.api.workflow.ProcessInstance<?> pi = ((io.automatik.engine.api.workflow.ProcessInstance<?>) processInstance
-				.getMetaData().get("KogitoProcessInstance"));
+				.getMetaData().get("AutomatikProcessInstance"));
 		if (pi != null) {
 			subProcessFactory.unbind(context, pi.variables());
 		}

@@ -17,6 +17,10 @@ public interface MutableProcessInstances<T> extends ProcessInstances<T> {
 		return instance.status() == ProcessInstance.STATE_ACTIVE || instance.status() == ProcessInstance.STATE_ERROR;
 	}
 
+	default boolean isPending(ProcessInstance<T> instance) {
+		return instance.status() == ProcessInstance.STATE_PENDING;
+	}
+
 	default String resolveId(String id) {
 		try {
 			return UUID.fromString(id).toString();

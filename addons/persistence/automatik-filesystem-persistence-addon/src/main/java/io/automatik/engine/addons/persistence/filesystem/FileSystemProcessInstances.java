@@ -11,7 +11,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,6 +39,8 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 	private Path storage;
 
 	private ProcessInstanceMarshaller marshaller;
+
+	private Map<String, ProcessInstance> cachedInstances = new ConcurrentHashMap<>();
 
 	public FileSystemProcessInstances(Process<?> process, Path storage) {
 		this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy()));
@@ -66,6 +70,10 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 	@Override
 	public Optional findById(String id, ProcessInstanceReadMode mode) {
 		String resolvedId = resolveId(id);
+		if (cachedInstances.containsKey(resolvedId)) {
+			return Optional.of(cachedInstances.get(resolvedId));
+		}
+
 		Path processInstanceStorage = Paths.get(storage.toString(), resolvedId);
 
 		if (Files.notExists(processInstanceStorage)) {
@@ -97,34 +105,45 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void create(String id, ProcessInstance instance) {
+		String resolvedId = resolveId(id);
 		if (isActive(instance)) {
-			String resolvedId = resolveId(id);
+
 			Path processInstanceStorage = Paths.get(storage.toString(), resolvedId);
 
 			if (Files.exists(processInstanceStorage)) {
 				throw new ProcessInstanceDuplicatedException(id);
 			}
 			storeProcessInstance(processInstanceStorage, instance);
+			cachedInstances.remove(resolvedId);
+		} else if (isPending(instance)) {
+			if (cachedInstances.putIfAbsent(resolvedId, instance) != null) {
+				throw new ProcessInstanceDuplicatedException(id);
+			}
+		} else {
+			cachedInstances.remove(resolvedId);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public void update(String id, ProcessInstance instance) {
+		String resolvedId = resolveId(id);
 		if (isActive(instance)) {
-			String resolvedId = resolveId(id);
+
 			Path processInstanceStorage = Paths.get(storage.toString(), resolvedId);
 
 			if (Files.exists(processInstanceStorage)) {
 				storeProcessInstance(processInstanceStorage, instance);
 			}
 		}
+		cachedInstances.remove(resolvedId);
 	}
 
 	@Override
 	public void remove(String id) {
-		Path processInstanceStorage = Paths.get(storage.toString(), resolveId(id));
-
+		String resolvedId = resolveId(id);
+		Path processInstanceStorage = Paths.get(storage.toString(), resolvedId);
+		cachedInstances.remove(resolvedId);
 		try {
 			Files.deleteIfExists(processInstanceStorage);
 		} catch (IOException e) {

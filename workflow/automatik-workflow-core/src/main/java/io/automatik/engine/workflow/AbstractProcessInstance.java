@@ -76,11 +76,18 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 		this.variables = variables;
 
 		setCorrelationKey(businessKey);
-
 		Map<String, Object> map = bind(variables);
 		String processId = process.process().getId();
 		syncProcessInstance((WorkflowProcessInstance) ((CorrelationAwareProcessRuntime) rt)
 				.createProcessInstance(processId, correlationKey, map));
+		// this applies to business keys only as non business keys process instances id
+		// are always unique
+		if (correlationKey != null && ((MutableProcessInstances<T>) process.instances()).exists(id)) {
+			throw new ProcessInstanceDuplicatedException(correlationKey.getName());
+		}
+		// add to the instances upon creation so it can be immediately found even if not
+		// started
+		((MutableProcessInstances<T>) process.instances()).create(id, this);
 	}
 
 	/**
@@ -114,7 +121,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 					.setProcessRuntime(((InternalProcessRuntime) getProcessRuntime()));
 		}
 		((WorkflowProcessInstanceImpl) processInstance).reconnect();
-		((WorkflowProcessInstanceImpl) processInstance).setMetaData("KogitoProcessInstance", this);
+		((WorkflowProcessInstanceImpl) processInstance).setMetaData("AutomatikProcessInstance", this);
 		addCompletionEventListener();
 
 		for (io.automatik.engine.api.runtime.process.NodeInstance nodeInstance : ((WorkflowProcessInstance) processInstance)
@@ -149,7 +156,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 		}
 
 		((WorkflowProcessInstanceImpl) processInstance).disconnect();
-		((WorkflowProcessInstanceImpl) processInstance).setMetaData("KogitoProcessInstance", null);
+		((WorkflowProcessInstanceImpl) processInstance).setMetaData("AutomatikProcessInstance", null);
 	}
 
 	private void syncProcessInstance(WorkflowProcessInstance wpi) {
@@ -189,31 +196,29 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 	}
 
 	public void start(String trigger, String referenceId, Object data) {
-		if (this.status != ProcessInstance.STATE_PENDING) {
-			throw new IllegalStateException("Impossible to start process instance that already was started");
-		}
-		this.status = ProcessInstance.STATE_ACTIVE;
+		synchronized (this) {
+			if (this.status != ProcessInstance.STATE_PENDING) {
+				throw new IllegalStateException("Impossible to start process instance that already was started");
+			}
+			this.status = ProcessInstance.STATE_ACTIVE;
 
-		if (referenceId != null) {
-			((WorkflowProcessInstanceImpl) processInstance).setReferenceId(referenceId);
-		}
+			if (referenceId != null) {
+				((WorkflowProcessInstanceImpl) processInstance).setReferenceId(referenceId);
+			}
 
-		((InternalProcessRuntime) getProcessRuntime()).getProcessInstanceManager()
-				.addProcessInstance(this.processInstance, this.correlationKey);
-		this.id = processInstance.getId();
-		// this applies to business keys only as non business keys process instances id
-		// are always unique
-		if (correlationKey != null && process.instances.exists(id)) {
-			throw new ProcessInstanceDuplicatedException(correlationKey.getName());
-		}
-		((WorkflowProcessInstanceImpl) processInstance).setMetaData("KogitoProcessInstance", this);
-		addCompletionEventListener();
-		io.automatik.engine.api.runtime.process.ProcessInstance processInstance = this.getProcessRuntime()
-				.startProcessInstance(this.id, trigger, data);
-		addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).create(pi.id(), pi));
-		unbind(variables, processInstance.getVariables());
-		if (this.processInstance != null) {
-			this.status = this.processInstance.getState();
+			((InternalProcessRuntime) getProcessRuntime()).getProcessInstanceManager()
+					.addProcessInstance(this.processInstance, this.correlationKey);
+			this.id = processInstance.getId();
+
+			((WorkflowProcessInstanceImpl) processInstance).setMetaData("AutomatikProcessInstance", this);
+			addCompletionEventListener();
+			io.automatik.engine.api.runtime.process.ProcessInstance processInstance = this.getProcessRuntime()
+					.startProcessInstance(this.id, trigger, data);
+			addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).create(pi.id(), pi));
+			unbind(variables, processInstance.getVariables());
+			if (this.processInstance != null) {
+				this.status = this.processInstance.getState();
+			}
 		}
 	}
 
@@ -224,20 +229,24 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 	}
 
 	public void abort() {
-		String pid = processInstance().getId();
-		unbind(variables, processInstance().getVariables());
-		this.getProcessRuntime().abortProcessInstance(pid);
-		this.status = processInstance.getState();
-		addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id()));
+		synchronized (this) {
+			String pid = processInstance().getId();
+			unbind(variables, processInstance().getVariables());
+			this.getProcessRuntime().abortProcessInstance(pid);
+			this.status = processInstance.getState();
+			addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id()));
+		}
 	}
 
 	@Override
 	public <S> void send(Signal<S> signal) {
-		if (signal.referenceId() != null) {
-			((WorkflowProcessInstanceImpl) processInstance()).setReferenceId(signal.referenceId());
+		synchronized (this) {
+			if (signal.referenceId() != null) {
+				((WorkflowProcessInstanceImpl) processInstance()).setReferenceId(signal.referenceId());
+			}
+			processInstance().signalEvent(signal.channel(), signal.payload());
+			removeOnFinish();
 		}
-		processInstance().signalEvent(signal.channel(), signal.payload());
-		removeOnFinish();
 	}
 
 	@Override
@@ -284,12 +293,14 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
 	@Override
 	public void updateVariables(T updates) {
-		Map<String, Object> map = bind(updates);
+		synchronized (this) {
+			Map<String, Object> map = bind(updates);
 
-		for (Entry<String, Object> entry : map.entrySet()) {
-			((WorkflowProcessInstance) processInstance()).setVariable(entry.getKey(), entry.getValue());
+			for (Entry<String, Object> entry : map.entrySet()) {
+				((WorkflowProcessInstance) processInstance()).setVariable(entry.getKey(), entry.getValue());
+			}
+			addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
 		}
-		addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
 	}
 
 	@Override
@@ -308,59 +319,67 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
 	@Override
 	public void startFrom(String nodeId, String referenceId) {
-		((WorkflowProcessInstanceImpl) processInstance).setStartDate(new Date());
-		((WorkflowProcessInstanceImpl) processInstance).setState(STATE_ACTIVE);
-		((InternalProcessRuntime) getProcessRuntime()).getProcessInstanceManager()
-				.addProcessInstance(this.processInstance, this.correlationKey);
-		this.id = processInstance.getId();
-		addCompletionEventListener();
-		if (referenceId != null) {
-			((WorkflowProcessInstanceImpl) processInstance).setReferenceId(referenceId);
-		}
-		((WorkflowProcessInstanceImpl) processInstance).setMetaData("KogitoProcessInstance", this);
-		triggerNode(nodeId);
-		addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
-		unbind(variables, processInstance.getVariables());
-		if (processInstance != null) {
-			this.status = processInstance.getState();
+		synchronized (this) {
+			((WorkflowProcessInstanceImpl) processInstance).setStartDate(new Date());
+			((WorkflowProcessInstanceImpl) processInstance).setState(STATE_ACTIVE);
+			((InternalProcessRuntime) getProcessRuntime()).getProcessInstanceManager()
+					.addProcessInstance(this.processInstance, this.correlationKey);
+			this.id = processInstance.getId();
+			addCompletionEventListener();
+			if (referenceId != null) {
+				((WorkflowProcessInstanceImpl) processInstance).setReferenceId(referenceId);
+			}
+			((WorkflowProcessInstanceImpl) processInstance).setMetaData("AutomatikProcessInstance", this);
+			triggerNode(nodeId);
+			addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
+			unbind(variables, processInstance.getVariables());
+			if (processInstance != null) {
+				this.status = processInstance.getState();
+			}
 		}
 	}
 
 	@Override
 	public void triggerNode(String nodeId) {
-		WorkflowProcessInstanceImpl wfpi = ((WorkflowProcessInstanceImpl) processInstance());
-		ExecutableProcess rfp = ((ExecutableProcess) wfpi.getProcess());
+		synchronized (this) {
+			WorkflowProcessInstanceImpl wfpi = ((WorkflowProcessInstanceImpl) processInstance());
+			ExecutableProcess rfp = ((ExecutableProcess) wfpi.getProcess());
 
-		Node node = rfp.getNodesRecursively().stream().filter(ni -> nodeId.equals(ni.getMetaData().get("UniqueId")))
-				.findFirst().orElseThrow(() -> new NodeNotFoundException(this.id, nodeId));
+			Node node = rfp.getNodesRecursively().stream().filter(ni -> nodeId.equals(ni.getMetaData().get("UniqueId")))
+					.findFirst().orElseThrow(() -> new NodeNotFoundException(this.id, nodeId));
 
-		Node parentNode = rfp.getParentNode(node.getId());
+			Node parentNode = rfp.getParentNode(node.getId());
 
-		NodeInstanceContainer nodeInstanceContainerNode = parentNode == null ? wfpi
-				: ((NodeInstanceContainer) wfpi.getNodeInstance(parentNode));
+			NodeInstanceContainer nodeInstanceContainerNode = parentNode == null ? wfpi
+					: ((NodeInstanceContainer) wfpi.getNodeInstance(parentNode));
 
-		nodeInstanceContainerNode.getNodeInstance(node).trigger(null,
-				io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
+			nodeInstanceContainerNode.getNodeInstance(node).trigger(null,
+					io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
+		}
 	}
 
 	@Override
 	public void cancelNodeInstance(String nodeInstanceId) {
-		NodeInstance nodeInstance = ((WorkflowProcessInstanceImpl) processInstance()).getNodeInstances(true).stream()
-				.filter(ni -> ni.getId().equals(nodeInstanceId)).findFirst()
-				.orElseThrow(() -> new NodeInstanceNotFoundException(this.id, nodeInstanceId));
+		synchronized (this) {
+			NodeInstance nodeInstance = ((WorkflowProcessInstanceImpl) processInstance()).getNodeInstances(true)
+					.stream().filter(ni -> ni.getId().equals(nodeInstanceId)).findFirst()
+					.orElseThrow(() -> new NodeInstanceNotFoundException(this.id, nodeInstanceId));
 
-		nodeInstance.cancel();
-		removeOnFinish();
+			nodeInstance.cancel();
+			removeOnFinish();
+		}
 	}
 
 	@Override
 	public void retriggerNodeInstance(String nodeInstanceId) {
-		NodeInstance nodeInstance = ((WorkflowProcessInstanceImpl) processInstance()).getNodeInstances(true).stream()
-				.filter(ni -> ni.getId().equals(nodeInstanceId)).findFirst()
-				.orElseThrow(() -> new NodeInstanceNotFoundException(this.id, nodeInstanceId));
+		synchronized (this) {
+			NodeInstance nodeInstance = ((WorkflowProcessInstanceImpl) processInstance()).getNodeInstances(true)
+					.stream().filter(ni -> ni.getId().equals(nodeInstanceId)).findFirst()
+					.orElseThrow(() -> new NodeInstanceNotFoundException(this.id, nodeInstanceId));
 
-		((NodeInstanceImpl) nodeInstance).retrigger(true);
-		removeOnFinish();
+			((NodeInstanceImpl) nodeInstance).retrigger(true);
+			removeOnFinish();
+		}
 	}
 
 	public io.automatik.engine.api.runtime.process.ProcessInstance processInstance() {
@@ -419,46 +438,55 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
 	@Override
 	public void completeWorkItem(String id, Map<String, Object> variables, Policy<?>... policies) {
-		String[] fragments = id.split("/");
+		synchronized (this) {
+			String[] fragments = id.split("/");
 
-		if (fragments.length > 1) {
-			// comes from subprocess
-			subprocesses().stream().filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
-					.findFirst().ifPresent(pi -> pi.completeWorkItem(fragments[3], variables, policies));
-		} else {
+			if (fragments.length > 1) {
+				// comes from subprocess
+				subprocesses().stream()
+						.filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
+						.findFirst().ifPresent(pi -> pi.completeWorkItem(fragments[3], variables, policies));
+			} else {
 
-			this.getProcessRuntime().getWorkItemManager().completeWorkItem(id, variables, policies);
-			removeOnFinish();
+				this.getProcessRuntime().getWorkItemManager().completeWorkItem(id, variables, policies);
+				removeOnFinish();
+			}
 		}
 	}
 
 	@Override
 	public void abortWorkItem(String id, Policy<?>... policies) {
-		String[] fragments = id.split("/");
+		synchronized (this) {
+			String[] fragments = id.split("/");
 
-		if (fragments.length > 1) {
-			// comes from subprocess
-			subprocesses().stream().filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
-					.findFirst().ifPresent(pi -> pi.abortWorkItem(fragments[3], policies));
-		} else {
+			if (fragments.length > 1) {
+				// comes from subprocess
+				subprocesses().stream()
+						.filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
+						.findFirst().ifPresent(pi -> pi.abortWorkItem(fragments[3], policies));
+			} else {
 
-			this.getProcessRuntime().getWorkItemManager().abortWorkItem(id, policies);
-			removeOnFinish();
+				this.getProcessRuntime().getWorkItemManager().abortWorkItem(id, policies);
+				removeOnFinish();
+			}
 		}
 	}
 
 	@Override
 	public void transitionWorkItem(String id, Transition<?> transition) {
-		String[] fragments = id.split("/");
+		synchronized (this) {
+			String[] fragments = id.split("/");
 
-		if (fragments.length > 1) {
-			// comes from subprocess
-			subprocesses().stream().filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
-					.findFirst().ifPresent(pi -> pi.transitionWorkItem(fragments[3], transition));
-		} else {
+			if (fragments.length > 1) {
+				// comes from subprocess
+				subprocesses().stream()
+						.filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
+						.findFirst().ifPresent(pi -> pi.transitionWorkItem(fragments[3], transition));
+			} else {
 
-			this.getProcessRuntime().getWorkItemManager().transitionWorkItem(id, transition);
-			removeOnFinish();
+				this.getProcessRuntime().getWorkItemManager().transitionWorkItem(id, transition);
+				removeOnFinish();
+			}
 		}
 	}
 

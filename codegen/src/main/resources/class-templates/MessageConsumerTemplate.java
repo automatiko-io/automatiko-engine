@@ -9,6 +9,7 @@ import io.automatik.engine.api.Application;
 import io.automatik.engine.api.event.DataEvent;
 import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
+import io.automatik.engine.api.workflow.ProcessInstanceDuplicatedException;
 import io.automatik.engine.workflow.Sig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,8 +73,13 @@ public class $Type$MessageConsumer {
                         	
                             pi.startFrom(eventData.getAutomatikStartFromNode(), eventData.getAutomatikProcessinstanceId());
                         } else {
-                        	ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
-                        	pi.start(trigger, eventData.getAutomatikProcessinstanceId(), eventData.getData());
+                        	try {
+                        		ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
+                        		pi.start(trigger, eventData.getAutomatikProcessinstanceId(), eventData.getData());
+                        	} catch (ProcessInstanceDuplicatedException e) {
+                            	ProcessInstance<$Type$> pi = process.instances().findById(correlation).get();
+                            	pi.send(Sig.of(trigger, eventData.getData()));
+                            }
                         }
                     }
                     return null;
@@ -95,8 +101,13 @@ public class $Type$MessageConsumer {
                 		
                     } 
                     LOGGER.debug("Received message without reference id and no correlation is set/matched, staring new process instance with trigger '{}'", trigger);
-                    ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
-                    pi.start(trigger, null, eventData);  
+                    try {
+                    	ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
+                    	pi.start(trigger, null, eventData);
+                    } catch (ProcessInstanceDuplicatedException e) {
+                    	ProcessInstance<$Type$> pi = process.instances().findById(correlation).get();
+                    	pi.send(Sig.of(trigger, eventData));
+                    }
                     
                     return null;
                 });

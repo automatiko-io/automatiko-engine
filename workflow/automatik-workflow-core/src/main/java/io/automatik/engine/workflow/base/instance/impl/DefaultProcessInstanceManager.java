@@ -19,19 +19,21 @@ public class DefaultProcessInstanceManager implements ProcessInstanceManager {
 	private Map<CorrelationKey, ProcessInstance> processInstancesByCorrelationKey = new ConcurrentHashMap<>();
 
 	public void addProcessInstance(ProcessInstance processInstance, CorrelationKey correlationKey) {
-		String uuid;
-		if (correlationKey != null) {
-			uuid = UUID.nameUUIDFromBytes(correlationKey.toExternalForm().getBytes()).toString();
-			if (processInstancesByCorrelationKey.containsKey(correlationKey)) {
-				throw new RuntimeException(correlationKey + " already exists");
+		if (processInstance.getId() == null) {
+			String uuid;
+			if (correlationKey != null) {
+				uuid = UUID.nameUUIDFromBytes(correlationKey.toExternalForm().getBytes()).toString();
+				if (processInstancesByCorrelationKey.containsKey(correlationKey)) {
+					throw new RuntimeException(correlationKey + " already exists");
+				}
+				processInstancesByCorrelationKey.put(correlationKey, processInstance);
+				((WorkflowProcessInstanceImpl) processInstance).setCorrelationKey(correlationKey.toExternalForm());
+			} else {
+				uuid = UUID.randomUUID().toString();
 			}
-			processInstancesByCorrelationKey.put(correlationKey, processInstance);
-			((WorkflowProcessInstanceImpl) processInstance).setCorrelationKey(correlationKey.toExternalForm());
-		} else {
-			uuid = UUID.randomUUID().toString();
-		}
 
-		((io.automatik.engine.workflow.base.instance.ProcessInstance) processInstance).setId(uuid);
+			((io.automatik.engine.workflow.base.instance.ProcessInstance) processInstance).setId(uuid);
+		}
 		internalAddProcessInstance(processInstance);
 	}
 
