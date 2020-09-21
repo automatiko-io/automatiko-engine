@@ -8,6 +8,7 @@ import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 
+import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.process.core.node.FaultNode;
 import io.automatik.engine.workflow.process.executable.core.factory.FaultNodeFactory;
@@ -20,8 +21,8 @@ public class FaultNodeVisitor extends AbstractNodeVisitor<FaultNode> {
 	}
 
 	@Override
-	public void visitNode(String factoryField, FaultNode node, BlockStmt body, VariableScope variableScope,
-			ProcessMetaData metadata) {
+	public void visitNode(WorkflowProcess process, String factoryField, FaultNode node, BlockStmt body,
+			VariableScope variableScope, ProcessMetaData metadata) {
 		body.addStatement(getAssignedFactoryMethod(factoryField, FaultNodeFactory.class, getNodeId(node), getNodeKey(),
 				new LongLiteralExpr(node.getId()))).addStatement(getNameMethod(node, "Error"));
 		if (node.getFaultVariable() != null) {

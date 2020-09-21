@@ -7,7 +7,6 @@ import static io.automatik.engine.workflow.process.executable.core.factory.WorkI
 import java.util.Map.Entry;
 import java.util.Objects;
 
-import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
@@ -17,6 +16,7 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 
+import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.workflow.base.core.Work;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.process.core.node.WorkItemNode;
@@ -61,17 +61,20 @@ public class WorkItemNodeVisitor<T extends WorkItemNode> extends AbstractNodeVis
 	}
 
 	@Override
-	public void visitNode(String factoryField, T node, BlockStmt body, VariableScope variableScope,
-			ProcessMetaData metadata) {
+	public void visitNode(WorkflowProcess process, String factoryField, T node, BlockStmt body,
+			VariableScope variableScope, ProcessMetaData metadata) {
 		Work work = node.getWork();
 		String workName = node.getWork().getName();
 
 		if (workName.equals("Service Task")) {
-			ServiceTaskDescriptor d = new ServiceTaskDescriptor(node, contextClassLoader);
+			ServiceTaskDescriptor d = new ServiceTaskDescriptor(process, node, contextClassLoader);
 			String mangledName = d.mangledName();
-			CompilationUnit generatedHandler = d.generateHandlerClassForService();
-			metadata.getGeneratedHandlers().put(mangledName, generatedHandler);
+			metadata.getGeneratedHandlers().put(mangledName, d);
 			workName = mangledName;
+
+			if (d.openapi() != null) {
+				metadata.addOpenAPI(d.openapi());
+			}
 		}
 
 		body.addStatement(getAssignedFactoryMethod(factoryField, WorkItemNodeFactory.class, getNodeId(node),

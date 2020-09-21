@@ -38,7 +38,7 @@ public class ClassUtils {
 		try {
 			return Class.forName(parseClassname(name), true, cl);
 		} catch (ClassNotFoundException e) {
-			throw new RuntimeException("Unable to construct variable from type", e);
+			return null;
 		}
 	}
 

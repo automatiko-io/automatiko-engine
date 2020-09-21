@@ -7,6 +7,7 @@ import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 
+import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.process.core.node.MilestoneNode;
 import io.automatik.engine.workflow.process.executable.core.factory.MilestoneNodeFactory;
@@ -19,8 +20,8 @@ public class MilestoneNodeVisitor extends AbstractNodeVisitor<MilestoneNode> {
 	}
 
 	@Override
-	public void visitNode(String factoryField, MilestoneNode node, BlockStmt body, VariableScope variableScope,
-			ProcessMetaData metadata) {
+	public void visitNode(WorkflowProcess process, String factoryField, MilestoneNode node, BlockStmt body,
+			VariableScope variableScope, ProcessMetaData metadata) {
 		body.addStatement(getAssignedFactoryMethod(factoryField, MilestoneNodeFactory.class, getNodeId(node),
 				getNodeKey(), new LongLiteralExpr(node.getId()))).addStatement(getNameMethod(node, "Milestone"));
 		if (node.getCondition() != null && !node.getCondition().trim().isEmpty()) {

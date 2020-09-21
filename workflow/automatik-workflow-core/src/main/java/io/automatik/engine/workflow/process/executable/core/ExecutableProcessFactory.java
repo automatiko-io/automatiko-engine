@@ -22,8 +22,10 @@ import org.slf4j.LoggerFactory;
 
 import io.automatik.engine.api.definition.process.Node;
 import io.automatik.engine.api.definition.process.NodeContainer;
+import io.automatik.engine.workflow.base.core.ContextContainer;
 import io.automatik.engine.workflow.base.core.context.exception.ActionExceptionHandler;
 import io.automatik.engine.workflow.base.core.context.exception.ExceptionHandler;
+import io.automatik.engine.workflow.base.core.context.exception.ExceptionScope;
 import io.automatik.engine.workflow.base.core.context.swimlane.Swimlane;
 import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.datatype.DataType;
@@ -33,9 +35,11 @@ import io.automatik.engine.workflow.base.core.timer.Timer;
 import io.automatik.engine.workflow.base.core.validation.ProcessValidationError;
 import io.automatik.engine.workflow.base.instance.impl.Action;
 import io.automatik.engine.workflow.base.instance.impl.actions.CancelNodeInstanceAction;
+import io.automatik.engine.workflow.base.instance.impl.actions.SignalProcessInstanceAction;
 import io.automatik.engine.workflow.process.core.ProcessAction;
 import io.automatik.engine.workflow.process.core.impl.ConsequenceAction;
 import io.automatik.engine.workflow.process.core.node.CompositeNode;
+import io.automatik.engine.workflow.process.core.node.EndNode;
 import io.automatik.engine.workflow.process.core.node.EventNode;
 import io.automatik.engine.workflow.process.core.node.EventSubProcessNode;
 import io.automatik.engine.workflow.process.core.node.EventTrigger;
@@ -231,6 +235,8 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
 							linkBoundaryTimerEvent(node, attachedTo, attachedNode);
 						} else if (node.getMetaData().get(SIGNAL_NAME) != null || type.startsWith("Message-")) {
 							linkBoundarySignalEvent(node, attachedTo);
+						} else if (type.startsWith("Error-")) {
+							linkBoundaryErrorEvent(nodeContainer, node, attachedTo, attachedNode);
 						}
 					}
 				}
@@ -290,6 +296,42 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
 			actions.add(action);
 			((EventNode) node).setActions(EVENT_NODE_EXIT, actions);
 		}
+	}
+
+	private static void linkBoundaryErrorEvent(NodeContainer nodeContainer, Node node, String attachedTo,
+			Node attachedNode) {
+		ContextContainer compositeNode = (ContextContainer) attachedNode;
+		ExceptionScope exceptionScope = (ExceptionScope) compositeNode
+				.getDefaultContext(ExceptionScope.EXCEPTION_SCOPE);
+		if (exceptionScope == null) {
+			exceptionScope = new ExceptionScope();
+			compositeNode.addContext(exceptionScope);
+			compositeNode.setDefaultContext(exceptionScope);
+		}
+		String errorCode = (String) node.getMetaData().get("ErrorEvent");
+		boolean hasErrorCode = (Boolean) node.getMetaData().get("HasErrorEvent");
+		String errorStructureRef = (String) node.getMetaData().get("ErrorStructureRef");
+		ActionExceptionHandler exceptionHandler = new ActionExceptionHandler();
+
+		String variable = ((EventNode) node).getVariableName();
+		ConsequenceAction action = new ConsequenceAction("java", null);
+		action.setMetaData(ACTION, new SignalProcessInstanceAction("Error-" + attachedTo + "-" + errorCode, variable,
+				SignalProcessInstanceAction.PROCESS_INSTANCE_SCOPE));
+		exceptionHandler.setAction(action);
+		exceptionHandler.setFaultVariable(variable);
+		exceptionScope.setExceptionHandler(hasErrorCode ? errorCode : null, exceptionHandler);
+		if (errorStructureRef != null) {
+			exceptionScope.setExceptionHandler(errorStructureRef, exceptionHandler);
+		}
+
+		List<ProcessAction> actions = ((EventNode) node).getActions(EndNode.EVENT_NODE_EXIT);
+		if (actions == null) {
+			actions = new ArrayList<ProcessAction>();
+		}
+		ConsequenceAction cancelAction = new ConsequenceAction("java", null);
+		cancelAction.setMetaData("Action", new CancelNodeInstanceAction(attachedTo));
+		actions.add(cancelAction);
+		((EventNode) node).setActions(EndNode.EVENT_NODE_EXIT, actions);
 	}
 
 	protected ProcessAction timerAction(String type) {

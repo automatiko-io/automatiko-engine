@@ -8,10 +8,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -63,7 +65,9 @@ public class GeneratorContext {
 
     private Map<String, ProcessMetaData> processes = new ConcurrentHashMap<String, ProcessMetaData>();
 
-    private Map<Path, Path> classToSource = new HashMap<>();;
+    private Map<Path, Path> classToSource = new HashMap<>();
+
+    private List<String> instructions = new ArrayList<String>();
 
     protected GeneratorContext(Properties properties, File resourcePath, File classesPath) {
         this.applicationProperties = properties;
@@ -205,4 +209,20 @@ public class GeneratorContext {
         return path.equals(targetPath);
     }
 
+    public void addInstruction(String instruction) {
+        this.instructions.add(instruction);
+    }
+
+    public List<String> getInstructions() {
+        return this.instructions;
+    }
+
+    public void logInstructions() {
+        LOGGER.info("****************** Automatik Instructions *********************");
+        LOGGER.info("Following are set of information that can be useful down the line...");
+
+        instructions.forEach(instruction -> LOGGER.info(instruction));
+
+        LOGGER.info("***************************************************************");
+    }
 }

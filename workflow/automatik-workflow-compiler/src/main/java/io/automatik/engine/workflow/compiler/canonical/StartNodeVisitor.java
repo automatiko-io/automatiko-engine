@@ -22,6 +22,7 @@ import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 
+import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.core.timer.Timer;
@@ -38,8 +39,8 @@ public class StartNodeVisitor extends AbstractNodeVisitor<StartNode> {
 	}
 
 	@Override
-	public void visitNode(String factoryField, StartNode node, BlockStmt body, VariableScope variableScope,
-			ProcessMetaData metadata) {
+	public void visitNode(WorkflowProcess process, String factoryField, StartNode node, BlockStmt body,
+			VariableScope variableScope, ProcessMetaData metadata) {
 		body.addStatement(getAssignedFactoryMethod(factoryField, StartNodeFactory.class, getNodeId(node), getNodeKey(),
 				new LongLiteralExpr(node.getId()))).addStatement(getNameMethod(node, "Start"))
 				.addStatement(getFactoryMethod(getNodeId(node), METHOD_INTERRUPTING,

@@ -2,6 +2,7 @@ package io.automatik.engine.quarkus.deployment;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,8 +11,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -53,14 +56,19 @@ import io.automatik.engine.quarkus.AutomatikBuildTimeConfig;
 import io.automatik.engine.services.utils.IoUtils;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
 import io.quarkus.bootstrap.BootstrapDependencyProcessingException;
+import io.quarkus.bootstrap.classloading.ClassPathElement;
+import io.quarkus.bootstrap.classloading.MemoryClassPathElement;
+import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
 import io.quarkus.bootstrap.model.AppDependency;
 import io.quarkus.bootstrap.model.AppModel;
 import io.quarkus.bootstrap.model.PathsCollection;
+import io.quarkus.deployment.ApplicationArchive;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.AdditionalIndexedClassesBuildItem;
+import io.quarkus.deployment.builditem.ApplicationArchivesBuildItem;
 import io.quarkus.deployment.builditem.ArchiveRootBuildItem;
 import io.quarkus.deployment.builditem.CapabilityBuildItem;
-import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
@@ -98,7 +106,9 @@ public class AutomatikQuarkusProcessor {
     }
 
     private void generatePersistenceInfo(AutomatikBuildTimeConfig config, AppPaths appPaths,
-            BuildProducer<GeneratedBeanBuildItem> generatedBeans, IndexView index, LaunchModeBuildItem launchMode,
+            BuildProducer<GeneratedBeanBuildItem> generatedBeans,
+            BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexClass,
+            IndexView index, LaunchModeBuildItem launchMode,
             BuildProducer<NativeImageResourceBuildItem> resource, CurateOutcomeBuildItem curateOutcomeBuildItem)
             throws Exception, BootstrapDependencyProcessingException {
 
@@ -120,7 +130,7 @@ public class AutomatikQuarkusProcessor {
         if (!generatedFiles.isEmpty()) {
 
             compile(appPaths, curateOutcomeBuildItem.getEffectiveModel(), generatedFiles, launchMode.getLaunchMode(),
-                    generatedBeans, GeneratedBeanBuildItem::new);
+                    generatedBeans, additionalIndexClass, GeneratedBeanBuildItem::new);
         }
 
         if (usePersistence) {
@@ -170,22 +180,37 @@ public class AutomatikQuarkusProcessor {
     }
 
     @BuildStep(loadsApplicationClasses = true)
-    public void generateModel(AutomatikBuildTimeConfig config, ArchiveRootBuildItem root,
-            BuildProducer<GeneratedBeanBuildItem> generatedBeans, CombinedIndexBuildItem combinedIndexBuildItem,
-            LaunchModeBuildItem launchMode, LiveReloadBuildItem liveReload,
+    public void generateModel(AutomatikBuildTimeConfig config,
+            ArchiveRootBuildItem root,
+            ApplicationArchivesBuildItem archives,
+            LaunchModeBuildItem launchMode,
+            LiveReloadBuildItem liveReload,
+            CurateOutcomeBuildItem curateOutcomeBuildItem,
+            BuildProducer<GeneratedBeanBuildItem> generatedBeans,
+            BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexClass,
             BuildProducer<NativeImageResourceBuildItem> resource,
-            BuildProducer<ReflectiveClassBuildItem> reflectiveClass, CurateOutcomeBuildItem curateOutcomeBuildItem,
+            BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
             BuildProducer<GeneratedResourceBuildItem> resources,
             BuildProducer<ServiceProviderBuildItem> providerProducer)
             throws Exception, BootstrapDependencyProcessingException {
+
+        // prepare index
+        List<IndexView> archiveIndexes = new ArrayList<>();
+
+        for (ApplicationArchive i : archives.getAllApplicationArchives()) {
+            archiveIndexes.add(i.getIndex());
+        }
+
+        CompositeIndex archivesIndex = CompositeIndex.create(archiveIndexes);
+
+        AppPaths appPaths = new AppPaths(root.getPaths());
+
+        ApplicationGenerator appGen = createApplicationGenerator(config, appPaths, archivesIndex);
 
         if (liveReload.isLiveReload()) {
             return;
         }
 
-        AppPaths appPaths = new AppPaths(root.getPaths());
-
-        ApplicationGenerator appGen = createApplicationGenerator(config, appPaths, combinedIndexBuildItem);
         Collection<GeneratedFile> generatedFiles = appGen.generate();
 
         Collection<GeneratedFile> javaFiles = generatedFiles.stream().filter(f -> f.relativePath().endsWith(".java"))
@@ -198,13 +223,14 @@ public class AutomatikQuarkusProcessor {
             Set<DotName> automatikIndex = new HashSet<>();
 
             compile(appPaths, curateOutcomeBuildItem.getEffectiveModel(), javaFiles, launchMode.getLaunchMode(),
-                    generatedBeans, (className, data) -> generateBeanBuildItem(combinedIndexBuildItem, automatikIndexer,
-                            automatikIndex, className, data));
+                    generatedBeans, additionalIndexClass, (className, data) -> {
+                        return generateBeanBuildItem(archivesIndex, automatikIndexer, automatikIndex, className, data);
+                    });
 
             Index index = automatikIndexer.complete();
 
-            generatePersistenceInfo(config, appPaths, generatedBeans,
-                    CompositeIndex.create(combinedIndexBuildItem.getIndex(), index), launchMode, resource,
+            generatePersistenceInfo(config, appPaths, generatedBeans, additionalIndexClass,
+                    CompositeIndex.create(archivesIndex, index), launchMode, resource,
                     curateOutcomeBuildItem);
 
             reflectiveClass.produce(
@@ -270,15 +296,16 @@ public class AutomatikQuarkusProcessor {
         }
     }
 
-    private GeneratedBeanBuildItem generateBeanBuildItem(CombinedIndexBuildItem combinedIndexBuildItem,
+    private GeneratedBeanBuildItem generateBeanBuildItem(CompositeIndex archivesIndex,
             Indexer automatikIndexer, Set<DotName> automatikIndex, String className, byte[] data) {
-        IndexingUtil.indexClass(className, automatikIndexer, combinedIndexBuildItem.getIndex(), automatikIndex,
+        IndexingUtil.indexClass(className, automatikIndexer, archivesIndex, automatikIndex,
                 Thread.currentThread().getContextClassLoader(), data);
         return new GeneratedBeanBuildItem(className, data);
     }
 
     private void compile(AppPaths appPaths, AppModel appModel, Collection<GeneratedFile> generatedFiles,
             LaunchMode launchMode, BuildProducer<GeneratedBeanBuildItem> generatedBeans,
+            BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexClassProducer,
             BiFunction<String, byte[], GeneratedBeanBuildItem> bif) throws Exception {
         List<JavaFileObject> sources = new ArrayList<JavaFileObject>();
         List<String> classpaths = new ArrayList<String>();
@@ -327,17 +354,41 @@ public class AutomatikQuarkusProcessor {
         boolean result = task.call();
 
         if (result) {
-
+            Map<String, byte[]> classes = new LinkedHashMap<String, byte[]>();
+            List<String> classesToIndex = new ArrayList<String>();
             Iterable<JavaFileObject> compiledClasses = fileManager.list(StandardLocation.CLASS_OUTPUT, "",
                     Collections.singleton(JavaFileObject.Kind.CLASS), true);
             for (JavaFileObject jfo : compiledClasses) {
 
                 String clazz = jfo.getName().replaceFirst(buildDir.toString() + "/", "");
                 clazz = toClassName(clazz);
-                generatedBeans.produce(bif.apply(clazz, IoUtils.readBytesFromInputStream(jfo.openInputStream())));
+                byte[] content = IoUtils.readBytesFromInputStream(jfo.openInputStream());
+                generatedBeans.produce(bif.apply(clazz, content));
+
+                classesToIndex.add(clazz);
+                classes.put(clazz, content);
+                classes.put(clazz.replaceAll("\\.", "/") + ".class", content);
             }
 
-        } else {
+            if (Thread.currentThread().getContextClassLoader() instanceof QuarkusClassLoader) {
+                QuarkusClassLoader cl = (QuarkusClassLoader) Thread.currentThread().getContextClassLoader();
+
+                Field f = cl.getClass().getDeclaredField("elements");
+                f.setAccessible(true);
+                List<ClassPathElement> element = (List<ClassPathElement>) f.get(cl);
+
+                element.add(new MemoryClassPathElement(classes));
+
+                f = cl.getClass().getDeclaredField("state");
+                f.setAccessible(true);
+                f.set(cl, null);
+            }
+
+            additionalIndexClassProducer.produce(new AdditionalIndexedClassesBuildItem(classesToIndex.toArray(String[]::new)));
+
+        } else
+
+        {
             List<Diagnostic<? extends JavaFileObject>> diagnostics = diagnosticsCollector.getDiagnostics();
             String errorMessage = diagnostics.stream().map(d -> d.toString()).collect(Collectors.joining(","));
 
@@ -346,12 +397,12 @@ public class AutomatikQuarkusProcessor {
     }
 
     private ApplicationGenerator createApplicationGenerator(AutomatikBuildTimeConfig config, AppPaths appPaths,
-            CombinedIndexBuildItem combinedIndexBuildItem) throws IOException {
+            CompositeIndex archivesIndex) throws IOException {
 
-        boolean usePersistence = combinedIndexBuildItem.getIndex()
+        boolean usePersistence = archivesIndex
                 .getClassByName(createDotName(persistenceFactoryClass)) != null;
 
-        GeneratorContext context = buildContext(config, appPaths, combinedIndexBuildItem.getIndex());
+        GeneratorContext context = buildContext(config, appPaths, archivesIndex);
 
         ApplicationGenerator appGen = new ApplicationGenerator(config.packageName().orElse(DEFAULT_PACKAGE_NAME),
                 new File(appPaths.getFirstProjectPath().toFile(), "target"))

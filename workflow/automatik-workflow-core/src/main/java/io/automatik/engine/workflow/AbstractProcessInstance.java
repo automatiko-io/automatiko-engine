@@ -322,6 +322,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
             for (Entry<String, Object> entry : map.entrySet()) {
                 ((WorkflowProcessInstance) processInstance()).setVariable(entry.getKey(), entry.getValue());
             }
+            syncProcessInstance(((WorkflowProcessInstance) processInstance()));
+            unbind(this.variables, processInstance().getVariables());
             addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
         }
     }

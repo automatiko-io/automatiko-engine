@@ -224,4 +224,11 @@ public interface DependencyInjectionAnnotator {
 	String emitterType(String dataType);
 
 	String objectMapperInjectorSource(String packageName);
+
+	/**
+	 * Annotates given node with rest client injection
+	 *
+	 * @param node node to be annotated
+	 */
+	<T extends NodeWithAnnotations<?>> T withRestClientInjection(T node);
 }

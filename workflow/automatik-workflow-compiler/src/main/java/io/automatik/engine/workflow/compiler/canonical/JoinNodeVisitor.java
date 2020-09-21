@@ -7,6 +7,7 @@ import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 
+import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.process.core.node.Join;
 import io.automatik.engine.workflow.process.executable.core.factory.JoinFactory;
@@ -19,8 +20,8 @@ public class JoinNodeVisitor extends AbstractNodeVisitor<Join> {
 	}
 
 	@Override
-	public void visitNode(String factoryField, Join node, BlockStmt body, VariableScope variableScope,
-			ProcessMetaData metadata) {
+	public void visitNode(WorkflowProcess process, String factoryField, Join node, BlockStmt body,
+			VariableScope variableScope, ProcessMetaData metadata) {
 		body.addStatement(getAssignedFactoryMethod(factoryField, JoinFactory.class, getNodeId(node), getNodeKey(),
 				new LongLiteralExpr(node.getId())));
 		body.addStatement(getNameMethod(node, "Join"));

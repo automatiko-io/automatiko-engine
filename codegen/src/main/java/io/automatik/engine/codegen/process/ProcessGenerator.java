@@ -224,7 +224,9 @@ public class ProcessGenerator {
 
         if (!processMetaData.getGeneratedHandlers().isEmpty()) {
 
-            processMetaData.getGeneratedHandlers().forEach((name, handler) -> {
+            processMetaData.getGeneratedHandlers().forEach((name, descriptor) -> {
+
+                CompilationUnit handler = descriptor.generateHandlerClassForService();
                 ClassOrInterfaceDeclaration clazz = handler.findFirst(ClassOrInterfaceDeclaration.class).get();
                 if (useInjection()) {
 
@@ -260,7 +262,11 @@ public class ProcessGenerator {
                 handler.findAll(FieldDeclaration.class).forEach(fd -> {
                     if (useInjection()) {
                         annotator.withInjection(fd);
-                    } else {
+                    }
+                    if (descriptor.implementation().equalsIgnoreCase("##webservice") && annotator != null) {
+                        annotator.withRestClientInjection(fd);
+
+                    } else if (!descriptor.implementation().equalsIgnoreCase("##webservice")) {
                         BlockStmt constructorBody = new BlockStmt();
                         AssignExpr assignExpr = new AssignExpr(
                                 new FieldAccessExpr(new ThisExpr(), fd.getVariable(0).getNameAsString()),

@@ -35,10 +35,12 @@ public class ProcessMetaData {
 
     private List<TriggerMetaData> triggers = new ArrayList<>();
 
+    private List<OpenAPIMetaData> apis = new ArrayList<>();
+
     private boolean startable;
     private boolean dynamic;
 
-    private Map<String, CompilationUnit> generatedHandlers = new HashMap<>();
+    private Map<String, ServiceTaskDescriptor> generatedHandlers = new HashMap<>();
     private Set<CompilationUnit> generatedListeners = new HashSet<>();
 
     public ProcessMetaData(String processId, String extractedProcessId, String processName, String processVersion,
@@ -52,7 +54,7 @@ public class ProcessMetaData {
         this.processClassName = processPackageName == null ? processClassName
                 : processPackageName + "." + processClassName;
         this.processBaseClassName = processClassName;
-        this.source = source;
+        this.setSource(source);
     }
 
     public String getPackageName() {
@@ -115,10 +117,6 @@ public class ProcessMetaData {
         return workItems;
     }
 
-    public void setWorkItems(Set<String> workItems) {
-        this.workItems = workItems;
-    }
-
     public Map<String, String> getSubProcesses() {
         return subProcesses;
     }
@@ -128,11 +126,11 @@ public class ProcessMetaData {
         return this;
     }
 
-    public Map<String, CompilationUnit> getGeneratedHandlers() {
+    public Map<String, ServiceTaskDescriptor> getGeneratedHandlers() {
         return generatedHandlers;
     }
 
-    public ProcessMetaData addGeneratedHandler(String workName, CompilationUnit handlerClass) {
+    public ProcessMetaData addGeneratedHandler(String workName, ServiceTaskDescriptor handlerClass) {
         generatedHandlers.put(workName, handlerClass);
         return this;
     }
@@ -163,6 +161,15 @@ public class ProcessMetaData {
         return this;
     }
 
+    public List<OpenAPIMetaData> getOpenAPIs() {
+        return apis;
+    }
+
+    public ProcessMetaData addOpenAPI(OpenAPIMetaData api) {
+        apis.add(api);
+        return this;
+    }
+
     public boolean isStartable() {
         return startable;
     }
@@ -179,16 +186,19 @@ public class ProcessMetaData {
         this.dynamic = dynamic;
     }
 
-    public String getSource() {
-        return this.source;
-    }
-
     @Override
     public String toString() {
-        return "ProcessMetaData [processId=" + processId + ", extractedProcessId=" + extractedProcessId + ", processName="
-                + processName + ", processVersion=" + processVersion + ", source=" + source + ", workItems=" + workItems
-                + ", subProcesses=" + subProcesses + ", signals=" + signals + ", triggers=" + triggers + ", startable="
-                + startable + ", dynamic=" + dynamic + "]";
+        return "ProcessMetaData [processClassName=" + processClassName + ", processId=" + processId
+                + ", extractedProcessId=" + extractedProcessId + ", processName=" + processName + ", processVersion="
+                + processVersion + ", workItems=" + workItems + "]";
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 
 }

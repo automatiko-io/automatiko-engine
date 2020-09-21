@@ -43,7 +43,8 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
     }
 
     @Override
-    public void visitNode(String factoryField, SubProcessNode node, BlockStmt body, VariableScope variableScope,
+    public void visitNode(WorkflowProcess process, String factoryField, SubProcessNode node, BlockStmt body,
+            VariableScope variableScope,
             ProcessMetaData metadata) {
         InputStream resourceAsStream = this.getClass()
                 .getResourceAsStream("/class-templates/SubProcessFactoryTemplate.java");

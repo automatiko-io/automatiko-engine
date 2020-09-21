@@ -1,0 +1,80 @@
+package {{package}};
+
+
+import java.util.Base64;
+
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.Response;
+
+{{#useSwaggerAnnotations}}
+import io.swagger.annotations.*;
+{{/useSwaggerAnnotations}}
+
+import java.io.InputStream;
+import java.util.Map;
+import java.util.List;
+{{#useBeanValidation}}import javax.validation.constraints.*;
+import javax.validation.Valid;{{/useBeanValidation}}
+
+@org.eclipse.microprofile.rest.client.annotation.ClientHeaderParam(name = "Authorization", value = "{authorizationHeader}")
+@org.eclipse.microprofile.rest.client.inject.RegisterRestClient(configKey="{{#lowercase}}{{classname}}{{/lowercase}}")
+@Path("/{{{baseName}}}"){{#useSwaggerAnnotations}}
+@Api(description = "the {{{baseName}}} API"){{/useSwaggerAnnotations}}{{#hasConsumes}}
+@Consumes({ {{#consumes}}"{{{mediaType}}}"{{#hasMore}}, {{/hasMore}}{{/consumes}} }){{/hasConsumes}}{{#hasProduces}}
+@Produces({ {{#produces}}"{{{mediaType}}}"{{#hasMore}}, {{/hasMore}}{{/produces}} }){{/hasProduces}}
+public {{#interfaceOnly}}interface{{/interfaceOnly}}{{^interfaceOnly}}class{{/interfaceOnly}} {{classname}} {
+
+    default String authorizationHeader() {
+    	Config config = ConfigProvider.getConfig();
+    	
+    	String authType = config.getOptionalValue("{{#lowercase}}{{classname}}{{/lowercase}}/mp-rest/auth-type", String.class).orElse("not-set");
+    	if (authType.equalsIgnoreCase("basic")) {
+    		String basicData = config.getOptionalValue("{{#lowercase}}{{classname}}{{/lowercase}}/mp-rest/auth-basic", String.class).orElse(null);
+    		
+    		String username = config.getOptionalValue("{{#lowercase}}{{classname}}{{/lowercase}}/mp-rest/auth-user", String.class).orElse(null);
+    		String password = config.getOptionalValue("{{#lowercase}}{{classname}}{{/lowercase}}/mp-rest/auth-password", String.class).orElse(null);
+    		if (username != null && password != null) {
+        		return "Basic " + basicData;
+        	}
+        } else if (authType.equalsIgnoreCase("oauth")) {
+        	String accessToken = config.getOptionalValue("{{#lowercase}}{{classname}}{{/lowercase}}/mp-rest/auth-access-token", String.class).orElse(null);        	
+        	
+        	if (accessToken == null) {
+        		String clientId = config.getOptionalValue("{{#lowercase}}{{classname}}{{/lowercase}}/mp-rest/auth-client-id", String.class).orElse(null);
+        		String clientSecret = config.getOptionalValue("{{#lowercase}}{{classname}}{{/lowercase}}/mp-rest/auth-client-secret", String.class).orElse(null);
+	        	String refreshToken = config.getOptionalValue("{{#lowercase}}{{classname}}{{/lowercase}}/mp-rest/auth-refresh-token", String.class).orElse(null);
+    			String refreshUrl = config.getOptionalValue("{{#lowercase}}{{classname}}{{/lowercase}}/mp-rest/auth-refresh-url", String.class).orElse(null);        	    
+        		String scope = config.getOptionalValue("{{#lowercase}}{{classname}}{{/lowercase}}/mp-rest/auth-scope", String.class).orElse(null);
+        		String url = config.getOptionalValue("{{#lowercase}}{{classname}}{{/lowercase}}/mp-rest/url", String.class).orElse(null);
+        	        	        	
+        		accessToken = io.automatik.engine.workflow.http.HttpAuthorization.get().token(url, 
+        		clientId, 
+        		clientSecret, 
+        		refreshToken, 
+        		refreshUrl, 
+        		scope, 
+        		is -> {
+        			try {
+        				return new com.fasterxml.jackson.databind.ObjectMapper().readValue(is, java.util.Map.class);
+        			} catch (Exception e) {
+        				throw new RuntimeException(e);
+        			}
+        			});
+        	}
+        	
+        	return "Bearer " + accessToken;        	
+        }
+        
+        return "";
+    }
+
+{{#operations}}
+{{#operation}}
+
+{{#interfaceOnly}}{{>apiInterface}}{{/interfaceOnly}}{{^interfaceOnly}}{{>apiMethod}}{{/interfaceOnly}}
+{{/operation}}
+}
+{{/operations}}

@@ -11,6 +11,7 @@ import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 
+import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.core.timer.Timer;
 import io.automatik.engine.workflow.process.core.node.TimerNode;
@@ -24,8 +25,8 @@ public class TimerNodeVisitor extends AbstractNodeVisitor<TimerNode> {
 	}
 
 	@Override
-	public void visitNode(String factoryField, TimerNode node, BlockStmt body, VariableScope variableScope,
-			ProcessMetaData metadata) {
+	public void visitNode(WorkflowProcess process, String factoryField, TimerNode node, BlockStmt body,
+			VariableScope variableScope, ProcessMetaData metadata) {
 		body.addStatement(getAssignedFactoryMethod(factoryField, TimerNodeFactory.class, getNodeId(node), getNodeKey(),
 				new LongLiteralExpr(node.getId()))).addStatement(getNameMethod(node, "Timer"));
 

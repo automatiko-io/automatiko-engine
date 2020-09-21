@@ -33,11 +33,13 @@ import com.github.javaparser.ast.type.UnknownType;
 
 import io.automatik.engine.api.definition.process.Connection;
 import io.automatik.engine.api.definition.process.Node;
+import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.base.core.context.variable.Mappable;
 import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.process.core.impl.ConnectionImpl;
+import io.automatik.engine.workflow.process.core.node.BoundaryEventNode;
 import io.automatik.engine.workflow.process.core.node.HumanTaskNode;
 import io.automatik.engine.workflow.process.core.node.StartNode;
 
@@ -45,9 +47,10 @@ public abstract class AbstractNodeVisitor<T extends Node> extends AbstractVisito
 
 	protected abstract String getNodeKey();
 
-	public void visitNode(T node, BlockStmt body, VariableScope variableScope, ProcessMetaData metadata) {
-		visitNode(FACTORY_FIELD_NAME, node, body, variableScope, metadata);
-		if (isAdHocNode(node) && !(node instanceof HumanTaskNode)) {
+	public void visitNode(WorkflowProcess process, T node, BlockStmt body, VariableScope variableScope,
+			ProcessMetaData metadata) {
+		visitNode(process, FACTORY_FIELD_NAME, node, body, variableScope, metadata);
+		if (isAdHocNode(node) && !(node instanceof HumanTaskNode) && !(node instanceof BoundaryEventNode)) {
 			metadata.addSignal(node.getName(), null);
 		}
 	}
@@ -62,8 +65,8 @@ public abstract class AbstractNodeVisitor<T extends Node> extends AbstractVisito
 		return getNodeKey() + node.getId();
 	}
 
-	public void visitNode(String factoryField, T node, BlockStmt body, VariableScope variableScope,
-			ProcessMetaData metadata) {
+	public void visitNode(WorkflowProcess process, String factoryField, T node, BlockStmt body,
+			VariableScope variableScope, ProcessMetaData metadata) {
 	}
 
 	protected MethodCallExpr getNameMethod(T node, String defaultName) {

@@ -20,6 +20,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import io.automatik.engine.api.definition.process.Node;
+import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
 import io.automatik.engine.workflow.process.core.node.ForEachNode;
@@ -37,8 +38,8 @@ public class ForEachNodeVisitor extends AbstractCompositeNodeVisitor<ForEachNode
     }
 
     @Override
-    public void visitNode(String factoryField, ForEachNode node, BlockStmt body, VariableScope variableScope,
-            ProcessMetaData metadata) {
+    public void visitNode(WorkflowProcess process, String factoryField, ForEachNode node, BlockStmt body,
+            VariableScope variableScope, ProcessMetaData metadata) {
         body.addStatement(getAssignedFactoryMethod(factoryField, ForEachNodeFactory.class, getNodeId(node),
                 getNodeKey(), new LongLiteralExpr(node.getId()))).addStatement(getNameMethod(node, "ForEach"))
                 .addStatement(getFactoryMethod(getNodeId(node), "sequential",
@@ -55,8 +56,7 @@ public class ForEachNodeVisitor extends AbstractCompositeNodeVisitor<ForEachNode
                                         new ClassOrInterfaceType(null, ObjectDataType.class.getSimpleName()), NodeList
                                                 .nodeList(
                                                         new ClassExpr(new ClassOrInterfaceType(null,
-                                                                node.getVariableType().getClassType()
-                                                                        .getCanonicalName())),
+                                                                node.getVariableType().getStringType())),
                                                         new StringLiteralExpr(
                                                                 node.getVariableType().getStringType())))));
 
@@ -69,13 +69,12 @@ public class ForEachNodeVisitor extends AbstractCompositeNodeVisitor<ForEachNode
                                             new ClassOrInterfaceType(null, ObjectDataType.class.getSimpleName()),
                                             NodeList.nodeList(
                                                     new ClassExpr(new ClassOrInterfaceType(null,
-                                                            node.getOutputVariableType().getClassType()
-                                                                    .getCanonicalName())),
+                                                            node.getOutputVariableType().getStringType())),
                                                     new StringLiteralExpr(
                                                             node.getOutputVariableType().getStringType())))));
         }
         // visit nodes
-        visitNodes(getNodeId(node), node.getNodes(), body,
+        visitNodes(process, getNodeId(node), node.getNodes(), body,
                 ((VariableScope) node.getCompositeNode().getDefaultContext(VariableScope.VARIABLE_SCOPE)), metadata);
         body.addStatement(getFactoryMethod(getNodeId(node), METHOD_LINK_INCOMING_CONNECTIONS,
                 new LongLiteralExpr(node

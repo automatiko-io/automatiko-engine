@@ -13,7 +13,7 @@ import io.automatik.engine.api.workflow.VariableInitializer;
 public class DefaultVariableInitializer implements VariableInitializer {
 
 	@Override
-	public Object initialize(Class<?> clazz) {
+	public Object initialize(String name, Class<?> clazz) {
 		if (List.class.isAssignableFrom(clazz)) {
 			return new ArrayList<>();
 		} else if (Set.class.isAssignableFrom(clazz)) {

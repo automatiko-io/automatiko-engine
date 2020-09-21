@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -57,6 +58,7 @@ import io.automatik.engine.workflow.bpmn2.xml.BPMNDISemanticModule;
 import io.automatik.engine.workflow.bpmn2.xml.BPMNExtensionsSemanticModule;
 import io.automatik.engine.workflow.bpmn2.xml.BPMNSemanticModule;
 import io.automatik.engine.workflow.compiler.canonical.ModelMetaData;
+import io.automatik.engine.workflow.compiler.canonical.OpenAPIMetaData;
 import io.automatik.engine.workflow.compiler.canonical.ProcessMetaData;
 import io.automatik.engine.workflow.compiler.canonical.ProcessToExecModelGenerator;
 import io.automatik.engine.workflow.compiler.canonical.TriggerMetaData;
@@ -268,6 +270,7 @@ public class ProcessCodegen extends AbstractGenerator {
         List<MessageDataEventGenerator> mdegs = new ArrayList<>(); // message data events
         List<MessageConsumerGenerator> megs = new ArrayList<>(); // message endpoints/consumers
         List<MessageProducerGenerator> mpgs = new ArrayList<>(); // message producers
+        Set<OpenAPIClientGenerator> opgs = new LinkedHashSet<>(); // OpenAPI clients
 
         List<String> publicProcesses = new ArrayList<>();
 
@@ -379,7 +382,15 @@ public class ProcessCodegen extends AbstractGenerator {
                     }
                 }
             }
+            if (metaData.getOpenAPIs() != null) {
 
+                for (OpenAPIMetaData api : metaData.getOpenAPIs()) {
+                    OpenAPIClientGenerator oagenerator = new OpenAPIClientGenerator(context, workFlowProcess, api)
+                            .withDependencyInjection(annotator);
+
+                    opgs.add(oagenerator);
+                }
+            }
             moduleGenerator.addProcess(p);
 
             ps.add(p);
@@ -430,6 +441,17 @@ public class ProcessCodegen extends AbstractGenerator {
         for (MessageProducerGenerator messageProducerGenerator : mpgs) {
             storeFile(Type.MESSAGE_PRODUCER, messageProducerGenerator.generatedFilePath(),
                     messageProducerGenerator.generate());
+        }
+
+        for (OpenAPIClientGenerator openApiClientGenerator : opgs) {
+            openApiClientGenerator.generate();
+
+            Map<String, String> contents = openApiClientGenerator.generatedClasses();
+
+            for (Entry<String, String> entry : contents.entrySet()) {
+
+                storeFile(Type.CLASS, entry.getKey().replace('.', '/') + ".java", entry.getValue());
+            }
         }
 
         for (ProcessGenerator p : ps) {

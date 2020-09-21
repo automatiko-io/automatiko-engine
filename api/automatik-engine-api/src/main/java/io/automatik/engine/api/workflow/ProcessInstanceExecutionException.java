@@ -2,7 +2,7 @@
 package io.automatik.engine.api.workflow;
 
 /**
- * Thrown when there is problems encountered during process instance execution.
+ * Thrown when there is problem encountered during process instance execution.
  * Usually caused by one of the node instances not able to perform desired
  * action.
  * 
@@ -16,7 +16,7 @@ public class ProcessInstanceExecutionException extends RuntimeException {
 	private String errorMessage;
 
 	public ProcessInstanceExecutionException(String processInstanceId, String failedNodeId, String errorMessage) {
-		super("Process instance with id " + processInstanceId + " not found");
+		super("Process instance with id " + processInstanceId + " failed to execute due to " + errorMessage);
 		this.processInstanceId = processInstanceId;
 		this.failedNodeId = failedNodeId;
 		this.errorMessage = errorMessage;

@@ -154,4 +154,10 @@ public class CDIDependencyInjectionAnnotator implements DependencyInjectionAnnot
 
 		return null;
 	}
+
+	@Override
+	public <T extends NodeWithAnnotations<?>> T withRestClientInjection(T node) {
+		node.addAnnotation("org.eclipse.microprofile.rest.client.inject.RestClient");
+		return node;
+	}
 }

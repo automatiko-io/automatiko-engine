@@ -1,13 +1,14 @@
 
 package io.automatik.engine.workflow.compiler.canonical;
 
+import java.util.Map;
+
 import com.github.javaparser.ast.stmt.BlockStmt;
 
 import io.automatik.engine.api.definition.process.Node;
+import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.process.core.node.CompositeContextNode;
-
-import java.util.Map;
 
 public abstract class AbstractCompositeNodeVisitor<T extends CompositeContextNode> extends AbstractNodeVisitor<T> {
 
@@ -17,14 +18,14 @@ public abstract class AbstractCompositeNodeVisitor<T extends CompositeContextNod
 		this.nodesVisitors = nodesVisitors;
 	}
 
-	protected <U extends Node> void visitNodes(String factoryField, U[] nodes, BlockStmt body,
+	protected <U extends Node> void visitNodes(WorkflowProcess process, String factoryField, U[] nodes, BlockStmt body,
 			VariableScope variableScope, ProcessMetaData metadata) {
 		for (U node : nodes) {
 			AbstractNodeVisitor<U> visitor = (AbstractNodeVisitor<U>) nodesVisitors.get(node.getClass());
 			if (visitor == null) {
 				continue;
 			}
-			visitor.visitNode(factoryField, node, body, variableScope, metadata);
+			visitor.visitNode(process, factoryField, node, body, variableScope, metadata);
 		}
 	}
 

@@ -8,5 +8,5 @@ public interface VariableInitializer {
 	 * @param clazz type of object to initialize
 	 * @return new instance of given class
 	 */
-	Object initialize(Class<?> clazz);
+	Object initialize(String name, Class<?> clazz);
 }

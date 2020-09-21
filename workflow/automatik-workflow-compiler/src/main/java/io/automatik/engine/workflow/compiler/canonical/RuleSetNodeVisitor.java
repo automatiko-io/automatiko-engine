@@ -21,6 +21,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.UnknownType;
 
+import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.process.core.node.RuleSetNode;
 import io.automatik.engine.workflow.process.executable.core.factory.RuleSetNodeFactory;
@@ -41,8 +42,8 @@ public class RuleSetNodeVisitor extends AbstractNodeVisitor<RuleSetNode> {
 	}
 
 	@Override
-	public void visitNode(String factoryField, RuleSetNode node, BlockStmt body, VariableScope variableScope,
-			ProcessMetaData metadata) {
+	public void visitNode(WorkflowProcess process, String factoryField, RuleSetNode node, BlockStmt body,
+			VariableScope variableScope, ProcessMetaData metadata) {
 		String nodeName = node.getName();
 
 		body.addStatement(getAssignedFactoryMethod(factoryField, RuleSetNodeFactory.class, getNodeId(node),

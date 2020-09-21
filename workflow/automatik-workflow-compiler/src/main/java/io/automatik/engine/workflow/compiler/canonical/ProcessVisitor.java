@@ -140,7 +140,7 @@ public class ProcessVisitor extends AbstractVisitor {
 		for (io.automatik.engine.api.definition.process.Node procNode : process.getNodes()) {
 			processNodes.add((io.automatik.engine.workflow.process.core.Node) procNode);
 		}
-		visitNodes(processNodes, body, variableScope, metadata);
+		visitNodes(process, processNodes, body, variableScope, metadata);
 		visitConnections(process.getNodes(), body);
 
 		body.addStatement(getFactoryMethod(FACTORY_FIELD_NAME, METHOD_VALIDATE));
@@ -160,10 +160,10 @@ public class ProcessVisitor extends AbstractVisitor {
 				String tags = (String) variable.getMetaData(Variable.VARIABLE_TAGS);
 				ClassOrInterfaceType variableType = new ClassOrInterfaceType(null,
 						ObjectDataType.class.getSimpleName());
-				ObjectCreationExpr variableValue = new ObjectCreationExpr(null, variableType, new NodeList<>(
-						new ClassExpr(
-								new ClassOrInterfaceType(null, variable.getType().getClassType().getCanonicalName())),
-						new StringLiteralExpr(variable.getType().getStringType())));
+				ObjectCreationExpr variableValue = new ObjectCreationExpr(null, variableType,
+						new NodeList<>(
+								new ClassExpr(new ClassOrInterfaceType(null, variable.getType().getStringType())),
+								new StringLiteralExpr(variable.getType().getStringType())));
 				body.addStatement(
 						getFactoryMethod(FACTORY_FIELD_NAME, METHOD_VARIABLE, new StringLiteralExpr(variable.getName()),
 								variableValue, new StringLiteralExpr(Variable.VARIABLE_TAGS),
@@ -218,14 +218,14 @@ public class ProcessVisitor extends AbstractVisitor {
 		return metaData;
 	}
 
-	private <U extends io.automatik.engine.api.definition.process.Node> void visitNodes(List<U> nodes, BlockStmt body,
-			VariableScope variableScope, ProcessMetaData metadata) {
+	private <U extends io.automatik.engine.api.definition.process.Node> void visitNodes(WorkflowProcess process,
+			List<U> nodes, BlockStmt body, VariableScope variableScope, ProcessMetaData metadata) {
 		for (U node : nodes) {
 			AbstractNodeVisitor<U> visitor = (AbstractNodeVisitor<U>) nodesVisitors.get(node.getClass());
 			if (visitor == null) {
 				throw new IllegalStateException("No visitor found for node " + node.getClass().getName());
 			}
-			visitor.visitNode(node, body, variableScope, metadata);
+			visitor.visitNode(process, node, body, variableScope, metadata);
 		}
 	}
 

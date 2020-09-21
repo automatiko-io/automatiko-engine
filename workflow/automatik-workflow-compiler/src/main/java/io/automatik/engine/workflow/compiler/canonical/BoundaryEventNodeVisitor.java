@@ -1,15 +1,6 @@
 
 package io.automatik.engine.workflow.compiler.canonical;
 
-import com.github.javaparser.ast.expr.LongLiteralExpr;
-import com.github.javaparser.ast.expr.StringLiteralExpr;
-import com.github.javaparser.ast.stmt.BlockStmt;
-
-import io.automatik.engine.workflow.base.core.context.variable.Variable;
-import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
-import io.automatik.engine.workflow.process.core.node.BoundaryEventNode;
-import io.automatik.engine.workflow.process.executable.core.factory.BoundaryEventNodeFactory;
-
 import static io.automatik.engine.workflow.process.executable.core.Metadata.EVENT_TYPE;
 import static io.automatik.engine.workflow.process.executable.core.Metadata.EVENT_TYPE_MESSAGE;
 import static io.automatik.engine.workflow.process.executable.core.Metadata.EVENT_TYPE_SIGNAL;
@@ -23,6 +14,16 @@ import static io.automatik.engine.workflow.process.executable.core.factory.Event
 
 import java.util.Map;
 
+import com.github.javaparser.ast.expr.LongLiteralExpr;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.stmt.BlockStmt;
+
+import io.automatik.engine.api.definition.process.WorkflowProcess;
+import io.automatik.engine.workflow.base.core.context.variable.Variable;
+import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
+import io.automatik.engine.workflow.process.core.node.BoundaryEventNode;
+import io.automatik.engine.workflow.process.executable.core.factory.BoundaryEventNodeFactory;
+
 public class BoundaryEventNodeVisitor extends AbstractNodeVisitor<BoundaryEventNode> {
 
 	@Override
@@ -31,8 +32,8 @@ public class BoundaryEventNodeVisitor extends AbstractNodeVisitor<BoundaryEventN
 	}
 
 	@Override
-	public void visitNode(String factoryField, BoundaryEventNode node, BlockStmt body, VariableScope variableScope,
-			ProcessMetaData metadata) {
+	public void visitNode(WorkflowProcess process, String factoryField, BoundaryEventNode node, BlockStmt body,
+			VariableScope variableScope, ProcessMetaData metadata) {
 		body.addStatement(getAssignedFactoryMethod(factoryField, BoundaryEventNodeFactory.class, getNodeId(node),
 				getNodeKey(), new LongLiteralExpr(node.getId()))).addStatement(getNameMethod(node, "BoundaryEvent"))
 				.addStatement(

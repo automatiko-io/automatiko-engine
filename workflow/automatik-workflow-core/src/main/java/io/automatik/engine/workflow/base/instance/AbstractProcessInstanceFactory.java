@@ -46,7 +46,7 @@ public abstract class AbstractProcessInstanceFactory implements ProcessInstanceF
 
 		for (Variable var : variableScope.getVariables()) {
 			if (var.hasTag(Variable.AUTO_INITIALIZED) && variableScopeInstance.getVariable(var.getName()) == null) {
-				Object value = variableInitializer.initialize(var.getType().getClassType());
+				Object value = variableInitializer.initialize(var.getName(), var.getType().getClassType());
 
 				variableScope.validateVariable(process.getName(), var.getName(), value);
 				variableScopeInstance.setVariable(var.getName(), value);

@@ -106,6 +106,8 @@
     <version.io.restassured>4.3.0</version.io.restassured>
     <version.io.smallrye.reactive>2.2.1</version.io.smallrye.reactive>
     <version.org.eclipse.microprofile.metrics>2.3</version.org.eclipse.microprofile.metrics>
+    <version.org.eclipse.microprofile.rest.client>1.4.1</version.org.eclipse.microprofile.rest.client>
+    <version.org.eclipse.microprofile.config>1.4</version.org.eclipse.microprofile.config>
 
     <version.org.antlr>3.5.2</version.org.antlr>
     <version.org.antlr4>4.8</version.org.antlr4>
@@ -130,6 +132,7 @@
     <version.testcontainers>1.14.3</version.testcontainers>
     <version.xmlunit>2.2.1</version.xmlunit>
     <version.jsonschema2pojo-maven-plugin>1.0.1</version.jsonschema2pojo-maven-plugin>
+    <version.org.openapitools>4.3.1</version.org.openapitools>
 
     <!-- container images for testing -->
     <container.image.infinispan>quay.io/infinispan/server:${version.org.infinispan.image}</container.image.infinispan>
@@ -310,6 +313,13 @@
         <groupId>com.jayway.jsonpath</groupId>
         <artifactId>json-path-assert</artifactId>
         <version>${version.jayway.jsonpath}</version>
+      </dependency>
+      
+      <!--  open api client generator -->
+      <dependency>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator</artifactId>
+        <version>${version.org.openapitools}</version>
       </dependency>
 
       <!-- metrics - prometheus -->
@@ -538,6 +548,18 @@
         <artifactId>microprofile-metrics-api</artifactId>
         <version>${version.org.eclipse.microprofile.metrics}</version>
       </dependency>
+      
+      <dependency>
+        <groupId>org.eclipse.microprofile.rest.client</groupId>
+        <artifactId>microprofile-rest-client-api</artifactId>
+        <version>${version.org.eclipse.microprofile.rest.client}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.eclipse.microprofile.config</groupId>
+        <artifactId>microprofile-config-api</artifactId>
+        <version>${version.org.eclipse.microprofile.config}</version>
+       </dependency>
 
       <dependency>
         <groupId>javax.inject</groupId>

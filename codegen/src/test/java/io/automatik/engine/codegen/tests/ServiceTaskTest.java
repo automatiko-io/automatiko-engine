@@ -288,4 +288,14 @@ public class ServiceTaskTest extends AbstractCodegenTest {
         assertThat((List<String>) result.toMap().get("listOut")).isNotNull().hasSize(2).contains("Hello first!",
                 "Hello second!");
     }
+
+    @Test
+    public void testBasicRestServiceProcessTask() throws Exception {
+
+        Application app = generateCodeProcessesOnly("servicetask/RESTServiceProcess.bpmn2");
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+    }
+
 }

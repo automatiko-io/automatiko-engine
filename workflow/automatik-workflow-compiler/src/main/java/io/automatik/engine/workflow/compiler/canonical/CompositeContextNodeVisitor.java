@@ -20,6 +20,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import io.automatik.engine.api.definition.process.Node;
+import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
@@ -50,8 +51,8 @@ public class CompositeContextNodeVisitor<T extends CompositeContextNode> extends
 	}
 
 	@Override
-	public void visitNode(String factoryField, T node, BlockStmt body, VariableScope variableScope,
-			ProcessMetaData metadata) {
+	public void visitNode(WorkflowProcess process, String factoryField, T node, BlockStmt body,
+			VariableScope variableScope, ProcessMetaData metadata) {
 		body.addStatement(getAssignedFactoryMethod(factoryField, factoryClass(), getNodeId(node), factoryMethod(),
 				new LongLiteralExpr(node.getId()))).addStatement(getNameMethod(node, getDefaultName()));
 		visitMetaData(node.getMetaData(), body, getNodeId(node));
@@ -72,7 +73,7 @@ public class CompositeContextNodeVisitor<T extends CompositeContextNode> extends
 		}
 		body.addStatement(getFactoryMethod(getNodeId(node), CompositeContextNodeFactory.METHOD_AUTO_COMPLETE,
 				new BooleanLiteralExpr(node.isAutoComplete())));
-		visitNodes(getNodeId(node), node.getNodes(), body, scope, metadata);
+		visitNodes(process, getNodeId(node), node.getNodes(), body, scope, metadata);
 		visitConnections(getNodeId(node), node.getNodes(), body);
 		body.addStatement(getDoneMethod(getNodeId(node)));
 	}
@@ -91,10 +92,10 @@ public class CompositeContextNodeVisitor<T extends CompositeContextNode> extends
 				String tags = (String) variable.getMetaData(Variable.VARIABLE_TAGS);
 				ClassOrInterfaceType variableType = new ClassOrInterfaceType(null,
 						ObjectDataType.class.getSimpleName());
-				ObjectCreationExpr variableValue = new ObjectCreationExpr(null, variableType, new NodeList<>(
-						new ClassExpr(
-								new ClassOrInterfaceType(null, variable.getType().getClassType().getCanonicalName())),
-						new StringLiteralExpr(variable.getType().getStringType())));
+				ObjectCreationExpr variableValue = new ObjectCreationExpr(null, variableType,
+						new NodeList<>(
+								new ClassExpr(new ClassOrInterfaceType(null, variable.getType().getStringType())),
+								new StringLiteralExpr(variable.getType().getStringType())));
 				body.addStatement(
 						getFactoryMethod(contextNode, METHOD_VARIABLE, new StringLiteralExpr(variable.getName()),
 								variableValue, new StringLiteralExpr(Variable.VARIABLE_TAGS),

@@ -4,6 +4,7 @@ package io.automatik.engine.workflow.compiler.canonical;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 
+import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.workflow.base.core.Work;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.process.core.node.HumanTaskNode;
@@ -21,8 +22,8 @@ public class HumanTaskNodeVisitor extends WorkItemNodeVisitor<HumanTaskNode> {
 	}
 
 	@Override
-	public void visitNode(String factoryField, HumanTaskNode node, BlockStmt body, VariableScope variableScope,
-			ProcessMetaData metadata) {
+	public void visitNode(WorkflowProcess process, String factoryField, HumanTaskNode node, BlockStmt body,
+			VariableScope variableScope, ProcessMetaData metadata) {
 		Work work = node.getWork();
 
 		body.addStatement(getAssignedFactoryMethod(factoryField, HumanTaskNodeFactory.class, getNodeId(node),
