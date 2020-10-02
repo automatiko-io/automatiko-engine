@@ -211,6 +211,7 @@ message ProcessInstance {
         message SubProcessNode {
             optional string process_instance_id = 1;
             repeated string timer_instance_id = 2;
+            optional string process_instance_name = 3;
         }
         message MilestoneNode { repeated string timer_instance_id = 1; }
         message EventNode {}

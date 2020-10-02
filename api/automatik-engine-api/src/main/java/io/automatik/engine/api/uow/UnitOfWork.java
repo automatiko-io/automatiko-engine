@@ -1,6 +1,9 @@
 
 package io.automatik.engine.api.uow;
 
+import io.automatik.engine.api.workflow.Process;
+import io.automatik.engine.api.workflow.ProcessInstances;
+
 /**
  * Unit of Work allows to group related activities and operation into single
  * unit. It it can be then completed or aborted as one making the execution
@@ -12,26 +15,39 @@ package io.automatik.engine.api.uow;
  */
 public interface UnitOfWork {
 
-	/**
-	 * Initiates this unit of work if not already started. It is safe to call start
-	 * multiple times unless the unit has already been completed or aborted.
-	 */
-	void start();
+    /**
+     * Initiates this unit of work if not already started. It is safe to call start
+     * multiple times unless the unit has already been completed or aborted.
+     */
+    void start();
 
-	/**
-	 * Completes this unit of work ensuring all awaiting work is invoked.
-	 */
-	void end();
+    /**
+     * Completes this unit of work ensuring all awaiting work is invoked.
+     */
+    void end();
 
-	/**
-	 * Aborts this unit of work and ignores any awaiting work.
-	 */
-	void abort();
+    /**
+     * Aborts this unit of work and ignores any awaiting work.
+     */
+    void abort();
 
-	/**
-	 * Intercepts work that should be done as part of this unit of work.
-	 * 
-	 * @param work actual work to be invoked as part of this unit of work.
-	 */
-	void intercept(WorkUnit work);
+    /**
+     * Intercepts work that should be done as part of this unit of work.
+     * 
+     * @param work actual work to be invoked as part of this unit of work.
+     */
+    void intercept(WorkUnit<?> work);
+
+    /**
+     * Allows to manage given implementation of process instances to provide
+     * up to date information for executed instances within unit of work
+     * 
+     * @param process definition of the process
+     * @param instances concrete implementation of the <code>ProcessInstances</code>
+     * @return returns managed instance of the given ProcessInstances instance
+     */
+    default ProcessInstances<?> managedProcessInstances(Process<?> process, ProcessInstances<?> instances) {
+        return instances;
+    }
+
 }

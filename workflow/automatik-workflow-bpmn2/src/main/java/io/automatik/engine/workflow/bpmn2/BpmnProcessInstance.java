@@ -10,40 +10,52 @@ import io.automatik.engine.workflow.AbstractProcessInstance;
 
 public class BpmnProcessInstance extends AbstractProcessInstance<BpmnVariables> {
 
-	public BpmnProcessInstance(AbstractProcess<BpmnVariables> process, BpmnVariables variables, ProcessRuntime rt) {
-		super(process, variables, rt);
-	}
+    public BpmnProcessInstance(AbstractProcess<BpmnVariables> process, BpmnVariables variables, ProcessRuntime rt) {
+        super(process, variables, rt);
+    }
 
-	public BpmnProcessInstance(AbstractProcess<BpmnVariables> process, BpmnVariables variables, String businessKey,
-			ProcessRuntime rt) {
-		super(process, variables, businessKey, rt);
-	}
+    public BpmnProcessInstance(AbstractProcess<BpmnVariables> process, BpmnVariables variables, String businessKey,
+            ProcessRuntime rt) {
+        super(process, variables, businessKey, rt);
+    }
 
-	public BpmnProcessInstance(AbstractProcess<BpmnVariables> process, BpmnVariables variables, ProcessRuntime rt,
-			WorkflowProcessInstance wpi) {
-		super(process, variables, rt, wpi);
-	}
+    public BpmnProcessInstance(AbstractProcess<BpmnVariables> process, BpmnVariables variables, ProcessRuntime rt,
+            WorkflowProcessInstance wpi) {
+        super(process, variables, rt, wpi);
+    }
 
-	public BpmnProcessInstance(AbstractProcess<BpmnVariables> process, BpmnVariables variables,
-			WorkflowProcessInstance wpi) {
-		super(process, variables, wpi);
-	}
+    public BpmnProcessInstance(AbstractProcess<BpmnVariables> process, BpmnVariables variables,
+            WorkflowProcessInstance wpi) {
+        super(process, variables, wpi);
+    }
 
-	@Override
-	protected Map<String, Object> bind(BpmnVariables variables) {
+    @Override
+    protected Map<String, Object> bind(BpmnVariables variables) {
 
-		if (variables == null) {
-			return null;
-		}
-		return variables.toMap();
-	}
+        if (variables == null) {
+            return null;
+        }
+        return variables.toMap();
+    }
 
-	@Override
-	protected void unbind(BpmnVariables variables, Map<String, Object> vmap) {
+    @Override
+    protected void unbind(BpmnVariables variables, Map<String, Object> vmap) {
 
-		if (variables == null || vmap == null) {
-			return;
-		}
-		variables.fromMap(vmap);
-	}
+        if (variables == null || vmap == null) {
+            return;
+        }
+        variables.fromMap(vmap);
+    }
+
+    //    @Override
+    //    public Collection<Subprocess> subprocesses() {
+    //        return ((WorkflowProcessInstanceImpl) processInstance()).getNodeInstances(true)
+    //                .stream()
+    //                .filter(ni -> ni instanceof LambdaSubProcessNodeInstance)
+    //                .map(ni -> new Subprocess(((LambdaSubProcessNodeInstance) ni).getProcessInstanceId(),
+    //                        ((SubProcessNode) ni.getNode()).getProcessId(),
+    //                        ((SubProcessNode) ni.getNode()).getProcessName()))
+    //                .collect(Collectors.toList());
+    //    }
+
 }

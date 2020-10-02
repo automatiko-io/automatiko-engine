@@ -5,9 +5,39 @@ import io.automatik.engine.api.runtime.process.ProcessContext;
 import io.automatik.engine.api.workflow.ProcessInstance;
 
 public interface SubProcessFactory<T> {
-	T bind(ProcessContext ctx);
 
-	ProcessInstance<T> createInstance(T model);
+    /**
+     * Binds given context to the model
+     * 
+     * @param ctx actual context of a process execution
+     * @return returns model build out of the context
+     */
+    T bind(ProcessContext ctx);
 
-	void unbind(ProcessContext ctx, T model);
+    /**
+     * Creates new instance based on given model
+     * 
+     * @param initial model data model for process instance
+     * @return returns non started process instance
+     */
+    ProcessInstance<T> createInstance(T model);
+
+    /**
+     * Unbinds given context into the model, meaning it copies context data
+     * into the model
+     * 
+     * @param ctx actual context of a process execution
+     * @param model current state of data model
+     */
+    void unbind(ProcessContext ctx, T model);
+
+    /**
+     * Aborts process instance with given instanceId
+     * 
+     * @param instanceId unique identifier of process instance to be aborted
+     */
+    default void abortInstance(String instanceId) {
+
+    }
+
 }
