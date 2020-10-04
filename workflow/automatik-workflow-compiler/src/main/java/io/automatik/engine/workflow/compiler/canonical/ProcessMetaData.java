@@ -12,175 +12,183 @@ import com.github.javaparser.ast.CompilationUnit;
 
 public class ProcessMetaData {
 
-	private final String processPackageName;
-	private final String processBaseClassName;
-	private String processClassName;
+    private final String processPackageName;
+    private final String processBaseClassName;
+    private String processClassName;
 
-	private String processId;
+    private String processId;
 
-	private String extractedProcessId;
+    private String extractedProcessId;
 
-	private String processName;
+    private String processName;
 
-	private String processVersion;
+    private String processVersion;
 
-	private CompilationUnit generatedClassModel;
+    private String source;
 
-	private Set<String> workItems = new HashSet<>();
-	private Map<String, String> subProcesses = new HashMap<>();
+    private CompilationUnit generatedClassModel;
 
-	private Map<String, String> signals = new HashMap<>();
+    private Set<String> workItems = new HashSet<>();
+    private Map<String, String> subProcesses = new HashMap<>();
 
-	private List<TriggerMetaData> triggers = new ArrayList<>();
+    private Map<String, String> signals = new HashMap<>();
 
-	private boolean startable;
-	private boolean dynamic;
+    private List<TriggerMetaData> triggers = new ArrayList<>();
 
-	private Map<String, CompilationUnit> generatedHandlers = new HashMap<>();
-	private Set<CompilationUnit> generatedListeners = new HashSet<>();
+    private boolean startable;
+    private boolean dynamic;
 
-	public ProcessMetaData(String processId, String extractedProcessId, String processName, String processVersion,
-			String processPackageName, String processClassName) {
-		super();
-		this.processId = processId;
-		this.extractedProcessId = extractedProcessId;
-		this.processName = processName;
-		this.processVersion = processVersion;
-		this.processPackageName = processPackageName;
-		this.processClassName = processPackageName == null ? processClassName
-				: processPackageName + "." + processClassName;
-		this.processBaseClassName = processClassName;
-	}
+    private Map<String, CompilationUnit> generatedHandlers = new HashMap<>();
+    private Set<CompilationUnit> generatedListeners = new HashSet<>();
 
-	public String getPackageName() {
-		return processPackageName;
-	}
+    public ProcessMetaData(String processId, String extractedProcessId, String processName, String processVersion,
+            String processPackageName, String processClassName, String source) {
+        super();
+        this.processId = processId;
+        this.extractedProcessId = extractedProcessId;
+        this.processName = processName;
+        this.processVersion = processVersion;
+        this.processPackageName = processPackageName;
+        this.processClassName = processPackageName == null ? processClassName
+                : processPackageName + "." + processClassName;
+        this.processBaseClassName = processClassName;
+        this.source = source;
+    }
 
-	public String getProcessBaseClassName() {
-		return processBaseClassName;
-	}
+    public String getPackageName() {
+        return processPackageName;
+    }
 
-	public String getProcessClassName() {
-		return processClassName;
-	}
+    public String getProcessBaseClassName() {
+        return processBaseClassName;
+    }
 
-	public void setProcessClassName(String processClassName) {
-		this.processClassName = processClassName;
-	}
+    public String getProcessClassName() {
+        return processClassName;
+    }
 
-	public String getProcessId() {
-		return processId;
-	}
+    public void setProcessClassName(String processClassName) {
+        this.processClassName = processClassName;
+    }
 
-	public void setProcessId(String processId) {
-		this.processId = processId;
-	}
+    public String getProcessId() {
+        return processId;
+    }
 
-	public String getExtractedProcessId() {
-		return extractedProcessId;
-	}
+    public void setProcessId(String processId) {
+        this.processId = processId;
+    }
 
-	public void setExtractedProcessId(String extractedProcessId) {
-		this.extractedProcessId = extractedProcessId;
-	}
+    public String getExtractedProcessId() {
+        return extractedProcessId;
+    }
 
-	public String getProcessName() {
-		return processName;
-	}
+    public void setExtractedProcessId(String extractedProcessId) {
+        this.extractedProcessId = extractedProcessId;
+    }
 
-	public void setProcessName(String processName) {
-		this.processName = processName;
-	}
+    public String getProcessName() {
+        return processName;
+    }
 
-	public String getProcessVersion() {
-		return processVersion;
-	}
+    public void setProcessName(String processName) {
+        this.processName = processName;
+    }
 
-	public void setProcessVersion(String processVersion) {
-		this.processVersion = processVersion;
-	}
+    public String getProcessVersion() {
+        return processVersion;
+    }
 
-	public CompilationUnit getGeneratedClassModel() {
-		return generatedClassModel;
-	}
+    public void setProcessVersion(String processVersion) {
+        this.processVersion = processVersion;
+    }
 
-	public void setGeneratedClassModel(CompilationUnit generatedClassModel) {
-		this.generatedClassModel = generatedClassModel;
-	}
+    public CompilationUnit getGeneratedClassModel() {
+        return generatedClassModel;
+    }
 
-	public Set<String> getWorkItems() {
-		return workItems;
-	}
+    public void setGeneratedClassModel(CompilationUnit generatedClassModel) {
+        this.generatedClassModel = generatedClassModel;
+    }
 
-	public void setWorkItems(Set<String> workItems) {
-		this.workItems = workItems;
-	}
+    public Set<String> getWorkItems() {
+        return workItems;
+    }
 
-	public Map<String, String> getSubProcesses() {
-		return subProcesses;
-	}
+    public void setWorkItems(Set<String> workItems) {
+        this.workItems = workItems;
+    }
 
-	public ProcessMetaData addSubProcess(String processId, String subProcessId) {
-		subProcesses.put(processId, subProcessId);
-		return this;
-	}
+    public Map<String, String> getSubProcesses() {
+        return subProcesses;
+    }
 
-	public Map<String, CompilationUnit> getGeneratedHandlers() {
-		return generatedHandlers;
-	}
+    public ProcessMetaData addSubProcess(String processId, String subProcessId) {
+        subProcesses.put(processId, subProcessId);
+        return this;
+    }
 
-	public ProcessMetaData addGeneratedHandler(String workName, CompilationUnit handlerClass) {
-		generatedHandlers.put(workName, handlerClass);
-		return this;
-	}
+    public Map<String, CompilationUnit> getGeneratedHandlers() {
+        return generatedHandlers;
+    }
 
-	public Set<CompilationUnit> getGeneratedListeners() {
-		return generatedListeners;
-	}
+    public ProcessMetaData addGeneratedHandler(String workName, CompilationUnit handlerClass) {
+        generatedHandlers.put(workName, handlerClass);
+        return this;
+    }
 
-	public void setGeneratedListeners(Set<CompilationUnit> generatedListeners) {
-		this.generatedListeners = generatedListeners;
-	}
+    public Set<CompilationUnit> getGeneratedListeners() {
+        return generatedListeners;
+    }
 
-	public Map<String, String> getSignals() {
-		return signals;
-	}
+    public void setGeneratedListeners(Set<CompilationUnit> generatedListeners) {
+        this.generatedListeners = generatedListeners;
+    }
 
-	public ProcessMetaData addSignal(String name, String value) {
-		signals.put(name, value);
-		return this;
-	}
+    public Map<String, String> getSignals() {
+        return signals;
+    }
 
-	public List<TriggerMetaData> getTriggers() {
-		return triggers;
-	}
+    public ProcessMetaData addSignal(String name, String value) {
+        signals.put(name, value);
+        return this;
+    }
 
-	public ProcessMetaData addTrigger(TriggerMetaData trigger) {
-		triggers.add(trigger);
-		return this;
-	}
+    public List<TriggerMetaData> getTriggers() {
+        return triggers;
+    }
 
-	public boolean isStartable() {
-		return startable;
-	}
+    public ProcessMetaData addTrigger(TriggerMetaData trigger) {
+        triggers.add(trigger);
+        return this;
+    }
 
-	public void setStartable(boolean startable) {
-		this.startable = startable;
-	}
+    public boolean isStartable() {
+        return startable;
+    }
 
-	public boolean isDynamic() {
-		return dynamic;
-	}
+    public void setStartable(boolean startable) {
+        this.startable = startable;
+    }
 
-	public void setDynamic(boolean dynamic) {
-		this.dynamic = dynamic;
-	}
+    public boolean isDynamic() {
+        return dynamic;
+    }
 
-	@Override
-	public String toString() {
-		return "ProcessMetaData [processClassName=" + processClassName + ", processId=" + processId
-				+ ", extractedProcessId=" + extractedProcessId + ", processName=" + processName + ", processVersion="
-				+ processVersion + ", workItems=" + workItems + "]";
-	}
+    public void setDynamic(boolean dynamic) {
+        this.dynamic = dynamic;
+    }
+
+    public String getSource() {
+        return this.source;
+    }
+
+    @Override
+    public String toString() {
+        return "ProcessMetaData [processId=" + processId + ", extractedProcessId=" + extractedProcessId + ", processName="
+                + processName + ", processVersion=" + processVersion + ", source=" + source + ", workItems=" + workItems
+                + ", subProcesses=" + subProcesses + ", signals=" + signals + ", triggers=" + triggers + ", startable="
+                + startable + ", dynamic=" + dynamic + "]";
+    }
 
 }
