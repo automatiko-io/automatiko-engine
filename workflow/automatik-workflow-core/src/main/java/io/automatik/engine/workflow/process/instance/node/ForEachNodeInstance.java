@@ -32,253 +32,290 @@ import io.automatik.engine.workflow.process.instance.impl.NodeInstanceResolverFa
  */
 public class ForEachNodeInstance extends CompositeContextNodeInstance {
 
-	private static final long serialVersionUID = 510L;
+    private static final long serialVersionUID = 510L;
 
-	private static final String TEMP_OUTPUT_VAR = "foreach_output";
+    private static final String TEMP_OUTPUT_VAR = "foreach_output";
 
-	public ForEachNode getForEachNode() {
-		return (ForEachNode) getNode();
-	}
+    private int sequentialCounter = 0;
 
-	@Override
-	public NodeInstance getNodeInstance(final Node node) {
-		if (node instanceof ForEachSplitNode) {
-			ForEachSplitNodeInstance nodeInstance = new ForEachSplitNodeInstance();
-			nodeInstance.setNodeId(node.getId());
-			nodeInstance.setNodeInstanceContainer(this);
-			nodeInstance.setProcessInstance(getProcessInstance());
-			String uniqueID = (String) node.getMetaData().get("UniqueId");
-			if (uniqueID == null) {
-				uniqueID = node.getId() + "";
-			}
-			int level = this.getLevelForNode(uniqueID);
-			nodeInstance.setLevel(level);
-			return nodeInstance;
-		} else if (node instanceof ForEachJoinNode) {
-			ForEachJoinNodeInstance nodeInstance = (ForEachJoinNodeInstance) getFirstNodeInstance(node.getId());
-			if (nodeInstance == null) {
-				nodeInstance = new ForEachJoinNodeInstance();
-				nodeInstance.setNodeId(node.getId());
-				nodeInstance.setNodeInstanceContainer(this);
-				nodeInstance.setProcessInstance(getProcessInstance());
-				String uniqueID = (String) node.getMetaData().get("UniqueId");
-				if (uniqueID == null) {
-					uniqueID = node.getId() + "";
-				}
-				int level = this.getLevelForNode(uniqueID);
-				nodeInstance.setLevel(level);
-			}
-			return nodeInstance;
-		}
-		return super.getNodeInstance(node);
-	}
+    public ForEachNode getForEachNode() {
+        return (ForEachNode) getNode();
+    }
 
-	@Override
-	public ContextContainer getContextContainer() {
-		return getForEachNode().getCompositeNode();
-	}
+    @Override
+    public NodeInstance getNodeInstance(final Node node) {
+        if (node instanceof ForEachSplitNode) {
+            ForEachSplitNodeInstance nodeInstance = new ForEachSplitNodeInstance();
+            nodeInstance.setNodeId(node.getId());
+            nodeInstance.setNodeInstanceContainer(this);
+            nodeInstance.setProcessInstance(getProcessInstance());
+            String uniqueID = (String) node.getMetaData().get("UniqueId");
+            if (uniqueID == null) {
+                uniqueID = node.getId() + "";
+            }
+            int level = this.getLevelForNode(uniqueID);
+            nodeInstance.setLevel(level);
+            return nodeInstance;
+        } else if (node instanceof ForEachJoinNode) {
+            ForEachJoinNodeInstance nodeInstance = (ForEachJoinNodeInstance) getFirstNodeInstance(node.getId());
+            if (nodeInstance == null) {
+                nodeInstance = new ForEachJoinNodeInstance();
+                nodeInstance.setNodeId(node.getId());
+                nodeInstance.setNodeInstanceContainer(this);
+                nodeInstance.setProcessInstance(getProcessInstance());
+                String uniqueID = (String) node.getMetaData().get("UniqueId");
+                if (uniqueID == null) {
+                    uniqueID = node.getId() + "";
+                }
+                int level = this.getLevelForNode(uniqueID);
+                nodeInstance.setLevel(level);
+            }
+            return nodeInstance;
+        }
+        return super.getNodeInstance(node);
+    }
 
-	private Collection<?> evaluateCollectionExpression(String collectionExpression) {
-		Object collection;
-		VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
-				VariableScope.VARIABLE_SCOPE, collectionExpression);
-		if (variableScopeInstance != null) {
-			collection = variableScopeInstance.getVariable(collectionExpression);
-		} else {
-			try {
-				collection = MVEL.eval(collectionExpression, new NodeInstanceResolverFactory(this));
-			} catch (Throwable t) {
-				throw new IllegalArgumentException("Could not find collection " + collectionExpression);
-			}
-		}
-		if (collection == null) {
-			return Collections.emptyList();
-		}
-		if (collection instanceof Collection<?>) {
-			return (Collection<?>) collection;
-		}
-		if (collection.getClass().isArray()) {
-			List<Object> list = new ArrayList<>();
-			Collections.addAll(list, (Object[]) collection);
-			return list;
-		}
-		throw new IllegalArgumentException("Unexpected collection type: " + collection.getClass());
-	}
+    @Override
+    public ContextContainer getContextContainer() {
+        return getForEachNode().getCompositeNode();
+    }
 
-	public class ForEachSplitNodeInstance extends NodeInstanceImpl {
+    private Collection<?> evaluateCollectionExpression(String collectionExpression) {
+        Object collection;
+        VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+                VariableScope.VARIABLE_SCOPE, collectionExpression);
+        if (variableScopeInstance != null) {
+            collection = variableScopeInstance.getVariable(collectionExpression);
+        } else {
+            try {
+                collection = MVEL.eval(collectionExpression, new NodeInstanceResolverFactory(this));
+            } catch (Throwable t) {
+                throw new IllegalArgumentException("Could not find collection " + collectionExpression);
+            }
+        }
+        if (collection == null) {
+            return Collections.emptyList();
+        }
+        if (collection instanceof Collection<?>) {
+            return (Collection<?>) collection;
+        }
+        if (collection.getClass().isArray()) {
+            List<Object> list = new ArrayList<>();
+            Collections.addAll(list, (Object[]) collection);
+            return list;
+        }
+        throw new IllegalArgumentException("Unexpected collection type: " + collection.getClass());
+    }
 
-		private static final long serialVersionUID = 510l;
+    public class ForEachSplitNodeInstance extends NodeInstanceImpl {
 
-		public ForEachSplitNode getForEachSplitNode() {
-			return (ForEachSplitNode) getNode();
-		}
+        private static final long serialVersionUID = 510l;
 
-		@Override
-		public void internalTrigger(io.automatik.engine.api.runtime.process.NodeInstance fromm, String type) {
-			triggerTime = new Date();
-			String collectionExpression = getForEachNode().getCollectionExpression();
-			Collection<?> collection = evaluateCollectionExpression(collectionExpression);
-			((NodeInstanceContainer) getNodeInstanceContainer()).removeNodeInstance(this);
-			if (collection.isEmpty()) {
-				ForEachNodeInstance.this
-						.triggerCompleted(io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE, true);
-			} else {
-				List<NodeInstance> nodeInstances = new ArrayList<>();
-				for (Object o : collection) {
-					String variableName = getForEachNode().getVariableName();
-					NodeInstance nodeInstance = ((NodeInstanceContainer) getNodeInstanceContainer())
-							.getNodeInstance(getForEachSplitNode().getTo().getTo());
-					VariableScopeInstance variableScopeInstance = (VariableScopeInstance) nodeInstance
-							.resolveContextInstance(VariableScope.VARIABLE_SCOPE, variableName);
-					variableScopeInstance.setVariable(this, variableName, o);
-					nodeInstances.add(nodeInstance);
-				}
-				for (NodeInstance nodeInstance : nodeInstances) {
-					logger.debug("Triggering [{}] in multi-instance loop.", nodeInstance.getNodeId());
-					nodeInstance.trigger(this, getForEachSplitNode().getTo().getToType());
-				}
-				if (!getForEachNode().isWaitForCompletion()) {
-					ForEachNodeInstance.this.triggerCompleted(
-							io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE, false);
-				}
-			}
-		}
-	}
+        public ForEachSplitNode getForEachSplitNode() {
+            return (ForEachSplitNode) getNode();
+        }
 
-	public class ForEachJoinNodeInstance extends NodeInstanceImpl {
+        @Override
+        public void internalTrigger(io.automatik.engine.api.runtime.process.NodeInstance fromm, String type) {
+            triggerTime = new Date();
+            String collectionExpression = getForEachNode().getCollectionExpression();
+            Collection<?> collection = evaluateCollectionExpression(collectionExpression);
+            ((NodeInstanceContainer) getNodeInstanceContainer()).removeNodeInstance(this);
+            if (collection.isEmpty()) {
+                ForEachNodeInstance.this
+                        .triggerCompleted(io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE, true);
+            } else {
+                List<NodeInstance> nodeInstances = new ArrayList<>();
+                for (Object o : collection) {
+                    String variableName = getForEachNode().getVariableName();
+                    NodeInstance nodeInstance = ((NodeInstanceContainer) getNodeInstanceContainer())
+                            .getNodeInstance(getForEachSplitNode().getTo().getTo());
+                    VariableScopeInstance variableScopeInstance = (VariableScopeInstance) nodeInstance
+                            .resolveContextInstance(VariableScope.VARIABLE_SCOPE, variableName);
+                    variableScopeInstance.setVariable(this, variableName, o);
+                    nodeInstances.add(nodeInstance);
 
-		private static final long serialVersionUID = 510l;
+                    if (getForEachNode().isSequential()) {
+                        // for sequential mode trigger only first item from the list
+                        sequentialCounter++;
+                        break;
+                    }
+                }
+                for (NodeInstance nodeInstance : nodeInstances) {
+                    logger.debug("Triggering [{}] in multi-instance loop.", nodeInstance.getNodeId());
+                    nodeInstance.trigger(this, getForEachSplitNode().getTo().getToType());
+                }
+                if (!getForEachNode().isWaitForCompletion()) {
+                    ForEachNodeInstance.this.triggerCompleted(
+                            io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE, false);
+                }
+            }
+        }
+    }
 
-		public ForEachJoinNode getForEachJoinNode() {
-			return (ForEachJoinNode) getNode();
-		}
+    public class ForEachJoinNodeInstance extends NodeInstanceImpl {
 
-		@Override
-		@SuppressWarnings({ "unchecked", "rawtypes" })
-		public void internalTrigger(io.automatik.engine.api.runtime.process.NodeInstance from, String type) {
-			triggerTime = new Date();
-			Map<String, Object> tempVariables = new HashMap<>();
-			VariableScopeInstance subprocessVariableScopeInstance = null;
-			if (getForEachNode().getOutputVariableName() != null) {
-				subprocessVariableScopeInstance = (VariableScopeInstance) getContextInstance(
-						VariableScope.VARIABLE_SCOPE);
+        private static final long serialVersionUID = 510l;
 
-				Collection<Object> outputCollection = (Collection<Object>) subprocessVariableScopeInstance
-						.getVariable(TEMP_OUTPUT_VAR);
-				if (outputCollection == null) {
-					outputCollection = new ArrayList<>();
-				}
+        public ForEachJoinNode getForEachJoinNode() {
+            return (ForEachJoinNode) getNode();
+        }
 
-				VariableScopeInstance variableScopeInstance = (VariableScopeInstance) ((NodeInstanceImpl) from)
-						.resolveContextInstance(VariableScope.VARIABLE_SCOPE, getForEachNode().getOutputVariableName());
-				Object outputVariable = null;
-				if (variableScopeInstance != null) {
-					outputVariable = variableScopeInstance.getVariable(getForEachNode().getOutputVariableName());
-				}
-				outputCollection.add(outputVariable);
+        @Override
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        public void internalTrigger(io.automatik.engine.api.runtime.process.NodeInstance from, String type) {
+            triggerTime = new Date();
+            Map<String, Object> tempVariables = new HashMap<>();
+            VariableScopeInstance subprocessVariableScopeInstance = null;
+            if (getForEachNode().getOutputVariableName() != null) {
+                subprocessVariableScopeInstance = (VariableScopeInstance) getContextInstance(
+                        VariableScope.VARIABLE_SCOPE);
 
-				subprocessVariableScopeInstance.setVariable(this, TEMP_OUTPUT_VAR, outputCollection);
-				// add temp collection under actual mi output name for completion condition
-				// evaluation
-				tempVariables.put(getForEachNode().getOutputVariableName(), outputVariable);
-				String outputCollectionName = getForEachNode().getOutputCollectionExpression();
-				tempVariables.put(outputCollectionName, outputCollection);
-			}
-			boolean isCompletionConditionMet = evaluateCompletionCondition(
-					getForEachNode().getCompletionConditionExpression(), tempVariables);
-			if (getNodeInstanceContainer().getNodeInstances().size() == 1 || isCompletionConditionMet) {
-				String outputCollection = getForEachNode().getOutputCollectionExpression();
-				if (outputCollection != null) {
-					VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
-							VariableScope.VARIABLE_SCOPE, outputCollection);
-					Collection<?> outputVariable = (Collection<?>) variableScopeInstance.getVariable(outputCollection);
-					if (outputVariable != null) {
-						outputVariable
-								.addAll((Collection) subprocessVariableScopeInstance.getVariable(TEMP_OUTPUT_VAR));
-					} else {
-						outputVariable = (Collection<Object>) subprocessVariableScopeInstance
-								.getVariable(TEMP_OUTPUT_VAR);
-					}
-					variableScopeInstance.setVariable(this, outputCollection, outputVariable);
-				}
-				((NodeInstanceContainer) getNodeInstanceContainer()).removeNodeInstance(this);
-				if (getForEachNode().isWaitForCompletion()) {
+                Collection<Object> outputCollection = (Collection<Object>) subprocessVariableScopeInstance
+                        .getVariable(TEMP_OUTPUT_VAR);
+                if (outputCollection == null) {
+                    outputCollection = new ArrayList<>();
+                }
 
-					if (!"true".equals(System.getProperty("jbpm.enable.multi.con"))) {
+                VariableScopeInstance variableScopeInstance = (VariableScopeInstance) ((NodeInstanceImpl) from)
+                        .resolveContextInstance(VariableScope.VARIABLE_SCOPE, getForEachNode().getOutputVariableName());
+                Object outputVariable = null;
+                if (variableScopeInstance != null) {
+                    outputVariable = variableScopeInstance.getVariable(getForEachNode().getOutputVariableName());
+                }
+                outputCollection.add(outputVariable);
 
-						triggerConnection(getForEachJoinNode().getTo());
-					} else {
+                subprocessVariableScopeInstance.setVariable(this, TEMP_OUTPUT_VAR, outputCollection);
+                // add temp collection under actual mi output name for completion condition
+                // evaluation
+                tempVariables.put(getForEachNode().getOutputVariableName(), outputVariable);
+                String outputCollectionName = getForEachNode().getOutputCollectionExpression();
+                tempVariables.put(outputCollectionName, outputCollection);
+            }
+            boolean isCompletionConditionMet = evaluateCompletionCondition(
+                    getForEachNode().getCompletionConditionExpression(), tempVariables);
 
-						List<Connection> connections = getForEachJoinNode().getOutgoingConnections(
-								io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
-						for (Connection connection : connections) {
-							triggerConnection(connection);
-						}
-					}
-				}
-			}
-		}
+            if (getForEachNode().isSequential() && !isCompletionConditionMet) {
+                String collectionExpression = getForEachNode().getCollectionExpression();
+                Collection<?> collection = evaluateCollectionExpression(collectionExpression);
 
-		private boolean evaluateCompletionCondition(String expression, Map<String, Object> tempVariables) {
-			if (expression == null || expression.isEmpty()) {
-				return false;
-			}
-			try {
-				Object result = MVEL.eval(expression, new ForEachNodeInstanceResolverFactory(this, tempVariables));
-				if (!(result instanceof Boolean)) {
-					throw new RuntimeException("Completion condition expression must return boolean values: " + result
-							+ " for expression " + expression);
-				}
-				return ((Boolean) result).booleanValue();
-			} catch (Throwable t) {
-				throw new IllegalArgumentException("Could not evaluate completion condition  " + expression, t);
-			}
-		}
-	}
+                if (collection.size() > sequentialCounter) {
 
-	@Override
-	public ContextInstance getContextInstance(String contextId) {
-		ContextInstance contextInstance = super.getContextInstance(contextId);
-		if (contextInstance == null) {
-			contextInstance = resolveContextInstance(contextId, TEMP_OUTPUT_VAR);
-			setContextInstance(contextId, contextInstance);
-		}
+                    String variableName = getForEachNode().getVariableName();
+                    NodeInstance nodeInstance = (NodeInstance) ((NodeInstanceContainer) getNodeInstanceContainer())
+                            .getNodeInstance(getForEachNode().getForEachSplitNode().getTo().getTo());
+                    VariableScopeInstance variableScopeInstance = (VariableScopeInstance) nodeInstance
+                            .resolveContextInstance(VariableScope.VARIABLE_SCOPE, variableName);
+                    variableScopeInstance.setVariable(variableName, new ArrayList<>(collection).get(sequentialCounter));
+                    sequentialCounter++;
 
-		return contextInstance;
-	}
+                    logger.debug("Triggering [{}] in multi-instance loop.", ((NodeInstanceImpl) nodeInstance).getNodeId());
+                    ((NodeInstance) nodeInstance).trigger(null, getForEachNode().getForEachSplitNode().getTo().getToType());
 
-	@Override
-	public int getLevelForNode(String uniqueID) {
-		// always 1 for for each
-		return 1;
-	}
+                }
+            }
 
-	private class ForEachNodeInstanceResolverFactory extends NodeInstanceResolverFactory {
+            if (getNodeInstanceContainer().getNodeInstances().size() == 1 || isCompletionConditionMet) {
+                String outputCollection = getForEachNode().getOutputCollectionExpression();
+                if (outputCollection != null) {
+                    VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+                            VariableScope.VARIABLE_SCOPE, outputCollection);
+                    Collection<?> outputVariable = (Collection<?>) variableScopeInstance.getVariable(outputCollection);
+                    if (outputVariable != null) {
+                        outputVariable
+                                .addAll((Collection) subprocessVariableScopeInstance.getVariable(TEMP_OUTPUT_VAR));
+                    } else {
+                        outputVariable = (Collection<Object>) subprocessVariableScopeInstance
+                                .getVariable(TEMP_OUTPUT_VAR);
+                    }
+                    variableScopeInstance.setVariable(this, outputCollection, outputVariable);
+                }
+                ((NodeInstanceContainer) getNodeInstanceContainer()).removeNodeInstance(this);
+                if (getForEachNode().isWaitForCompletion()) {
 
-		private static final long serialVersionUID = -8856846610671009685L;
+                    if (!"true".equals(System.getProperty("jbpm.enable.multi.con"))) {
 
-		private Map<String, Object> tempVariables;
+                        triggerConnection(getForEachJoinNode().getTo());
+                    } else {
 
-		public ForEachNodeInstanceResolverFactory(NodeInstance nodeInstance, Map<String, Object> tempVariables) {
-			super(nodeInstance);
-			this.tempVariables = tempVariables;
-		}
+                        List<Connection> connections = getForEachJoinNode().getOutgoingConnections(
+                                io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
+                        for (Connection connection : connections) {
+                            triggerConnection(connection);
+                        }
+                    }
+                }
+            }
+        }
 
-		@Override
-		public boolean isResolveable(String name) {
-			boolean result = tempVariables.containsKey(name);
-			if (result) {
-				return result;
-			}
-			return super.isResolveable(name);
-		}
+        private boolean evaluateCompletionCondition(String expression, Map<String, Object> tempVariables) {
+            if (expression == null || expression.isEmpty()) {
+                return false;
+            }
+            try {
+                Object result = MVEL.eval(expression, new ForEachNodeInstanceResolverFactory(this, tempVariables));
+                if (!(result instanceof Boolean)) {
+                    throw new RuntimeException("Completion condition expression must return boolean values: " + result
+                            + " for expression " + expression);
+                }
+                return ((Boolean) result).booleanValue();
+            } catch (Throwable t) {
+                throw new IllegalArgumentException("Could not evaluate completion condition  " + expression, t);
+            }
+        }
+    }
 
-		@Override
-		public VariableResolver getVariableResolver(String name) {
-			if (tempVariables.containsKey(name)) {
-				return new SimpleValueResolver(tempVariables.get(name));
-			}
-			return super.getVariableResolver(name);
-		}
-	}
+    @Override
+    public ContextInstance getContextInstance(String contextId) {
+        ContextInstance contextInstance = super.getContextInstance(contextId);
+        if (contextInstance == null) {
+            contextInstance = resolveContextInstance(contextId, TEMP_OUTPUT_VAR);
+            setContextInstance(contextId, contextInstance);
+        }
+
+        return contextInstance;
+    }
+
+    @Override
+    public int getLevelForNode(String uniqueID) {
+        // always 1 for for each
+        return 1;
+    }
+
+    public void setInternalSequentialCounter(int counter) {
+        this.sequentialCounter = counter;
+    }
+
+    public int getSequentialCounter() {
+        return this.sequentialCounter;
+    }
+
+    private class ForEachNodeInstanceResolverFactory extends NodeInstanceResolverFactory {
+
+        private static final long serialVersionUID = -8856846610671009685L;
+
+        private Map<String, Object> tempVariables;
+
+        public ForEachNodeInstanceResolverFactory(NodeInstance nodeInstance, Map<String, Object> tempVariables) {
+            super(nodeInstance);
+            this.tempVariables = tempVariables;
+        }
+
+        @Override
+        public boolean isResolveable(String name) {
+            boolean result = tempVariables.containsKey(name);
+            if (result) {
+                return result;
+            }
+            return super.isResolveable(name);
+        }
+
+        @Override
+        public VariableResolver getVariableResolver(String name) {
+            if (tempVariables.containsKey(name)) {
+                return new SimpleValueResolver(tempVariables.get(name));
+            }
+            return super.getVariableResolver(name);
+        }
+    }
 }

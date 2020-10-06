@@ -104,6 +104,7 @@ public class CallActivityHandler extends AbstractNodeHandler {
                         NodeImpl.CONNECTION_DEFAULT_TYPE);
                 forEachNode.linkOutgoingConnections(node.getId(), NodeImpl.CONNECTION_DEFAULT_TYPE,
                         NodeImpl.CONNECTION_DEFAULT_TYPE);
+                forEachNode.setSequential(Boolean.parseBoolean(((Element) xmlNode).getAttribute("isSequential")));
 
                 Node orignalNode = node;
                 node = forEachNode;

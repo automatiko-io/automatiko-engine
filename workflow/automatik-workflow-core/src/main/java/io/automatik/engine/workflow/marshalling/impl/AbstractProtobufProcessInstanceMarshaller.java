@@ -377,7 +377,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                             .setLevel(level.getValue()));
                 }
             }
-
+            _foreach.setSequentialCounter(forEachNodeInstance.getSequentialCounter());
             _content = AutomatikMessages.ProcessInstance.NodeInstanceContent.newBuilder()
                     .setType(NodeInstanceType.FOR_EACH_NODE).setForEach(_foreach.build());
         } else if (nodeInstance instanceof CompositeContextNodeInstance) {
@@ -982,6 +982,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                 break;
             case FOR_EACH_NODE:
                 nodeInstance = new ForEachNodeInstance();
+                ((ForEachNodeInstance) nodeInstance).setInternalSequentialCounter(_content.getForEach().getSequentialCounter());
                 break;
             case COMPOSITE_CONTEXT_NODE:
                 nodeInstance = new CompositeContextNodeInstance();

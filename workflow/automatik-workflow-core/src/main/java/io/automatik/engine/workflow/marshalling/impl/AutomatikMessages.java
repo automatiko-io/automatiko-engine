@@ -26234,6 +26234,17 @@ public final class AutomatikMessages {
          */
         io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.IterationLevelOrBuilder getIterationLevelsOrBuilder(
             int index);
+
+        /**
+         * <code>optional int32 sequential_counter = 4;</code>
+         * @return Whether the sequentialCounter field is set.
+         */
+        boolean hasSequentialCounter();
+        /**
+         * <code>optional int32 sequential_counter = 4;</code>
+         * @return The sequentialCounter.
+         */
+        int getSequentialCounter();
       }
       /**
        * Protobuf type {@code io.automatik.engine.workflow.marshalling.ProcessInstance.NodeInstanceContent.ForEachNode}
@@ -26311,6 +26322,11 @@ public final class AutomatikMessages {
                       input.readMessage(io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.IterationLevel.PARSER, extensionRegistry));
                   break;
                 }
+                case 32: {
+                  bitField0_ |= 0x00000001;
+                  sequentialCounter_ = input.readInt32();
+                  break;
+                }
                 default: {
                   if (!parseUnknownField(
                       input, unknownFields, extensionRegistry, tag)) {
@@ -26352,6 +26368,7 @@ public final class AutomatikMessages {
                   io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.NodeInstanceContent.ForEachNode.class, io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.NodeInstanceContent.ForEachNode.Builder.class);
         }
 
+        private int bitField0_;
         public static final int NODE_INSTANCE_FIELD_NUMBER = 1;
         private java.util.List<io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.NodeInstance> nodeInstance_;
         /**
@@ -26472,6 +26489,25 @@ public final class AutomatikMessages {
           return iterationLevels_.get(index);
         }
 
+        public static final int SEQUENTIAL_COUNTER_FIELD_NUMBER = 4;
+        private int sequentialCounter_;
+        /**
+         * <code>optional int32 sequential_counter = 4;</code>
+         * @return Whether the sequentialCounter field is set.
+         */
+        @java.lang.Override
+        public boolean hasSequentialCounter() {
+          return ((bitField0_ & 0x00000001) != 0);
+        }
+        /**
+         * <code>optional int32 sequential_counter = 4;</code>
+         * @return The sequentialCounter.
+         */
+        @java.lang.Override
+        public int getSequentialCounter() {
+          return sequentialCounter_;
+        }
+
         private byte memoizedIsInitialized = -1;
         @java.lang.Override
         public final boolean isInitialized() {
@@ -26495,6 +26531,9 @@ public final class AutomatikMessages {
           for (int i = 0; i < iterationLevels_.size(); i++) {
             output.writeMessage(3, iterationLevels_.get(i));
           }
+          if (((bitField0_ & 0x00000001) != 0)) {
+            output.writeInt32(4, sequentialCounter_);
+          }
           unknownFields.writeTo(output);
         }
 
@@ -26515,6 +26554,10 @@ public final class AutomatikMessages {
           for (int i = 0; i < iterationLevels_.size(); i++) {
             size += com.google.protobuf.CodedOutputStream
               .computeMessageSize(3, iterationLevels_.get(i));
+          }
+          if (((bitField0_ & 0x00000001) != 0)) {
+            size += com.google.protobuf.CodedOutputStream
+              .computeInt32Size(4, sequentialCounter_);
           }
           size += unknownFields.getSerializedSize();
           memoizedSize = size;
@@ -26537,6 +26580,11 @@ public final class AutomatikMessages {
               .equals(other.getVariableList())) return false;
           if (!getIterationLevelsList()
               .equals(other.getIterationLevelsList())) return false;
+          if (hasSequentialCounter() != other.hasSequentialCounter()) return false;
+          if (hasSequentialCounter()) {
+            if (getSequentialCounter()
+                != other.getSequentialCounter()) return false;
+          }
           if (!unknownFields.equals(other.unknownFields)) return false;
           return true;
         }
@@ -26559,6 +26607,10 @@ public final class AutomatikMessages {
           if (getIterationLevelsCount() > 0) {
             hash = (37 * hash) + ITERATIONLEVELS_FIELD_NUMBER;
             hash = (53 * hash) + getIterationLevelsList().hashCode();
+          }
+          if (hasSequentialCounter()) {
+            hash = (37 * hash) + SEQUENTIAL_COUNTER_FIELD_NUMBER;
+            hash = (53 * hash) + getSequentialCounter();
           }
           hash = (29 * hash) + unknownFields.hashCode();
           memoizedHashCode = hash;
@@ -26714,6 +26766,8 @@ public final class AutomatikMessages {
             } else {
               iterationLevelsBuilder_.clear();
             }
+            sequentialCounter_ = 0;
+            bitField0_ = (bitField0_ & ~0x00000008);
             return this;
           }
 
@@ -26741,6 +26795,7 @@ public final class AutomatikMessages {
           public io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.NodeInstanceContent.ForEachNode buildPartial() {
             io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.NodeInstanceContent.ForEachNode result = new io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.NodeInstanceContent.ForEachNode(this);
             int from_bitField0_ = bitField0_;
+            int to_bitField0_ = 0;
             if (nodeInstanceBuilder_ == null) {
               if (((bitField0_ & 0x00000001) != 0)) {
                 nodeInstance_ = java.util.Collections.unmodifiableList(nodeInstance_);
@@ -26768,6 +26823,11 @@ public final class AutomatikMessages {
             } else {
               result.iterationLevels_ = iterationLevelsBuilder_.build();
             }
+            if (((from_bitField0_ & 0x00000008) != 0)) {
+              result.sequentialCounter_ = sequentialCounter_;
+              to_bitField0_ |= 0x00000001;
+            }
+            result.bitField0_ = to_bitField0_;
             onBuilt();
             return result;
           }
@@ -26893,6 +26953,9 @@ public final class AutomatikMessages {
                   iterationLevelsBuilder_.addAllMessages(other.iterationLevels_);
                 }
               }
+            }
+            if (other.hasSequentialCounter()) {
+              setSequentialCounter(other.getSequentialCounter());
             }
             this.mergeUnknownFields(other.unknownFields);
             onChanged();
@@ -27642,6 +27705,45 @@ public final class AutomatikMessages {
               iterationLevels_ = null;
             }
             return iterationLevelsBuilder_;
+          }
+
+          private int sequentialCounter_ ;
+          /**
+           * <code>optional int32 sequential_counter = 4;</code>
+           * @return Whether the sequentialCounter field is set.
+           */
+          @java.lang.Override
+          public boolean hasSequentialCounter() {
+            return ((bitField0_ & 0x00000008) != 0);
+          }
+          /**
+           * <code>optional int32 sequential_counter = 4;</code>
+           * @return The sequentialCounter.
+           */
+          @java.lang.Override
+          public int getSequentialCounter() {
+            return sequentialCounter_;
+          }
+          /**
+           * <code>optional int32 sequential_counter = 4;</code>
+           * @param value The sequentialCounter to set.
+           * @return This builder for chaining.
+           */
+          public Builder setSequentialCounter(int value) {
+            bitField0_ |= 0x00000008;
+            sequentialCounter_ = value;
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>optional int32 sequential_counter = 4;</code>
+           * @return This builder for chaining.
+           */
+          public Builder clearSequentialCounter() {
+            bitField0_ = (bitField0_ & ~0x00000008);
+            sequentialCounter_ = 0;
+            onChanged();
+            return this;
           }
           @java.lang.Override
           public final Builder setUnknownFields(
@@ -48286,7 +48388,7 @@ public final class AutomatikMessages {
       ".marshalling.Trigger\"T\n\013TriggerType\022\010\n\004C" +
       "RON\020\000\022\014\n\010INTERVAL\020\001\022\021\n\rPOINT_IN_TIME\020\002\022\032" +
       "\n\026COMPOSITE_MAX_DURATION\020\003\"\024\n\013ProcessDat" +
-      "a*\005\010\n\020\310\001\"\373&\n\017ProcessInstance\022\024\n\014process_" +
+      "a*\005\010\n\020\310\001\"\227\'\n\017ProcessInstance\022\024\n\014process_" +
       "type\030\001 \001(\t\022\n\n\002id\030\002 \001(\t\022\022\n\nprocess_id\030\003 \001" +
       "(\t\022\r\n\005state\030\004 \001(\005\022\035\n\025node_instance_count" +
       "er\030\005 \001(\003\022\023\n\013process_xml\030\013 \001(\t\022\"\n\032parent_" +
@@ -48324,7 +48426,7 @@ public final class AutomatikMessages {
       "a_due_date\030\007 \001(\003\022\026\n\016sla_compliance\030\010 \001(\005" +
       "\022\024\n\014trigger_date\030\t \001(\003\0328\n\026ExclusiveGroup" +
       "Instance\022\036\n\026group_node_instance_id\030\001 \003(\t" +
-      "\032\322\030\n\023NodeInstanceContent\022X\n\004type\030\001 \001(\0162J" +
+      "\032\356\030\n\023NodeInstanceContent\022X\n\004type\030\001 \001(\0162J" +
       ".io.automatik.engine.workflow.marshallin" +
       "g.ProcessInstance.NodeInstanceType\022k\n\010ru" +
       "le_set\030\002 \001(\0132Y.io.automatik.engine.workf" +
@@ -48395,72 +48497,73 @@ public final class AutomatikMessages {
       "w.marshalling.ProcessInstance.ExclusiveG" +
       "roupInstance\022Q\n\017iterationLevels\030\006 \003(\01328." +
       "io.automatik.engine.workflow.marshalling" +
-      ".IterationLevel\032\205\002\n\013ForEachNode\022]\n\rnode_" +
+      ".IterationLevel\032\241\002\n\013ForEachNode\022]\n\rnode_" +
       "instance\030\001 \003(\0132F.io.automatik.engine.wor" +
       "kflow.marshalling.ProcessInstance.NodeIn" +
       "stance\022D\n\010variable\030\002 \003(\01322.io.automatik." +
       "engine.workflow.marshalling.Variable\022Q\n\017" +
       "iterationLevels\030\003 \003(\01328.io.automatik.eng" +
-      "ine.workflow.marshalling.IterationLevel\032" +
-      "$\n\016AsyncEventNode\022\022\n\nevent_type\030\001 \001(\t\"\276\002" +
-      "\n\020NodeInstanceType\022\021\n\rRULE_SET_NODE\020\000\022\023\n" +
-      "\017HUMAN_TASK_NODE\020\001\022\022\n\016WORK_ITEM_NODE\020\002\022\023" +
-      "\n\017SUBPROCESS_NODE\020\003\022\022\n\016MILESTONE_NODE\020\004\022" +
-      "\016\n\nEVENT_NODE\020\005\022\016\n\nTIMER_NODE\020\006\022\r\n\tJOIN_" +
-      "NODE\020\007\022\016\n\nSTATE_NODE\020\010\022\032\n\026COMPOSITE_CONT" +
-      "EXT_NODE\020\t\022\021\n\rFOR_EACH_NODE\020\n\022\020\n\014DYNAMIC" +
-      "_NODE\020\013\022\031\n\025EVENT_SUBPROCESS_NODE\020\014\022\024\n\020AS" +
-      "YNC_EVENT_NODE\020\r\022\024\n\020SUB_PROCESS_NODE\020\016\"R" +
-      "\n\010Variable\022\014\n\004name\030\001 \001(\t\022\026\n\016strategy_ind" +
-      "ex\030\002 \001(\005\022\r\n\005value\030\003 \001(\014\022\021\n\tdata_type\030\004 \001" +
-      "(\t\"\254\002\n\010WorkItem\022\n\n\002id\030\001 \001(\t\022\034\n\024process_i" +
-      "nstances_id\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\r\n\005state" +
-      "\030\004 \001(\005\022D\n\010variable\030\005 \003(\01322.io.automatik." +
-      "engine.workflow.marshalling.Variable\022\025\n\r" +
-      "deployment_id\030\006 \001(\t\022\030\n\020node_instance_id\030" +
-      "\007 \001(\t\022\017\n\007node_id\030\010 \001(\003\022\020\n\010phase_id\030\t \001(\t" +
-      "\022\024\n\014phase_status\030\n \001(\t\022\022\n\nstart_date\030\013 \001" +
-      "(\003\022\025\n\rcomplete_date\030\014 \001(\003\"\226\004\n\021HumanTaskW" +
-      "orkItem\022\n\n\002id\030\001 \001(\t\022\034\n\024process_instances" +
-      "_id\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\r\n\005state\030\004 \001(\005\022D" +
-      "\n\010variable\030\005 \003(\01322.io.automatik.engine.w" +
-      "orkflow.marshalling.Variable\022\025\n\rdeployme" +
-      "nt_id\030\006 \001(\t\022\030\n\020node_instance_id\030\007 \001(\t\022\017\n" +
-      "\007node_id\030\010 \001(\003\022\020\n\010phase_id\030\t \001(\t\022\024\n\014phas" +
-      "e_status\030\n \001(\t\022\022\n\nstart_date\030\013 \001(\003\022\025\n\rco" +
-      "mplete_date\030\014 \001(\003\022\021\n\ttask_name\030\r \001(\t\022\030\n\020" +
-      "task_description\030\016 \001(\t\022\025\n\rtask_priority\030" +
-      "\017 \001(\t\022\024\n\014actual_owner\030\020 \001(\t\022\021\n\tpot_users" +
-      "\030\021 \003(\t\022\022\n\npot_groups\030\022 \003(\t\022\026\n\016excluded_u" +
-      "sers\030\023 \003(\t\022\023\n\013admin_users\030\024 \003(\t\022\024\n\014admin" +
-      "_groups\030\025 \003(\t\022\033\n\023task_reference_name\030\026 \001" +
-      "(\t\"\211\003\n\014ProcessTimer\022S\n\005timer\030\001 \001(\0132D.io." +
-      "automatik.engine.workflow.marshalling.Pr" +
-      "ocessTimer.TimerInstance\022B\n\007trigger\030\002 \001(" +
-      "\01321.io.automatik.engine.workflow.marshal" +
-      "ling.Trigger\032\337\001\n\rTimerInstance\022\n\n\002id\030\001 \001" +
-      "(\003\022\020\n\010timer_id\030\002 \001(\t\022\r\n\005delay\030\003 \001(\003\022\016\n\006p" +
-      "eriod\030\004 \001(\003\022\033\n\023process_instance_id\030\005 \001(\t" +
-      "\022\026\n\016activated_time\030\006 \001(\003\022\026\n\016last_trigger" +
-      "ed\030\007 \001(\003\022\034\n\024DEPRECATED_sessionId\030\010 \001(\005\022\021" +
-      "\n\tsessionId\030\t \001(\003\022\023\n\013repeatLimit\030\n \001(\005\"+" +
-      "\n\016IterationLevel\022\n\n\002id\030\001 \001(\t\022\r\n\005level\030\002 " +
-      "\001(\005\"Y\n\021VariableContainer\022D\n\010variable\030\001 \003" +
-      "(\01322.io.automatik.engine.workflow.marsha" +
-      "lling.Variable:\212\001\n\020process_instance\0225.io" +
-      ".automatik.engine.workflow.marshalling.P" +
-      "rocessData\030\n \003(\01329.io.automatik.engine.w" +
-      "orkflow.marshalling.ProcessInstance:|\n\tw" +
-      "ork_item\0225.io.automatik.engine.workflow." +
-      "marshalling.ProcessData\030\013 \003(\01322.io.autom" +
-      "atik.engine.workflow.marshalling.WorkIte" +
-      "m:G\n\010timer_id\0225.io.automatik.engine.work" +
-      "flow.marshalling.ProcessData\030\r \001(\003:\204\001\n\rp" +
-      "rocess_timer\0225.io.automatik.engine.workf" +
-      "low.marshalling.ProcessData\030\014 \003(\01326.io.a" +
-      "utomatik.engine.workflow.marshalling.Pro" +
-      "cessTimerBB\n-io.automatik.engine.workflo" +
-      "w.marshalling.implB\021AutomatikMessages"
+      "ine.workflow.marshalling.IterationLevel\022" +
+      "\032\n\022sequential_counter\030\004 \001(\005\032$\n\016AsyncEven" +
+      "tNode\022\022\n\nevent_type\030\001 \001(\t\"\276\002\n\020NodeInstan" +
+      "ceType\022\021\n\rRULE_SET_NODE\020\000\022\023\n\017HUMAN_TASK_" +
+      "NODE\020\001\022\022\n\016WORK_ITEM_NODE\020\002\022\023\n\017SUBPROCESS" +
+      "_NODE\020\003\022\022\n\016MILESTONE_NODE\020\004\022\016\n\nEVENT_NOD" +
+      "E\020\005\022\016\n\nTIMER_NODE\020\006\022\r\n\tJOIN_NODE\020\007\022\016\n\nST" +
+      "ATE_NODE\020\010\022\032\n\026COMPOSITE_CONTEXT_NODE\020\t\022\021" +
+      "\n\rFOR_EACH_NODE\020\n\022\020\n\014DYNAMIC_NODE\020\013\022\031\n\025E" +
+      "VENT_SUBPROCESS_NODE\020\014\022\024\n\020ASYNC_EVENT_NO" +
+      "DE\020\r\022\024\n\020SUB_PROCESS_NODE\020\016\"R\n\010Variable\022\014" +
+      "\n\004name\030\001 \001(\t\022\026\n\016strategy_index\030\002 \001(\005\022\r\n\005" +
+      "value\030\003 \001(\014\022\021\n\tdata_type\030\004 \001(\t\"\254\002\n\010WorkI" +
+      "tem\022\n\n\002id\030\001 \001(\t\022\034\n\024process_instances_id\030" +
+      "\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\r\n\005state\030\004 \001(\005\022D\n\010va" +
+      "riable\030\005 \003(\01322.io.automatik.engine.workf" +
+      "low.marshalling.Variable\022\025\n\rdeployment_i" +
+      "d\030\006 \001(\t\022\030\n\020node_instance_id\030\007 \001(\t\022\017\n\007nod" +
+      "e_id\030\010 \001(\003\022\020\n\010phase_id\030\t \001(\t\022\024\n\014phase_st" +
+      "atus\030\n \001(\t\022\022\n\nstart_date\030\013 \001(\003\022\025\n\rcomple" +
+      "te_date\030\014 \001(\003\"\226\004\n\021HumanTaskWorkItem\022\n\n\002i" +
+      "d\030\001 \001(\t\022\034\n\024process_instances_id\030\002 \001(\t\022\014\n" +
+      "\004name\030\003 \001(\t\022\r\n\005state\030\004 \001(\005\022D\n\010variable\030\005" +
+      " \003(\01322.io.automatik.engine.workflow.mars" +
+      "halling.Variable\022\025\n\rdeployment_id\030\006 \001(\t\022" +
+      "\030\n\020node_instance_id\030\007 \001(\t\022\017\n\007node_id\030\010 \001" +
+      "(\003\022\020\n\010phase_id\030\t \001(\t\022\024\n\014phase_status\030\n \001" +
+      "(\t\022\022\n\nstart_date\030\013 \001(\003\022\025\n\rcomplete_date\030" +
+      "\014 \001(\003\022\021\n\ttask_name\030\r \001(\t\022\030\n\020task_descrip" +
+      "tion\030\016 \001(\t\022\025\n\rtask_priority\030\017 \001(\t\022\024\n\014act" +
+      "ual_owner\030\020 \001(\t\022\021\n\tpot_users\030\021 \003(\t\022\022\n\npo" +
+      "t_groups\030\022 \003(\t\022\026\n\016excluded_users\030\023 \003(\t\022\023" +
+      "\n\013admin_users\030\024 \003(\t\022\024\n\014admin_groups\030\025 \003(" +
+      "\t\022\033\n\023task_reference_name\030\026 \001(\t\"\211\003\n\014Proce" +
+      "ssTimer\022S\n\005timer\030\001 \001(\0132D.io.automatik.en" +
+      "gine.workflow.marshalling.ProcessTimer.T" +
+      "imerInstance\022B\n\007trigger\030\002 \001(\01321.io.autom" +
+      "atik.engine.workflow.marshalling.Trigger" +
+      "\032\337\001\n\rTimerInstance\022\n\n\002id\030\001 \001(\003\022\020\n\010timer_" +
+      "id\030\002 \001(\t\022\r\n\005delay\030\003 \001(\003\022\016\n\006period\030\004 \001(\003\022" +
+      "\033\n\023process_instance_id\030\005 \001(\t\022\026\n\016activate" +
+      "d_time\030\006 \001(\003\022\026\n\016last_triggered\030\007 \001(\003\022\034\n\024" +
+      "DEPRECATED_sessionId\030\010 \001(\005\022\021\n\tsessionId\030" +
+      "\t \001(\003\022\023\n\013repeatLimit\030\n \001(\005\"+\n\016IterationL" +
+      "evel\022\n\n\002id\030\001 \001(\t\022\r\n\005level\030\002 \001(\005\"Y\n\021Varia" +
+      "bleContainer\022D\n\010variable\030\001 \003(\01322.io.auto" +
+      "matik.engine.workflow.marshalling.Variab" +
+      "le:\212\001\n\020process_instance\0225.io.automatik.e" +
+      "ngine.workflow.marshalling.ProcessData\030\n" +
+      " \003(\01329.io.automatik.engine.workflow.mars" +
+      "halling.ProcessInstance:|\n\twork_item\0225.i" +
+      "o.automatik.engine.workflow.marshalling." +
+      "ProcessData\030\013 \003(\01322.io.automatik.engine." +
+      "workflow.marshalling.WorkItem:G\n\010timer_i" +
+      "d\0225.io.automatik.engine.workflow.marshal" +
+      "ling.ProcessData\030\r \001(\003:\204\001\n\rprocess_timer" +
+      "\0225.io.automatik.engine.workflow.marshall" +
+      "ing.ProcessData\030\014 \003(\01326.io.automatik.eng" +
+      "ine.workflow.marshalling.ProcessTimerBB\n" +
+      "-io.automatik.engine.workflow.marshallin" +
+      "g.implB\021AutomatikMessages"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -48639,7 +48742,7 @@ public final class AutomatikMessages {
     internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_NodeInstanceContent_ForEachNode_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_NodeInstanceContent_ForEachNode_descriptor,
-        new java.lang.String[] { "NodeInstance", "Variable", "IterationLevels", });
+        new java.lang.String[] { "NodeInstance", "Variable", "IterationLevels", "SequentialCounter", });
     internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_NodeInstanceContent_AsyncEventNode_descriptor =
       internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_NodeInstanceContent_descriptor.getNestedTypes().get(11);
     internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_NodeInstanceContent_AsyncEventNode_fieldAccessorTable = new
