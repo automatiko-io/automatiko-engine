@@ -69,7 +69,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 
     public Integer size() {
         try (Stream<Path> stream = Files.walk(storage)) {
-            Long count = stream.filter(file -> !Files.isDirectory(file)).count();
+            Long count = stream.filter(file -> isValidProcessFile(file)).count();
             return count.intValue();
         } catch (IOException e) {
             throw new RuntimeException("Unable to count process instances ", e);
@@ -97,7 +97,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     @Override
     public Collection values(ProcessInstanceReadMode mode) {
         try (Stream<Path> stream = Files.walk(storage)) {
-            return stream.filter(file -> !Files.isDirectory(file)).map(this::readBytesFromFile)
+            return stream.filter(file -> isValidProcessFile(file)).map(this::readBytesFromFile)
                     .map(b -> mode == MUTABLE ? marshaller.unmarshallProcessInstance(b, process)
                             : marshaller.unmarshallReadOnlyProcessInstance(b, process))
                     .collect(Collectors.toList());
@@ -189,6 +189,15 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             return Files.readAllBytes(processInstanceStorage);
         } catch (IOException e) {
             throw new RuntimeException("Unable to read process instance from " + processInstanceStorage, e);
+        }
+    }
+
+    protected boolean isValidProcessFile(Path file) {
+
+        try {
+            return !Files.isDirectory(file) && !Files.isHidden(file);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
