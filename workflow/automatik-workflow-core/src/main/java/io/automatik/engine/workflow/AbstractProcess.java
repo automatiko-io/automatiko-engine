@@ -85,9 +85,9 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
         return createInstance(businessKey, m);
     }
 
-    public abstract ProcessInstance<T> createInstance(WorkflowProcessInstance wpi);
+    public abstract ProcessInstance<T> createInstance(WorkflowProcessInstance wpi, T m);
 
-    public abstract ProcessInstance<T> createReadOnlyInstance(WorkflowProcessInstance wpi);
+    public abstract ProcessInstance<T> createReadOnlyInstance(WorkflowProcessInstance wpi, T m);
 
     @Override
     public ProcessInstances<T> instances() {

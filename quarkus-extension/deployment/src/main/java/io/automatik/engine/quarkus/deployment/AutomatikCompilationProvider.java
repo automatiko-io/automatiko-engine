@@ -59,8 +59,11 @@ public abstract class AutomatikCompilationProvider extends JavaCompilationProvid
 
     @Override
     public Path getSourcePath(Path classFilePath, Set<String> sourcePaths, String classesPath) {
-
-        return AutomatikBuildData.get().getGenerationContext().getClassSource(classFilePath);
+        try {
+            return AutomatikBuildData.get().getGenerationContext().getClassSource(classFilePath);
+        } catch (IllegalStateException e) {
+            return null;
+        }
 
     }
 

@@ -2,6 +2,7 @@ package io.automatik.engine.quarkus;
 
 import java.util.Optional;
 
+import io.automatik.engine.api.config.DatabasePersistenceConfig;
 import io.automatik.engine.api.config.FileSystemPersistenceConfig;
 import io.automatik.engine.api.config.InfinispanPersistenceConfig;
 import io.automatik.engine.api.config.PersistenceConfig;
@@ -11,37 +12,48 @@ import io.quarkus.runtime.annotations.ConfigItem;
 @ConfigGroup
 public class PersistenceBuildTimeConfig extends PersistenceConfig {
 
-	/**
-	 * Determines the type of persistence to be used
-	 */
-	@ConfigItem
-	public Optional<String> type;
+    /**
+     * Determines the type of persistence to be used
+     */
+    @ConfigItem
+    public Optional<String> type;
 
-	/**
-	 * Configures file system based persistence
-	 */
-	@ConfigItem
-	public FileSystemPersistenceBuildTimeConfig filesystem;
+    /**
+     * Configures file system based persistence
+     */
+    @ConfigItem
+    public FileSystemPersistenceBuildTimeConfig filesystem;
 
-	/**
-	 * Configures infinispan based persistence
-	 */
-	@ConfigItem
-	public InfinispanPersistenceBuildTimeConfig infinispan;
+    /**
+     * Configures infinispan based persistence
+     */
+    @ConfigItem
+    public InfinispanPersistenceBuildTimeConfig infinispan;
 
-	@Override
-	public Optional<String> type() {
-		return type;
-	}
+    /**
+     * Configures database based persistence
+     */
+    @ConfigItem
+    public DatabasePersistenceBuildTimeConfig database;
 
-	@Override
-	public FileSystemPersistenceConfig filesystem() {
+    @Override
+    public Optional<String> type() {
+        return type;
+    }
 
-		return filesystem;
-	}
+    @Override
+    public FileSystemPersistenceConfig filesystem() {
 
-	@Override
-	public InfinispanPersistenceConfig infinispan() {
-		return infinispan;
-	}
+        return filesystem;
+    }
+
+    @Override
+    public InfinispanPersistenceConfig infinispan() {
+        return infinispan;
+    }
+
+    @Override
+    public DatabasePersistenceConfig database() {
+        return database;
+    }
 }

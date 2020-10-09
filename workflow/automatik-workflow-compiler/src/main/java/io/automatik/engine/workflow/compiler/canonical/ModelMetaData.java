@@ -4,12 +4,14 @@ package io.automatik.engine.workflow.compiler.canonical;
 import static com.github.javaparser.StaticJavaParser.parse;
 import static com.github.javaparser.StaticJavaParser.parseClassOrInterfaceType;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.javaparser.ast.CompilationUnit;
@@ -19,6 +21,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.CastExpr;
@@ -38,244 +41,320 @@ import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
 
 import io.automatik.engine.api.codegen.Generated;
 import io.automatik.engine.api.codegen.VariableInfo;
 import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.base.core.context.variable.Variable;
+import io.automatik.engine.workflow.base.core.datatype.DataType;
 
 public class ModelMetaData {
 
-	private final String processId;
-	private final String version;
-	private final String packageName;
-	private final String modelClassSimpleName;
-	private final VariableDeclarations variableScope;
-	private String modelClassName;
-	private String visibility;
-	private boolean hidden;
-	private String templateName;
+    private final String processId;
+    private final String version;
+    private final String packageName;
+    private final String modelClassSimpleName;
+    private final VariableDeclarations variableScope;
+    private String modelClassName;
+    private String visibility;
+    private boolean hidden;
+    private String templateName;
 
-	private boolean supportsValidation;
+    private boolean supportsValidation;
 
-	public ModelMetaData(String processId, String version, String packageName, String modelClassSimpleName,
-			String visibility, VariableDeclarations variableScope, boolean hidden) {
-		this(processId, version, packageName, modelClassSimpleName, visibility, variableScope, hidden,
-				"/class-templates/ModelTemplate.java");
-	}
+    private boolean asEntity;
+    private boolean removeAtCompletion;
 
-	public ModelMetaData(String processId, String version, String packageName, String modelClassSimpleName,
-			String visibility, VariableDeclarations variableScope, boolean hidden, String templateName) {
-		this.processId = processId;
-		this.version = version;
-		this.packageName = packageName;
-		this.modelClassSimpleName = modelClassSimpleName;
-		this.variableScope = variableScope;
-		this.modelClassName = packageName + '.' + modelClassSimpleName;
-		this.visibility = visibility;
-		this.hidden = hidden;
-		this.templateName = templateName;
-	}
+    public ModelMetaData(String processId, String version, String packageName, String modelClassSimpleName,
+            String visibility, VariableDeclarations variableScope, boolean hidden) {
+        this(processId, version, packageName, modelClassSimpleName, visibility, variableScope, hidden,
+                "/class-templates/ModelTemplate.java");
+    }
 
-	public String generate() {
-		CompilationUnit modelClass = compilationUnit();
-		return modelClass.toString();
-	}
+    public ModelMetaData(String processId, String version, String packageName, String modelClassSimpleName,
+            String visibility, VariableDeclarations variableScope, boolean hidden, String templateName) {
+        this.processId = processId;
+        this.version = version;
+        this.packageName = packageName;
+        this.modelClassSimpleName = modelClassSimpleName;
+        this.variableScope = variableScope;
+        this.modelClassName = packageName + '.' + modelClassSimpleName;
+        this.visibility = visibility;
+        this.hidden = hidden;
+        this.templateName = templateName;
+    }
 
-	public AssignExpr newInstance(String assignVarName) {
-		ClassOrInterfaceType type = new ClassOrInterfaceType(null, modelClassName);
-		return new AssignExpr(new VariableDeclarationExpr(type, assignVarName), new ObjectCreationExpr().setType(type),
-				AssignExpr.Operator.ASSIGN);
-	}
+    public String generate() {
+        CompilationUnit modelClass = compilationUnit();
+        return modelClass.toString();
+    }
 
-	public MethodCallExpr fromMap(String variableName, String mapVarName) {
-		return new MethodCallExpr(new NameExpr(variableName), "fromMap")
-				.addArgument(new MethodCallExpr(new ThisExpr(), "id")).addArgument(mapVarName);
-	}
+    public AssignExpr newInstance(String assignVarName) {
+        ClassOrInterfaceType type = new ClassOrInterfaceType(null, modelClassName);
+        return new AssignExpr(new VariableDeclarationExpr(type, assignVarName), new ObjectCreationExpr().setType(type),
+                AssignExpr.Operator.ASSIGN);
+    }
 
-	public MethodCallExpr toMap(String varName) {
-		return new MethodCallExpr(new NameExpr(varName), "toMap");
-	}
+    public MethodCallExpr fromMap(String variableName, String mapVarName) {
+        return new MethodCallExpr(new NameExpr(variableName), "fromMap")
+                .addArgument(new MethodCallExpr(new ThisExpr(), "id")).addArgument(mapVarName);
+    }
 
-	public BlockStmt copyInto(String sourceVarName, String destVarName, ModelMetaData dest,
-			Map<String, String> mapping) {
-		BlockStmt blockStmt = new BlockStmt();
+    public MethodCallExpr toMap(String varName) {
+        return new MethodCallExpr(new NameExpr(varName), "toMap");
+    }
 
-		for (Map.Entry<String, String> e : mapping.entrySet()) {
-			String destField = variableScope.getTypes().get(e.getKey()).getSanitizedName();
-			String sourceField = e.getValue();
-			blockStmt
-					.addStatement(dest.callSetter(destVarName, destField, dest.callGetter(sourceVarName, sourceField)));
-		}
+    public BlockStmt copyInto(String sourceVarName, String destVarName, ModelMetaData dest,
+            Map<String, String> mapping) {
+        BlockStmt blockStmt = new BlockStmt();
 
-		return blockStmt;
-	}
+        for (Map.Entry<String, String> e : mapping.entrySet()) {
+            String destField = variableScope.getTypes().get(e.getKey()).getSanitizedName();
+            String sourceField = e.getValue();
+            blockStmt
+                    .addStatement(dest.callSetter(destVarName, destField, dest.callGetter(sourceVarName, sourceField)));
+        }
 
-	public MethodCallExpr callSetter(String targetVar, String destField, String value) {
-		if (value.startsWith("#{")) {
-			value = value.substring(2, value.length() - 1);
-		}
+        return blockStmt;
+    }
 
-		return callSetter(targetVar, destField, new NameExpr(value));
-	}
+    public MethodCallExpr callSetter(String targetVar, String destField, String value) {
+        if (value.startsWith("#{")) {
+            value = value.substring(2, value.length() - 1);
+        }
 
-	public MethodCallExpr callSetter(String targetVar, String destField, Expression value) {
-		String name = variableScope.getTypes().get(destField).getSanitizedName();
-		String type = variableScope.getType(destField);
-		String setter = "set" + StringUtils.capitalize(name); // todo cache FieldDeclarations in compilationUnit()
-		return new MethodCallExpr(new NameExpr(targetVar), setter)
-				.addArgument(new CastExpr(new ClassOrInterfaceType(null, type), new EnclosedExpr(value)));
-	}
+        return callSetter(targetVar, destField, new NameExpr(value));
+    }
 
-	public MethodCallExpr callGetter(String targetVar, String field) {
-		String getter = "get" + StringUtils.capitalize(field); // todo cache FieldDeclarations in compilationUnit()
-		return new MethodCallExpr(new NameExpr(targetVar), getter);
-	}
+    public MethodCallExpr callSetter(String targetVar, String destField, Expression value) {
+        String name = variableScope.getTypes().get(destField).getSanitizedName();
+        String type = variableScope.getType(destField);
+        String setter = "set" + StringUtils.capitalize(name); // todo cache FieldDeclarations in compilationUnit()
+        return new MethodCallExpr(new NameExpr(targetVar), setter)
+                .addArgument(new CastExpr(new ClassOrInterfaceType(null, type), new EnclosedExpr(value)));
+    }
 
-	private CompilationUnit compilationUnit() {
-		CompilationUnit compilationUnit = parse(this.getClass().getResourceAsStream(templateName));
-		compilationUnit.setPackageDeclaration(packageName);
-		Optional<ClassOrInterfaceDeclaration> processMethod = compilationUnit
-				.findFirst(ClassOrInterfaceDeclaration.class, sl1 -> true);
+    public MethodCallExpr callGetter(String targetVar, String field) {
+        String getter = "get" + StringUtils.capitalize(field); // todo cache FieldDeclarations in compilationUnit()
+        return new MethodCallExpr(new NameExpr(targetVar), getter);
+    }
 
-		if (!processMethod.isPresent()) {
-			throw new NoSuchElementException("Cannot find class declaration in the template");
-		}
-		ClassOrInterfaceDeclaration modelClass = processMethod.get();
+    private CompilationUnit compilationUnit() {
+        CompilationUnit compilationUnit = parse(this.getClass().getResourceAsStream(templateName));
+        compilationUnit.setPackageDeclaration(packageName);
+        Optional<ClassOrInterfaceDeclaration> processMethod = compilationUnit
+                .findFirst(ClassOrInterfaceDeclaration.class, sl1 -> true);
 
-		if (!WorkflowProcess.PRIVATE_VISIBILITY.equals(visibility)) {
-			modelClass.addAnnotation(new NormalAnnotationExpr(new Name(Generated.class.getCanonicalName()),
-					NodeList.nodeList(new MemberValuePair("value", new StringLiteralExpr("kogito-codegen")),
-							new MemberValuePair("reference", new StringLiteralExpr(processId)),
-							new MemberValuePair("name",
-									new StringLiteralExpr(StringUtils.capitalize(
-											ProcessToExecModelGenerator.extractProcessId(processId, version)))),
-							new MemberValuePair("hidden", new BooleanLiteralExpr(hidden)))));
-		}
-		modelClass.setName(modelClassSimpleName);
+        if (!processMethod.isPresent()) {
+            throw new NoSuchElementException("Cannot find class declaration in the template");
+        }
+        ClassOrInterfaceDeclaration modelClass = processMethod.get();
+        if (asEntity) {
+            modelClass.addExtendedType("io.automatik.engine.addons.persistence.db.model.ProcessInstanceEntity");
+            modelClass.addAnnotation(new NormalAnnotationExpr(new Name("javax.persistence.Entity"),
+                    NodeList.nodeList(new MemberValuePair("name",
+                            new StringLiteralExpr(camelToSnake(processId.toUpperCase()))))));
 
-		// setup of the toMap method body
-		BlockStmt toMapBody = new BlockStmt();
-		ClassOrInterfaceType toMap = new ClassOrInterfaceType(null, new SimpleName(Map.class.getSimpleName()),
-				NodeList.nodeList(new ClassOrInterfaceType(null, String.class.getSimpleName()),
-						new ClassOrInterfaceType(null, Object.class.getSimpleName())));
-		VariableDeclarationExpr paramsField = new VariableDeclarationExpr(toMap, "params");
-		toMapBody
-				.addStatement(new AssignExpr(
-						paramsField, new ObjectCreationExpr(null,
-								new ClassOrInterfaceType(null, HashMap.class.getSimpleName()), NodeList.nodeList()),
-						AssignExpr.Operator.ASSIGN));
+            modelClass.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("id")).forEach(fd -> {
+                fd.removeForced();
+            });
 
-		// setup of static fromMap method body
-		BlockStmt staticFromMap = new BlockStmt();
+        }
 
-		if (modelClass.findFirst(MethodDeclaration.class, md -> md.getNameAsString().equals("getId")).isPresent()) {
-			FieldAccessExpr idField = new FieldAccessExpr(new ThisExpr(), "id");
-			staticFromMap.addStatement(new AssignExpr(idField, new NameExpr("id"), AssignExpr.Operator.ASSIGN));
-		}
+        if (!WorkflowProcess.PRIVATE_VISIBILITY.equals(visibility)) {
+            modelClass.addAnnotation(new NormalAnnotationExpr(new Name(Generated.class.getCanonicalName()),
+                    NodeList.nodeList(new MemberValuePair("value", new StringLiteralExpr("automatik-codegen")),
+                            new MemberValuePair("reference", new StringLiteralExpr(processId)),
+                            new MemberValuePair("name",
+                                    new StringLiteralExpr(StringUtils.capitalize(
+                                            ProcessToExecModelGenerator.extractProcessId(processId, version)))),
+                            new MemberValuePair("hidden", new BooleanLiteralExpr(hidden)))));
+        }
+        modelClass.setName(modelClassSimpleName);
 
-		for (Map.Entry<String, Variable> variable : variableScope.getTypes().entrySet()) {
-			String varName = variable.getValue().getName();
-			String vtype = variable.getValue().getType().getStringType();
-			String sanitizedName = variable.getValue().getSanitizedName();
+        // setup of the toMap method body
+        BlockStmt toMapBody = new BlockStmt();
+        ClassOrInterfaceType toMap = new ClassOrInterfaceType(null, new SimpleName(Map.class.getSimpleName()),
+                NodeList.nodeList(new ClassOrInterfaceType(null, String.class.getSimpleName()),
+                        new ClassOrInterfaceType(null, Object.class.getSimpleName())));
+        VariableDeclarationExpr paramsField = new VariableDeclarationExpr(toMap, "params");
+        toMapBody
+                .addStatement(new AssignExpr(
+                        paramsField, new ObjectCreationExpr(null,
+                                new ClassOrInterfaceType(null, HashMap.class.getSimpleName()), NodeList.nodeList()),
+                        AssignExpr.Operator.ASSIGN));
 
-			FieldDeclaration fd = declareField(sanitizedName, vtype);
-			modelClass.addMember(fd);
+        // setup of static fromMap method body
+        BlockStmt staticFromMap = new BlockStmt();
 
-			List<String> tags = variable.getValue().getTags();
-			fd.addAnnotation(new NormalAnnotationExpr(new Name(VariableInfo.class.getCanonicalName()),
-					NodeList.nodeList(new MemberValuePair("tags",
-							new StringLiteralExpr(tags.stream().collect(Collectors.joining(",")))))));
-			fd.addAnnotation(new NormalAnnotationExpr(new Name(JsonProperty.class.getCanonicalName()),
-					NodeList.nodeList(new MemberValuePair("value", new StringLiteralExpr(varName)))));
+        if (modelClass.findFirst(MethodDeclaration.class, md -> md.getNameAsString().equals("getId")).isPresent()) {
+            FieldAccessExpr idField = new FieldAccessExpr(new ThisExpr(), "id");
+            staticFromMap.addStatement(new AssignExpr(idField, new NameExpr("id"), AssignExpr.Operator.ASSIGN));
+        }
 
-			applyValidation(fd, tags);
+        for (Map.Entry<String, Variable> variable : variableScope.getTypes().entrySet()) {
+            String varName = variable.getValue().getName();
+            String vtype = variable.getValue().getType().getStringType();
+            String sanitizedName = variable.getValue().getSanitizedName();
 
-			fd.createGetter();
-			fd.createSetter();
+            FieldDeclaration fd = declareField(sanitizedName, vtype);
+            modelClass.addMember(fd);
 
-			// toMap method body
-			MethodCallExpr putVariable = new MethodCallExpr(new NameExpr("params"), "put");
-			putVariable.addArgument(new StringLiteralExpr(varName));
-			putVariable.addArgument(new FieldAccessExpr(new ThisExpr(), sanitizedName));
-			toMapBody.addStatement(putVariable);
+            List<String> tags = variable.getValue().getTags();
+            fd.addAnnotation(new NormalAnnotationExpr(new Name(VariableInfo.class.getCanonicalName()),
+                    NodeList.nodeList(new MemberValuePair("tags",
+                            new StringLiteralExpr(tags.stream().collect(Collectors.joining(",")))))));
+            fd.addAnnotation(new NormalAnnotationExpr(new Name(JsonProperty.class.getCanonicalName()),
+                    NodeList.nodeList(new MemberValuePair("value", new StringLiteralExpr(varName)))));
 
-			ClassOrInterfaceType type = parseClassOrInterfaceType(vtype);
+            applyValidation(fd, tags);
+            applyPersistence(variable.getValue().getType(), fd, tags);
 
-			// from map instance method body
-			FieldAccessExpr instanceField = new FieldAccessExpr(new ThisExpr(), sanitizedName);
-			staticFromMap.addStatement(new AssignExpr(instanceField, new CastExpr(type,
-					new MethodCallExpr(new NameExpr("params"), "get").addArgument(new StringLiteralExpr(varName))),
-					AssignExpr.Operator.ASSIGN));
-		}
+            fd.createGetter();
+            fd.createSetter();
 
-		Optional<MethodDeclaration> toMapMethod = modelClass.findFirst(MethodDeclaration.class,
-				sl -> sl.getName().asString().equals("toMap"));
+            // toMap method body
+            MethodCallExpr putVariable = new MethodCallExpr(new NameExpr("params"), "put");
+            putVariable.addArgument(new StringLiteralExpr(varName));
+            putVariable.addArgument(new FieldAccessExpr(new ThisExpr(), sanitizedName));
+            toMapBody.addStatement(putVariable);
 
-		toMapBody.addStatement(new ReturnStmt(new NameExpr("params")));
-		toMapMethod.ifPresent(methodDeclaration -> methodDeclaration.setBody(toMapBody));
+            ClassOrInterfaceType type = parseClassOrInterfaceType(vtype);
 
-		modelClass
-				.findFirst(MethodDeclaration.class,
-						sl -> sl.getName().asString().equals("fromMap") && sl.getParameters().size() == 2)// make sure
-																											// to take
-																											// only the
-																											// method
-																											// with two
-																											// parameters
-																											// (id and
-																											// params)
-				.ifPresent(m -> m.setBody(staticFromMap));
+            // from map instance method body
+            FieldAccessExpr instanceField = new FieldAccessExpr(new ThisExpr(), sanitizedName);
+            staticFromMap.addStatement(new AssignExpr(instanceField, new CastExpr(type,
+                    new MethodCallExpr(new NameExpr("params"), "get").addArgument(new StringLiteralExpr(varName))),
+                    AssignExpr.Operator.ASSIGN));
+        }
 
-		return compilationUnit;
-	}
+        Optional<MethodDeclaration> toMapMethod = modelClass.findFirst(MethodDeclaration.class,
+                sl -> sl.getName().asString().equals("toMap"));
 
-	private void applyValidation(FieldDeclaration fd, List<String> tags) {
+        toMapBody.addStatement(new ReturnStmt(new NameExpr("params")));
+        toMapMethod.ifPresent(methodDeclaration -> methodDeclaration.setBody(toMapBody));
 
-		if (supportsValidation) {
-			fd.addAnnotation("javax.validation.Valid");
+        modelClass
+                .findFirst(MethodDeclaration.class,
+                        sl -> sl.getName().asString().equals("fromMap") && sl.getParameters().size() == 2)// make sure
+                // to take
+                // only the
+                // method
+                // with two
+                // parameters
+                // (id and
+                // params)
+                .ifPresent(m -> m.setBody(staticFromMap));
 
-			if (tags != null && tags.contains(Variable.REQUIRED_TAG)) {
-				fd.addAnnotation("javax.validation.constraints.NotNull");
-			}
-		}
-	}
+        return compilationUnit;
+    }
 
-	private FieldDeclaration declareField(String name, String type) {
-		return new FieldDeclaration().addVariable(new VariableDeclarator().setType(type).setName(name))
-				.addModifier(Modifier.Keyword.PRIVATE);
-	}
+    private void applyValidation(FieldDeclaration fd, List<String> tags) {
 
-	public String getModelClassSimpleName() {
-		return modelClassSimpleName;
-	}
+        if (supportsValidation) {
+            fd.addAnnotation("javax.validation.Valid");
 
-	public String getModelClassName() {
-		return modelClassName;
-	}
+            if (tags != null && tags.contains(Variable.REQUIRED_TAG)) {
+                fd.addAnnotation("javax.validation.constraints.NotNull");
+            }
+        }
+    }
 
-	public String getGeneratedClassModel() {
-		return generate();
-	}
+    private void applyPersistence(DataType dataType, FieldDeclaration fd, List<String> tags) {
 
-	public boolean isSupportsValidation() {
-		return supportsValidation;
-	}
+        if (asEntity) {
 
-	public void setSupportsValidation(boolean supportsValidation) {
-		this.supportsValidation = supportsValidation;
-	}
+            NodeList<Expression> cascade;
+            if (removeAtCompletion) {
+                cascade = NodeList.nodeList(
+                        new NameExpr("javax.persistence.CascadeType.ALL"));
+            } else {
+                cascade = NodeList.nodeList(
+                        new NameExpr("javax.persistence.CascadeType.PERSIST"),
+                        new NameExpr("javax.persistence.CascadeType.MERGE"),
+                        new NameExpr("javax.persistence.CascadeType.REFRESH"),
+                        new NameExpr("javax.persistence.CascadeType.DETACH"));
+            }
 
-	@Override
-	public String toString() {
-		return "ModelMetaData [modelClassName=" + modelClassName + "]";
-	}
+            Type type = fd.getVariable(0).getType();
+            if (type.isArrayType() || Collection.class.isAssignableFrom(dataType.getClassType())) {
+                fd.addAnnotation(new NormalAnnotationExpr(new Name("javax.persistence.OneToMany"),
+                        NodeList.nodeList(
+                                new MemberValuePair("cascade",
+                                        new ArrayInitializerExpr(cascade)),
+                                new MemberValuePair("fetch", new NameExpr("javax.persistence.FetchType.EAGER")))));
 
-	public static String version(String version) {
-		if (version != null && !version.trim().isEmpty()) {
-			return "_" + version.replaceAll("\\.", "_");
-		}
-		return "";
-	}
+            } else if (dataType.getClassType() != null && Stream.of(dataType.getClassType().getAnnotations())
+                    .anyMatch(a -> a.annotationType().getName().equals("javax.persistence.Entity"))) {
+                fd.addAnnotation(new NormalAnnotationExpr(new Name("javax.persistence.OneToOne"),
+                        NodeList.nodeList(
+                                new MemberValuePair("cascade",
+                                        new ArrayInitializerExpr(cascade)),
+                                new MemberValuePair("fetch", new NameExpr("javax.persistence.FetchType.EAGER")))));
+            } else {
+                fd.addAnnotation(new NormalAnnotationExpr(new Name("javax.persistence.Column"),
+                        NodeList.nodeList(new MemberValuePair("name",
+                                new StringLiteralExpr(camelToSnake(fd.getVariable(0).getNameAsString().toUpperCase()))))));
+            }
+        }
+    }
+
+    private FieldDeclaration declareField(String name, String type) {
+        return new FieldDeclaration().addVariable(new VariableDeclarator().setType(type).setName(name))
+                .addModifier(Modifier.Keyword.PRIVATE);
+    }
+
+    public String getModelClassSimpleName() {
+        return modelClassSimpleName;
+    }
+
+    public String getModelClassName() {
+        return modelClassName;
+    }
+
+    public String getGeneratedClassModel() {
+        return generate();
+    }
+
+    public boolean isSupportsValidation() {
+        return supportsValidation;
+    }
+
+    public void setSupportsValidation(boolean supportsValidation) {
+        this.supportsValidation = supportsValidation;
+    }
+
+    public boolean isAsEntity() {
+        return asEntity;
+    }
+
+    public void setAsEntity(boolean asEntity, boolean removeAtCompletion) {
+        this.asEntity = asEntity;
+        this.removeAtCompletion = removeAtCompletion;
+    }
+
+    @Override
+    public String toString() {
+        return "ModelMetaData [modelClassName=" + modelClassName + "]";
+    }
+
+    public static String version(String version) {
+        if (version != null && !version.trim().isEmpty()) {
+            return "_" + version.replaceAll("\\.", "_");
+        }
+        return "";
+    }
+
+    public static String camelToSnake(String str) {
+        // Regular Expression 
+        String regex = "([a-z])([A-Z]+)";
+
+        // Replacement string 
+        String replacement = "$1_$2";
+        str = str.replaceAll(regex, replacement).toUpperCase();
+
+        return str;
+    }
 }

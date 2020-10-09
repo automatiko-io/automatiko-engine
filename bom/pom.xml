@@ -84,6 +84,17 @@
       </dependency>
       <dependency>
         <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-db-persistence-addon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
+        <artifactId>automatik-db-persistence-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>io.automatik.platform.addons</groupId>
         <artifactId>automatik-platform-events-reactive-messaging-addon</artifactId>
         <version>${project.version}</version>
       </dependency>

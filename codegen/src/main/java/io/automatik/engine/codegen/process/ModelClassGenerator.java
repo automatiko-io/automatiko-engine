@@ -10,41 +10,44 @@ import io.automatik.engine.workflow.compiler.canonical.ProcessToExecModelGenerat
 
 public class ModelClassGenerator {
 
-	private final GeneratorContext context;
-	private final WorkflowProcess workFlowProcess;
-	private String modelFileName;
-	private ModelMetaData modelMetaData;
-	private String modelClassName;
+    private final GeneratorContext context;
+    private final WorkflowProcess workFlowProcess;
+    private String modelFileName;
+    private ModelMetaData modelMetaData;
+    private String modelClassName;
 
-	public ModelClassGenerator(GeneratorContext context, WorkflowProcess workFlowProcess) {
-		String pid = workFlowProcess.getId();
-		String name = ProcessToExecModelGenerator.extractProcessId(pid,
-				CodegenUtils.version(workFlowProcess.getVersion()));
-		this.modelClassName = workFlowProcess.getPackageName() + "." + StringUtils.capitalize(name) + "Model";
+    public ModelClassGenerator(GeneratorContext context, WorkflowProcess workFlowProcess) {
+        String pid = workFlowProcess.getId();
+        String name = ProcessToExecModelGenerator.extractProcessId(pid,
+                CodegenUtils.version(workFlowProcess.getVersion()));
+        this.modelClassName = workFlowProcess.getPackageName() + "." + StringUtils.capitalize(name) + "Model";
 
-		this.context = context;
-		this.workFlowProcess = workFlowProcess;
-	}
+        this.context = context;
+        this.workFlowProcess = workFlowProcess;
+    }
 
-	public ModelMetaData generate() {
-		// create model class for all variables
-		modelMetaData = ProcessToExecModelGenerator.INSTANCE.generateModel(workFlowProcess);
-		modelFileName = modelMetaData.getModelClassName().replace('.', '/') + ".java";
+    public ModelMetaData generate() {
+        // create model class for all variables
+        modelMetaData = ProcessToExecModelGenerator.INSTANCE.generateModel(workFlowProcess);
+        modelFileName = modelMetaData.getModelClassName().replace('.', '/') + ".java";
 
-		modelMetaData.setSupportsValidation(context.getBuildContext().isValidationSupported());
+        modelMetaData.setSupportsValidation(context.getBuildContext().isValidationSupported());
 
-		return modelMetaData;
-	}
+        modelMetaData.setAsEntity(context.getBuildContext().isEntitiesSupported(),
+                context.getBuildContext().config().persistence().database().removeAtCompletion().orElse(false));
 
-	public String generatedFilePath() {
-		return modelFileName;
-	}
+        return modelMetaData;
+    }
 
-	public String simpleName() {
-		return modelMetaData.getModelClassSimpleName();
-	}
+    public String generatedFilePath() {
+        return modelFileName;
+    }
 
-	public String className() {
-		return modelClassName;
-	}
+    public String simpleName() {
+        return modelMetaData.getModelClassSimpleName();
+    }
+
+    public String className() {
+        return modelClassName;
+    }
 }

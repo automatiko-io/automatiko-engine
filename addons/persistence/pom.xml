@@ -16,5 +16,6 @@
   <modules>
     <module>automatik-infinispan-persistence-addon</module>
     <module>automatik-filesystem-persistence-addon</module>
+    <module>automatik-db-persistence-addon</module>
   </modules>
 </project>

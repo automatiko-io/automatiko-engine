@@ -6,11 +6,15 @@ import io.automatik.engine.codegen.CodeGenConstants;
 
 public interface ApplicationBuildContext {
 
-	AutomatikConfig config();
+    AutomatikConfig config();
 
-	boolean hasClassAvailable(String fqcn);
+    boolean hasClassAvailable(String fqcn);
 
-	default boolean isValidationSupported() {
-		return hasClassAvailable(CodeGenConstants.VALIDATION_CLASS);
-	}
+    default boolean isValidationSupported() {
+        return hasClassAvailable(CodeGenConstants.VALIDATION_CLASS);
+    }
+
+    default boolean isEntitiesSupported() {
+        return hasClassAvailable(CodeGenConstants.ENTITY_CLASS);
+    }
 }
