@@ -15,7 +15,13 @@
 
     <!-- process variables -->
     <property id="x" itemSubjectRef="_xItem"/>
-    <property id="y" itemSubjectRef="_yItem"/>
+    <property id="y" itemSubjectRef="_yItem">
+      <extensionElements>
+        <tns:metaData name="customTags">
+          <tns:metaValue><![CDATA[business-key]]></tns:metaValue>
+        </tns:metaData>
+      </extensionElements>
+    </property>
 
     <!-- nodes -->
     <startEvent id="_1" name="StartProcess" />

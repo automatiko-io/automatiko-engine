@@ -7,7 +7,13 @@
   <bpmn2:itemDefinition id="ItemDefinition_2" isCollection="false" structureRef="java.lang.Integer"/>
   <bpmn2:itemDefinition id="ItemDefinition_3" isCollection="false" structureRef="java.lang.Boolean"/>
   <bpmn2:process id="SubProcess" name="Sub Process" isExecutable="true" processType="Private">
-    <bpmn2:property id="subX" itemSubjectRef="_subXItem" name="subX"/>
+    <bpmn2:property id="subX" itemSubjectRef="_subXItem" name="subX">
+      <bpmn2:extensionElements>
+        <tns:metaData name="customTags">
+          <tns:metaValue><![CDATA[business-key]]></tns:metaValue>
+        </tns:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
     <bpmn2:property id="subY" itemSubjectRef="_subYItem" name="subY"/>
     <bpmn2:startEvent id="_1" name="StartProcess">
       <bpmn2:extensionElements>
