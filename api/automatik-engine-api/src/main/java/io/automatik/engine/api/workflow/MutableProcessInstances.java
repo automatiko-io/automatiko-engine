@@ -11,7 +11,7 @@ public interface MutableProcessInstances<T> extends ProcessInstances<T> {
 
     void update(String id, ProcessInstance<T> instance);
 
-    void remove(String id);
+    void remove(String id, ProcessInstance<T> instance);
 
     default boolean isActive(ProcessInstance<T> instance) {
         return instance.status() == ProcessInstance.STATE_ACTIVE || instance.status() == ProcessInstance.STATE_ERROR;

@@ -54,309 +54,309 @@ import io.automatik.engine.workflow.process.core.node.ActionNode;
 
 public class FileSystemProcessInstancesTest {
 
-	private static final String PERSISTENCE_FOLDER = "target" + File.separator + "persistence-test";
-
-	private SecurityPolicy securityPolicy = SecurityPolicy.of(new StaticIdentityProvider("john"));
-
-	@BeforeEach
-	public void setup() throws IOException {
-		Path path = Paths.get(PERSISTENCE_FOLDER);
-
-		if (Files.exists(path)) {
-			Files.walk(path).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-		}
-	}
-
-	private BpmnProcess createProcess(ProcessConfig config, String fileName) {
-		BpmnProcess process = BpmnProcess.from(config, new ClassPathResource(fileName)).get(0);
-
-		process.setProcessInstancesFactory(new FileSystemProcessInstancesFactory());
-		process.configure();
-		process.instances().values(ProcessInstanceReadMode.MUTABLE).forEach(p -> p.abort());
-		return process;
-	}
-
-	@Test
-	void testFindByIdReadMode() {
-		BpmnProcess process = createProcess(null, "BPMN2-UserTask-Script.bpmn2");
-		// workaround as BpmnProcess does not compile the scripts but just reads the xml
-		for (io.automatik.engine.api.definition.process.Node node : ((WorkflowProcess) process.process()).getNodes()) {
-			if (node instanceof ActionNode) {
-				ProcessAction a = ((ActionNode) node).getAction();
-				a.removeMetaData("Action");
-				a.setMetaData("Action", new Action() {
-
-					@Override
-					public void execute(ProcessContext kcontext) throws Exception {
-						System.out.println(
-								"The variable value is " + kcontext.getVariable("s") + " about to call toString on it");
-						kcontext.getVariable("s").toString();
-					}
-				});
-			}
-		}
-		ProcessInstance<BpmnVariables> mutablePi = process
-				.createInstance(BpmnVariables.create(Collections.singletonMap("var", "value")));
-
-		mutablePi.start();
-		assertThat(mutablePi.status()).isEqualTo(STATE_ERROR);
-		assertThat(mutablePi.error()).hasValueSatisfying(error -> {
-			assertThat(error.errorMessage()).endsWith("java.lang.NullPointerException - null");
-			assertThat(error.failedNodeId()).isEqualTo("ScriptTask_1");
-		});
-		assertThat(mutablePi.variables().toMap()).containsExactly(entry("var", "value"));
-
-		ProcessInstances<BpmnVariables> instances = process.instances();
-		assertThat(instances.size()).isOne();
-		ProcessInstance<BpmnVariables> pi = instances.findById(mutablePi.id(), ProcessInstanceReadMode.READ_ONLY).get();
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> pi.abort());
-
-		ProcessInstance<BpmnVariables> readOnlyPi = instances
-				.findById(mutablePi.id(), ProcessInstanceReadMode.READ_ONLY).get();
-		assertThat(readOnlyPi.status()).isEqualTo(STATE_ERROR);
-		assertThat(readOnlyPi.error()).hasValueSatisfying(error -> {
-			assertThat(error.errorMessage()).endsWith("java.lang.NullPointerException - null");
-			assertThat(error.failedNodeId()).isEqualTo("ScriptTask_1");
-		});
-		assertThat(readOnlyPi.variables().toMap()).containsExactly(entry("var", "value"));
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> readOnlyPi.abort());
-
-		instances.findById(mutablePi.id()).get().abort();
-		assertThat(instances.size()).isZero();
-	}
-
-	@Test
-	void testValuesReadMode() {
-		BpmnProcess process = createProcess(null, "BPMN2-UserTask.bpmn2");
-		ProcessInstance<BpmnVariables> processInstance = process
-				.createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
-		processInstance.start();
-
-		ProcessInstances<BpmnVariables> instances = process.instances();
-		assertThat(instances.size()).isOne();
-		ProcessInstance<BpmnVariables> pi = instances.values().stream().findFirst().get();
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> pi.abort());
-		instances.values(ProcessInstanceReadMode.MUTABLE).stream().findFirst().get().abort();
-		assertThat(instances.size()).isZero();
-	}
-
-	@Test
-	void testBasicFlow() {
-		BpmnProcess process = createProcess(null, "BPMN2-UserTask.bpmn2");
-		ProcessInstance<BpmnVariables> processInstance = process
-				.createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
-
-		processInstance.start();
-
-		assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
-		assertThat(processInstance.description()).isEqualTo("User Task");
-
-		FileSystemProcessInstances fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
-		assertThat(fileSystemBasedStorage.size()).isOne();
-
-		verify(fileSystemBasedStorage, times(2)).create(any(), any());
-		verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_DESCRIPTION),
-				eq("User Task"));
-		verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_STATUS), eq("1"));
+    private static final String PERSISTENCE_FOLDER = "target" + File.separator + "persistence-test";
+
+    private SecurityPolicy securityPolicy = SecurityPolicy.of(new StaticIdentityProvider("john"));
+
+    @BeforeEach
+    public void setup() throws IOException {
+        Path path = Paths.get(PERSISTENCE_FOLDER);
+
+        if (Files.exists(path)) {
+            Files.walk(path).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+        }
+    }
+
+    private BpmnProcess createProcess(ProcessConfig config, String fileName) {
+        BpmnProcess process = BpmnProcess.from(config, new ClassPathResource(fileName)).get(0);
+
+        process.setProcessInstancesFactory(new FileSystemProcessInstancesFactory());
+        process.configure();
+        process.instances().values(ProcessInstanceReadMode.MUTABLE).forEach(p -> p.abort());
+        return process;
+    }
+
+    @Test
+    void testFindByIdReadMode() {
+        BpmnProcess process = createProcess(null, "BPMN2-UserTask-Script.bpmn2");
+        // workaround as BpmnProcess does not compile the scripts but just reads the xml
+        for (io.automatik.engine.api.definition.process.Node node : ((WorkflowProcess) process.process()).getNodes()) {
+            if (node instanceof ActionNode) {
+                ProcessAction a = ((ActionNode) node).getAction();
+                a.removeMetaData("Action");
+                a.setMetaData("Action", new Action() {
+
+                    @Override
+                    public void execute(ProcessContext kcontext) throws Exception {
+                        System.out.println(
+                                "The variable value is " + kcontext.getVariable("s") + " about to call toString on it");
+                        kcontext.getVariable("s").toString();
+                    }
+                });
+            }
+        }
+        ProcessInstance<BpmnVariables> mutablePi = process
+                .createInstance(BpmnVariables.create(Collections.singletonMap("var", "value")));
+
+        mutablePi.start();
+        assertThat(mutablePi.status()).isEqualTo(STATE_ERROR);
+        assertThat(mutablePi.error()).hasValueSatisfying(error -> {
+            assertThat(error.errorMessage()).endsWith("java.lang.NullPointerException - null");
+            assertThat(error.failedNodeId()).isEqualTo("ScriptTask_1");
+        });
+        assertThat(mutablePi.variables().toMap()).containsExactly(entry("var", "value"));
+
+        ProcessInstances<BpmnVariables> instances = process.instances();
+        assertThat(instances.size()).isOne();
+        ProcessInstance<BpmnVariables> pi = instances.findById(mutablePi.id(), ProcessInstanceReadMode.READ_ONLY).get();
+        assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> pi.abort());
+
+        ProcessInstance<BpmnVariables> readOnlyPi = instances
+                .findById(mutablePi.id(), ProcessInstanceReadMode.READ_ONLY).get();
+        assertThat(readOnlyPi.status()).isEqualTo(STATE_ERROR);
+        assertThat(readOnlyPi.error()).hasValueSatisfying(error -> {
+            assertThat(error.errorMessage()).endsWith("java.lang.NullPointerException - null");
+            assertThat(error.failedNodeId()).isEqualTo("ScriptTask_1");
+        });
+        assertThat(readOnlyPi.variables().toMap()).containsExactly(entry("var", "value"));
+        assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> readOnlyPi.abort());
+
+        instances.findById(mutablePi.id()).get().abort();
+        assertThat(instances.size()).isZero();
+    }
+
+    @Test
+    void testValuesReadMode() {
+        BpmnProcess process = createProcess(null, "BPMN2-UserTask.bpmn2");
+        ProcessInstance<BpmnVariables> processInstance = process
+                .createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
+        processInstance.start();
+
+        ProcessInstances<BpmnVariables> instances = process.instances();
+        assertThat(instances.size()).isOne();
+        ProcessInstance<BpmnVariables> pi = instances.values().stream().findFirst().get();
+        assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> pi.abort());
+        instances.values(ProcessInstanceReadMode.MUTABLE).stream().findFirst().get().abort();
+        assertThat(instances.size()).isZero();
+    }
+
+    @Test
+    void testBasicFlow() {
+        BpmnProcess process = createProcess(null, "BPMN2-UserTask.bpmn2");
+        ProcessInstance<BpmnVariables> processInstance = process
+                .createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
+
+        processInstance.start();
+
+        assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
+        assertThat(processInstance.description()).isEqualTo("User Task");
+
+        FileSystemProcessInstances fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
+        assertThat(fileSystemBasedStorage.size()).isOne();
+
+        verify(fileSystemBasedStorage, times(2)).create(any(), any());
+        verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_DESCRIPTION),
+                eq("User Task"));
+        verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_STATUS), eq("1"));
 
-		String testVar = (String) processInstance.variables().get("test");
-		assertThat(testVar).isEqualTo("test");
+        String testVar = (String) processInstance.variables().get("test");
+        assertThat(testVar).isEqualTo("test");
 
-		assertThat(processInstance.description()).isEqualTo("User Task");
+        assertThat(processInstance.description()).isEqualTo("User Task");
 
-		assertThat(process.instances().values().iterator().next().workItems(securityPolicy)).hasSize(1);
+        assertThat(process.instances().values().iterator().next().workItems(securityPolicy)).hasSize(1);
 
-		WorkItem workItem = processInstance.workItems(securityPolicy).get(0);
-		assertThat(workItem).isNotNull();
-		assertThat(workItem.getParameters().get("ActorId")).isEqualTo("john");
-		processInstance.completeWorkItem(workItem.getId(), null, securityPolicy);
-		assertThat(processInstance.status()).isEqualTo(STATE_COMPLETED);
+        WorkItem workItem = processInstance.workItems(securityPolicy).get(0);
+        assertThat(workItem).isNotNull();
+        assertThat(workItem.getParameters().get("ActorId")).isEqualTo("john");
+        processInstance.completeWorkItem(workItem.getId(), null, securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(STATE_COMPLETED);
 
-		fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
-		verify(fileSystemBasedStorage, times(2)).remove(any());
+        fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
+        verify(fileSystemBasedStorage, times(2)).remove(any(), any());
 
-		assertThat(fileSystemBasedStorage.size()).isZero();
-	}
+        assertThat(fileSystemBasedStorage.size()).isZero();
+    }
 
-	@Test
-	void testBasicFlowWithStartFrom() {
-		BpmnProcess process = createProcess(null, "BPMN2-UserTask.bpmn2");
+    @Test
+    void testBasicFlowWithStartFrom() {
+        BpmnProcess process = createProcess(null, "BPMN2-UserTask.bpmn2");
 
-		ProcessInstance<BpmnVariables> processInstance = process
-				.createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
+        ProcessInstance<BpmnVariables> processInstance = process
+                .createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
 
-		processInstance.startFrom("_2");
+        processInstance.startFrom("_2");
 
-		assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
-		assertThat(processInstance.description()).isEqualTo("User Task");
+        assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
+        assertThat(processInstance.description()).isEqualTo("User Task");
 
-		FileSystemProcessInstances fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
-		verify(fileSystemBasedStorage, times(1)).update(any(), any());
+        FileSystemProcessInstances fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
+        verify(fileSystemBasedStorage, times(1)).update(any(), any());
 
-		String testVar = (String) processInstance.variables().get("test");
-		assertThat(testVar).isEqualTo("test");
+        String testVar = (String) processInstance.variables().get("test");
+        assertThat(testVar).isEqualTo("test");
 
-		assertThat(processInstance.description()).isEqualTo("User Task");
+        assertThat(processInstance.description()).isEqualTo("User Task");
 
-		WorkItem workItem = processInstance.workItems(securityPolicy).get(0);
-		assertThat(workItem).isNotNull();
-		assertThat(workItem.getParameters().get("ActorId")).isEqualTo("john");
-		processInstance.completeWorkItem(workItem.getId(), null, securityPolicy);
-		assertThat(processInstance.status()).isEqualTo(STATE_COMPLETED);
+        WorkItem workItem = processInstance.workItems(securityPolicy).get(0);
+        assertThat(workItem).isNotNull();
+        assertThat(workItem.getParameters().get("ActorId")).isEqualTo("john");
+        processInstance.completeWorkItem(workItem.getId(), null, securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(STATE_COMPLETED);
 
-		fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
-		verify(fileSystemBasedStorage, times(2)).remove(any());
+        fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
+        verify(fileSystemBasedStorage, times(2)).remove(any(), any());
 
-		assertThat(fileSystemBasedStorage.size()).isZero();
-	}
+        assertThat(fileSystemBasedStorage.size()).isZero();
+    }
 
-	@Test
-	void testBasicFlowControlledByUnitOfWork() {
+    @Test
+    void testBasicFlowControlledByUnitOfWork() {
 
-		UnitOfWorkManager uowManager = new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory());
-		ProcessConfig config = new StaticProcessConfig(new DefaultWorkItemHandlerConfig(),
-				new DefaultProcessEventListenerConfig(), uowManager, null, new DefaultVariableInitializer());
-		BpmnProcess process = createProcess(config, "BPMN2-UserTask.bpmn2");
-		process.setProcessInstancesFactory(new FileSystemProcessInstancesFactory());
-		process.configure();
+        UnitOfWorkManager uowManager = new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory());
+        ProcessConfig config = new StaticProcessConfig(new DefaultWorkItemHandlerConfig(),
+                new DefaultProcessEventListenerConfig(), uowManager, null, new DefaultVariableInitializer());
+        BpmnProcess process = createProcess(config, "BPMN2-UserTask.bpmn2");
+        process.setProcessInstancesFactory(new FileSystemProcessInstancesFactory());
+        process.configure();
 
-		ProcessInstance<BpmnVariables> processInstance = process
-				.createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
+        ProcessInstance<BpmnVariables> processInstance = process
+                .createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
 
-		UnitOfWork uow = uowManager.newUnitOfWork();
-		uow.start();
+        UnitOfWork uow = uowManager.newUnitOfWork();
+        uow.start();
 
-		processInstance.start();
+        processInstance.start();
 
-		uow.end();
-		assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
-		assertThat(processInstance.description()).isEqualTo("User Task");
+        uow.end();
+        assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
+        assertThat(processInstance.description()).isEqualTo("User Task");
 
-		assertThat(process.instances().values()).hasSize(1);
+        assertThat(process.instances().values()).hasSize(1);
 
-		FileSystemProcessInstances fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
-		verify(fileSystemBasedStorage, times(2)).create(any(), any());
-		verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_DESCRIPTION),
-				eq("User Task"));
-		verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_STATUS), eq("1"));
+        FileSystemProcessInstances fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
+        verify(fileSystemBasedStorage, times(2)).create(any(), any());
+        verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_DESCRIPTION),
+                eq("User Task"));
+        verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_STATUS), eq("1"));
 
-		String testVar = (String) processInstance.variables().get("test");
-		assertThat(testVar).isEqualTo("test");
+        String testVar = (String) processInstance.variables().get("test");
+        assertThat(testVar).isEqualTo("test");
 
-		assertThat(processInstance.description()).isEqualTo("User Task");
+        assertThat(processInstance.description()).isEqualTo("User Task");
 
-		WorkItem workItem = processInstance.workItems(securityPolicy).get(0);
-		assertThat(workItem).isNotNull();
-		assertThat(workItem.getParameters().get("ActorId")).isEqualTo("john");
+        WorkItem workItem = processInstance.workItems(securityPolicy).get(0);
+        assertThat(workItem).isNotNull();
+        assertThat(workItem.getParameters().get("ActorId")).isEqualTo("john");
 
-		uow = uowManager.newUnitOfWork();
-		uow.start();
-		processInstance.completeWorkItem(workItem.getId(), null, securityPolicy);
-		uow.end();
+        uow = uowManager.newUnitOfWork();
+        uow.start();
+        processInstance.completeWorkItem(workItem.getId(), null, securityPolicy);
+        uow.end();
 
-		assertThat(processInstance.status()).isEqualTo(STATE_COMPLETED);
+        assertThat(processInstance.status()).isEqualTo(STATE_COMPLETED);
 
-		fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
-		verify(fileSystemBasedStorage, times(1)).remove(any());
+        fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
+        verify(fileSystemBasedStorage, times(1)).remove(any(), any());
 
-		assertThat(fileSystemBasedStorage.size()).isZero();
-	}
+        assertThat(fileSystemBasedStorage.size()).isZero();
+    }
 
-	@Test
-	public void testComplexVariableFlow() {
+    @Test
+    public void testComplexVariableFlow() {
 
-		BpmnProcess process = (BpmnProcess) BpmnProcess.from(new ClassPathResource("BPMN2-PersonUserTask.bpmn2"))
-				.get(0);
-		process.setProcessInstancesFactory(new FileSystemProcessInstancesFactory());
-		process.configure();
+        BpmnProcess process = (BpmnProcess) BpmnProcess.from(new ClassPathResource("BPMN2-PersonUserTask.bpmn2"))
+                .get(0);
+        process.setProcessInstancesFactory(new FileSystemProcessInstancesFactory());
+        process.configure();
 
-		Person person = new Person("John", 30);
-		Address mainAddress = new Address("first", "Brisbane", "00000", "Australia", true);
-		Address secondaryAddress = new Address("second", "Syndey", "11111", "Australia", false);
+        Person person = new Person("John", 30);
+        Address mainAddress = new Address("first", "Brisbane", "00000", "Australia", true);
+        Address secondaryAddress = new Address("second", "Syndey", "11111", "Australia", false);
 
-		person.addAddress(mainAddress);
-		person.addAddress(secondaryAddress);
+        person.addAddress(mainAddress);
+        person.addAddress(secondaryAddress);
 
-		ProcessInstance<BpmnVariables> processInstance = process
-				.createInstance(BpmnVariables.create(Collections.singletonMap("person", person)));
+        ProcessInstance<BpmnVariables> processInstance = process
+                .createInstance(BpmnVariables.create(Collections.singletonMap("person", person)));
 
-		processInstance.start();
+        processInstance.start();
 
-		assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
-		assertThat(processInstance.description()).isEqualTo("User Task");
+        assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
+        assertThat(processInstance.description()).isEqualTo("User Task");
 
-		assertThat(process.instances().values()).hasSize(1);
+        assertThat(process.instances().values()).hasSize(1);
 
-		FileSystemProcessInstances fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
-		verify(fileSystemBasedStorage, times(2)).create(any(), any());
-		verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_DESCRIPTION),
-				eq("User Task"));
-		verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_STATUS), eq("1"));
+        FileSystemProcessInstances fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
+        verify(fileSystemBasedStorage, times(2)).create(any(), any());
+        verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_DESCRIPTION),
+                eq("User Task"));
+        verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_STATUS), eq("1"));
 
-		Person testVar = (Person) processInstance.variables().get("person");
-		assertThat(testVar).isEqualTo(person);
+        Person testVar = (Person) processInstance.variables().get("person");
+        assertThat(testVar).isEqualTo(person);
 
-		assertThat(processInstance.description()).isEqualTo("User Task");
+        assertThat(processInstance.description()).isEqualTo("User Task");
 
-		WorkItem workItem = processInstance.workItems(securityPolicy).get(0);
-		assertThat(workItem).isNotNull();
-		assertThat(workItem.getParameters().get("ActorId")).isEqualTo("john");
-		processInstance.completeWorkItem(workItem.getId(), null, securityPolicy);
-		assertThat(processInstance.status()).isEqualTo(STATE_COMPLETED);
+        WorkItem workItem = processInstance.workItems(securityPolicy).get(0);
+        assertThat(workItem).isNotNull();
+        assertThat(workItem.getParameters().get("ActorId")).isEqualTo("john");
+        processInstance.completeWorkItem(workItem.getId(), null, securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(STATE_COMPLETED);
 
-		fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
-		verify(fileSystemBasedStorage, times(2)).remove(any());
-	}
+        fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
+        verify(fileSystemBasedStorage, times(2)).remove(any(), any());
+    }
 
-	@Test
-	void testBasicFlowVersionedProcess() {
-		BpmnProcess process = createProcess(null, "BPMN2-UserTaskVersioned.bpmn2");
-		ProcessInstance<BpmnVariables> processInstance = process
-				.createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
+    @Test
+    void testBasicFlowVersionedProcess() {
+        BpmnProcess process = createProcess(null, "BPMN2-UserTaskVersioned.bpmn2");
+        ProcessInstance<BpmnVariables> processInstance = process
+                .createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
 
-		processInstance.start();
+        processInstance.start();
 
-		assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
-		assertThat(processInstance.description()).isEqualTo("User Task");
+        assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
+        assertThat(processInstance.description()).isEqualTo("User Task");
 
-		FileSystemProcessInstances fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
-		assertThat(fileSystemBasedStorage.size()).isOne();
+        FileSystemProcessInstances fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
+        assertThat(fileSystemBasedStorage.size()).isOne();
 
-		verify(fileSystemBasedStorage, times(2)).create(any(), any());
-		verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_DESCRIPTION),
-				eq("User Task"));
-		verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_STATUS), eq("1"));
+        verify(fileSystemBasedStorage, times(2)).create(any(), any());
+        verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_DESCRIPTION),
+                eq("User Task"));
+        verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_STATUS), eq("1"));
 
-		String testVar = (String) processInstance.variables().get("test");
-		assertThat(testVar).isEqualTo("test");
+        String testVar = (String) processInstance.variables().get("test");
+        assertThat(testVar).isEqualTo("test");
 
-		assertThat(processInstance.description()).isEqualTo("User Task");
+        assertThat(processInstance.description()).isEqualTo("User Task");
 
-		assertThat(process.instances().values().iterator().next().workItems(securityPolicy)).hasSize(1);
+        assertThat(process.instances().values().iterator().next().workItems(securityPolicy)).hasSize(1);
 
-		WorkItem workItem = processInstance.workItems(securityPolicy).get(0);
-		assertThat(workItem).isNotNull();
-		assertThat(workItem.getParameters().get("ActorId")).isEqualTo("john");
-		processInstance.completeWorkItem(workItem.getId(), null, securityPolicy);
-		assertThat(processInstance.status()).isEqualTo(STATE_COMPLETED);
+        WorkItem workItem = processInstance.workItems(securityPolicy).get(0);
+        assertThat(workItem).isNotNull();
+        assertThat(workItem.getParameters().get("ActorId")).isEqualTo("john");
+        processInstance.completeWorkItem(workItem.getId(), null, securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(STATE_COMPLETED);
 
-		fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
-		verify(fileSystemBasedStorage, times(2)).remove(any());
+        fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
+        verify(fileSystemBasedStorage, times(2)).remove(any(), any());
 
-		assertThat(fileSystemBasedStorage.size()).isZero();
-	}
+        assertThat(fileSystemBasedStorage.size()).isZero();
+    }
 
-	private class FileSystemProcessInstancesFactory extends AbstractProcessInstancesFactory {
+    private class FileSystemProcessInstancesFactory extends AbstractProcessInstancesFactory {
 
-		@Override
-		public FileSystemProcessInstances createProcessInstances(Process<?> process) {
-			FileSystemProcessInstances instances = spy(super.createProcessInstances(process));
-			return instances;
-		}
+        @Override
+        public FileSystemProcessInstances createProcessInstances(Process<?> process) {
+            FileSystemProcessInstances instances = spy(super.createProcessInstances(process));
+            return instances;
+        }
 
-		@Override
-		public String path() {
-			return PERSISTENCE_FOLDER;
-		}
-	}
+        @Override
+        public String path() {
+            return PERSISTENCE_FOLDER;
+        }
+    }
 }

@@ -242,7 +242,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
             unbind(variables, processInstance().getVariables());
             this.getProcessRuntime().abortProcessInstance(pid);
             this.status = processInstance.getState();
-            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id()));
+            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi));
         }
     }
 
@@ -543,7 +543,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
             removeCompletionListener();
             syncProcessInstance((WorkflowProcessInstance) processInstance);
             unbind(this.variables, processInstance().getVariables());
-            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id()));
+            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi));
 
         } else {
             syncProcessInstance((WorkflowProcessInstance) processInstance);

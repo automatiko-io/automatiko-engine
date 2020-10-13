@@ -149,7 +149,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     }
 
     @Override
-    public void remove(String id) {
+    public void remove(String id, ProcessInstance instance) {
         String resolvedId = resolveId(id);
         Path processInstanceStorage = Paths.get(storage.toString(), resolvedId);
         Path processInstanceMetadataStorage = Paths.get(storage.toString(), "._metadata_" + resolveId(id));

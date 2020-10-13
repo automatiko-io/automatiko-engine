@@ -24,112 +24,112 @@ import io.automatik.engine.workflow.marshalling.ProcessInstanceMarshaller;
 @SuppressWarnings({ "rawtypes" })
 public class CacheProcessInstances implements MutableProcessInstances {
 
-	private final RemoteCache<String, byte[]> cache;
-	private ProcessInstanceMarshaller marshaller;
+    private final RemoteCache<String, byte[]> cache;
+    private ProcessInstanceMarshaller marshaller;
 
-	private io.automatik.engine.api.workflow.Process<?> process;
+    private io.automatik.engine.api.workflow.Process<?> process;
 
-	private Map<String, ProcessInstance> cachedInstances = new ConcurrentHashMap<>();
+    private Map<String, ProcessInstance> cachedInstances = new ConcurrentHashMap<>();
 
-	public CacheProcessInstances(Process<?> process, RemoteCacheManager cacheManager, String templateName, String proto,
-			MessageMarshaller<?>... marshallers) {
-		this.process = process;
-		this.cache = cacheManager.administration().getOrCreateCache(process.id() + "_store",
-				ignoreNullOrEmpty(templateName));
+    public CacheProcessInstances(Process<?> process, RemoteCacheManager cacheManager, String templateName, String proto,
+            MessageMarshaller<?>... marshallers) {
+        this.process = process;
+        this.cache = cacheManager.administration().getOrCreateCache(process.id() + "_store",
+                ignoreNullOrEmpty(templateName));
 
-		this.marshaller = new ProcessInstanceMarshaller(new ProtoStreamObjectMarshallingStrategy(proto, marshallers));
-	}
+        this.marshaller = new ProcessInstanceMarshaller(new ProtoStreamObjectMarshallingStrategy(proto, marshallers));
+    }
 
-	public Integer size() {
-		return cache.size();
-	}
+    public Integer size() {
+        return cache.size();
+    }
 
-	@Override
-	public Optional<? extends ProcessInstance> findById(String id, ProcessInstanceReadMode mode) {
-		String resolvedId = resolveId(id);
-		if (cachedInstances.containsKey(resolvedId)) {
-			return Optional.of(cachedInstances.get(resolvedId));
-		}
+    @Override
+    public Optional<? extends ProcessInstance> findById(String id, ProcessInstanceReadMode mode) {
+        String resolvedId = resolveId(id);
+        if (cachedInstances.containsKey(resolvedId)) {
+            return Optional.of(cachedInstances.get(resolvedId));
+        }
 
-		byte[] data = cache.get(resolvedId);
-		if (data == null) {
-			return Optional.empty();
-		}
+        byte[] data = cache.get(resolvedId);
+        if (data == null) {
+            return Optional.empty();
+        }
 
-		return Optional.of(mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process)
-				: marshaller.unmarshallReadOnlyProcessInstance(data, process));
-	}
+        return Optional.of(mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process)
+                : marshaller.unmarshallReadOnlyProcessInstance(data, process));
+    }
 
-	@Override
-	public Collection<? extends ProcessInstance> values(ProcessInstanceReadMode mode) {
-		return cache.values().parallelStream()
-				.map(data -> mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process)
-						: marshaller.unmarshallReadOnlyProcessInstance(data, process))
-				.collect(Collectors.toList());
-	}
+    @Override
+    public Collection<? extends ProcessInstance> values(ProcessInstanceReadMode mode) {
+        return cache.values().parallelStream()
+                .map(data -> mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process)
+                        : marshaller.unmarshallReadOnlyProcessInstance(data, process))
+                .collect(Collectors.toList());
+    }
 
-	@Override
-	public void update(String id, ProcessInstance instance) {
-		updateStorage(id, instance, false);
-	}
+    @Override
+    public void update(String id, ProcessInstance instance) {
+        updateStorage(id, instance, false);
+    }
 
-	@Override
-	public void remove(String id) {
-		String resolvedId = resolveId(id);
-		cache.remove(resolvedId);
-		cachedInstances.remove(resolvedId);
-	}
+    @Override
+    public void remove(String id, ProcessInstance instance) {
+        String resolvedId = resolveId(id);
+        cache.remove(resolvedId);
+        cachedInstances.remove(resolvedId);
+    }
 
-	protected String ignoreNullOrEmpty(String value) {
-		if (value == null || value.trim().isEmpty()) {
-			return null;
-		}
+    protected String ignoreNullOrEmpty(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
 
-		return value;
-	}
+        return value;
+    }
 
-	@Override
-	public void create(String id, ProcessInstance instance) {
-		updateStorage(id, instance, true);
+    @Override
+    public void create(String id, ProcessInstance instance) {
+        updateStorage(id, instance, true);
 
-	}
+    }
 
-	@SuppressWarnings("unchecked")
-	protected void updateStorage(String id, ProcessInstance instance, boolean checkDuplicates) {
-		String resolvedId = resolveId(id);
-		if (isActive(instance)) {
+    @SuppressWarnings("unchecked")
+    protected void updateStorage(String id, ProcessInstance instance, boolean checkDuplicates) {
+        String resolvedId = resolveId(id);
+        if (isActive(instance)) {
 
-			byte[] data = marshaller.marhsallProcessInstance(instance);
+            byte[] data = marshaller.marhsallProcessInstance(instance);
 
-			if (checkDuplicates) {
-				byte[] existing = cache.putIfAbsent(resolvedId, data);
-				if (existing != null) {
-					throw new ProcessInstanceDuplicatedException(id);
-				}
-			} else {
-				cache.put(resolvedId, data);
-			}
+            if (checkDuplicates) {
+                byte[] existing = cache.putIfAbsent(resolvedId, data);
+                if (existing != null) {
+                    throw new ProcessInstanceDuplicatedException(id);
+                }
+            } else {
+                cache.put(resolvedId, data);
+            }
 
-			((AbstractProcessInstance<?>) instance).internalRemoveProcessInstance(() -> {
-				byte[] reloaded = cache.get(resolvedId);
-				if (reloaded != null) {
-					return marshaller.unmarshallWorkflowProcessInstance(reloaded, process);
-				}
+            ((AbstractProcessInstance<?>) instance).internalRemoveProcessInstance(() -> {
+                byte[] reloaded = cache.get(resolvedId);
+                if (reloaded != null) {
+                    return marshaller.unmarshallWorkflowProcessInstance(reloaded, process);
+                }
 
-				return null;
-			});
-			cachedInstances.remove(resolvedId);
-		} else if (isPending(instance)) {
-			if (cachedInstances.putIfAbsent(resolvedId, instance) != null) {
-				throw new ProcessInstanceDuplicatedException(id);
-			}
-		} else {
-			cachedInstances.remove(resolvedId);
-		}
-	}
+                return null;
+            });
+            cachedInstances.remove(resolvedId);
+        } else if (isPending(instance)) {
+            if (cachedInstances.putIfAbsent(resolvedId, instance) != null) {
+                throw new ProcessInstanceDuplicatedException(id);
+            }
+        } else {
+            cachedInstances.remove(resolvedId);
+        }
+    }
 
-	@Override
-	public boolean exists(String id) {
-		return cache.containsKey(id);
-	}
+    @Override
+    public boolean exists(String id) {
+        return cache.containsKey(id);
+    }
 }

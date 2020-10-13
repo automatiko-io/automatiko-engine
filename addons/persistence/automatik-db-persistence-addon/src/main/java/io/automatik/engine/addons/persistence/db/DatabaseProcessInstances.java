@@ -86,7 +86,11 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
     }
 
     @Override
-    public void remove(String id) {
+    public void remove(String id, ProcessInstance<ProcessInstanceEntity> instance) {
+        ProcessInstanceEntity entity = instance.variables();
+        // run persist to make sure entities of the root are stored
+        JpaOperations.persist(entity);
+        // then delete the root one
         JpaOperations.deleteById(type, id);
     }
 

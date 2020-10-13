@@ -193,9 +193,10 @@ public class CollectingUnitOfWork implements UnitOfWork {
             local.put(id, instance);
         }
 
+        @SuppressWarnings("unchecked")
         @Override
-        public void remove(String id) {
-            delegate.remove(id);
+        public void remove(String id, ProcessInstance instance) {
+            delegate.remove(id, instance);
 
             local.remove(id);
         }
