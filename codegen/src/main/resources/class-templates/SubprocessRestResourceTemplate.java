@@ -62,7 +62,7 @@ public class $Type$Resource {
         return subprocess_$name$.instances()
                 .findById(id_$name$)
                 .map(pi -> mapOutput(new $Type$Output(), pi.variables()))
-                .orElse(null);
+                .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
     }
 
     @DELETE()
@@ -75,13 +75,10 @@ public class $Type$Resource {
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = subprocess_$name$.instances()
                     .findById(id_$name$)
-                    .orElse(null);
-            if (pi == null) {
-                return null;
-            } else {
-                pi.abort();
-                return getSubModel_$name$(pi);
-            }
+                    .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+            pi.abort();
+            return getSubModel_$name$(pi);
+            
         });
     }
     
@@ -93,13 +90,11 @@ public class $Type$Resource {
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = subprocess_$name$.instances()
                     .findById(id_$name$)
-                    .orElse(null);
-            if (pi == null) {
-                return null;
-            } else {
-                pi.updateVariables(resource);
-                return mapOutput(new $Type$Output(), pi.variables());
-            }
+                    .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+
+            pi.updateVariables(resource);
+            return mapOutput(new $Type$Output(), pi.variables());
+
         });
     }
     
@@ -112,7 +107,7 @@ public class $Type$Resource {
                 .findById(id_$name$)
                 .map(pi -> pi.workItems(policies(user, groups)))
                 .map(l -> l.stream().map(WorkItem::toMap).collect(Collectors.toList()))
-                .orElse(null);
+                .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
     }
     
     protected $Type$Output getSubModel_$name$(ProcessInstance<$Type$> pi) {

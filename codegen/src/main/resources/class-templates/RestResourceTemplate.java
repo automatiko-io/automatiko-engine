@@ -24,6 +24,7 @@ import io.automatik.engine.api.auth.SecurityPolicy;
 import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.api.workflow.ProcessInstanceExecutionException;
+import io.automatik.engine.api.workflow.ProcessInstanceNotFoundException;
 import io.automatik.engine.api.workflow.WorkItem;
 import io.automatik.engine.api.workflow.workitem.Policy;
 import io.automatik.engine.workflow.Sig;
@@ -79,7 +80,7 @@ public class $Type$Resource {
         return process.instances()
                 .findById(id)
                 .map(pi -> mapOutput(new $Type$Output(), pi.variables()))
-                .orElse(null);
+                .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
     }
 
     @DELETE()
@@ -92,13 +93,10 @@ public class $Type$Resource {
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)
-                    .orElse(null);
-            if (pi == null) {
-                return null;
-            } else {
-                pi.abort();
-                return getModel(pi);
-            }
+                    .orElseThrow(() -> new ProcessInstanceNotFoundException(id));            
+            pi.abort();
+            return getModel(pi);
+            
         });
     }
     
@@ -110,13 +108,10 @@ public class $Type$Resource {
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)
-                    .orElse(null);
-            if (pi == null) {
-                return null;
-            } else {
-                pi.updateVariables(resource);
-                return mapOutput(new $Type$Output(), pi.variables());
-            }
+                    .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+        
+            pi.updateVariables(resource);
+            return mapOutput(new $Type$Output(), pi.variables());
         });
     }
     
@@ -129,7 +124,7 @@ public class $Type$Resource {
                 .findById(id)
                 .map(pi -> pi.workItems(policies(user, groups)))
                 .map(l -> l.stream().map(WorkItem::toMap).collect(Collectors.toList()))
-                .orElse(null);
+                .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
     }
     
     protected $Type$Output getModel(ProcessInstance<$Type$> pi) {

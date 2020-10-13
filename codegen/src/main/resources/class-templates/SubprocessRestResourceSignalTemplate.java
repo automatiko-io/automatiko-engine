@@ -20,10 +20,7 @@ public class $Type$Resource {
     @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of triggering instances of $name$", description="Rate of triggering instances of $name$")   
     public $Type$Output signal(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$, final $signalType$ data) {
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-            ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById(id_$name$).orElse(null);
-            if (pi == null) {
-                return null;
-            }
+            ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById(id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             pi.send(Sig.of("$signalName$", data));
             return getModel(pi);
         });
