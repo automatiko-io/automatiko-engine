@@ -1,6 +1,7 @@
 package io.automatik.engine.quarkus.metrics;
 
 import java.time.Duration;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -27,132 +28,135 @@ import io.smallrye.metrics.MetricRegistries;
 @ApplicationScoped
 public class ProcessMetricsEventListener extends DefaultProcessEventListener {
 
-	@ConfigProperty(name = "quarkus.application.name")
-	String application;
+    @ConfigProperty(name = "quarkus.application.name", defaultValue = "")
+    Optional<String> application;
 
-	@ConfigProperty(name = "quarkus.application.version")
-	String version;
+    @ConfigProperty(name = "quarkus.application.version", defaultValue = "")
+    Optional<String> version;
 
-	@Override
-	public void afterProcessStarted(ProcessStartedEvent event) {
-		final WorkflowProcessInstanceImpl processInstance = (WorkflowProcessInstanceImpl) event.getProcessInstance();
-		Metadata startedPIMetadata = Metadata.builder().withName("automatik.process.started.count")
-				.withDescription("Total count of started process instances").withType(MetricType.COUNTER).build();
-		Counter counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter(startedPIMetadata,
-				new Tag("application", application), new Tag("version", version),
-				new Tag("processId", processInstance.getProcessId()),
-				new Tag("processVersion",
-						processInstance.getProcess().getVersion() == null ? "unknown"
-								: processInstance.getProcess().getVersion()),
-				new Tag("businessKey",
-						processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()));
-		counter.inc();
+    @Override
+    public void afterProcessStarted(ProcessStartedEvent event) {
+        final WorkflowProcessInstanceImpl processInstance = (WorkflowProcessInstanceImpl) event.getProcessInstance();
+        Metadata startedPIMetadata = Metadata.builder().withName("automatik.process.started.count")
+                .withDescription("Total count of started process instances").withType(MetricType.COUNTER).build();
+        Counter counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter(startedPIMetadata,
+                new Tag("application", application.orElse("")), new Tag("version", version.orElse("")),
+                new Tag("processId", processInstance.getProcessId()),
+                new Tag("processVersion",
+                        processInstance.getProcess().getVersion() == null ? "unknown"
+                                : processInstance.getProcess().getVersion()),
+                new Tag("businessKey",
+                        processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()));
+        counter.inc();
 
-		Metadata currentlyActivePIMetadata = Metadata.builder().withName("automatik.process.current.active.count")
-				.withDescription("Currently Active Process Instances").withType(MetricType.CONCURRENT_GAUGE).build();
+        Metadata currentlyActivePIMetadata = Metadata.builder().withName("automatik.process.current.active.count")
+                .withDescription("Currently Active Process Instances").withType(MetricType.CONCURRENT_GAUGE).build();
 
-		ConcurrentGauge currentlyActive = MetricRegistries.get(MetricRegistry.Type.VENDOR).concurrentGauge(
-				currentlyActivePIMetadata, new Tag("application", application), new Tag("version", version),
-				new Tag("processId", processInstance.getProcessId()),
-				new Tag("processVersion",
-						processInstance.getProcess().getVersion() == null ? "unknown"
-								: processInstance.getProcess().getVersion()),
-				new Tag("businessKey",
-						processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()));
-		currentlyActive.inc();
-	}
+        ConcurrentGauge currentlyActive = MetricRegistries.get(MetricRegistry.Type.VENDOR).concurrentGauge(
+                currentlyActivePIMetadata, new Tag("application", application.orElse("")),
+                new Tag("version", version.orElse("")),
+                new Tag("processId", processInstance.getProcessId()),
+                new Tag("processVersion",
+                        processInstance.getProcess().getVersion() == null ? "unknown"
+                                : processInstance.getProcess().getVersion()),
+                new Tag("businessKey",
+                        processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()));
+        currentlyActive.inc();
+    }
 
-	@Override
-	public void afterProcessCompleted(ProcessCompletedEvent event) {
+    @Override
+    public void afterProcessCompleted(ProcessCompletedEvent event) {
 
-		final WorkflowProcessInstanceImpl processInstance = (WorkflowProcessInstanceImpl) event.getProcessInstance();
+        final WorkflowProcessInstanceImpl processInstance = (WorkflowProcessInstanceImpl) event.getProcessInstance();
 
-		Counter counter;
-		if (processInstance.getState() == ProcessInstance.STATE_COMPLETED) {
-			Metadata completedPIMetadata = Metadata.builder().withName("automatik.process.completed.count")
-					.withDescription("Displays total count of completed process instances").withType(MetricType.COUNTER)
-					.build();
-			counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter(completedPIMetadata,
-					new Tag("application", application), new Tag("version", version),
-					new Tag("processId", processInstance.getProcessId()),
-					new Tag("processVersion",
-							processInstance.getProcess().getVersion() == null ? "unknown"
-									: processInstance.getProcess().getVersion()),
-					new Tag("businessKey",
-							processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()));
-		} else {
-			Metadata abortedPIMetadata = Metadata.builder().withName("automatik.process.aborted.count")
-					.withDescription("Displays total count of aborted process instances").withType(MetricType.COUNTER)
-					.build();
-			counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter(abortedPIMetadata,
-					new Tag("application", application), new Tag("version", version),
-					new Tag("processId", processInstance.getProcessId()),
-					new Tag("processVersion",
-							processInstance.getProcess().getVersion() == null ? "unknown"
-									: processInstance.getProcess().getVersion()),
-					new Tag("businessKey",
-							processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()));
-		}
+        Counter counter;
+        if (processInstance.getState() == ProcessInstance.STATE_COMPLETED) {
+            Metadata completedPIMetadata = Metadata.builder().withName("automatik.process.completed.count")
+                    .withDescription("Displays total count of completed process instances").withType(MetricType.COUNTER)
+                    .build();
+            counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter(completedPIMetadata,
+                    new Tag("application", application.orElse("")), new Tag("version", version.orElse("")),
+                    new Tag("processId", processInstance.getProcessId()),
+                    new Tag("processVersion",
+                            processInstance.getProcess().getVersion() == null ? "unknown"
+                                    : processInstance.getProcess().getVersion()),
+                    new Tag("businessKey",
+                            processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()));
+        } else {
+            Metadata abortedPIMetadata = Metadata.builder().withName("automatik.process.aborted.count")
+                    .withDescription("Displays total count of aborted process instances").withType(MetricType.COUNTER)
+                    .build();
+            counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter(abortedPIMetadata,
+                    new Tag("application", application.orElse("")), new Tag("version", version.orElse("")),
+                    new Tag("processId", processInstance.getProcessId()),
+                    new Tag("processVersion",
+                            processInstance.getProcess().getVersion() == null ? "unknown"
+                                    : processInstance.getProcess().getVersion()),
+                    new Tag("businessKey",
+                            processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()));
+        }
 
-		counter.inc();
+        counter.inc();
 
-		if (processInstance.getStartDate() != null) {
-			Metadata processInstanceDurationMetadata = Metadata.builder()
-					.withName("automatik.process.instances.duration")
-					.withDescription("Displays duration of process instances - from start to completion")
-					.withType(MetricType.SIMPLE_TIMER).withUnit(TimeUnit.MILLISECONDS.name()).build();
+        if (processInstance.getStartDate() != null) {
+            Metadata processInstanceDurationMetadata = Metadata.builder()
+                    .withName("automatik.process.instances.duration")
+                    .withDescription("Displays duration of process instances - from start to completion")
+                    .withType(MetricType.SIMPLE_TIMER).withUnit(TimeUnit.MILLISECONDS.name()).build();
 
-			SimpleTimer instanceDuration = MetricRegistries.get(MetricRegistry.Type.VENDOR).simpleTimer(
-					processInstanceDurationMetadata, new Tag("application", application), new Tag("version", version),
-					new Tag("processId", processInstance.getProcessId()),
-					new Tag("processVersion",
-							processInstance.getProcess().getVersion() == null ? "unknown"
-									: processInstance.getProcess().getVersion()),
-					new Tag("businessKey",
-							processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()));
+            SimpleTimer instanceDuration = MetricRegistries.get(MetricRegistry.Type.VENDOR).simpleTimer(
+                    processInstanceDurationMetadata, new Tag("application", application.orElse("")),
+                    new Tag("version", version.orElse("")),
+                    new Tag("processId", processInstance.getProcessId()),
+                    new Tag("processVersion",
+                            processInstance.getProcess().getVersion() == null ? "unknown"
+                                    : processInstance.getProcess().getVersion()),
+                    new Tag("businessKey",
+                            processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()));
 
-			final long duration = millisToSeconds(
-					processInstance.getEndDate().getTime() - processInstance.getStartDate().getTime());
-			instanceDuration.update(Duration.ofMillis(duration));
+            final long duration = millisToSeconds(
+                    processInstance.getEndDate().getTime() - processInstance.getStartDate().getTime());
+            instanceDuration.update(Duration.ofMillis(duration));
 
-		}
+        }
 
-		Metadata currentlyActivePIMetadata = Metadata.builder().withName("automatik.process.current.active.count")
-				.withDescription("Currently Active Process Instances").withType(MetricType.CONCURRENT_GAUGE).build();
+        Metadata currentlyActivePIMetadata = Metadata.builder().withName("automatik.process.current.active.count")
+                .withDescription("Currently Active Process Instances").withType(MetricType.CONCURRENT_GAUGE).build();
 
-		ConcurrentGauge currentlyActive = MetricRegistries.get(MetricRegistry.Type.VENDOR).concurrentGauge(
-				currentlyActivePIMetadata, new Tag("application", application), new Tag("version", version),
-				new Tag("processId", processInstance.getProcessId()),
-				new Tag("processVersion",
-						processInstance.getProcess().getVersion() == null ? "unknown"
-								: processInstance.getProcess().getVersion()),
-				new Tag("businessKey",
-						processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()));
-		currentlyActive.dec();
-	}
+        ConcurrentGauge currentlyActive = MetricRegistries.get(MetricRegistry.Type.VENDOR).concurrentGauge(
+                currentlyActivePIMetadata, new Tag("application", application.orElse("")),
+                new Tag("version", version.orElse("")),
+                new Tag("processId", processInstance.getProcessId()),
+                new Tag("processVersion",
+                        processInstance.getProcess().getVersion() == null ? "unknown"
+                                : processInstance.getProcess().getVersion()),
+                new Tag("businessKey",
+                        processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()));
+        currentlyActive.dec();
+    }
 
-	@Override
-	public void afterNodeInstanceFailed(ProcessNodeInstanceFailedEvent event) {
+    @Override
+    public void afterNodeInstanceFailed(ProcessNodeInstanceFailedEvent event) {
 
-		final WorkflowProcessInstanceImpl processInstance = (WorkflowProcessInstanceImpl) event.getProcessInstance();
+        final WorkflowProcessInstanceImpl processInstance = (WorkflowProcessInstanceImpl) event.getProcessInstance();
 
-		Metadata erroredtMetadata = Metadata.builder().withName("automatik.process.errored.count").withDescription(
-				"Displays total count of process instances that failed during execution - failure of given node")
-				.withType(MetricType.COUNTER).build();
+        Metadata erroredtMetadata = Metadata.builder().withName("automatik.process.errored.count").withDescription(
+                "Displays total count of process instances that failed during execution - failure of given node")
+                .withType(MetricType.COUNTER).build();
 
-		Counter counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter(erroredtMetadata,
-				new Tag("application", application), new Tag("version", version),
-				new Tag("processId", processInstance.getProcessId()),
-				new Tag("processVersion",
-						processInstance.getProcess().getVersion() == null ? "unknown"
-								: processInstance.getProcess().getVersion()),
-				new Tag("businessKey",
-						processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()),
-				new Tag("nodeName", event.getNodeInstance().getNodeName()));
-		counter.inc();
-	}
+        Counter counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter(erroredtMetadata,
+                new Tag("application", application.orElse("")), new Tag("version", version.orElse("")),
+                new Tag("processId", processInstance.getProcessId()),
+                new Tag("processVersion",
+                        processInstance.getProcess().getVersion() == null ? "unknown"
+                                : processInstance.getProcess().getVersion()),
+                new Tag("businessKey",
+                        processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()),
+                new Tag("nodeName", event.getNodeInstance().getNodeName()));
+        counter.inc();
+    }
 
-	protected static long millisToSeconds(long millis) {
-		return millis / 1000;
-	}
+    protected static long millisToSeconds(long millis) {
+        return millis / 1000;
+    }
 }
