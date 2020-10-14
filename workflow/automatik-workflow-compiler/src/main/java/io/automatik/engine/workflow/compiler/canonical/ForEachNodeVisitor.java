@@ -23,6 +23,7 @@ import io.automatik.engine.api.definition.process.Node;
 import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
+import io.automatik.engine.workflow.compiler.util.ClassUtils;
 import io.automatik.engine.workflow.process.core.node.ForEachNode;
 import io.automatik.engine.workflow.process.executable.core.factory.ForEachNodeFactory;
 
@@ -56,7 +57,8 @@ public class ForEachNodeVisitor extends AbstractCompositeNodeVisitor<ForEachNode
                                         new ClassOrInterfaceType(null, ObjectDataType.class.getSimpleName()), NodeList
                                                 .nodeList(
                                                         new ClassExpr(new ClassOrInterfaceType(null,
-                                                                node.getVariableType().getStringType())),
+                                                                ClassUtils.parseClassname(
+                                                                        node.getVariableType().getStringType()))),
                                                         new StringLiteralExpr(
                                                                 node.getVariableType().getStringType())))));
 
@@ -69,7 +71,8 @@ public class ForEachNodeVisitor extends AbstractCompositeNodeVisitor<ForEachNode
                                             new ClassOrInterfaceType(null, ObjectDataType.class.getSimpleName()),
                                             NodeList.nodeList(
                                                     new ClassExpr(new ClassOrInterfaceType(null,
-                                                            node.getOutputVariableType().getStringType())),
+                                                            ClassUtils.parseClassname(
+                                                                    node.getOutputVariableType().getStringType()))),
                                                     new StringLiteralExpr(
                                                             node.getOutputVariableType().getStringType())))));
         }
