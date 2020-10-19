@@ -15,6 +15,7 @@ import io.automatik.engine.api.jobs.JobsService;
 import io.automatik.engine.api.jobs.ProcessInstanceJobDescription;
 import io.automatik.engine.api.runtime.process.EventListener;
 import io.automatik.engine.api.runtime.process.NodeInstance;
+import io.automatik.engine.api.runtime.process.NodeInstanceState;
 import io.automatik.engine.api.workflow.BaseEventDescription;
 import io.automatik.engine.api.workflow.EventDescription;
 import io.automatik.engine.services.time.TimerInstance;
@@ -23,86 +24,89 @@ import io.automatik.engine.workflow.process.instance.WorkflowProcessInstance;
 
 public class TimerNodeInstance extends StateBasedNodeInstance implements EventListener {
 
-	private static final long serialVersionUID = 510l;
-	private static final Logger logger = LoggerFactory.getLogger(TimerNodeInstance.class);
-	private static final String TIMER_TRIGGERED_EVENT = "timerTriggered";
+    private static final long serialVersionUID = 510l;
+    private static final Logger logger = LoggerFactory.getLogger(TimerNodeInstance.class);
+    private static final String TIMER_TRIGGERED_EVENT = "timerTriggered";
 
-	private String timerId;
+    private String timerId;
 
-	public TimerNode getTimerNode() {
-		return (TimerNode) getNode();
-	}
+    public TimerNode getTimerNode() {
+        return (TimerNode) getNode();
+    }
 
-	public String getTimerId() {
-		return timerId;
-	}
+    public String getTimerId() {
+        return timerId;
+    }
 
-	public void internalSetTimerId(String timerId) {
-		this.timerId = timerId;
-	}
+    public void internalSetTimerId(String timerId) {
+        this.timerId = timerId;
+    }
 
-	@Override
-	public void internalTrigger(NodeInstance from, String type) {
-		if (!io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE.equals(type)) {
-			throw new IllegalArgumentException("A TimerNode only accepts default incoming connections!");
-		}
-		triggerTime = new Date();
-		ExpirationTime expirationTime = createTimerInstance(getTimerNode().getTimer());
-		if (getTimerInstances() == null) {
-			addTimerListener();
-		}
-		JobsService jobService = getProcessInstance().getProcessRuntime().getJobsService();
-		timerId = jobService.scheduleProcessInstanceJob(ProcessInstanceJobDescription.of(
-				getTimerNode().getTimer().getId(), expirationTime, getProcessInstance().getId(),
-				getProcessInstance().getRootProcessInstanceId(), getProcessInstance().getProcessId(),
-				getProcessInstance().getProcess().getVersion(), getProcessInstance().getRootProcessId()));
-	}
+    @Override
+    public void internalTrigger(NodeInstance from, String type) {
+        if (!io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE.equals(type)) {
+            throw new IllegalArgumentException("A TimerNode only accepts default incoming connections!");
+        }
+        triggerTime = new Date();
+        ExpirationTime expirationTime = createTimerInstance(getTimerNode().getTimer());
+        if (getTimerInstances() == null) {
+            addTimerListener();
+        }
+        JobsService jobService = getProcessInstance().getProcessRuntime().getJobsService();
+        timerId = jobService.scheduleProcessInstanceJob(ProcessInstanceJobDescription.of(
+                getTimerNode().getTimer().getId(), expirationTime, getProcessInstance().getId(),
+                getProcessInstance().getRootProcessInstanceId(), getProcessInstance().getProcessId(),
+                getProcessInstance().getProcess().getVersion(), getProcessInstance().getRootProcessId()));
+        logger.debug("Scheduled timer with id {} for node {} with fire date {}", timerId, getNodeName(), expirationTime.get());
+    }
 
-	public void signalEvent(String type, Object event) {
-		if (TIMER_TRIGGERED_EVENT.equals(type)) {
-			TimerInstance timer = (TimerInstance) event;
-			if (timer.getId().equals(timerId)) {
-				triggerCompleted(timer.getRepeatLimit() <= 0);
-			}
-		}
-	}
+    public void signalEvent(String type, Object event) {
+        if (TIMER_TRIGGERED_EVENT.equals(type)) {
+            TimerInstance timer = (TimerInstance) event;
+            if (timer.getId().equals(timerId)) {
+                logger.debug("Triggering timer with id {} on node {}", timerId, getNodeName());
+                triggerCompleted(timer.getRepeatLimit() <= 0);
+            }
+        }
+    }
 
-	public String[] getEventTypes() {
-		return new String[] { TIMER_TRIGGERED_EVENT };
-	}
+    public String[] getEventTypes() {
+        return new String[] { TIMER_TRIGGERED_EVENT };
+    }
 
-	public void triggerCompleted(boolean remove) {
-		triggerCompleted(io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE, remove);
-	}
+    public void triggerCompleted(boolean remove) {
+        internalChangeState(NodeInstanceState.Occur);
+        triggerCompleted(io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE, remove);
+    }
 
-	@Override
-	public void cancel() {
-		getProcessInstance().getProcessRuntime().getJobsService().cancelJob(timerId);
-		super.cancel();
-	}
+    @Override
+    public void cancel() {
+        getProcessInstance().getProcessRuntime().getJobsService().cancelJob(timerId);
+        super.cancel();
+    }
 
-	public void addEventListeners() {
-		super.addEventListeners();
-		if (getTimerInstances() == null) {
-			addTimerListener();
-		}
-	}
+    public void addEventListeners() {
+        super.addEventListeners();
+        if (getTimerInstances() == null) {
+            addTimerListener();
+        }
+    }
 
-	public void removeEventListeners() {
-		super.removeEventListeners();
-		((WorkflowProcessInstance) getProcessInstance()).removeEventListener(TIMER_TRIGGERED_EVENT, this, false);
-	}
+    public void removeEventListeners() {
+        super.removeEventListeners();
+        ((WorkflowProcessInstance) getProcessInstance()).removeEventListener(TIMER_TRIGGERED_EVENT, this, false);
+    }
 
-	@Override
-	public Set<EventDescription<?>> getEventDescriptions() {
-		Map<String, String> properties = new HashMap<>();
-		properties.put("TimerID", timerId);
-		properties.put("Delay", getTimerNode().getTimer().getDelay());
-		properties.put("Period", getTimerNode().getTimer().getPeriod());
-		properties.put("Date", getTimerNode().getTimer().getDate());
-		return Collections.singleton(new BaseEventDescription(TIMER_TRIGGERED_EVENT, getNodeDefinitionId(),
-				getNodeName(), "timer", getId(), getProcessInstance().getId(), null, properties));
+    @Override
+    public Set<EventDescription<?>> getEventDescriptions() {
+        Map<String, String> properties = new HashMap<>();
+        properties.put("TimerID", timerId);
+        properties.put("Delay", getTimerNode().getTimer().getDelay());
+        properties.put("Period", getTimerNode().getTimer().getPeriod());
+        properties.put("Date", getTimerNode().getTimer().getDate());
+        return Collections.singleton(new BaseEventDescription(TIMER_TRIGGERED_EVENT, getNodeDefinitionId(), getNodeName(),
+                "timer", getId(), getProcessInstance().getId(), null, properties));
 
-	}
+    }
 
 }

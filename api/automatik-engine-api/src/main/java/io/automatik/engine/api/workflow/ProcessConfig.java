@@ -10,20 +10,25 @@ import io.automatik.engine.api.uow.UnitOfWorkManager;
 import io.automatik.engine.api.workflow.signal.SignalManagerHub;
 
 public interface ProcessConfig {
-	WorkItemHandlerConfig workItemHandlers();
+    WorkItemHandlerConfig workItemHandlers();
 
-	ProcessEventListenerConfig processEventListeners();
+    ProcessEventListenerConfig processEventListeners();
 
-	SignalManagerHub signalManagerHub();
+    SignalManagerHub signalManagerHub();
 
-	UnitOfWorkManager unitOfWorkManager();
+    UnitOfWorkManager unitOfWorkManager();
 
-	JobsService jobsService();
+    JobsService jobsService();
 
-	VariableInitializer variableInitializer();
+    VariableInitializer variableInitializer();
 
-	// TODO refactor this
-	default Map<String, Process> processes() {
-		return Collections.emptyMap();
-	}
+    // TODO refactor this
+    default Map<String, Process> processes() {
+        return Collections.emptyMap();
+    }
+
+    default ProcessInstancesFactory processInstancesFactory() {
+        return null;
+    }
+
 }

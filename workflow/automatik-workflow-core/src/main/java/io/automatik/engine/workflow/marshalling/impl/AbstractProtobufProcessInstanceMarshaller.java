@@ -149,22 +149,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
             }
         }
 
-        VariableScopeInstance variableScopeInstance = (VariableScopeInstance) workFlow
-                .getContextInstance(VariableScope.VARIABLE_SCOPE);
-        List<Map.Entry<String, Object>> variables = new ArrayList<Map.Entry<String, Object>>(
-                variableScopeInstance.getVariables().entrySet());
-        Collections.sort(variables, new Comparator<Map.Entry<String, Object>>() {
-            public int compare(Map.Entry<String, Object> o1, Map.Entry<String, Object> o2) {
-                return o1.getKey().compareTo(o2.getKey());
-            }
-        });
-
-        for (Map.Entry<String, Object> variable : variables) {
-            if (variable.getValue() != null) {
-                _instance.addVariable(
-                        ProtobufProcessMarshaller.marshallVariable(context, variable.getKey(), variable.getValue()));
-            }
-        }
+        writeVariableScope(context, workFlow, _instance);
 
         List<Map.Entry<String, Integer>> iterationlevels = new ArrayList<Map.Entry<String, Integer>>(
                 workFlow.getIterationLevels().entrySet());
@@ -735,6 +720,19 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                 exclusiveGroupInstance.addNodeInstance(nodeInstance);
             }
         }
+        readVariableScope(context, process, processInstance, _instance);
+
+        if (_instance.getIterationLevelsCount() > 0) {
+
+            for (AutomatikMessages.IterationLevel _level : _instance.getIterationLevelsList()) {
+                processInstance.getIterationLevels().put(_level.getId(), _level.getLevel());
+            }
+        }
+        return processInstance;
+    }
+
+    protected void readVariableScope(MarshallerReaderContext context, Process process,
+            WorkflowProcessInstanceImpl processInstance, AutomatikMessages.ProcessInstance _instance) throws IOException {
 
         if (_instance.getVariableCount() > 0) {
             Context variableScope = ((io.automatik.engine.workflow.base.core.Process) process)
@@ -751,13 +749,6 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
             }
         }
 
-        if (_instance.getIterationLevelsCount() > 0) {
-
-            for (AutomatikMessages.IterationLevel _level : _instance.getIterationLevelsList()) {
-                processInstance.getIterationLevels().put(_level.getId(), _level.getLevel());
-            }
-        }
-        return processInstance;
     }
 
     protected abstract WorkflowProcessInstanceImpl createProcessInstance();
@@ -1032,4 +1023,27 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         return nodeInstance;
 
     }
+
+    protected void writeVariableScope(MarshallerWriteContext context, WorkflowProcessInstanceImpl workFlow,
+            AutomatikMessages.ProcessInstance.Builder _instance) throws IOException {
+        VariableScopeInstance variableScopeInstance = (VariableScopeInstance) workFlow
+                .getContextInstance(VariableScope.VARIABLE_SCOPE);
+        List<Map.Entry<String, Object>> variables = new ArrayList<Map.Entry<String, Object>>(
+                variableScopeInstance.getVariables().entrySet());
+        Collections.sort(variables,
+                new Comparator<Map.Entry<String, Object>>() {
+                    public int compare(Map.Entry<String, Object> o1,
+                            Map.Entry<String, Object> o2) {
+                        return o1.getKey().compareTo(o2.getKey());
+                    }
+                });
+
+        for (Map.Entry<String, Object> variable : variables) {
+            if (variable.getValue() != null) {
+                _instance.addVariable(
+                        ProtobufProcessMarshaller.marshallVariable(context, variable.getKey(), variable.getValue()));
+            }
+        }
+    }
+
 }

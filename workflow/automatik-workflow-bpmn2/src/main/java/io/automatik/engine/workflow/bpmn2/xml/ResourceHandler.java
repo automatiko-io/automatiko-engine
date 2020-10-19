@@ -1,16 +1,14 @@
-
 package io.automatik.engine.workflow.bpmn2.xml;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 import io.automatik.engine.workflow.bpmn2.core.DataStore;
 import io.automatik.engine.workflow.bpmn2.core.Definitions;
-import io.automatik.engine.workflow.bpmn2.core.Error;
 import io.automatik.engine.workflow.bpmn2.core.Escalation;
 import io.automatik.engine.workflow.bpmn2.core.Interface;
 import io.automatik.engine.workflow.bpmn2.core.ItemDefinition;
@@ -23,10 +21,10 @@ import io.automatik.engine.workflow.compiler.xml.Handler;
 import io.automatik.engine.workflow.compiler.xml.ProcessBuildData;
 import io.automatik.engine.workflow.process.executable.core.ExecutableProcess;
 
-public class InterfaceHandler extends BaseAbstractHandler implements Handler {
+public class ResourceHandler extends BaseAbstractHandler implements Handler {
 
     @SuppressWarnings("unchecked")
-    public InterfaceHandler() {
+    public ResourceHandler() {
         if ((this.validParents == null) && (this.validPeers == null)) {
             this.validParents = new HashSet();
             this.validParents.add(Definitions.class);
@@ -48,39 +46,34 @@ public class InterfaceHandler extends BaseAbstractHandler implements Handler {
     }
 
     @SuppressWarnings("unchecked")
-    public Object start(final String uri, final String localName, final Attributes attrs,
-            final ExtensibleXmlParser parser) throws SAXException {
+    public Object start(final String uri, final String localName,
+            final Attributes attrs, final ExtensibleXmlParser parser)
+            throws SAXException {
         parser.startElementBuilder(localName, attrs);
 
         String id = attrs.getValue("id");
         String name = attrs.getValue("name");
-        String implRef = attrs.getValue("implementationRef");
-
-        if (name == null || name.isEmpty()) {
-            throw new MalformedNodeException(id, name, "interface name is a required attribute");
-        }
 
         ProcessBuildData buildData = (ProcessBuildData) parser.getData();
-        List<Interface> interfaces = (List<Interface>) buildData.getMetaData("Interfaces");
-        if (interfaces == null) {
-            interfaces = new ArrayList<Interface>();
-            buildData.setMetaData("Interfaces", interfaces);
+        Map<String, Resource> resources = (Map<String, Resource>) buildData.getMetaData("Resources");
+        if (resources == null) {
+            resources = new HashMap<String, Resource>();
+            buildData.setMetaData("Resources", resources);
         }
-        Interface i = new Interface(id, name);
-        if (implRef != null) {
-            i.setImplementationRef(implRef);
-        }
-        interfaces.add(i);
-        return i;
+        Resource resource = new Resource(id, name);
+        ;
+        resources.put(id, resource);
+        return resource;
     }
 
-    public Object end(final String uri, final String localName, final ExtensibleXmlParser parser) throws SAXException {
+    public Object end(final String uri, final String localName,
+            final ExtensibleXmlParser parser) throws SAXException {
         parser.endElementBuilder();
         return parser.getCurrent();
     }
 
     public Class<?> generateNodeFor() {
-        return Interface.class;
+        return Resource.class;
     }
 
 }

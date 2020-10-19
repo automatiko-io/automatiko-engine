@@ -284,7 +284,12 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         this.workItem = workItem;
         WorkItemNode workItemNode = getWorkItemNode();
 
-        if (workItemNode != null && workItem.getState() == COMPLETED) {
+        if (workItemNode != null && workItem.getState() == WorkItem.ABORTED) {
+            cancel();
+            continueToNextNode(io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE, workItemNode);
+            return;
+        } else if (workItemNode != null && workItem.getState() == WorkItem.COMPLETED) {
+
             validateWorkItemResultVariable(getProcessInstance().getProcessName(), workItemNode.getOutAssociations(),
                     workItem);
             for (Iterator<DataAssociation> iterator = getWorkItemNode().getOutAssociations().iterator(); iterator

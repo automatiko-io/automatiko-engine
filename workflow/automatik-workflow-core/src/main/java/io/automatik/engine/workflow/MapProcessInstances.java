@@ -10,7 +10,7 @@ import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.api.workflow.ProcessInstanceDuplicatedException;
 import io.automatik.engine.api.workflow.ProcessInstanceReadMode;
 
-class MapProcessInstances<T> implements MutableProcessInstances<T> {
+public class MapProcessInstances<T> implements MutableProcessInstances<T> {
 
     private final ConcurrentHashMap<String, ProcessInstance<T>> instances = new ConcurrentHashMap<>();
 
@@ -40,7 +40,7 @@ class MapProcessInstances<T> implements MutableProcessInstances<T> {
 
     @Override
     public void update(String id, ProcessInstance<T> instance) {
-        if (isActive(instance)) {
+        if (isActive(instance) && instances.containsKey(resolveId(id))) {
             instances.put(resolveId(id), instance);
         }
     }

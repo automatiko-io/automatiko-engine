@@ -397,7 +397,7 @@ public class SubProcessNode extends StateBasedNode implements Mappable, ContextC
                 }
             }
             if (parameterValue != null) {
-                parameters.put(association.getTarget(), parameterValue);
+                parameters.put(sourceParam, parameterValue);
             }
         }
 

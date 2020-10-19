@@ -106,7 +106,7 @@ public class CacheProcessInstances implements MutableProcessInstances {
                 if (existing != null) {
                     throw new ProcessInstanceDuplicatedException(id);
                 }
-            } else {
+            } else if (cache.containsKey(resolvedId)) {
                 cache.put(resolvedId, data);
             }
 

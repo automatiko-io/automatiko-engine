@@ -44,313 +44,310 @@ import io.automatik.engine.workflow.util.PatternConstants;
  */
 public class RuleSetNodeInstance extends StateBasedNodeInstance implements EventListener, ContextInstanceContainer {
 
-	private static final long serialVersionUID = 510L;
-	private static final Logger logger = LoggerFactory.getLogger(RuleSetNodeInstance.class);
+    private static final long serialVersionUID = 510L;
+    private static final Logger logger = LoggerFactory.getLogger(RuleSetNodeInstance.class);
 
-	// NOTE: ContetxInstances are not persisted as current functionality (exception
-	// scope) does not require it
-	private Map<String, List<ContextInstance>> subContextInstances = new HashMap<>();
+    // NOTE: ContetxInstances are not persisted as current functionality (exception
+    // scope) does not require it
+    private Map<String, List<ContextInstance>> subContextInstances = new HashMap<>();
 
-	protected RuleSetNode getRuleSetNode() {
-		return (RuleSetNode) getNode();
-	}
+    protected RuleSetNode getRuleSetNode() {
+        return (RuleSetNode) getNode();
+    }
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Override
-	public void internalTrigger(final NodeInstance from, String type) {
-		try {
-			super.internalTrigger(from, type);
-			// if node instance was cancelled, abort
-			if (getNodeInstanceContainer().getNodeInstance(getId()) == null) {
-				return;
-			}
-			if (!io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE.equals(type)) {
-				throw new IllegalArgumentException("A RuleSetNode only accepts default incoming connections!");
-			}
-			RuleSetNode ruleSetNode = getRuleSetNode();
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
+    public void internalTrigger(final NodeInstance from, String type) {
+        try {
+            super.internalTrigger(from, type);
+            // if node instance was cancelled, abort
+            if (getNodeInstanceContainer().getNodeInstance(getId()) == null) {
+                return;
+            }
+            if (!io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE.equals(type)) {
+                throw new IllegalArgumentException("A RuleSetNode only accepts default incoming connections!");
+            }
+            RuleSetNode ruleSetNode = getRuleSetNode();
 
-			Map<String, Object> inputs = evaluateParameters(ruleSetNode);
+            Map<String, Object> inputs = evaluateParameters(ruleSetNode);
 
-			RuleSetNode.RuleType ruleType = ruleSetNode.getRuleType();
-			if (ruleType.isDecision()) {
-				RuleSetNode.RuleType.Decision decisionModel = (RuleSetNode.RuleType.Decision) ruleType;
-				String dName = resolveVariable(decisionModel.getDecision());
+            RuleSetNode.RuleType ruleType = ruleSetNode.getRuleType();
+            if (ruleType.isDecision()) {
+                RuleSetNode.RuleType.Decision decisionModel = (RuleSetNode.RuleType.Decision) ruleType;
+                String dName = resolveVariable(decisionModel.getDecision());
 
-				DecisionModel modelInstance = getRuleSetNode().getDecisionModel().get();
+                DecisionModel modelInstance = getRuleSetNode().getDecisionModel().get();
 
-				Object context = modelInstance.newContext(inputs);
-				Object dmnResult = null;
-				if (dName == null) {
-					dmnResult = modelInstance.evaluateAll(context);
-				} else if (decisionModel.isDecisionService()) {
-					dmnResult = modelInstance.evaluateDecisionService(context, dName);
-				} else {
-					dmnResult = modelInstance.evaluateDecisionByName(context, dName);
-				}
+                Object context = modelInstance.newContext(inputs);
+                Object dmnResult = null;
+                if (dName == null) {
+                    dmnResult = modelInstance.evaluateAll(context);
+                } else if (decisionModel.isDecisionService()) {
+                    dmnResult = modelInstance.evaluateDecisionService(context, dName);
+                } else {
+                    dmnResult = modelInstance.evaluateDecisionByName(context, dName);
+                }
 
-				if (modelInstance.hasErrors(dmnResult)) {
+                if (modelInstance.hasErrors(dmnResult)) {
 
-					throw new RuntimeException("DMN result errors:: " + modelInstance.buildErrorMessage(dmnResult));
-				}
-				processOutputs(modelInstance.getResultData(dmnResult));
-				triggerCompleted();
-			} else {
-				throw new UnsupportedOperationException("Unsupported Rule Type: " + ruleType);
-			}
-		} catch (Exception e) {
-			handleException(e);
-		}
-	}
+                    throw new RuntimeException("DMN result errors:: " + modelInstance.buildErrorMessage(dmnResult));
+                }
+                processOutputs(modelInstance.getResultData(dmnResult));
+                triggerCompleted();
+            } else {
+                throw new UnsupportedOperationException("Unsupported Rule Type: " + ruleType);
+            }
+        } catch (Exception e) {
+            handleException(e);
+        }
+    }
 
-	private void handleException(Throwable e) {
-		ExceptionScopeInstance exceptionScopeInstance = getExceptionScopeInstance(e);
-		if (exceptionScopeInstance != null) {
-			exceptionScopeInstance.handleException(e.getClass().getName(), e);
-		} else {
-			Throwable rootCause = getRootException(e);
-			if (rootCause != null) {
-				exceptionScopeInstance = getExceptionScopeInstance(rootCause);
-				if (exceptionScopeInstance != null) {
-					exceptionScopeInstance.handleException(rootCause.getClass().getName(), rootCause);
+    private void handleException(Throwable e) {
+        ExceptionScopeInstance exceptionScopeInstance = getExceptionScopeInstance(e);
+        if (exceptionScopeInstance != null) {
+            exceptionScopeInstance.handleException(e.getClass().getName(), e);
+        } else {
+            Throwable rootCause = getRootException(e);
+            if (rootCause != null) {
+                exceptionScopeInstance = getExceptionScopeInstance(rootCause);
+                if (exceptionScopeInstance != null) {
+                    exceptionScopeInstance.handleException(rootCause.getClass().getName(), rootCause);
 
-					return;
-				}
-			}
-			throw new WorkflowRuntimeException(this, getProcessInstance(),
-					"Unable to execute Action: " + e.getMessage(), e);
-		}
-	}
+                    return;
+                }
+            }
+            throw new WorkflowRuntimeException(this, getProcessInstance(),
+                    "Unable to execute Action: " + e.getMessage(), e);
+        }
+    }
 
-	private ExceptionScopeInstance getExceptionScopeInstance(Throwable e) {
-		return (ExceptionScopeInstance) resolveContextInstance(ExceptionScope.EXCEPTION_SCOPE, e.getClass().getName());
-	}
+    private ExceptionScopeInstance getExceptionScopeInstance(Throwable e) {
+        return (ExceptionScopeInstance) resolveContextInstance(ExceptionScope.EXCEPTION_SCOPE, e.getClass().getName());
+    }
 
-	protected Throwable getRootException(Throwable exception) {
-		Throwable rootException = exception;
-		while (rootException.getCause() != null) {
-			rootException = rootException.getCause();
-		}
-		return rootException;
-	}
+    protected Throwable getRootException(Throwable exception) {
+        Throwable rootException = exception;
+        while (rootException.getCause() != null) {
+            rootException = rootException.getCause();
+        }
+        return rootException;
+    }
 
-	@Override
-	public void cancel() {
-		super.cancel();
-	}
+    @Override
+    public void cancel() {
+        super.cancel();
+    }
 
-	private void processOutputs(Map<String, Object> objects) {
-		RuleSetNode ruleSetNode = getRuleSetNode();
-		if (ruleSetNode != null) {
-			for (Iterator<DataAssociation> iterator = ruleSetNode.getOutAssociations().iterator(); iterator
-					.hasNext();) {
-				DataAssociation association = iterator.next();
-				if (association.getTransformation() != null) {
-					Transformation transformation = association.getTransformation();
-					DataTransformer transformer = DataTransformerRegistry.get().find(transformation.getLanguage());
-					if (transformer != null) {
-						Object parameterValue = transformer.transform(transformation.getCompiledExpression(), objects);
-						VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
-								VariableScope.VARIABLE_SCOPE, association.getTarget());
-						if (variableScopeInstance != null && parameterValue != null) {
-							variableScopeInstance.setVariable(this, association.getTarget(), parameterValue);
-						} else {
-							logger.warn("Could not find variable scope for variable {}", association.getTarget());
-							logger.warn("Continuing without setting variable.");
-						}
-					}
-				} else if (association.getAssignments() == null || association.getAssignments().isEmpty()) {
-					VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
-							VariableScope.VARIABLE_SCOPE, association.getTarget());
-					if (variableScopeInstance != null) {
-						Object value = objects.get(association.getSources().get(0));
-						if (value == null) {
-							try {
-								value = MVEL.eval(association.getSources().get(0),
-										new MapVariableResolverFactory(objects));
-							} catch (Throwable t) {
-								// do nothing
-							}
-						}
-						Variable varDef = variableScopeInstance.getVariableScope()
-								.findVariable(association.getTarget());
-						DataType dataType = varDef.getType();
-						// exclude java.lang.Object as it is considered unknown type
-						if (!dataType.getStringType().endsWith("java.lang.Object") && value instanceof String) {
-							value = dataType.readValue((String) value);
-						}
-						variableScopeInstance.setVariable(this, association.getTarget(), value);
-					} else {
-						String output = association.getSources().get(0);
-						String target = association.getTarget();
+    private void processOutputs(Map<String, Object> objects) {
+        RuleSetNode ruleSetNode = getRuleSetNode();
+        if (ruleSetNode != null) {
+            for (Iterator<DataAssociation> iterator = ruleSetNode.getOutAssociations().iterator(); iterator
+                    .hasNext();) {
+                DataAssociation association = iterator.next();
+                if (association.getTransformation() != null) {
+                    Transformation transformation = association.getTransformation();
+                    DataTransformer transformer = DataTransformerRegistry.get().find(transformation.getLanguage());
+                    if (transformer != null) {
+                        Object parameterValue = transformer.transform(transformation.getCompiledExpression(), objects);
+                        VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+                                VariableScope.VARIABLE_SCOPE, association.getTarget());
+                        if (variableScopeInstance != null && parameterValue != null) {
+                            variableScopeInstance.setVariable(this, association.getTarget(), parameterValue);
+                        } else {
+                            logger.warn("Could not find variable scope for variable {}", association.getTarget());
+                            logger.warn("Continuing without setting variable.");
+                        }
+                    }
+                } else if (association.getAssignments() == null || association.getAssignments().isEmpty()) {
+                    VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+                            VariableScope.VARIABLE_SCOPE, association.getTarget());
+                    if (variableScopeInstance != null) {
+                        Object value = objects.get(association.getSources().get(0));
+                        if (value == null) {
+                            try {
+                                value = MVEL.eval(association.getSources().get(0),
+                                        new MapVariableResolverFactory(objects));
+                            } catch (Throwable t) {
+                                // do nothing
+                            }
+                        }
+                        Variable varDef = variableScopeInstance.getVariableScope()
+                                .findVariable(association.getTarget());
+                        DataType dataType = varDef.getType();
+                        // exclude java.lang.Object as it is considered unknown type
+                        if (!dataType.getStringType().endsWith("java.lang.Object") && value instanceof String) {
+                            value = dataType.readValue((String) value);
+                        }
+                        variableScopeInstance.setVariable(this, association.getTarget(), value);
+                    } else {
+                        String output = association.getSources().get(0);
+                        String target = association.getTarget();
 
-						Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(target);
-						if (matcher.find()) {
-							String paramName = matcher.group(1);
+                        Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(target);
+                        if (matcher.find()) {
+                            String paramName = matcher.group(1);
 
-							String expression = VariableUtil.transformDotNotation(paramName, output);
-							NodeInstanceResolverFactory resolver = new NodeInstanceResolverFactory(this);
-							resolver.addExtraParameters(objects);
-							Serializable compiled = MVEL.compileExpression(expression);
-							MVEL.executeExpression(compiled, resolver);
-						} else {
-							logger.warn("Could not find variable scope for variable {}", association.getTarget());
-						}
-					}
-				}
-			}
-		}
-	}
+                            String expression = VariableUtil.transformDotNotation(paramName, output);
+                            NodeInstanceResolverFactory resolver = new NodeInstanceResolverFactory(this);
+                            resolver.addExtraParameters(objects);
+                            Serializable compiled = MVEL.compileExpression(expression);
+                            MVEL.executeExpression(compiled, resolver);
+                        } else {
+                            logger.warn("Could not find variable scope for variable {}", association.getTarget());
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	protected Map<String, Object> evaluateParameters(RuleSetNode ruleSetNode) {
-		Map<String, Object> replacements = new HashMap<>();
+    protected Map<String, Object> evaluateParameters(RuleSetNode ruleSetNode) {
+        Map<String, Object> replacements = new HashMap<>();
 
-		for (Iterator<DataAssociation> iterator = ruleSetNode.getInAssociations().iterator(); iterator.hasNext();) {
-			DataAssociation association = iterator.next();
-			if (association.getTransformation() != null) {
-				Transformation transformation = association.getTransformation();
-				DataTransformer transformer = DataTransformerRegistry.get().find(transformation.getLanguage());
-				if (transformer != null) {
-					Object parameterValue = transformer.transform(transformation.getCompiledExpression(),
-							getSourceParameters(association));
-					if (parameterValue != null) {
-						replacements.put(association.getTarget(), parameterValue);
-					}
-				}
-			} else if (association.getAssignments() == null || association.getAssignments().isEmpty()) {
-				Object parameterValue = null;
-				VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
-						VariableScope.VARIABLE_SCOPE, association.getSources().get(0));
-				if (variableScopeInstance != null) {
-					parameterValue = variableScopeInstance.getVariable(association.getSources().get(0));
-				} else {
-					try {
-						parameterValue = MVEL.eval(association.getSources().get(0),
-								new NodeInstanceResolverFactory(this));
-					} catch (Throwable t) {
-						logger.error("Could not find variable scope for variable {}", association.getSources().get(0));
-						logger.error("when trying to execute RuleSetNode {}", ruleSetNode.getName());
-						logger.error("Continuing without setting parameter.");
-					}
-				}
-				if (parameterValue != null) {
-					replacements.put(association.getTarget(), parameterValue);
-				}
-			}
-		}
+        for (Iterator<DataAssociation> iterator = ruleSetNode.getInAssociations().iterator(); iterator.hasNext();) {
+            DataAssociation association = iterator.next();
+            if (association.getTransformation() != null) {
+                Transformation transformation = association.getTransformation();
+                DataTransformer transformer = DataTransformerRegistry.get().find(transformation.getLanguage());
+                if (transformer != null) {
+                    Object parameterValue = transformer.transform(transformation.getCompiledExpression(),
+                            getSourceParameters(association));
 
-		for (Map.Entry<String, Object> entry : ruleSetNode.getParameters().entrySet()) {
-			if (entry.getValue() instanceof String) {
+                    replacements.put(association.getTarget(), parameterValue);
+                }
+            } else if (association.getAssignments() == null || association.getAssignments().isEmpty()) {
+                Object parameterValue = null;
+                VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+                        VariableScope.VARIABLE_SCOPE, association.getSources().get(0));
+                if (variableScopeInstance != null) {
+                    parameterValue = variableScopeInstance.getVariable(association.getSources().get(0));
+                } else {
+                    try {
+                        parameterValue = MVEL.eval(association.getSources().get(0),
+                                new NodeInstanceResolverFactory(this));
+                    } catch (Throwable t) {
+                        logger.error("Could not find variable scope for variable {}", association.getSources().get(0));
+                        logger.error("when trying to execute RuleSetNode {}", ruleSetNode.getName());
+                        logger.error("Continuing without setting parameter.");
+                    }
+                }
+                replacements.put(association.getTarget(), parameterValue);
 
-				Object value = resolveVariable(entry.getValue());
-				if (value != null) {
-					replacements.put(entry.getKey(), value);
-				}
-			}
-		}
+            }
+        }
 
-		return replacements;
-	}
+        for (Map.Entry<String, Object> entry : ruleSetNode.getParameters().entrySet()) {
+            if (entry.getValue() instanceof String) {
 
-	private Object resolveVariable(Object s) {
+                Object value = resolveVariable(entry.getValue());
 
-		if (s instanceof String) {
-			Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher((String) s);
-			while (matcher.find()) {
-				String paramName = matcher.group(1);
+                replacements.put(entry.getKey(), value);
+            }
+        }
 
-				VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
-						VariableScope.VARIABLE_SCOPE, paramName);
-				if (variableScopeInstance != null) {
-					Object variableValue = variableScopeInstance.getVariable(paramName);
-					if (variableValue != null) {
-						return variableValue;
-					}
-				} else {
-					try {
-						Object variableValue = MVEL.eval(paramName, new NodeInstanceResolverFactory(this));
-						if (variableValue != null) {
-							return variableValue;
-						}
-					} catch (Throwable t) {
-						logger.error("Could not find variable scope for variable {}", paramName);
-					}
-				}
-			}
-		}
+        return replacements;
+    }
 
-		return s;
-	}
+    private Object resolveVariable(Object s) {
 
-	protected Map<String, Object> getSourceParameters(DataAssociation association) {
-		Map<String, Object> parameters = new HashMap<>();
-		for (String sourceParam : association.getSources()) {
-			Object parameterValue = null;
-			VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
-					VariableScope.VARIABLE_SCOPE, sourceParam);
-			if (variableScopeInstance != null) {
-				parameterValue = variableScopeInstance.getVariable(sourceParam);
-			} else {
-				try {
-					parameterValue = MVEL.eval(sourceParam, new NodeInstanceResolverFactory(this));
-				} catch (Throwable t) {
-					logger.warn("Could not find variable scope for variable {}", sourceParam);
-				}
-			}
-			if (parameterValue != null) {
-				parameters.put(sourceParam, parameterValue);
-			}
-		}
+        if (s instanceof String) {
+            Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher((String) s);
+            while (matcher.find()) {
+                String paramName = matcher.group(1);
 
-		return parameters;
-	}
+                VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+                        VariableScope.VARIABLE_SCOPE, paramName);
+                if (variableScopeInstance != null) {
+                    Object variableValue = variableScopeInstance.getVariable(paramName);
+                    if (variableValue != null) {
+                        return variableValue;
+                    }
+                } else {
+                    try {
+                        Object variableValue = MVEL.eval(paramName, new NodeInstanceResolverFactory(this));
+                        if (variableValue != null) {
+                            return variableValue;
+                        }
+                    } catch (Throwable t) {
+                        logger.error("Could not find variable scope for variable {}", paramName);
+                    }
+                }
+            }
+        }
 
-	@Override
-	public List<ContextInstance> getContextInstances(String contextId) {
-		return this.subContextInstances.get(contextId);
-	}
+        return s;
+    }
 
-	@Override
-	public void addContextInstance(String contextId, ContextInstance contextInstance) {
-		List<ContextInstance> list = this.subContextInstances.computeIfAbsent(contextId, key -> new ArrayList<>());
-		list.add(contextInstance);
-	}
+    protected Map<String, Object> getSourceParameters(DataAssociation association) {
+        Map<String, Object> parameters = new HashMap<>();
+        for (String sourceParam : association.getSources()) {
+            Object parameterValue = null;
+            VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+                    VariableScope.VARIABLE_SCOPE, sourceParam);
+            if (variableScopeInstance != null) {
+                parameterValue = variableScopeInstance.getVariable(sourceParam);
+            } else {
+                try {
+                    parameterValue = MVEL.eval(sourceParam, new NodeInstanceResolverFactory(this));
+                } catch (Throwable t) {
+                    logger.warn("Could not find variable scope for variable {}", sourceParam);
+                }
+            }
+            if (parameterValue != null) {
+                parameters.put(sourceParam, parameterValue);
+            }
+        }
 
-	@Override
-	public void removeContextInstance(String contextId, ContextInstance contextInstance) {
-		List<ContextInstance> list = this.subContextInstances.get(contextId);
-		if (list != null) {
-			list.remove(contextInstance);
-		}
-	}
+        return parameters;
+    }
 
-	@Override
-	public ContextInstance getContextInstance(String contextId, long id) {
-		List<ContextInstance> contextInstances = subContextInstances.get(contextId);
-		if (contextInstances != null) {
-			for (ContextInstance contextInstance : contextInstances) {
-				if (contextInstance.getContextId() == id) {
-					return contextInstance;
-				}
-			}
-		}
-		return null;
-	}
+    @Override
+    public List<ContextInstance> getContextInstances(String contextId) {
+        return this.subContextInstances.get(contextId);
+    }
 
-	@Override
-	public ContextInstance getContextInstance(Context context) {
-		ContextInstanceFactory conf = ContextInstanceFactoryRegistry.INSTANCE.getContextInstanceFactory(context);
-		if (conf == null) {
-			throw new IllegalArgumentException("Illegal context type (registry not found): " + context.getClass());
-		}
-		ContextInstance contextInstance = conf.getContextInstance(context, this, getProcessInstance());
-		if (contextInstance == null) {
-			throw new IllegalArgumentException("Illegal context type (instance not found): " + context.getClass());
-		}
-		return contextInstance;
-	}
+    @Override
+    public void addContextInstance(String contextId, ContextInstance contextInstance) {
+        List<ContextInstance> list = this.subContextInstances.computeIfAbsent(contextId, key -> new ArrayList<>());
+        list.add(contextInstance);
+    }
 
-	@Override
-	public ContextContainer getContextContainer() {
-		return getRuleSetNode();
-	}
+    @Override
+    public void removeContextInstance(String contextId, ContextInstance contextInstance) {
+        List<ContextInstance> list = this.subContextInstances.get(contextId);
+        if (list != null) {
+            list.remove(contextInstance);
+        }
+    }
+
+    @Override
+    public ContextInstance getContextInstance(String contextId, long id) {
+        List<ContextInstance> contextInstances = subContextInstances.get(contextId);
+        if (contextInstances != null) {
+            for (ContextInstance contextInstance : contextInstances) {
+                if (contextInstance.getContextId() == id) {
+                    return contextInstance;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public ContextInstance getContextInstance(Context context) {
+        ContextInstanceFactory conf = ContextInstanceFactoryRegistry.INSTANCE.getContextInstanceFactory(context);
+        if (conf == null) {
+            throw new IllegalArgumentException("Illegal context type (registry not found): " + context.getClass());
+        }
+        ContextInstance contextInstance = conf.getContextInstance(context, this, getProcessInstance());
+        if (contextInstance == null) {
+            throw new IllegalArgumentException("Illegal context type (instance not found): " + context.getClass());
+        }
+        return contextInstance;
+    }
+
+    @Override
+    public ContextContainer getContextContainer() {
+        return getRuleSetNode();
+    }
 }

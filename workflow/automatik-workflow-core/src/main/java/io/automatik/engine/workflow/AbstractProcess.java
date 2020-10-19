@@ -47,13 +47,33 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
         this(new LightProcessRuntimeServiceProvider());
     }
 
+    protected AbstractProcess(MutableProcessInstances<T> instances) {
+        this(new LightProcessRuntimeServiceProvider(), instances);
+    }
+
     protected AbstractProcess(ProcessConfig config) {
         this(new ConfiguredProcessServices(config));
+        if (config.processInstancesFactory() != null) {
+            this.processInstancesFactory = config.processInstancesFactory();
+        }
+
+    }
+
+    protected AbstractProcess(ProcessConfig config, MutableProcessInstances<T> instances) {
+        this(new ConfiguredProcessServices(config), instances);
+        if (config.processInstancesFactory() != null) {
+            this.processInstancesFactory = config.processInstancesFactory();
+        }
     }
 
     protected AbstractProcess(ProcessRuntimeServiceProvider services) {
+        this(services, new MapProcessInstances<T>());
+
+    }
+
+    protected AbstractProcess(ProcessRuntimeServiceProvider services, MutableProcessInstances<T> instances) {
         this.services = services;
-        this.instances = new MapProcessInstances<>();
+        this.instances = instances;
     }
 
     @Override

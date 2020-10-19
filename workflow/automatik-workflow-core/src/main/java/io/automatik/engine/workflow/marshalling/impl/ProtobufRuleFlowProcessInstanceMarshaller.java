@@ -11,13 +11,13 @@ import io.automatik.engine.workflow.process.instance.impl.WorkflowProcessInstanc
 
 public class ProtobufRuleFlowProcessInstanceMarshaller extends AbstractProtobufProcessInstanceMarshaller {
 
-	public static ProtobufRuleFlowProcessInstanceMarshaller INSTANCE = new ProtobufRuleFlowProcessInstanceMarshaller();
+    public static ProtobufRuleFlowProcessInstanceMarshaller INSTANCE = new ProtobufRuleFlowProcessInstanceMarshaller();
 
-	private ProtobufRuleFlowProcessInstanceMarshaller() {
-	}
+    protected ProtobufRuleFlowProcessInstanceMarshaller() {
+    }
 
-	protected WorkflowProcessInstanceImpl createProcessInstance() {
-		return new ExecutableProcessInstance();
-	}
+    protected WorkflowProcessInstanceImpl createProcessInstance() {
+        return new ExecutableProcessInstance();
+    }
 
 }

@@ -12,7 +12,6 @@ import java.util.Optional;
 import javax.lang.model.SourceVersion;
 
 import io.automatik.engine.services.utils.StringUtils;
-import io.automatik.engine.workflow.base.core.TypeObject;
 import io.automatik.engine.workflow.base.core.ValueObject;
 import io.automatik.engine.workflow.base.core.datatype.DataType;
 import io.automatik.engine.workflow.base.core.datatype.impl.type.UndefinedDataType;
@@ -21,7 +20,7 @@ import io.automatik.engine.workflow.base.core.datatype.impl.type.UndefinedDataTy
  * Default implementation of a variable.
  * 
  */
-public class Variable implements TypeObject, ValueObject, Serializable {
+public class Variable implements ValueObject, Serializable {
 
     private static final long serialVersionUID = 510l;
 
