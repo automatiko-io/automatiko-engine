@@ -19,7 +19,7 @@ public class $Type$Resource {
     @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of creating $taskName$ tasks", description="Rate of creating $taskName$ tasks")   
     public javax.ws.rs.core.Response signal(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$) {
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-            ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById(id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+            ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
 
             pi.send(Sig.of("$taskNodeName$", java.util.Collections.emptyMap()));
             java.util.Optional<WorkItem> task = pi.workItems().stream().filter(wi -> wi.getName().equals("$taskName$")).findFirst();
@@ -42,7 +42,7 @@ public class $Type$Resource {
     public $Type$Output completeTask(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$, @PathParam("workItemId") final String workItemId, @QueryParam("phase") @DefaultValue("complete") final String phase, @QueryParam("user") final String user, @QueryParam("group") final List<String> groups, final $TaskOutput$ model) {
         try {
             return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-                ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById(id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+                ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
 
                 io.automatik.engine.api.auth.IdentityProvider identity = null;
                 if (user != null) {
@@ -64,7 +64,7 @@ public class $Type$Resource {
     @Produces(MediaType.APPLICATION_JSON)
     public $TaskInput$ getTask(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$, @PathParam("workItemId") String workItemId, @QueryParam("user") final String user, @QueryParam("group") final List<String> groups) {
         try {
-            ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById(id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+            ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
 
             WorkItem workItem = pi.workItem(workItemId, policies(user, groups));
             if (workItem == null) {
@@ -87,7 +87,7 @@ public class $Type$Resource {
         try {
             
             return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-                ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById(id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+                ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
 
                 io.automatik.engine.api.auth.IdentityProvider identity = null;
                 if (user != null) {

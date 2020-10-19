@@ -31,7 +31,7 @@ public class MapProcessInstances<T> implements MutableProcessInstances<T> {
     @Override
     public void create(String id, ProcessInstance<T> instance) {
         if (isActive(instance)) {
-            ProcessInstance<T> existing = instances.putIfAbsent(resolveId(id), instance);
+            ProcessInstance<T> existing = instances.putIfAbsent(resolveId(id, instance), instance);
             if (existing != null) {
                 throw new ProcessInstanceDuplicatedException(id);
             }
@@ -40,14 +40,15 @@ public class MapProcessInstances<T> implements MutableProcessInstances<T> {
 
     @Override
     public void update(String id, ProcessInstance<T> instance) {
-        if (isActive(instance) && instances.containsKey(resolveId(id))) {
-            instances.put(resolveId(id), instance);
+        String resolvedId = resolveId(id, instance);
+        if (isActive(instance) && instances.containsKey(resolvedId)) {
+            instances.put(resolvedId, instance);
         }
     }
 
     @Override
     public void remove(String id, ProcessInstance<T> instance) {
-        instances.remove(resolveId(id));
+        instances.remove(resolveId(id, instance));
     }
 
     @Override

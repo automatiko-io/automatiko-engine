@@ -595,7 +595,9 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         if (children != null && !children.isEmpty()) {
 
             for (String id : children) {
-                process.instances().findById(id).ifPresent(pi -> collection.add((ProcessInstance<? extends Model>) pi));
+                process.instances().findById(id)
+                        .ifPresent(pi -> collection.add((ProcessInstance<? extends Model>) pi));
+
             }
         }
     }

@@ -47,250 +47,253 @@ import io.automatik.engine.workflow.process.core.node.ActionNode;
 
 public class MockCacheProcessInstancesTest {
 
-	private final ConcurrentHashMap<Object, Object> mockCache = new ConcurrentHashMap<>();
-	private RemoteCacheManager cacheManager;
+    private final ConcurrentHashMap<Object, Object> mockCache = new ConcurrentHashMap<>();
+    private RemoteCacheManager cacheManager;
 
-	@SuppressWarnings("unchecked")
-	@BeforeEach
-	public void setup() {
-		mockCache.clear();
-		cacheManager = mock(RemoteCacheManager.class);
-		RemoteCacheManagerAdmin admin = mock(RemoteCacheManagerAdmin.class);
-		RemoteCache<Object, Object> cache = mock(RemoteCache.class);
+    @SuppressWarnings("unchecked")
+    @BeforeEach
+    public void setup() {
+        mockCache.clear();
+        cacheManager = mock(RemoteCacheManager.class);
+        RemoteCacheManagerAdmin admin = mock(RemoteCacheManagerAdmin.class);
+        RemoteCache<Object, Object> cache = mock(RemoteCache.class);
 
-		when(cacheManager.administration()).thenReturn(admin);
-		when(admin.getOrCreateCache(any(), (String) any())).thenReturn(cache);
+        when(cacheManager.administration()).thenReturn(admin);
+        when(admin.getOrCreateCache(any(), (String) any())).thenReturn(cache);
 
-		when(cache.put(any(), any())).then(new Answer<Object>() {
+        when(cache.put(any(), any())).then(new Answer<Object>() {
 
-			@Override
-			public Object answer(InvocationOnMock invocation) throws Throwable {
-				Object key = invocation.getArgument(0, Object.class);
-				Object value = invocation.getArgument(1, Object.class);
-				return mockCache.put(key, value);
-			}
-		});
-		when(cache.putIfAbsent(any(), any())).then(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object key = invocation.getArgument(0, Object.class);
+                Object value = invocation.getArgument(1, Object.class);
+                return mockCache.put(key, value);
+            }
+        });
+        when(cache.putIfAbsent(any(), any())).then(new Answer<Object>() {
 
-			@Override
-			public Object answer(InvocationOnMock invocation) throws Throwable {
-				Object key = invocation.getArgument(0, Object.class);
-				Object value = invocation.getArgument(1, Object.class);
-				return mockCache.put(key, value);
-			}
-		});
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object key = invocation.getArgument(0, Object.class);
+                Object value = invocation.getArgument(1, Object.class);
+                return mockCache.put(key, value);
+            }
+        });
 
-		when(cache.get(any())).then(new Answer<Object>() {
+        when(cache.get(any())).then(new Answer<Object>() {
 
-			@Override
-			public Object answer(InvocationOnMock invocation) throws Throwable {
-				Object key = invocation.getArgument(0, Object.class);
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object key = invocation.getArgument(0, Object.class);
 
-				return mockCache.get(key);
-			}
-		});
-		when(cache.remove(any())).then(invocation -> {
-			Object key = invocation.getArgument(0, Object.class);
-			return mockCache.remove(key);
-		});
-		when(cache.size()).then(invocation -> mockCache.size());
-	}
+                return mockCache.get(key);
+            }
+        });
+        when(cache.remove(any())).then(invocation -> {
+            Object key = invocation.getArgument(0, Object.class);
+            return mockCache.remove(key);
+        });
+        when(cache.size()).then(invocation -> mockCache.size());
 
-	@Test
-	void testFindByIdReadMode() {
-		BpmnProcess process = BpmnProcess.from(new ClassPathResource("BPMN2-UserTask-Script.bpmn2")).get(0);
-		// workaround as BpmnProcess does not compile the scripts but just reads the xml
-		for (Node node : ((WorkflowProcess) process.process()).getNodes()) {
-			if (node instanceof ActionNode) {
-				ProcessAction a = ((ActionNode) node).getAction();
-				a.removeMetaData("Action");
-				a.setMetaData("Action", new Action() {
+        when(cache.containsKey(any())).thenReturn(true);
+    }
 
-					@Override
-					public void execute(ProcessContext kcontext) throws Exception {
-						System.out.println(
-								"The variable value is " + kcontext.getVariable("s") + " about to call toString on it");
-						kcontext.getVariable("s").toString();
-					}
-				});
-			}
-		}
-		process.setProcessInstancesFactory(new CacheProcessInstancesFactory(cacheManager));
-		process.configure();
+    @Test
+    void testFindByIdReadMode() {
+        BpmnProcess process = BpmnProcess.from(new ClassPathResource("BPMN2-UserTask-Script.bpmn2")).get(0);
+        // workaround as BpmnProcess does not compile the scripts but just reads the xml
+        for (Node node : ((WorkflowProcess) process.process()).getNodes()) {
+            if (node instanceof ActionNode) {
+                ProcessAction a = ((ActionNode) node).getAction();
+                a.removeMetaData("Action");
+                a.setMetaData("Action", new Action() {
 
-		ProcessInstance<BpmnVariables> mutablePi = process
-				.createInstance(BpmnVariables.create(Collections.singletonMap("var", "value")));
+                    @Override
+                    public void execute(ProcessContext kcontext) throws Exception {
+                        System.out.println(
+                                "The variable value is " + kcontext.getVariable("s") + " about to call toString on it");
+                        kcontext.getVariable("s").toString();
+                    }
+                });
+            }
+        }
+        process.setProcessInstancesFactory(new CacheProcessInstancesFactory(cacheManager));
+        process.configure();
 
-		mutablePi.start();
-		assertThat(mutablePi.status()).isEqualTo(STATE_ERROR);
-		assertThat(mutablePi.error()).hasValueSatisfying(error -> {
-			assertThat(error.errorMessage()).endsWith("java.lang.NullPointerException - null");
-			assertThat(error.failedNodeId()).isEqualTo("ScriptTask_1");
-		});
-		assertThat(mutablePi.variables().toMap()).containsExactly(entry("var", "value"));
+        ProcessInstance<BpmnVariables> mutablePi = process
+                .createInstance(BpmnVariables.create(Collections.singletonMap("var", "value")));
 
-		ProcessInstances<BpmnVariables> instances = process.instances();
-		assertThat(instances.size()).isOne();
-		ProcessInstance<BpmnVariables> pi = instances.findById(mutablePi.id(), ProcessInstanceReadMode.READ_ONLY).get();
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> pi.abort());
+        mutablePi.start();
+        assertThat(mutablePi.status()).isEqualTo(STATE_ERROR);
+        assertThat(mutablePi.error()).hasValueSatisfying(error -> {
+            assertThat(error.errorMessage()).endsWith("java.lang.NullPointerException - null");
+            assertThat(error.failedNodeId()).isEqualTo("ScriptTask_1");
+        });
+        assertThat(mutablePi.variables().toMap()).containsExactly(entry("var", "value"));
 
-		ProcessInstance<BpmnVariables> readOnlyPi = instances
-				.findById(mutablePi.id(), ProcessInstanceReadMode.READ_ONLY).get();
-		assertThat(readOnlyPi.status()).isEqualTo(STATE_ERROR);
-		assertThat(readOnlyPi.error()).hasValueSatisfying(error -> {
-			assertThat(error.errorMessage()).endsWith("java.lang.NullPointerException - null");
-			assertThat(error.failedNodeId()).isEqualTo("ScriptTask_1");
-		});
-		assertThat(readOnlyPi.variables().toMap()).containsExactly(entry("var", "value"));
-		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> readOnlyPi.abort());
+        ProcessInstances<BpmnVariables> instances = process.instances();
+        assertThat(instances.size()).isOne();
+        ProcessInstance<BpmnVariables> pi = instances.findById(mutablePi.id(), ProcessInstanceReadMode.READ_ONLY).get();
+        assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> pi.abort());
 
-		instances.findById(mutablePi.id()).get().abort();
-		assertThat(instances.size()).isZero();
-	}
+        ProcessInstance<BpmnVariables> readOnlyPi = instances
+                .findById(mutablePi.id(), ProcessInstanceReadMode.READ_ONLY).get();
+        assertThat(readOnlyPi.status()).isEqualTo(STATE_ERROR);
+        assertThat(readOnlyPi.error()).hasValueSatisfying(error -> {
+            assertThat(error.errorMessage()).endsWith("java.lang.NullPointerException - null");
+            assertThat(error.failedNodeId()).isEqualTo("ScriptTask_1");
+        });
+        assertThat(readOnlyPi.variables().toMap()).containsExactly(entry("var", "value"));
+        assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> readOnlyPi.abort());
 
-	@Test
-	public void testBasicFlow() {
+        instances.findById(mutablePi.id()).get().abort();
+        assertThat(instances.size()).isZero();
+    }
 
-		BpmnProcess process = (BpmnProcess) BpmnProcess.from(new ClassPathResource("BPMN2-UserTask.bpmn2")).get(0);
-		process.setProcessInstancesFactory(new CacheProcessInstancesFactory(cacheManager));
-		process.configure();
+    @Test
+    public void testBasicFlow() {
 
-		ProcessInstance<BpmnVariables> processInstance = process
-				.createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
+        BpmnProcess process = (BpmnProcess) BpmnProcess.from(new ClassPathResource("BPMN2-UserTask.bpmn2")).get(0);
+        process.setProcessInstancesFactory(new CacheProcessInstancesFactory(cacheManager));
+        process.configure();
 
-		processInstance.start();
-		assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
+        ProcessInstance<BpmnVariables> processInstance = process
+                .createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
 
-		WorkItem workItem = processInstance.workItems(SecurityPolicy.of(new StaticIdentityProvider("john"))).get(0);
-		assertThat(workItem).isNotNull();
-		assertThat(workItem.getParameters().get("ActorId")).isEqualTo("john");
-		processInstance.completeWorkItem(workItem.getId(), null, SecurityPolicy.of(new StaticIdentityProvider("john")));
-		assertThat(processInstance.status()).isEqualTo(STATE_COMPLETED);
-	}
+        processInstance.start();
+        assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
 
-	@Test
-	public void testBasicFlowNoActors() {
+        WorkItem workItem = processInstance.workItems(SecurityPolicy.of(new StaticIdentityProvider("john"))).get(0);
+        assertThat(workItem).isNotNull();
+        assertThat(workItem.getParameters().get("ActorId")).isEqualTo("john");
+        processInstance.completeWorkItem(workItem.getId(), null, SecurityPolicy.of(new StaticIdentityProvider("john")));
+        assertThat(processInstance.status()).isEqualTo(STATE_COMPLETED);
+    }
 
-		BpmnProcess process = (BpmnProcess) BpmnProcess.from(new ClassPathResource("BPMN2-UserTask-NoActors.bpmn2"))
-				.get(0);
-		process.setProcessInstancesFactory(new CacheProcessInstancesFactory(cacheManager));
-		process.configure();
+    @Test
+    public void testBasicFlowNoActors() {
 
-		ProcessInstance<BpmnVariables> processInstance = process
-				.createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
+        BpmnProcess process = (BpmnProcess) BpmnProcess.from(new ClassPathResource("BPMN2-UserTask-NoActors.bpmn2"))
+                .get(0);
+        process.setProcessInstancesFactory(new CacheProcessInstancesFactory(cacheManager));
+        process.configure();
 
-		processInstance.start();
-		assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
+        ProcessInstance<BpmnVariables> processInstance = process
+                .createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
 
-		WorkItem workItem = processInstance.workItems().get(0);
-		assertThat(workItem).isNotNull();
-		assertThat(workItem.getParameters().get("ActorId")).isNull();
+        processInstance.start();
+        assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
 
-		List<WorkItem> workItems = processInstance.workItems(SecurityPolicy.of(new StaticIdentityProvider("john")));
-		assertThat(workItems).hasSize(1);
+        WorkItem workItem = processInstance.workItems().get(0);
+        assertThat(workItem).isNotNull();
+        assertThat(workItem.getParameters().get("ActorId")).isNull();
 
-		processInstance.completeWorkItem(workItem.getId(), null);
-		assertThat(processInstance.status()).isEqualTo(STATE_COMPLETED);
-	}
+        List<WorkItem> workItems = processInstance.workItems(SecurityPolicy.of(new StaticIdentityProvider("john")));
+        assertThat(workItems).hasSize(1);
 
-	@Test
-	public void testProcessInstanceNotFound() {
+        processInstance.completeWorkItem(workItem.getId(), null);
+        assertThat(processInstance.status()).isEqualTo(STATE_COMPLETED);
+    }
 
-		BpmnProcess process = (BpmnProcess) BpmnProcess.from(new ClassPathResource("BPMN2-UserTask.bpmn2")).get(0);
-		process.setProcessInstancesFactory(new CacheProcessInstancesFactory(cacheManager));
-		process.configure();
+    @Test
+    public void testProcessInstanceNotFound() {
 
-		ProcessInstance<BpmnVariables> processInstance = process
-				.createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
+        BpmnProcess process = (BpmnProcess) BpmnProcess.from(new ClassPathResource("BPMN2-UserTask.bpmn2")).get(0);
+        process.setProcessInstancesFactory(new CacheProcessInstancesFactory(cacheManager));
+        process.configure();
 
-		processInstance.start();
-		assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
-		mockCache.clear();
+        ProcessInstance<BpmnVariables> processInstance = process
+                .createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
 
-		assertThatThrownBy(() -> processInstance.workItems().get(0))
-				.isInstanceOf(ProcessInstanceNotFoundException.class);
+        processInstance.start();
+        assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
+        mockCache.clear();
 
-		Optional<? extends ProcessInstance<BpmnVariables>> loaded = process.instances().findById(processInstance.id());
-		assertThat(loaded).isNotPresent();
-	}
+        assertThatThrownBy(() -> processInstance.workItems().get(0))
+                .isInstanceOf(ProcessInstanceNotFoundException.class);
 
-	@Test
-	public void testBasicFlowWithErrorAndRetry() {
+        Optional<? extends ProcessInstance<BpmnVariables>> loaded = process.instances().findById(processInstance.id());
+        assertThat(loaded).isNotPresent();
+    }
 
-		testBasicFlowWithError((processInstance) -> {
-			processInstance.updateVariables(BpmnVariables.create(Collections.singletonMap("s", "test")));
-			processInstance.error().orElseThrow(() -> new IllegalStateException("Process instance not in error"))
-					.retrigger();
-		});
-	}
+    @Test
+    public void testBasicFlowWithErrorAndRetry() {
 
-	@Test
-	public void testBasicFlowWithErrorAndSkip() {
+        testBasicFlowWithError((processInstance) -> {
+            processInstance.updateVariables(BpmnVariables.create(Collections.singletonMap("s", "test")));
+            processInstance.error().orElseThrow(() -> new IllegalStateException("Process instance not in error"))
+                    .retrigger();
+        });
+    }
 
-		testBasicFlowWithError((processInstance) -> {
-			processInstance.updateVariables(BpmnVariables.create(Collections.singletonMap("s", "test")));
-			processInstance.error().orElseThrow(() -> new IllegalStateException("Process instance not in error"))
-					.skip();
-		});
-	}
+    @Test
+    public void testBasicFlowWithErrorAndSkip() {
 
-	private void testBasicFlowWithError(Consumer<ProcessInstance<BpmnVariables>> op) {
+        testBasicFlowWithError((processInstance) -> {
+            processInstance.updateVariables(BpmnVariables.create(Collections.singletonMap("s", "test")));
+            processInstance.error().orElseThrow(() -> new IllegalStateException("Process instance not in error"))
+                    .skip();
+        });
+    }
 
-		BpmnProcess process = (BpmnProcess) BpmnProcess.from(new ClassPathResource("BPMN2-UserTask-Script.bpmn2"))
-				.get(0);
-		// workaround as BpmnProcess does not compile the scripts but just reads the xml
-		for (Node node : ((WorkflowProcess) process.process()).getNodes()) {
-			if (node instanceof ActionNode) {
-				ProcessAction a = ((ActionNode) node).getAction();
-				a.removeMetaData("Action");
-				a.setMetaData("Action", new Action() {
+    private void testBasicFlowWithError(Consumer<ProcessInstance<BpmnVariables>> op) {
 
-					@Override
-					public void execute(ProcessContext kcontext) throws Exception {
-						System.out.println(
-								"The variable value is " + kcontext.getVariable("s") + " about to call toString on it");
+        BpmnProcess process = (BpmnProcess) BpmnProcess.from(new ClassPathResource("BPMN2-UserTask-Script.bpmn2"))
+                .get(0);
+        // workaround as BpmnProcess does not compile the scripts but just reads the xml
+        for (Node node : ((WorkflowProcess) process.process()).getNodes()) {
+            if (node instanceof ActionNode) {
+                ProcessAction a = ((ActionNode) node).getAction();
+                a.removeMetaData("Action");
+                a.setMetaData("Action", new Action() {
 
-						kcontext.getVariable("s").toString();
-					}
-				});
-			}
-		}
-		process.setProcessInstancesFactory(new CacheProcessInstancesFactory(cacheManager));
-		process.configure();
+                    @Override
+                    public void execute(ProcessContext kcontext) throws Exception {
+                        System.out.println(
+                                "The variable value is " + kcontext.getVariable("s") + " about to call toString on it");
 
-		ProcessInstance<BpmnVariables> processInstance = process.createInstance(BpmnVariables.create());
+                        kcontext.getVariable("s").toString();
+                    }
+                });
+            }
+        }
+        process.setProcessInstancesFactory(new CacheProcessInstancesFactory(cacheManager));
+        process.configure();
 
-		processInstance.start();
-		assertThat(processInstance.status()).isEqualTo(STATE_ERROR);
+        ProcessInstance<BpmnVariables> processInstance = process.createInstance(BpmnVariables.create());
 
-		Optional<ProcessError> errorOp = processInstance.error();
-		assertThat(errorOp).isPresent();
-		assertThat(errorOp.get().failedNodeId()).isEqualTo("ScriptTask_1");
-		assertThat(errorOp.get().errorMessage()).isNotNull().contains("java.lang.NullPointerException - null");
+        processInstance.start();
+        assertThat(processInstance.status()).isEqualTo(STATE_ERROR);
 
-		op.accept(processInstance);
+        Optional<ProcessError> errorOp = processInstance.error();
+        assertThat(errorOp).isPresent();
+        assertThat(errorOp.get().failedNodeId()).isEqualTo("ScriptTask_1");
+        assertThat(errorOp.get().errorMessage()).isNotNull().contains("java.lang.NullPointerException - null");
 
-		WorkItem workItem = processInstance.workItems(SecurityPolicy.of(new StaticIdentityProvider("john"))).get(0);
-		assertThat(workItem).isNotNull();
-		assertThat(workItem.getParameters().get("ActorId")).isEqualTo("john");
-		processInstance.completeWorkItem(workItem.getId(), null, SecurityPolicy.of(new StaticIdentityProvider("john")));
-		assertThat(processInstance.status()).isEqualTo(STATE_COMPLETED);
-	}
+        op.accept(processInstance);
+        processInstance.error().ifPresent(e -> e.retrigger());
 
-	private class CacheProcessInstancesFactory extends AbstractProcessInstancesFactory {
+        WorkItem workItem = processInstance.workItems(SecurityPolicy.of(new StaticIdentityProvider("john"))).get(0);
+        assertThat(workItem).isNotNull();
+        assertThat(workItem.getParameters().get("ActorId")).isEqualTo("john");
+        processInstance.completeWorkItem(workItem.getId(), null, SecurityPolicy.of(new StaticIdentityProvider("john")));
+        assertThat(processInstance.status()).isEqualTo(STATE_COMPLETED);
+    }
 
-		CacheProcessInstancesFactory(RemoteCacheManager cacheManager) {
-			super(cacheManager);
-		}
+    private class CacheProcessInstancesFactory extends AbstractProcessInstancesFactory {
 
-		@Override
-		public String proto() {
-			return null;
-		}
+        CacheProcessInstancesFactory(RemoteCacheManager cacheManager) {
+            super(cacheManager);
+        }
 
-		@Override
-		public List<?> marshallers() {
-			return Collections.emptyList();
-		}
-	}
+        @Override
+        public String proto() {
+            return null;
+        }
+
+        @Override
+        public List<?> marshallers() {
+            return Collections.emptyList();
+        }
+    }
 }

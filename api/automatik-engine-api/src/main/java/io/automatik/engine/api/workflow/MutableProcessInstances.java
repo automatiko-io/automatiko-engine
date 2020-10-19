@@ -2,8 +2,12 @@
 package io.automatik.engine.api.workflow;
 
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public interface MutableProcessInstances<T> extends ProcessInstances<T> {
+
+    public static final String SEPARATOR = ":";
 
     boolean exists(String id);
 
@@ -22,10 +26,30 @@ public interface MutableProcessInstances<T> extends ProcessInstances<T> {
     }
 
     default String resolveId(String id) {
+
+        if (id.contains(":")) {
+            String[] parts = id.split(SEPARATOR);
+
+            return Stream.of(parts).map(this::resolveId).collect(Collectors.joining(":"));
+        }
+
         try {
             return UUID.fromString(id).toString();
         } catch (IllegalArgumentException e) {
             return UUID.nameUUIDFromBytes(id.getBytes()).toString();
         }
+    }
+
+    default String resolveId(String id, ProcessInstance<T> instance) {
+
+        if (useCompositeIdForSubprocess() && instance.parentProcessInstanceId() != null) {
+            return resolveId(instance.parentProcessInstanceId()) + SEPARATOR + resolveId(id);
+        }
+
+        return resolveId(id);
+    }
+
+    default boolean useCompositeIdForSubprocess() {
+        return true;
     }
 }

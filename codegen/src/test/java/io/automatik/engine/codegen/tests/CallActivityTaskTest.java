@@ -260,7 +260,7 @@ public class CallActivityTaskTest extends AbstractCodegenTest {
 
         // verify that sub processes can be access by business key defined via variable tagging
         Process<? extends Model> sp = (Process<? extends Model>) childProcessInstance.process();
-        Optional<?> found = sp.instances().findById("a");
+        Optional<?> found = sp.instances().findById("custom-key:a");
         assertThat(found).isPresent();
 
         workItems = childProcessInstance.workItems(securityPolicy);
@@ -333,7 +333,7 @@ public class CallActivityTaskTest extends AbstractCodegenTest {
 
         // verify that sub processes can be access by business key defined via variable tagging
         Process<? extends Model> sp = (Process<? extends Model>) childProcessInstance.process();
-        Optional<?> found = sp.instances().findById("a");
+        Optional<?> found = sp.instances().findById("b:a");
         assertThat(found).isPresent();
 
         workItems = childProcessInstance.workItems(securityPolicy);

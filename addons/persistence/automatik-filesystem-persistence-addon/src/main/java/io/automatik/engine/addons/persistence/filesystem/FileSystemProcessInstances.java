@@ -44,6 +44,8 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     public static final String PI_ROOT_INSTANCE = "RootProcessInstance";
     public static final String PI_SUB_INSTANCE_COUNT = "SubProcessInstanceCount";
 
+    private boolean useCompositeIdForSubprocess = true;
+
     private Process<?> process;
     private Path storage;
 
@@ -55,10 +57,21 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy()));
     }
 
+    public FileSystemProcessInstances(Process<?> process, Path storage, boolean useCompositeIdForSubprocess) {
+        this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy()),
+                useCompositeIdForSubprocess);
+    }
+
     public FileSystemProcessInstances(Process<?> process, Path storage, ProcessInstanceMarshaller marshaller) {
+        this(process, storage, marshaller, true);
+    }
+
+    public FileSystemProcessInstances(Process<?> process, Path storage, ProcessInstanceMarshaller marshaller,
+            boolean useCompositeIdForSubprocess) {
         this.process = process;
         this.storage = Paths.get(storage.toString(), process.id());
         this.marshaller = marshaller;
+        this.useCompositeIdForSubprocess = useCompositeIdForSubprocess;
 
         try {
             Files.createDirectories(this.storage);
@@ -114,7 +127,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     @SuppressWarnings("unchecked")
     @Override
     public void create(String id, ProcessInstance instance) {
-        String resolvedId = resolveId(id);
+        String resolvedId = resolveId(id, instance);
         if (isActive(instance)) {
 
             Path processInstanceStorage = Paths.get(storage.toString(), resolvedId);
@@ -124,19 +137,21 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             }
             storeProcessInstance(processInstanceStorage, instance);
             cachedInstances.remove(resolvedId);
+            cachedInstances.remove(id);
         } else if (isPending(instance)) {
             if (cachedInstances.putIfAbsent(resolvedId, instance) != null) {
                 throw new ProcessInstanceDuplicatedException(id);
             }
         } else {
             cachedInstances.remove(resolvedId);
+            cachedInstances.remove(id);
         }
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public void update(String id, ProcessInstance instance) {
-        String resolvedId = resolveId(id);
+        String resolvedId = resolveId(id, instance);
         if (isActive(instance)) {
 
             Path processInstanceStorage = Paths.get(storage.toString(), resolvedId);
@@ -148,12 +163,14 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         cachedInstances.remove(resolvedId);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void remove(String id, ProcessInstance instance) {
-        String resolvedId = resolveId(id);
+        String resolvedId = resolveId(id, instance);
         Path processInstanceStorage = Paths.get(storage.toString(), resolvedId);
         Path processInstanceMetadataStorage = Paths.get(storage.toString(), "._metadata_" + resolveId(id));
         cachedInstances.remove(resolvedId);
+        cachedInstances.remove(id);
         try {
             Files.deleteIfExists(processInstanceStorage);
 
@@ -162,6 +179,12 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             throw new RuntimeException("Unable to remove process instance with id " + id, e);
         }
 
+    }
+
+    @Override
+    public boolean useCompositeIdForSubprocess() {
+
+        return useCompositeIdForSubprocess;
     }
 
     protected void storeProcessInstance(Path processInstanceStorage, ProcessInstance<?> instance) {

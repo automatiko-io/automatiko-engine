@@ -73,11 +73,13 @@ public class CacheProcessInstances implements MutableProcessInstances {
         updateStorage(id, instance, false);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void remove(String id, ProcessInstance instance) {
-        String resolvedId = resolveId(id);
+        String resolvedId = resolveId(id, instance);
         cache.remove(resolvedId);
         cachedInstances.remove(resolvedId);
+        cachedInstances.remove(id);
     }
 
     protected String ignoreNullOrEmpty(String value) {
@@ -96,7 +98,7 @@ public class CacheProcessInstances implements MutableProcessInstances {
 
     @SuppressWarnings("unchecked")
     protected void updateStorage(String id, ProcessInstance instance, boolean checkDuplicates) {
-        String resolvedId = resolveId(id);
+        String resolvedId = resolveId(id, instance);
         if (isActive(instance)) {
 
             byte[] data = marshaller.marhsallProcessInstance(instance);
@@ -119,12 +121,14 @@ public class CacheProcessInstances implements MutableProcessInstances {
                 return null;
             });
             cachedInstances.remove(resolvedId);
+            cachedInstances.remove(id);
         } else if (isPending(instance)) {
             if (cachedInstances.putIfAbsent(resolvedId, instance) != null) {
                 throw new ProcessInstanceDuplicatedException(id);
             }
         } else {
             cachedInstances.remove(resolvedId);
+            cachedInstances.remove(id);
         }
     }
 

@@ -60,7 +60,7 @@ public class $Type$Resource {
     @Produces(MediaType.APPLICATION_JSON)
     public $Type$Output get_$name$(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$) {
         return subprocess_$name$.instances()
-                .findById(id_$name$)
+                .findById($parentprocessid$ + ":" + id_$name$)
                 .map(pi -> mapOutput(new $Type$Output(), pi.variables()))
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
     }
@@ -74,7 +74,7 @@ public class $Type$Resource {
     public $Type$Output delete_$name$(@PathParam("id") String id, @PathParam("id_$name$") final String id_$name$) {
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = subprocess_$name$.instances()
-                    .findById(id_$name$)
+                    .findById($parentprocessid$ + ":" + id_$name$)
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             pi.abort();
             return getSubModel_$name$(pi);
@@ -89,7 +89,7 @@ public class $Type$Resource {
     public $Type$Output updateModel_$name$(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$, $Type$ resource) {
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = subprocess_$name$.instances()
-                    .findById(id_$name$)
+                    .findById($parentprocessid$ + ":" + id_$name$)
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
 
             pi.updateVariables(resource);
@@ -104,7 +104,7 @@ public class $Type$Resource {
     public java.util.List<WorkItem.Descriptor> getTasks_$name$(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$, @QueryParam("user") final String user, @QueryParam("group") final List<String> groups) {
         
         return subprocess_$name$.instances()
-                .findById(id_$name$)
+                .findById($parentprocessid$ + ":" + id_$name$)
                 .map(pi -> pi.workItems(policies(user, groups)))
                 .map(l -> l.stream().map(WorkItem::toMap).collect(Collectors.toList()))
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));

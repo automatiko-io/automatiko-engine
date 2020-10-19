@@ -97,7 +97,9 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
                 || processInstance.status() == ProcessInstance.STATE_ABORTED) {
             triggerCompleted();
         } else {
-            ((ProcessInstanceImpl) getProcessInstance()).addChild(processInstance.process().id(), processInstance.id());
+            String subprocessInstanceId = getProcessInstance().getId() + ":" + processInstance.id();
+
+            ((ProcessInstanceImpl) getProcessInstance()).addChild(processInstance.process().id(), subprocessInstanceId);
             addProcessListener();
         }
     }
@@ -107,7 +109,7 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
         super.cancel();
         if (getSubProcessNode() == null || !getSubProcessNode().isIndependent()) {
             SubProcessFactory<?> subProcessFactory = getSubProcessNode().getSubProcessFactory();
-            subProcessFactory.abortInstance(getProcessInstanceId());
+            subProcessFactory.abortInstance(getProcessInstance().getId() + ":" + getProcessInstanceId());
 
         }
     }

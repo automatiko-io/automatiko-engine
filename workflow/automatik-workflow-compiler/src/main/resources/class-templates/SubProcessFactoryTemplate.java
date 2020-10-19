@@ -15,7 +15,7 @@ class Template {
             
         }
         
-        private void internalAbortInstance(java.util.Optional<io.automatik.engine.api.workflow.ProcessInstance<$Type$>> processInstance) {
+        private void internalAbortInstance(java.util.Optional<? extends io.automatik.engine.api.workflow.ProcessInstance<$Type$>> processInstance) {
             processInstance.ifPresent(pi -> {
 
                 try {

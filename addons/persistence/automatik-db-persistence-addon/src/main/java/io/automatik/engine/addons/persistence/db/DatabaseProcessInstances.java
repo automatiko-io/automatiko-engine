@@ -91,11 +91,11 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
         // run persist to make sure entities of the root are stored
         JpaOperations.persist(entity);
         // then delete the root one
-        JpaOperations.deleteById(type, id);
+        JpaOperations.deleteById(type, resolveId(id, instance));
     }
 
     protected void store(String id, ProcessInstance<ProcessInstanceEntity> instance) {
-        String resolvedId = resolveId(id);
+        String resolvedId = resolveId(id, instance);
         if (isActive(instance)) {
             ProcessInstanceEntity entity = instance.variables();
             byte[] data = marshaller.marhsallProcessInstance(instance);
@@ -119,7 +119,8 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
         ((AbstractProcessInstance<?>) instance).internalRemoveProcessInstance(() -> {
 
             try {
-                ProcessInstanceEntity entity = (ProcessInstanceEntity) JpaOperations.findById(type, instance.id());
+                ProcessInstanceEntity entity = (ProcessInstanceEntity) JpaOperations.findById(type,
+                        resolveId(instance.id(), instance));
                 byte[] reloaded = entity.content;
 
                 WorkflowProcessInstance wpi = marshaller.unmarshallWorkflowProcessInstance(reloaded, process);
