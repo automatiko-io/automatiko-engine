@@ -306,6 +306,8 @@ public abstract class AbstractResourceGenerator {
             subunit.findFirst(ClassOrInterfaceDeclaration.class).get().findAll(MethodDeclaration.class).forEach(md -> {
                 MethodDeclaration cloned = md.clone();
 
+                interpolateMethodParams(cloned);
+
                 Optional<AnnotationExpr> pathAnotation = cloned.getAnnotationByName("Path");
                 if (pathAnotation.isPresent()) {
                     String v = pathAnotation.get().toString().replaceAll("\\{id", "#{id");
@@ -433,6 +435,24 @@ public abstract class AbstractResourceGenerator {
 
         m.getParameters().forEach(p -> p.setName(
                 p.getNameAsString().replace("$name$", processName).replace("$parentprocessid$", parentProcessId)));
+    }
+
+    private void interpolateMethodParams(MethodDeclaration m) {
+
+        m.findAll(MethodCallExpr.class, mc -> mc.getNameAsString().equals("findById")).forEach(mc -> {
+
+            mc.findAll(NameExpr.class).forEach(t -> {
+                String value = "";
+
+                if (parentProcess != null) {
+                    value = parentProcessId + "+ \":\" + ";
+                }
+
+                SimpleName methodName = t.getName();
+                String interpolated = methodName.asString().replace("$parentparentprocessid$", value);
+                t.setName(interpolated);
+            });
+        });
     }
 
     private void interpolateFields(FieldDeclaration m) {

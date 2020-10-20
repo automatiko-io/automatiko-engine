@@ -43,7 +43,7 @@ public class $Type$Resource {
     public List<$Type$Output> getAll_$name$(@PathParam("id") String id) {
         
     	ProcessInstance parent = $parentprocess$.instances()
-                .findById($parentprocessid$)
+                .findById($parentparentprocessid$$parentprocessid$)
                 .orElse(null);
         if (parent != null) {
     	
