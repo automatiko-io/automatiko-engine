@@ -71,8 +71,9 @@ public class EventSubProcessNodeInstance extends CompositeContextNodeInstance {
                         ((ProcessInstance) getProcessInstance()).setState(ProcessInstance.STATE_ABORTED, faultName);
                     } else {
                         ((NodeInstanceContainer) getNodeInstanceContainer()).setState(ProcessInstance.STATE_ABORTED);
+                        // to allow top level process instance in case there are no more active nodes
+                        ((NodeInstanceContainer) ((ProcessInstance) getProcessInstance())).nodeInstanceCompleted(this, null);
                     }
-
                 }
             }
         } else {
