@@ -49,18 +49,22 @@ import io.automatik.engine.api.runtime.process.ProcessInstance;
 import io.automatik.engine.api.workflow.BaseEventDescription;
 import io.automatik.engine.api.workflow.EventDescription;
 import io.automatik.engine.api.workflow.NamedDataType;
+import io.automatik.engine.api.workflow.Tag;
 import io.automatik.engine.api.workflow.flexible.AdHocFragment;
 import io.automatik.engine.api.workflow.flexible.ItemDescription;
 import io.automatik.engine.api.workflow.flexible.Milestone;
 import io.automatik.engine.services.correlation.CorrelationKey;
 import io.automatik.engine.services.time.TimerInstance;
 import io.automatik.engine.workflow.base.core.ContextContainer;
+import io.automatik.engine.workflow.base.core.Process;
+import io.automatik.engine.workflow.base.core.TagDefinition;
 import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.core.timer.DateTimeUtils;
 import io.automatik.engine.workflow.base.core.timer.Timer;
 import io.automatik.engine.workflow.base.instance.ContextInstance;
 import io.automatik.engine.workflow.base.instance.InternalProcessRuntime;
+import io.automatik.engine.workflow.base.instance.TagInstance;
 import io.automatik.engine.workflow.base.instance.context.variable.VariableScopeInstance;
 import io.automatik.engine.workflow.base.instance.impl.ProcessInstanceImpl;
 import io.automatik.engine.workflow.process.core.ProcessAction;
@@ -130,6 +134,8 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
     private String slaTimerId;
 
     private String referenceId;
+
+    private Collection<Tag> tags = new LinkedHashSet<Tag>();
 
     @Override
     public NodeContainer getNodeContainer() {
@@ -1178,6 +1184,51 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
 
     protected void broadcaseNodeInstanceStateChange(NodeInstance nodeInstance) {
 
+    }
+
+    @Override
+    public Collection<Tag> getTags() {
+        if (tags == null || tags.isEmpty()) {
+            evaluateTags();
+        }
+        return tags;
+    }
+
+    public Collection<Tag> evaluateTags() {
+        if (this.tags == null) {
+            this.tags = new LinkedHashSet<Tag>();
+        }
+        Collection<Tag> evaluatedTags = new LinkedHashSet<Tag>();
+
+        Collection<TagDefinition> tagDefinitions = ((Process) getProcess()).getTagDefinitions();
+
+        for (TagDefinition def : tagDefinitions) {
+
+            String tag = def.get(getVariables());
+            if (tag != null) {
+                Tag tagInstance = new TagInstance(def.getId(), tag);
+                evaluatedTags.add(tagInstance);
+
+                this.tags.remove(tagInstance);
+            }
+        }
+        // append all remaining tasks that didn't have definition - added manually on the instance
+        evaluatedTags.addAll(this.tags);
+        // replace existing ones
+        this.tags = evaluatedTags;
+        return evaluatedTags;
+    }
+
+    public void addTag(String value) {
+        internalAddTag(value, value);
+    }
+
+    public void internalAddTag(String id, String value) {
+        this.tags.add(new TagInstance(id, value));
+    }
+
+    public boolean removedTag(String id) {
+        return this.tags.remove(new TagInstance(id, null));
     }
 
     @Override

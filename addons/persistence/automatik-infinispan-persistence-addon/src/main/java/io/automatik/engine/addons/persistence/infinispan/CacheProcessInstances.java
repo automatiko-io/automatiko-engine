@@ -3,7 +3,9 @@ package io.automatik.engine.addons.persistence.infinispan;
 
 import static io.automatik.engine.api.workflow.ProcessInstanceReadMode.MUTABLE;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,6 +60,27 @@ public class CacheProcessInstances implements MutableProcessInstances {
 
         return Optional.of(mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process)
                 : marshaller.unmarshallReadOnlyProcessInstance(data, process));
+    }
+
+    @Override
+    public Collection<? extends ProcessInstance> findByIdOrTag(ProcessInstanceReadMode mode, String... values) {
+        List<ProcessInstance> collected = new ArrayList<>();
+        for (String idOrTag : values) {
+
+            cache.values().parallelStream()
+                    .map(data -> mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process)
+                            : marshaller.unmarshallReadOnlyProcessInstance(data, process))
+                    .filter(pi -> {
+                        if (pi.id().equals(resolveId(idOrTag)) || pi.tags().values().contains(idOrTag)) {
+                            return true;
+                        } else {
+                            pi.disconnect();
+                            return false;
+                        }
+                    })
+                    .forEach(pi -> collected.add(pi));
+        }
+        return collected;
     }
 
     @Override
@@ -136,4 +159,5 @@ public class CacheProcessInstances implements MutableProcessInstances {
     public boolean exists(String id) {
         return cache.containsKey(id);
     }
+
 }

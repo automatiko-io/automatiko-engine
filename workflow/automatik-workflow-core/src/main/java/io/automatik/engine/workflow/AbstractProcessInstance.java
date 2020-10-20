@@ -31,6 +31,8 @@ import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.api.workflow.ProcessInstanceDuplicatedException;
 import io.automatik.engine.api.workflow.ProcessInstanceNotFoundException;
 import io.automatik.engine.api.workflow.Signal;
+import io.automatik.engine.api.workflow.Tag;
+import io.automatik.engine.api.workflow.Tags;
 import io.automatik.engine.api.workflow.WorkItem;
 import io.automatik.engine.api.workflow.flexible.AdHocFragment;
 import io.automatik.engine.api.workflow.flexible.Milestone;
@@ -64,6 +66,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     protected String rootProcessId;
 
     protected ProcessError processError;
+
+    protected Tags tags;
 
     protected Supplier<io.automatik.engine.api.runtime.process.ProcessInstance> reloadSupplier;
 
@@ -170,6 +174,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         parentProcessInstanceId = "".equals(wpi.getParentProcessInstanceId()) ? null : wpi.getParentProcessInstanceId();
         rootProcessInstanceId = "".equals(wpi.getRootProcessInstanceId()) ? null : wpi.getRootProcessInstanceId();
         rootProcessId = "".equals(wpi.getRootProcessId()) ? null : wpi.getRootProcessId();
+        tags = buildTags();
 
         setCorrelationKey(wpi.getCorrelationKey());
     }
@@ -317,6 +322,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     @Override
     public void updateVariables(T updates) {
         synchronized (this) {
+            processInstance();
             Map<String, Object> map = bind(updates);
 
             for (Entry<String, Object> entry : map.entrySet()) {
@@ -325,6 +331,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
             syncProcessInstance(((WorkflowProcessInstance) processInstance()));
             unbind(this.variables, processInstance().getVariables());
             addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
+            removeOnFinish();
         }
     }
 
@@ -335,6 +342,12 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    public Tags tags() {
+
+        return this.tags != null ? this.tags : buildTags();
     }
 
     @Override
@@ -535,6 +548,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     }
 
     protected void removeOnFinish() {
+        io.automatik.engine.api.runtime.process.ProcessInstance processInstance = processInstance();
         if (processInstance.getState() != ProcessInstance.STATE_ACTIVE
                 && processInstance.getState() != ProcessInstance.STATE_ERROR) {
             ((WorkflowProcessInstanceImpl) processInstance).removeEventListener(
@@ -546,6 +560,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
             addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi));
 
         } else {
+            ((WorkflowProcessInstance) processInstance).evaluateTags();
             syncProcessInstance((WorkflowProcessInstance) processInstance);
             unbind(this.variables, processInstance().getVariables());
             addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
@@ -587,6 +602,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         vmap.put("$v", variables);
     }
 
+    @SuppressWarnings("unchecked")
     protected void populateChildProcesses(Process<?> process, Collection<ProcessInstance<? extends Model>> collection) {
 
         WorkflowProcessInstanceImpl instance = (WorkflowProcessInstanceImpl) processInstance();
@@ -682,6 +698,46 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                 ((NodeInstanceImpl) ni)
                         .triggerCompleted(io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE, true);
                 removeOnFinish();
+            }
+        };
+    }
+
+    protected Tags buildTags() {
+
+        return new Tags() {
+
+            @Override
+            public Collection<String> values() {
+                WorkflowProcessInstanceImpl pi = (WorkflowProcessInstanceImpl) processInstance();
+                return pi.getTags().stream().map(t -> t.getValue()).collect(Collectors.toList());
+            }
+
+            @Override
+            public boolean remove(String id) {
+                WorkflowProcessInstanceImpl pi = (WorkflowProcessInstanceImpl) processInstance();
+                boolean removed = pi.removedTag(id);
+                removeOnFinish();
+
+                return removed;
+            }
+
+            @Override
+            public Tag get(String id) {
+                WorkflowProcessInstanceImpl pi = (WorkflowProcessInstanceImpl) processInstance();
+                return pi.getTags().stream().filter(t -> t.getId().equals(id)).findFirst().orElse(null);
+            }
+
+            @Override
+            public void add(String value) {
+                WorkflowProcessInstanceImpl pi = (WorkflowProcessInstanceImpl) processInstance();
+                pi.addTag(value);
+                removeOnFinish();
+            }
+
+            @Override
+            public Collection<Tag> get() {
+                WorkflowProcessInstanceImpl pi = (WorkflowProcessInstanceImpl) processInstance();
+                return pi.getTags();
             }
         };
     }

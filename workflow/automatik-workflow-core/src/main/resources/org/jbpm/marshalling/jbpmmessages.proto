@@ -145,10 +145,17 @@ message ProcessInstance {
     repeated IterationLevel iterationLevels = 14;
     
     repeated ProcessInstanchChildren children = 28;
+    
+    repeated Tag tags = 29;
         
 	message ProcessInstanchChildren {
 	    optional string process_id = 1;
 	    repeated string ids = 2;
+	}	
+	
+	message Tag {
+	    optional string id = 1;
+	    optional string value = 2;
 	}
 
     message SwimlaneContextInstance {

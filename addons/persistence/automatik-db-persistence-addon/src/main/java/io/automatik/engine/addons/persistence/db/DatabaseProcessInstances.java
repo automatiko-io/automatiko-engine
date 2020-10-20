@@ -2,7 +2,9 @@ package io.automatik.engine.addons.persistence.db;
 
 import static io.automatik.engine.api.workflow.ProcessInstanceReadMode.MUTABLE;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -52,6 +54,15 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
         }
         ProcessInstanceEntity entity = found.get();
         return Optional.of(unmarshallInstance(mode, entity));
+    }
+
+    @Override
+    public Collection<? extends ProcessInstance<ProcessInstanceEntity>> findByIdOrTag(ProcessInstanceReadMode mode,
+            String... values) {
+        return JpaOperations.stream(type, "id in (?1) or (?1) in elements(tags) ", Arrays.asList(values))
+                .map(e -> unmarshallInstance(mode, ((ProcessInstanceEntity) e)))
+                .collect(Collectors.toList());
+
     }
 
     @Override
@@ -109,6 +120,8 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
             entity.processVersion = instance.process().version();
             entity.startDate = instance.startDate();
             entity.state = instance.status();
+
+            entity.tags = new HashSet<>(instance.tags().values());
 
             JpaOperations.persist(entity);
             disconnect(instance);

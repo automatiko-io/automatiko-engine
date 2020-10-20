@@ -16,17 +16,21 @@ import static io.automatik.engine.workflow.process.executable.core.Metadata.LINK
 import static io.automatik.engine.workflow.process.executable.core.Metadata.UNIQUE_ID;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
+import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -37,11 +41,13 @@ import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.UnknownType;
 
 import io.automatik.engine.api.definition.process.Connection;
 import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.workflow.base.core.ContextContainer;
-import io.automatik.engine.workflow.base.core.Work;
+import io.automatik.engine.workflow.base.core.FunctionTagDefinition;
+import io.automatik.engine.workflow.base.core.TagDefinition;
 import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
@@ -69,6 +75,7 @@ import io.automatik.engine.workflow.process.core.node.SubProcessNode;
 import io.automatik.engine.workflow.process.core.node.TimerNode;
 import io.automatik.engine.workflow.process.core.node.WorkItemNode;
 import io.automatik.engine.workflow.process.executable.core.ExecutableProcessFactory;
+import io.automatik.engine.workflow.util.PatternConstants;
 
 public class ProcessVisitor extends AbstractVisitor {
 
@@ -119,7 +126,40 @@ public class ProcessVisitor extends AbstractVisitor {
         visitVariableScope(variableScope, body, visitedVariables);
         visitSubVariableScopes(process.getNodes(), body, visitedVariables);
 
-        visitInterfaces(process.getNodes(), body);
+        Collection<TagDefinition> tagDefinitions = ((io.automatik.engine.workflow.process.core.WorkflowProcess) process)
+                .getTagDefinitions();
+        if (tagDefinitions != null) {
+
+            for (TagDefinition tag : tagDefinitions) {
+                if (tag instanceof FunctionTagDefinition) {
+                    String expression = tag.getExpression();
+                    Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(expression);
+                    if (matcher.find()) {
+                        expression = matcher.group(1);
+                    }
+                    BlockStmt actionBody = new BlockStmt();
+                    List<Variable> variables = variableScope.getVariables();
+                    variables.stream().filter(v -> tag.getExpression().contains(v.getName()))
+                            .map(ActionNodeVisitor::makeAssignmentFromMap)
+                            .forEach(actionBody::addStatement);
+                    actionBody.addStatement(new ReturnStmt(new NameExpr(expression)));
+
+                    LambdaExpr lambda = new LambdaExpr(
+                            NodeList.nodeList(new Parameter(new UnknownType(), "exp"),
+                                    new Parameter(new UnknownType(), "variables")),
+                            actionBody);
+
+                    body.addStatement(
+                            getFactoryMethod(FACTORY_FIELD_NAME, "tag", new StringLiteralExpr(tag.getId()),
+                                    new StringLiteralExpr(tag.getExpression()), lambda));
+
+                } else {
+                    body.addStatement(
+                            getFactoryMethod(FACTORY_FIELD_NAME, "tag", new StringLiteralExpr(tag.getId()),
+                                    new StringLiteralExpr(tag.getExpression()), new NullLiteralExpr()));
+                }
+            }
+        }
 
         metadata.setDynamic(((io.automatik.engine.workflow.process.core.WorkflowProcess) process).isDynamic());
         // the process itself
@@ -241,18 +281,6 @@ public class ProcessVisitor extends AbstractVisitor {
         }
         for (Connection connection : connections) {
             visitConnection(connection, body);
-        }
-    }
-
-    // KOGITO-1882 Finish implementation or delete completely
-    private void visitInterfaces(io.automatik.engine.api.definition.process.Node[] nodes, BlockStmt body) {
-        for (io.automatik.engine.api.definition.process.Node node : nodes) {
-            if (node instanceof WorkItemNode) {
-                Work work = ((WorkItemNode) node).getWork();
-                if (work != null) {
-                    // TODO - finish this method
-                }
-            }
         }
     }
 

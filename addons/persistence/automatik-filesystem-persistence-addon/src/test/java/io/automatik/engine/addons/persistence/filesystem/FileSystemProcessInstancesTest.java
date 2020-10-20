@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -153,6 +154,9 @@ public class FileSystemProcessInstancesTest {
 
         FileSystemProcessInstances fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
         assertThat(fileSystemBasedStorage.size()).isOne();
+
+        Collection findByTag = fileSystemBasedStorage.findByIdOrTag(ProcessInstanceReadMode.READ_ONLY, "important");
+        assertThat(findByTag).hasSize(1);
 
         verify(fileSystemBasedStorage, times(2)).create(any(), any());
         verify(fileSystemBasedStorage, times(1)).setMetadata(any(), eq(FileSystemProcessInstances.PI_DESCRIPTION),

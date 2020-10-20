@@ -1,8 +1,11 @@
 package io.automatik.engine.addons.persistence.db.model;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.MappedSuperclass;
@@ -51,6 +54,9 @@ public abstract class ProcessInstanceEntity extends PanacheEntityBase implements
     @JsonIgnore
     @Lob
     public byte[] content;
+
+    @ElementCollection
+    public Set<String> tags = new HashSet<String>();
 
     @Override
     public String toString() {

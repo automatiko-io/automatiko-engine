@@ -16,6 +16,7 @@ import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.api.workflow.ProcessInstances;
 import io.automatik.engine.api.workflow.Signal;
+import io.automatik.engine.api.workflow.Tags;
 import io.automatik.engine.api.workflow.WorkItem;
 import io.automatik.engine.api.workflow.workitem.Policy;
 import io.automatik.engine.api.workflow.workitem.Transition;
@@ -308,5 +309,9 @@ public class BpmnProcessInstance extends AbstractProcessInstance<BpmnVariables> 
         public void disconnect() {
         }
 
+        @Override
+        public Tags tags() {
+            return null;
+        }
     }
 }

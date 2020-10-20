@@ -4,6 +4,7 @@ package io.automatik.engine.api.runtime.process;
 import java.util.Collection;
 import java.util.Date;
 
+import io.automatik.engine.api.workflow.Tag;
 import io.automatik.engine.api.workflow.flexible.AdHocFragment;
 import io.automatik.engine.api.workflow.flexible.Milestone;
 
@@ -17,78 +18,106 @@ import io.automatik.engine.api.workflow.flexible.Milestone;
  */
 public interface WorkflowProcessInstance extends ProcessInstance, NodeInstanceContainer {
 
-	/**
-	 * Returns the value of the variable with the given name. Note that only
-	 * variables in the process-level scope will be searched. Returns
-	 * <code>null</code> if the value of the variable is null or if the variable
-	 * cannot be found.
-	 *
-	 * @param name the name of the variable
-	 * @return the value of the variable, or <code>null</code> if it cannot be found
-	 */
-	Object getVariable(String name);
+    /**
+     * Returns the value of the variable with the given name. Note that only
+     * variables in the process-level scope will be searched. Returns
+     * <code>null</code> if the value of the variable is null or if the variable
+     * cannot be found.
+     *
+     * @param name the name of the variable
+     * @return the value of the variable, or <code>null</code> if it cannot be found
+     */
+    Object getVariable(String name);
 
-	/**
-	 * Sets process variable with given value under given name
-	 * 
-	 * @param name  name of the variable
-	 * @param value value of the variable
-	 */
-	void setVariable(String name, Object value);
+    /**
+     * Sets process variable with given value under given name
+     * 
+     * @param name name of the variable
+     * @param value value of the variable
+     */
+    void setVariable(String name, Object value);
 
-	/**
-	 * Returns start date of this process instance
-	 * 
-	 * @return actual start date
-	 */
-	Date getStartDate();
+    /**
+     * Returns start date of this process instance
+     * 
+     * @return actual start date
+     */
+    Date getStartDate();
 
-	/**
-	 * Returns end date (either completed or aborted) of this process instance
-	 * 
-	 * @return actual end date
-	 */
-	Date getEndDate();
+    /**
+     * Returns end date (either completed or aborted) of this process instance
+     * 
+     * @return actual end date
+     */
+    Date getEndDate();
 
-	/**
-	 * Returns node definition id associated with node instance that failed in case
-	 * this process instance is in an error
-	 * 
-	 * @return node definition id of the failed node instance
-	 */
-	String getNodeIdInError();
+    /**
+     * Returns node definition id associated with node instance that failed in case
+     * this process instance is in an error
+     * 
+     * @return node definition id of the failed node instance
+     */
+    String getNodeIdInError();
 
-	/**
-	 * Returns error message associated with this process instance in case it is in
-	 * an error state. It will consists of
-	 * <ul>
-	 * <li>unique error id (uuid)</li>
-	 * <li>fully qualified class name of the root cause</li>
-	 * <li>error message of the root cause</li>
-	 * </ul>
-	 * 
-	 * @return error message
-	 */
-	String getErrorMessage();
+    /**
+     * Returns error message associated with this process instance in case it is in
+     * an error state. It will consists of
+     * <ul>
+     * <li>unique error id (uuid)</li>
+     * <li>fully qualified class name of the root cause</li>
+     * <li>error message of the root cause</li>
+     * </ul>
+     * 
+     * @return error message
+     */
+    String getErrorMessage();
 
-	/**
-	 * Returns optional correlation key assigned to process instance
-	 * 
-	 * @return correlation key if present otherwise null
-	 */
-	String getCorrelationKey();
+    /**
+     * Returns optional correlation key assigned to process instance
+     * 
+     * @return correlation key if present otherwise null
+     */
+    String getCorrelationKey();
 
-	/**
-	 * Returns the list of Milestones and their status in the current process
-	 * instances
-	 * 
-	 * @return Milestones defined in the process
-	 */
-	Collection<Milestone> milestones();
+    /**
+     * Returns the list of Milestones and their status in the current process
+     * instances
+     * 
+     * @return Milestones defined in the process
+     */
+    Collection<Milestone> milestones();
 
-	/**
-	 * @return AdHocFragments from the process instances
-	 */
-	Collection<AdHocFragment> adHocFragments();
+    /**
+     * @return AdHocFragments from the process instances
+     */
+    Collection<AdHocFragment> adHocFragments();
+
+    /**
+     * Returns current collection of tags.
+     * 
+     * @return collection of tags
+     */
+    Collection<Tag> getTags();
+
+    /**
+     * Evaluates all tags to apply any changes of the variables
+     * 
+     * @return collection of tags
+     */
+    Collection<Tag> evaluateTags();
+
+    /**
+     * Adds new tag
+     * 
+     * @param tag new tag to be added
+     */
+    void addTag(String value);
+
+    /**
+     * Removes the tag associated with given id
+     * 
+     * @param id identifier of the tag
+     */
+    boolean removedTag(String id);
 
 }

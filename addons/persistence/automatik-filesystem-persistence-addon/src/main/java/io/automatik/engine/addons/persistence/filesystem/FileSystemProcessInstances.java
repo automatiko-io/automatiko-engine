@@ -14,8 +14,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -43,6 +45,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     public static final String PI_STATUS = "ProcessInstanceStatus";
     public static final String PI_ROOT_INSTANCE = "RootProcessInstance";
     public static final String PI_SUB_INSTANCE_COUNT = "SubProcessInstanceCount";
+    public static final String PI_TAGS = "ProcessInstanceTags";
 
     private boolean useCompositeIdForSubprocess = true;
 
@@ -105,6 +108,28 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         return Optional.of(mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process)
                 : marshaller.unmarshallReadOnlyProcessInstance(data, process));
 
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Collection findByIdOrTag(ProcessInstanceReadMode mode, String... values) {
+        List collected = new ArrayList<>();
+        for (String idOrTag : values) {
+
+            findById(idOrTag, mode).ifPresent(pi -> collected.add(pi));
+
+            try (Stream<Path> stream = Files.walk(storage)) {
+                stream.filter(file -> isValidProcessFile(file))
+                        .filter(file -> matchTag(getMetadata(file, PI_TAGS), idOrTag))
+                        .map(this::readBytesFromFile)
+                        .map(b -> mode == MUTABLE ? marshaller.unmarshallProcessInstance(b, process)
+                                : marshaller.unmarshallReadOnlyProcessInstance(b, process))
+                        .forEach(pi -> collected.add(pi));
+            } catch (IOException e) {
+                throw new RuntimeException("Unable to read process instances ", e);
+            }
+        }
+        return collected;
     }
 
     @Override
@@ -200,6 +225,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
                 setMetadata(processInstanceStorage, PI_ROOT_INSTANCE, "false");
             }
             setMetadata(processInstanceStorage, PI_SUB_INSTANCE_COUNT, String.valueOf(instance.subprocesses().size()));
+            setMetadata(processInstanceStorage, PI_TAGS, instance.tags().values().stream().collect(Collectors.joining(",")));
 
             disconnect(processInstanceStorage, instance);
         } catch (IOException e) {
@@ -237,6 +263,13 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             }
 
         });
+    }
+
+    protected boolean matchTag(String metadata, String idOrTag) {
+        if (metadata != null) {
+            return Stream.of(metadata.split(",")).anyMatch(item -> item.equals(idOrTag));
+        }
+        return false;
     }
 
     public String getMetadata(Path file, String key) {
@@ -289,6 +322,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
      * fallback mechanism based on .file.metadata to keep user defined info
      */
 
+    @SuppressWarnings("unchecked")
     protected Map<String, String> getDotFileMetadata(File file) {
         try (FileInputStream in = new FileInputStream(new File(file.getParent(), "._metadata_" + file.getName()))) {
             Properties props = new Properties();

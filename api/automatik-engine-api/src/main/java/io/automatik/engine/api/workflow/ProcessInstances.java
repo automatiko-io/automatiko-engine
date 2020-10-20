@@ -18,6 +18,12 @@ public interface ProcessInstances<T> {
 
     Collection<? extends ProcessInstance<T>> values(ProcessInstanceReadMode mode);
 
+    default Collection<? extends ProcessInstance<T>> findByIdOrTag(String... values) {
+        return findByIdOrTag(ProcessInstanceReadMode.MUTABLE, values);
+    }
+
+    Collection<? extends ProcessInstance<T>> findByIdOrTag(ProcessInstanceReadMode mode, String... values);
+
     Integer size();
 
 }

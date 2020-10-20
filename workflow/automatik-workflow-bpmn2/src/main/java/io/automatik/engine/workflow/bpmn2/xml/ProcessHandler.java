@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.mvel2.MVEL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
@@ -17,6 +18,10 @@ import io.automatik.engine.api.definition.process.Node;
 import io.automatik.engine.api.definition.process.NodeContainer;
 import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.workflow.base.core.ContextContainer;
+import io.automatik.engine.workflow.base.core.FunctionTagDefinition;
+import io.automatik.engine.workflow.base.core.Process;
+import io.automatik.engine.workflow.base.core.StaticTagDefinition;
+import io.automatik.engine.workflow.base.core.TagDefinition;
 import io.automatik.engine.workflow.base.core.context.exception.ActionExceptionHandler;
 import io.automatik.engine.workflow.base.core.context.exception.CompensationHandler;
 import io.automatik.engine.workflow.base.core.context.exception.CompensationScope;
@@ -77,6 +82,7 @@ import io.automatik.engine.workflow.process.core.node.Trigger;
 import io.automatik.engine.workflow.process.core.node.WorkItemNode;
 import io.automatik.engine.workflow.process.executable.core.ExecutableProcess;
 import io.automatik.engine.workflow.process.executable.core.validation.ExecutableProcessValidator;
+import io.automatik.engine.workflow.util.PatternConstants;
 
 public class ProcessHandler extends BaseAbstractHandler implements Handler {
 
@@ -190,6 +196,10 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
         List<Lane> lanes = (List<Lane>) process.getMetaData(LaneHandler.LANES);
         assignLanes(process, lanes);
         postProcessNodes(process, process);
+
+        // process tags if any defined
+        processTags(process);
+
         return process;
     }
 
@@ -1070,5 +1080,26 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
 
         return consequenceAction;
 
+    }
+
+    protected void processTags(WorkflowProcess process) {
+        String tags = (String) process.getMetaData().get("tags");
+        List<TagDefinition> tagDefinitions = new ArrayList<TagDefinition>();
+        if (tags != null) {
+            String[] tagList = tags.split(",");
+            int counter = 0;
+            for (String tag : tagList) {
+                boolean isExpression = PatternConstants.PARAMETER_MATCHER.matcher(tag).matches();
+
+                if (isExpression) {
+                    tagDefinitions
+                            .add(new FunctionTagDefinition(String.valueOf(++counter), tag,
+                                    (exp, vars) -> (String) MVEL.executeExpression(exp, vars)));
+                } else {
+                    tagDefinitions.add(new StaticTagDefinition(String.valueOf(++counter), tag));
+                }
+            }
+        }
+        ((Process) process).setTagDefinitions(tagDefinitions);
     }
 }

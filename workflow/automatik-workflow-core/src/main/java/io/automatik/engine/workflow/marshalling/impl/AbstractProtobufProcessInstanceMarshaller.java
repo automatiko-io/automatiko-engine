@@ -21,6 +21,7 @@ import io.automatik.engine.api.runtime.process.NodeInstanceContainer;
 import io.automatik.engine.api.runtime.process.ProcessInstance;
 import io.automatik.engine.api.runtime.process.WorkItem;
 import io.automatik.engine.api.runtime.process.WorkflowProcessInstance;
+import io.automatik.engine.api.workflow.Tag;
 import io.automatik.engine.workflow.base.core.Context;
 import io.automatik.engine.workflow.base.core.context.exclusive.ExclusiveGroup;
 import io.automatik.engine.workflow.base.core.context.swimlane.SwimlaneContext;
@@ -105,12 +106,18 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         }
 
         Map<String, List<String>> children = workFlow.getChildren();
-
         if (children != null) {
             for (Entry<String, List<String>> entry : children.entrySet()) {
                 _instance.addChildren(AutomatikMessages.ProcessInstance.ProcessInstanchChildren.newBuilder()
                         .setProcessId(entry.getKey()).addAllIds(entry.getValue()).build());
 
+            }
+        }
+
+        Collection<Tag> tags = workFlow.getTags();
+        if (tags != null) {
+            for (Tag tag : tags) {
+                _instance.addTags(AutomatikMessages.ProcessInstance.Tag.newBuilder().setId(tag.getId()).setValue(tag.getValue()));
             }
         }
 
@@ -688,6 +695,11 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         if (_instance.getChildrenCount() > 0) {
             _instance.getChildrenList()
                     .forEach(child -> processInstance.addChildren(child.getProcessId(), child.getIdsList()));
+        }
+
+        if (_instance.getTagsCount() > 0) {
+            _instance.getTagsList()
+                    .forEach(tag -> processInstance.internalAddTag(tag.getId(), tag.getValue()));
         }
 
         if (_instance.getSwimlaneContextCount() > 0) {

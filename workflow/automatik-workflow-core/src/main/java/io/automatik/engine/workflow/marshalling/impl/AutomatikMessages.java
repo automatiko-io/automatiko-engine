@@ -10215,6 +10215,30 @@ public final class AutomatikMessages {
      */
     io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.ProcessInstanchChildrenOrBuilder getChildrenOrBuilder(
         int index);
+
+    /**
+     * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+     */
+    java.util.List<io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag> 
+        getTagsList();
+    /**
+     * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+     */
+    io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag getTags(int index);
+    /**
+     * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+     */
+    int getTagsCount();
+    /**
+     * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+     */
+    java.util.List<? extends io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.TagOrBuilder> 
+        getTagsOrBuilderList();
+    /**
+     * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+     */
+    io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.TagOrBuilder getTagsOrBuilder(
+        int index);
   }
   /**
    * Protobuf type {@code io.automatik.engine.workflow.marshalling.ProcessInstance}
@@ -10251,6 +10275,7 @@ public final class AutomatikMessages {
       completedNodeIds_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       iterationLevels_ = java.util.Collections.emptyList();
       children_ = java.util.Collections.emptyList();
+      tags_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -10461,6 +10486,15 @@ public final class AutomatikMessages {
                   input.readMessage(io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.ProcessInstanchChildren.PARSER, extensionRegistry));
               break;
             }
+            case 234: {
+              if (!((mutable_bitField0_ & 0x08000000) != 0)) {
+                tags_ = new java.util.ArrayList<io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag>();
+                mutable_bitField0_ |= 0x08000000;
+              }
+              tags_.add(
+                  input.readMessage(io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.PARSER, extensionRegistry));
+              break;
+            }
             default: {
               if (!parseUnknownField(
                   input, unknownFields, extensionRegistry, tag)) {
@@ -10496,6 +10530,9 @@ public final class AutomatikMessages {
         }
         if (((mutable_bitField0_ & 0x04000000) != 0)) {
           children_ = java.util.Collections.unmodifiableList(children_);
+        }
+        if (((mutable_bitField0_ & 0x08000000) != 0)) {
+          tags_ = java.util.Collections.unmodifiableList(tags_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -11544,6 +11581,794 @@ public final class AutomatikMessages {
 
       @java.lang.Override
       public io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.ProcessInstanchChildren getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+      }
+
+    }
+
+    public interface TagOrBuilder extends
+        // @@protoc_insertion_point(interface_extends:io.automatik.engine.workflow.marshalling.ProcessInstance.Tag)
+        com.google.protobuf.MessageOrBuilder {
+
+      /**
+       * <code>optional string id = 1;</code>
+       * @return Whether the id field is set.
+       */
+      boolean hasId();
+      /**
+       * <code>optional string id = 1;</code>
+       * @return The id.
+       */
+      java.lang.String getId();
+      /**
+       * <code>optional string id = 1;</code>
+       * @return The bytes for id.
+       */
+      com.google.protobuf.ByteString
+          getIdBytes();
+
+      /**
+       * <code>optional string value = 2;</code>
+       * @return Whether the value field is set.
+       */
+      boolean hasValue();
+      /**
+       * <code>optional string value = 2;</code>
+       * @return The value.
+       */
+      java.lang.String getValue();
+      /**
+       * <code>optional string value = 2;</code>
+       * @return The bytes for value.
+       */
+      com.google.protobuf.ByteString
+          getValueBytes();
+    }
+    /**
+     * Protobuf type {@code io.automatik.engine.workflow.marshalling.ProcessInstance.Tag}
+     */
+    public static final class Tag extends
+        com.google.protobuf.GeneratedMessageV3 implements
+        // @@protoc_insertion_point(message_implements:io.automatik.engine.workflow.marshalling.ProcessInstance.Tag)
+        TagOrBuilder {
+    private static final long serialVersionUID = 0L;
+      // Use Tag.newBuilder() to construct.
+      private Tag(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+        super(builder);
+      }
+      private Tag() {
+        id_ = "";
+        value_ = "";
+      }
+
+      @java.lang.Override
+      @SuppressWarnings({"unused"})
+      protected java.lang.Object newInstance(
+          UnusedPrivateParameter unused) {
+        return new Tag();
+      }
+
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+      getUnknownFields() {
+        return this.unknownFields;
+      }
+      private Tag(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        this();
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                com.google.protobuf.ByteString bs = input.readBytes();
+                bitField0_ |= 0x00000001;
+                id_ = bs;
+                break;
+              }
+              case 18: {
+                com.google.protobuf.ByteString bs = input.readBytes();
+                bitField0_ |= 0x00000002;
+                value_ = bs;
+                break;
+              }
+              default: {
+                if (!parseUnknownField(
+                    input, unknownFields, extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e).setUnfinishedMessage(this);
+        } finally {
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_Tag_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_Tag_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.class, io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.Builder.class);
+      }
+
+      private int bitField0_;
+      public static final int ID_FIELD_NUMBER = 1;
+      private volatile java.lang.Object id_;
+      /**
+       * <code>optional string id = 1;</code>
+       * @return Whether the id field is set.
+       */
+      @java.lang.Override
+      public boolean hasId() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>optional string id = 1;</code>
+       * @return The id.
+       */
+      @java.lang.Override
+      public java.lang.String getId() {
+        java.lang.Object ref = id_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            id_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>optional string id = 1;</code>
+       * @return The bytes for id.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString
+          getIdBytes() {
+        java.lang.Object ref = id_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          id_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      public static final int VALUE_FIELD_NUMBER = 2;
+      private volatile java.lang.Object value_;
+      /**
+       * <code>optional string value = 2;</code>
+       * @return Whether the value field is set.
+       */
+      @java.lang.Override
+      public boolean hasValue() {
+        return ((bitField0_ & 0x00000002) != 0);
+      }
+      /**
+       * <code>optional string value = 2;</code>
+       * @return The value.
+       */
+      @java.lang.Override
+      public java.lang.String getValue() {
+        java.lang.Object ref = value_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            value_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>optional string value = 2;</code>
+       * @return The bytes for value.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString
+          getValueBytes() {
+        java.lang.Object ref = value_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          value_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      private byte memoizedIsInitialized = -1;
+      @java.lang.Override
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized == 1) return true;
+        if (isInitialized == 0) return false;
+
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      @java.lang.Override
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        if (((bitField0_ & 0x00000001) != 0)) {
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 1, id_);
+        }
+        if (((bitField0_ & 0x00000002) != 0)) {
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 2, value_);
+        }
+        unknownFields.writeTo(output);
+      }
+
+      @java.lang.Override
+      public int getSerializedSize() {
+        int size = memoizedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) != 0)) {
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, id_);
+        }
+        if (((bitField0_ & 0x00000002) != 0)) {
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, value_);
+        }
+        size += unknownFields.getSerializedSize();
+        memoizedSize = size;
+        return size;
+      }
+
+      @java.lang.Override
+      public boolean equals(final java.lang.Object obj) {
+        if (obj == this) {
+         return true;
+        }
+        if (!(obj instanceof io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag)) {
+          return super.equals(obj);
+        }
+        io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag other = (io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag) obj;
+
+        if (hasId() != other.hasId()) return false;
+        if (hasId()) {
+          if (!getId()
+              .equals(other.getId())) return false;
+        }
+        if (hasValue() != other.hasValue()) return false;
+        if (hasValue()) {
+          if (!getValue()
+              .equals(other.getValue())) return false;
+        }
+        if (!unknownFields.equals(other.unknownFields)) return false;
+        return true;
+      }
+
+      @java.lang.Override
+      public int hashCode() {
+        if (memoizedHashCode != 0) {
+          return memoizedHashCode;
+        }
+        int hash = 41;
+        hash = (19 * hash) + getDescriptor().hashCode();
+        if (hasId()) {
+          hash = (37 * hash) + ID_FIELD_NUMBER;
+          hash = (53 * hash) + getId().hashCode();
+        }
+        if (hasValue()) {
+          hash = (37 * hash) + VALUE_FIELD_NUMBER;
+          hash = (53 * hash) + getValue().hashCode();
+        }
+        hash = (29 * hash) + unknownFields.hashCode();
+        memoizedHashCode = hash;
+        return hash;
+      }
+
+      public static io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag parseFrom(
+          java.nio.ByteBuffer data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag parseFrom(
+          java.nio.ByteBuffer data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
+      }
+      public static io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+
+      @java.lang.Override
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
+      }
+      public static Builder newBuilder(io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+      }
+      @java.lang.Override
+      public Builder toBuilder() {
+        return this == DEFAULT_INSTANCE
+            ? new Builder() : new Builder().mergeFrom(this);
+      }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code io.automatik.engine.workflow.marshalling.ProcessInstance.Tag}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+          // @@protoc_insertion_point(builder_implements:io.automatik.engine.workflow.marshalling.ProcessInstance.Tag)
+          io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.TagOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_Tag_descriptor;
+        }
+
+        @java.lang.Override
+        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_Tag_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.class, io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.Builder.class);
+        }
+
+        // Construct using io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessageV3
+                  .alwaysUseFieldBuilders) {
+          }
+        }
+        @java.lang.Override
+        public Builder clear() {
+          super.clear();
+          id_ = "";
+          bitField0_ = (bitField0_ & ~0x00000001);
+          value_ = "";
+          bitField0_ = (bitField0_ & ~0x00000002);
+          return this;
+        }
+
+        @java.lang.Override
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_Tag_descriptor;
+        }
+
+        @java.lang.Override
+        public io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag getDefaultInstanceForType() {
+          return io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.getDefaultInstance();
+        }
+
+        @java.lang.Override
+        public io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag build() {
+          io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        @java.lang.Override
+        public io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag buildPartial() {
+          io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag result = new io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) != 0)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.id_ = id_;
+          if (((from_bitField0_ & 0x00000002) != 0)) {
+            to_bitField0_ |= 0x00000002;
+          }
+          result.value_ = value_;
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        @java.lang.Override
+        public Builder clone() {
+          return super.clone();
+        }
+        @java.lang.Override
+        public Builder setField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            java.lang.Object value) {
+          return super.setField(field, value);
+        }
+        @java.lang.Override
+        public Builder clearField(
+            com.google.protobuf.Descriptors.FieldDescriptor field) {
+          return super.clearField(field);
+        }
+        @java.lang.Override
+        public Builder clearOneof(
+            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+          return super.clearOneof(oneof);
+        }
+        @java.lang.Override
+        public Builder setRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index, java.lang.Object value) {
+          return super.setRepeatedField(field, index, value);
+        }
+        @java.lang.Override
+        public Builder addRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            java.lang.Object value) {
+          return super.addRepeatedField(field, value);
+        }
+        @java.lang.Override
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag) {
+            return mergeFrom((io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag other) {
+          if (other == io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.getDefaultInstance()) return this;
+          if (other.hasId()) {
+            bitField0_ |= 0x00000001;
+            id_ = other.id_;
+            onChanged();
+          }
+          if (other.hasValue()) {
+            bitField0_ |= 0x00000002;
+            value_ = other.value_;
+            onChanged();
+          }
+          this.mergeUnknownFields(other.unknownFields);
+          onChanged();
+          return this;
+        }
+
+        @java.lang.Override
+        public final boolean isInitialized() {
+          return true;
+        }
+
+        @java.lang.Override
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag) e.getUnfinishedMessage();
+            throw e.unwrapIOException();
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        private java.lang.Object id_ = "";
+        /**
+         * <code>optional string id = 1;</code>
+         * @return Whether the id field is set.
+         */
+        public boolean hasId() {
+          return ((bitField0_ & 0x00000001) != 0);
+        }
+        /**
+         * <code>optional string id = 1;</code>
+         * @return The id.
+         */
+        public java.lang.String getId() {
+          java.lang.Object ref = id_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              id_ = s;
+            }
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>optional string id = 1;</code>
+         * @return The bytes for id.
+         */
+        public com.google.protobuf.ByteString
+            getIdBytes() {
+          java.lang.Object ref = id_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            id_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>optional string id = 1;</code>
+         * @param value The id to set.
+         * @return This builder for chaining.
+         */
+        public Builder setId(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          id_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string id = 1;</code>
+         * @return This builder for chaining.
+         */
+        public Builder clearId() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          id_ = getDefaultInstance().getId();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string id = 1;</code>
+         * @param value The bytes for id to set.
+         * @return This builder for chaining.
+         */
+        public Builder setIdBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          id_ = value;
+          onChanged();
+          return this;
+        }
+
+        private java.lang.Object value_ = "";
+        /**
+         * <code>optional string value = 2;</code>
+         * @return Whether the value field is set.
+         */
+        public boolean hasValue() {
+          return ((bitField0_ & 0x00000002) != 0);
+        }
+        /**
+         * <code>optional string value = 2;</code>
+         * @return The value.
+         */
+        public java.lang.String getValue() {
+          java.lang.Object ref = value_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              value_ = s;
+            }
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>optional string value = 2;</code>
+         * @return The bytes for value.
+         */
+        public com.google.protobuf.ByteString
+            getValueBytes() {
+          java.lang.Object ref = value_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            value_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>optional string value = 2;</code>
+         * @param value The value to set.
+         * @return This builder for chaining.
+         */
+        public Builder setValue(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+          value_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string value = 2;</code>
+         * @return This builder for chaining.
+         */
+        public Builder clearValue() {
+          bitField0_ = (bitField0_ & ~0x00000002);
+          value_ = getDefaultInstance().getValue();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string value = 2;</code>
+         * @param value The bytes for value to set.
+         * @return This builder for chaining.
+         */
+        public Builder setValueBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+          value_ = value;
+          onChanged();
+          return this;
+        }
+        @java.lang.Override
+        public final Builder setUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.setUnknownFields(unknownFields);
+        }
+
+        @java.lang.Override
+        public final Builder mergeUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.mergeUnknownFields(unknownFields);
+        }
+
+
+        // @@protoc_insertion_point(builder_scope:io.automatik.engine.workflow.marshalling.ProcessInstance.Tag)
+      }
+
+      // @@protoc_insertion_point(class_scope:io.automatik.engine.workflow.marshalling.ProcessInstance.Tag)
+      private static final io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag DEFAULT_INSTANCE;
+      static {
+        DEFAULT_INSTANCE = new io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag();
+      }
+
+      public static io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+      }
+
+      @java.lang.Deprecated public static final com.google.protobuf.Parser<Tag>
+          PARSER = new com.google.protobuf.AbstractParser<Tag>() {
+        @java.lang.Override
+        public Tag parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new Tag(input, extensionRegistry);
+        }
+      };
+
+      public static com.google.protobuf.Parser<Tag> parser() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<Tag> getParserForType() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag getDefaultInstanceForType() {
         return DEFAULT_INSTANCE;
       }
 
@@ -32054,6 +32879,46 @@ public final class AutomatikMessages {
       return children_.get(index);
     }
 
+    public static final int TAGS_FIELD_NUMBER = 29;
+    private java.util.List<io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag> tags_;
+    /**
+     * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+     */
+    @java.lang.Override
+    public java.util.List<io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag> getTagsList() {
+      return tags_;
+    }
+    /**
+     * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+     */
+    @java.lang.Override
+    public java.util.List<? extends io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.TagOrBuilder> 
+        getTagsOrBuilderList() {
+      return tags_;
+    }
+    /**
+     * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+     */
+    @java.lang.Override
+    public int getTagsCount() {
+      return tags_.size();
+    }
+    /**
+     * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+     */
+    @java.lang.Override
+    public io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag getTags(int index) {
+      return tags_.get(index);
+    }
+    /**
+     * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+     */
+    @java.lang.Override
+    public io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.TagOrBuilder getTagsOrBuilder(
+        int index) {
+      return tags_.get(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -32148,6 +33013,9 @@ public final class AutomatikMessages {
       }
       for (int i = 0; i < children_.size(); i++) {
         output.writeMessage(28, children_.get(i));
+      }
+      for (int i = 0; i < tags_.size(); i++) {
+        output.writeMessage(29, tags_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -32255,6 +33123,10 @@ public final class AutomatikMessages {
       for (int i = 0; i < children_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(28, children_.get(i));
+      }
+      for (int i = 0; i < tags_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(29, tags_.get(i));
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -32385,6 +33257,8 @@ public final class AutomatikMessages {
           .equals(other.getIterationLevelsList())) return false;
       if (!getChildrenList()
           .equals(other.getChildrenList())) return false;
+      if (!getTagsList()
+          .equals(other.getTagsList())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -32507,6 +33381,10 @@ public final class AutomatikMessages {
       if (getChildrenCount() > 0) {
         hash = (37 * hash) + CHILDREN_FIELD_NUMBER;
         hash = (53 * hash) + getChildrenList().hashCode();
+      }
+      if (getTagsCount() > 0) {
+        hash = (37 * hash) + TAGS_FIELD_NUMBER;
+        hash = (53 * hash) + getTagsList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -32642,6 +33520,7 @@ public final class AutomatikMessages {
           getExclusiveGroupFieldBuilder();
           getIterationLevelsFieldBuilder();
           getChildrenFieldBuilder();
+          getTagsFieldBuilder();
         }
       }
       @java.lang.Override
@@ -32724,6 +33603,12 @@ public final class AutomatikMessages {
           bitField0_ = (bitField0_ & ~0x04000000);
         } else {
           childrenBuilder_.clear();
+        }
+        if (tagsBuilder_ == null) {
+          tags_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x08000000);
+        } else {
+          tagsBuilder_.clear();
         }
         return this;
       }
@@ -32891,6 +33776,15 @@ public final class AutomatikMessages {
           result.children_ = children_;
         } else {
           result.children_ = childrenBuilder_.build();
+        }
+        if (tagsBuilder_ == null) {
+          if (((bitField0_ & 0x08000000) != 0)) {
+            tags_ = java.util.Collections.unmodifiableList(tags_);
+            bitField0_ = (bitField0_ & ~0x08000000);
+          }
+          result.tags_ = tags_;
+        } else {
+          result.tags_ = tagsBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -33192,6 +34086,32 @@ public final class AutomatikMessages {
                    getChildrenFieldBuilder() : null;
             } else {
               childrenBuilder_.addAllMessages(other.children_);
+            }
+          }
+        }
+        if (tagsBuilder_ == null) {
+          if (!other.tags_.isEmpty()) {
+            if (tags_.isEmpty()) {
+              tags_ = other.tags_;
+              bitField0_ = (bitField0_ & ~0x08000000);
+            } else {
+              ensureTagsIsMutable();
+              tags_.addAll(other.tags_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.tags_.isEmpty()) {
+            if (tagsBuilder_.isEmpty()) {
+              tagsBuilder_.dispose();
+              tagsBuilder_ = null;
+              tags_ = other.tags_;
+              bitField0_ = (bitField0_ & ~0x08000000);
+              tagsBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getTagsFieldBuilder() : null;
+            } else {
+              tagsBuilder_.addAllMessages(other.tags_);
             }
           }
         }
@@ -36182,6 +37102,246 @@ public final class AutomatikMessages {
           children_ = null;
         }
         return childrenBuilder_;
+      }
+
+      private java.util.List<io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag> tags_ =
+        java.util.Collections.emptyList();
+      private void ensureTagsIsMutable() {
+        if (!((bitField0_ & 0x08000000) != 0)) {
+          tags_ = new java.util.ArrayList<io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag>(tags_);
+          bitField0_ |= 0x08000000;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag, io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.Builder, io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.TagOrBuilder> tagsBuilder_;
+
+      /**
+       * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+       */
+      public java.util.List<io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag> getTagsList() {
+        if (tagsBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(tags_);
+        } else {
+          return tagsBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+       */
+      public int getTagsCount() {
+        if (tagsBuilder_ == null) {
+          return tags_.size();
+        } else {
+          return tagsBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+       */
+      public io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag getTags(int index) {
+        if (tagsBuilder_ == null) {
+          return tags_.get(index);
+        } else {
+          return tagsBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+       */
+      public Builder setTags(
+          int index, io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag value) {
+        if (tagsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureTagsIsMutable();
+          tags_.set(index, value);
+          onChanged();
+        } else {
+          tagsBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+       */
+      public Builder setTags(
+          int index, io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.Builder builderForValue) {
+        if (tagsBuilder_ == null) {
+          ensureTagsIsMutable();
+          tags_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          tagsBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+       */
+      public Builder addTags(io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag value) {
+        if (tagsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureTagsIsMutable();
+          tags_.add(value);
+          onChanged();
+        } else {
+          tagsBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+       */
+      public Builder addTags(
+          int index, io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag value) {
+        if (tagsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureTagsIsMutable();
+          tags_.add(index, value);
+          onChanged();
+        } else {
+          tagsBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+       */
+      public Builder addTags(
+          io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.Builder builderForValue) {
+        if (tagsBuilder_ == null) {
+          ensureTagsIsMutable();
+          tags_.add(builderForValue.build());
+          onChanged();
+        } else {
+          tagsBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+       */
+      public Builder addTags(
+          int index, io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.Builder builderForValue) {
+        if (tagsBuilder_ == null) {
+          ensureTagsIsMutable();
+          tags_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          tagsBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+       */
+      public Builder addAllTags(
+          java.lang.Iterable<? extends io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag> values) {
+        if (tagsBuilder_ == null) {
+          ensureTagsIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, tags_);
+          onChanged();
+        } else {
+          tagsBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+       */
+      public Builder clearTags() {
+        if (tagsBuilder_ == null) {
+          tags_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x08000000);
+          onChanged();
+        } else {
+          tagsBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+       */
+      public Builder removeTags(int index) {
+        if (tagsBuilder_ == null) {
+          ensureTagsIsMutable();
+          tags_.remove(index);
+          onChanged();
+        } else {
+          tagsBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+       */
+      public io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.Builder getTagsBuilder(
+          int index) {
+        return getTagsFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+       */
+      public io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.TagOrBuilder getTagsOrBuilder(
+          int index) {
+        if (tagsBuilder_ == null) {
+          return tags_.get(index);  } else {
+          return tagsBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+       */
+      public java.util.List<? extends io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.TagOrBuilder> 
+           getTagsOrBuilderList() {
+        if (tagsBuilder_ != null) {
+          return tagsBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(tags_);
+        }
+      }
+      /**
+       * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+       */
+      public io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.Builder addTagsBuilder() {
+        return getTagsFieldBuilder().addBuilder(
+            io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+       */
+      public io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.Builder addTagsBuilder(
+          int index) {
+        return getTagsFieldBuilder().addBuilder(
+            index, io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .io.automatik.engine.workflow.marshalling.ProcessInstance.Tag tags = 29;</code>
+       */
+      public java.util.List<io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.Builder> 
+           getTagsBuilderList() {
+        return getTagsFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag, io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.Builder, io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.TagOrBuilder> 
+          getTagsFieldBuilder() {
+        if (tagsBuilder_ == null) {
+          tagsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag, io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.Tag.Builder, io.automatik.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.TagOrBuilder>(
+                  tags_,
+                  ((bitField0_ & 0x08000000) != 0),
+                  getParentForChildren(),
+                  isClean());
+          tags_ = null;
+        }
+        return tagsBuilder_;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -48215,6 +49375,11 @@ public final class AutomatikMessages {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_ProcessInstanchChildren_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_Tag_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_Tag_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_SwimlaneContextInstance_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -48388,7 +49553,7 @@ public final class AutomatikMessages {
       ".marshalling.Trigger\"T\n\013TriggerType\022\010\n\004C" +
       "RON\020\000\022\014\n\010INTERVAL\020\001\022\021\n\rPOINT_IN_TIME\020\002\022\032" +
       "\n\026COMPOSITE_MAX_DURATION\020\003\"\024\n\013ProcessDat" +
-      "a*\005\010\n\020\310\001\"\227\'\n\017ProcessInstance\022\024\n\014process_" +
+      "a*\005\010\n\020\310\001\"\206(\n\017ProcessInstance\022\024\n\014process_" +
       "type\030\001 \001(\t\022\n\n\002id\030\002 \001(\t\022\022\n\nprocess_id\030\003 \001" +
       "(\t\022\r\n\005state\030\004 \001(\005\022\035\n\025node_instance_count" +
       "er\030\005 \001(\003\022\023\n\013process_xml\030\013 \001(\t\022\"\n\032parent_" +
@@ -48415,155 +49580,158 @@ public final class AutomatikMessages {
       "flow.marshalling.IterationLevel\022c\n\010child" +
       "ren\030\034 \003(\0132Q.io.automatik.engine.workflow" +
       ".marshalling.ProcessInstance.ProcessInst" +
-      "anchChildren\032:\n\027ProcessInstanchChildren\022" +
-      "\022\n\nprocess_id\030\001 \001(\t\022\013\n\003ids\030\002 \003(\t\032=\n\027Swim" +
-      "laneContextInstance\022\020\n\010swimlane\030\001 \001(\t\022\020\n" +
-      "\010actor_id\030\002 \001(\t\032\364\001\n\014NodeInstance\022\n\n\002id\030\001" +
-      " \001(\t\022\017\n\007node_id\030\002 \001(\003\022^\n\007content\030\004 \001(\0132M" +
-      ".io.automatik.engine.workflow.marshallin" +
-      "g.ProcessInstance.NodeInstanceContent\022\r\n" +
-      "\005level\030\005 \001(\005\022\024\n\014sla_timer_id\030\006 \001(\t\022\024\n\014sl" +
-      "a_due_date\030\007 \001(\003\022\026\n\016sla_compliance\030\010 \001(\005" +
-      "\022\024\n\014trigger_date\030\t \001(\003\0328\n\026ExclusiveGroup" +
-      "Instance\022\036\n\026group_node_instance_id\030\001 \003(\t" +
-      "\032\356\030\n\023NodeInstanceContent\022X\n\004type\030\001 \001(\0162J" +
-      ".io.automatik.engine.workflow.marshallin" +
-      "g.ProcessInstance.NodeInstanceType\022k\n\010ru" +
-      "le_set\030\002 \001(\0132Y.io.automatik.engine.workf" +
-      "low.marshalling.ProcessInstance.NodeInst" +
-      "anceContent.RuleSetNode\022o\n\nhuman_task\030\003 " +
-      "\001(\0132[.io.automatik.engine.workflow.marsh" +
+      "anchChildren\022K\n\004tags\030\035 \003(\0132=.io.automati" +
+      "k.engine.workflow.marshalling.ProcessIns" +
+      "tance.Tag\032:\n\027ProcessInstanchChildren\022\022\n\n" +
+      "process_id\030\001 \001(\t\022\013\n\003ids\030\002 \003(\t\032 \n\003Tag\022\n\n\002" +
+      "id\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\032=\n\027SwimlaneConte" +
+      "xtInstance\022\020\n\010swimlane\030\001 \001(\t\022\020\n\010actor_id" +
+      "\030\002 \001(\t\032\364\001\n\014NodeInstance\022\n\n\002id\030\001 \001(\t\022\017\n\007n" +
+      "ode_id\030\002 \001(\003\022^\n\007content\030\004 \001(\0132M.io.autom" +
+      "atik.engine.workflow.marshalling.Process" +
+      "Instance.NodeInstanceContent\022\r\n\005level\030\005 " +
+      "\001(\005\022\024\n\014sla_timer_id\030\006 \001(\t\022\024\n\014sla_due_dat" +
+      "e\030\007 \001(\003\022\026\n\016sla_compliance\030\010 \001(\005\022\024\n\014trigg" +
+      "er_date\030\t \001(\003\0328\n\026ExclusiveGroupInstance\022" +
+      "\036\n\026group_node_instance_id\030\001 \003(\t\032\356\030\n\023Node" +
+      "InstanceContent\022X\n\004type\030\001 \001(\0162J.io.autom" +
+      "atik.engine.workflow.marshalling.Process" +
+      "Instance.NodeInstanceType\022k\n\010rule_set\030\002 " +
+      "\001(\0132Y.io.automatik.engine.workflow.marsh" +
       "alling.ProcessInstance.NodeInstanceConte" +
-      "nt.HumanTaskNode\022m\n\twork_item\030\004 \001(\0132Z.io" +
-      ".automatik.engine.workflow.marshalling.P" +
-      "rocessInstance.NodeInstanceContent.WorkI" +
-      "temNode\022q\n\013sub_process\030\005 \001(\0132\\.io.automa" +
-      "tik.engine.workflow.marshalling.ProcessI" +
-      "nstance.NodeInstanceContent.SubProcessNo" +
-      "de\022n\n\tmilestone\030\006 \001(\0132[.io.automatik.eng" +
-      "ine.workflow.marshalling.ProcessInstance" +
-      ".NodeInstanceContent.MilestoneNode\022f\n\005ev" +
-      "ent\030\007 \001(\0132W.io.automatik.engine.workflow" +
-      ".marshalling.ProcessInstance.NodeInstanc" +
-      "eContent.EventNode\022f\n\005timer\030\010 \001(\0132W.io.a" +
-      "utomatik.engine.workflow.marshalling.Pro" +
-      "cessInstance.NodeInstanceContent.TimerNo" +
-      "de\022d\n\004join\030\t \001(\0132V.io.automatik.engine.w" +
-      "orkflow.marshalling.ProcessInstance.Node" +
-      "InstanceContent.JoinNode\022f\n\005state\030\n \001(\0132" +
-      "W.io.automatik.engine.workflow.marshalli" +
-      "ng.ProcessInstance.NodeInstanceContent.S" +
-      "tateNode\022u\n\tcomposite\030\013 \001(\0132b.io.automat" +
-      "ik.engine.workflow.marshalling.ProcessIn" +
-      "stance.NodeInstanceContent.CompositeCont" +
-      "extNode\022k\n\010for_each\030\014 \001(\0132Y.io.automatik" +
-      ".engine.workflow.marshalling.ProcessInst" +
-      "ance.NodeInstanceContent.ForEachNode\022q\n\013" +
-      "async_event\030\r \001(\0132\\.io.automatik.engine." +
-      "workflow.marshalling.ProcessInstance.Nod" +
-      "eInstanceContent.AsyncEventNode\032\350\001\n\013Rule" +
-      "SetNode\022\031\n\021timer_instance_id\030\001 \003(\t\022x\n\010ma" +
-      "pEntry\030\002 \003(\0132f.io.automatik.engine.workf" +
-      "low.marshalling.ProcessInstance.NodeInst" +
-      "anceContent.RuleSetNode.TextMapEntry\022\027\n\017" +
-      "rule_flow_group\030\003 \001(\t\032+\n\014TextMapEntry\022\014\n" +
-      "\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\032\273\001\n\rHumanTask" +
-      "Node\022\024\n\014work_item_id\030\001 \001(\t\022\031\n\021timer_inst" +
-      "ance_id\030\002 \003(\t\022*\n\"error_handling_process_" +
-      "instance_id\030\003 \001(\t\022M\n\010workitem\030\004 \001(\0132;.io" +
-      ".automatik.engine.workflow.marshalling.H" +
-      "umanTaskWorkItem\032\261\001\n\014WorkItemNode\022\024\n\014wor" +
-      "k_item_id\030\001 \001(\t\022\031\n\021timer_instance_id\030\002 \003" +
-      "(\t\022*\n\"error_handling_process_instance_id" +
-      "\030\003 \001(\t\022D\n\010workitem\030\004 \001(\01322.io.automatik." +
-      "engine.workflow.marshalling.WorkItem\032g\n\016" +
-      "SubProcessNode\022\033\n\023process_instance_id\030\001 " +
-      "\001(\t\022\031\n\021timer_instance_id\030\002 \003(\t\022\035\n\025proces" +
-      "s_instance_name\030\003 \001(\t\032*\n\rMilestoneNode\022\031" +
-      "\n\021timer_instance_id\030\001 \003(\t\032\013\n\tEventNode\032\035" +
-      "\n\tTimerNode\022\020\n\010timer_id\030\001 \001(\t\032\260\001\n\010JoinNo" +
-      "de\022s\n\007trigger\030\001 \003(\0132b.io.automatik.engin" +
+      "nt.RuleSetNode\022o\n\nhuman_task\030\003 \001(\0132[.io." +
+      "automatik.engine.workflow.marshalling.Pr" +
+      "ocessInstance.NodeInstanceContent.HumanT" +
+      "askNode\022m\n\twork_item\030\004 \001(\0132Z.io.automati" +
+      "k.engine.workflow.marshalling.ProcessIns" +
+      "tance.NodeInstanceContent.WorkItemNode\022q" +
+      "\n\013sub_process\030\005 \001(\0132\\.io.automatik.engin" +
       "e.workflow.marshalling.ProcessInstance.N" +
-      "odeInstanceContent.JoinNode.JoinTrigger\032" +
-      "/\n\013JoinTrigger\022\017\n\007node_id\030\001 \001(\003\022\017\n\007count" +
-      "er\030\002 \001(\005\032&\n\tStateNode\022\031\n\021timer_instance_" +
-      "id\030\001 \003(\t\032\224\003\n\024CompositeContextNode\022\031\n\021tim" +
-      "er_instance_id\030\002 \003(\t\022D\n\010variable\030\003 \003(\01322" +
-      ".io.automatik.engine.workflow.marshallin" +
-      "g.Variable\022]\n\rnode_instance\030\004 \003(\0132F.io.a" +
-      "utomatik.engine.workflow.marshalling.Pro" +
-      "cessInstance.NodeInstance\022i\n\017exclusive_g" +
-      "roup\030\005 \003(\0132P.io.automatik.engine.workflo" +
-      "w.marshalling.ProcessInstance.ExclusiveG" +
-      "roupInstance\022Q\n\017iterationLevels\030\006 \003(\01328." +
-      "io.automatik.engine.workflow.marshalling" +
-      ".IterationLevel\032\241\002\n\013ForEachNode\022]\n\rnode_" +
-      "instance\030\001 \003(\0132F.io.automatik.engine.wor" +
-      "kflow.marshalling.ProcessInstance.NodeIn" +
-      "stance\022D\n\010variable\030\002 \003(\01322.io.automatik." +
-      "engine.workflow.marshalling.Variable\022Q\n\017" +
-      "iterationLevels\030\003 \003(\01328.io.automatik.eng" +
-      "ine.workflow.marshalling.IterationLevel\022" +
-      "\032\n\022sequential_counter\030\004 \001(\005\032$\n\016AsyncEven" +
-      "tNode\022\022\n\nevent_type\030\001 \001(\t\"\276\002\n\020NodeInstan" +
-      "ceType\022\021\n\rRULE_SET_NODE\020\000\022\023\n\017HUMAN_TASK_" +
-      "NODE\020\001\022\022\n\016WORK_ITEM_NODE\020\002\022\023\n\017SUBPROCESS" +
-      "_NODE\020\003\022\022\n\016MILESTONE_NODE\020\004\022\016\n\nEVENT_NOD" +
-      "E\020\005\022\016\n\nTIMER_NODE\020\006\022\r\n\tJOIN_NODE\020\007\022\016\n\nST" +
-      "ATE_NODE\020\010\022\032\n\026COMPOSITE_CONTEXT_NODE\020\t\022\021" +
-      "\n\rFOR_EACH_NODE\020\n\022\020\n\014DYNAMIC_NODE\020\013\022\031\n\025E" +
-      "VENT_SUBPROCESS_NODE\020\014\022\024\n\020ASYNC_EVENT_NO" +
-      "DE\020\r\022\024\n\020SUB_PROCESS_NODE\020\016\"R\n\010Variable\022\014" +
-      "\n\004name\030\001 \001(\t\022\026\n\016strategy_index\030\002 \001(\005\022\r\n\005" +
-      "value\030\003 \001(\014\022\021\n\tdata_type\030\004 \001(\t\"\254\002\n\010WorkI" +
-      "tem\022\n\n\002id\030\001 \001(\t\022\034\n\024process_instances_id\030" +
-      "\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\r\n\005state\030\004 \001(\005\022D\n\010va" +
-      "riable\030\005 \003(\01322.io.automatik.engine.workf" +
-      "low.marshalling.Variable\022\025\n\rdeployment_i" +
-      "d\030\006 \001(\t\022\030\n\020node_instance_id\030\007 \001(\t\022\017\n\007nod" +
-      "e_id\030\010 \001(\003\022\020\n\010phase_id\030\t \001(\t\022\024\n\014phase_st" +
-      "atus\030\n \001(\t\022\022\n\nstart_date\030\013 \001(\003\022\025\n\rcomple" +
-      "te_date\030\014 \001(\003\"\226\004\n\021HumanTaskWorkItem\022\n\n\002i" +
-      "d\030\001 \001(\t\022\034\n\024process_instances_id\030\002 \001(\t\022\014\n" +
-      "\004name\030\003 \001(\t\022\r\n\005state\030\004 \001(\005\022D\n\010variable\030\005" +
-      " \003(\01322.io.automatik.engine.workflow.mars" +
-      "halling.Variable\022\025\n\rdeployment_id\030\006 \001(\t\022" +
-      "\030\n\020node_instance_id\030\007 \001(\t\022\017\n\007node_id\030\010 \001" +
-      "(\003\022\020\n\010phase_id\030\t \001(\t\022\024\n\014phase_status\030\n \001" +
-      "(\t\022\022\n\nstart_date\030\013 \001(\003\022\025\n\rcomplete_date\030" +
-      "\014 \001(\003\022\021\n\ttask_name\030\r \001(\t\022\030\n\020task_descrip" +
-      "tion\030\016 \001(\t\022\025\n\rtask_priority\030\017 \001(\t\022\024\n\014act" +
-      "ual_owner\030\020 \001(\t\022\021\n\tpot_users\030\021 \003(\t\022\022\n\npo" +
-      "t_groups\030\022 \003(\t\022\026\n\016excluded_users\030\023 \003(\t\022\023" +
-      "\n\013admin_users\030\024 \003(\t\022\024\n\014admin_groups\030\025 \003(" +
-      "\t\022\033\n\023task_reference_name\030\026 \001(\t\"\211\003\n\014Proce" +
-      "ssTimer\022S\n\005timer\030\001 \001(\0132D.io.automatik.en" +
-      "gine.workflow.marshalling.ProcessTimer.T" +
-      "imerInstance\022B\n\007trigger\030\002 \001(\01321.io.autom" +
-      "atik.engine.workflow.marshalling.Trigger" +
-      "\032\337\001\n\rTimerInstance\022\n\n\002id\030\001 \001(\003\022\020\n\010timer_" +
-      "id\030\002 \001(\t\022\r\n\005delay\030\003 \001(\003\022\016\n\006period\030\004 \001(\003\022" +
-      "\033\n\023process_instance_id\030\005 \001(\t\022\026\n\016activate" +
-      "d_time\030\006 \001(\003\022\026\n\016last_triggered\030\007 \001(\003\022\034\n\024" +
-      "DEPRECATED_sessionId\030\010 \001(\005\022\021\n\tsessionId\030" +
-      "\t \001(\003\022\023\n\013repeatLimit\030\n \001(\005\"+\n\016IterationL" +
-      "evel\022\n\n\002id\030\001 \001(\t\022\r\n\005level\030\002 \001(\005\"Y\n\021Varia" +
-      "bleContainer\022D\n\010variable\030\001 \003(\01322.io.auto" +
-      "matik.engine.workflow.marshalling.Variab" +
-      "le:\212\001\n\020process_instance\0225.io.automatik.e" +
-      "ngine.workflow.marshalling.ProcessData\030\n" +
-      " \003(\01329.io.automatik.engine.workflow.mars" +
-      "halling.ProcessInstance:|\n\twork_item\0225.i" +
-      "o.automatik.engine.workflow.marshalling." +
-      "ProcessData\030\013 \003(\01322.io.automatik.engine." +
-      "workflow.marshalling.WorkItem:G\n\010timer_i" +
-      "d\0225.io.automatik.engine.workflow.marshal" +
-      "ling.ProcessData\030\r \001(\003:\204\001\n\rprocess_timer" +
-      "\0225.io.automatik.engine.workflow.marshall" +
-      "ing.ProcessData\030\014 \003(\01326.io.automatik.eng" +
-      "ine.workflow.marshalling.ProcessTimerBB\n" +
-      "-io.automatik.engine.workflow.marshallin" +
-      "g.implB\021AutomatikMessages"
+      "odeInstanceContent.SubProcessNode\022n\n\tmil" +
+      "estone\030\006 \001(\0132[.io.automatik.engine.workf" +
+      "low.marshalling.ProcessInstance.NodeInst" +
+      "anceContent.MilestoneNode\022f\n\005event\030\007 \001(\013" +
+      "2W.io.automatik.engine.workflow.marshall" +
+      "ing.ProcessInstance.NodeInstanceContent." +
+      "EventNode\022f\n\005timer\030\010 \001(\0132W.io.automatik." +
+      "engine.workflow.marshalling.ProcessInsta" +
+      "nce.NodeInstanceContent.TimerNode\022d\n\004joi" +
+      "n\030\t \001(\0132V.io.automatik.engine.workflow.m" +
+      "arshalling.ProcessInstance.NodeInstanceC" +
+      "ontent.JoinNode\022f\n\005state\030\n \001(\0132W.io.auto" +
+      "matik.engine.workflow.marshalling.Proces" +
+      "sInstance.NodeInstanceContent.StateNode\022" +
+      "u\n\tcomposite\030\013 \001(\0132b.io.automatik.engine" +
+      ".workflow.marshalling.ProcessInstance.No" +
+      "deInstanceContent.CompositeContextNode\022k" +
+      "\n\010for_each\030\014 \001(\0132Y.io.automatik.engine.w" +
+      "orkflow.marshalling.ProcessInstance.Node" +
+      "InstanceContent.ForEachNode\022q\n\013async_eve" +
+      "nt\030\r \001(\0132\\.io.automatik.engine.workflow." +
+      "marshalling.ProcessInstance.NodeInstance" +
+      "Content.AsyncEventNode\032\350\001\n\013RuleSetNode\022\031" +
+      "\n\021timer_instance_id\030\001 \003(\t\022x\n\010mapEntry\030\002 " +
+      "\003(\0132f.io.automatik.engine.workflow.marsh" +
+      "alling.ProcessInstance.NodeInstanceConte" +
+      "nt.RuleSetNode.TextMapEntry\022\027\n\017rule_flow" +
+      "_group\030\003 \001(\t\032+\n\014TextMapEntry\022\014\n\004name\030\001 \001" +
+      "(\t\022\r\n\005value\030\002 \001(\t\032\273\001\n\rHumanTaskNode\022\024\n\014w" +
+      "ork_item_id\030\001 \001(\t\022\031\n\021timer_instance_id\030\002" +
+      " \003(\t\022*\n\"error_handling_process_instance_" +
+      "id\030\003 \001(\t\022M\n\010workitem\030\004 \001(\0132;.io.automati" +
+      "k.engine.workflow.marshalling.HumanTaskW" +
+      "orkItem\032\261\001\n\014WorkItemNode\022\024\n\014work_item_id" +
+      "\030\001 \001(\t\022\031\n\021timer_instance_id\030\002 \003(\t\022*\n\"err" +
+      "or_handling_process_instance_id\030\003 \001(\t\022D\n" +
+      "\010workitem\030\004 \001(\01322.io.automatik.engine.wo" +
+      "rkflow.marshalling.WorkItem\032g\n\016SubProces" +
+      "sNode\022\033\n\023process_instance_id\030\001 \001(\t\022\031\n\021ti" +
+      "mer_instance_id\030\002 \003(\t\022\035\n\025process_instanc" +
+      "e_name\030\003 \001(\t\032*\n\rMilestoneNode\022\031\n\021timer_i" +
+      "nstance_id\030\001 \003(\t\032\013\n\tEventNode\032\035\n\tTimerNo" +
+      "de\022\020\n\010timer_id\030\001 \001(\t\032\260\001\n\010JoinNode\022s\n\007tri" +
+      "gger\030\001 \003(\0132b.io.automatik.engine.workflo" +
+      "w.marshalling.ProcessInstance.NodeInstan" +
+      "ceContent.JoinNode.JoinTrigger\032/\n\013JoinTr" +
+      "igger\022\017\n\007node_id\030\001 \001(\003\022\017\n\007counter\030\002 \001(\005\032" +
+      "&\n\tStateNode\022\031\n\021timer_instance_id\030\001 \003(\t\032" +
+      "\224\003\n\024CompositeContextNode\022\031\n\021timer_instan" +
+      "ce_id\030\002 \003(\t\022D\n\010variable\030\003 \003(\01322.io.autom" +
+      "atik.engine.workflow.marshalling.Variabl" +
+      "e\022]\n\rnode_instance\030\004 \003(\0132F.io.automatik." +
+      "engine.workflow.marshalling.ProcessInsta" +
+      "nce.NodeInstance\022i\n\017exclusive_group\030\005 \003(" +
+      "\0132P.io.automatik.engine.workflow.marshal" +
+      "ling.ProcessInstance.ExclusiveGroupInsta" +
+      "nce\022Q\n\017iterationLevels\030\006 \003(\01328.io.automa" +
+      "tik.engine.workflow.marshalling.Iteratio" +
+      "nLevel\032\241\002\n\013ForEachNode\022]\n\rnode_instance\030" +
+      "\001 \003(\0132F.io.automatik.engine.workflow.mar" +
+      "shalling.ProcessInstance.NodeInstance\022D\n" +
+      "\010variable\030\002 \003(\01322.io.automatik.engine.wo" +
+      "rkflow.marshalling.Variable\022Q\n\017iteration" +
+      "Levels\030\003 \003(\01328.io.automatik.engine.workf" +
+      "low.marshalling.IterationLevel\022\032\n\022sequen" +
+      "tial_counter\030\004 \001(\005\032$\n\016AsyncEventNode\022\022\n\n" +
+      "event_type\030\001 \001(\t\"\276\002\n\020NodeInstanceType\022\021\n" +
+      "\rRULE_SET_NODE\020\000\022\023\n\017HUMAN_TASK_NODE\020\001\022\022\n" +
+      "\016WORK_ITEM_NODE\020\002\022\023\n\017SUBPROCESS_NODE\020\003\022\022" +
+      "\n\016MILESTONE_NODE\020\004\022\016\n\nEVENT_NODE\020\005\022\016\n\nTI" +
+      "MER_NODE\020\006\022\r\n\tJOIN_NODE\020\007\022\016\n\nSTATE_NODE\020" +
+      "\010\022\032\n\026COMPOSITE_CONTEXT_NODE\020\t\022\021\n\rFOR_EAC" +
+      "H_NODE\020\n\022\020\n\014DYNAMIC_NODE\020\013\022\031\n\025EVENT_SUBP" +
+      "ROCESS_NODE\020\014\022\024\n\020ASYNC_EVENT_NODE\020\r\022\024\n\020S" +
+      "UB_PROCESS_NODE\020\016\"R\n\010Variable\022\014\n\004name\030\001 " +
+      "\001(\t\022\026\n\016strategy_index\030\002 \001(\005\022\r\n\005value\030\003 \001" +
+      "(\014\022\021\n\tdata_type\030\004 \001(\t\"\254\002\n\010WorkItem\022\n\n\002id" +
+      "\030\001 \001(\t\022\034\n\024process_instances_id\030\002 \001(\t\022\014\n\004" +
+      "name\030\003 \001(\t\022\r\n\005state\030\004 \001(\005\022D\n\010variable\030\005 " +
+      "\003(\01322.io.automatik.engine.workflow.marsh" +
+      "alling.Variable\022\025\n\rdeployment_id\030\006 \001(\t\022\030" +
+      "\n\020node_instance_id\030\007 \001(\t\022\017\n\007node_id\030\010 \001(" +
+      "\003\022\020\n\010phase_id\030\t \001(\t\022\024\n\014phase_status\030\n \001(" +
+      "\t\022\022\n\nstart_date\030\013 \001(\003\022\025\n\rcomplete_date\030\014" +
+      " \001(\003\"\226\004\n\021HumanTaskWorkItem\022\n\n\002id\030\001 \001(\t\022\034" +
+      "\n\024process_instances_id\030\002 \001(\t\022\014\n\004name\030\003 \001" +
+      "(\t\022\r\n\005state\030\004 \001(\005\022D\n\010variable\030\005 \003(\01322.io" +
+      ".automatik.engine.workflow.marshalling.V" +
+      "ariable\022\025\n\rdeployment_id\030\006 \001(\t\022\030\n\020node_i" +
+      "nstance_id\030\007 \001(\t\022\017\n\007node_id\030\010 \001(\003\022\020\n\010pha" +
+      "se_id\030\t \001(\t\022\024\n\014phase_status\030\n \001(\t\022\022\n\nsta" +
+      "rt_date\030\013 \001(\003\022\025\n\rcomplete_date\030\014 \001(\003\022\021\n\t" +
+      "task_name\030\r \001(\t\022\030\n\020task_description\030\016 \001(" +
+      "\t\022\025\n\rtask_priority\030\017 \001(\t\022\024\n\014actual_owner" +
+      "\030\020 \001(\t\022\021\n\tpot_users\030\021 \003(\t\022\022\n\npot_groups\030" +
+      "\022 \003(\t\022\026\n\016excluded_users\030\023 \003(\t\022\023\n\013admin_u" +
+      "sers\030\024 \003(\t\022\024\n\014admin_groups\030\025 \003(\t\022\033\n\023task" +
+      "_reference_name\030\026 \001(\t\"\211\003\n\014ProcessTimer\022S" +
+      "\n\005timer\030\001 \001(\0132D.io.automatik.engine.work" +
+      "flow.marshalling.ProcessTimer.TimerInsta" +
+      "nce\022B\n\007trigger\030\002 \001(\01321.io.automatik.engi" +
+      "ne.workflow.marshalling.Trigger\032\337\001\n\rTime" +
+      "rInstance\022\n\n\002id\030\001 \001(\003\022\020\n\010timer_id\030\002 \001(\t\022" +
+      "\r\n\005delay\030\003 \001(\003\022\016\n\006period\030\004 \001(\003\022\033\n\023proces" +
+      "s_instance_id\030\005 \001(\t\022\026\n\016activated_time\030\006 " +
+      "\001(\003\022\026\n\016last_triggered\030\007 \001(\003\022\034\n\024DEPRECATE" +
+      "D_sessionId\030\010 \001(\005\022\021\n\tsessionId\030\t \001(\003\022\023\n\013" +
+      "repeatLimit\030\n \001(\005\"+\n\016IterationLevel\022\n\n\002i" +
+      "d\030\001 \001(\t\022\r\n\005level\030\002 \001(\005\"Y\n\021VariableContai" +
+      "ner\022D\n\010variable\030\001 \003(\01322.io.automatik.eng" +
+      "ine.workflow.marshalling.Variable:\212\001\n\020pr" +
+      "ocess_instance\0225.io.automatik.engine.wor" +
+      "kflow.marshalling.ProcessData\030\n \003(\01329.io" +
+      ".automatik.engine.workflow.marshalling.P" +
+      "rocessInstance:|\n\twork_item\0225.io.automat" +
+      "ik.engine.workflow.marshalling.ProcessDa" +
+      "ta\030\013 \003(\01322.io.automatik.engine.workflow." +
+      "marshalling.WorkItem:G\n\010timer_id\0225.io.au" +
+      "tomatik.engine.workflow.marshalling.Proc" +
+      "essData\030\r \001(\003:\204\001\n\rprocess_timer\0225.io.aut" +
+      "omatik.engine.workflow.marshalling.Proce" +
+      "ssData\030\014 \003(\01326.io.automatik.engine.workf" +
+      "low.marshalling.ProcessTimerBB\n-io.autom" +
+      "atik.engine.workflow.marshalling.implB\021A" +
+      "utomatikMessages"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -48634,33 +49802,39 @@ public final class AutomatikMessages {
     internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_descriptor,
-        new java.lang.String[] { "ProcessType", "Id", "ProcessId", "State", "NodeInstanceCounter", "ProcessXml", "ParentProcessInstanceId", "Description", "SignalCompletion", "DeploymentId", "CorrelationKey", "SlaTimerId", "SlaDueDate", "SlaCompliance", "RootProcessInstanceId", "StartDate", "RootProcessId", "ErrorNodeId", "ErrorMessage", "ReferenceId", "SwimlaneContext", "NodeInstance", "Variable", "ExclusiveGroup", "CompletedNodeIds", "IterationLevels", "Children", });
+        new java.lang.String[] { "ProcessType", "Id", "ProcessId", "State", "NodeInstanceCounter", "ProcessXml", "ParentProcessInstanceId", "Description", "SignalCompletion", "DeploymentId", "CorrelationKey", "SlaTimerId", "SlaDueDate", "SlaCompliance", "RootProcessInstanceId", "StartDate", "RootProcessId", "ErrorNodeId", "ErrorMessage", "ReferenceId", "SwimlaneContext", "NodeInstance", "Variable", "ExclusiveGroup", "CompletedNodeIds", "IterationLevels", "Children", "Tags", });
     internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_ProcessInstanchChildren_descriptor =
       internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(0);
     internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_ProcessInstanchChildren_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_ProcessInstanchChildren_descriptor,
         new java.lang.String[] { "ProcessId", "Ids", });
-    internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_SwimlaneContextInstance_descriptor =
+    internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_Tag_descriptor =
       internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(1);
+    internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_Tag_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_Tag_descriptor,
+        new java.lang.String[] { "Id", "Value", });
+    internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_SwimlaneContextInstance_descriptor =
+      internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(2);
     internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_SwimlaneContextInstance_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_SwimlaneContextInstance_descriptor,
         new java.lang.String[] { "Swimlane", "ActorId", });
     internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_NodeInstance_descriptor =
-      internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(2);
+      internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(3);
     internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_NodeInstance_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_NodeInstance_descriptor,
         new java.lang.String[] { "Id", "NodeId", "Content", "Level", "SlaTimerId", "SlaDueDate", "SlaCompliance", "TriggerDate", });
     internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_ExclusiveGroupInstance_descriptor =
-      internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(3);
+      internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(4);
     internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_ExclusiveGroupInstance_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_ExclusiveGroupInstance_descriptor,
         new java.lang.String[] { "GroupNodeInstanceId", });
     internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_NodeInstanceContent_descriptor =
-      internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(4);
+      internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(5);
     internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_NodeInstanceContent_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_NodeInstanceContent_descriptor,

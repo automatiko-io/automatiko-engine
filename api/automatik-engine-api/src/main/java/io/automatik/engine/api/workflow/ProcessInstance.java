@@ -208,12 +208,41 @@ public interface ProcessInstance<T> {
      */
     Optional<ProcessError> error();
 
+    /**
+     * Returns tags associated with this process instances
+     * 
+     * @return currently associated tags
+     */
+    Tags tags();
+
+    /**
+     * Triggers a node with given id to perform its associated logic
+     * 
+     * @param nodeId unique id of the node to trigger
+     */
     void triggerNode(String nodeId);
 
+    /**
+     * Cancels node instance with given nodeInstanceId which results in abort of
+     * any work being done by this node instance
+     * 
+     * @param nodeInstanceId unique id of the node instance to be cancelled
+     */
     void cancelNodeInstance(String nodeInstanceId);
 
+    /**
+     * Retriggers (canceling and triggering again) node instance with given nodeInstanceId
+     * This results in redoing the logic associated with given node instance
+     * 
+     * @param nodeInstanceId unique id of the node instance to be cancelled
+     */
     void retriggerNodeInstance(String nodeInstanceId);
 
+    /**
+     * Returns all active events that this process instance is capable of acting on.
+     * 
+     * @return set of event descriptions for this process instance
+     */
     Set<EventDescription<?>> events();
 
     /**

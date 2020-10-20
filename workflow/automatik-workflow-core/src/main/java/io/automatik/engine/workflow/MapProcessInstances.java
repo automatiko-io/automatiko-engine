@@ -1,7 +1,9 @@
 
 package io.automatik.engine.workflow;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -54,6 +56,17 @@ public class MapProcessInstances<T> implements MutableProcessInstances<T> {
     @Override
     public boolean exists(String id) {
         return instances.containsKey(id);
+    }
+
+    @Override
+    public Collection<? extends ProcessInstance<T>> findByIdOrTag(ProcessInstanceReadMode mode, String... values) {
+        List<ProcessInstance<T>> collected = new ArrayList<>();
+        for (String idOrTag : values) {
+
+            instances.values().stream().filter(pi -> pi.id().equals(resolveId(idOrTag)) || pi.tags().values().contains(idOrTag))
+                    .forEach(pi -> collected.add(pi));
+        }
+        return collected;
     }
 
 }

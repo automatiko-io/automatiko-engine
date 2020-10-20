@@ -14,57 +14,58 @@ import io.automatik.engine.workflow.process.instance.NodeInstance;
  * 
  */
 public interface ProcessInstance
-		extends io.automatik.engine.api.runtime.process.ProcessInstance, ContextInstanceContainer, ContextableInstance {
+        extends io.automatik.engine.api.runtime.process.ProcessInstance, ContextInstanceContainer, ContextableInstance {
 
-	void setId(String id);
+    void setId(String id);
 
-	void setProcess(Process process);
+    void setProcess(Process process);
 
-	Process getProcess();
+    Process getProcess();
 
-	void setState(int state);
+    void setState(int state);
 
-	void setState(int state, String outcome);
+    void setState(int state, String outcome);
 
-	void setState(int state, String outcome, Object faultData);
+    void setState(int state, String outcome, Object faultData);
 
-	void setErrorState(NodeInstance nodeInstanceInError, Exception e);
+    void setErrorState(NodeInstance nodeInstanceInError, Exception e);
 
-	void setProcessRuntime(InternalProcessRuntime runtime);
+    void setProcessRuntime(InternalProcessRuntime runtime);
 
-	InternalProcessRuntime getProcessRuntime();
+    InternalProcessRuntime getProcessRuntime();
 
-	void start();
+    void start();
 
-	void start(String tigger, Object triggerData);
+    void start(String tigger, Object triggerData);
 
-	String getOutcome();
+    String getOutcome();
 
-	void setParentProcessInstanceId(String parentId);
+    void setParentProcessInstanceId(String parentId);
 
-	void setRootProcessInstanceId(String parentId);
+    void setRootProcessInstanceId(String parentId);
 
-	Map<String, Object> getMetaData();
+    Map<String, Object> getMetaData();
 
-	Object getFaultData();
+    Object getFaultData();
 
-	void setSignalCompletion(boolean signalCompletion);
+    void setSignalCompletion(boolean signalCompletion);
 
-	boolean isSignalCompletion();
+    boolean isSignalCompletion();
 
-	String getDeploymentId();
+    String getDeploymentId();
 
-	void setDeploymentId(String deploymentId);
+    void setDeploymentId(String deploymentId);
 
-	Date getStartDate();
+    Date getStartDate();
 
-	void setStartDate(Date date);
+    void setStartDate(Date date);
 
-	int getSlaCompliance();
+    int getSlaCompliance();
 
-	Date getSlaDueDate();
+    Date getSlaDueDate();
 
-	void configureSLA();
+    void configureSLA();
 
-	void setReferenceId(String referenceId);
+    void setReferenceId(String referenceId);
+
 }

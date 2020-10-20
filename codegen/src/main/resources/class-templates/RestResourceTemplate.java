@@ -1,5 +1,6 @@
 package com.myspace.demo;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,9 +26,11 @@ import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.api.workflow.ProcessInstanceExecutionException;
 import io.automatik.engine.api.workflow.ProcessInstanceNotFoundException;
+import io.automatik.engine.api.workflow.Tag;
 import io.automatik.engine.api.workflow.WorkItem;
 import io.automatik.engine.api.workflow.workitem.Policy;
 import io.automatik.engine.workflow.Sig;
+import io.automatik.engine.workflow.base.instance.TagInstance;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,6 +128,45 @@ public class $Type$Resource {
                 .map(pi -> pi.workItems(policies(user, groups)))
                 .map(l -> l.stream().map(WorkItem::toMap).collect(Collectors.toList()))
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+    }
+    
+    @GET()
+    @Path("/{id}/tags")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<Tag> get_tags_$name$(@PathParam("id") String id) {
+        return process.instances()
+                .findById(id)
+                .map(pi -> pi.tags().get())
+                .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+    }
+    
+    @POST()
+    @Path("/{id}/tags")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<Tag> add_tag_$name$(@PathParam("id") String id, TagInstance resource) {
+        return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+            ProcessInstance<$Type$> pi = process.instances()
+                    .findById(id)
+                    .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+        
+            pi.tags().add(resource.getValue());
+            return pi.tags().get();
+        });
+    }
+    
+    @DELETE()
+    @Path("/{id}/tags/{tagId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Collection<Tag> get_tags_$name$(@PathParam("id") String id, @PathParam("tagId") String tagId) {
+        return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+            ProcessInstance<$Type$> pi = process.instances()
+                    .findById(id)
+                    .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+        
+            pi.tags().remove(tagId);
+            return pi.tags().get();
+        });
     }
     
     protected $Type$Output getModel(ProcessInstance<$Type$> pi) {

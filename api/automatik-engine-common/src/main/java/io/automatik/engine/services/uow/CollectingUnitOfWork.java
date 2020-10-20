@@ -133,30 +133,7 @@ public class CollectingUnitOfWork implements UnitOfWork {
 
             if (found.isPresent()) {
                 ProcessInstance<?> pi = (ProcessInstance<?>) found.get();
-                local.put(id, pi);
-
-                intercept(new WorkUnit<ProcessInstance<?>>() {
-
-                    @Override
-                    public ProcessInstance<?> data() {
-                        return pi;
-                    }
-
-                    @Override
-                    public void perform() {
-                        pi.disconnect();
-                    }
-
-                    @Override
-                    public void abort() {
-                        pi.disconnect();
-                    }
-
-                    @Override
-                    public Integer priority() {
-                        return 200;
-                    }
-                });
+                addToCache(id, pi);
             }
 
             return found;
@@ -201,6 +178,43 @@ public class CollectingUnitOfWork implements UnitOfWork {
             local.remove(id);
         }
 
+        @Override
+        public Collection findByIdOrTag(ProcessInstanceReadMode mode, String... values) {
+            Collection<?> collected = delegate.findByIdOrTag(mode, values);
+
+            if (mode.equals(ProcessInstanceReadMode.MUTABLE)) {
+                collected.forEach(pi -> addToCache(((ProcessInstance<?>) pi).id(), ((ProcessInstance<?>) pi)));
+            }
+
+            return collected;
+        }
+
+        protected void addToCache(String id, ProcessInstance<?> pi) {
+            local.put(id, pi);
+
+            intercept(new WorkUnit<ProcessInstance<?>>() {
+
+                @Override
+                public ProcessInstance<?> data() {
+                    return pi;
+                }
+
+                @Override
+                public void perform() {
+                    pi.disconnect();
+                }
+
+                @Override
+                public void abort() {
+                    pi.disconnect();
+                }
+
+                @Override
+                public Integer priority() {
+                    return 200;
+                }
+            });
+        }
     }
 
 }
