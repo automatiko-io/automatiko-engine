@@ -408,7 +408,8 @@ public abstract class AbstractResourceGenerator {
         String s = vv.getValue();
         String documentation = process.getMetaData().getOrDefault("Documentation", processName).toString();
         String interpolated = s.replace("$name$", processName).replace("$id$", processId)
-                .replace("$documentation$", documentation).replace("$prefix$", pathPrefix);
+                .replace("$processdocumentation$", documentation).replace("$prefix$", pathPrefix)
+                .replace("$processname$", process.getName());
         vv.setString(interpolated);
     }
 

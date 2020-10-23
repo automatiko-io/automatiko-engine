@@ -1,5 +1,6 @@
 package io.automatik.engine.quarkus.config;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,53 +14,69 @@ import io.automatik.engine.api.codegen.AutomatikConfigProperties;
 
 public class AutomatikConfigSource implements ConfigSource {
 
-	public static final String NAME = "AutomatikConfigSource";
+    public static final String NAME = "AutomatikConfigSource";
 
-	private List<AutomatikConfigProperties> found = null;
+    private List<AutomatikConfigProperties> found = null;
 
-	public AutomatikConfigSource() {
+    public AutomatikConfigSource() {
 
-	}
+    }
 
-	@Override
-	public Map<String, String> getProperties() {
-		load();
-		Map<String, String> properties = new LinkedHashMap<String, String>();
-		if (found == null) {
-			return properties;
-		}
-		for (AutomatikConfigProperties p : found) {
-			if (p.getProperties() != null) {
-				properties.putAll(p.getProperties());
-			}
-		}
+    @Override
+    public Map<String, String> getProperties() {
+        load();
+        Map<String, String> properties = new LinkedHashMap<String, String>();
+        if (found == null) {
+            return properties;
+        }
+        for (AutomatikConfigProperties p : found) {
+            if (p.getProperties() != null) {
+                properties.putAll(p.getProperties());
+            }
+        }
 
-		return properties;
-	}
+        return properties;
+    }
 
-	@Override
-	public String getValue(String propertyName) {
-		load();
-		if (found == null) {
-			return null;
-		}
+    @Override
+    public String getValue(String propertyName) {
+        load();
+        if (found == null) {
+            return null;
+        }
 
-		return found.stream().map(p -> p.getProperty(propertyName)).filter(v -> v != null).findFirst().orElse(null);
+        return found.stream().map(p -> p.getProperty(propertyName)).filter(v -> v != null).findFirst().orElse(null);
 
-	}
+    }
 
-	@Override
-	public String getName() {
-		return NAME;
-	}
+    @Override
+    public String getName() {
+        return NAME;
+    }
 
-	private void load() {
-		if (found == null) {
-			try {
-				ServiceLoader<AutomatikConfigProperties> loader = ServiceLoader.load(AutomatikConfigProperties.class);
-				found = StreamSupport.stream(loader.spliterator(), false).collect(Collectors.toList());
-			} catch (Throwable e) {
-			}
-		}
-	}
+    private void load() {
+        if (found == null) {
+            try {
+                ServiceLoader<AutomatikConfigProperties> loader = ServiceLoader.load(AutomatikConfigProperties.class);
+                found = StreamSupport.stream(loader.spliterator(), false).collect(Collectors.toList());
+
+                found.add(new AutomatikConfigProperties() {
+
+                    @Override
+                    public String getProperty(String name) {
+                        if ("mp.openapi.extensions.smallrye.operationIdStrategy".equals(name)) {
+                            return "METHOD";
+                        }
+                        return null;
+                    }
+
+                    @Override
+                    public Map<String, String> getProperties() {
+                        return Collections.singletonMap("mp.openapi.extensions.smallrye.operationIdStrategy", "METHOD");
+                    }
+                });
+            } catch (Throwable e) {
+            }
+        }
+    }
 }

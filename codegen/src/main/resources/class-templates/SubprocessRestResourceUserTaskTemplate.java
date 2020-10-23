@@ -10,6 +10,23 @@ import io.automatik.engine.workflow.Sig;
 
 public class $Type$Resource {
 
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "404",
+                description = "In case of task instance with given id was not found",
+                content = @Content(mediaType = "application/json")),              
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully created new instance of $taskName$ task",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = $Type$Output.class))) })
+    @Operation(
+        summary = "Adds new $taskName$ task instance")  
     @POST
     @Path("$prefix$/$name$/{id_$name$}/$taskName$")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -32,6 +49,23 @@ public class $Type$Resource {
         });
     }
 
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "404",
+                description = "In case of task instance with given id was not found",
+                content = @Content(mediaType = "application/json")),              
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully completed instance of $taskName$ task with given id",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = $Type$Output.class))) })
+    @Operation(
+        summary = "Completes $taskName$ task instance with given id")     
     @POST()
     @Path("$prefix$/$name$/{id_$name$}/$taskName$/{workItemId}")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -58,7 +92,23 @@ public class $Type$Resource {
         }
     }
     
-    
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "404",
+                description = "In case of task instance with given id was not found",
+                content = @Content(mediaType = "application/json")),              
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully retrieved instance of $taskName$ task with given id",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = $TaskInput$.class))) })
+    @Operation(
+        summary = "Retrieves $taskName$ task instance with given id")     
     @GET()
     @Path("$prefix$/$name$/{id_$name$}/$taskName$/{workItemId}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -76,6 +126,23 @@ public class $Type$Resource {
         }
     }
     
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "404",
+                description = "In case of task instance with given id was not found",
+                content = @Content(mediaType = "application/json")),              
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully aborted instance of $taskName$ task with given id",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = $Type$Output.class))) })
+    @Operation(
+        summary = "Aborts $taskName$ task instance with given id")      
     @DELETE()
     @Path("$prefix$/$name$/{id_$name$}/$taskName$/{workItemId}")
     @Produces(MediaType.APPLICATION_JSON)

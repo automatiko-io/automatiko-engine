@@ -70,14 +70,18 @@ public class ModelMetaData {
     private boolean asEntity;
     private boolean removeAtCompletion;
 
+    private String name;
+    private String description;
+
     public ModelMetaData(String processId, String version, String packageName, String modelClassSimpleName,
-            String visibility, VariableDeclarations variableScope, boolean hidden) {
+            String visibility, VariableDeclarations variableScope, boolean hidden, String name, String description) {
         this(processId, version, packageName, modelClassSimpleName, visibility, variableScope, hidden,
-                "/class-templates/ModelTemplate.java");
+                "/class-templates/ModelTemplate.java", name, description);
     }
 
     public ModelMetaData(String processId, String version, String packageName, String modelClassSimpleName,
-            String visibility, VariableDeclarations variableScope, boolean hidden, String templateName) {
+            String visibility, VariableDeclarations variableScope, boolean hidden, String templateName,
+            String name, String description) {
         this.processId = processId;
         this.version = version;
         this.packageName = packageName;
@@ -87,6 +91,8 @@ public class ModelMetaData {
         this.visibility = visibility;
         this.hidden = hidden;
         this.templateName = templateName;
+        this.name = name;
+        this.description = description;
     }
 
     public String generate() {
@@ -168,8 +174,11 @@ public class ModelMetaData {
             modelClass.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("id")).forEach(fd -> {
                 fd.removeForced();
             });
-
         }
+
+        modelClass.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.media.Schema"),
+                NodeList.nodeList(new MemberValuePair("name", new StringLiteralExpr(name)),
+                        new MemberValuePair("description", new StringLiteralExpr(description)))));
 
         if (!WorkflowProcess.PRIVATE_VISIBILITY.equals(visibility)) {
             modelClass.addAnnotation(new NormalAnnotationExpr(new Name(Generated.class.getCanonicalName()),
@@ -216,6 +225,13 @@ public class ModelMetaData {
                             new StringLiteralExpr(tags.stream().collect(Collectors.joining(",")))))));
             fd.addAnnotation(new NormalAnnotationExpr(new Name(JsonProperty.class.getCanonicalName()),
                     NodeList.nodeList(new MemberValuePair("value", new StringLiteralExpr(varName)))));
+
+            fd.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.media.Schema"),
+                    NodeList.nodeList(new MemberValuePair("name",
+                            new StringLiteralExpr(sanitizedName)),
+                            new MemberValuePair("description",
+                                    new StringLiteralExpr(
+                                            getOrDefault((String) variable.getValue().getMetaData("Documentation"), ""))))));
 
             applyValidation(fd, tags);
             applyPersistence(variable.getValue().getType(), fd, tags);
@@ -364,5 +380,12 @@ public class ModelMetaData {
         str = str.replaceAll(regex, replacement).toUpperCase();
 
         return str;
+    }
+
+    protected String getOrDefault(String value, String defaultValue) {
+        if (value == null) {
+            return defaultValue;
+        }
+        return value;
     }
 }

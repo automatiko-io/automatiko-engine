@@ -73,7 +73,8 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
                 subProcessVersion);
         ModelMetaData subProcessModel = new ModelMetaData(subProcessId, subProcessVersion, metadata.getPackageName(),
                 subProcessModelClassName, WorkflowProcess.PRIVATE_VISIBILITY,
-                VariableDeclarations.ofRawInfo(inputTypes), false);
+                VariableDeclarations.ofRawInfo(inputTypes), false, "Data model for " + name,
+                "A complete data model for " + name);
 
         retValue.ifPresent(retValueExpression -> {
             retValueExpression.findAll(ClassOrInterfaceType.class).stream()

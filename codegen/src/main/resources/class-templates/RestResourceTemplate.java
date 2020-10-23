@@ -32,9 +32,18 @@ import io.automatik.engine.api.workflow.workitem.Policy;
 import io.automatik.engine.workflow.Sig;
 import io.automatik.engine.workflow.base.instance.TagInstance;
 
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@org.eclipse.microprofile.openapi.annotations.tags.Tag(name="$processname$", description="$processdocumentation$")
 @Path("/$name$")
 public class $Type$Resource {
 
@@ -42,13 +51,35 @@ public class $Type$Resource {
     
     Application application;
 
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "400",
+                description = "In case request given does not meet expectations",
+                content = @Content(mediaType = "application/json")),
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")),
+            @APIResponse(
+                responseCode = "409",
+                description = "In case an instance already exists with given business key",
+                content = @Content(mediaType = "application/json")),                
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully created instance",
+                    content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = $Type$Output.class))) })
+    @Operation(
+        summary = "Creates new instance of $name$")
     @POST()
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @org.eclipse.microprofile.metrics.annotation.Counted(name = "create $name$", description = "Number of new instances of $name$")
     @org.eclipse.microprofile.metrics.annotation.Timed(name = "duration of creating $name$", description = "A measure of how long it takes to create new instance of $name$.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
     @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of instances of $name$", description="Rate of new instances of $name$")
-    public $Type$Output create_$name$(@Context HttpHeaders httpHeaders, @QueryParam("businessKey") String businessKey, $Type$Input resource) {
+    public $Type$Output create_$name$(@Context HttpHeaders httpHeaders, @QueryParam("businessKey") @Parameter(description = "Alternative id to be assigned to the instance", required = false) String businessKey, 
+            @Parameter(description = "The input model for $name$ instance") $Type$Input resource) {
         if (resource == null) {
             resource = new $Type$Input();
         }
@@ -68,6 +99,19 @@ public class $Type$Resource {
         });
     }
 
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")),              
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully retrieved list of instances",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = $Type$Output.class, type = SchemaType.ARRAY))) })
+    @Operation(
+        summary = "Retrieves instances of $name$")
     @GET()
     @Produces(MediaType.APPLICATION_JSON)
     public List<$Type$Output> getAll_$name$() {
@@ -76,23 +120,57 @@ public class $Type$Resource {
                 .collect(Collectors.toList());
     }
 
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "404",
+                description = "In case of instance with given id was not found",
+                content = @Content(mediaType = "application/json")),              
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully retrieved instance",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = $Type$Output.class))) })
+    @Operation(
+        summary = "Retrieves $name$ instance with given id")    
     @GET()
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public $Type$Output get_$name$(@PathParam("id") String id) {
+    public $Type$Output get_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id) {
         return process.instances()
                 .findById(id)
                 .map(pi -> mapOutput(new $Type$Output(), pi.variables()))
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
     }
 
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "404",
+                description = "In case of instance with given id was not found",
+                content = @Content(mediaType = "application/json")),              
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully deleted instance",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = $Type$Output.class))) })
+    @Operation(
+        summary = "Deletes $name$ instance with given id") 
     @DELETE()
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @org.eclipse.microprofile.metrics.annotation.Counted(name = "delete $name$", description = "Number of instances of $name$ deleted/aborted")
     @org.eclipse.microprofile.metrics.annotation.Timed(name = "duration of deleting $name$", description = "A measure of how long it takes to delete instance of $name$.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
     @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of deleted instances of $name$", description="Rate of deleted instances of $name$")    
-    public $Type$Output delete_$name$(@PathParam("id") final String id) {
+    public $Type$Output delete_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) final String id) {
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)
@@ -103,11 +181,29 @@ public class $Type$Resource {
         });
     }
     
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "404",
+                description = "In case of instance with given id was not found",
+                content = @Content(mediaType = "application/json")),              
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully updated instance",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = $Type$Output.class))) })
+    @Operation(
+        summary = "Updates data of $name$ instance with given id") 
     @POST()
     @Path("/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public $Type$Output updateModel_$name$(@PathParam("id") String id, $Type$ resource) {
+    public $Type$Output updateModel_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id, 
+            @Parameter(description = "Updates to the data model for $name$ instance", required = true) $Type$ resource) {
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)
@@ -118,10 +214,29 @@ public class $Type$Resource {
         });
     }
     
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "404",
+                description = "In case of instance with given id was not found",
+                content = @Content(mediaType = "application/json")),              
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully retrieved task of the instance",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = WorkItem.Descriptor.class, type = SchemaType.ARRAY))) })
+    @Operation(
+        summary = "Retrieves tasks currently active in $name$ instance with given id") 
     @GET()
     @Path("/{id}/tasks")
     @Produces(MediaType.APPLICATION_JSON)
-    public java.util.List<WorkItem.Descriptor> getTasks_$name$(@PathParam("id") String id, @QueryParam("user") final String user, @QueryParam("group") final List<String> groups) {
+    public java.util.List<WorkItem.Descriptor> getTasks_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id, 
+            @Parameter(description = "User identifier that the tasks should be fetched for", required = false) @QueryParam("user") final String user, 
+            @Parameter(description = "Groups that the tasks should be fetched for", required = false) @QueryParam("group") final List<String> groups) {
         
         return process.instances()
                 .findById(id)
@@ -130,21 +245,56 @@ public class $Type$Resource {
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
     }
     
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "404",
+                description = "In case of instance with given id was not found",
+                content = @Content(mediaType = "application/json")),              
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully retrieved tags of the instance",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Tag.class, type = SchemaType.ARRAY))) })
+    @Operation(
+        summary = "Retrieves tags associated with $name$ instance with given id") 
     @GET()
     @Path("/{id}/tags")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Tag> get_tags_$name$(@PathParam("id") String id) {
+    public Collection<Tag> get_tags_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id) {
         return process.instances()
                 .findById(id)
                 .map(pi -> pi.tags().get())
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
     }
     
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "404",
+                description = "In case of instance with given id was not found",
+                content = @Content(mediaType = "application/json")),              
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully added tag to the instance",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Tag.class, type = SchemaType.ARRAY))) })
+    @Operation(
+        summary = "Adds new tag to $name$ instance with given id")    
     @POST()
     @Path("/{id}/tags")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Tag> add_tag_$name$(@PathParam("id") String id, TagInstance resource) {
+    public Collection<Tag> add_tag_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id, 
+            @Parameter(description = "Tag content that should be associated with the $name$ instance", required = true) Tag resource) {
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)
@@ -155,10 +305,28 @@ public class $Type$Resource {
         });
     }
     
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "404",
+                description = "In case of instance with given id was not found",
+                content = @Content(mediaType = "application/json")),              
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully removed tag from the instance",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Tag.class, type = SchemaType.ARRAY))) })
+    @Operation(
+            summary = "Removes tag from $name$ instance with given id")     
     @DELETE()
     @Path("/{id}/tags/{tagId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Tag> get_tags_$name$(@PathParam("id") String id, @PathParam("tagId") String tagId) {
+    public Collection<Tag> get_tags_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id, 
+            @Parameter(description = "Tag to be removed", required = true) @PathParam("tagId") String tagId) {
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)

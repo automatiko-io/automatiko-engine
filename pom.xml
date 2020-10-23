@@ -108,6 +108,7 @@
     <version.org.eclipse.microprofile.metrics>2.3</version.org.eclipse.microprofile.metrics>
     <version.org.eclipse.microprofile.rest.client>1.4.1</version.org.eclipse.microprofile.rest.client>
     <version.org.eclipse.microprofile.config>1.4</version.org.eclipse.microprofile.config>
+    <version.org.eclipse.microprofile.openapi>1.1.2</version.org.eclipse.microprofile.openapi>
 
     <version.org.antlr>3.5.2</version.org.antlr>
     <version.org.antlr4>4.8</version.org.antlr4>
@@ -314,8 +315,8 @@
         <artifactId>json-path-assert</artifactId>
         <version>${version.jayway.jsonpath}</version>
       </dependency>
-      
-      <!--  open api client generator -->
+
+      <!-- open api client generator -->
       <dependency>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator</artifactId>
@@ -548,18 +549,24 @@
         <artifactId>microprofile-metrics-api</artifactId>
         <version>${version.org.eclipse.microprofile.metrics}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.eclipse.microprofile.rest.client</groupId>
         <artifactId>microprofile-rest-client-api</artifactId>
         <version>${version.org.eclipse.microprofile.rest.client}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.eclipse.microprofile.config</groupId>
         <artifactId>microprofile-config-api</artifactId>
         <version>${version.org.eclipse.microprofile.config}</version>
-       </dependency>
+      </dependency>
+
+      <dependency>
+        <groupId>org.eclipse.microprofile.openapi</groupId>
+        <artifactId>microprofile-openapi-api</artifactId>
+        <version>${version.org.eclipse.microprofile.openapi}</version>
+      </dependency>
 
       <dependency>
         <groupId>javax.inject</groupId>

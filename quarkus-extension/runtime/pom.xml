@@ -65,8 +65,12 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-metrics</artifactId>
-      <version>${version.io.quarkus}</version>
       <optional>true</optional>
+    </dependency>
+    <!-- openapi -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-openapi</artifactId>
     </dependency>
   </dependencies>
 

@@ -37,6 +37,19 @@ public class $Type$Resource {
 
     Process<$Type$> subprocess_$name$;
 
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")),              
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully retrieved list of instances",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = $Type$Output.class, type = SchemaType.ARRAY))) })
+    @Operation(
+        summary = "Retrieves instances of $name$")
     @GET()
     @Path("$prefix$/$name$")
     @Produces(MediaType.APPLICATION_JSON)
@@ -55,6 +68,23 @@ public class $Type$Resource {
         }
     }
 
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "404",
+                description = "In case of instance with given id was not found",
+                content = @Content(mediaType = "application/json")),              
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully retrieved instance",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = $Type$Output.class))) })
+    @Operation(
+        summary = "Retrieves $name$ instance with given id")      
     @GET()
     @Path("$prefix$/$name$/{id_$name$}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -65,6 +95,23 @@ public class $Type$Resource {
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
     }
 
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "404",
+                description = "In case of instance with given id was not found",
+                content = @Content(mediaType = "application/json")),              
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully deleted instance",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = $Type$Output.class))) })
+    @Operation(
+        summary = "Deletes $name$ instance with given id")     
     @DELETE()
     @Path("$prefix$/$name$/{id_$name$}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -82,6 +129,23 @@ public class $Type$Resource {
         });
     }
     
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "404",
+                description = "In case of instance with given id was not found",
+                content = @Content(mediaType = "application/json")),              
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully updated instance",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = $Type$Output.class))) })
+    @Operation(
+        summary = "Updates data of $name$ instance with given id")     
     @POST()
     @Path("$prefix$/$name$/{id_$name$}")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -98,6 +162,23 @@ public class $Type$Resource {
         });
     }
     
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "404",
+                description = "In case of instance with given id was not found",
+                content = @Content(mediaType = "application/json")),              
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully retrieved task of the instance",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = WorkItem.Descriptor.class, type = SchemaType.ARRAY))) })
+    @Operation(
+        summary = "Retrieves tasks currently active in $name$ instance with given id")     
     @GET()
     @Path("$prefix$/$name$/{id_$name$}/tasks")
     @Produces(MediaType.APPLICATION_JSON)

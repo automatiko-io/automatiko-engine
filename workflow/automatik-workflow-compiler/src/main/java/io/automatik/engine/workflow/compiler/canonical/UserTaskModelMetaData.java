@@ -25,8 +25,11 @@ import com.github.javaparser.ast.comments.LineComment;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
@@ -48,297 +51,311 @@ import io.automatik.engine.workflow.util.PatternConstants;
 
 public class UserTaskModelMetaData {
 
-	private static final String TASK_INTPUT_CLASS_SUFFIX = "TaskInput";
-	private static final String TASK_OUTTPUT_CLASS_SUFFIX = "TaskOutput";
-	private static final String TASK_NAME = "TaskName";
+    private static final String TASK_INTPUT_CLASS_SUFFIX = "TaskInput";
+    private static final String TASK_OUTTPUT_CLASS_SUFFIX = "TaskOutput";
+    private static final String TASK_NAME = "TaskName";
 
-	protected static final List<String> INTERNAL_FIELDS = Arrays.asList(TASK_NAME, "NodeName", "ActorId", "GroupId",
-			"Priority", "Comment", "Skippable", "Content", "Locale");
+    protected static final List<String> INTERNAL_FIELDS = Arrays.asList(TASK_NAME, "NodeName", "ActorId", "GroupId",
+            "Priority", "Comment", "Skippable", "Content", "Locale");
 
-	private final String packageName;
+    private final String packageName;
 
-	private final VariableScope processVariableScope;
-	private final VariableScope variableScope;
-	private final HumanTaskNode humanTaskNode;
-	private final String processId;
-	private final String version;
+    private final VariableScope processVariableScope;
+    private final VariableScope variableScope;
+    private final HumanTaskNode humanTaskNode;
+    private final String processId;
+    private final String version;
 
-	private String inputModelClassName;
-	private String inputModelClassSimpleName;
+    private String inputModelClassName;
+    private String inputModelClassSimpleName;
 
-	private String outputModelClassName;
-	private String outputModelClassSimpleName;
+    private String outputModelClassName;
+    private String outputModelClassSimpleName;
 
-	public UserTaskModelMetaData(String packageName, VariableScope processVariableScope, VariableScope variableScope,
-			HumanTaskNode humanTaskNode, String processId, String version) {
-		this.packageName = packageName;
-		this.processVariableScope = processVariableScope;
-		this.variableScope = variableScope;
-		this.humanTaskNode = humanTaskNode;
-		this.processId = processId;
-		this.version = version;
+    public UserTaskModelMetaData(String packageName, VariableScope processVariableScope, VariableScope variableScope,
+            HumanTaskNode humanTaskNode, String processId, String version) {
+        this.packageName = packageName;
+        this.processVariableScope = processVariableScope;
+        this.variableScope = variableScope;
+        this.humanTaskNode = humanTaskNode;
+        this.processId = processId;
+        this.version = version;
 
-		this.inputModelClassSimpleName = StringUtils
-				.capitalize(ProcessToExecModelGenerator.extractProcessId(processId, version) + "_"
-						+ humanTaskNode.getId() + "_" + TASK_INTPUT_CLASS_SUFFIX);
-		this.inputModelClassName = packageName + '.' + inputModelClassSimpleName;
+        this.inputModelClassSimpleName = StringUtils
+                .capitalize(ProcessToExecModelGenerator.extractProcessId(processId, version) + "_"
+                        + humanTaskNode.getId() + "_" + TASK_INTPUT_CLASS_SUFFIX);
+        this.inputModelClassName = packageName + '.' + inputModelClassSimpleName;
 
-		this.outputModelClassSimpleName = StringUtils
-				.capitalize(ProcessToExecModelGenerator.extractProcessId(processId, version) + "_"
-						+ humanTaskNode.getId() + "_" + TASK_OUTTPUT_CLASS_SUFFIX);
-		this.outputModelClassName = packageName + '.' + outputModelClassSimpleName;
+        this.outputModelClassSimpleName = StringUtils
+                .capitalize(ProcessToExecModelGenerator.extractProcessId(processId, version) + "_"
+                        + humanTaskNode.getId() + "_" + TASK_OUTTPUT_CLASS_SUFFIX);
+        this.outputModelClassName = packageName + '.' + outputModelClassSimpleName;
 
-	}
+    }
 
-	public String generateInput() {
-		CompilationUnit modelClass = compilationUnitInput();
-		return modelClass.toString();
-	}
+    public String generateInput() {
+        CompilationUnit modelClass = compilationUnitInput();
+        return modelClass.toString();
+    }
 
-	public String generateOutput() {
-		CompilationUnit modelClass = compilationUnitOutput();
-		return modelClass.toString();
-	}
+    public String generateOutput() {
+        CompilationUnit modelClass = compilationUnitOutput();
+        return modelClass.toString();
+    }
 
-	public String getInputModelClassName() {
-		return inputModelClassName;
-	}
+    public String getInputModelClassName() {
+        return inputModelClassName;
+    }
 
-	public void setInputModelClassName(String inputModelClassName) {
-		this.inputModelClassName = inputModelClassName;
-	}
+    public void setInputModelClassName(String inputModelClassName) {
+        this.inputModelClassName = inputModelClassName;
+    }
 
-	public String getInputModelClassSimpleName() {
-		return inputModelClassSimpleName;
-	}
+    public String getInputModelClassSimpleName() {
+        return inputModelClassSimpleName;
+    }
 
-	public void setInputModelClassSimpleName(String inputModelClassSimpleName) {
-		this.inputModelClassSimpleName = inputModelClassSimpleName;
-	}
+    public void setInputModelClassSimpleName(String inputModelClassSimpleName) {
+        this.inputModelClassSimpleName = inputModelClassSimpleName;
+    }
 
-	public String getOutputModelClassName() {
-		return outputModelClassName;
-	}
+    public String getOutputModelClassName() {
+        return outputModelClassName;
+    }
 
-	public void setOutputModelClassName(String outputModelClassName) {
-		this.outputModelClassName = outputModelClassName;
-	}
+    public void setOutputModelClassName(String outputModelClassName) {
+        this.outputModelClassName = outputModelClassName;
+    }
 
-	public String getOutputModelClassSimpleName() {
-		return outputModelClassSimpleName;
-	}
+    public String getOutputModelClassSimpleName() {
+        return outputModelClassSimpleName;
+    }
 
-	public void setOutputModelClassSimpleName(String outputModelClassSimpleName) {
-		this.outputModelClassSimpleName = outputModelClassSimpleName;
-	}
+    public void setOutputModelClassSimpleName(String outputModelClassSimpleName) {
+        this.outputModelClassSimpleName = outputModelClassSimpleName;
+    }
 
-	public String getName() {
-		return (String) humanTaskNode.getWork().getParameters().getOrDefault(TASK_NAME, humanTaskNode.getName());
-	}
+    public String getName() {
+        return (String) humanTaskNode.getWork().getParameters().getOrDefault(TASK_NAME, humanTaskNode.getName());
+    }
 
-	public String getNodeName() {
-		return humanTaskNode.getName();
-	}
+    public String getNodeName() {
+        return humanTaskNode.getName();
+    }
 
-	public long getId() {
-		return humanTaskNode.getId();
-	}
+    public long getId() {
+        return humanTaskNode.getId();
+    }
 
-	private void addUserTaskAnnotation(ClassOrInterfaceDeclaration modelClass) {
-		String taskName = (String) humanTaskNode.getWork().getParameter(TASK_NAME);
-		if (taskName == null)
-			taskName = humanTaskNode.getName();
-		modelClass.addAndGetAnnotation(UserTask.class).addPair("taskName", new StringLiteralExpr(taskName))
-				.addPair("processName", new StringLiteralExpr(
-						StringUtils.capitalize(ProcessToExecModelGenerator.extractProcessId(processId, version))));
-	}
+    private void addUserTaskAnnotation(ClassOrInterfaceDeclaration modelClass) {
+        String taskName = (String) humanTaskNode.getWork().getParameter(TASK_NAME);
+        if (taskName == null)
+            taskName = humanTaskNode.getName();
+        modelClass.addAndGetAnnotation(UserTask.class).addPair("taskName", new StringLiteralExpr(taskName))
+                .addPair("processName", new StringLiteralExpr(
+                        StringUtils.capitalize(ProcessToExecModelGenerator.extractProcessId(processId, version))));
+    }
 
-	private void addUserTaskParamAnnotation(FieldDeclaration fd, UserTaskParam.ParamType paramType) {
-		fd.tryAddImportToParentCompilationUnit(ParamType.class);
-		fd.addAndGetAnnotation(UserTaskParam.class).addPair("value", ParamType.class.getSimpleName() + '.' + paramType);
-	}
+    private void addUserTaskParamAnnotation(FieldDeclaration fd, UserTaskParam.ParamType paramType) {
+        fd.tryAddImportToParentCompilationUnit(ParamType.class);
+        fd.addAndGetAnnotation(UserTaskParam.class).addPair("value", ParamType.class.getSimpleName() + '.' + paramType);
+    }
 
-	private CompilationUnit compilationUnitInput() {
-		// task input handling
-		CompilationUnit compilationUnit = parse(
-				this.getClass().getResourceAsStream("/class-templates/TaskInputTemplate.java"));
-		compilationUnit.setPackageDeclaration(packageName);
-		Optional<ClassOrInterfaceDeclaration> processMethod = compilationUnit
-				.findFirst(ClassOrInterfaceDeclaration.class, sl1 -> true);
+    private CompilationUnit compilationUnitInput() {
+        // task input handling
+        CompilationUnit compilationUnit = parse(
+                this.getClass().getResourceAsStream("/class-templates/TaskInputTemplate.java"));
+        compilationUnit.setPackageDeclaration(packageName);
+        Optional<ClassOrInterfaceDeclaration> processMethod = compilationUnit
+                .findFirst(ClassOrInterfaceDeclaration.class, sl1 -> true);
 
-		if (!processMethod.isPresent()) {
-			throw new RuntimeException("Cannot find class declaration in the template");
-		}
-		ClassOrInterfaceDeclaration modelClass = processMethod.get();
-		compilationUnit.addOrphanComment(new LineComment(
-				"Task input model for user task '" + humanTaskNode.getName() + "' in process '" + processId + "'"));
+        if (!processMethod.isPresent()) {
+            throw new RuntimeException("Cannot find class declaration in the template");
+        }
+        ClassOrInterfaceDeclaration modelClass = processMethod.get();
+        compilationUnit.addOrphanComment(new LineComment(
+                "Task input model for user task '" + humanTaskNode.getName() + "' in process '" + processId + "'"));
 
-		addUserTaskAnnotation(modelClass);
+        addUserTaskAnnotation(modelClass);
 
-		modelClass.setName(inputModelClassSimpleName);
+        modelClass.setName(inputModelClassSimpleName);
 
-		// setup of static fromMap method body
-		ClassOrInterfaceType modelType = new ClassOrInterfaceType(null, modelClass.getNameAsString());
-		BlockStmt staticFromMap = new BlockStmt();
-		VariableDeclarationExpr itemField = new VariableDeclarationExpr(modelType, "item");
-		staticFromMap.addStatement(new AssignExpr(itemField,
-				new ObjectCreationExpr(null, modelType, NodeList.nodeList()), AssignExpr.Operator.ASSIGN));
-		NameExpr item = new NameExpr("item");
-		FieldAccessExpr idField = new FieldAccessExpr(item, "_id");
-		staticFromMap.addStatement(new AssignExpr(idField, new NameExpr("id"), AssignExpr.Operator.ASSIGN));
+        modelClass.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.media.Schema"),
+                NodeList.nodeList(
+                        new MemberValuePair("name", new StringLiteralExpr("Input model for " + humanTaskNode.getName())),
+                        new MemberValuePair("description", new StringLiteralExpr(
+                                "Task input model for user task '" + humanTaskNode.getName() + "' in '" + processId
+                                        + "'")))));
 
-		FieldAccessExpr nameField = new FieldAccessExpr(item, "_name");
-		staticFromMap.addStatement(new AssignExpr(nameField, new NameExpr("name"), AssignExpr.Operator.ASSIGN));
+        // setup of static fromMap method body
+        ClassOrInterfaceType modelType = new ClassOrInterfaceType(null, modelClass.getNameAsString());
+        BlockStmt staticFromMap = new BlockStmt();
+        VariableDeclarationExpr itemField = new VariableDeclarationExpr(modelType, "item");
+        staticFromMap.addStatement(new AssignExpr(itemField,
+                new ObjectCreationExpr(null, modelType, NodeList.nodeList()), AssignExpr.Operator.ASSIGN));
+        NameExpr item = new NameExpr("item");
+        FieldAccessExpr idField = new FieldAccessExpr(item, "_id");
+        staticFromMap.addStatement(new AssignExpr(idField, new NameExpr("id"), AssignExpr.Operator.ASSIGN));
 
-		for (Entry<String, String> entry : humanTaskNode.getInMappings().entrySet()) {
+        FieldAccessExpr nameField = new FieldAccessExpr(item, "_name");
+        staticFromMap.addStatement(new AssignExpr(nameField, new NameExpr("name"), AssignExpr.Operator.ASSIGN));
 
-			Variable variable = Optional.ofNullable(variableScope.findVariable(entry.getValue()))
-					.orElse(processVariableScope.findVariable(entry.getValue()));
+        for (Entry<String, String> entry : humanTaskNode.getInMappings().entrySet()) {
 
-			if (variable == null) {
-				throw new IllegalStateException("Task " + humanTaskNode.getName() + " (input) " + entry.getKey()
-						+ " reference not existing variable " + entry.getValue());
-			}
+            Variable variable = Optional.ofNullable(variableScope.findVariable(entry.getValue()))
+                    .orElse(processVariableScope.findVariable(entry.getValue()));
 
-			FieldDeclaration fd = new FieldDeclaration().addVariable(
-					new VariableDeclarator().setType(variable.getType().getStringType()).setName(entry.getKey()))
-					.addModifier(Modifier.Keyword.PRIVATE);
+            if (variable == null) {
+                throw new IllegalStateException("Task " + humanTaskNode.getName() + " (input) " + entry.getKey()
+                        + " reference not existing variable " + entry.getValue());
+            }
 
-			modelClass.addMember(fd);
+            FieldDeclaration fd = new FieldDeclaration().addVariable(
+                    new VariableDeclarator().setType(variable.getType().getStringType()).setName(entry.getKey()))
+                    .addModifier(Modifier.Keyword.PRIVATE);
 
-			addUserTaskParamAnnotation(fd, UserTaskParam.ParamType.INPUT);
+            modelClass.addMember(fd);
 
-			fd.createGetter();
-			fd.createSetter();
+            addUserTaskParamAnnotation(fd, UserTaskParam.ParamType.INPUT);
 
-			// fromMap static method body
-			FieldAccessExpr field = new FieldAccessExpr(item, entry.getKey());
+            fd.createGetter();
+            fd.createSetter();
 
-			ClassOrInterfaceType type = parseClassOrInterfaceType(variable.getType().getStringType());
-			staticFromMap
-					.addStatement(new AssignExpr(field,
-							new CastExpr(type,
-									new MethodCallExpr(new NameExpr("params"), "get")
-											.addArgument(new StringLiteralExpr(entry.getKey()))),
-							AssignExpr.Operator.ASSIGN));
-		}
+            // fromMap static method body
+            FieldAccessExpr field = new FieldAccessExpr(item, entry.getKey());
 
-		for (Entry<String, Object> entry : humanTaskNode.getWork().getParameters().entrySet()) {
+            ClassOrInterfaceType type = parseClassOrInterfaceType(variable.getType().getStringType());
+            staticFromMap
+                    .addStatement(new AssignExpr(field,
+                            new CastExpr(type,
+                                    new MethodCallExpr(new NameExpr("params"), "get")
+                                            .addArgument(new StringLiteralExpr(entry.getKey()))),
+                            AssignExpr.Operator.ASSIGN));
+        }
 
-			if (entry.getValue() == null || INTERNAL_FIELDS.contains(entry.getKey())) {
-				continue;
-			}
+        for (Entry<String, Object> entry : humanTaskNode.getWork().getParameters().entrySet()) {
 
-			FieldDeclaration fd = new FieldDeclaration().addVariable(new VariableDeclarator()
-					.setType(entry.getValue().getClass().getCanonicalName()).setName(entry.getKey()))
-					.addModifier(Modifier.Keyword.PRIVATE);
-			modelClass.addMember(fd);
-			addUserTaskParamAnnotation(fd, UserTaskParam.ParamType.INPUT);
+            if (entry.getValue() == null || INTERNAL_FIELDS.contains(entry.getKey())) {
+                continue;
+            }
 
-			fd.createGetter();
-			fd.createSetter();
+            FieldDeclaration fd = new FieldDeclaration().addVariable(new VariableDeclarator()
+                    .setType(entry.getValue().getClass().getCanonicalName()).setName(entry.getKey()))
+                    .addModifier(Modifier.Keyword.PRIVATE);
+            modelClass.addMember(fd);
+            addUserTaskParamAnnotation(fd, UserTaskParam.ParamType.INPUT);
 
-			// fromMap static method body
-			FieldAccessExpr field = new FieldAccessExpr(item, entry.getKey());
+            fd.createGetter();
+            fd.createSetter();
 
-			ClassOrInterfaceType type = parseClassOrInterfaceType(entry.getValue().getClass().getCanonicalName());
-			staticFromMap
-					.addStatement(new AssignExpr(field,
-							new CastExpr(type,
-									new MethodCallExpr(new NameExpr("params"), "get")
-											.addArgument(new StringLiteralExpr(entry.getKey()))),
-							AssignExpr.Operator.ASSIGN));
-		}
-		Optional<MethodDeclaration> staticFromMapMethod = modelClass.findFirst(MethodDeclaration.class,
-				sl -> sl.getName().asString().equals("fromMap") && sl.isStatic());
-		if (staticFromMapMethod.isPresent()) {
-			MethodDeclaration fromMap = staticFromMapMethod.get();
-			fromMap.setType(modelClass.getNameAsString());
-			staticFromMap.addStatement(new ReturnStmt(new NameExpr("item")));
-			fromMap.setBody(staticFromMap);
-		}
-		return compilationUnit;
-	}
+            // fromMap static method body
+            FieldAccessExpr field = new FieldAccessExpr(item, entry.getKey());
 
-	@SuppressWarnings({ "unchecked" })
-	private CompilationUnit compilationUnitOutput() {
-		CompilationUnit compilationUnit = parse(
-				this.getClass().getResourceAsStream("/class-templates/TaskOutputTemplate.java"));
-		compilationUnit.setPackageDeclaration(packageName);
-		Optional<ClassOrInterfaceDeclaration> processMethod = compilationUnit
-				.findFirst(ClassOrInterfaceDeclaration.class, sl1 -> true);
+            ClassOrInterfaceType type = parseClassOrInterfaceType(entry.getValue().getClass().getCanonicalName());
+            staticFromMap
+                    .addStatement(new AssignExpr(field,
+                            new CastExpr(type,
+                                    new MethodCallExpr(new NameExpr("params"), "get")
+                                            .addArgument(new StringLiteralExpr(entry.getKey()))),
+                            AssignExpr.Operator.ASSIGN));
+        }
+        Optional<MethodDeclaration> staticFromMapMethod = modelClass.findFirst(MethodDeclaration.class,
+                sl -> sl.getName().asString().equals("fromMap") && sl.isStatic());
+        if (staticFromMapMethod.isPresent()) {
+            MethodDeclaration fromMap = staticFromMapMethod.get();
+            fromMap.setType(modelClass.getNameAsString());
+            staticFromMap.addStatement(new ReturnStmt(new NameExpr("item")));
+            fromMap.setBody(staticFromMap);
+        }
+        return compilationUnit;
+    }
 
-		if (!processMethod.isPresent()) {
-			throw new RuntimeException("Cannot find class declaration in the template");
-		}
-		ClassOrInterfaceDeclaration modelClass = processMethod.get();
-		compilationUnit.addOrphanComment(new LineComment(
-				"Task output model for user task '" + humanTaskNode.getName() + "' in process '" + processId + "'"));
-		addUserTaskAnnotation(modelClass);
-		modelClass.setName(outputModelClassSimpleName);
+    @SuppressWarnings({ "unchecked" })
+    private CompilationUnit compilationUnitOutput() {
+        CompilationUnit compilationUnit = parse(
+                this.getClass().getResourceAsStream("/class-templates/TaskOutputTemplate.java"));
+        compilationUnit.setPackageDeclaration(packageName);
+        Optional<ClassOrInterfaceDeclaration> processMethod = compilationUnit
+                .findFirst(ClassOrInterfaceDeclaration.class, sl1 -> true);
 
-		// setup of the toMap method body
-		BlockStmt toMapBody = new BlockStmt();
-		ClassOrInterfaceType toMap = new ClassOrInterfaceType(null, new SimpleName(Map.class.getSimpleName()),
-				NodeList.nodeList(new ClassOrInterfaceType(null, String.class.getSimpleName()),
-						new ClassOrInterfaceType(null, Object.class.getSimpleName())));
-		VariableDeclarationExpr paramsField = new VariableDeclarationExpr(toMap, "params");
-		toMapBody
-				.addStatement(new AssignExpr(
-						paramsField, new ObjectCreationExpr(null,
-								new ClassOrInterfaceType(null, HashMap.class.getSimpleName()), NodeList.nodeList()),
-						AssignExpr.Operator.ASSIGN));
+        if (!processMethod.isPresent()) {
+            throw new RuntimeException("Cannot find class declaration in the template");
+        }
+        ClassOrInterfaceDeclaration modelClass = processMethod.get();
+        compilationUnit.addOrphanComment(new LineComment(
+                "Task output model for user task '" + humanTaskNode.getName() + "' in process '" + processId + "'"));
+        addUserTaskAnnotation(modelClass);
+        modelClass.setName(outputModelClassSimpleName);
 
-		for (Entry<String, String> entry : humanTaskNode.getOutMappings().entrySet()) {
-			if (entry.getValue() == null || INTERNAL_FIELDS.contains(entry.getKey())) {
-				continue;
-			}
+        modelClass.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.media.Schema"),
+                NodeList.nodeList(
+                        new MemberValuePair("name", new StringLiteralExpr("Output model for " + humanTaskNode.getName())),
+                        new MemberValuePair("description", new StringLiteralExpr(
+                                "Task output model for user task '" + humanTaskNode.getName() + "' in '" + processId
+                                        + "'")))));
 
-			Variable variable = Optional.ofNullable(variableScope.findVariable(entry.getValue()))
-					.orElse(processVariableScope.findVariable(entry.getValue()));
+        // setup of the toMap method body
+        BlockStmt toMapBody = new BlockStmt();
+        ClassOrInterfaceType toMap = new ClassOrInterfaceType(null, new SimpleName(Map.class.getSimpleName()),
+                NodeList.nodeList(new ClassOrInterfaceType(null, String.class.getSimpleName()),
+                        new ClassOrInterfaceType(null, Object.class.getSimpleName())));
+        VariableDeclarationExpr paramsField = new VariableDeclarationExpr(toMap, "params");
+        toMapBody
+                .addStatement(new AssignExpr(
+                        paramsField, new ObjectCreationExpr(null,
+                                new ClassOrInterfaceType(null, HashMap.class.getSimpleName()), NodeList.nodeList()),
+                        AssignExpr.Operator.ASSIGN));
 
-			if (variable == null) {
-				// check if given mapping is an expression
-				Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(entry.getValue());
-				if (matcher.find()) {
-					Map<String, String> dataOutputs = (Map<String, String>) humanTaskNode.getMetaData(DATA_OUTPUTS);
-					variable = new Variable();
-					variable.setName(entry.getKey());
-					variable.setType(new ObjectDataType(constructClass(dataOutputs.get(entry.getKey())),
-							dataOutputs.get(entry.getKey())));
-				} else {
-					throw new IllegalStateException("Task " + humanTaskNode.getName() + " (output) " + entry.getKey()
-							+ " reference not existing variable " + entry.getValue());
-				}
-			}
+        for (Entry<String, String> entry : humanTaskNode.getOutMappings().entrySet()) {
+            if (entry.getValue() == null || INTERNAL_FIELDS.contains(entry.getKey())) {
+                continue;
+            }
 
-			FieldDeclaration fd = new FieldDeclaration().addVariable(
-					new VariableDeclarator().setType(variable.getType().getStringType()).setName(entry.getKey()))
-					.addModifier(Modifier.Keyword.PRIVATE);
-			modelClass.addMember(fd);
-			addUserTaskParamAnnotation(fd, UserTaskParam.ParamType.OUTPUT);
+            Variable variable = Optional.ofNullable(variableScope.findVariable(entry.getValue()))
+                    .orElse(processVariableScope.findVariable(entry.getValue()));
 
-			fd.createGetter();
-			fd.createSetter();
+            if (variable == null) {
+                // check if given mapping is an expression
+                Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(entry.getValue());
+                if (matcher.find()) {
+                    Map<String, String> dataOutputs = (Map<String, String>) humanTaskNode.getMetaData(DATA_OUTPUTS);
+                    variable = new Variable();
+                    variable.setName(entry.getKey());
+                    variable.setType(new ObjectDataType(constructClass(dataOutputs.get(entry.getKey())),
+                            dataOutputs.get(entry.getKey())));
+                } else {
+                    throw new IllegalStateException("Task " + humanTaskNode.getName() + " (output) " + entry.getKey()
+                            + " reference not existing variable " + entry.getValue());
+                }
+            }
 
-			// toMap method body
-			MethodCallExpr putVariable = new MethodCallExpr(new NameExpr("params"), "put");
-			putVariable.addArgument(new StringLiteralExpr(entry.getKey()));
-			putVariable.addArgument(new FieldAccessExpr(new ThisExpr(), entry.getKey()));
-			toMapBody.addStatement(putVariable);
-		}
+            FieldDeclaration fd = new FieldDeclaration().addVariable(
+                    new VariableDeclarator().setType(variable.getType().getStringType()).setName(entry.getKey()))
+                    .addModifier(Modifier.Keyword.PRIVATE);
+            modelClass.addMember(fd);
+            addUserTaskParamAnnotation(fd, UserTaskParam.ParamType.OUTPUT);
 
-		Optional<MethodDeclaration> toMapMethod = modelClass.findFirst(MethodDeclaration.class,
-				sl -> sl.getName().asString().equals("toMap"));
+            fd.createGetter();
+            fd.createSetter();
 
-		toMapBody.addStatement(new ReturnStmt(new NameExpr("params")));
-		toMapMethod.ifPresent(methodDeclaration -> methodDeclaration.setBody(toMapBody));
-		return compilationUnit;
-	}
+            // toMap method body
+            MethodCallExpr putVariable = new MethodCallExpr(new NameExpr("params"), "put");
+            putVariable.addArgument(new StringLiteralExpr(entry.getKey()));
+            putVariable.addArgument(new FieldAccessExpr(new ThisExpr(), entry.getKey()));
+            toMapBody.addStatement(putVariable);
+        }
 
-	public boolean isAdHoc() {
-		return !Boolean.parseBoolean((String) humanTaskNode.getMetaData(CUSTOM_AUTO_START))
-				&& (humanTaskNode.getIncomingConnections() == null || humanTaskNode.getIncomingConnections().isEmpty());
-	}
+        Optional<MethodDeclaration> toMapMethod = modelClass.findFirst(MethodDeclaration.class,
+                sl -> sl.getName().asString().equals("toMap"));
+
+        toMapBody.addStatement(new ReturnStmt(new NameExpr("params")));
+        toMapMethod.ifPresent(methodDeclaration -> methodDeclaration.setBody(toMapBody));
+        return compilationUnit;
+    }
+
+    public boolean isAdHoc() {
+        return !Boolean.parseBoolean((String) humanTaskNode.getMetaData(CUSTOM_AUTO_START))
+                && (humanTaskNode.getIncomingConnections() == null || humanTaskNode.getIncomingConnections().isEmpty());
+    }
 
 }

@@ -88,7 +88,9 @@ public class ProcessToExecModelGenerator {
                 process.getVisibility(),
                 VariableDeclarations.of((VariableScope) ((io.automatik.engine.workflow.base.core.Process) process)
                         .getDefaultContext(VariableScope.VARIABLE_SCOPE)),
-                false);
+                false,
+                "Complete data model for " + process.getName(),
+                "Describes complete data model expected by " + process.getName());
     }
 
     public ModelMetaData generateInputModel(WorkflowProcess process) {
@@ -99,7 +101,9 @@ public class ProcessToExecModelGenerator {
                 process.getVisibility(),
                 VariableDeclarations.ofInput((VariableScope) ((io.automatik.engine.workflow.base.core.Process) process)
                         .getDefaultContext(VariableScope.VARIABLE_SCOPE)),
-                true, "/class-templates/ModelNoIDTemplate.java");
+                true, "/class-templates/ModelNoIDTemplate.java",
+                "Input data model for " + process.getName(),
+                "Describes input data model expected by " + process.getName());
     }
 
     public ModelMetaData generateOutputModel(WorkflowProcess process) {
@@ -110,7 +114,9 @@ public class ProcessToExecModelGenerator {
                 process.getVisibility(),
                 VariableDeclarations.ofOutput((VariableScope) ((io.automatik.engine.workflow.base.core.Process) process)
                         .getDefaultContext(VariableScope.VARIABLE_SCOPE)),
-                true);
+                true,
+                "Output data model for " + process.getName(),
+                "Describes output data model expected by " + process.getName());
     }
 
     public static String extractModelClassName(String processId, String version) {
