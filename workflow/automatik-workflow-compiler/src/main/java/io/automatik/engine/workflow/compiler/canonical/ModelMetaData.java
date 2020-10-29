@@ -169,7 +169,7 @@ public class ModelMetaData {
             modelClass.addExtendedType("io.automatik.engine.addons.persistence.db.model.ProcessInstanceEntity");
             modelClass.addAnnotation(new NormalAnnotationExpr(new Name("javax.persistence.Entity"),
                     NodeList.nodeList(new MemberValuePair("name",
-                            new StringLiteralExpr(camelToSnake(processId.toUpperCase()))))));
+                            new StringLiteralExpr(camelToSnake(processId.toUpperCase() + version(version).toUpperCase()))))));
 
             modelClass.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("id")).forEach(fd -> {
                 fd.removeForced();
