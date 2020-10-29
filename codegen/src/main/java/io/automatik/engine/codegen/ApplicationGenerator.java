@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -227,7 +228,7 @@ public class ApplicationGenerator {
             context.logInstructions();
         }
 
-        return generatedFiles;
+        return new LinkedHashSet<GeneratedFile>(generatedFiles);
     }
 
     public List<GeneratedFile> generateComponents() {
