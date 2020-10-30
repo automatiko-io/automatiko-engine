@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- origin at X=0.0 Y=0.0 -->
-<bpmn2:definitions xmlns:java="http://www.java.com/javaTypes" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools" xmlns="http://www.jboss.org/drools" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd http://www.jboss.org/drools drools.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="1.4.3.Final-v20180418-1358-B1" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.jboss.org/drools" typeLanguage="http://www.java.com/javaTypes">
+<bpmn2:definitions xmlns:java="http://www.java.com/javaTypes" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io" xmlns="https://automatik-platform.io" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatik-platform.io automatik.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="1.4.3.Final-v20180418-1358-B1" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="https://automatik-platform.io" typeLanguage="http://www.java.com/javaTypes">
   <bpmn2:itemDefinition id="ItemDefinition_59" isCollection="false" structureRef="java.lang.String"/>
   <bpmn2:message id="Message_1" itemRef="ItemDefinition_59" name="SomeMessage"/>
   <bpmn2:message id="Message_2" itemRef="ItemDefinition_59" name="nothing"/>
@@ -9,20 +9,20 @@
       <bpmn2:inMessageRef>Message_2</bpmn2:inMessageRef>
     </bpmn2:operation>
   </bpmn2:interface>
-  <bpmn2:process id="workingMessageModel" drools:version="1" drools:packageName="defaultPackage" drools:adHoc="false" name="Default Process" isExecutable="true">
+  <bpmn2:process id="workingMessageModel" automatik:version="1" automatik:packageName="defaultPackage" automatik:adHoc="false" name="Default Process" isExecutable="true">
     <bpmn2:property id="Property_1" itemSubjectRef="ItemDefinition_59" name="messageContent"/>
     <bpmn2:startEvent id="StartEvent_1" name="Start">
       <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
     </bpmn2:startEvent>
-    <bpmn2:sequenceFlow id="SequenceFlow_1" drools:priority="1" sourceRef="IntermediateThrowEvent_1" targetRef="EndEvent_1"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_1" automatik:priority="1" sourceRef="IntermediateThrowEvent_1" targetRef="EndEvent_1"/>
     <bpmn2:endEvent id="EndEvent_1" name="End">
       <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
     </bpmn2:endEvent>
     <bpmn2:serviceTask id="ServiceTask_1" name="SomeService" operationRef="Operation_1">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[SomeService]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[SomeService]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_2</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_3</bpmn2:outgoing>
@@ -34,12 +34,12 @@
         <bpmn2:outputSet id="OutputSet_4" name="Output Set 4"/>
       </bpmn2:ioSpecification>
     </bpmn2:serviceTask>
-    <bpmn2:sequenceFlow id="SequenceFlow_2" drools:priority="1" sourceRef="StartEvent_1" targetRef="ServiceTask_1"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_2" automatik:priority="1" sourceRef="StartEvent_1" targetRef="ServiceTask_1"/>
     <bpmn2:intermediateThrowEvent id="IntermediateThrowEvent_1" name="Message">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[Message]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Message]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_3</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
@@ -53,7 +53,7 @@
       </bpmn2:inputSet>
       <bpmn2:messageEventDefinition id="MessageEventDefinition_1" messageRef="Message_1"/>
     </bpmn2:intermediateThrowEvent>
-    <bpmn2:sequenceFlow id="SequenceFlow_3" drools:priority="1" sourceRef="ServiceTask_1" targetRef="IntermediateThrowEvent_1"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_3" automatik:priority="1" sourceRef="ServiceTask_1" targetRef="IntermediateThrowEvent_1"/>
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1" name="Default Process Diagram">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="workingMessageModel">

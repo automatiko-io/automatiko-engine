@@ -9,7 +9,7 @@
              xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
              xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
              xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-             xmlns:tns="http://www.jboss.org/drools">
+             xmlns:tns="https://automatik-platform.io">
 
   <process processType="Private" isExecutable="true" id="Minimal" name="Minimal Process" tns:packageName="com.sample" >
 
@@ -20,7 +20,7 @@
     <!-- nodes -->
     <startEvent id="_1" name="StartProcess" >
       <conditionalEventDefinition>
-        <condition xsi:type="tFormalExpression" language="http://www.jboss.org/drools/rule">Person(name == "john")</condition>
+        <condition xsi:type="tFormalExpression" language="https://automatik-platform.io/rule">Person(name == "john")</condition>
       </conditionalEventDefinition>
     </startEvent>
     <scriptTask id="_2" name="Hello" >

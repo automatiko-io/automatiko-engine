@@ -1,43 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools" id="_0PtkoLaXEeOzbZEBuj00bQ" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd http://www.jboss.org/drools drools.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io" id="_0PtkoLaXEeOzbZEBuj00bQ" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatik-platform.io automatik.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
   <bpmn2:error id="90277" errorCode="90277"/>
-  <bpmn2:process id="com.sample.process" drools:packageName="policy" drools:version="1" name="Process" isExecutable="true">
-    <bpmn2:startEvent id="_AF342A59-0EB1-494A-A7A2-0C04D6D3D1AB" drools:bgcolor="#9acd32" drools:selectable="true" name="Start">
+  <bpmn2:process id="com.sample.process" automatik:packageName="policy" automatik:version="1" name="Process" isExecutable="true">
+    <bpmn2:startEvent id="_AF342A59-0EB1-494A-A7A2-0C04D6D3D1AB" automatik:bgcolor="#9acd32" automatik:selectable="true" name="Start">
       <bpmn2:outgoing>_76D86D65-D2AF-4559-9874-EF19AA775D47</bpmn2:outgoing>
     </bpmn2:startEvent>
-    <bpmn2:task id="_ED52AC44-CDE7-43D3-813F-9C2DD80CFE36" drools:selectable="true" name="Process Request" drools:taskName="Request Handler">
+    <bpmn2:task id="_ED52AC44-CDE7-43D3-813F-9C2DD80CFE36" automatik:selectable="true" name="Process Request" automatik:taskName="Request Handler">
       <bpmn2:incoming>_76D86D65-D2AF-4559-9874-EF19AA775D47</bpmn2:incoming>
       <bpmn2:outgoing>_64A81E30-55D2-4038-A813-F834154CEE31</bpmn2:outgoing>
     </bpmn2:task>
-    <bpmn2:sequenceFlow id="_64A81E30-55D2-4038-A813-F834154CEE31" drools:bgcolor="#000000" drools:selectable="true" drools:priority="1" sourceRef="_ED52AC44-CDE7-43D3-813F-9C2DD80CFE36" targetRef="_CF1EDD38-BF93-462A-B9C1-F400E23A8566"/>
-    <bpmn2:endEvent id="_CF1EDD38-BF93-462A-B9C1-F400E23A8566" drools:bgcolor="#ff6347" drools:selectable="true" name="End">
+    <bpmn2:sequenceFlow id="_64A81E30-55D2-4038-A813-F834154CEE31" automatik:bgcolor="#000000" automatik:selectable="true" automatik:priority="1" sourceRef="_ED52AC44-CDE7-43D3-813F-9C2DD80CFE36" targetRef="_CF1EDD38-BF93-462A-B9C1-F400E23A8566"/>
+    <bpmn2:endEvent id="_CF1EDD38-BF93-462A-B9C1-F400E23A8566" automatik:bgcolor="#ff6347" automatik:selectable="true" name="End">
       <bpmn2:incoming>_64A81E30-55D2-4038-A813-F834154CEE31</bpmn2:incoming>
       <bpmn2:terminateEventDefinition id="_0PtkobaXEeOzbZEBuj00bQ"/>
     </bpmn2:endEvent>
-    <bpmn2:subProcess id="_095D53C7-0D75-4443-960E-87631134132B" drools:selectable="true" name="Handle Error 90277" triggeredByEvent="true">
+    <bpmn2:subProcess id="_095D53C7-0D75-4443-960E-87631134132B" automatik:selectable="true" name="Handle Error 90277" triggeredByEvent="true">
       <bpmn2:extensionElements>
-        <drools:onEntry-script scriptFormat="http://www.java.com/java">
-          <drools:script></drools:script>
-        </drools:onEntry-script>
-        <drools:onExit-script scriptFormat="http://www.java.com/java">
-          <drools:script></drools:script>
-        </drools:onExit-script>
+        <automatik:onEntry-script scriptFormat="http://www.java.com/java">
+          <automatik:script></automatik:script>
+        </automatik:onEntry-script>
+        <automatik:onExit-script scriptFormat="http://www.java.com/java">
+          <automatik:script></automatik:script>
+        </automatik:onExit-script>
       </bpmn2:extensionElements>
-      <bpmn2:startEvent id="_9C3432DE-97AF-4EDE-894F-B5BD9D68EB10" drools:bgcolor="#9acd32" drools:selectable="true" name="StartExcp">
+      <bpmn2:startEvent id="_9C3432DE-97AF-4EDE-894F-B5BD9D68EB10" automatik:bgcolor="#9acd32" automatik:selectable="true" name="StartExcp">
         <bpmn2:outgoing>_A4491E9E-572A-49FD-8F35-044270B022E6</bpmn2:outgoing>
-        <bpmn2:errorEventDefinition id="_0PtkoraXEeOzbZEBuj00bQ" drools:erefname="90277" errorRef="90277"/>
+        <bpmn2:errorEventDefinition id="_0PtkoraXEeOzbZEBuj00bQ" automatik:erefname="90277" errorRef="90277"/>
       </bpmn2:startEvent>
-      <bpmn2:task id="_1E0F2567-751F-47C6-803D-724D64D1034E" drools:selectable="true" name="Handle Error" drools:taskName="Error Handler">
+      <bpmn2:task id="_1E0F2567-751F-47C6-803D-724D64D1034E" automatik:selectable="true" name="Handle Error" automatik:taskName="Error Handler">
         <bpmn2:incoming>_A4491E9E-572A-49FD-8F35-044270B022E6</bpmn2:incoming>
         <bpmn2:outgoing>_1D1A88EC-53CD-42F1-9DFD-24A5C11CF6EE</bpmn2:outgoing>
       </bpmn2:task>
-      <bpmn2:endEvent id="_2F993E3B-1C35-4912-AA45-501249F150D9" drools:bgcolor="#ff6347" drools:selectable="true" name="EndExcp">
+      <bpmn2:endEvent id="_2F993E3B-1C35-4912-AA45-501249F150D9" automatik:bgcolor="#ff6347" automatik:selectable="true" name="EndExcp">
         <bpmn2:incoming>_1D1A88EC-53CD-42F1-9DFD-24A5C11CF6EE</bpmn2:incoming>
       </bpmn2:endEvent>
-      <bpmn2:sequenceFlow id="_A4491E9E-572A-49FD-8F35-044270B022E6" drools:bgcolor="#000000" drools:selectable="true" drools:priority="1" sourceRef="_9C3432DE-97AF-4EDE-894F-B5BD9D68EB10" targetRef="_1E0F2567-751F-47C6-803D-724D64D1034E"/>
-      <bpmn2:sequenceFlow id="_1D1A88EC-53CD-42F1-9DFD-24A5C11CF6EE" drools:bgcolor="#000000" drools:selectable="true" drools:priority="1" sourceRef="_1E0F2567-751F-47C6-803D-724D64D1034E" targetRef="_2F993E3B-1C35-4912-AA45-501249F150D9"/>
+      <bpmn2:sequenceFlow id="_A4491E9E-572A-49FD-8F35-044270B022E6" automatik:bgcolor="#000000" automatik:selectable="true" automatik:priority="1" sourceRef="_9C3432DE-97AF-4EDE-894F-B5BD9D68EB10" targetRef="_1E0F2567-751F-47C6-803D-724D64D1034E"/>
+      <bpmn2:sequenceFlow id="_1D1A88EC-53CD-42F1-9DFD-24A5C11CF6EE" automatik:bgcolor="#000000" automatik:selectable="true" automatik:priority="1" sourceRef="_1E0F2567-751F-47C6-803D-724D64D1034E" targetRef="_2F993E3B-1C35-4912-AA45-501249F150D9"/>
     </bpmn2:subProcess>
-    <bpmn2:sequenceFlow id="_76D86D65-D2AF-4559-9874-EF19AA775D47" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_AF342A59-0EB1-494A-A7A2-0C04D6D3D1AB" targetRef="_ED52AC44-CDE7-43D3-813F-9C2DD80CFE36"/>
+    <bpmn2:sequenceFlow id="_76D86D65-D2AF-4559-9874-EF19AA775D47" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_AF342A59-0EB1-494A-A7A2-0C04D6D3D1AB" targetRef="_ED52AC44-CDE7-43D3-813F-9C2DD80CFE36"/>
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="_0Ptko7aXEeOzbZEBuj00bQ">
     <bpmndi:BPMNPlane id="_0PtkpLaXEeOzbZEBuj00bQ" bpmnElement="policy.Risk">

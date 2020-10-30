@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- origin at X=0.0 Y=0.0 -->
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmn20="http://www.omg.org/bpmn20" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools" xmlns="http://www.jboss.org/drools" xmlns:java="http://www.java.com/javaTypes" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd http://www.jboss.org/drools drools.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" id="_erIygJZ7EeSDh8PHobjSSA" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="1.2.1.Final" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmn20="http://www.omg.org/bpmn20" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io" xmlns="https://automatik-platform.io" xmlns:java="http://www.java.com/javaTypes" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatik-platform.io automatik.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" id="_erIygJZ7EeSDh8PHobjSSA" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="1.2.1.Final" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
   <bpmn2:itemDefinition id="_cronStrItem" isCollection="false" structureRef="String"/>
   <bpmn2:itemDefinition id="_completeItem" isCollection="false" structureRef="String"/>
   <bpmn2:itemDefinition id="ItemDefinition_1" isCollection="false" structureRef="Integer"/>
@@ -19,17 +19,17 @@
   <bpmn2:itemDefinition id="ItemDefinition_14" isCollection="false"/>
   <bpmn2:itemDefinition id="ItemDefinition_15" isCollection="false"/>
   <bpmn2:itemDefinition id="ItemDefinition_16" isCollection="false"/>
-  <bpmn2:process id="boundaryTimerCycleCron" drools:packageName="org.jbpm" drools:version="1.0" name="Test_Cron" isExecutable="true">
+  <bpmn2:process id="boundaryTimerCycleCron" automatik:packageName="org.jbpm" automatik:version="1.0" name="Test_Cron" isExecutable="true">
     <bpmn2:property id="cronStr" itemSubjectRef="_cronStrItem" name="cronStr"/>
     <bpmn2:property id="complete" itemSubjectRef="_completeItem" name="complete"/>
-    <bpmn2:startEvent id="processStartEvent" drools:bgcolor="#9acd32" drools:selectable="true" name="">
+    <bpmn2:startEvent id="processStartEvent" automatik:bgcolor="#9acd32" automatik:selectable="true" name="">
       <bpmn2:outgoing>_6BB13960-7EC2-466D-AD11-3128F7EDDE8F</bpmn2:outgoing>
     </bpmn2:startEvent>
-    <bpmn2:userTask id="_77A94B54-8B7C-4F8A-84EE-C1D310A343A6" drools:selectable="true" drools:scriptFormat="http://www.java.com/java" name="Finish Work">
+    <bpmn2:userTask id="_77A94B54-8B7C-4F8A-84EE-C1D310A343A6" automatik:selectable="true" automatik:scriptFormat="http://www.java.com/java" name="Finish Work">
       <bpmn2:extensionElements>
-        <drools:onEntry-script scriptFormat="http://www.java.com/java">
-          <drools:script>System.out.println(&quot;Finish Work&quot;);</drools:script>
-        </drools:onEntry-script>
+        <automatik:onEntry-script scriptFormat="http://www.java.com/java">
+          <automatik:script>System.out.println(&quot;Finish Work&quot;);</automatik:script>
+        </automatik:onEntry-script>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_6BB13960-7EC2-466D-AD11-3128F7EDDE8F</bpmn2:incoming>
       <bpmn2:outgoing>_0819806F-6B1A-4058-B848-CE4938E0DFA7</bpmn2:outgoing>
@@ -39,16 +39,16 @@
         </bpmn2:resourceAssignmentExpression>
       </bpmn2:potentialOwner>
     </bpmn2:userTask>
-    <bpmn2:endEvent id="_861C71C8-12C0-4EBB-9536-1537FB045A1D" drools:bgcolor="#ff6347" drools:selectable="true" name="">
+    <bpmn2:endEvent id="_861C71C8-12C0-4EBB-9536-1537FB045A1D" automatik:bgcolor="#ff6347" automatik:selectable="true" name="">
       <bpmn2:incoming>_0819806F-6B1A-4058-B848-CE4938E0DFA7</bpmn2:incoming>
       <bpmn2:terminateEventDefinition id="_erIyhJZ7EeSDh8PHobjSSA"/>
     </bpmn2:endEvent>
-    <bpmn2:sequenceFlow id="_6BB13960-7EC2-466D-AD11-3128F7EDDE8F" drools:bgcolor="#000000" drools:selectable="true" sourceRef="processStartEvent" targetRef="_77A94B54-8B7C-4F8A-84EE-C1D310A343A6"/>
-    <bpmn2:userTask id="_78E7D740-28D7-49F3-9A4D-801C92F6EDD9" drools:selectable="true" drools:scriptFormat="http://www.java.com/java" name="Send Update">
+    <bpmn2:sequenceFlow id="_6BB13960-7EC2-466D-AD11-3128F7EDDE8F" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="processStartEvent" targetRef="_77A94B54-8B7C-4F8A-84EE-C1D310A343A6"/>
+    <bpmn2:userTask id="_78E7D740-28D7-49F3-9A4D-801C92F6EDD9" automatik:selectable="true" automatik:scriptFormat="http://www.java.com/java" name="Send Update">
       <bpmn2:extensionElements>
-        <drools:onEntry-script scriptFormat="http://www.java.com/java">
-          <drools:script>System.out.println(&quot;Sending Update...&quot;);</drools:script>
-        </drools:onEntry-script>
+        <automatik:onEntry-script scriptFormat="http://www.java.com/java">
+          <automatik:script>System.out.println(&quot;Sending Update...&quot;);</automatik:script>
+        </automatik:onEntry-script>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_1206D165-6704-439E-99E6-7A02989A8C3C</bpmn2:incoming>
       <bpmn2:outgoing>_CC158D9E-0478-4474-8A21-D638565EC92A</bpmn2:outgoing>
@@ -58,13 +58,13 @@
         </bpmn2:resourceAssignmentExpression>
       </bpmn2:potentialOwner>
     </bpmn2:userTask>
-    <bpmn2:sequenceFlow id="_1206D165-6704-439E-99E6-7A02989A8C3C" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_8B5EE6E3-73EE-477D-8CC5-96F7C01DA7F0" targetRef="_78E7D740-28D7-49F3-9A4D-801C92F6EDD9"/>
-    <bpmn2:endEvent id="_A6951F30-BBCD-4A26-9368-00622D6358C3" drools:bgcolor="#ff6347" drools:selectable="true" name="">
+    <bpmn2:sequenceFlow id="_1206D165-6704-439E-99E6-7A02989A8C3C" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_8B5EE6E3-73EE-477D-8CC5-96F7C01DA7F0" targetRef="_78E7D740-28D7-49F3-9A4D-801C92F6EDD9"/>
+    <bpmn2:endEvent id="_A6951F30-BBCD-4A26-9368-00622D6358C3" automatik:bgcolor="#ff6347" automatik:selectable="true" name="">
       <bpmn2:incoming>_CC158D9E-0478-4474-8A21-D638565EC92A</bpmn2:incoming>
     </bpmn2:endEvent>
-    <bpmn2:sequenceFlow id="_CC158D9E-0478-4474-8A21-D638565EC92A" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_78E7D740-28D7-49F3-9A4D-801C92F6EDD9" targetRef="_A6951F30-BBCD-4A26-9368-00622D6358C3"/>
-    <bpmn2:sequenceFlow id="_0819806F-6B1A-4058-B848-CE4938E0DFA7" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_77A94B54-8B7C-4F8A-84EE-C1D310A343A6" targetRef="_861C71C8-12C0-4EBB-9536-1537FB045A1D"/>
-    <bpmn2:boundaryEvent id="_8B5EE6E3-73EE-477D-8CC5-96F7C01DA7F0" drools:bgcolor="#f5deb3" drools:selectable="true" drools:bordercolor="#a0522d" drools:boundaryca="false" name="Send Update Timer" attachedToRef="_77A94B54-8B7C-4F8A-84EE-C1D310A343A6" cancelActivity="false">
+    <bpmn2:sequenceFlow id="_CC158D9E-0478-4474-8A21-D638565EC92A" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_78E7D740-28D7-49F3-9A4D-801C92F6EDD9" targetRef="_A6951F30-BBCD-4A26-9368-00622D6358C3"/>
+    <bpmn2:sequenceFlow id="_0819806F-6B1A-4058-B848-CE4938E0DFA7" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_77A94B54-8B7C-4F8A-84EE-C1D310A343A6" targetRef="_861C71C8-12C0-4EBB-9536-1537FB045A1D"/>
+    <bpmn2:boundaryEvent id="_8B5EE6E3-73EE-477D-8CC5-96F7C01DA7F0" automatik:bgcolor="#f5deb3" automatik:selectable="true" automatik:bordercolor="#a0522d" automatik:boundaryca="false" name="Send Update Timer" attachedToRef="_77A94B54-8B7C-4F8A-84EE-C1D310A343A6" cancelActivity="false">
       <bpmn2:outgoing>_1206D165-6704-439E-99E6-7A02989A8C3C</bpmn2:outgoing>
       <bpmn2:timerEventDefinition id="_erIyiJZ7EeSDh8PHobjSSA">
         <bpmn2:timeCycle xsi:type="bpmn2:tFormalExpression" id="_erIyiZZ7EeSDh8PHobjSSA" language="cron">#{cronStr}</bpmn2:timeCycle>
@@ -76,16 +76,16 @@
         <bpmn2:timeCycle xsi:type="bpmn2:tFormalExpression" id="TimerEventDefinition_112" language="cron">#{cronStr}</bpmn2:timeCycle>
       </bpmn2:timerEventDefinition>
     </bpmn2:boundaryEvent>
-    <bpmn2:sequenceFlow id="SequenceFlow_1" drools:priority="1" sourceRef="BoundaryEvent_1" targetRef="UserTask_1"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_1" automatik:priority="1" sourceRef="BoundaryEvent_1" targetRef="UserTask_1"/>
     <bpmn2:endEvent id="EndEvent_1" name="End Event 1">
       <bpmn2:incoming>SequenceFlow_2</bpmn2:incoming>
     </bpmn2:endEvent>
-    <bpmn2:sequenceFlow id="SequenceFlow_2" drools:priority="1" sourceRef="UserTask_1" targetRef="EndEvent_1"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_2" automatik:priority="1" sourceRef="UserTask_1" targetRef="EndEvent_1"/>
     <bpmn2:userTask id="UserTask_1" name="Send Update 2">
       <bpmn2:extensionElements>
-        <drools:onEntry-script scriptFormat="http://www.java.com/java">
-          <drools:script>System.out.println(&quot;Sending Update 2...&quot;);</drools:script>
-        </drools:onEntry-script>
+        <automatik:onEntry-script scriptFormat="http://www.java.com/java">
+          <automatik:script>System.out.println(&quot;Sending Update 2...&quot;);</automatik:script>
+        </automatik:onEntry-script>
       </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>

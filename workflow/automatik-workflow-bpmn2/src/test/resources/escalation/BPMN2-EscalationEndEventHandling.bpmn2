@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools" id="_epSjUKbQEei-BuW7dkQYjQ" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd http://www.jboss.org/drools drools.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" exporter="jBPM Designer" exporterVersion="1.0" targetNamespace="http://www.omg.org/bpmn20">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io" id="_epSjUKbQEei-BuW7dkQYjQ" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatik-platform.io automatik.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" exporter="jBPM Designer" exporterVersion="1.0" targetNamespace="http://www.omg.org/bpmn20">
   <bpmn2:itemDefinition id="_helloItem" structureRef="Integer"/>
   <bpmn2:escalation id="_a9c99a5b-4c12-38f4-a6a9-a816dbd7f330" escalationCode="Escalation1" name="Escalation1"/>
-  <bpmn2:process id="helloWorld.Escalation" drools:packageName="org.jbpm" drools:version="1.0" name="Escalation" isExecutable="true">
+  <bpmn2:process id="helloWorld.Escalation" automatik:packageName="org.jbpm" automatik:version="1.0" name="Escalation" isExecutable="true">
     <bpmn2:property id="hello" itemSubjectRef="_helloItem"/>
-    <bpmn2:subProcess id="_97A8E2E1-F119-4549-8021-947EBE20F3F3" drools:selectable="true" color:background-color="#fafad2" color:border-color="#000000" color:color="#000000" name="Sub-process">
+    <bpmn2:subProcess id="_97A8E2E1-F119-4549-8021-947EBE20F3F3" automatik:selectable="true" color:background-color="#fafad2" color:border-color="#000000" color:color="#000000" name="Sub-process">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[Sub-process]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Sub-process]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_ED8CD50A-2AB2-47A4-9E62-572AEEB40C63</bpmn2:incoming>
       <bpmn2:outgoing>_0B6E58EF-CECD-4C31-8E36-D52CD443C573</bpmn2:outgoing>
@@ -16,130 +16,130 @@
         <bpmn2:inputSet id="_epSjUqbQEei-BuW7dkQYjQ"/>
         <bpmn2:outputSet id="_epSjU6bQEei-BuW7dkQYjQ"/>
       </bpmn2:ioSpecification>
-      <bpmn2:intermediateThrowEvent id="_DC7E94BA-C978-43D4-8AC7-EC5123B6CDA0" drools:selectable="true" color:background-color="#8cabff" color:border-color="#008cec" color:color="#000000" name="hello name">
+      <bpmn2:intermediateThrowEvent id="_DC7E94BA-C978-43D4-8AC7-EC5123B6CDA0" automatik:selectable="true" color:background-color="#8cabff" color:border-color="#008cec" color:color="#000000" name="hello name">
         <bpmn2:documentation id="_epSjVKbQEei-BuW7dkQYjQ"><![CDATA[some
 document]]></bpmn2:documentation>
         <bpmn2:extensionElements>
-          <drools:metaData name="elementname">
-            <drools:metaValue><![CDATA[hello name]]></drools:metaValue>
-          </drools:metaData>
+          <automatik:metaData name="elementname">
+            <automatik:metaValue><![CDATA[hello name]]></automatik:metaValue>
+          </automatik:metaData>
         </bpmn2:extensionElements>
         <bpmn2:incoming>_B0A8E8EB-19E4-4F99-ABFF-DE6B2641AEC3</bpmn2:incoming>
         <bpmn2:outgoing>_BC83A631-93C2-4D9B-B142-FB42542F00A3</bpmn2:outgoing>
-        <bpmn2:escalationEventDefinition id="_epSjVabQEei-BuW7dkQYjQ" drools:esccode="Escalation1" escalationRef="_a9c99a5b-4c12-38f4-a6a9-a816dbd7f330"/>
+        <bpmn2:escalationEventDefinition id="_epSjVabQEei-BuW7dkQYjQ" automatik:esccode="Escalation1" escalationRef="_a9c99a5b-4c12-38f4-a6a9-a816dbd7f330"/>
       </bpmn2:intermediateThrowEvent>
-      <bpmn2:endEvent id="_6FFF6FCD-F040-4886-9C90-D5F24AD921DF" drools:selectable="true" color:background-color="#ff6347" color:border-color="#000000" color:color="#000000" name="">
+      <bpmn2:endEvent id="_6FFF6FCD-F040-4886-9C90-D5F24AD921DF" automatik:selectable="true" color:background-color="#ff6347" color:border-color="#000000" color:color="#000000" name="">
         <bpmn2:extensionElements>
-          <drools:metaData name="elementname">
-            <drools:metaValue><![CDATA[]]></drools:metaValue>
-          </drools:metaData>
+          <automatik:metaData name="elementname">
+            <automatik:metaValue><![CDATA[]]></automatik:metaValue>
+          </automatik:metaData>
         </bpmn2:extensionElements>
         <bpmn2:incoming>_BC83A631-93C2-4D9B-B142-FB42542F00A3</bpmn2:incoming>
       </bpmn2:endEvent>
-      <bpmn2:exclusiveGateway id="_80FE98E1-BD03-45AC-BC19-1C54DA68AECF" drools:selectable="true" drools:dg="" color:background-color="#f0e68c" color:border-color="#a67f00" color:color="#000000" name="" gatewayDirection="Diverging">
+      <bpmn2:exclusiveGateway id="_80FE98E1-BD03-45AC-BC19-1C54DA68AECF" automatik:selectable="true" automatik:dg="" color:background-color="#f0e68c" color:border-color="#a67f00" color:color="#000000" name="" gatewayDirection="Diverging">
         <bpmn2:incoming>_28560701-11E9-4540-B10F-4E496BAD0CA1</bpmn2:incoming>
         <bpmn2:outgoing>_B0A8E8EB-19E4-4F99-ABFF-DE6B2641AEC3</bpmn2:outgoing>
         <bpmn2:outgoing>_78F7A863-F415-48DF-A9C6-E8AE825EDEB3</bpmn2:outgoing>
       </bpmn2:exclusiveGateway>
-      <bpmn2:scriptTask id="_87E64E5A-689F-4429-8DB2-7D9F60032210" drools:selectable="true" color:background-color="#fafad2" color:border-color="#000000" color:color="#000000" name="After gate" scriptFormat="http://www.javascript.com/javascript">
+      <bpmn2:scriptTask id="_87E64E5A-689F-4429-8DB2-7D9F60032210" automatik:selectable="true" color:background-color="#fafad2" color:border-color="#000000" color:color="#000000" name="After gate" scriptFormat="http://www.javascript.com/javascript">
         <bpmn2:extensionElements>
-          <drools:metaData name="elementname">
-            <drools:metaValue><![CDATA[After gate]]></drools:metaValue>
-          </drools:metaData>
+          <automatik:metaData name="elementname">
+            <automatik:metaValue><![CDATA[After gate]]></automatik:metaValue>
+          </automatik:metaData>
         </bpmn2:extensionElements>
         <bpmn2:incoming>_78F7A863-F415-48DF-A9C6-E8AE825EDEB3</bpmn2:incoming>
         <bpmn2:outgoing>_EFBAFF48-63BE-4A3F-BED5-A557888386B7</bpmn2:outgoing>
         <bpmn2:script><![CDATA[print("After gate");]]></bpmn2:script>
       </bpmn2:scriptTask>
-      <bpmn2:endEvent id="_F8C393C8-B021-4912-A2CC-61AAFEC1A6AB" drools:selectable="true" color:background-color="#ff6347" color:border-color="#000000" color:color="#000000" name="">
+      <bpmn2:endEvent id="_F8C393C8-B021-4912-A2CC-61AAFEC1A6AB" automatik:selectable="true" color:background-color="#ff6347" color:border-color="#000000" color:color="#000000" name="">
         <bpmn2:extensionElements>
-          <drools:metaData name="elementname">
-            <drools:metaValue><![CDATA[]]></drools:metaValue>
-          </drools:metaData>
+          <automatik:metaData name="elementname">
+            <automatik:metaValue><![CDATA[]]></automatik:metaValue>
+          </automatik:metaData>
         </bpmn2:extensionElements>
         <bpmn2:incoming>_EFBAFF48-63BE-4A3F-BED5-A557888386B7</bpmn2:incoming>
-        <bpmn2:escalationEventDefinition id="_epSjVqbQEei-BuW7dkQYjQ" drools:esccode="Escalation1" escalationRef="_a9c99a5b-4c12-38f4-a6a9-a816dbd7f330"/>
+        <bpmn2:escalationEventDefinition id="_epSjVqbQEei-BuW7dkQYjQ" automatik:esccode="Escalation1" escalationRef="_a9c99a5b-4c12-38f4-a6a9-a816dbd7f330"/>
       </bpmn2:endEvent>
-      <bpmn2:startEvent id="_D02CC53C-C417-4342-B916-DB98FAA12EC9" drools:selectable="true" color:background-color="#9acd32" color:border-color="#000000" color:color="#000000" name="">
+      <bpmn2:startEvent id="_D02CC53C-C417-4342-B916-DB98FAA12EC9" automatik:selectable="true" color:background-color="#9acd32" color:border-color="#000000" color:color="#000000" name="">
         <bpmn2:extensionElements>
-          <drools:metaData name="elementname">
-            <drools:metaValue><![CDATA[]]></drools:metaValue>
-          </drools:metaData>
+          <automatik:metaData name="elementname">
+            <automatik:metaValue><![CDATA[]]></automatik:metaValue>
+          </automatik:metaData>
         </bpmn2:extensionElements>
         <bpmn2:outgoing>_28560701-11E9-4540-B10F-4E496BAD0CA1</bpmn2:outgoing>
       </bpmn2:startEvent>
-      <bpmn2:sequenceFlow id="_B0A8E8EB-19E4-4F99-ABFF-DE6B2641AEC3" drools:selectable="true" drools:priority="50" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_80FE98E1-BD03-45AC-BC19-1C54DA68AECF" targetRef="_DC7E94BA-C978-43D4-8AC7-EC5123B6CDA0">
+      <bpmn2:sequenceFlow id="_B0A8E8EB-19E4-4F99-ABFF-DE6B2641AEC3" automatik:selectable="true" automatik:priority="50" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_80FE98E1-BD03-45AC-BC19-1C54DA68AECF" targetRef="_DC7E94BA-C978-43D4-8AC7-EC5123B6CDA0">
         <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="_epSjV6bQEei-BuW7dkQYjQ" language="http://www.java.com/java"><![CDATA[Integer i = (Integer) kcontext.getVariable("hello");
 return i < 50;]]></bpmn2:conditionExpression>
       </bpmn2:sequenceFlow>
-      <bpmn2:sequenceFlow id="_BC83A631-93C2-4D9B-B142-FB42542F00A3" drools:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_DC7E94BA-C978-43D4-8AC7-EC5123B6CDA0" targetRef="_6FFF6FCD-F040-4886-9C90-D5F24AD921DF"/>
-      <bpmn2:sequenceFlow id="_28560701-11E9-4540-B10F-4E496BAD0CA1" drools:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_D02CC53C-C417-4342-B916-DB98FAA12EC9" targetRef="_80FE98E1-BD03-45AC-BC19-1C54DA68AECF"/>
-      <bpmn2:sequenceFlow id="_78F7A863-F415-48DF-A9C6-E8AE825EDEB3" drools:selectable="true" drools:priority="50" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_80FE98E1-BD03-45AC-BC19-1C54DA68AECF" targetRef="_87E64E5A-689F-4429-8DB2-7D9F60032210">
+      <bpmn2:sequenceFlow id="_BC83A631-93C2-4D9B-B142-FB42542F00A3" automatik:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_DC7E94BA-C978-43D4-8AC7-EC5123B6CDA0" targetRef="_6FFF6FCD-F040-4886-9C90-D5F24AD921DF"/>
+      <bpmn2:sequenceFlow id="_28560701-11E9-4540-B10F-4E496BAD0CA1" automatik:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_D02CC53C-C417-4342-B916-DB98FAA12EC9" targetRef="_80FE98E1-BD03-45AC-BC19-1C54DA68AECF"/>
+      <bpmn2:sequenceFlow id="_78F7A863-F415-48DF-A9C6-E8AE825EDEB3" automatik:selectable="true" automatik:priority="50" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_80FE98E1-BD03-45AC-BC19-1C54DA68AECF" targetRef="_87E64E5A-689F-4429-8DB2-7D9F60032210">
         <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="_epSjWKbQEei-BuW7dkQYjQ" language="http://www.java.com/java"><![CDATA[Integer i = (Integer) kcontext.getVariable("hello");
 return i > 10;]]></bpmn2:conditionExpression>
       </bpmn2:sequenceFlow>
-      <bpmn2:sequenceFlow id="_EFBAFF48-63BE-4A3F-BED5-A557888386B7" drools:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_87E64E5A-689F-4429-8DB2-7D9F60032210" targetRef="_F8C393C8-B021-4912-A2CC-61AAFEC1A6AB"/>
+      <bpmn2:sequenceFlow id="_EFBAFF48-63BE-4A3F-BED5-A557888386B7" automatik:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_87E64E5A-689F-4429-8DB2-7D9F60032210" targetRef="_F8C393C8-B021-4912-A2CC-61AAFEC1A6AB"/>
     </bpmn2:subProcess>
-    <bpmn2:endEvent id="_57E557DC-288A-4854-9752-C018CE7EFA5E" drools:selectable="true" color:background-color="#ff6347" color:border-color="#000000" color:color="#000000" name="">
+    <bpmn2:endEvent id="_57E557DC-288A-4854-9752-C018CE7EFA5E" automatik:selectable="true" color:background-color="#ff6347" color:border-color="#000000" color:color="#000000" name="">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_F62E280B-CEE3-4CDB-A202-6A863820851E</bpmn2:incoming>
     </bpmn2:endEvent>
-    <bpmn2:parallelGateway id="_6EF04936-0F16-4F29-96A3-92C6829C9028" drools:selectable="true" color:background-color="#f0e68c" color:border-color="#a67f00" color:color="#000000" name="" gatewayDirection="Converging">
+    <bpmn2:parallelGateway id="_6EF04936-0F16-4F29-96A3-92C6829C9028" automatik:selectable="true" color:background-color="#f0e68c" color:border-color="#a67f00" color:color="#000000" name="" gatewayDirection="Converging">
       <bpmn2:incoming>_26EC02A0-1EFF-4133-ABC3-164E766BF0D2</bpmn2:incoming>
       <bpmn2:incoming>_6BD46A5A-FF49-4A33-A251-4C3DD68F317F</bpmn2:incoming>
       <bpmn2:outgoing>_F62E280B-CEE3-4CDB-A202-6A863820851E</bpmn2:outgoing>
     </bpmn2:parallelGateway>
-    <bpmn2:startEvent id="_AA1E2919-093B-4529-BEDC-8DA788ADCB4B" drools:selectable="true" color:background-color="#9acd32" color:border-color="#000000" color:color="#000000" name="">
+    <bpmn2:startEvent id="_AA1E2919-093B-4529-BEDC-8DA788ADCB4B" automatik:selectable="true" color:background-color="#9acd32" color:border-color="#000000" color:color="#000000" name="">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:outgoing>_ED8CD50A-2AB2-47A4-9E62-572AEEB40C63</bpmn2:outgoing>
     </bpmn2:startEvent>
-    <bpmn2:scriptTask id="_58E1627E-F081-4216-9B3A-074F4BC64BDC" drools:selectable="true" color:background-color="#fafad2" color:border-color="#000000" color:color="#000000" name="After subprocess" scriptFormat="http://www.javascript.com/javascript">
+    <bpmn2:scriptTask id="_58E1627E-F081-4216-9B3A-074F4BC64BDC" automatik:selectable="true" color:background-color="#fafad2" color:border-color="#000000" color:color="#000000" name="After subprocess" scriptFormat="http://www.javascript.com/javascript">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[After subprocess]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[After subprocess]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_0B6E58EF-CECD-4C31-8E36-D52CD443C573</bpmn2:incoming>
       <bpmn2:outgoing>_26EC02A0-1EFF-4133-ABC3-164E766BF0D2</bpmn2:outgoing>
       <bpmn2:script><![CDATA[print("After subprocess");]]></bpmn2:script>
     </bpmn2:scriptTask>
-    <bpmn2:scriptTask id="_029AFAF5-85DC-42BE-B7F2-312A2129FF52" drools:selectable="true" color:background-color="#fafad2" color:border-color="#000000" color:color="#000000" name="Escalated" scriptFormat="http://www.javascript.com/javascript">
+    <bpmn2:scriptTask id="_029AFAF5-85DC-42BE-B7F2-312A2129FF52" automatik:selectable="true" color:background-color="#fafad2" color:border-color="#000000" color:color="#000000" name="Escalated" scriptFormat="http://www.javascript.com/javascript">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[Escalated]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Escalated]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_607BEE1C-0004-411C-B0E7-E9D460163515</bpmn2:incoming>
       <bpmn2:outgoing>_6BD46A5A-FF49-4A33-A251-4C3DD68F317F</bpmn2:outgoing>
       <bpmn2:script><![CDATA[print("Escalated");]]></bpmn2:script>
     </bpmn2:scriptTask>
-    <bpmn2:sequenceFlow id="_F62E280B-CEE3-4CDB-A202-6A863820851E" drools:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_6EF04936-0F16-4F29-96A3-92C6829C9028" targetRef="_57E557DC-288A-4854-9752-C018CE7EFA5E"/>
-    <bpmn2:sequenceFlow id="_ED8CD50A-2AB2-47A4-9E62-572AEEB40C63" drools:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_AA1E2919-093B-4529-BEDC-8DA788ADCB4B" targetRef="_97A8E2E1-F119-4549-8021-947EBE20F3F3"/>
-    <bpmn2:sequenceFlow id="_0B6E58EF-CECD-4C31-8E36-D52CD443C573" drools:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_97A8E2E1-F119-4549-8021-947EBE20F3F3" targetRef="_58E1627E-F081-4216-9B3A-074F4BC64BDC"/>
-    <bpmn2:sequenceFlow id="_607BEE1C-0004-411C-B0E7-E9D460163515" drools:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_EE8388D4-93FF-42A9-A982-944386A92C64" targetRef="_029AFAF5-85DC-42BE-B7F2-312A2129FF52"/>
-    <bpmn2:sequenceFlow id="_6BD46A5A-FF49-4A33-A251-4C3DD68F317F" drools:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_029AFAF5-85DC-42BE-B7F2-312A2129FF52" targetRef="_6EF04936-0F16-4F29-96A3-92C6829C9028"/>
-    <bpmn2:sequenceFlow id="_26EC02A0-1EFF-4133-ABC3-164E766BF0D2" drools:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_58E1627E-F081-4216-9B3A-074F4BC64BDC" targetRef="_6EF04936-0F16-4F29-96A3-92C6829C9028"/>
-    <bpmn2:boundaryEvent id="_EE8388D4-93FF-42A9-A982-944386A92C64" drools:selectable="true" drools:boundaryca="false" drools:dockerinfo="298.0^225.0|" color:background-color="#f5deb3" color:border-color="#a0522d" color:color="#000000" name="n a" attachedToRef="_97A8E2E1-F119-4549-8021-947EBE20F3F3" cancelActivity="false">
+    <bpmn2:sequenceFlow id="_F62E280B-CEE3-4CDB-A202-6A863820851E" automatik:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_6EF04936-0F16-4F29-96A3-92C6829C9028" targetRef="_57E557DC-288A-4854-9752-C018CE7EFA5E"/>
+    <bpmn2:sequenceFlow id="_ED8CD50A-2AB2-47A4-9E62-572AEEB40C63" automatik:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_AA1E2919-093B-4529-BEDC-8DA788ADCB4B" targetRef="_97A8E2E1-F119-4549-8021-947EBE20F3F3"/>
+    <bpmn2:sequenceFlow id="_0B6E58EF-CECD-4C31-8E36-D52CD443C573" automatik:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_97A8E2E1-F119-4549-8021-947EBE20F3F3" targetRef="_58E1627E-F081-4216-9B3A-074F4BC64BDC"/>
+    <bpmn2:sequenceFlow id="_607BEE1C-0004-411C-B0E7-E9D460163515" automatik:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_EE8388D4-93FF-42A9-A982-944386A92C64" targetRef="_029AFAF5-85DC-42BE-B7F2-312A2129FF52"/>
+    <bpmn2:sequenceFlow id="_6BD46A5A-FF49-4A33-A251-4C3DD68F317F" automatik:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_029AFAF5-85DC-42BE-B7F2-312A2129FF52" targetRef="_6EF04936-0F16-4F29-96A3-92C6829C9028"/>
+    <bpmn2:sequenceFlow id="_26EC02A0-1EFF-4133-ABC3-164E766BF0D2" automatik:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_58E1627E-F081-4216-9B3A-074F4BC64BDC" targetRef="_6EF04936-0F16-4F29-96A3-92C6829C9028"/>
+    <bpmn2:boundaryEvent id="_EE8388D4-93FF-42A9-A982-944386A92C64" automatik:selectable="true" automatik:boundaryca="false" automatik:dockerinfo="298.0^225.0|" color:background-color="#f5deb3" color:border-color="#a0522d" color:color="#000000" name="n a" attachedToRef="_97A8E2E1-F119-4549-8021-947EBE20F3F3" cancelActivity="false">
       <bpmn2:documentation id="_epSjWabQEei-BuW7dkQYjQ"><![CDATA[doc
 afdsoi
 
 ]]></bpmn2:documentation>
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[n
-a]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[n
+a]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:outgoing>_607BEE1C-0004-411C-B0E7-E9D460163515</bpmn2:outgoing>
-      <bpmn2:escalationEventDefinition id="_epSjWqbQEei-BuW7dkQYjQ" drools:esccode="Escalation1" escalationRef="_a9c99a5b-4c12-38f4-a6a9-a816dbd7f330"/>
+      <bpmn2:escalationEventDefinition id="_epSjWqbQEei-BuW7dkQYjQ" automatik:esccode="Escalation1" escalationRef="_a9c99a5b-4c12-38f4-a6a9-a816dbd7f330"/>
     </bpmn2:boundaryEvent>
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="_epSjW6bQEei-BuW7dkQYjQ">

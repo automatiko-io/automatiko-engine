@@ -7,7 +7,7 @@
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd"
              xmlns:di="http://www.omg.com/di/1.0.0"
-             xmlns:g="http://www.jboss.org/drools/flow/gpd"
+             xmlns:g="https://automatik-platform.io/flow/gpd"
              xmlns:tns="http://www.example.org/MinimalExample">
 
   <process id="Minimal" name="Minimal Process">

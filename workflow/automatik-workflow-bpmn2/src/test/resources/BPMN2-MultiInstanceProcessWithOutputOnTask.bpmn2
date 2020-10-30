@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:_1="http://www.omg.org/bpmn20" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd" id="_xhl1EJuxEeKPFrhDXIk2sQ" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
+<definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:_1="http://www.omg.org/bpmn20" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd" id="_xhl1EJuxEeKPFrhDXIk2sQ" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
   <itemDefinition id="_miinputItem" structureRef="java.util.Collection"/>
   <itemDefinition id="_mioutputItem" structureRef="java.util.Collection"/>
   <itemDefinition id="__0320595C-6C27-43B9-A9A9-C04531AB4E0E_firstNameInputItem" structureRef="String"/>
   <itemDefinition id="__0320595C-6C27-43B9-A9A9-C04531AB4E0E_minputCollectionInputItem" structureRef="java.util.Collection"/>
   <itemDefinition id="__0320595C-6C27-43B9-A9A9-C04531AB4E0E_replyOutputItem" structureRef="String"/>
   <itemDefinition id="__0320595C-6C27-43B9-A9A9-C04531AB4E0E_ioutputcollectionOutputItem" structureRef="java.util.Collection"/>
-  <process id="miprocess" drools:version="1" drools:packageName="test" drools:adHoc="false" name="" isExecutable="true">
+  <process id="miprocess" automatik:version="1" automatik:packageName="test" automatik:adHoc="false" name="" isExecutable="true">
     <property id="miinput" itemSubjectRef="_miinputItem"/>
     <property id="mioutput" itemSubjectRef="_mioutputItem"/>
-    <startEvent id="_5CDA2E14-63CF-4629-A0F0-6C72351FA63E" drools:bgcolor="#9acd32" drools:selectable="true" name="">
+    <startEvent id="_5CDA2E14-63CF-4629-A0F0-6C72351FA63E" automatik:bgcolor="#9acd32" automatik:selectable="true" name="">
       <outgoing>_5DB5DDA3-7A1D-4BAF-84F9-FEDEB0B20BB3</outgoing>
     </startEvent>
-    <sequenceFlow id="_5DB5DDA3-7A1D-4BAF-84F9-FEDEB0B20BB3" drools:priority="1" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_5CDA2E14-63CF-4629-A0F0-6C72351FA63E" targetRef="_0320595C-6C27-43B9-A9A9-C04531AB4E0E"/>
-    <userTask id="_0320595C-6C27-43B9-A9A9-C04531AB4E0E" drools:selectable="true" drools:mitask="miinput@mioutput@firstName@reply" drools:scriptFormat="http://www.java.com/java" name="mi test">
+    <sequenceFlow id="_5DB5DDA3-7A1D-4BAF-84F9-FEDEB0B20BB3" automatik:priority="1" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_5CDA2E14-63CF-4629-A0F0-6C72351FA63E" targetRef="_0320595C-6C27-43B9-A9A9-C04531AB4E0E"/>
+    <userTask id="_0320595C-6C27-43B9-A9A9-C04531AB4E0E" automatik:selectable="true" automatik:mitask="miinput@mioutput@firstName@reply" automatik:scriptFormat="http://www.java.com/java" name="mi test">
       <incoming>_5DB5DDA3-7A1D-4BAF-84F9-FEDEB0B20BB3</incoming>
       <outgoing>SequenceFlow_2</outgoing>
       <ioSpecification id="_xhl1EZuxEeKPFrhDXIk2sQ">
-        <dataInput id="_0320595C-6C27-43B9-A9A9-C04531AB4E0E_firstNameInput" drools:dtype="String" itemSubjectRef="__0320595C-6C27-43B9-A9A9-C04531AB4E0E_firstNameInputItem" name="firstName"/>
-        <dataInput id="_0320595C-6C27-43B9-A9A9-C04531AB4E0E_minputCollectionInput" drools:dtype="java.util.Collection" itemSubjectRef="__0320595C-6C27-43B9-A9A9-C04531AB4E0E_minputCollectionInputItem" name="minputCollection"/>
-        <dataOutput id="_0320595C-6C27-43B9-A9A9-C04531AB4E0E_replyOutput" drools:dtype="String" itemSubjectRef="__0320595C-6C27-43B9-A9A9-C04531AB4E0E_replyOutputItem" name="reply"/>
-        <dataOutput id="_0320595C-6C27-43B9-A9A9-C04531AB4E0E_ioutputcollectionOutput" drools:dtype="java.util.Collection" itemSubjectRef="__0320595C-6C27-43B9-A9A9-C04531AB4E0E_ioutputcollectionOutputItem" name="ioutputcollection"/>
+        <dataInput id="_0320595C-6C27-43B9-A9A9-C04531AB4E0E_firstNameInput" automatik:dtype="String" itemSubjectRef="__0320595C-6C27-43B9-A9A9-C04531AB4E0E_firstNameInputItem" name="firstName"/>
+        <dataInput id="_0320595C-6C27-43B9-A9A9-C04531AB4E0E_minputCollectionInput" automatik:dtype="java.util.Collection" itemSubjectRef="__0320595C-6C27-43B9-A9A9-C04531AB4E0E_minputCollectionInputItem" name="minputCollection"/>
+        <dataOutput id="_0320595C-6C27-43B9-A9A9-C04531AB4E0E_replyOutput" automatik:dtype="String" itemSubjectRef="__0320595C-6C27-43B9-A9A9-C04531AB4E0E_replyOutputItem" name="reply"/>
+        <dataOutput id="_0320595C-6C27-43B9-A9A9-C04531AB4E0E_ioutputcollectionOutput" automatik:dtype="java.util.Collection" itemSubjectRef="__0320595C-6C27-43B9-A9A9-C04531AB4E0E_ioutputcollectionOutputItem" name="ioutputcollection"/>
         <inputSet id="_xhl1EpuxEeKPFrhDXIk2sQ">
           <dataInputRefs>_0320595C-6C27-43B9-A9A9-C04531AB4E0E_firstNameInput</dataInputRefs>
           <dataInputRefs>_0320595C-6C27-43B9-A9A9-C04531AB4E0E_minputCollectionInput</dataInputRefs>
@@ -58,7 +58,7 @@
         <outputDataItem xsi:type="tDataOutput" id="miDataOutput" itemSubjectRef="__0320595C-6C27-43B9-A9A9-C04531AB4E0E_replyOutputItem"/>
       </multiInstanceLoopCharacteristics>
     </userTask>
-    <endEvent id="_26390A10-9B26-4111-97DF-07D75B93390F" drools:bgcolor="#ff6347" drools:selectable="true" name="">
+    <endEvent id="_26390A10-9B26-4111-97DF-07D75B93390F" automatik:bgcolor="#ff6347" automatik:selectable="true" name="">
       <incoming>SequenceFlow_3</incoming>
     </endEvent>
     <userTask id="UserTask_4" name="User Task 4">
@@ -104,8 +104,8 @@
         <targetRef>_DataInput_36</targetRef>
       </dataInputAssociation>
     </userTask>
-    <sequenceFlow id="SequenceFlow_2" drools:priority="1" sourceRef="_0320595C-6C27-43B9-A9A9-C04531AB4E0E" targetRef="UserTask_4"/>
-    <sequenceFlow id="SequenceFlow_3" drools:priority="1" name="" sourceRef="UserTask_4" targetRef="_26390A10-9B26-4111-97DF-07D75B93390F"/>
+    <sequenceFlow id="SequenceFlow_2" automatik:priority="1" sourceRef="_0320595C-6C27-43B9-A9A9-C04531AB4E0E" targetRef="UserTask_4"/>
+    <sequenceFlow id="SequenceFlow_3" automatik:priority="1" name="" sourceRef="UserTask_4" targetRef="_26390A10-9B26-4111-97DF-07D75B93390F"/>
   </process>
   <bpmndi:BPMNDiagram id="_xhmcKZuxEeKPFrhDXIk2sQ">
     <bpmndi:BPMNPlane id="_xhmcKpuxEeKPFrhDXIk2sQ" bpmnElement="miprocess">

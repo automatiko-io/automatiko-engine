@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools" id="_8ChZ0PFUEeOy9-1snp-mHw" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd http://www.jboss.org/drools drools.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io" id="_8ChZ0PFUEeOy9-1snp-mHw" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatik-platform.io automatik.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
   <bpmn2:itemDefinition id="_firstXorItem" structureRef="Boolean"/>
   <bpmn2:itemDefinition id="_secondXorItem" structureRef="Boolean"/>
   <bpmn2:itemDefinition id="_thirdXorItem" structureRef="Boolean"/>
-  <bpmn2:process id="InclusiveWithAdvancedLoop" drools:packageName="org.jbpm" drools:version="7" name="InclusiveWithAdvancedLoop" isExecutable="true">
+  <bpmn2:process id="InclusiveWithAdvancedLoop" automatik:packageName="org.jbpm" automatik:version="7" name="InclusiveWithAdvancedLoop" isExecutable="true">
     <bpmn2:property id="firstXor" itemSubjectRef="_firstXorItem"/>
     <bpmn2:property id="secondXor" itemSubjectRef="_secondXorItem"/>
     <bpmn2:property id="thirdXor" itemSubjectRef="_thirdXorItem"/>
-    <bpmn2:startEvent id="_1B47C910-79D3-45B0-8690-F48D08BA53E9" drools:bgcolor="#9acd32" drools:selectable="true" name="Start" isInterrupting="false">
+    <bpmn2:startEvent id="_1B47C910-79D3-45B0-8690-F48D08BA53E9" automatik:bgcolor="#9acd32" automatik:selectable="true" name="Start" isInterrupting="false">
       <bpmn2:documentation id="_8ChZ0fFUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
       <bpmn2:outgoing>_84BF663C-2750-4177-BCDB-45964A1B127D</bpmn2:outgoing>
     </bpmn2:startEvent>
-    <bpmn2:endEvent id="_46A7DD3B-9855-4D0F-86B3-9C5132E5DCBD" drools:bgcolor="#ff6347" drools:selectable="true" name="Koniec">
+    <bpmn2:endEvent id="_46A7DD3B-9855-4D0F-86B3-9C5132E5DCBD" automatik:bgcolor="#ff6347" automatik:selectable="true" name="Koniec">
       <bpmn2:documentation id="_8ChZ0vFUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
       <bpmn2:incoming>_BF4B7943-95AB-4BAD-8A87-E396A4A71417</bpmn2:incoming>
     </bpmn2:endEvent>
-    <bpmn2:endEvent id="_33C46451-D3A2-4288-BBBB-9D527FE2D885" drools:bgcolor="#ff6347" drools:selectable="true" name="Koniec2">
+    <bpmn2:endEvent id="_33C46451-D3A2-4288-BBBB-9D527FE2D885" automatik:bgcolor="#ff6347" automatik:selectable="true" name="Koniec2">
       <bpmn2:documentation id="_8ChZ0_FUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
       <bpmn2:incoming>_4F5981C4-8E1C-4333-A8B6-C174016B99D1</bpmn2:incoming>
     </bpmn2:endEvent>
-    <bpmn2:endEvent id="_B3B60352-49A6-4180-BD4F-8E89B6D81F94" drools:bgcolor="#ff6347" drools:selectable="true" name="Koniec3">
+    <bpmn2:endEvent id="_B3B60352-49A6-4180-BD4F-8E89B6D81F94" automatik:bgcolor="#ff6347" automatik:selectable="true" name="Koniec3">
       <bpmn2:documentation id="_8ChZ1PFUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
       <bpmn2:incoming>_EB2332D2-0DDD-4B08-BDF7-C9299812DBEA</bpmn2:incoming>
     </bpmn2:endEvent>
-    <bpmn2:userTask id="_16F026D2-46D8-4116-8171-8E672551EAC8" drools:selectable="true" drools:scriptFormat="http://www.java.com/java" name="HT Form2">
+    <bpmn2:userTask id="_16F026D2-46D8-4116-8171-8E672551EAC8" automatik:selectable="true" automatik:scriptFormat="http://www.java.com/java" name="HT Form2">
       <bpmn2:incoming>_5AF0D1D0-C7DD-4DE9-9D77-1C4FAE8C7B60</bpmn2:incoming>
       <bpmn2:outgoing>_83C41A1A-E3A9-4FEE-9B72-206A42B09979</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_8ChZ1fFUEeOy9-1snp-mHw">
@@ -44,7 +44,7 @@
         </bpmn2:resourceAssignmentExpression>
       </bpmn2:potentialOwner>
     </bpmn2:userTask>
-    <bpmn2:userTask id="_AEB5D3C2-426D-4F97-BC5B-29FB63A36896" drools:selectable="true" drools:scriptFormat="http://www.java.com/java" name="HT Form3">
+    <bpmn2:userTask id="_AEB5D3C2-426D-4F97-BC5B-29FB63A36896" automatik:selectable="true" automatik:scriptFormat="http://www.java.com/java" name="HT Form3">
       <bpmn2:incoming>_E9F76FF9-057E-49B6-9680-397B88534625</bpmn2:incoming>
       <bpmn2:outgoing>_104B571D-5EFD-49D6-BA61-895F28CF21E5</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_8CiA5PFUEeOy9-1snp-mHw">
@@ -65,7 +65,7 @@
         </bpmn2:resourceAssignmentExpression>
       </bpmn2:potentialOwner>
     </bpmn2:userTask>
-    <bpmn2:userTask id="_E994C73E-0770-49C1-A73B-459A3AAFEEF7" drools:selectable="true" drools:scriptFormat="http://www.java.com/java" name="HT Form4">
+    <bpmn2:userTask id="_E994C73E-0770-49C1-A73B-459A3AAFEEF7" automatik:selectable="true" automatik:scriptFormat="http://www.java.com/java" name="HT Form4">
       <bpmn2:incoming>_B14B6217-BE1E-40DC-9614-61EFC7397418</bpmn2:incoming>
       <bpmn2:outgoing>_53CA605A-7DE1-44ED-85DA-E2BDB1A1B61B</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_8CiA7vFUEeOy9-1snp-mHw">
@@ -86,7 +86,7 @@
         </bpmn2:resourceAssignmentExpression>
       </bpmn2:potentialOwner>
     </bpmn2:userTask>
-    <bpmn2:userTask id="_C2869789-8CBF-48BC-94D5-7EB004D192F2" drools:selectable="true" drools:scriptFormat="http://www.java.com/java" name="HT Form1">
+    <bpmn2:userTask id="_C2869789-8CBF-48BC-94D5-7EB004D192F2" automatik:selectable="true" automatik:scriptFormat="http://www.java.com/java" name="HT Form1">
       <bpmn2:incoming>_84BF663C-2750-4177-BCDB-45964A1B127D</bpmn2:incoming>
       <bpmn2:outgoing>_2FBDB474-6D2F-4590-83D8-D47627ED307C</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_8CiA-PFUEeOy9-1snp-mHw">
@@ -107,91 +107,91 @@
         </bpmn2:resourceAssignmentExpression>
       </bpmn2:potentialOwner>
     </bpmn2:userTask>
-    <bpmn2:parallelGateway id="_F24FBFC2-DF17-45E8-AFC7-0943AE840600" drools:bgcolor="#f0e68c" drools:selectable="true" drools:bordercolor="#a67f00" name="and1" gatewayDirection="Diverging">
+    <bpmn2:parallelGateway id="_F24FBFC2-DF17-45E8-AFC7-0943AE840600" automatik:bgcolor="#f0e68c" automatik:selectable="true" automatik:bordercolor="#a67f00" name="and1" gatewayDirection="Diverging">
       <bpmn2:documentation id="_8CiBAvFUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
       <bpmn2:incoming>_2FBDB474-6D2F-4590-83D8-D47627ED307C</bpmn2:incoming>
       <bpmn2:outgoing>_5AF0D1D0-C7DD-4DE9-9D77-1C4FAE8C7B60</bpmn2:outgoing>
       <bpmn2:outgoing>_6FC81BC8-E056-4B53-BD97-7A7998BBE084</bpmn2:outgoing>
     </bpmn2:parallelGateway>
-    <bpmn2:inclusiveGateway id="_E3B6C02C-9CDF-475E-AFDF-E50CFFF11769" drools:bgcolor="#f0e68c" drools:selectable="true" drools:bordercolor="#a67f00" drools:dg="" name="or1" gatewayDirection="Converging">
+    <bpmn2:inclusiveGateway id="_E3B6C02C-9CDF-475E-AFDF-E50CFFF11769" automatik:bgcolor="#f0e68c" automatik:selectable="true" automatik:bordercolor="#a67f00" automatik:dg="" name="or1" gatewayDirection="Converging">
       <bpmn2:documentation id="_8CiBA_FUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
       <bpmn2:incoming>_B7938946-2212-4652-81CE-E627F4C2E93F</bpmn2:incoming>
       <bpmn2:incoming>_83C41A1A-E3A9-4FEE-9B72-206A42B09979</bpmn2:incoming>
       <bpmn2:outgoing>_BF4B7943-95AB-4BAD-8A87-E396A4A71417</bpmn2:outgoing>
     </bpmn2:inclusiveGateway>
-    <bpmn2:exclusiveGateway id="_378276EC-54CA-449F-A6AB-905E16D70857" drools:bgcolor="#f0e68c" drools:selectable="true" drools:bordercolor="#a67f00" drools:dg="" name="xor1" gatewayDirection="Diverging">
+    <bpmn2:exclusiveGateway id="_378276EC-54CA-449F-A6AB-905E16D70857" automatik:bgcolor="#f0e68c" automatik:selectable="true" automatik:bordercolor="#a67f00" automatik:dg="" name="xor1" gatewayDirection="Diverging">
       <bpmn2:documentation id="_8CiBBPFUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
       <bpmn2:incoming>_6FC81BC8-E056-4B53-BD97-7A7998BBE084</bpmn2:incoming>
       <bpmn2:outgoing>_B7938946-2212-4652-81CE-E627F4C2E93F</bpmn2:outgoing>
       <bpmn2:outgoing>_B819C445-F701-4E0A-9901-131EEF245E04</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
-    <bpmn2:exclusiveGateway id="_82F3ABD4-AC4E-4DA6-A7FB-2A6707F1CB92" drools:bgcolor="#f0e68c" drools:selectable="true" drools:bordercolor="#a67f00" drools:dg="" name="xor2" gatewayDirection="Converging">
+    <bpmn2:exclusiveGateway id="_82F3ABD4-AC4E-4DA6-A7FB-2A6707F1CB92" automatik:bgcolor="#f0e68c" automatik:selectable="true" automatik:bordercolor="#a67f00" automatik:dg="" name="xor2" gatewayDirection="Converging">
       <bpmn2:documentation id="_8CiBBfFUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
       <bpmn2:incoming>_5B17CDEC-B59A-4140-A791-629755A08D37</bpmn2:incoming>
       <bpmn2:incoming>_B819C445-F701-4E0A-9901-131EEF245E04</bpmn2:incoming>
       <bpmn2:outgoing>_E9F76FF9-057E-49B6-9680-397B88534625</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
-    <bpmn2:exclusiveGateway id="_B0676DCA-9D5B-4AEE-A730-503EA0C5B363" drools:bgcolor="#f0e68c" drools:selectable="true" drools:bordercolor="#a67f00" drools:dg="" name="xor4" gatewayDirection="Diverging">
+    <bpmn2:exclusiveGateway id="_B0676DCA-9D5B-4AEE-A730-503EA0C5B363" automatik:bgcolor="#f0e68c" automatik:selectable="true" automatik:bordercolor="#a67f00" automatik:dg="" name="xor4" gatewayDirection="Diverging">
       <bpmn2:documentation id="_8CiBBvFUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
       <bpmn2:incoming>_53CA605A-7DE1-44ED-85DA-E2BDB1A1B61B</bpmn2:incoming>
       <bpmn2:outgoing>_4F5981C4-8E1C-4333-A8B6-C174016B99D1</bpmn2:outgoing>
       <bpmn2:outgoing>_5B17CDEC-B59A-4140-A791-629755A08D37</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
-    <bpmn2:exclusiveGateway id="_5D82DC04-724F-4040-8C82-6C6B022C5B79" drools:bgcolor="#f0e68c" drools:selectable="true" drools:bordercolor="#a67f00" drools:dg="" name="xor 3" gatewayDirection="Diverging">
+    <bpmn2:exclusiveGateway id="_5D82DC04-724F-4040-8C82-6C6B022C5B79" automatik:bgcolor="#f0e68c" automatik:selectable="true" automatik:bordercolor="#a67f00" automatik:dg="" name="xor 3" gatewayDirection="Diverging">
       <bpmn2:documentation id="_8CiBB_FUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
       <bpmn2:incoming>_104B571D-5EFD-49D6-BA61-895F28CF21E5</bpmn2:incoming>
       <bpmn2:outgoing>_EB2332D2-0DDD-4B08-BDF7-C9299812DBEA</bpmn2:outgoing>
       <bpmn2:outgoing>_B14B6217-BE1E-40DC-9614-61EFC7397418</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
-    <bpmn2:sequenceFlow id="_BF4B7943-95AB-4BAD-8A87-E396A4A71417" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_E3B6C02C-9CDF-475E-AFDF-E50CFFF11769" targetRef="_46A7DD3B-9855-4D0F-86B3-9C5132E5DCBD">
+    <bpmn2:sequenceFlow id="_BF4B7943-95AB-4BAD-8A87-E396A4A71417" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_E3B6C02C-9CDF-475E-AFDF-E50CFFF11769" targetRef="_46A7DD3B-9855-4D0F-86B3-9C5132E5DCBD">
       <bpmn2:documentation id="_8CiBCPFUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
     </bpmn2:sequenceFlow>
-    <bpmn2:sequenceFlow id="_4F5981C4-8E1C-4333-A8B6-C174016B99D1" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_B0676DCA-9D5B-4AEE-A730-503EA0C5B363" targetRef="_33C46451-D3A2-4288-BBBB-9D527FE2D885">
+    <bpmn2:sequenceFlow id="_4F5981C4-8E1C-4333-A8B6-C174016B99D1" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_B0676DCA-9D5B-4AEE-A730-503EA0C5B363" targetRef="_33C46451-D3A2-4288-BBBB-9D527FE2D885">
       <bpmn2:documentation id="_8CiBCfFUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
       <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="_8CiBCvFUEeOy9-1snp-mHw" language="http://www.java.com/java"><![CDATA[return  KieFunctions.isTrue(thirdXor);]]></bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
-    <bpmn2:sequenceFlow id="_EB2332D2-0DDD-4B08-BDF7-C9299812DBEA" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_5D82DC04-724F-4040-8C82-6C6B022C5B79" targetRef="_B3B60352-49A6-4180-BD4F-8E89B6D81F94">
+    <bpmn2:sequenceFlow id="_EB2332D2-0DDD-4B08-BDF7-C9299812DBEA" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_5D82DC04-724F-4040-8C82-6C6B022C5B79" targetRef="_B3B60352-49A6-4180-BD4F-8E89B6D81F94">
       <bpmn2:documentation id="_8CiBC_FUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
       <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="_8CiBDPFUEeOy9-1snp-mHw" language="http://www.java.com/java"><![CDATA[return  KieFunctions.isFalse(secondXor);]]></bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
-    <bpmn2:sequenceFlow id="_5AF0D1D0-C7DD-4DE9-9D77-1C4FAE8C7B60" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_F24FBFC2-DF17-45E8-AFC7-0943AE840600" targetRef="_16F026D2-46D8-4116-8171-8E672551EAC8">
+    <bpmn2:sequenceFlow id="_5AF0D1D0-C7DD-4DE9-9D77-1C4FAE8C7B60" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_F24FBFC2-DF17-45E8-AFC7-0943AE840600" targetRef="_16F026D2-46D8-4116-8171-8E672551EAC8">
       <bpmn2:documentation id="_8CiBDfFUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
     </bpmn2:sequenceFlow>
-    <bpmn2:sequenceFlow id="_E9F76FF9-057E-49B6-9680-397B88534625" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_82F3ABD4-AC4E-4DA6-A7FB-2A6707F1CB92" targetRef="_AEB5D3C2-426D-4F97-BC5B-29FB63A36896">
+    <bpmn2:sequenceFlow id="_E9F76FF9-057E-49B6-9680-397B88534625" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_82F3ABD4-AC4E-4DA6-A7FB-2A6707F1CB92" targetRef="_AEB5D3C2-426D-4F97-BC5B-29FB63A36896">
       <bpmn2:documentation id="_8CiBDvFUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
     </bpmn2:sequenceFlow>
-    <bpmn2:sequenceFlow id="_B14B6217-BE1E-40DC-9614-61EFC7397418" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_5D82DC04-724F-4040-8C82-6C6B022C5B79" targetRef="_E994C73E-0770-49C1-A73B-459A3AAFEEF7">
+    <bpmn2:sequenceFlow id="_B14B6217-BE1E-40DC-9614-61EFC7397418" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_5D82DC04-724F-4040-8C82-6C6B022C5B79" targetRef="_E994C73E-0770-49C1-A73B-459A3AAFEEF7">
       <bpmn2:documentation id="_8CiBD_FUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
       <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="_8CiBEPFUEeOy9-1snp-mHw" language="http://www.java.com/java"><![CDATA[return  KieFunctions.isTrue(secondXor);]]></bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
-    <bpmn2:sequenceFlow id="_2FBDB474-6D2F-4590-83D8-D47627ED307C" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_C2869789-8CBF-48BC-94D5-7EB004D192F2" targetRef="_F24FBFC2-DF17-45E8-AFC7-0943AE840600">
+    <bpmn2:sequenceFlow id="_2FBDB474-6D2F-4590-83D8-D47627ED307C" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_C2869789-8CBF-48BC-94D5-7EB004D192F2" targetRef="_F24FBFC2-DF17-45E8-AFC7-0943AE840600">
       <bpmn2:documentation id="_8CiBEfFUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
     </bpmn2:sequenceFlow>
-    <bpmn2:sequenceFlow id="_83C41A1A-E3A9-4FEE-9B72-206A42B09979" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_16F026D2-46D8-4116-8171-8E672551EAC8" targetRef="_E3B6C02C-9CDF-475E-AFDF-E50CFFF11769">
+    <bpmn2:sequenceFlow id="_83C41A1A-E3A9-4FEE-9B72-206A42B09979" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_16F026D2-46D8-4116-8171-8E672551EAC8" targetRef="_E3B6C02C-9CDF-475E-AFDF-E50CFFF11769">
       <bpmn2:documentation id="_8CiBEvFUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
     </bpmn2:sequenceFlow>
-    <bpmn2:sequenceFlow id="_B7938946-2212-4652-81CE-E627F4C2E93F" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_378276EC-54CA-449F-A6AB-905E16D70857" targetRef="_E3B6C02C-9CDF-475E-AFDF-E50CFFF11769">
+    <bpmn2:sequenceFlow id="_B7938946-2212-4652-81CE-E627F4C2E93F" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_378276EC-54CA-449F-A6AB-905E16D70857" targetRef="_E3B6C02C-9CDF-475E-AFDF-E50CFFF11769">
       <bpmn2:documentation id="_8CiBE_FUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
       <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="_8CiBFPFUEeOy9-1snp-mHw" language="http://www.java.com/java"><![CDATA[return  KieFunctions.isFalse(firstXor);]]></bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
-    <bpmn2:sequenceFlow id="_6FC81BC8-E056-4B53-BD97-7A7998BBE084" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_F24FBFC2-DF17-45E8-AFC7-0943AE840600" targetRef="_378276EC-54CA-449F-A6AB-905E16D70857">
+    <bpmn2:sequenceFlow id="_6FC81BC8-E056-4B53-BD97-7A7998BBE084" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_F24FBFC2-DF17-45E8-AFC7-0943AE840600" targetRef="_378276EC-54CA-449F-A6AB-905E16D70857">
       <bpmn2:documentation id="_8CiBFfFUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
     </bpmn2:sequenceFlow>
-    <bpmn2:sequenceFlow id="_5B17CDEC-B59A-4140-A791-629755A08D37" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_B0676DCA-9D5B-4AEE-A730-503EA0C5B363" targetRef="_82F3ABD4-AC4E-4DA6-A7FB-2A6707F1CB92">
+    <bpmn2:sequenceFlow id="_5B17CDEC-B59A-4140-A791-629755A08D37" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_B0676DCA-9D5B-4AEE-A730-503EA0C5B363" targetRef="_82F3ABD4-AC4E-4DA6-A7FB-2A6707F1CB92">
       <bpmn2:documentation id="_8CiBFvFUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
       <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="_8Cin8PFUEeOy9-1snp-mHw" language="http://www.java.com/java"><![CDATA[return  KieFunctions.isFalse(thirdXor);]]></bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
-    <bpmn2:sequenceFlow id="_B819C445-F701-4E0A-9901-131EEF245E04" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_378276EC-54CA-449F-A6AB-905E16D70857" targetRef="_82F3ABD4-AC4E-4DA6-A7FB-2A6707F1CB92">
+    <bpmn2:sequenceFlow id="_B819C445-F701-4E0A-9901-131EEF245E04" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_378276EC-54CA-449F-A6AB-905E16D70857" targetRef="_82F3ABD4-AC4E-4DA6-A7FB-2A6707F1CB92">
       <bpmn2:documentation id="_8Cin8fFUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
       <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="_8Cin8vFUEeOy9-1snp-mHw" language="http://www.java.com/java"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
-    <bpmn2:sequenceFlow id="_53CA605A-7DE1-44ED-85DA-E2BDB1A1B61B" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_E994C73E-0770-49C1-A73B-459A3AAFEEF7" targetRef="_B0676DCA-9D5B-4AEE-A730-503EA0C5B363">
+    <bpmn2:sequenceFlow id="_53CA605A-7DE1-44ED-85DA-E2BDB1A1B61B" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_E994C73E-0770-49C1-A73B-459A3AAFEEF7" targetRef="_B0676DCA-9D5B-4AEE-A730-503EA0C5B363">
       <bpmn2:documentation id="_8Cin8_FUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
     </bpmn2:sequenceFlow>
-    <bpmn2:sequenceFlow id="_104B571D-5EFD-49D6-BA61-895F28CF21E5" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_AEB5D3C2-426D-4F97-BC5B-29FB63A36896" targetRef="_5D82DC04-724F-4040-8C82-6C6B022C5B79">
+    <bpmn2:sequenceFlow id="_104B571D-5EFD-49D6-BA61-895F28CF21E5" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_AEB5D3C2-426D-4F97-BC5B-29FB63A36896" targetRef="_5D82DC04-724F-4040-8C82-6C6B022C5B79">
       <bpmn2:documentation id="_8Cin9PFUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
     </bpmn2:sequenceFlow>
-    <bpmn2:sequenceFlow id="_84BF663C-2750-4177-BCDB-45964A1B127D" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_1B47C910-79D3-45B0-8690-F48D08BA53E9" targetRef="_C2869789-8CBF-48BC-94D5-7EB004D192F2">
+    <bpmn2:sequenceFlow id="_84BF663C-2750-4177-BCDB-45964A1B127D" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_1B47C910-79D3-45B0-8690-F48D08BA53E9" targetRef="_C2869789-8CBF-48BC-94D5-7EB004D192F2">
       <bpmn2:documentation id="_8Cin9fFUEeOy9-1snp-mHw"><![CDATA[return  KieFunctions.isTrue(firstXor);]]></bpmn2:documentation>
     </bpmn2:sequenceFlow>
   </bpmn2:process>

@@ -88,8 +88,8 @@ public class OpenAPIClientGenerator {
                 if (!openApiMetadata.operations().contains(codegenOperation.operationId)) {
                     it.remove();
                 } else {
-                    codegenOperation.allParams.forEach(p -> usedTypes.add("io.automatic.engine.app.rest.model." + p.dataType));
-                    usedTypes.add("io.automatic.engine.app.rest.model." + codegenOperation.returnType);
+                    codegenOperation.allParams.forEach(p -> usedTypes.add("io.automatik.engine.app.rest.model." + p.dataType));
+                    usedTypes.add("io.automatik.engine.app.rest.model." + codegenOperation.returnType);
                 }
             }
 
@@ -102,7 +102,7 @@ public class OpenAPIClientGenerator {
         this.context = context;
         this.process = process;
         this.openApiMetadata = openApiMetadata;
-        this.packageName = "io.automatic.engine.app.rest";
+        this.packageName = "io.automatik.engine.app.rest";
         this.resourceClazzName = StringUtils.capitalize(codegen.toApiName(openApiMetadata.name()));
         this.relativePath = packageName.replace(".", "/") + "/" + resourceClazzName + ".java";
 
@@ -169,8 +169,8 @@ public class OpenAPIClientGenerator {
         codegen.additionalProperties().put(JavaJAXRSSpecServerCodegen.GENERATE_POM, false);
         codegen.additionalProperties().put("lowercase", new LowercaseLambda());
         codegen.setTemplateDir("open-api-templates");
-        codegen.setApiPackage("io.automatic.engine.app.rest");
-        codegen.setModelPackage("io.automatic.engine.app.rest.model");
+        codegen.setApiPackage("io.automatik.engine.app.rest");
+        codegen.setModelPackage("io.automatik.engine.app.rest.model");
         codegen.setSourceFolder("");
 
         ClientOptInput input = new ClientOptInput().openAPI(openApiMetadata.api()).config(codegen);
@@ -188,14 +188,14 @@ public class OpenAPIClientGenerator {
                             CompilationUnit unit = com.github.javaparser.StaticJavaParser.parse(contents);
                             ClassOrInterfaceDeclaration template = unit.findFirst(ClassOrInterfaceDeclaration.class)
                                     .get();
-                            if (unit.getPackageDeclaration().get().getNameAsString().equals("io.automatic.engine.app.rest")) {
+                            if (unit.getPackageDeclaration().get().getNameAsString().equals("io.automatik.engine.app.rest")) {
                                 // add wildcard import to all model classes generated
-                                unit.addImport("io.automatic.engine.app.rest.model.*");
+                                unit.addImport("io.automatik.engine.app.rest.model.*");
                             } else if (unit.getPackageDeclaration().get().getNameAsString()
-                                    .equals("io.automatic.engine.app.rest.model")) {
+                                    .equals("io.automatik.engine.app.rest.model")) {
                                 // find all import definitions that reference other model classes and add them to used types
                                 unit.getImports().stream()
-                                        .filter(i -> i.getNameAsString().startsWith("io.automatic.engine.app.rest.model"))
+                                        .filter(i -> i.getNameAsString().startsWith("io.automatik.engine.app.rest.model"))
                                         .forEach(i -> usedTypes.add(i.getNameAsString()));
                             }
 

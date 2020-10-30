@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema targetNamespace="http://www.jboss.org/drools"
+<schema targetNamespace="https://automatik-platform.io"
         elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema"
-        xmlns:drools="http://www.jboss.org/drools">
+        xmlns:automatik="https://automatik-platform.io">
 
     <attribute name="packageName">
         <simpleType>
@@ -53,7 +53,7 @@
             <sequence>
                 <element name="script" minOccurs="1" maxOccurs="1" type="string" />
             </sequence>
-            <attributeGroup ref="drools:onxscriptattributes" />
+            <attributeGroup ref="automatik:onxscriptattributes" />
         </complexType>
     </element>
 
@@ -62,26 +62,26 @@
             <sequence>
                 <element name="script" minOccurs="1" maxOccurs="1" type="string" />
             </sequence>
-            <attributeGroup ref="drools:onxscriptattributes" />
+            <attributeGroup ref="automatik:onxscriptattributes" />
         </complexType>
     </element>
 
     <element name="import">
         <complexType>
-            <attributeGroup ref="drools:importattributes" />
+            <attributeGroup ref="automatik:importattributes" />
         </complexType>
     </element>
 
     <element name="global">
         <complexType>
-            <attributeGroup ref="drools:globalattributes" />
+            <attributeGroup ref="automatik:globalattributes" />
         </complexType>
     </element>
 
     <element name="metadata">
         <complexType>
             <sequence>
-                <element maxOccurs="unbounded" ref="drools:metaentry" />
+                <element maxOccurs="unbounded" ref="automatik:metaentry" />
             </sequence>
         </complexType>
     </element>

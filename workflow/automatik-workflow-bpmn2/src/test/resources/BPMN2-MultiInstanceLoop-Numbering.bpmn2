@@ -5,7 +5,7 @@
                    xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
                    xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
                    xmlns:di="http://www.omg.org/spec/DD/20100524/DI" 
-                   xmlns:drools="http://www.jboss.org/drools" 
+                   xmlns:automatik="https://automatik-platform.io" 
                    id="_HD_q0GyEEeK9dplxPIET6Q" 
                    xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd" 
                    targetNamespace="http://www.omg.org/bpmn20">
@@ -13,18 +13,18 @@
   <bpmn2:itemDefinition id="_listItem" structureRef="Object"/>
   <bpmn2:itemDefinition id="_multiInstanceItem"/>
 
-  <bpmn2:process id="Test.MultipleInstancesBug" drools:packageName="Test" name="MultipleInstancesBug" isExecutable="true">
+  <bpmn2:process id="Test.MultipleInstancesBug" automatik:packageName="Test" name="MultipleInstancesBug" isExecutable="true">
     <bpmn2:property id="list" itemSubjectRef="_listItem"/>
 
-    <bpmn2:startEvent id="_1" drools:bgcolor="#9acd32" drools:selectable="true" name="Start"/>
-    <bpmn2:sequenceFlow id="_1-_2" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_1" targetRef="_2"/>
+    <bpmn2:startEvent id="_1" automatik:bgcolor="#9acd32" automatik:selectable="true" name="Start"/>
+    <bpmn2:sequenceFlow id="_1-_2" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_1" targetRef="_2"/>
 
-    <bpmn2:scriptTask id="_2" drools:selectable="true" name="Script" scriptFormat="http://www.java.com/java">
+    <bpmn2:scriptTask id="_2" automatik:selectable="true" name="Script" scriptFormat="http://www.java.com/java">
       <bpmn2:script><![CDATA[java.util.List l = new java.util.ArrayList();l.add("a");l.add("b");kcontext.setVariable("list", l);]]></bpmn2:script>
     </bpmn2:scriptTask>
-    <bpmn2:sequenceFlow id="_2-_3" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_2" targetRef="_3"/>
+    <bpmn2:sequenceFlow id="_2-_3" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_2" targetRef="_3"/>
 
-    <bpmn2:subProcess id="_3" drools:selectable="true" name="">
+    <bpmn2:subProcess id="_3" automatik:selectable="true" name="">
 
       <bpmn2:ioSpecification id="_supProc-ioSpec">
         <bpmn2:dataInput id="_3_input" name="MultiInstanceInput"/>
@@ -43,10 +43,10 @@
         <bpmn2:inputDataItem xsi:type="bpmn2:tDataInput" id="var" itemSubjectRef="_multiInstanceItem"/>
       </bpmn2:multiInstanceLoopCharacteristics>
 
-      <bpmn2:startEvent id="_3-1" drools:bgcolor="#9acd32" drools:selectable="true" name="Inside Start"/>
-      <bpmn2:sequenceFlow id="_3-1-_3-2" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_3-1" targetRef="_3-2"/>
+      <bpmn2:startEvent id="_3-1" automatik:bgcolor="#9acd32" automatik:selectable="true" name="Inside Start"/>
+      <bpmn2:sequenceFlow id="_3-1-_3-2" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_3-1" targetRef="_3-2"/>
 
-      <bpmn2:userTask id="_3-2" drools:selectable="true" drools:taskName="HumanTask" drools:scriptFormat="http://www.java.com/java" name="Human Task">
+      <bpmn2:userTask id="_3-2" automatik:selectable="true" automatik:taskName="HumanTask" automatik:scriptFormat="http://www.java.com/java" name="Human Task">
         <bpmn2:ioSpecification id="_subProc-userTask-ioSpec">
           <bpmn2:dataInput id="_3-2_TaskNameInput" name="TaskName"/>
           <bpmn2:inputSet id="_subProc-userTask-ioSpec-input"/>
@@ -65,14 +65,14 @@
           </bpmn2:resourceAssignmentExpression>
         </bpmn2:potentialOwner>
       </bpmn2:userTask>
-      <bpmn2:sequenceFlow id="_3-2-_3-3" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_3-2" targetRef="_3-3"/>
+      <bpmn2:sequenceFlow id="_3-2-_3-3" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_3-2" targetRef="_3-3"/>
 
-      <bpmn2:endEvent id="_3-3" drools:bgcolor="#ff6347" drools:selectable="true" name="Inside End"/>
+      <bpmn2:endEvent id="_3-3" automatik:bgcolor="#ff6347" automatik:selectable="true" name="Inside End"/>
 
     </bpmn2:subProcess>
-    <bpmn2:sequenceFlow id="_3-_4" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_3" targetRef="_4"/>
+    <bpmn2:sequenceFlow id="_3-_4" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_3" targetRef="_4"/>
 
-    <bpmn2:endEvent id="_4" drools:bgcolor="#ff6347" drools:selectable="true" name="End"/>
+    <bpmn2:endEvent id="_4" automatik:bgcolor="#ff6347" automatik:selectable="true" name="End"/>
 
   </bpmn2:process>
   

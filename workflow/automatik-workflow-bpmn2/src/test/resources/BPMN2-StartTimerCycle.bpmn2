@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools" id="_FNr5sGhrEeGMT7sG7hEI2w" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd" targetNamespace="http://www.omg.org/bpmn20">
-  <bpmn2:process id="defaultPackage.TimerProcess" drools:packageName="defaultPackage" name="TimerProcess" isExecutable="true">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io" id="_FNr5sGhrEeGMT7sG7hEI2w" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd" targetNamespace="http://www.omg.org/bpmn20">
+  <bpmn2:process id="defaultPackage.TimerProcess" automatik:packageName="defaultPackage" name="TimerProcess" isExecutable="true">
     <bpmn2:scriptTask id="_F3AC9894-09DE-4843-B067-10C517748321" name="Start" scriptFormat="http://www.java.com/java">
       <bpmn2:incoming>_A3317C84-4084-4AD3-AEC2-B05731E3F8FB</bpmn2:incoming>
       <bpmn2:outgoing>_D50AB330-24FD-4949-A212-4345842ACBFC</bpmn2:outgoing>
       <bpmn2:script><![CDATA[System.out.println("timer process start");]]></bpmn2:script>
     </bpmn2:scriptTask>
-    <bpmn2:intermediateCatchEvent id="_F85E4F62-3894-464A-B5A8-5BA641BF8981" drools:bgcolor="#ffffff" drools:boundaryca="false" name="">
+    <bpmn2:intermediateCatchEvent id="_F85E4F62-3894-464A-B5A8-5BA641BF8981" automatik:bgcolor="#ffffff" automatik:boundaryca="false" name="">
       <bpmn2:incoming>_D50AB330-24FD-4949-A212-4345842ACBFC</bpmn2:incoming>
       <bpmn2:outgoing>_4428B579-D616-4B1D-BCEC-0ECD6E062822</bpmn2:outgoing>
       <bpmn2:timerEventDefinition id="_FNr5sWhrEeGMT7sG7hEI2w">
@@ -20,11 +20,11 @@
       <bpmn2:script><![CDATA[System.out.println("timer process end");]]></bpmn2:script>
     </bpmn2:scriptTask>
     <bpmn2:sequenceFlow id="_4428B579-D616-4B1D-BCEC-0ECD6E062822" sourceRef="_F85E4F62-3894-464A-B5A8-5BA641BF8981" targetRef="_E76AD186-6FA6-4378-B45B-C8F73E2C497C"/>
-    <bpmn2:endEvent id="_7232FBCC-81DD-4DEF-91DD-5D1D415117F8" drools:bgcolor="#ffffff" name="">
+    <bpmn2:endEvent id="_7232FBCC-81DD-4DEF-91DD-5D1D415117F8" automatik:bgcolor="#ffffff" name="">
       <bpmn2:incoming>_85A5CC49-2B8B-440F-9F1D-145C7D807F6B</bpmn2:incoming>
     </bpmn2:endEvent>
     <bpmn2:sequenceFlow id="_85A5CC49-2B8B-440F-9F1D-145C7D807F6B" sourceRef="_E76AD186-6FA6-4378-B45B-C8F73E2C497C" targetRef="_7232FBCC-81DD-4DEF-91DD-5D1D415117F8"/>
-    <bpmn2:startEvent id="_F9AC8B12-8E75-49B5-B799-292F66270627" drools:bgcolor="#ffffff" name="start">
+    <bpmn2:startEvent id="_F9AC8B12-8E75-49B5-B799-292F66270627" automatik:bgcolor="#ffffff" name="start">
       <bpmn2:outgoing>_A3317C84-4084-4AD3-AEC2-B05731E3F8FB</bpmn2:outgoing>
       <bpmn2:timerEventDefinition id="_FNr5s2hrEeGMT7sG7hEI2w">
         <bpmn2:timeCycle xsi:type="bpmn2:tFormalExpression" id="_FNr5tGhrEeGMT7sG7hEI2w">2000</bpmn2:timeCycle>

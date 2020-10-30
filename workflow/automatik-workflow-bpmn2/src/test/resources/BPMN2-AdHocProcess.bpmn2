@@ -8,7 +8,7 @@
              xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
              xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
              xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-             xmlns:tns="http://www.jboss.org/drools">
+             xmlns:tns="https://automatik-platform.io">
 
   <process processType="Private" isExecutable="true" id="AdHocProcess" name="AdHoc" tns:adHoc="true">
 
@@ -40,10 +40,10 @@
 
     <!-- connections -->
     <sequenceFlow id="_7-_5" sourceRef="_7" targetRef="_5" name="default" >
-      <conditionExpression xsi:type="tFormalExpression" language="http://www.jboss.org/drools/rule" >not org.jbpm.bpmn2.objects.Person()</conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression" language="https://automatik-platform.io/rule" >not org.jbpm.bpmn2.objects.Person()</conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="_7-_6" sourceRef="_7" targetRef="_6" name="Person" >
-      <conditionExpression xsi:type="tFormalExpression" language="http://www.jboss.org/drools/rule" >org.jbpm.bpmn2.objects.Person()</conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression" language="https://automatik-platform.io/rule" >org.jbpm.bpmn2.objects.Person()</conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="_4-_7" sourceRef="_4" targetRef="_7" />
 

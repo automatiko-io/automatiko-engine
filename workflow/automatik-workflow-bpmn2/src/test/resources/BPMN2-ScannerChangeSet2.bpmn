@@ -5,11 +5,11 @@
              xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd"
-             xmlns:g="http://www.jboss.org/drools/flow/gpd"
+             xmlns:g="https://automatik-platform.io/flow/gpd"
              xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
              xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
              xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-             xmlns:tns="http://www.jboss.org/drools">
+             xmlns:tns="https://automatik-platform.io">
 
   <process processType="Private" isExecutable="true" id="bpmn" name="flow" tns:packageName="com.sample" >
 
@@ -59,13 +59,13 @@
     <sequenceFlow id="_26-_23" sourceRef="_26" targetRef="_23" />
     <sequenceFlow id="_2-_22" sourceRef="_2" targetRef="_22" />
     <sequenceFlow id="_22-_24" sourceRef="_22" targetRef="_24" name="and" >
-      <conditionExpression xsi:type="tFormalExpression" language="http://www.jboss.org/drools/rule" >org.jbpm.bpmn2.ScannerChangeSetTest.Message( message matches 'AND' )</conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression" language="https://automatik-platform.io/rule" >org.jbpm.bpmn2.ScannerChangeSetTest.Message( message matches 'AND' )</conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="_22-_27" sourceRef="_22" targetRef="_27" name="xor" >
-      <conditionExpression xsi:type="tFormalExpression" language="http://www.jboss.org/drools/rule" >org.jbpm.bpmn2.ScannerChangeSetTest.Message( message == "XOR" )</conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression" language="https://automatik-platform.io/rule" >org.jbpm.bpmn2.ScannerChangeSetTest.Message( message == "XOR" )</conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="_22-_26" sourceRef="_22" targetRef="_26" name="end" tns:priority="10" >
-      <conditionExpression xsi:type="tFormalExpression" language="http://www.jboss.org/drools/rule" >eval(true)</conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression" language="https://automatik-platform.io/rule" >eval(true)</conditionExpression>
     </sequenceFlow>
 
   </process>

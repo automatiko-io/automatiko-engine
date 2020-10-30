@@ -1,69 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools" id="_nSHFIE5KEeSzl7DO_eaUkw" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd http://www.jboss.org/drools drools.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io" id="_nSHFIE5KEeSzl7DO_eaUkw" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatik-platform.io automatik.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
   <bpmn2:itemDefinition id="_checkItem" structureRef="Boolean"/>
   <bpmn2:signal id="SigOne" name="SigOne"/>
-  <bpmn2:process id="NEFTissue.InvalidEmdeddedSubProcess" drools:packageName="org.jbpm" drools:version="1.0" name="InvalidEmdeddedSubProcess" isExecutable="true">
+  <bpmn2:process id="NEFTissue.InvalidEmdeddedSubProcess" automatik:packageName="org.jbpm" automatik:version="1.0" name="InvalidEmdeddedSubProcess" isExecutable="true">
     <bpmn2:property id="check" itemSubjectRef="_checkItem"/>
-    <bpmn2:subProcess id="_808E4877-70FB-475D-BEDA-3EB40042D26B" drools:selectable="true" name="SubEmbedded">
+    <bpmn2:subProcess id="_808E4877-70FB-475D-BEDA-3EB40042D26B" automatik:selectable="true" name="SubEmbedded">
       <bpmn2:extensionElements>
-        <drools:onEntry-script scriptFormat="http://www.java.com/java">
-          <drools:script><![CDATA[System.out.println("About to enter Embedded SubProcess...");]]></drools:script>
-        </drools:onEntry-script>
-        <drools:onExit-script scriptFormat="http://www.java.com/java">
-          <drools:script><![CDATA[System.out.println("Exited from Embedded SubProcess...");]]></drools:script>
-        </drools:onExit-script>
+        <automatik:onEntry-script scriptFormat="http://www.java.com/java">
+          <automatik:script><![CDATA[System.out.println("About to enter Embedded SubProcess...");]]></automatik:script>
+        </automatik:onEntry-script>
+        <automatik:onExit-script scriptFormat="http://www.java.com/java">
+          <automatik:script><![CDATA[System.out.println("Exited from Embedded SubProcess...");]]></automatik:script>
+        </automatik:onExit-script>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_3CBE1528-76E8-4526-A738-29E2228EE4CB</bpmn2:incoming>
-      <bpmn2:startEvent id="_F7799CCA-8283-4C06-9B97-72E481BDB878" drools:bgcolor="#9acd32" drools:selectable="true" name="StartEmb">
+      <bpmn2:startEvent id="_F7799CCA-8283-4C06-9B97-72E481BDB878" automatik:bgcolor="#9acd32" automatik:selectable="true" name="StartEmb">
         <bpmn2:outgoing>_60D77CCE-7C1C-4E35-B261-004C68AB109B</bpmn2:outgoing>
       </bpmn2:startEvent>
-      <bpmn2:scriptTask id="_30508139-637D-4B15-AC6F-9C2EF9A6F2D3" drools:selectable="true" name="ScriptEmd" scriptFormat="http://www.java.com/java">
+      <bpmn2:scriptTask id="_30508139-637D-4B15-AC6F-9C2EF9A6F2D3" automatik:selectable="true" name="ScriptEmd" scriptFormat="http://www.java.com/java">
         <bpmn2:incoming>_96CE8FF2-3E3D-4E86-AFE5-654850E1FCCC</bpmn2:incoming>
         <bpmn2:outgoing>_AD0FB1AB-A355-429F-9B57-CC787C855739</bpmn2:outgoing>
         <bpmn2:script><![CDATA[System.out.println("Inside Embedded SubProcess...");]]></bpmn2:script>
       </bpmn2:scriptTask>
-      <bpmn2:endEvent id="_C7AA7EB7-EC6F-477B-B958-B0E4942A5707" drools:bgcolor="#ff6347" drools:selectable="true" name="ThrowSigOne">
+      <bpmn2:endEvent id="_C7AA7EB7-EC6F-477B-B958-B0E4942A5707" automatik:bgcolor="#ff6347" automatik:selectable="true" name="ThrowSigOne">
         <bpmn2:incoming>_AD0FB1AB-A355-429F-9B57-CC787C855739</bpmn2:incoming>
         <bpmn2:signalEventDefinition id="_nSHFIU5KEeSzl7DO_eaUkw" signalRef="SigOne"/>
       </bpmn2:endEvent>
-      <bpmn2:scriptTask id="_F3021A14-0257-4782-B99E-6F7684A6361E" drools:selectable="true" name="ScriptTerminateEmd" scriptFormat="http://www.java.com/java">
+      <bpmn2:scriptTask id="_F3021A14-0257-4782-B99E-6F7684A6361E" automatik:selectable="true" name="ScriptTerminateEmd" scriptFormat="http://www.java.com/java">
         <bpmn2:incoming>_0377EAF7-A646-4CEB-AD62-EFF9571998F2</bpmn2:incoming>
         <bpmn2:outgoing>_A697A15D-870C-4553-84BB-9819529A0BD4</bpmn2:outgoing>
         <bpmn2:script><![CDATA[System.out.println("Printing this from Termination branch of Embedded SubProcess ... ");]]></bpmn2:script>
       </bpmn2:scriptTask>
-      <bpmn2:endEvent id="_7EE16DFA-4586-4413-8F97-C2EF24B25632" drools:bgcolor="#ff6347" drools:selectable="true" name="EndSub">
+      <bpmn2:endEvent id="_7EE16DFA-4586-4413-8F97-C2EF24B25632" automatik:bgcolor="#ff6347" automatik:selectable="true" name="EndSub">
         <bpmn2:incoming>_A697A15D-870C-4553-84BB-9819529A0BD4</bpmn2:incoming>
       </bpmn2:endEvent>
-      <bpmn2:exclusiveGateway id="_7D18D460-36F4-484C-A1C9-6E4F20ADE6D9" drools:bgcolor="#f0e68c" drools:selectable="true" drools:bordercolor="#a67f00" drools:dg="" name="Cond" gatewayDirection="Diverging">
+      <bpmn2:exclusiveGateway id="_7D18D460-36F4-484C-A1C9-6E4F20ADE6D9" automatik:bgcolor="#f0e68c" automatik:selectable="true" automatik:bordercolor="#a67f00" automatik:dg="" name="Cond" gatewayDirection="Diverging">
         <bpmn2:incoming>_60D77CCE-7C1C-4E35-B261-004C68AB109B</bpmn2:incoming>
         <bpmn2:outgoing>_96CE8FF2-3E3D-4E86-AFE5-654850E1FCCC</bpmn2:outgoing>
         <bpmn2:outgoing>_0377EAF7-A646-4CEB-AD62-EFF9571998F2</bpmn2:outgoing>
       </bpmn2:exclusiveGateway>
-      <bpmn2:sequenceFlow id="_AD0FB1AB-A355-429F-9B57-CC787C855739" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_30508139-637D-4B15-AC6F-9C2EF9A6F2D3" targetRef="_C7AA7EB7-EC6F-477B-B958-B0E4942A5707"/>
-      <bpmn2:sequenceFlow id="_60D77CCE-7C1C-4E35-B261-004C68AB109B" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_F7799CCA-8283-4C06-9B97-72E481BDB878" targetRef="_7D18D460-36F4-484C-A1C9-6E4F20ADE6D9"/>
-      <bpmn2:sequenceFlow id="_96CE8FF2-3E3D-4E86-AFE5-654850E1FCCC" drools:bgcolor="#000000" drools:selectable="true" name="Salvation" sourceRef="_7D18D460-36F4-484C-A1C9-6E4F20ADE6D9" targetRef="_30508139-637D-4B15-AC6F-9C2EF9A6F2D3">
+      <bpmn2:sequenceFlow id="_AD0FB1AB-A355-429F-9B57-CC787C855739" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_30508139-637D-4B15-AC6F-9C2EF9A6F2D3" targetRef="_C7AA7EB7-EC6F-477B-B958-B0E4942A5707"/>
+      <bpmn2:sequenceFlow id="_60D77CCE-7C1C-4E35-B261-004C68AB109B" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_F7799CCA-8283-4C06-9B97-72E481BDB878" targetRef="_7D18D460-36F4-484C-A1C9-6E4F20ADE6D9"/>
+      <bpmn2:sequenceFlow id="_96CE8FF2-3E3D-4E86-AFE5-654850E1FCCC" automatik:bgcolor="#000000" automatik:selectable="true" name="Salvation" sourceRef="_7D18D460-36F4-484C-A1C9-6E4F20ADE6D9" targetRef="_30508139-637D-4B15-AC6F-9C2EF9A6F2D3">
         <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="_nSHFIk5KEeSzl7DO_eaUkw" language="http://www.java.com/java"><![CDATA[return  KieFunctions.isFalse(check);]]></bpmn2:conditionExpression>
       </bpmn2:sequenceFlow>
-      <bpmn2:sequenceFlow id="_0377EAF7-A646-4CEB-AD62-EFF9571998F2" drools:bgcolor="#000000" drools:selectable="true" name="Termination" sourceRef="_7D18D460-36F4-484C-A1C9-6E4F20ADE6D9" targetRef="_F3021A14-0257-4782-B99E-6F7684A6361E">
+      <bpmn2:sequenceFlow id="_0377EAF7-A646-4CEB-AD62-EFF9571998F2" automatik:bgcolor="#000000" automatik:selectable="true" name="Termination" sourceRef="_7D18D460-36F4-484C-A1C9-6E4F20ADE6D9" targetRef="_F3021A14-0257-4782-B99E-6F7684A6361E">
         <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="_nSHsME5KEeSzl7DO_eaUkw" language="http://www.java.com/java"><![CDATA[return  KieFunctions.isTrue(check);]]></bpmn2:conditionExpression>
       </bpmn2:sequenceFlow>
-      <bpmn2:sequenceFlow id="_A697A15D-870C-4553-84BB-9819529A0BD4" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_F3021A14-0257-4782-B99E-6F7684A6361E" targetRef="_7EE16DFA-4586-4413-8F97-C2EF24B25632"/>
+      <bpmn2:sequenceFlow id="_A697A15D-870C-4553-84BB-9819529A0BD4" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_F3021A14-0257-4782-B99E-6F7684A6361E" targetRef="_7EE16DFA-4586-4413-8F97-C2EF24B25632"/>
     </bpmn2:subProcess>
-    <bpmn2:sequenceFlow id="_3CBE1528-76E8-4526-A738-29E2228EE4CB" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_0DF7A66A-60DC-4537-92D3-BA2A526F6181" targetRef="_808E4877-70FB-475D-BEDA-3EB40042D26B"/>
-    <bpmn2:scriptTask id="_34526553-00C3-43F7-9936-E2A23C377EAF" drools:selectable="true" name="ScriptMain" scriptFormat="http://www.java.com/java">
+    <bpmn2:sequenceFlow id="_3CBE1528-76E8-4526-A738-29E2228EE4CB" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_0DF7A66A-60DC-4537-92D3-BA2A526F6181" targetRef="_808E4877-70FB-475D-BEDA-3EB40042D26B"/>
+    <bpmn2:scriptTask id="_34526553-00C3-43F7-9936-E2A23C377EAF" automatik:selectable="true" name="ScriptMain" scriptFormat="http://www.java.com/java">
       <bpmn2:incoming>_425CF53B-E444-4817-89EB-7F44DD379619</bpmn2:incoming>
       <bpmn2:outgoing>_2A161DC6-8E45-451C-B4D5-146B6A53917C</bpmn2:outgoing>
       <bpmn2:script><![CDATA[System.out.println("Outiside of Embedded SubProcess...");]]></bpmn2:script>
     </bpmn2:scriptTask>
-    <bpmn2:sequenceFlow id="_425CF53B-E444-4817-89EB-7F44DD379619" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_DE0B09CB-619A-468B-BFFD-F04EB43A3050" targetRef="_34526553-00C3-43F7-9936-E2A23C377EAF"/>
-    <bpmn2:endEvent id="_D3E1F03D-B0A2-49CD-B29F-E6AEB3665938" drools:bgcolor="#ff6347" drools:selectable="true" name="EndMain">
+    <bpmn2:sequenceFlow id="_425CF53B-E444-4817-89EB-7F44DD379619" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_DE0B09CB-619A-468B-BFFD-F04EB43A3050" targetRef="_34526553-00C3-43F7-9936-E2A23C377EAF"/>
+    <bpmn2:endEvent id="_D3E1F03D-B0A2-49CD-B29F-E6AEB3665938" automatik:bgcolor="#ff6347" automatik:selectable="true" name="EndMain">
       <bpmn2:incoming>_2A161DC6-8E45-451C-B4D5-146B6A53917C</bpmn2:incoming>
     </bpmn2:endEvent>
-    <bpmn2:sequenceFlow id="_2A161DC6-8E45-451C-B4D5-146B6A53917C" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_34526553-00C3-43F7-9936-E2A23C377EAF" targetRef="_D3E1F03D-B0A2-49CD-B29F-E6AEB3665938"/>
-    <bpmn2:startEvent id="_0DF7A66A-60DC-4537-92D3-BA2A526F6181" drools:bgcolor="#9acd32" drools:selectable="true" name="StartMain">
+    <bpmn2:sequenceFlow id="_2A161DC6-8E45-451C-B4D5-146B6A53917C" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_34526553-00C3-43F7-9936-E2A23C377EAF" targetRef="_D3E1F03D-B0A2-49CD-B29F-E6AEB3665938"/>
+    <bpmn2:startEvent id="_0DF7A66A-60DC-4537-92D3-BA2A526F6181" automatik:bgcolor="#9acd32" automatik:selectable="true" name="StartMain">
       <bpmn2:outgoing>_3CBE1528-76E8-4526-A738-29E2228EE4CB</bpmn2:outgoing>
     </bpmn2:startEvent>
-    <bpmn2:boundaryEvent id="_DE0B09CB-619A-468B-BFFD-F04EB43A3050" drools:bgcolor="#f5deb3" drools:selectable="true" drools:bordercolor="#a0522d" drools:boundaryca="false" name="CatchSigOne" attachedToRef="_808E4877-70FB-475D-BEDA-3EB40042D26B" cancelActivity="false">
+    <bpmn2:boundaryEvent id="_DE0B09CB-619A-468B-BFFD-F04EB43A3050" automatik:bgcolor="#f5deb3" automatik:selectable="true" automatik:bordercolor="#a0522d" automatik:boundaryca="false" name="CatchSigOne" attachedToRef="_808E4877-70FB-475D-BEDA-3EB40042D26B" cancelActivity="false">
       <bpmn2:outgoing>_425CF53B-E444-4817-89EB-7F44DD379619</bpmn2:outgoing>
       <bpmn2:signalEventDefinition id="_nSHsMU5KEeSzl7DO_eaUkw" signalRef="SigOne"/>
     </bpmn2:boundaryEvent>

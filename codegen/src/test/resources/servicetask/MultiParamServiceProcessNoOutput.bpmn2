@@ -8,7 +8,7 @@
   xmlns:bpsim="http://www.bpsim.org/schemas/1.0"
   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-  xmlns:drools="http://www.jboss.org/drools">
+  xmlns:automatik="https://automatik-platform.io">
   <bpmn2:itemDefinition id="_nameItem"
     structureRef="String" />
   <bpmn2:itemDefinition id="_ageItem"
@@ -42,8 +42,8 @@
       <bpmn2:outMessageRef>_750337AF-3A39-4B58-9CA6-947FCE6E61DB_OutMessage</bpmn2:outMessageRef>
     </bpmn2:operation>
   </bpmn2:interface>
-  <bpmn2:process id="MultiParamServiceProcessNoOutput" drools:version="1.0"
-    drools:adHoc="false" name="Multip Params service task"
+  <bpmn2:process id="MultiParamServiceProcessNoOutput" automatik:version="1.0"
+    automatik:adHoc="false" name="Multip Params service task"
     isExecutable="true" processType="Public">
     <bpmn2:property id="name" itemSubjectRef="_nameItem"
       name="name" />
@@ -54,12 +54,12 @@
       sourceRef="_750337AF-3A39-4B58-9CA6-947FCE6E61DB"
       targetRef="_DC890802-5A77-47F4-BEA8-A2AA34DDD8EC">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.source">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
-        <drools:metaData name="isAutoConnection.target">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.source">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
+        <automatik:metaData name="isAutoConnection.target">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow
@@ -67,12 +67,12 @@
       sourceRef="_08E6A86F-0A12-49EE-AB48-E972FEB9D989"
       targetRef="_750337AF-3A39-4B58-9CA6-947FCE6E61DB">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.source">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
-        <drools:metaData name="isAutoConnection.target">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.source">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
+        <automatik:metaData name="isAutoConnection.target">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
     </bpmn2:sequenceFlow>
     <bpmn2:endEvent
@@ -82,14 +82,14 @@
     </bpmn2:endEvent>
     <bpmn2:serviceTask
       id="_750337AF-3A39-4B58-9CA6-947FCE6E61DB"
-      drools:serviceimplementation="Java"
-      drools:serviceinterface="org.acme.travels.services.HelloService"
-      drools:serviceoperation="hello" name="Task" implementation="Java"
+      automatik:serviceimplementation="Java"
+      automatik:serviceinterface="org.acme.travels.services.HelloService"
+      automatik:serviceoperation="hello" name="Task" implementation="Java"
       operationRef="_750337AF-3A39-4B58-9CA6-947FCE6E61DB_ServiceOperation">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[Task]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Task]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_6B02D1C2-1814-4F49-9669-4BBB023E704B
       </bpmn2:incoming>
@@ -99,12 +99,12 @@
         id="_2qKRcPDaEDeJSJzp9Tra4w">
         <bpmn2:dataInput
           id="_750337AF-3A39-4B58-9CA6-947FCE6E61DB_nameInputX"
-          drools:dtype="String"
+          automatik:dtype="String"
           itemSubjectRef="__750337AF-3A39-4B58-9CA6-947FCE6E61DB_nameInputXItem"
           name="name" />
         <bpmn2:dataInput
           id="_750337AF-3A39-4B58-9CA6-947FCE6E61DB_ageInputX"
-          drools:dtype="Integer"
+          automatik:dtype="Integer"
           itemSubjectRef="__750337AF-3A39-4B58-9CA6-947FCE6E61DB_ageInputXItem"
           name="age" />
         <bpmn2:inputSet id="_2qKRcfDaEDeJSJzp9Tra4w">

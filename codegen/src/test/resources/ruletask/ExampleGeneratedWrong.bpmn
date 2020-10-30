@@ -9,62 +9,62 @@
   <bpmn2:itemDefinition id="__5293F325-A06A-469B-8C31-1E79EE36A3E2_namespaceInputXItem" structureRef="java.lang.String"/>
   <bpmn2:itemDefinition id="__5293F325-A06A-469B-8C31-1E79EE36A3E2_modelInputXItem" structureRef="java.lang.String"/>
   <bpmn2:itemDefinition id="__5293F325-A06A-469B-8C31-1E79EE36A3E2_decisionInputXItem" structureRef="java.lang.String"/>
-  <bpmn2:process id="ruletask.ExampleGenerated" drools:packageName="ruletask" xmlns:drools="http://www.jboss.org/drools" drools:version="1.0" drools:adHoc="false" name="ExampleGenerated" isExecutable="true" processType="Public">
+  <bpmn2:process id="ruletask.ExampleGenerated" automatik:packageName="ruletask" xmlns:automatik="https://automatik-platform.io" automatik:version="1.0" automatik:adHoc="false" name="ExampleGenerated" isExecutable="true" processType="Public">
     <bpmn2:property id="singleString" itemSubjectRef="_singleStringItem" name="singleString"/>
     <bpmn2:property id="singlePerson" itemSubjectRef="_singlePersonItem" name="singlePerson"/>
     <bpmn2:sequenceFlow id="_D8A8D35C-3BBE-461E-8C67-682A3CEE6ACD" sourceRef="_5293F325-A06A-469B-8C31-1E79EE36A3E2" targetRef="_B89C98A9-F577-4B07-BB72-52283EE38A77">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.source">
-          <drools:metaValue>true</drools:metaValue>
-        </drools:metaData>
-        <drools:metaData name="isAutoConnection.target">
-          <drools:metaValue>true</drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.source">
+          <automatik:metaValue>true</automatik:metaValue>
+        </automatik:metaData>
+        <automatik:metaData name="isAutoConnection.target">
+          <automatik:metaValue>true</automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="_587C3E93-D988-4692-AAD3-954FD9254EEC" sourceRef="_5E0A1111-5D38-4B9F-AFDE-F55CC99B9952" targetRef="_5293F325-A06A-469B-8C31-1E79EE36A3E2">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.source">
-          <drools:metaValue>true</drools:metaValue>
-        </drools:metaData>
-        <drools:metaData name="isAutoConnection.target">
-          <drools:metaValue>true</drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.source">
+          <automatik:metaValue>true</automatik:metaValue>
+        </automatik:metaData>
+        <automatik:metaData name="isAutoConnection.target">
+          <automatik:metaValue>true</automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="_0390D294-D66C-4ED6-89CB-C22BE74B6ACD" sourceRef="_AB221175-4773-4CD7-96FF-867312DAA65D" targetRef="_5E0A1111-5D38-4B9F-AFDE-F55CC99B9952">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.source">
-          <drools:metaValue>true</drools:metaValue>
-        </drools:metaData>
-        <drools:metaData name="isAutoConnection.target">
-          <drools:metaValue>true</drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.source">
+          <automatik:metaValue>true</automatik:metaValue>
+        </automatik:metaData>
+        <automatik:metaData name="isAutoConnection.target">
+          <automatik:metaValue>true</automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
     </bpmn2:sequenceFlow>
     <bpmn2:endEvent id="_B89C98A9-F577-4B07-BB72-52283EE38A77">
       <bpmn2:incoming>_D8A8D35C-3BBE-461E-8C67-682A3CEE6ACD</bpmn2:incoming>
     </bpmn2:endEvent>
-    <bpmn2:businessRuleTask id="_5293F325-A06A-469B-8C31-1E79EE36A3E2" drools:ruleFlowGroup="unit:ruletask.Generated" name="Rule2" implementation="http://www.jboss.org/drools/rule">
+    <bpmn2:businessRuleTask id="_5293F325-A06A-469B-8C31-1E79EE36A3E2" automatik:ruleFlowGroup="unit:ruletask.Generated" name="Rule2" implementation="https://automatik-platform.io/rule">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue>Rule2</drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue>Rule2</automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_587C3E93-D988-4692-AAD3-954FD9254EEC</bpmn2:incoming>
       <bpmn2:outgoing>_D8A8D35C-3BBE-461E-8C67-682A3CEE6ACD</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_KeNWgE8cEDijEJ-Gu4czCw"/>
     </bpmn2:businessRuleTask>
-    <bpmn2:businessRuleTask id="_5E0A1111-5D38-4B9F-AFDE-F55CC99B9952" drools:ruleFlowGroup="unit:ruletask.Generated" name="Rule1" implementation="http://www.jboss.org/drools/rule">
+    <bpmn2:businessRuleTask id="_5E0A1111-5D38-4B9F-AFDE-F55CC99B9952" automatik:ruleFlowGroup="unit:ruletask.Generated" name="Rule1" implementation="https://automatik-platform.io/rule">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue>Rule1</drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue>Rule1</automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_0390D294-D66C-4ED6-89CB-C22BE74B6ACD</bpmn2:incoming>
       <bpmn2:outgoing>_587C3E93-D988-4692-AAD3-954FD9254EEC</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_KePLsE8cEDijEJ-Gu4czCw">
-        <bpmn2:dataInput id="_5E0A1111-5D38-4B9F-AFDE-F55CC99B9952_singleInputX" drools:dtype="String" itemSubjectRef="__5E0A1111-5D38-4B9F-AFDE-F55CC99B9952_singleInputXItem" name="single"/>
+        <bpmn2:dataInput id="_5E0A1111-5D38-4B9F-AFDE-F55CC99B9952_singleInputX" automatik:dtype="String" itemSubjectRef="__5E0A1111-5D38-4B9F-AFDE-F55CC99B9952_singleInputXItem" name="single"/>
         <bpmn2:inputSet id="_KePywE8cEDijEJ-Gu4czCw">
           <bpmn2:dataInputRefs>_5E0A1111-5D38-4B9F-AFDE-F55CC99B9952_singleInputX</bpmn2:dataInputRefs>
         </bpmn2:inputSet>

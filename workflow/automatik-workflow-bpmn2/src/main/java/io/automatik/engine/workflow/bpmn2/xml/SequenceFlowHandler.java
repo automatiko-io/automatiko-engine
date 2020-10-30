@@ -58,7 +58,7 @@ public class SequenceFlowHandler extends BaseAbstractHandler implements Handler 
 		final String targetRef = attrs.getValue("targetRef");
 		final String bendpoints = attrs.getValue("g:bendpoints");
 		final String name = attrs.getValue("name");
-		final String priority = attrs.getValue("http://www.jboss.org/drools", "priority");
+		final String priority = attrs.getValue("https://automatik-platform.io", "priority");
 
 		NodeContainer nodeContainer = (NodeContainer) parser.getParent();
 

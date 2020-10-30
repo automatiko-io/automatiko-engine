@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmn20="http://www.omg.org/bpmn20" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools" xmlns="http://www.jboss.org/drools" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd http://www.jboss.org/drools drools.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" id="_jGtVEOiwEeSi1Zv8XOUApg" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmn20="http://www.omg.org/bpmn20" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io" xmlns="https://automatik-platform.io" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatik-platform.io automatik.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" id="_jGtVEOiwEeSi1Zv8XOUApg" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
   <bpmn2:itemDefinition id="_testListItem" structureRef="java.util.List"/>
   <bpmn2:itemDefinition id="_resultMapItem" structureRef="java.util.Map"/>
   <bpmn2:itemDefinition id="_18367EE1-FEB9-414C-A58D-95EAB07D448C_multiInstanceItemType"/>
-  <bpmn2:process id="sub_variable.sub_variables" drools:version="1.0" drools:packageName="org.jbpm" drools:adHoc="false" name="sub_variables" isExecutable="true">
+  <bpmn2:process id="sub_variable.sub_variables" automatik:version="1.0" automatik:packageName="org.jbpm" automatik:adHoc="false" name="sub_variables" isExecutable="true">
     <bpmn2:property id="testList" itemSubjectRef="_testListItem"/>
-    <bpmn2:startEvent id="processStartEvent" drools:bgcolor="#9acd32" drools:selectable="true" name="">
+    <bpmn2:startEvent id="processStartEvent" automatik:bgcolor="#9acd32" automatik:selectable="true" name="">
       <bpmn2:outgoing>_386FCFB5-0699-449B-996D-596F61D0D840</bpmn2:outgoing>
     </bpmn2:startEvent>
-    <bpmn2:subProcess id="_18367EE1-FEB9-414C-A58D-95EAB07D448C" drools:selectable="true" name="">
+    <bpmn2:subProcess id="_18367EE1-FEB9-414C-A58D-95EAB07D448C" automatik:selectable="true" name="">
       <bpmn2:incoming>_543D4DAB-AEBD-428D-8769-29E60927EB26</bpmn2:incoming>
       <bpmn2:outgoing>_27BC7114-7BF1-4B3D-B87F-F086DF0B24EA</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_jGtVEeiwEeSi1Zv8XOUApg">
@@ -27,15 +27,15 @@
         <bpmn2:loopDataInputRef>_18367EE1-FEB9-414C-A58D-95EAB07D448C_input</bpmn2:loopDataInputRef>
         <bpmn2:inputDataItem xsi:type="bpmn2:tDataInput" id="test" itemSubjectRef="_18367EE1-FEB9-414C-A58D-95EAB07D448C_multiInstanceItemType"/>
       </bpmn2:multiInstanceLoopCharacteristics>
-      <bpmn2:startEvent id="_369D1ABF-3BCA-4CC9-9B86-84D933484972" drools:bgcolor="#9acd32" drools:selectable="true" name="">
+      <bpmn2:startEvent id="_369D1ABF-3BCA-4CC9-9B86-84D933484972" automatik:bgcolor="#9acd32" automatik:selectable="true" name="">
         <bpmn2:outgoing>_08DC8EAB-91AC-450B-B92D-917E9EDAC4A5</bpmn2:outgoing>
       </bpmn2:startEvent>
-      <bpmn2:scriptTask id="_DD90C75A-3138-4848-B53B-1B2C5B86A7B5" drools:selectable="true" name="Read Map" scriptFormat="http://www.java.com/java">
+      <bpmn2:scriptTask id="_DD90C75A-3138-4848-B53B-1B2C5B86A7B5" automatik:selectable="true" name="Read Map" scriptFormat="http://www.java.com/java">
         <bpmn2:incoming>_D6DD831B-A00B-4E5B-8A36-4BC7B26B8FA4</bpmn2:incoming>
         <bpmn2:outgoing>_0FDA6226-30EC-43DB-8347-89AB616F19DC</bpmn2:outgoing>
         <bpmn2:script>System.out.println(resultMap.get(&quot;key1&quot;));</bpmn2:script>
       </bpmn2:scriptTask>
-      <bpmn2:scriptTask id="_4B524E65-4673-40C1-935D-27784089A0E4" drools:selectable="true" name="init Map" scriptFormat="http://www.java.com/java">
+      <bpmn2:scriptTask id="_4B524E65-4673-40C1-935D-27784089A0E4" automatik:selectable="true" name="init Map" scriptFormat="http://www.java.com/java">
         <bpmn2:incoming>_08DC8EAB-91AC-450B-B92D-917E9EDAC4A5</bpmn2:incoming>
         <bpmn2:outgoing>_D6DD831B-A00B-4E5B-8A36-4BC7B26B8FA4</bpmn2:outgoing>
         <bpmn2:script>java.util.Map b = new java.util.HashMap();
@@ -44,14 +44,14 @@ b.put(&quot;key1&quot;,&quot;value1&quot;);
 
 kcontext.setVariable(&quot;resultMap&quot;,b);</bpmn2:script>
       </bpmn2:scriptTask>
-      <bpmn2:endEvent id="_CC27E4F5-72AE-47C7-8236-CA3D335FCF94" drools:bgcolor="#ff6347" drools:selectable="true" name="">
+      <bpmn2:endEvent id="_CC27E4F5-72AE-47C7-8236-CA3D335FCF94" automatik:bgcolor="#ff6347" automatik:selectable="true" name="">
         <bpmn2:incoming>_0FDA6226-30EC-43DB-8347-89AB616F19DC</bpmn2:incoming>
       </bpmn2:endEvent>
-      <bpmn2:sequenceFlow id="_0FDA6226-30EC-43DB-8347-89AB616F19DC" drools:priority="1" drools:bgcolor="#000000" drools:selectable="true" name="" sourceRef="_DD90C75A-3138-4848-B53B-1B2C5B86A7B5" targetRef="_CC27E4F5-72AE-47C7-8236-CA3D335FCF94"/>
-      <bpmn2:sequenceFlow id="_08DC8EAB-91AC-450B-B92D-917E9EDAC4A5" drools:priority="1" drools:bgcolor="#000000" drools:selectable="true" name="" sourceRef="_369D1ABF-3BCA-4CC9-9B86-84D933484972" targetRef="_4B524E65-4673-40C1-935D-27784089A0E4"/>
-      <bpmn2:sequenceFlow id="_D6DD831B-A00B-4E5B-8A36-4BC7B26B8FA4" drools:priority="1" drools:bgcolor="#000000" drools:selectable="true" name="" sourceRef="_4B524E65-4673-40C1-935D-27784089A0E4" targetRef="_DD90C75A-3138-4848-B53B-1B2C5B86A7B5"/>
+      <bpmn2:sequenceFlow id="_0FDA6226-30EC-43DB-8347-89AB616F19DC" automatik:priority="1" automatik:bgcolor="#000000" automatik:selectable="true" name="" sourceRef="_DD90C75A-3138-4848-B53B-1B2C5B86A7B5" targetRef="_CC27E4F5-72AE-47C7-8236-CA3D335FCF94"/>
+      <bpmn2:sequenceFlow id="_08DC8EAB-91AC-450B-B92D-917E9EDAC4A5" automatik:priority="1" automatik:bgcolor="#000000" automatik:selectable="true" name="" sourceRef="_369D1ABF-3BCA-4CC9-9B86-84D933484972" targetRef="_4B524E65-4673-40C1-935D-27784089A0E4"/>
+      <bpmn2:sequenceFlow id="_D6DD831B-A00B-4E5B-8A36-4BC7B26B8FA4" automatik:priority="1" automatik:bgcolor="#000000" automatik:selectable="true" name="" sourceRef="_4B524E65-4673-40C1-935D-27784089A0E4" targetRef="_DD90C75A-3138-4848-B53B-1B2C5B86A7B5"/>
     </bpmn2:subProcess>
-    <bpmn2:scriptTask id="_94441474-ED9A-4235-9D70-D6ED64A54D1C" drools:selectable="true" name="Init List" scriptFormat="http://www.java.com/java">
+    <bpmn2:scriptTask id="_94441474-ED9A-4235-9D70-D6ED64A54D1C" automatik:selectable="true" name="Init List" scriptFormat="http://www.java.com/java">
       <bpmn2:incoming>_386FCFB5-0699-449B-996D-596F61D0D840</bpmn2:incoming>
       <bpmn2:outgoing>_543D4DAB-AEBD-428D-8769-29E60927EB26</bpmn2:outgoing>
       <bpmn2:script>java.util.List a = new java.util.ArrayList();
@@ -59,12 +59,12 @@ a.add(&quot;str1&quot;);
 a.add(&quot;str2&quot;);
 kcontext.setVariable(&quot;testList&quot;,a);</bpmn2:script>
     </bpmn2:scriptTask>
-    <bpmn2:endEvent id="_6C9592AD-29AE-45F6-9A48-4AE5A8948543" drools:bgcolor="#ff6347" drools:selectable="true" name="">
+    <bpmn2:endEvent id="_6C9592AD-29AE-45F6-9A48-4AE5A8948543" automatik:bgcolor="#ff6347" automatik:selectable="true" name="">
       <bpmn2:incoming>_27BC7114-7BF1-4B3D-B87F-F086DF0B24EA</bpmn2:incoming>
     </bpmn2:endEvent>
-    <bpmn2:sequenceFlow id="_27BC7114-7BF1-4B3D-B87F-F086DF0B24EA" drools:priority="1" drools:bgcolor="#000000" drools:selectable="true" name="" sourceRef="_18367EE1-FEB9-414C-A58D-95EAB07D448C" targetRef="_6C9592AD-29AE-45F6-9A48-4AE5A8948543"/>
-    <bpmn2:sequenceFlow id="_386FCFB5-0699-449B-996D-596F61D0D840" drools:priority="1" drools:bgcolor="#000000" drools:selectable="true" name="" sourceRef="processStartEvent" targetRef="_94441474-ED9A-4235-9D70-D6ED64A54D1C"/>
-    <bpmn2:sequenceFlow id="_543D4DAB-AEBD-428D-8769-29E60927EB26" drools:priority="1" drools:bgcolor="#000000" drools:selectable="true" name="" sourceRef="_94441474-ED9A-4235-9D70-D6ED64A54D1C" targetRef="_18367EE1-FEB9-414C-A58D-95EAB07D448C"/>
+    <bpmn2:sequenceFlow id="_27BC7114-7BF1-4B3D-B87F-F086DF0B24EA" automatik:priority="1" automatik:bgcolor="#000000" automatik:selectable="true" name="" sourceRef="_18367EE1-FEB9-414C-A58D-95EAB07D448C" targetRef="_6C9592AD-29AE-45F6-9A48-4AE5A8948543"/>
+    <bpmn2:sequenceFlow id="_386FCFB5-0699-449B-996D-596F61D0D840" automatik:priority="1" automatik:bgcolor="#000000" automatik:selectable="true" name="" sourceRef="processStartEvent" targetRef="_94441474-ED9A-4235-9D70-D6ED64A54D1C"/>
+    <bpmn2:sequenceFlow id="_543D4DAB-AEBD-428D-8769-29E60927EB26" automatik:priority="1" automatik:bgcolor="#000000" automatik:selectable="true" name="" sourceRef="_94441474-ED9A-4235-9D70-D6ED64A54D1C" targetRef="_18367EE1-FEB9-414C-A58D-95EAB07D448C"/>
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="_jGt8I-iwEeSi1Zv8XOUApg">
     <bpmndi:BPMNPlane id="_jGt8JOiwEeSi1Zv8XOUApg" bpmnElement="sub_variable.sub_variables">

@@ -43,7 +43,7 @@ import static org.mockito.Mockito.when;
 
 public class ApplicationGeneratorTest {
 
-	private static final String PACKAGE_NAME = "org.drools.test";
+	private static final String PACKAGE_NAME = "io.automatik.test";
 	private static final String EXPECTED_APPLICATION_NAME = PACKAGE_NAME + ".Application";
 
 	@Test

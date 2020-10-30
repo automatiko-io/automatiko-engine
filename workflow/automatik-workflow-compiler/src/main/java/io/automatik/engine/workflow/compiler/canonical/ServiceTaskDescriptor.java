@@ -64,7 +64,7 @@ public class ServiceTaskDescriptor {
         if (implementation.equalsIgnoreCase("##webservice")) {
             openapi = OpenAPIMetaData.of((String) workItemNode.getWork().getParameter("interfaceImplementationRef"));
 
-            interfaceName = "io.automatic.engine.app.rest." + StringUtils.capitalize(openapi.name());
+            interfaceName = "io.automatik.engine.app.rest." + StringUtils.capitalize(openapi.name());
             openapi.addOperation(operationName);
         }
 

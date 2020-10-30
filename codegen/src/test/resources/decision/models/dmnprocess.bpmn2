@@ -1,4 +1,4 @@
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools" id="_Y5NDwB81EDiXeq2AO6t0ng" exporter="jBPM Process Modeler" exporterVersion="2.0" targetNamespace="http://www.omg.org/bpmn20">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io" id="_Y5NDwB81EDiXeq2AO6t0ng" exporter="jBPM Process Modeler" exporterVersion="2.0" targetNamespace="http://www.omg.org/bpmn20">
   <bpmn2:itemDefinition id="_ageItem" structureRef="Integer"/>
   <bpmn2:itemDefinition id="_yearsOfServiceItem" structureRef="Integer"/>
   <bpmn2:itemDefinition id="_vacationDaysItem" structureRef="java.math.BigDecimal"/>
@@ -8,28 +8,28 @@
   <bpmn2:itemDefinition id="__3EDB5055-D95B-43D0-A87A-A827EE7229A7_AgeInputXItem" structureRef="Integer"/>
   <bpmn2:itemDefinition id="__3EDB5055-D95B-43D0-A87A-A827EE7229A7_Years-of-ServiceInputXItem" structureRef="Integer"/>
   <bpmn2:itemDefinition id="__3EDB5055-D95B-43D0-A87A-A827EE7229A7_Total-Vacation-DaysOutputXItem" structureRef="java.math.BigInteger"/>
-  <bpmn2:process id="DmnProcess" drools:packageName="decision" drools:version="1.0" drools:adHoc="false" name="DmnProcess" isExecutable="true" processType="Public">
+  <bpmn2:process id="DmnProcess" automatik:packageName="decision" automatik:version="1.0" automatik:adHoc="false" name="DmnProcess" isExecutable="true" processType="Public">
     <bpmn2:property id="age" itemSubjectRef="_ageItem" name="age"/>
     <bpmn2:property id="yearsOfService" itemSubjectRef="_yearsOfServiceItem" name="yearsOfService"/>
     <bpmn2:property id="vacationDays" itemSubjectRef="_vacationDaysItem" name="vacationDays"/>
     <bpmn2:sequenceFlow id="_14DB8038-D485-4BCE-BFD9-7A98B9DC3361" sourceRef="_3EDB5055-D95B-43D0-A87A-A827EE7229A7" targetRef="_C61E8BCD-A87D-4976-B519-FF3DB53CE306">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.source">
-          <drools:metaValue>true</drools:metaValue>
-        </drools:metaData>
-        <drools:metaData name="isAutoConnection.target">
-          <drools:metaValue>true</drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.source">
+          <automatik:metaValue>true</automatik:metaValue>
+        </automatik:metaData>
+        <automatik:metaData name="isAutoConnection.target">
+          <automatik:metaValue>true</automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="_BB6D2A53-9775-4654-AC1B-31E35737510A" sourceRef="_BF61E48E-A824-4D10-8198-A17D3F081B70" targetRef="_3EDB5055-D95B-43D0-A87A-A827EE7229A7">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.source">
-          <drools:metaValue>true</drools:metaValue>
-        </drools:metaData>
-        <drools:metaData name="isAutoConnection.target">
-          <drools:metaValue>true</drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.source">
+          <automatik:metaValue>true</automatik:metaValue>
+        </automatik:metaData>
+        <automatik:metaData name="isAutoConnection.target">
+          <automatik:metaValue>true</automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
     </bpmn2:sequenceFlow>
     <bpmn2:endEvent id="_C61E8BCD-A87D-4976-B519-FF3DB53CE306">
@@ -37,18 +37,18 @@
     </bpmn2:endEvent>
     <bpmn2:businessRuleTask id="_3EDB5055-D95B-43D0-A87A-A827EE7229A7" name="Task" implementation="http://www.jboss.org/drools/dmn">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue>Task</drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue>Task</automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_BB6D2A53-9775-4654-AC1B-31E35737510A</bpmn2:incoming>
       <bpmn2:outgoing>_14DB8038-D485-4BCE-BFD9-7A98B9DC3361</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_Y5YC4B81EDiXeq2AO6t0ng">
-        <bpmn2:dataInput id="_3EDB5055-D95B-43D0-A87A-A827EE7229A7_namespaceInputX" drools:dtype="java.lang.String" itemSubjectRef="__3EDB5055-D95B-43D0-A87A-A827EE7229A7_namespaceInputXItem" name="namespace"/>
-        <bpmn2:dataInput id="_3EDB5055-D95B-43D0-A87A-A827EE7229A7_modelInputX" drools:dtype="java.lang.String" itemSubjectRef="__3EDB5055-D95B-43D0-A87A-A827EE7229A7_modelInputXItem" name="model"/>
-        <bpmn2:dataInput id="_3EDB5055-D95B-43D0-A87A-A827EE7229A7_AgeInputX" drools:dtype="Integer" itemSubjectRef="__3EDB5055-D95B-43D0-A87A-A827EE7229A7_AgeInputXItem" name="Age"/>
-        <bpmn2:dataInput id="_3EDB5055-D95B-43D0-A87A-A827EE7229A7_Years-of-ServiceInputX" drools:dtype="Integer" itemSubjectRef="__3EDB5055-D95B-43D0-A87A-A827EE7229A7_Years-of-ServiceInputXItem" name="Years of Service"/>
-        <bpmn2:dataOutput id="_3EDB5055-D95B-43D0-A87A-A827EE7229A7_Total-Vacation-DaysOutputX" drools:dtype="java.math.BigInteger" itemSubjectRef="__3EDB5055-D95B-43D0-A87A-A827EE7229A7_Total-Vacation-DaysOutputXItem" name="Total Vacation Days"/>
+        <bpmn2:dataInput id="_3EDB5055-D95B-43D0-A87A-A827EE7229A7_namespaceInputX" automatik:dtype="java.lang.String" itemSubjectRef="__3EDB5055-D95B-43D0-A87A-A827EE7229A7_namespaceInputXItem" name="namespace"/>
+        <bpmn2:dataInput id="_3EDB5055-D95B-43D0-A87A-A827EE7229A7_modelInputX" automatik:dtype="java.lang.String" itemSubjectRef="__3EDB5055-D95B-43D0-A87A-A827EE7229A7_modelInputXItem" name="model"/>
+        <bpmn2:dataInput id="_3EDB5055-D95B-43D0-A87A-A827EE7229A7_AgeInputX" automatik:dtype="Integer" itemSubjectRef="__3EDB5055-D95B-43D0-A87A-A827EE7229A7_AgeInputXItem" name="Age"/>
+        <bpmn2:dataInput id="_3EDB5055-D95B-43D0-A87A-A827EE7229A7_Years-of-ServiceInputX" automatik:dtype="Integer" itemSubjectRef="__3EDB5055-D95B-43D0-A87A-A827EE7229A7_Years-of-ServiceInputXItem" name="Years of Service"/>
+        <bpmn2:dataOutput id="_3EDB5055-D95B-43D0-A87A-A827EE7229A7_Total-Vacation-DaysOutputX" automatik:dtype="java.math.BigInteger" itemSubjectRef="__3EDB5055-D95B-43D0-A87A-A827EE7229A7_Total-Vacation-DaysOutputXItem" name="Total Vacation Days"/>
         <bpmn2:inputSet id="_Y5bGMB81EDiXeq2AO6t0ng">
           <bpmn2:dataInputRefs>_3EDB5055-D95B-43D0-A87A-A827EE7229A7_namespaceInputX</bpmn2:dataInputRefs>
           <bpmn2:dataInputRefs>_3EDB5055-D95B-43D0-A87A-A827EE7229A7_modelInputX</bpmn2:dataInputRefs>

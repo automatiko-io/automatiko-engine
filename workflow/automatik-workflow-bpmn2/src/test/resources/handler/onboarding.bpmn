@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools" id="_YwdwMFr1EemSce_o1Tqd5Q" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd http://www.jboss.org/drools drools.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd http://www.omg.org/spec/DD/20100524/DC DC.xsd http://www.omg.org/spec/DD/20100524/DI DI.xsd " exporter="jBPM Process Modeler" exporterVersion="2.0" targetNamespace="http://www.omg.org/bpmn20">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io" id="_YwdwMFr1EemSce_o1Tqd5Q" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatik-platform.io automatik.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd http://www.omg.org/spec/DD/20100524/DC DC.xsd http://www.omg.org/spec/DD/20100524/DI DI.xsd " exporter="jBPM Process Modeler" exporterVersion="2.0" targetNamespace="http://www.omg.org/bpmn20">
   <bpmn2:itemDefinition id="_employeeItem" structureRef="com.myspace.onboarding.Employee"/>
   <bpmn2:itemDefinition id="_payrollItem" structureRef="com.myspace.onboarding.Payroll"/>
   <bpmn2:itemDefinition id="_employeeIdItem" structureRef="String"/>
@@ -40,7 +40,7 @@
   <bpmn2:itemDefinition id="__55258880-C191-4643-AC16-A0F5C1B05956_statusOutputXItem" structureRef="String"/>
   <bpmn2:itemDefinition id="__55258880-C191-4643-AC16-A0F5C1B05956_messageOutputXItem" structureRef="String"/>
   <bpmn2:error id="Rejected" errorCode="Rejected"/>
-  <bpmn2:process id="onboarding.onboarding" drools:packageName="com.myspace.onboarding" drools:version="1.0" drools:adHoc="false" name="onboarding" isExecutable="true">
+  <bpmn2:process id="onboarding.onboarding" automatik:packageName="com.myspace.onboarding" automatik:version="1.0" automatik:adHoc="false" name="onboarding" isExecutable="true">
     <bpmn2:property id="employee" itemSubjectRef="_employeeItem" name="employee"/>
     <bpmn2:property id="payroll" itemSubjectRef="_payrollItem" name="payroll"/>
     <bpmn2:property id="employeeId" itemSubjectRef="_employeeIdItem" name="employeeId"/>
@@ -51,59 +51,59 @@
     <bpmn2:property id="department" itemSubjectRef="_departmentItem" name="department"/>
     <bpmn2:sequenceFlow id="_D32B4A20-53D1-46F3-95F6-276A2392931F" sourceRef="_14472369-3EAD-4B2D-9C3B-F83D4630C59B" targetRef="_55258880-C191-4643-AC16-A0F5C1B05956">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.source">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
-        <drools:metaData name="isAutoConnection.target">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.source">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
+        <automatik:metaData name="isAutoConnection.target">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="_D5E3808E-4D68-4B8F-939D-17C7643E58FD" sourceRef="_EEA9F9A8-BC9D-4DC3-B89A-28F79A0C6A48" targetRef="_14472369-3EAD-4B2D-9C3B-F83D4630C59B"/>
     <bpmn2:sequenceFlow id="_5A442C9F-BADA-4D95-9ECA-3BD2898C8377" sourceRef="_DD24B4AE-8804-4D6E-B90B-98689CF6EF37" targetRef="_32221BB1-BAE5-4431-8003-3FEF0E04D9C7"/>
     <bpmn2:sequenceFlow id="_9D72C909-B631-415E-B015-30812A42B8C2" sourceRef="_1EA961BC-6E42-4F0E-ACC4-B3A06137B9E8" targetRef="_DD24B4AE-8804-4D6E-B90B-98689CF6EF37">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.source">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
-        <drools:metaData name="isAutoConnection.target">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.source">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
+        <automatik:metaData name="isAutoConnection.target">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="_DF6979D3-AFD3-4BC8-A866-8B9214F7F0FB" sourceRef="_EEA9F9A8-BC9D-4DC3-B89A-28F79A0C6A48" targetRef="_9D7A4927-BFCB-4F17-A4D4-E3D03B3FBE49"/>
     <bpmn2:sequenceFlow id="_3CFB2AC2-17B6-4322-ACD8-C9A149975143" sourceRef="_E918E3F5-CB0B-4875-AD72-5C8337D3C69A" targetRef="_F6920526-06EC-43CD-A743-17778DEB7363"/>
     <bpmn2:sequenceFlow id="_44ABA3C5-9A26-4843-B03B-99C2C0251707" sourceRef="_55258880-C191-4643-AC16-A0F5C1B05956" targetRef="_E918E3F5-CB0B-4875-AD72-5C8337D3C69A">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.target">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.target">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="_BB67B9E9-611B-4B17-A6F9-3CD4DCA4B249" sourceRef="_9D7A4927-BFCB-4F17-A4D4-E3D03B3FBE49" targetRef="_E918E3F5-CB0B-4875-AD72-5C8337D3C69A">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.source">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
-        <drools:metaData name="isAutoConnection.target">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.source">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
+        <automatik:metaData name="isAutoConnection.target">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="_5F4F4E2D-B4EC-4542-91DF-69FC30C5E346" sourceRef="_32221BB1-BAE5-4431-8003-3FEF0E04D9C7" targetRef="_469F11CB-CA82-4CA0-ACC4-127F6B3727F1">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.target">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.target">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="_YwdwMVr1EemSce_o1Tqd5Q" language="http://www.java.com/java"><![CDATA[return KieFunctions.equalsTo(status, "exists");]]></bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="_7DF7D2C1-195D-4C19-BC47-CC4462F9062D" sourceRef="_16FFBBF8-8373-46D4-A278-F305AFA7F4B1" targetRef="_EEA9F9A8-BC9D-4DC3-B89A-28F79A0C6A48"/>
     <bpmn2:sequenceFlow id="_A65F4850-A93F-4703-B5AA-2EF5F649BC86" sourceRef="_32221BB1-BAE5-4431-8003-3FEF0E04D9C7" targetRef="_16FFBBF8-8373-46D4-A278-F305AFA7F4B1">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.target">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.target">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="_YwdwMlr1EemSce_o1Tqd5Q" language="http://www.java.com/java"><![CDATA[return KieFunctions.equalsTo(status, "new");]]></bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
@@ -117,22 +117,22 @@
     </bpmn2:startEvent>
     <bpmn2:userTask id="_55258880-C191-4643-AC16-A0F5C1B05956" name="Manager confirmation">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[Manager confirmation]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Manager confirmation]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_D32B4A20-53D1-46F3-95F6-276A2392931F</bpmn2:incoming>
       <bpmn2:outgoing>_44ABA3C5-9A26-4843-B03B-99C2C0251707</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_YwdwM1r1EemSce_o1Tqd5Q">
-        <bpmn2:dataInput id="_55258880-C191-4643-AC16-A0F5C1B05956_TaskNameInputX" drools:dtype="Object" itemSubjectRef="__55258880-C191-4643-AC16-A0F5C1B05956_TaskNameInputXItem" name="TaskName"/>
-        <bpmn2:dataInput id="_55258880-C191-4643-AC16-A0F5C1B05956_employeeInputX" drools:dtype="com.myspace.onboarding.Employee" itemSubjectRef="__55258880-C191-4643-AC16-A0F5C1B05956_employeeInputXItem" name="employee"/>
-        <bpmn2:dataInput id="_55258880-C191-4643-AC16-A0F5C1B05956_depeartmentInputX" drools:dtype="String" itemSubjectRef="__55258880-C191-4643-AC16-A0F5C1B05956_depeartmentInputXItem" name="depeartment"/>
-        <bpmn2:dataInput id="_55258880-C191-4643-AC16-A0F5C1B05956_payrollInputX" drools:dtype="com.myspace.onboarding.Payroll" itemSubjectRef="__55258880-C191-4643-AC16-A0F5C1B05956_payrollInputXItem" name="payroll"/>
-        <bpmn2:dataInput id="_55258880-C191-4643-AC16-A0F5C1B05956_emailInputX" drools:dtype="String" itemSubjectRef="__55258880-C191-4643-AC16-A0F5C1B05956_emailInputXItem" name="email"/>
-        <bpmn2:dataInput id="_55258880-C191-4643-AC16-A0F5C1B05956_employeeIdInputX" drools:dtype="String" itemSubjectRef="__55258880-C191-4643-AC16-A0F5C1B05956_employeeIdInputXItem" name="employeeId"/>
-        <bpmn2:dataInput id="_55258880-C191-4643-AC16-A0F5C1B05956_SkippableInputX" drools:dtype="Object" itemSubjectRef="__55258880-C191-4643-AC16-A0F5C1B05956_SkippableInputXItem" name="Skippable"/>
-        <bpmn2:dataOutput id="_55258880-C191-4643-AC16-A0F5C1B05956_statusOutputX" drools:dtype="String" itemSubjectRef="__55258880-C191-4643-AC16-A0F5C1B05956_statusOutputXItem" name="status"/>
-        <bpmn2:dataOutput id="_55258880-C191-4643-AC16-A0F5C1B05956_messageOutputX" drools:dtype="String" itemSubjectRef="__55258880-C191-4643-AC16-A0F5C1B05956_messageOutputXItem" name="message"/>
+        <bpmn2:dataInput id="_55258880-C191-4643-AC16-A0F5C1B05956_TaskNameInputX" automatik:dtype="Object" itemSubjectRef="__55258880-C191-4643-AC16-A0F5C1B05956_TaskNameInputXItem" name="TaskName"/>
+        <bpmn2:dataInput id="_55258880-C191-4643-AC16-A0F5C1B05956_employeeInputX" automatik:dtype="com.myspace.onboarding.Employee" itemSubjectRef="__55258880-C191-4643-AC16-A0F5C1B05956_employeeInputXItem" name="employee"/>
+        <bpmn2:dataInput id="_55258880-C191-4643-AC16-A0F5C1B05956_depeartmentInputX" automatik:dtype="String" itemSubjectRef="__55258880-C191-4643-AC16-A0F5C1B05956_depeartmentInputXItem" name="depeartment"/>
+        <bpmn2:dataInput id="_55258880-C191-4643-AC16-A0F5C1B05956_payrollInputX" automatik:dtype="com.myspace.onboarding.Payroll" itemSubjectRef="__55258880-C191-4643-AC16-A0F5C1B05956_payrollInputXItem" name="payroll"/>
+        <bpmn2:dataInput id="_55258880-C191-4643-AC16-A0F5C1B05956_emailInputX" automatik:dtype="String" itemSubjectRef="__55258880-C191-4643-AC16-A0F5C1B05956_emailInputXItem" name="email"/>
+        <bpmn2:dataInput id="_55258880-C191-4643-AC16-A0F5C1B05956_employeeIdInputX" automatik:dtype="String" itemSubjectRef="__55258880-C191-4643-AC16-A0F5C1B05956_employeeIdInputXItem" name="employeeId"/>
+        <bpmn2:dataInput id="_55258880-C191-4643-AC16-A0F5C1B05956_SkippableInputX" automatik:dtype="Object" itemSubjectRef="__55258880-C191-4643-AC16-A0F5C1B05956_SkippableInputXItem" name="Skippable"/>
+        <bpmn2:dataOutput id="_55258880-C191-4643-AC16-A0F5C1B05956_statusOutputX" automatik:dtype="String" itemSubjectRef="__55258880-C191-4643-AC16-A0F5C1B05956_statusOutputXItem" name="status"/>
+        <bpmn2:dataOutput id="_55258880-C191-4643-AC16-A0F5C1B05956_messageOutputX" automatik:dtype="String" itemSubjectRef="__55258880-C191-4643-AC16-A0F5C1B05956_messageOutputXItem" name="message"/>
         <bpmn2:inputSet id="_YwdwNFr1EemSce_o1Tqd5Q">
           <bpmn2:dataInputRefs>_55258880-C191-4643-AC16-A0F5C1B05956_TaskNameInputX</bpmn2:dataInputRefs>
           <bpmn2:dataInputRefs>_55258880-C191-4643-AC16-A0F5C1B05956_employeeInputX</bpmn2:dataInputRefs>
@@ -195,23 +195,23 @@
         </bpmn2:resourceAssignmentExpression>
       </bpmn2:potentialOwner>
     </bpmn2:userTask>
-    <bpmn2:exclusiveGateway id="_32221BB1-BAE5-4431-8003-3FEF0E04D9C7" drools:dg="_A65F4850-A93F-4703-B5AA-2EF5F649BC86" gatewayDirection="Diverging" default="_A65F4850-A93F-4703-B5AA-2EF5F649BC86">
+    <bpmn2:exclusiveGateway id="_32221BB1-BAE5-4431-8003-3FEF0E04D9C7" automatik:dg="_A65F4850-A93F-4703-B5AA-2EF5F649BC86" gatewayDirection="Diverging" default="_A65F4850-A93F-4703-B5AA-2EF5F649BC86">
       <bpmn2:incoming>_5A442C9F-BADA-4D95-9ECA-3BD2898C8377</bpmn2:incoming>
       <bpmn2:outgoing>_A65F4850-A93F-4703-B5AA-2EF5F649BC86</bpmn2:outgoing>
       <bpmn2:outgoing>_5F4F4E2D-B4EC-4542-91DF-69FC30C5E346</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
-    <bpmn2:callActivity id="_14472369-3EAD-4B2D-9C3B-F83D4630C59B" drools:independent="false" drools:waitForCompletion="true" name="Setup HR" calledElement="onboarding.setupHR">
+    <bpmn2:callActivity id="_14472369-3EAD-4B2D-9C3B-F83D4630C59B" automatik:independent="false" automatik:waitForCompletion="true" name="Setup HR" calledElement="onboarding.setupHR">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[Setup HR]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Setup HR]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_D5E3808E-4D68-4B8F-939D-17C7643E58FD</bpmn2:incoming>
       <bpmn2:outgoing>_D32B4A20-53D1-46F3-95F6-276A2392931F</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_YwdwR1r1EemSce_o1Tqd5Q">
-        <bpmn2:dataInput id="_14472369-3EAD-4B2D-9C3B-F83D4630C59B_employeeInputX" drools:dtype="com.myspace.onboarding.Employee" itemSubjectRef="__14472369-3EAD-4B2D-9C3B-F83D4630C59B_employeeInputXItem" name="employee"/>
-        <bpmn2:dataOutput id="_14472369-3EAD-4B2D-9C3B-F83D4630C59B_managerOutputX" drools:dtype="String" itemSubjectRef="__14472369-3EAD-4B2D-9C3B-F83D4630C59B_managerOutputXItem" name="manager"/>
-        <bpmn2:dataOutput id="_14472369-3EAD-4B2D-9C3B-F83D4630C59B_departmentOutputX" drools:dtype="String" itemSubjectRef="__14472369-3EAD-4B2D-9C3B-F83D4630C59B_departmentOutputXItem" name="department"/>
+        <bpmn2:dataInput id="_14472369-3EAD-4B2D-9C3B-F83D4630C59B_employeeInputX" automatik:dtype="com.myspace.onboarding.Employee" itemSubjectRef="__14472369-3EAD-4B2D-9C3B-F83D4630C59B_employeeInputXItem" name="employee"/>
+        <bpmn2:dataOutput id="_14472369-3EAD-4B2D-9C3B-F83D4630C59B_managerOutputX" automatik:dtype="String" itemSubjectRef="__14472369-3EAD-4B2D-9C3B-F83D4630C59B_managerOutputXItem" name="manager"/>
+        <bpmn2:dataOutput id="_14472369-3EAD-4B2D-9C3B-F83D4630C59B_departmentOutputX" automatik:dtype="String" itemSubjectRef="__14472369-3EAD-4B2D-9C3B-F83D4630C59B_departmentOutputXItem" name="department"/>
         <bpmn2:inputSet id="_YwdwSFr1EemSce_o1Tqd5Q">
           <bpmn2:dataInputRefs>_14472369-3EAD-4B2D-9C3B-F83D4630C59B_employeeInputX</bpmn2:dataInputRefs>
         </bpmn2:inputSet>
@@ -236,22 +236,22 @@
     <bpmn2:endEvent id="_F6920526-06EC-43CD-A743-17778DEB7363">
       <bpmn2:incoming>_3CFB2AC2-17B6-4322-ACD8-C9A149975143</bpmn2:incoming>
     </bpmn2:endEvent>
-    <bpmn2:task id="_DD24B4AE-8804-4D6E-B90B-98689CF6EF37" drools:taskName="ValidateEmployee" name="Validate employee">
+    <bpmn2:task id="_DD24B4AE-8804-4D6E-B90B-98689CF6EF37" automatik:taskName="ValidateEmployee" name="Validate employee">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[Validate employee]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Validate employee]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_9D72C909-B631-415E-B015-30812A42B8C2</bpmn2:incoming>
       <bpmn2:outgoing>_5A442C9F-BADA-4D95-9ECA-3BD2898C8377</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_YwdwTVr1EemSce_o1Tqd5Q">
-        <bpmn2:dataInput id="_DD24B4AE-8804-4D6E-B90B-98689CF6EF37_DecisionInputX" drools:dtype="String" itemSubjectRef="__DD24B4AE-8804-4D6E-B90B-98689CF6EF37_DecisionInputXItem" name="Decision"/>
-        <bpmn2:dataInput id="_DD24B4AE-8804-4D6E-B90B-98689CF6EF37_ModelInputX" drools:dtype="String" itemSubjectRef="__DD24B4AE-8804-4D6E-B90B-98689CF6EF37_ModelInputXItem" name="Model"/>
-        <bpmn2:dataInput id="_DD24B4AE-8804-4D6E-B90B-98689CF6EF37_NamespaceInputX" drools:dtype="String" itemSubjectRef="__DD24B4AE-8804-4D6E-B90B-98689CF6EF37_NamespaceInputXItem" name="Namespace"/>
-        <bpmn2:dataInput id="_DD24B4AE-8804-4D6E-B90B-98689CF6EF37_employeeInputX" drools:dtype="com.myspace.onboarding.Employee" itemSubjectRef="__DD24B4AE-8804-4D6E-B90B-98689CF6EF37_employeeInputXItem" name="employee"/>
-        <bpmn2:dataInput id="_DD24B4AE-8804-4D6E-B90B-98689CF6EF37_TaskNameInputX" drools:dtype="Object" name="TaskName"/>
-        <bpmn2:dataOutput id="_DD24B4AE-8804-4D6E-B90B-98689CF6EF37_statusOutputX" drools:dtype="String" itemSubjectRef="__DD24B4AE-8804-4D6E-B90B-98689CF6EF37_statusOutputXItem" name="status"/>
-        <bpmn2:dataOutput id="_DD24B4AE-8804-4D6E-B90B-98689CF6EF37_messageOutputX" drools:dtype="String" itemSubjectRef="__DD24B4AE-8804-4D6E-B90B-98689CF6EF37_messageOutputXItem" name="message"/>
+        <bpmn2:dataInput id="_DD24B4AE-8804-4D6E-B90B-98689CF6EF37_DecisionInputX" automatik:dtype="String" itemSubjectRef="__DD24B4AE-8804-4D6E-B90B-98689CF6EF37_DecisionInputXItem" name="Decision"/>
+        <bpmn2:dataInput id="_DD24B4AE-8804-4D6E-B90B-98689CF6EF37_ModelInputX" automatik:dtype="String" itemSubjectRef="__DD24B4AE-8804-4D6E-B90B-98689CF6EF37_ModelInputXItem" name="Model"/>
+        <bpmn2:dataInput id="_DD24B4AE-8804-4D6E-B90B-98689CF6EF37_NamespaceInputX" automatik:dtype="String" itemSubjectRef="__DD24B4AE-8804-4D6E-B90B-98689CF6EF37_NamespaceInputXItem" name="Namespace"/>
+        <bpmn2:dataInput id="_DD24B4AE-8804-4D6E-B90B-98689CF6EF37_employeeInputX" automatik:dtype="com.myspace.onboarding.Employee" itemSubjectRef="__DD24B4AE-8804-4D6E-B90B-98689CF6EF37_employeeInputXItem" name="employee"/>
+        <bpmn2:dataInput id="_DD24B4AE-8804-4D6E-B90B-98689CF6EF37_TaskNameInputX" automatik:dtype="Object" name="TaskName"/>
+        <bpmn2:dataOutput id="_DD24B4AE-8804-4D6E-B90B-98689CF6EF37_statusOutputX" automatik:dtype="String" itemSubjectRef="__DD24B4AE-8804-4D6E-B90B-98689CF6EF37_statusOutputXItem" name="status"/>
+        <bpmn2:dataOutput id="_DD24B4AE-8804-4D6E-B90B-98689CF6EF37_messageOutputX" automatik:dtype="String" itemSubjectRef="__DD24B4AE-8804-4D6E-B90B-98689CF6EF37_messageOutputXItem" name="message"/>
         <bpmn2:inputSet id="_YwdwTlr1EemSce_o1Tqd5Q">
           <bpmn2:dataInputRefs>_DD24B4AE-8804-4D6E-B90B-98689CF6EF37_DecisionInputX</bpmn2:dataInputRefs>
           <bpmn2:dataInputRefs>_DD24B4AE-8804-4D6E-B90B-98689CF6EF37_ModelInputX</bpmn2:dataInputRefs>
@@ -305,17 +305,17 @@
         <bpmn2:targetRef>message</bpmn2:targetRef>
       </bpmn2:dataOutputAssociation>
     </bpmn2:task>
-    <bpmn2:callActivity id="_9D7A4927-BFCB-4F17-A4D4-E3D03B3FBE49" drools:independent="false" drools:waitForCompletion="true" name="Setup Payroll" calledElement="onboarding.setupPayroll">
+    <bpmn2:callActivity id="_9D7A4927-BFCB-4F17-A4D4-E3D03B3FBE49" automatik:independent="false" automatik:waitForCompletion="true" name="Setup Payroll" calledElement="onboarding.setupPayroll">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[Setup Payroll]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Setup Payroll]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_DF6979D3-AFD3-4BC8-A866-8B9214F7F0FB</bpmn2:incoming>
       <bpmn2:outgoing>_BB67B9E9-611B-4B17-A6F9-3CD4DCA4B249</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_YweXTFr1EemSce_o1Tqd5Q">
-        <bpmn2:dataInput id="_9D7A4927-BFCB-4F17-A4D4-E3D03B3FBE49_employeeInputX" drools:dtype="com.myspace.onboarding.Employee" itemSubjectRef="__9D7A4927-BFCB-4F17-A4D4-E3D03B3FBE49_employeeInputXItem" name="employee"/>
-        <bpmn2:dataOutput id="_9D7A4927-BFCB-4F17-A4D4-E3D03B3FBE49_payrollOutputX" drools:dtype="com.myspace.onboarding.Payroll" itemSubjectRef="__9D7A4927-BFCB-4F17-A4D4-E3D03B3FBE49_payrollOutputXItem" name="payroll"/>
+        <bpmn2:dataInput id="_9D7A4927-BFCB-4F17-A4D4-E3D03B3FBE49_employeeInputX" automatik:dtype="com.myspace.onboarding.Employee" itemSubjectRef="__9D7A4927-BFCB-4F17-A4D4-E3D03B3FBE49_employeeInputXItem" name="employee"/>
+        <bpmn2:dataOutput id="_9D7A4927-BFCB-4F17-A4D4-E3D03B3FBE49_payrollOutputX" automatik:dtype="com.myspace.onboarding.Payroll" itemSubjectRef="__9D7A4927-BFCB-4F17-A4D4-E3D03B3FBE49_payrollOutputXItem" name="payroll"/>
         <bpmn2:inputSet id="_YweXTVr1EemSce_o1Tqd5Q">
           <bpmn2:dataInputRefs>_9D7A4927-BFCB-4F17-A4D4-E3D03B3FBE49_employeeInputX</bpmn2:dataInputRefs>
         </bpmn2:inputSet>
@@ -339,24 +339,24 @@
     </bpmn2:parallelGateway>
     <bpmn2:endEvent id="_469F11CB-CA82-4CA0-ACC4-127F6B3727F1">
       <bpmn2:incoming>_5F4F4E2D-B4EC-4542-91DF-69FC30C5E346</bpmn2:incoming>
-      <bpmn2:errorEventDefinition id="_YweXUVr1EemSce_o1Tqd5Q" drools:erefname="Rejected" errorRef="Rejected"/>
+      <bpmn2:errorEventDefinition id="_YweXUVr1EemSce_o1Tqd5Q" automatik:erefname="Rejected" errorRef="Rejected"/>
     </bpmn2:endEvent>
-    <bpmn2:task id="_16FFBBF8-8373-46D4-A278-F305AFA7F4B1" drools:taskName="AssignIdAndEmail" name="Assign id and email">
+    <bpmn2:task id="_16FFBBF8-8373-46D4-A278-F305AFA7F4B1" automatik:taskName="AssignIdAndEmail" name="Assign id and email">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[Assign id and email]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Assign id and email]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_A65F4850-A93F-4703-B5AA-2EF5F649BC86</bpmn2:incoming>
       <bpmn2:outgoing>_7DF7D2C1-195D-4C19-BC47-CC4462F9062D</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_YweXUlr1EemSce_o1Tqd5Q">
-        <bpmn2:dataInput id="_16FFBBF8-8373-46D4-A278-F305AFA7F4B1_DecisionInputX" drools:dtype="String" itemSubjectRef="__16FFBBF8-8373-46D4-A278-F305AFA7F4B1_DecisionInputXItem" name="Decision"/>
-        <bpmn2:dataInput id="_16FFBBF8-8373-46D4-A278-F305AFA7F4B1_ModelInputX" drools:dtype="String" itemSubjectRef="__16FFBBF8-8373-46D4-A278-F305AFA7F4B1_ModelInputXItem" name="Model"/>
-        <bpmn2:dataInput id="_16FFBBF8-8373-46D4-A278-F305AFA7F4B1_NamespaceInputX" drools:dtype="String" itemSubjectRef="__16FFBBF8-8373-46D4-A278-F305AFA7F4B1_NamespaceInputXItem" name="Namespace"/>
-        <bpmn2:dataInput id="_9D7A4927-BFCB-4F17-A4D4-E3D03B3FBE40_employeeInputX" drools:dtype="com.myspace.onboarding.Employee" itemSubjectRef="__9D7A4927-BFCB-4F17-A4D4-E3D03B3FBE49_employeeInputXItem" name="employee"/>
-        <bpmn2:dataInput id="_16FFBBF8-8373-46D4-A278-F305AFA7F4B1_TaskNameInputX" drools:dtype="Object" name="TaskName"/>
-        <bpmn2:dataOutput id="_16FFBBF8-8373-46D4-A278-F305AFA7F4B1_emailOutputX" drools:dtype="String" itemSubjectRef="__16FFBBF8-8373-46D4-A278-F305AFA7F4B1_emailOutputXItem" name="email"/>
-        <bpmn2:dataOutput id="_16FFBBF8-8373-46D4-A278-F305AFA7F4B1_employeeIdOutputX" drools:dtype="String" itemSubjectRef="__16FFBBF8-8373-46D4-A278-F305AFA7F4B1_employeeIdOutputXItem" name="employeeId"/>
+        <bpmn2:dataInput id="_16FFBBF8-8373-46D4-A278-F305AFA7F4B1_DecisionInputX" automatik:dtype="String" itemSubjectRef="__16FFBBF8-8373-46D4-A278-F305AFA7F4B1_DecisionInputXItem" name="Decision"/>
+        <bpmn2:dataInput id="_16FFBBF8-8373-46D4-A278-F305AFA7F4B1_ModelInputX" automatik:dtype="String" itemSubjectRef="__16FFBBF8-8373-46D4-A278-F305AFA7F4B1_ModelInputXItem" name="Model"/>
+        <bpmn2:dataInput id="_16FFBBF8-8373-46D4-A278-F305AFA7F4B1_NamespaceInputX" automatik:dtype="String" itemSubjectRef="__16FFBBF8-8373-46D4-A278-F305AFA7F4B1_NamespaceInputXItem" name="Namespace"/>
+        <bpmn2:dataInput id="_9D7A4927-BFCB-4F17-A4D4-E3D03B3FBE40_employeeInputX" automatik:dtype="com.myspace.onboarding.Employee" itemSubjectRef="__9D7A4927-BFCB-4F17-A4D4-E3D03B3FBE49_employeeInputXItem" name="employee"/>
+        <bpmn2:dataInput id="_16FFBBF8-8373-46D4-A278-F305AFA7F4B1_TaskNameInputX" automatik:dtype="Object" name="TaskName"/>
+        <bpmn2:dataOutput id="_16FFBBF8-8373-46D4-A278-F305AFA7F4B1_emailOutputX" automatik:dtype="String" itemSubjectRef="__16FFBBF8-8373-46D4-A278-F305AFA7F4B1_emailOutputXItem" name="email"/>
+        <bpmn2:dataOutput id="_16FFBBF8-8373-46D4-A278-F305AFA7F4B1_employeeIdOutputX" automatik:dtype="String" itemSubjectRef="__16FFBBF8-8373-46D4-A278-F305AFA7F4B1_employeeIdOutputXItem" name="employeeId"/>
         <bpmn2:inputSet id="_YweXU1r1EemSce_o1Tqd5Q">
           <bpmn2:dataInputRefs>_16FFBBF8-8373-46D4-A278-F305AFA7F4B1_DecisionInputX</bpmn2:dataInputRefs>
           <bpmn2:dataInputRefs>_16FFBBF8-8373-46D4-A278-F305AFA7F4B1_ModelInputX</bpmn2:dataInputRefs>

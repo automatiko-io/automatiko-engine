@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?> 
 <definitions id="Definition"
-             targetNamespace="http://www.jboss.org/drools"
+             targetNamespace="https://automatik-platform.io"
              typeLanguage="http://www.java.com/javaTypes"
              expressionLanguage="http://www.mvel.org/2.0"
              xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd"
-             xmlns:g="http://www.jboss.org/drools/flow/gpd"
+             xmlns:g="https://automatik-platform.io/flow/gpd"
              xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
              xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
              xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-             xmlns:tns="http://www.jboss.org/drools">
+             xmlns:tns="https://automatik-platform.io">
 
   <process processType="Private" isExecutable="true" id="GatewayTest" name="GatewayTest" >
 
@@ -49,10 +49,10 @@
     <sequenceFlow id="_6-_7" sourceRef="_6" targetRef="_7" />
     <sequenceFlow id="_7-_8" sourceRef="_7" targetRef="_8" />
     <sequenceFlow id="_8-_9" sourceRef="_8" targetRef="_9" name="rule exists" tns:priority="1" >
-      <conditionExpression xsi:type="tFormalExpression" language="http://www.jboss.org/drools/rule" >exists Integer()</conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression" language="https://automatik-platform.io/rule" >exists Integer()</conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="_8-_10" sourceRef="_8" targetRef="_10" name="rule not" tns:priority="1" >
-      <conditionExpression xsi:type="tFormalExpression" language="http://www.jboss.org/drools/rule" >not Integer()</conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression" language="https://automatik-platform.io/rule" >not Integer()</conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="_9-_11" sourceRef="_9" targetRef="_11" />
     <sequenceFlow id="_10-_11" sourceRef="_10" targetRef="_11" />

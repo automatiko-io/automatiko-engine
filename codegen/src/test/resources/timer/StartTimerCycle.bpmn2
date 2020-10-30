@@ -1,46 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- origin at X=0.0 Y=0.0 -->
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmn20="http://www.omg.org/bpmn20" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools" xmlns="http://www.jboss.org/drools" xmlns:ns="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd http://www.jboss.org/drools drools.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" id="_FNr5sGhrEeGMT7sG7hEI2w" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="1.5.1.Final-v20190425-2005-B1" targetNamespace="http://www.omg.org/bpmn20">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmn20="http://www.omg.org/bpmn20" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io" xmlns="https://automatik-platform.io" xmlns:ns="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatik-platform.io automatik.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" id="_FNr5sGhrEeGMT7sG7hEI2w" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="1.5.1.Final-v20190425-2005-B1" targetNamespace="http://www.omg.org/bpmn20">
   <bpmn2:itemDefinition id="ItemDefinition_1" isCollection="false" structureRef="java.lang.String"/>
   <bpmn2:itemDefinition id="ItemDefinition_2" isCollection="false" structureRef="java.lang.Integer"/>
   <bpmn2:itemDefinition id="ItemDefinition_3" isCollection="false" structureRef="java.lang.Boolean"/>
-  <bpmn2:process id="defaultPackage.TimerProcess" drools:packageName="defaultPackage" name="TimerProcess" isExecutable="true">
+  <bpmn2:process id="defaultPackage.TimerProcess" automatik:packageName="defaultPackage" name="TimerProcess" isExecutable="true">
     <bpmn2:scriptTask id="_E76AD186-6FA6-4378-B45B-C8F73E2C497C" name="timer fired" scriptFormat="http://www.java.com/java">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[timer fired]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[timer fired]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_2</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
       <bpmn2:script>System.out.println(&quot;timer process end&quot;);</bpmn2:script>
     </bpmn2:scriptTask>
-    <bpmn2:endEvent id="_7232FBCC-81DD-4DEF-91DD-5D1D415117F8" drools:bgcolor="#ffffff" name="">
+    <bpmn2:endEvent id="_7232FBCC-81DD-4DEF-91DD-5D1D415117F8" automatik:bgcolor="#ffffff" name="">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_85A5CC49-2B8B-440F-9F1D-145C7D807F6B</bpmn2:incoming>
     </bpmn2:endEvent>
     <bpmn2:sequenceFlow id="_85A5CC49-2B8B-440F-9F1D-145C7D807F6B" sourceRef="UserTask_1" targetRef="_7232FBCC-81DD-4DEF-91DD-5D1D415117F8"/>
-    <bpmn2:startEvent id="_F9AC8B12-8E75-49B5-B799-292F66270627" drools:bgcolor="#ffffff" name="start">
+    <bpmn2:startEvent id="_F9AC8B12-8E75-49B5-B799-292F66270627" automatik:bgcolor="#ffffff" name="start">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[start]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[start]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
       <bpmn2:timerEventDefinition id="_FNr5s2hrEeGMT7sG7hEI2w">
         <bpmn2:timeCycle xsi:type="bpmn2:tFormalExpression" id="_FNr5tGhrEeGMT7sG7hEI2w">R/PT2S</bpmn2:timeCycle>
       </bpmn2:timerEventDefinition>
     </bpmn2:startEvent>
-    <bpmn2:sequenceFlow id="SequenceFlow_2" drools:priority="1" sourceRef="_F9AC8B12-8E75-49B5-B799-292F66270627" targetRef="_E76AD186-6FA6-4378-B45B-C8F73E2C497C"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_2" automatik:priority="1" sourceRef="_F9AC8B12-8E75-49B5-B799-292F66270627" targetRef="_E76AD186-6FA6-4378-B45B-C8F73E2C497C"/>
     <bpmn2:userTask id="UserTask_1" name="User Task 1">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[User Task 1]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[User Task 1]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
       <bpmn2:outgoing>_85A5CC49-2B8B-440F-9F1D-145C7D807F6B</bpmn2:outgoing>
@@ -111,7 +111,7 @@
         <bpmn2:targetRef>DataInput_9</bpmn2:targetRef>
       </bpmn2:dataInputAssociation>
     </bpmn2:userTask>
-    <bpmn2:sequenceFlow id="SequenceFlow_1" drools:priority="1" sourceRef="_E76AD186-6FA6-4378-B45B-C8F73E2C497C" targetRef="UserTask_1"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_1" automatik:priority="1" sourceRef="_E76AD186-6FA6-4378-B45B-C8F73E2C497C" targetRef="UserTask_1"/>
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="_FNr5tWhrEeGMT7sG7hEI2w">
     <bpmndi:BPMNPlane id="_FNr5tmhrEeGMT7sG7hEI2w" bpmnElement="defaultPackage.TimerProcess">

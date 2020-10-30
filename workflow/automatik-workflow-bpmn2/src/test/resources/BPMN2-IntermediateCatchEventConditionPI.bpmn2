@@ -9,7 +9,7 @@
              xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
              xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
              xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-             xmlns:tns="http://www.jboss.org/drools">
+             xmlns:tns="https://automatik-platform.io">
 
   <itemDefinition id="_xItem" structureRef="String" />
 
@@ -22,7 +22,7 @@
     <startEvent id="_1" name="StartProcess" />
     <intermediateCatchEvent id="_3" name="timer" >
       <conditionalEventDefinition>
-        <condition xsi:type="tFormalExpression" language="http://www.jboss.org/drools/rule">
+        <condition xsi:type="tFormalExpression" language="https://automatik-platform.io/rule">
         $processInstance : org.kie.api.runtime.process.WorkflowProcessInstance() 
         $name : String() from (String)$processInstance.getVariable("name");
         org.jbpm.bpmn2.objects.Person(name == $name)</condition>

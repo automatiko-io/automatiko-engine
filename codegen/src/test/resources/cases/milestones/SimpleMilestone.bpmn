@@ -1,61 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools" id="_ktrqMKGZEeqLW8V2ozl9RA" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd http://www.jboss.org/drools drools.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd http://www.omg.org/spec/DD/20100524/DC DC.xsd http://www.omg.org/spec/DD/20100524/DI DI.xsd " exporter="jBPM Process Modeler" exporterVersion="2.0" targetNamespace="http://www.omg.org/bpmn20">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io" id="_ktrqMKGZEeqLW8V2ozl9RA" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatik-platform.io automatik.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd http://www.omg.org/spec/DD/20100524/DC DC.xsd http://www.omg.org/spec/DD/20100524/DI DI.xsd " exporter="jBPM Process Modeler" exporterVersion="2.0" targetNamespace="http://www.omg.org/bpmn20">
   <bpmn2:signal id="_40d87a17-75ab-304e-b647-4bacd556afe2" name="SimpleMilestone"/>
-  <bpmn2:process id="TestCase.SimpleMilestone" drools:packageName="com.myspace.testcase" drools:version="1.0" drools:adHoc="true" name="SimpleMilestone" isExecutable="true">
+  <bpmn2:process id="TestCase.SimpleMilestone" automatik:packageName="com.myspace.testcase" automatik:version="1.0" automatik:adHoc="true" name="SimpleMilestone" isExecutable="true">
     <bpmn2:sequenceFlow id="_E699F7D5-8915-4FAF-B532-18D69AB4D14C" sourceRef="_0F4368C3-FD42-4FFD-A5ED-0678F43326BC" targetRef="_C6B19B8C-4661-4552-A135-7B1453DCAB0E">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.source">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
-        <drools:metaData name="isAutoConnection.target">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.source">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
+        <automatik:metaData name="isAutoConnection.target">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="_7C3D8AD3-D41F-45E6-9D85-F8659B569A76" sourceRef="_C6B19B8C-4661-4552-A135-7B1453DCAB0E" targetRef="_0B21DF3F-0085-4839-9FE4-8200FEC3E765">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.source">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
-        <drools:metaData name="isAutoConnection.target">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.source">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
+        <automatik:metaData name="isAutoConnection.target">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="_4C9CE849-6EA4-4F8F-BF5D-242B1979CD27" sourceRef="_C170DFC6-A4DE-4865-945F-A922641D390A" targetRef="_3CAFD1C0-0922-489D-A718-C1C361644F6C">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.source">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.source">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="_4B30184B-E482-46E1-BA88-83B01E5398E0" sourceRef="_18950AC4-664B-465E-B99E-766D38D362BF" targetRef="_C170DFC6-A4DE-4865-945F-A922641D390A">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.source">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.source">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
     </bpmn2:sequenceFlow>
     <bpmn2:scriptTask id="_C6B19B8C-4661-4552-A135-7B1453DCAB0E" name="Simple Milestone task" scriptFormat="http://www.java.com/java">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[Simple Milestone task]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Simple Milestone task]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_E699F7D5-8915-4FAF-B532-18D69AB4D14C</bpmn2:incoming>
       <bpmn2:outgoing>_7C3D8AD3-D41F-45E6-9D85-F8659B569A76</bpmn2:outgoing>
       <bpmn2:script><![CDATA[System.out.println("SimpleMilestone");]]></bpmn2:script>
     </bpmn2:scriptTask>
-    <bpmn2:task id="_0F4368C3-FD42-4FFD-A5ED-0678F43326BC" drools:taskName="Milestone" name="SimpleMilestone">
+    <bpmn2:task id="_0F4368C3-FD42-4FFD-A5ED-0678F43326BC" automatik:taskName="Milestone" name="SimpleMilestone">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[SimpleMilestone
-]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[SimpleMilestone
+]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:outgoing>_E699F7D5-8915-4FAF-B532-18D69AB4D14C</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_ktrqMaGZEeqLW8V2ozl9RA">
-        <bpmn2:dataInput id="_0F4368C3-FD42-4FFD-A5ED-0678F43326BC_TaskNameInputX" drools:dtype="Object" name="TaskName"/>
+        <bpmn2:dataInput id="_0F4368C3-FD42-4FFD-A5ED-0678F43326BC_TaskNameInputX" automatik:dtype="Object" name="TaskName"/>
         <bpmn2:inputSet id="_ktrqMqGZEeqLW8V2ozl9RA">
           <bpmn2:dataInputRefs>_0F4368C3-FD42-4FFD-A5ED-0678F43326BC_TaskNameInputX</bpmn2:dataInputRefs>
         </bpmn2:inputSet>
@@ -75,36 +75,36 @@
     </bpmn2:endEvent>
     <bpmn2:endEvent id="_3CAFD1C0-0922-489D-A718-C1C361644F6C">
       <bpmn2:extensionElements>
-        <drools:metaData name="customScope">
-          <drools:metaValue><![CDATA[processInstance]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="customScope">
+          <automatik:metaValue><![CDATA[processInstance]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_4C9CE849-6EA4-4F8F-BF5D-242B1979CD27</bpmn2:incoming>
       <bpmn2:signalEventDefinition id="_ktsRRqGZEeqLW8V2ozl9RA" signalRef="_40d87a17-75ab-304e-b647-4bacd556afe2"/>
     </bpmn2:endEvent>
     <bpmn2:scriptTask id="_C170DFC6-A4DE-4865-945F-A922641D390A" name="AutoStart Milestone task" scriptFormat="http://www.java.com/java">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[AutoStart Milestone task
-]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[AutoStart Milestone task
+]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_4B30184B-E482-46E1-BA88-83B01E5398E0</bpmn2:incoming>
       <bpmn2:outgoing>_4C9CE849-6EA4-4F8F-BF5D-242B1979CD27</bpmn2:outgoing>
       <bpmn2:script><![CDATA[System.out.println("Milestone AutoStarted");]]></bpmn2:script>
     </bpmn2:scriptTask>
-    <bpmn2:task id="_18950AC4-664B-465E-B99E-766D38D362BF" drools:taskName="Milestone" name="AutoStartMilestone">
+    <bpmn2:task id="_18950AC4-664B-465E-B99E-766D38D362BF" automatik:taskName="Milestone" name="AutoStartMilestone">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[AutoStartMilestone]]></drools:metaValue>
-        </drools:metaData>
-        <drools:metaData name="customAutoStart">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[AutoStartMilestone]]></automatik:metaValue>
+        </automatik:metaData>
+        <automatik:metaData name="customAutoStart">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:outgoing>_4B30184B-E482-46E1-BA88-83B01E5398E0</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_ktsRR6GZEeqLW8V2ozl9RA">
-        <bpmn2:dataInput id="_18950AC4-664B-465E-B99E-766D38D362BF_TaskNameInputX" drools:dtype="Object" name="TaskName"/>
+        <bpmn2:dataInput id="_18950AC4-664B-465E-B99E-766D38D362BF_TaskNameInputX" automatik:dtype="Object" name="TaskName"/>
         <bpmn2:inputSet id="_ktsRSKGZEeqLW8V2ozl9RA">
           <bpmn2:dataInputRefs>_18950AC4-664B-465E-B99E-766D38D362BF_TaskNameInputX</bpmn2:dataInputRefs>
         </bpmn2:inputSet>

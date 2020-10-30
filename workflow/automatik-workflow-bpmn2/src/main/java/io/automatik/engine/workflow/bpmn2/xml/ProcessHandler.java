@@ -127,9 +127,9 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
         String id = attrs.getValue("id");
         String name = attrs.getValue("name");
         String visibility = attrs.getValue("processType");
-        String packageName = attrs.getValue("http://www.jboss.org/drools", "packageName");
-        String dynamic = attrs.getValue("http://www.jboss.org/drools", "adHoc");
-        String version = attrs.getValue("http://www.jboss.org/drools", "version");
+        String packageName = attrs.getValue("https://automatik-platform.io", "packageName");
+        String dynamic = attrs.getValue("https://automatik-platform.io", "adHoc");
+        String version = attrs.getValue("https://automatik-platform.io", "version");
 
         ExecutableProcess process = new ExecutableProcess();
         process.setAutoComplete(true);
@@ -140,7 +140,7 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
         process.setName(name);
         process.setType("RuleFlow");
         if (packageName == null) {
-            packageName = "org.drools.bpmn2";
+            packageName = "io.automatik.processes";
         }
         process.setPackageName(packageName);
         if ("true".equals(dynamic)) {

@@ -6,7 +6,7 @@
                    xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
                    xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
                    xmlns:di="http://www.omg.org/spec/DD/20100524/DI" 
-                   xmlns:drools="http://www.jboss.org/drools" 
+                   xmlns:automatik="https://automatik-platform.io" 
                    id="_df_GEJnmEeG1YvOsUtyHvw" 
                    xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd" 
                    targetNamespace="http://www.omg.org/bpmn20">
@@ -17,7 +17,7 @@
 
     <bpmn2:property id="time" itemSubjectRef="_timeItem"/>
 
-    <bpmn2:startEvent id="_1" drools:bgcolor="#ffffff" name="">
+    <bpmn2:startEvent id="_1" automatik:bgcolor="#ffffff" name="">
       <bpmn2:outgoing>_1-2</bpmn2:outgoing>
     </bpmn2:startEvent>
 
@@ -31,7 +31,7 @@
 
     <bpmn2:sequenceFlow id="_2-3" sourceRef="_2" targetRef="_3"/>
 
-    <bpmn2:intermediateCatchEvent id="_3" drools:bgcolor="#ffffff" drools:boundaryca="false" name="timer">
+    <bpmn2:intermediateCatchEvent id="_3" automatik:bgcolor="#ffffff" automatik:boundaryca="false" name="timer">
       <bpmn2:incoming>_2-3</bpmn2:incoming>
       <bpmn2:outgoing>_3-4</bpmn2:outgoing>
       <bpmn2:timerEventDefinition id="_6">
@@ -47,7 +47,7 @@
 
     <bpmn2:sequenceFlow id="_3-4" sourceRef="_3" targetRef="_4"/>
 
-    <bpmn2:endEvent id="_5" drools:bgcolor="#ffffff" name="">
+    <bpmn2:endEvent id="_5" automatik:bgcolor="#ffffff" name="">
       <bpmn2:incoming>_4-5</bpmn2:incoming>
     </bpmn2:endEvent>
 

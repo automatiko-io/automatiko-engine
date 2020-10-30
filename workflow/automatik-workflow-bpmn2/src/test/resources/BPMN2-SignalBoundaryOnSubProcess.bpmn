@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd http://www.jboss.org/drools drools.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" id="Definition" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.jboss.org/drools" typeLanguage="http://www.java.com/javaTypes">
-  <process id="jbpm.testing.signal" drools:version="1" drools:packageName="jbpm.testing" drools:adHoc="false" name="signal" isExecutable="true" processType="Private">
+<definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatik-platform.io automatik.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" id="Definition" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="https://automatik-platform.io" typeLanguage="http://www.java.com/javaTypes">
+  <process id="jbpm.testing.signal" automatik:version="1" automatik:packageName="jbpm.testing" automatik:adHoc="false" name="signal" isExecutable="true" processType="Private">
     <startEvent id="StartEvent_1" name="StartProcess">
       <outgoing>SequenceFlow_11</outgoing>
     </startEvent>
@@ -21,10 +21,10 @@
         <outgoing>SequenceFlow_20</outgoing>
         <signalEventDefinition id="SignalEventDefinition_1" signalRef="continue"/>
       </intermediateCatchEvent>
-      <sequenceFlow id="SequenceFlow_20" drools:priority="1" name="" sourceRef="IntermediateCatchEvent_1" targetRef="EndEvent_2"/>
-      <sequenceFlow id="SequenceFlow_21" drools:priority="1" name="" sourceRef="StartEvent_2" targetRef="IntermediateCatchEvent_1"/>
+      <sequenceFlow id="SequenceFlow_20" automatik:priority="1" name="" sourceRef="IntermediateCatchEvent_1" targetRef="EndEvent_2"/>
+      <sequenceFlow id="SequenceFlow_21" automatik:priority="1" name="" sourceRef="StartEvent_2" targetRef="IntermediateCatchEvent_1"/>
     </subProcess>
-    <sequenceFlow id="SequenceFlow_11" drools:priority="1" name="" sourceRef="StartEvent_1" targetRef="SubProcess_1"/>
+    <sequenceFlow id="SequenceFlow_11" automatik:priority="1" name="" sourceRef="StartEvent_1" targetRef="SubProcess_1"/>
     <boundaryEvent id="BoundaryEvent_1" name="Wait for &quot;forward&quot;" attachedToRef="SubProcess_1">
       <outgoing>SequenceFlow_4</outgoing>
       <signalEventDefinition id="SignalEventDefinition_2" signalRef="forward"/>
@@ -34,21 +34,21 @@
       <incoming>SequenceFlow_5</incoming>
       <outgoing>SequenceFlow_16</outgoing>
     </exclusiveGateway>
-    <sequenceFlow id="SequenceFlow_16" drools:priority="1" name="" sourceRef="ExclusiveGateway_1" targetRef="EndEvent_1"/>
+    <sequenceFlow id="SequenceFlow_16" automatik:priority="1" name="" sourceRef="ExclusiveGateway_1" targetRef="EndEvent_1"/>
     <scriptTask id="ScriptTask_3" name="After Execution" scriptFormat="http://www.java.com/java">
       <incoming>SequenceFlow_1</incoming>
       <outgoing>SequenceFlow_2</outgoing>
       <script>System.out.println();</script>
     </scriptTask>
-    <sequenceFlow id="SequenceFlow_1" drools:priority="1" sourceRef="SubProcess_1" targetRef="ScriptTask_3"/>
-    <sequenceFlow id="SequenceFlow_2" drools:priority="1" name="" sourceRef="ScriptTask_3" targetRef="ExclusiveGateway_1"/>
+    <sequenceFlow id="SequenceFlow_1" automatik:priority="1" sourceRef="SubProcess_1" targetRef="ScriptTask_3"/>
+    <sequenceFlow id="SequenceFlow_2" automatik:priority="1" name="" sourceRef="ScriptTask_3" targetRef="ExclusiveGateway_1"/>
     <scriptTask id="ScriptTask_1" name="After Boundary" scriptFormat="http://www.java.com/java">
       <incoming>SequenceFlow_4</incoming>
       <outgoing>SequenceFlow_5</outgoing>
       <script>System.out.println();</script>
     </scriptTask>
-    <sequenceFlow id="SequenceFlow_4" drools:priority="1" name="" sourceRef="BoundaryEvent_1" targetRef="ScriptTask_1"/>
-    <sequenceFlow id="SequenceFlow_5" drools:priority="1" name="" sourceRef="ScriptTask_1" targetRef="ExclusiveGateway_1"/>
+    <sequenceFlow id="SequenceFlow_4" automatik:priority="1" name="" sourceRef="BoundaryEvent_1" targetRef="ScriptTask_1"/>
+    <sequenceFlow id="SequenceFlow_5" automatik:priority="1" name="" sourceRef="ScriptTask_1" targetRef="ExclusiveGateway_1"/>
   </process>
   <itemDefinition id="ItemDefinition_620" itemKind="Physical" structureRef="String"/>
   <signal id="continue" name="Continue Signal"/>

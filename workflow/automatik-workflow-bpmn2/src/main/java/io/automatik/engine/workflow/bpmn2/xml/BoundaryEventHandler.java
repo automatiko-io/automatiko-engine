@@ -583,7 +583,7 @@ public class BoundaryEventHandler extends AbstractNodeHandler {
 				writeExtensionElements(node, xmlDump);
 				xmlDump.append("      <conditionalEventDefinition>" + EOL);
 				xmlDump.append(
-						"        <condition xsi:type=\"tFormalExpression\" language=\"http://www.jboss.org/drools/rule\">"
+						"        <condition xsi:type=\"tFormalExpression\" language=\"https://automatik-platform.io/rule\">"
 								+ eventNode.getMetaData("Condition") + "</condition>" + EOL);
 				xmlDump.append("      </conditionalEventDefinition>" + EOL);
 				endNode("boundaryEvent", xmlDump);

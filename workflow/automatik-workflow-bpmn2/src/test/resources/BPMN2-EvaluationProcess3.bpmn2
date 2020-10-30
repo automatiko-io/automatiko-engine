@@ -9,7 +9,7 @@
              xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
              xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
              xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-             xmlns:tns="http://www.jboss.org/drools">
+             xmlns:tns="https://automatik-platform.io">
 
   <itemDefinition id="_employeeItem" structureRef="String" />
 
@@ -67,7 +67,7 @@
       <conditionExpression xsi:type="tFormalExpression" >return employee == "john";</conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="_3-_5" sourceRef="_3" targetRef="_5" >
-      <conditionExpression xsi:type="tFormalExpression" language="http://www.jboss.org/drools/rule" >eval(true);</conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression" language="https://automatik-platform.io/rule" >eval(true);</conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="_4-_6" sourceRef="_4" targetRef="_6" />
     <sequenceFlow id="_5-_6" sourceRef="_5" targetRef="_6" />

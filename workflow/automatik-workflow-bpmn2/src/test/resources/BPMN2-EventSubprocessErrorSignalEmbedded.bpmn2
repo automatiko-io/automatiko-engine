@@ -1,63 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools" id="_pgP6sHTaEeaoApuNXeI-uQ" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd http://www.jboss.org/drools drools.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" exporter="jBPM Designer" exporterVersion="6.2.0" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io" id="_pgP6sHTaEeaoApuNXeI-uQ" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatik-platform.io automatik.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" exporter="jBPM Designer" exporterVersion="6.2.0" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
   <bpmn2:signal id="signal1" name="signal1"/>
   <bpmn2:signal id="signal2" name="signal2"/>
   <bpmn2:signal id="signal3" name="signal3"/>
   <bpmn2:error id="myerrorref" errorCode="myerrorref"/>
-  <bpmn2:process id="project2.myerrorprocess" drools:packageName="org.jbpm" drools:version="1.0" name="myerrorprocess" isExecutable="true">
-    <bpmn2:startEvent id="processStartEvent" drools:bgcolor="#9acd32" drools:selectable="true" name="">
+  <bpmn2:process id="project2.myerrorprocess" automatik:packageName="org.jbpm" automatik:version="1.0" name="myerrorprocess" isExecutable="true">
+    <bpmn2:startEvent id="processStartEvent" automatik:bgcolor="#9acd32" automatik:selectable="true" name="">
       <bpmn2:outgoing>_39010054-5D46-4E8C-A9FA-64E46B4E293A</bpmn2:outgoing>
     </bpmn2:startEvent>
-    <bpmn2:scriptTask id="_C17A804A-5140-4FF4-9F27-3608B2F8D4A3" drools:selectable="true" name="Parent Process" scriptFormat="http://www.java.com/java">
+    <bpmn2:scriptTask id="_C17A804A-5140-4FF4-9F27-3608B2F8D4A3" automatik:selectable="true" name="Parent Process" scriptFormat="http://www.java.com/java">
       <bpmn2:incoming>_39010054-5D46-4E8C-A9FA-64E46B4E293A</bpmn2:incoming>
       <bpmn2:outgoing>_FCC2871C-1D99-46E5-BE85-294F2F5EC58A</bpmn2:outgoing>
       <bpmn2:script><![CDATA[System.out.println("Parent process run...");]]></bpmn2:script>
     </bpmn2:scriptTask>
-    <bpmn2:sequenceFlow id="_39010054-5D46-4E8C-A9FA-64E46B4E293A" drools:bgcolor="#000000" drools:selectable="true" sourceRef="processStartEvent" targetRef="_C17A804A-5140-4FF4-9F27-3608B2F8D4A3"/>
-    <bpmn2:intermediateCatchEvent id="_A55CA959-D4DA-403D-8F0B-2078F58D2DDE" drools:bgcolor="#f5deb3" drools:selectable="true" drools:bordercolor="#a0522d" drools:boundaryca="" name="Signal1">
+    <bpmn2:sequenceFlow id="_39010054-5D46-4E8C-A9FA-64E46B4E293A" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="processStartEvent" targetRef="_C17A804A-5140-4FF4-9F27-3608B2F8D4A3"/>
+    <bpmn2:intermediateCatchEvent id="_A55CA959-D4DA-403D-8F0B-2078F58D2DDE" automatik:bgcolor="#f5deb3" automatik:selectable="true" automatik:bordercolor="#a0522d" automatik:boundaryca="" name="Signal1">
       <bpmn2:incoming>_FCC2871C-1D99-46E5-BE85-294F2F5EC58A</bpmn2:incoming>
       <bpmn2:outgoing>_05EE3913-3EAD-424B-92DC-6465CFA11A50</bpmn2:outgoing>
       <bpmn2:signalEventDefinition id="_pgP6sXTaEeaoApuNXeI-uQ" signalRef="signal1"/>
     </bpmn2:intermediateCatchEvent>
-    <bpmn2:sequenceFlow id="_FCC2871C-1D99-46E5-BE85-294F2F5EC58A" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_C17A804A-5140-4FF4-9F27-3608B2F8D4A3" targetRef="_A55CA959-D4DA-403D-8F0B-2078F58D2DDE"/>
-    <bpmn2:endEvent id="_D5BCD39D-61A8-49BA-8AC1-477D27500F0D" drools:bgcolor="#ff6347" drools:selectable="true" name="">
+    <bpmn2:sequenceFlow id="_FCC2871C-1D99-46E5-BE85-294F2F5EC58A" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_C17A804A-5140-4FF4-9F27-3608B2F8D4A3" targetRef="_A55CA959-D4DA-403D-8F0B-2078F58D2DDE"/>
+    <bpmn2:endEvent id="_D5BCD39D-61A8-49BA-8AC1-477D27500F0D" automatik:bgcolor="#ff6347" automatik:selectable="true" name="">
       <bpmn2:incoming>_05EE3913-3EAD-424B-92DC-6465CFA11A50</bpmn2:incoming>
-      <bpmn2:errorEventDefinition id="_pgP6snTaEeaoApuNXeI-uQ" drools:erefname="myerrorref" errorRef="myerrorref"/>
+      <bpmn2:errorEventDefinition id="_pgP6snTaEeaoApuNXeI-uQ" automatik:erefname="myerrorref" errorRef="myerrorref"/>
     </bpmn2:endEvent>
-    <bpmn2:sequenceFlow id="_05EE3913-3EAD-424B-92DC-6465CFA11A50" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_A55CA959-D4DA-403D-8F0B-2078F58D2DDE" targetRef="_D5BCD39D-61A8-49BA-8AC1-477D27500F0D"/>
-    <bpmn2:subProcess id="_AB7869E8-1143-43A1-8F62-EB0FEE4E131D" drools:bgcolor="#ffffff" drools:selectable="true" name="" triggeredByEvent="true">
-      <bpmn2:startEvent id="_41A836D9-83C2-4B6B-A2CB-FB392E62C6EA" drools:bgcolor="#9acd32" drools:selectable="true" name="">
+    <bpmn2:sequenceFlow id="_05EE3913-3EAD-424B-92DC-6465CFA11A50" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_A55CA959-D4DA-403D-8F0B-2078F58D2DDE" targetRef="_D5BCD39D-61A8-49BA-8AC1-477D27500F0D"/>
+    <bpmn2:subProcess id="_AB7869E8-1143-43A1-8F62-EB0FEE4E131D" automatik:bgcolor="#ffffff" automatik:selectable="true" name="" triggeredByEvent="true">
+      <bpmn2:startEvent id="_41A836D9-83C2-4B6B-A2CB-FB392E62C6EA" automatik:bgcolor="#9acd32" automatik:selectable="true" name="">
         <bpmn2:outgoing>_87AD2D24-CFFC-4352-BC76-DA18AE611768</bpmn2:outgoing>
-        <bpmn2:errorEventDefinition id="_pgP6s3TaEeaoApuNXeI-uQ" drools:erefname="myerrorref" errorRef="myerrorref"/>
+        <bpmn2:errorEventDefinition id="_pgP6s3TaEeaoApuNXeI-uQ" automatik:erefname="myerrorref" errorRef="myerrorref"/>
       </bpmn2:startEvent>
-      <bpmn2:scriptTask id="_9C6C7F2A-9459-40DE-9675-DDA5CB1A0CD6" drools:selectable="true" name="Script1" scriptFormat="http://www.java.com/java">
+      <bpmn2:scriptTask id="_9C6C7F2A-9459-40DE-9675-DDA5CB1A0CD6" automatik:selectable="true" name="Script1" scriptFormat="http://www.java.com/java">
         <bpmn2:incoming>_87AD2D24-CFFC-4352-BC76-DA18AE611768</bpmn2:incoming>
         <bpmn2:outgoing>_4099F2E8-745B-4C8A-81F5-177D8B3D09A3</bpmn2:outgoing>
         <bpmn2:script><![CDATA[System.out.println("Script1 run...");]]></bpmn2:script>
       </bpmn2:scriptTask>
-      <bpmn2:intermediateCatchEvent id="_9BE0054F-3EA1-415D-80F5-3DB0770FA1C0" drools:bgcolor="#f5deb3" drools:selectable="true" drools:bordercolor="#a0522d" drools:boundaryca="" name="Sub-signal1">
+      <bpmn2:intermediateCatchEvent id="_9BE0054F-3EA1-415D-80F5-3DB0770FA1C0" automatik:bgcolor="#f5deb3" automatik:selectable="true" automatik:bordercolor="#a0522d" automatik:boundaryca="" name="Sub-signal1">
         <bpmn2:incoming>_4099F2E8-745B-4C8A-81F5-177D8B3D09A3</bpmn2:incoming>
         <bpmn2:outgoing>_C970DF27-4230-4477-9D81-0C34636CE8BB</bpmn2:outgoing>
         <bpmn2:signalEventDefinition id="_pgP6tHTaEeaoApuNXeI-uQ" signalRef="signal2"/>
       </bpmn2:intermediateCatchEvent>
-      <bpmn2:scriptTask id="_87B4E535-4BA2-4F83-9F9A-CD147B67C6DE" drools:selectable="true" name="Script2" scriptFormat="http://www.java.com/java">
+      <bpmn2:scriptTask id="_87B4E535-4BA2-4F83-9F9A-CD147B67C6DE" automatik:selectable="true" name="Script2" scriptFormat="http://www.java.com/java">
         <bpmn2:incoming>_C970DF27-4230-4477-9D81-0C34636CE8BB</bpmn2:incoming>
         <bpmn2:outgoing>_52E875AC-A9EA-41CF-A168-3C02CEB2AA06</bpmn2:outgoing>
         <bpmn2:script><![CDATA[System.out.println("Script2 run...");]]></bpmn2:script>
       </bpmn2:scriptTask>
-      <bpmn2:intermediateCatchEvent id="_EAB2BE48-6748-4C2E-91E1-D27C080E96FA" drools:bgcolor="#f5deb3" drools:selectable="true" drools:bordercolor="#a0522d" drools:boundaryca="" name="Sub-signal2">
+      <bpmn2:intermediateCatchEvent id="_EAB2BE48-6748-4C2E-91E1-D27C080E96FA" automatik:bgcolor="#f5deb3" automatik:selectable="true" automatik:bordercolor="#a0522d" automatik:boundaryca="" name="Sub-signal2">
         <bpmn2:incoming>_52E875AC-A9EA-41CF-A168-3C02CEB2AA06</bpmn2:incoming>
         <bpmn2:outgoing>_AA209FC7-33F3-483C-ABAB-541246AD4445</bpmn2:outgoing>
         <bpmn2:signalEventDefinition id="_pgP6tXTaEeaoApuNXeI-uQ" signalRef="signal3"/>
       </bpmn2:intermediateCatchEvent>
-      <bpmn2:endEvent id="_BCAF7A70-3871-44F5-9E24-1A87D436FF93" drools:bgcolor="#ff6347" drools:selectable="true" name="">
+      <bpmn2:endEvent id="_BCAF7A70-3871-44F5-9E24-1A87D436FF93" automatik:bgcolor="#ff6347" automatik:selectable="true" name="">
         <bpmn2:incoming>_AA209FC7-33F3-483C-ABAB-541246AD4445</bpmn2:incoming>
       </bpmn2:endEvent>
-      <bpmn2:sequenceFlow id="_87AD2D24-CFFC-4352-BC76-DA18AE611768" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_41A836D9-83C2-4B6B-A2CB-FB392E62C6EA" targetRef="_9C6C7F2A-9459-40DE-9675-DDA5CB1A0CD6"/>
-      <bpmn2:sequenceFlow id="_4099F2E8-745B-4C8A-81F5-177D8B3D09A3" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_9C6C7F2A-9459-40DE-9675-DDA5CB1A0CD6" targetRef="_9BE0054F-3EA1-415D-80F5-3DB0770FA1C0"/>
-      <bpmn2:sequenceFlow id="_C970DF27-4230-4477-9D81-0C34636CE8BB" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_9BE0054F-3EA1-415D-80F5-3DB0770FA1C0" targetRef="_87B4E535-4BA2-4F83-9F9A-CD147B67C6DE"/>
-      <bpmn2:sequenceFlow id="_52E875AC-A9EA-41CF-A168-3C02CEB2AA06" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_87B4E535-4BA2-4F83-9F9A-CD147B67C6DE" targetRef="_EAB2BE48-6748-4C2E-91E1-D27C080E96FA"/>
-      <bpmn2:sequenceFlow id="_AA209FC7-33F3-483C-ABAB-541246AD4445" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_EAB2BE48-6748-4C2E-91E1-D27C080E96FA" targetRef="_BCAF7A70-3871-44F5-9E24-1A87D436FF93"/>
+      <bpmn2:sequenceFlow id="_87AD2D24-CFFC-4352-BC76-DA18AE611768" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_41A836D9-83C2-4B6B-A2CB-FB392E62C6EA" targetRef="_9C6C7F2A-9459-40DE-9675-DDA5CB1A0CD6"/>
+      <bpmn2:sequenceFlow id="_4099F2E8-745B-4C8A-81F5-177D8B3D09A3" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_9C6C7F2A-9459-40DE-9675-DDA5CB1A0CD6" targetRef="_9BE0054F-3EA1-415D-80F5-3DB0770FA1C0"/>
+      <bpmn2:sequenceFlow id="_C970DF27-4230-4477-9D81-0C34636CE8BB" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_9BE0054F-3EA1-415D-80F5-3DB0770FA1C0" targetRef="_87B4E535-4BA2-4F83-9F9A-CD147B67C6DE"/>
+      <bpmn2:sequenceFlow id="_52E875AC-A9EA-41CF-A168-3C02CEB2AA06" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_87B4E535-4BA2-4F83-9F9A-CD147B67C6DE" targetRef="_EAB2BE48-6748-4C2E-91E1-D27C080E96FA"/>
+      <bpmn2:sequenceFlow id="_AA209FC7-33F3-483C-ABAB-541246AD4445" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_EAB2BE48-6748-4C2E-91E1-D27C080E96FA" targetRef="_BCAF7A70-3871-44F5-9E24-1A87D436FF93"/>
     </bpmn2:subProcess>
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="_pgP6tnTaEeaoApuNXeI-uQ">

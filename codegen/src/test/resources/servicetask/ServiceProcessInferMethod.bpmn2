@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions id="_6403D79B-D01C-478F-8D3F-44F0137A7F99" exporter="jBPM Process Modeler" exporterVersion="2.0" targetNamespace="http://www.omg.org/bpmn20" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools">
+<bpmn2:definitions id="_6403D79B-D01C-478F-8D3F-44F0137A7F99" exporter="jBPM Process Modeler" exporterVersion="2.0" targetNamespace="http://www.omg.org/bpmn20" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io">
   <bpmn2:itemDefinition id="_A4520009-200E-46DD-B0F4-6B50B3703612_InMessageType" structureRef=""/>
   <bpmn2:itemDefinition id="_A4520009-200E-46DD-B0F4-6B50B3703612_OutMessageType" structureRef=""/>
   <bpmn2:itemDefinition id="__A4520009-200E-46DD-B0F4-6B50B3703612_ParameterInputXItem" structureRef="String"/>
@@ -11,40 +11,40 @@
       <bpmn2:outMessageRef>_A4520009-200E-46DD-B0F4-6B50B3703612_OutMessage</bpmn2:outMessageRef>
     </bpmn2:operation>
   </bpmn2:interface>
-  <bpmn2:process id="foobar" drools:version="1.0" drools:adHoc="false" name="foobar" isExecutable="true" processType="Public">
+  <bpmn2:process id="foobar" automatik:version="1.0" automatik:adHoc="false" name="foobar" isExecutable="true" processType="Public">
     <bpmn2:sequenceFlow id="_780B6632-C650-4753-99E6-E89746DFB51E" sourceRef="_A4520009-200E-46DD-B0F4-6B50B3703612" targetRef="_01749F2C-5AA6-4CC3-AFF2-E65AA714E903">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.source">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
-        <drools:metaData name="isAutoConnection.target">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.source">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
+        <automatik:metaData name="isAutoConnection.target">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="_3B0D7E71-5757-473E-8431-EA5C1E1388EE" sourceRef="_B56F6C7C-5A4A-4FF1-96A7-AB83FCD7C68C" targetRef="_A4520009-200E-46DD-B0F4-6B50B3703612">
       <bpmn2:extensionElements>
-        <drools:metaData name="isAutoConnection.source">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
-        <drools:metaData name="isAutoConnection.target">
-          <drools:metaValue><![CDATA[true]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="isAutoConnection.source">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
+        <automatik:metaData name="isAutoConnection.target">
+          <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
     </bpmn2:sequenceFlow>
     <bpmn2:endEvent id="_01749F2C-5AA6-4CC3-AFF2-E65AA714E903">
       <bpmn2:incoming>_780B6632-C650-4753-99E6-E89746DFB51E</bpmn2:incoming>
     </bpmn2:endEvent>
-    <bpmn2:serviceTask id="_A4520009-200E-46DD-B0F4-6B50B3703612" drools:serviceimplementation="Java" drools:serviceinterface="io.automatik.engine.codegen.data.HelloService" drools:serviceoperation="hello" name="Task" implementation="Java" operationRef="_A4520009-200E-46DD-B0F4-6B50B3703612_ServiceOperation">
+    <bpmn2:serviceTask id="_A4520009-200E-46DD-B0F4-6B50B3703612" automatik:serviceimplementation="Java" automatik:serviceinterface="io.automatik.engine.codegen.data.HelloService" automatik:serviceoperation="hello" name="Task" implementation="Java" operationRef="_A4520009-200E-46DD-B0F4-6B50B3703612_ServiceOperation">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[Task]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Task]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_3B0D7E71-5757-473E-8431-EA5C1E1388EE</bpmn2:incoming>
       <bpmn2:outgoing>_780B6632-C650-4753-99E6-E89746DFB51E</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_OvxXANFUEDed7vZfaMZkog">
-        <bpmn2:dataInput id="_A4520009-200E-46DD-B0F4-6B50B3703612_ParameterInputX" drools:dtype="String" itemSubjectRef="__A4520009-200E-46DD-B0F4-6B50B3703612_ParameterInputXItem" name="Parameter"/>
+        <bpmn2:dataInput id="_A4520009-200E-46DD-B0F4-6B50B3703612_ParameterInputX" automatik:dtype="String" itemSubjectRef="__A4520009-200E-46DD-B0F4-6B50B3703612_ParameterInputXItem" name="Parameter"/>
         <bpmn2:inputSet id="_Ovx-ENFUEDed7vZfaMZkog">
           <bpmn2:dataInputRefs>_A4520009-200E-46DD-B0F4-6B50B3703612_ParameterInputX</bpmn2:dataInputRefs>
         </bpmn2:inputSet>

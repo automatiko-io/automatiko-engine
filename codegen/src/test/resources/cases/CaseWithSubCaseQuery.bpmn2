@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools" id="_qh7WELWdEeez6KlxwDtT2Q" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd http://www.jboss.org/drools drools.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" exporter="jBPM Designer" exporterVersion="6.2.0" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io" id="_qh7WELWdEeez6KlxwDtT2Q" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatik-platform.io automatik.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" exporter="jBPM Designer" exporterVersion="6.2.0" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
   <bpmn2:itemDefinition id="_nameItem" structureRef="String"/>
   <bpmn2:itemDefinition id="_caseFile_subCaseIdItem" structureRef="String"/>
   <bpmn2:itemDefinition id="_caseFile_outcomeItem" structureRef="String"/>
@@ -11,23 +11,23 @@
   <bpmn2:itemDefinition id="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_Data_sInputXItem" structureRef="String"/>
   <bpmn2:itemDefinition id="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_CaseIdOutputXItem" structureRef="String"/>
   <bpmn2:itemDefinition id="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_sOutputXItem" structureRef="String"/>
-  <bpmn2:process id="CaseWithSubCaseQuery" drools:adHoc="true" drools:version="1.0" name="CaseWithSubCase" isExecutable="true">
+  <bpmn2:process id="CaseWithSubCaseQuery" automatik:adHoc="true" automatik:version="1.0" name="CaseWithSubCase" isExecutable="true">
     <bpmn2:extensionElements>
-      <drools:metaData name="customCaseIdPrefix">
-        <drools:metaValue><![CDATA[SUB]]></drools:metaValue>
-      </drools:metaData>
-      <drools:metaData name="customCaseRoles">
-        <drools:metaValue><![CDATA[owner:1,manager:1]]></drools:metaValue>
-      </drools:metaData>
+      <automatik:metaData name="customCaseIdPrefix">
+        <automatik:metaValue><![CDATA[SUB]]></automatik:metaValue>
+      </automatik:metaData>
+      <automatik:metaData name="customCaseRoles">
+        <automatik:metaValue><![CDATA[owner:1,manager:1]]></automatik:metaValue>
+      </automatik:metaData>
     </bpmn2:extensionElements>
     <bpmn2:property id="name" itemSubjectRef="_nameItem"/>
     <bpmn2:property id="caseFile_subCaseId" itemSubjectRef="_caseFile_subCaseIdItem"/>
     <bpmn2:property id="caseFile_outcome" itemSubjectRef="_caseFile_outcomeItem"/>
-    <bpmn2:userTask id="_9B954E20-082F-41C2-BA7B-D88DEFC4D16C" drools:selectable="true" drools:scriptFormat="http://www.java.com/java" color:background-color="#fafad2" color:border-color="#000000" color:color="#000000" name="Initial task">
+    <bpmn2:userTask id="_9B954E20-082F-41C2-BA7B-D88DEFC4D16C" automatik:selectable="true" automatik:scriptFormat="http://www.java.com/java" color:background-color="#fafad2" color:border-color="#000000" color:color="#000000" name="Initial task">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[Initial task]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Initial task]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:ioSpecification id="_qh7WEbWdEeez6KlxwDtT2Q">
         <bpmn2:dataInput id="_9B954E20-082F-41C2-BA7B-D88DEFC4D16C_SkippableInputX" name="Skippable"/>
@@ -49,22 +49,22 @@
         </bpmn2:resourceAssignmentExpression>
       </bpmn2:potentialOwner>
     </bpmn2:userTask>
-    <bpmn2:task id="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B" drools:selectable="true" drools:taskName="StartCaseInstance" color:background-color="#fafad2" color:border-color="#000000" color:color="#000000" name="Sub Case">
+    <bpmn2:task id="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B" automatik:selectable="true" automatik:taskName="StartCaseInstance" color:background-color="#fafad2" color:border-color="#000000" color:color="#000000" name="Sub Case">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[Sub Case]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Sub Case]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:outgoing>_9BD44A3A-53AB-4FCC-B79E-21CBC4C2DA13</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_qh79KLWdEeez6KlxwDtT2Q">
-        <bpmn2:dataInput id="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_TaskNameInputX" drools:dtype="String" itemSubjectRef="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_TaskNameInputXItem" name="TaskName"/>
-        <bpmn2:dataInput id="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_IndependentInputX" drools:dtype="String" itemSubjectRef="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_IndependentInputXItem" name="Independent"/>
-        <bpmn2:dataInput id="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_CaseDefinitionIdInputX" drools:dtype="String" itemSubjectRef="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_CaseDefinitionIdInputXItem" name="CaseDefinitionId"/>
-        <bpmn2:dataInput id="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_DeploymentIdInputX" drools:dtype="String" itemSubjectRef="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_DeploymentIdInputXItem" name="DeploymentId"/>
-        <bpmn2:dataInput id="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_UserRole_ownerInputX" drools:dtype="String" itemSubjectRef="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_UserRole_ownerInputXItem" name="UserRole_owner"/>
-        <bpmn2:dataInput id="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_Data_sInputX" drools:dtype="String" itemSubjectRef="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_Data_sInputXItem" name="Data_s"/>
-        <bpmn2:dataOutput id="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_CaseIdOutputX" drools:dtype="String" itemSubjectRef="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_CaseIdOutputXItem" name="CaseId"/>
-        <bpmn2:dataOutput id="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_sOutputX" drools:dtype="String" itemSubjectRef="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_sOutputXItem" name="s"/>
+        <bpmn2:dataInput id="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_TaskNameInputX" automatik:dtype="String" itemSubjectRef="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_TaskNameInputXItem" name="TaskName"/>
+        <bpmn2:dataInput id="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_IndependentInputX" automatik:dtype="String" itemSubjectRef="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_IndependentInputXItem" name="Independent"/>
+        <bpmn2:dataInput id="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_CaseDefinitionIdInputX" automatik:dtype="String" itemSubjectRef="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_CaseDefinitionIdInputXItem" name="CaseDefinitionId"/>
+        <bpmn2:dataInput id="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_DeploymentIdInputX" automatik:dtype="String" itemSubjectRef="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_DeploymentIdInputXItem" name="DeploymentId"/>
+        <bpmn2:dataInput id="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_UserRole_ownerInputX" automatik:dtype="String" itemSubjectRef="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_UserRole_ownerInputXItem" name="UserRole_owner"/>
+        <bpmn2:dataInput id="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_Data_sInputX" automatik:dtype="String" itemSubjectRef="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_Data_sInputXItem" name="Data_s"/>
+        <bpmn2:dataOutput id="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_CaseIdOutputX" automatik:dtype="String" itemSubjectRef="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_CaseIdOutputXItem" name="CaseId"/>
+        <bpmn2:dataOutput id="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_sOutputX" automatik:dtype="String" itemSubjectRef="__2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_sOutputXItem" name="s"/>
         <bpmn2:inputSet id="_qh79KbWdEeez6KlxwDtT2Q">
           <bpmn2:dataInputRefs>_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_IndependentInputX</bpmn2:dataInputRefs>
           <bpmn2:dataInputRefs>_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B_CaseDefinitionIdInputX</bpmn2:dataInputRefs>
@@ -126,11 +126,11 @@
         <bpmn2:targetRef>caseFile_outcome</bpmn2:targetRef>
       </bpmn2:dataOutputAssociation>
     </bpmn2:task>
-    <bpmn2:userTask id="_0F826C6F-36A4-4DCD-952C-B1771C2CA39F" drools:selectable="true" drools:scriptFormat="http://www.java.com/java" color:background-color="#fafad2" color:border-color="#000000" color:color="#000000" name="Task after subcase">
+    <bpmn2:userTask id="_0F826C6F-36A4-4DCD-952C-B1771C2CA39F" automatik:selectable="true" automatik:scriptFormat="http://www.java.com/java" color:background-color="#fafad2" color:border-color="#000000" color:color="#000000" name="Task after subcase">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[Task after subcase]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Task after subcase]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_9BD44A3A-53AB-4FCC-B79E-21CBC4C2DA13</bpmn2:incoming>
       <bpmn2:outgoing>_7E73D809-AF8B-422A-8C66-278CB9E0FE69</bpmn2:outgoing>
@@ -154,16 +154,16 @@
         </bpmn2:resourceAssignmentExpression>
       </bpmn2:potentialOwner>
     </bpmn2:userTask>
-    <bpmn2:sequenceFlow id="_9BD44A3A-53AB-4FCC-B79E-21CBC4C2DA13" drools:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B" targetRef="_0F826C6F-36A4-4DCD-952C-B1771C2CA39F"/>
-    <bpmn2:endEvent id="_43642373-A711-4CC5-A66F-3D82025B10E7" drools:selectable="true" color:background-color="#ff6347" color:border-color="#000000" color:color="#000000" name="">
+    <bpmn2:sequenceFlow id="_9BD44A3A-53AB-4FCC-B79E-21CBC4C2DA13" automatik:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_2D40664E-2AFD-4BD9-AC28-C9EAD763BF5B" targetRef="_0F826C6F-36A4-4DCD-952C-B1771C2CA39F"/>
+    <bpmn2:endEvent id="_43642373-A711-4CC5-A66F-3D82025B10E7" automatik:selectable="true" color:background-color="#ff6347" color:border-color="#000000" color:color="#000000" name="">
       <bpmn2:extensionElements>
-        <drools:metaData name="elementname">
-          <drools:metaValue><![CDATA[]]></drools:metaValue>
-        </drools:metaData>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[]]></automatik:metaValue>
+        </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_7E73D809-AF8B-422A-8C66-278CB9E0FE69</bpmn2:incoming>
     </bpmn2:endEvent>
-    <bpmn2:sequenceFlow id="_7E73D809-AF8B-422A-8C66-278CB9E0FE69" drools:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_0F826C6F-36A4-4DCD-952C-B1771C2CA39F" targetRef="_43642373-A711-4CC5-A66F-3D82025B10E7"/>
+    <bpmn2:sequenceFlow id="_7E73D809-AF8B-422A-8C66-278CB9E0FE69" automatik:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_0F826C6F-36A4-4DCD-952C-B1771C2CA39F" targetRef="_43642373-A711-4CC5-A66F-3D82025B10E7"/>
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="_qh8kMrWdEeez6KlxwDtT2Q">
     <bpmndi:BPMNPlane id="_qh8kM7WdEeez6KlxwDtT2Q" bpmnElement="CaseWithSubCase">

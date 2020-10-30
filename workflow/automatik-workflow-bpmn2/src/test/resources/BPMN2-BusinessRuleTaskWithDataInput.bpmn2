@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:drools="http://www.jboss.org/drools" id="_4stiAC9sEeOaG4BBbqOFwA" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd http://www.jboss.org/drools drools.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io" id="_4stiAC9sEeOaG4BBbqOFwA" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatik-platform.io automatik.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
   <bpmn2:itemDefinition id="_personItem" structureRef="org.jbpm.bpmn2.objects.Person"/>
   <bpmn2:itemDefinition id="__B837821D-9CA0-431E-8D4C-8065C3493CE7_personinInputItem" structureRef="org.jbpm.bpmn2.objects.Person"/>
   <bpmn2:itemDefinition id="__B837821D-9CA0-431E-8D4C-8065C3493CE7_personoutOutputItem" structureRef="org.jbpm.bpmn2.objects.Person"/>
-  <bpmn2:process id="BPMN2-BusinessRuleTask" drools:packageName="org.jbpm.bpmn2.objects" drools:version="1.0" name="withrules" isExecutable="true">
+  <bpmn2:process id="BPMN2-BusinessRuleTask" automatik:packageName="org.jbpm.bpmn2.objects" automatik:version="1.0" name="withrules" isExecutable="true">
     <bpmn2:property id="person" itemSubjectRef="_personItem"/>
-    <bpmn2:startEvent id="processStartEvent" drools:bgcolor="#9acd32" drools:selectable="true" name="">
+    <bpmn2:startEvent id="processStartEvent" automatik:bgcolor="#9acd32" automatik:selectable="true" name="">
       <bpmn2:outgoing>_DE49B781-CAB0-4C7E-81AE-1A4EA34648CA</bpmn2:outgoing>
     </bpmn2:startEvent>
-    <bpmn2:businessRuleTask id="_B837821D-9CA0-431E-8D4C-8065C3493CE7" drools:selectable="true" drools:ruleFlowGroup="MyRuleFlow" drools:scriptFormat="http://www.java.com/java" name="Evaluate rule">
+    <bpmn2:businessRuleTask id="_B837821D-9CA0-431E-8D4C-8065C3493CE7" automatik:selectable="true" automatik:ruleFlowGroup="MyRuleFlow" automatik:scriptFormat="http://www.java.com/java" name="Evaluate rule">
       <bpmn2:incoming>_DE49B781-CAB0-4C7E-81AE-1A4EA34648CA</bpmn2:incoming>
       <bpmn2:outgoing>_CDF5A14A-D296-42A4-9EAF-2F0910A4BC10</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_4suJEC9sEeOaG4BBbqOFwA">
-        <bpmn2:dataInput id="_B837821D-9CA0-431E-8D4C-8065C3493CE7_personinInput" drools:dtype="org.jbpm.bpmn2.objects.Person" itemSubjectRef="__B837821D-9CA0-431E-8D4C-8065C3493CE7_personinInputItem" name="personin"/>
-        <bpmn2:dataOutput id="_B837821D-9CA0-431E-8D4C-8065C3493CE7_personoutOutput" drools:dtype="org.jbpm.bpmn2.objects.Person" itemSubjectRef="__B837821D-9CA0-431E-8D4C-8065C3493CE7_personoutOutputItem" name="personin"/>
+        <bpmn2:dataInput id="_B837821D-9CA0-431E-8D4C-8065C3493CE7_personinInput" automatik:dtype="org.jbpm.bpmn2.objects.Person" itemSubjectRef="__B837821D-9CA0-431E-8D4C-8065C3493CE7_personinInputItem" name="personin"/>
+        <bpmn2:dataOutput id="_B837821D-9CA0-431E-8D4C-8065C3493CE7_personoutOutput" automatik:dtype="org.jbpm.bpmn2.objects.Person" itemSubjectRef="__B837821D-9CA0-431E-8D4C-8065C3493CE7_personoutOutputItem" name="personin"/>
         <bpmn2:inputSet id="_4suJES9sEeOaG4BBbqOFwA">
           <bpmn2:dataInputRefs>_B837821D-9CA0-431E-8D4C-8065C3493CE7_personinInput</bpmn2:dataInputRefs>
         </bpmn2:inputSet>
@@ -30,17 +30,17 @@
         <bpmn2:targetRef>person</bpmn2:targetRef>
       </bpmn2:dataOutputAssociation>
     </bpmn2:businessRuleTask>
-    <bpmn2:sequenceFlow id="_DE49B781-CAB0-4C7E-81AE-1A4EA34648CA" drools:bgcolor="#000000" drools:selectable="true" sourceRef="processStartEvent" targetRef="_B837821D-9CA0-431E-8D4C-8065C3493CE7"/>
-    <bpmn2:scriptTask id="_93BD2C60-4B4B-4AF6-A393-B75C3999135F" drools:selectable="true" name="Printout" scriptFormat="http://www.java.com/java">
+    <bpmn2:sequenceFlow id="_DE49B781-CAB0-4C7E-81AE-1A4EA34648CA" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="processStartEvent" targetRef="_B837821D-9CA0-431E-8D4C-8065C3493CE7"/>
+    <bpmn2:scriptTask id="_93BD2C60-4B4B-4AF6-A393-B75C3999135F" automatik:selectable="true" name="Printout" scriptFormat="http://www.java.com/java">
       <bpmn2:incoming>_CDF5A14A-D296-42A4-9EAF-2F0910A4BC10</bpmn2:incoming>
       <bpmn2:outgoing>_00D2A1E8-F343-478F-B301-B11C551F1037</bpmn2:outgoing>
       <bpmn2:script><![CDATA[System.out.println("Person " + person.getName());]]></bpmn2:script>
     </bpmn2:scriptTask>
-    <bpmn2:sequenceFlow id="_CDF5A14A-D296-42A4-9EAF-2F0910A4BC10" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_B837821D-9CA0-431E-8D4C-8065C3493CE7" targetRef="_93BD2C60-4B4B-4AF6-A393-B75C3999135F"/>
-    <bpmn2:endEvent id="_5D14605E-F34F-475C-A3A3-A3F3F09ACB21" drools:bgcolor="#ff6347" drools:selectable="true" name="">
+    <bpmn2:sequenceFlow id="_CDF5A14A-D296-42A4-9EAF-2F0910A4BC10" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_B837821D-9CA0-431E-8D4C-8065C3493CE7" targetRef="_93BD2C60-4B4B-4AF6-A393-B75C3999135F"/>
+    <bpmn2:endEvent id="_5D14605E-F34F-475C-A3A3-A3F3F09ACB21" automatik:bgcolor="#ff6347" automatik:selectable="true" name="">
       <bpmn2:incoming>_00D2A1E8-F343-478F-B301-B11C551F1037</bpmn2:incoming>
     </bpmn2:endEvent>
-    <bpmn2:sequenceFlow id="_00D2A1E8-F343-478F-B301-B11C551F1037" drools:bgcolor="#000000" drools:selectable="true" sourceRef="_93BD2C60-4B4B-4AF6-A393-B75C3999135F" targetRef="_5D14605E-F34F-475C-A3A3-A3F3F09ACB21"/>
+    <bpmn2:sequenceFlow id="_00D2A1E8-F343-478F-B301-B11C551F1037" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_93BD2C60-4B4B-4AF6-A393-B75C3999135F" targetRef="_5D14605E-F34F-475C-A3A3-A3F3F09ACB21"/>
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="_4suJFS9sEeOaG4BBbqOFwA">
     <bpmndi:BPMNPlane id="_4suJFi9sEeOaG4BBbqOFwA" bpmnElement="BPMN2-BusinessRuleTask">
