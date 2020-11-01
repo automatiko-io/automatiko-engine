@@ -21,6 +21,7 @@ import javax.ws.rs.core.MediaType;
 
 import io.automatik.engine.api.runtime.process.WorkItemNotFoundException;
 import io.automatik.engine.api.Application;
+import io.automatik.engine.api.auth.IdentityProvider;
 import io.automatik.engine.api.auth.SecurityPolicy;
 import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
@@ -53,18 +54,25 @@ public class $Type$Resource {
     @GET()
     @Path("$prefix$/$name$")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<$Type$Output> getAll_$name$(@PathParam("id") String id) {
+    public List<$Type$Output> getAll_$name$(@PathParam("id") String id,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         
-    	ProcessInstance parent = $parentprocess$.instances()
-                .findById($parentparentprocessid$$parentprocessid$)
-                .orElse(null);
-        if (parent != null) {
-    	
-        	return (List<$Type$Output>) parent.subprocesses().stream()
-                .map(pi -> mapOutput(new $Type$Output(), ($Type$) ((ProcessInstance)pi).variables()))
-                .collect(java.util.stream.Collectors.toList());
-        } else {
-        	return java.util.Collections.emptyList();
+        try {
+            identitySupplier.buildIdentityProvider(user, groups);
+        	ProcessInstance parent = $parentprocess$.instances()
+                    .findById($parentparentprocessid$$parentprocessid$)
+                    .orElse(null);
+            if (parent != null) {
+        	
+            	return (List<$Type$Output>) parent.subprocesses().stream()
+                    .map(pi -> mapOutput(new $Type$Output(), ($Type$) ((ProcessInstance)pi).variables()))
+                    .collect(java.util.stream.Collectors.toList());
+            } else {
+            	return java.util.Collections.emptyList();
+            }
+        } finally {
+            IdentityProvider.set(null);
         }
     }
 
@@ -88,11 +96,19 @@ public class $Type$Resource {
     @GET()
     @Path("$prefix$/$name$/{id_$name$}")
     @Produces(MediaType.APPLICATION_JSON)
-    public $Type$Output get_$name$(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$) {
-        return subprocess_$name$.instances()
+    public $Type$Output get_$name$(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        
+        try {
+            identitySupplier.buildIdentityProvider(user, groups);
+            return subprocess_$name$.instances()
                 .findById($parentprocessid$ + ":" + id_$name$)
                 .map(pi -> mapOutput(new $Type$Output(), pi.variables()))
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+        } finally {
+            IdentityProvider.set(null);
+        }
     }
 
     @APIResponses(
@@ -118,7 +134,10 @@ public class $Type$Resource {
     @org.eclipse.microprofile.metrics.annotation.Counted(name = "delete $name$", description = "Number of instances of $name$ deleted/aborted")
     @org.eclipse.microprofile.metrics.annotation.Timed(name = "duration of deleting $name$", description = "A measure of how long it takes to delete instance of $name$.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
     @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of deleted instances of $name$", description="Rate of deleted instances of $name$")    
-    public $Type$Output delete_$name$(@PathParam("id") String id, @PathParam("id_$name$") final String id_$name$) {
+    public $Type$Output delete_$name$(@PathParam("id") String id, @PathParam("id_$name$") final String id_$name$,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        identitySupplier.buildIdentityProvider(user, groups);
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = subprocess_$name$.instances()
                     .findById($parentprocessid$ + ":" + id_$name$)
@@ -150,7 +169,11 @@ public class $Type$Resource {
     @Path("$prefix$/$name$/{id_$name$}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public $Type$Output updateModel_$name$(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$, $Type$ resource) {
+    public $Type$Output updateModel_$name$(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$, 
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
+            $Type$ resource) {
+        identitySupplier.buildIdentityProvider(user, groups);
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = subprocess_$name$.instances()
                     .findById($parentprocessid$ + ":" + id_$name$)
@@ -183,12 +206,16 @@ public class $Type$Resource {
     @Path("$prefix$/$name$/{id_$name$}/tasks")
     @Produces(MediaType.APPLICATION_JSON)
     public java.util.List<WorkItem.Descriptor> getTasks_$name$(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$, @QueryParam("user") final String user, @QueryParam("group") final List<String> groups) {
-        
-        return subprocess_$name$.instances()
+        try {
+            identitySupplier.buildIdentityProvider(user, groups);
+            return subprocess_$name$.instances()
                 .findById($parentprocessid$ + ":" + id_$name$)
                 .map(pi -> pi.workItems(policies(user, groups)))
                 .map(l -> l.stream().map(WorkItem::toMap).collect(Collectors.toList()))
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+        } finally {
+            IdentityProvider.set(null);
+        }
     }
     
     protected $Type$Output getSubModel_$name$(ProcessInstance<$Type$> pi) {

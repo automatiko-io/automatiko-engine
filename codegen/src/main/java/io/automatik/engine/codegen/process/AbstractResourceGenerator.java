@@ -205,7 +205,7 @@ public abstract class AbstractResourceGenerator {
                     }
                     template.addMethod(methodName, Keyword.PUBLIC).setType(outputType)
                             // Remove data parameter ( payload ) if signalType is null
-                            .setParameters(signalType == null ? NodeList.nodeList(cloned.getParameter(0))
+                            .setParameters(signalType == null ? removeLastParam(cloned)
                                     : cloned.getParameters())
                             .setBody(body).setAnnotations(cloned.getAnnotations());
                 });
@@ -276,6 +276,8 @@ public abstract class AbstractResourceGenerator {
                     .forEach(fd -> annotator.withNamedInjection(fd, processId + version));
 
             template.findAll(FieldDeclaration.class, CodegenUtils::isApplicationField)
+                    .forEach(fd -> annotator.withInjection(fd));
+            template.findAll(FieldDeclaration.class, CodegenUtils::isIdentitySupplierField)
                     .forEach(fd -> annotator.withInjection(fd));
         } else {
             template.findAll(FieldDeclaration.class, CodegenUtils::isProcessField)
@@ -513,5 +515,11 @@ public abstract class AbstractResourceGenerator {
 
     protected boolean isParentPublic() {
         return WorkflowProcess.PUBLIC_VISIBILITY.equalsIgnoreCase(parentProcess.getVisibility());
+    }
+
+    protected NodeList<Parameter> removeLastParam(MethodDeclaration cloned) {
+        cloned.getParameters().remove(cloned.getParameters().size() - 1);
+
+        return cloned.getParameters();
     }
 }

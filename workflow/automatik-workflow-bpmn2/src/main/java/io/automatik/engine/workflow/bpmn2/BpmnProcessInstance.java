@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import io.automatik.engine.api.Model;
+import io.automatik.engine.api.auth.AccessPolicy;
 import io.automatik.engine.api.runtime.process.ProcessRuntime;
 import io.automatik.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatik.engine.api.workflow.Process;
@@ -157,6 +158,11 @@ public class BpmnProcessInstance extends AbstractProcessInstance<BpmnVariables> 
 
                 @Override
                 public BpmnVariables createModel() {
+                    return null;
+                }
+
+                @Override
+                public AccessPolicy<? extends ProcessInstance<BpmnVariables>> accessPolicy() {
                     return null;
                 }
             };
@@ -311,6 +317,11 @@ public class BpmnProcessInstance extends AbstractProcessInstance<BpmnVariables> 
 
         @Override
         public Tags tags() {
+            return null;
+        }
+
+        @Override
+        public Optional<String> initiator() {
             return null;
         }
     }

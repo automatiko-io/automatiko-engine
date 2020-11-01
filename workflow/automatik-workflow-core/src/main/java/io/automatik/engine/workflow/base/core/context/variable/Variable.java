@@ -35,6 +35,7 @@ public class Variable implements ValueObject, Serializable {
     public static final String TRACKED = "tracked";
     public static final String AUTO_INITIALIZED = "auto-initialized";
     public static final String BUSINESS_KEY = "business-key";
+    public static final String INITIATOR = "initiator";
 
     private String id;
     private String name;

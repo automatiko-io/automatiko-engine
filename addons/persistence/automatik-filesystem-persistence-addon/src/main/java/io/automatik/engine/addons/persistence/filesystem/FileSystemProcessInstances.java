@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.automatik.engine.api.auth.AccessDeniedException;
 import io.automatik.engine.api.workflow.MutableProcessInstances;
 import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
@@ -122,8 +123,15 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
                 stream.filter(file -> isValidProcessFile(file))
                         .filter(file -> matchTag(getMetadata(file, PI_TAGS), idOrTag))
                         .map(this::readBytesFromFile)
-                        .map(b -> mode == MUTABLE ? marshaller.unmarshallProcessInstance(b, process)
-                                : marshaller.unmarshallReadOnlyProcessInstance(b, process))
+                        .map(b -> {
+                            try {
+                                return mode == MUTABLE ? marshaller.unmarshallProcessInstance(b, process)
+                                        : marshaller.unmarshallReadOnlyProcessInstance(b, process);
+                            } catch (AccessDeniedException e) {
+                                return null;
+                            }
+                        })
+                        .filter(pi -> pi != null)
                         .forEach(pi -> collected.add(pi));
             } catch (IOException e) {
                 throw new RuntimeException("Unable to read process instances ", e);
@@ -136,8 +144,15 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     public Collection values(ProcessInstanceReadMode mode) {
         try (Stream<Path> stream = Files.walk(storage)) {
             return stream.filter(file -> isValidProcessFile(file)).map(this::readBytesFromFile)
-                    .map(b -> mode == MUTABLE ? marshaller.unmarshallProcessInstance(b, process)
-                            : marshaller.unmarshallReadOnlyProcessInstance(b, process))
+                    .map(b -> {
+                        try {
+                            return mode == MUTABLE ? marshaller.unmarshallProcessInstance(b, process)
+                                    : marshaller.unmarshallReadOnlyProcessInstance(b, process);
+                        } catch (AccessDeniedException e) {
+                            return null;
+                        }
+                    })
+                    .filter(pi -> pi != null)
                     .collect(Collectors.toList());
         } catch (IOException e) {
             throw new RuntimeException("Unable to read process instances ", e);

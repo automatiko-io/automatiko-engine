@@ -21,6 +21,8 @@ import javax.ws.rs.core.MediaType;
 
 import io.automatik.engine.api.runtime.process.WorkItemNotFoundException;
 import io.automatik.engine.api.Application;
+import io.automatik.engine.api.auth.IdentityProvider;
+import io.automatik.engine.api.auth.IdentitySupplier;
 import io.automatik.engine.api.auth.SecurityPolicy;
 import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
@@ -50,6 +52,8 @@ public class $Type$Resource {
     Process<$Type$> process;
     
     Application application;
+    
+    IdentitySupplier identitySupplier;
 
     @APIResponses(
         value = {
@@ -64,7 +68,11 @@ public class $Type$Resource {
             @APIResponse(
                 responseCode = "409",
                 description = "In case an instance already exists with given business key",
-                content = @Content(mediaType = "application/json")),                
+                content = @Content(mediaType = "application/json")),  
+            @APIResponse(
+                responseCode = "403",
+                description = "In case an instance cannot be created due to access policy by the caller",
+                content = @Content(mediaType = "application/json")),            
             @APIResponse(
                 responseCode = "200",
                 description = "Successfully created instance",
@@ -79,12 +87,14 @@ public class $Type$Resource {
     @org.eclipse.microprofile.metrics.annotation.Timed(name = "duration of creating $name$", description = "A measure of how long it takes to create new instance of $name$.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
     @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of instances of $name$", description="Rate of new instances of $name$")
     public $Type$Output create_$name$(@Context HttpHeaders httpHeaders, @QueryParam("businessKey") @Parameter(description = "Alternative id to be assigned to the instance", required = false) String businessKey, 
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
             @Parameter(description = "The input model for $name$ instance") $Type$Input resource) {
         if (resource == null) {
             resource = new $Type$Input();
         }
         final $Type$Input value = resource;
-
+        identitySupplier.buildIdentityProvider(user, groups);
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.createInstance(businessKey, mapInput(value, new $Type$()));
             String startFromNode = httpHeaders.getHeaderString("X-AUTOMATIK-StartFromNode");
@@ -114,10 +124,17 @@ public class $Type$Resource {
         summary = "Retrieves instances of $name$")
     @GET()
     @Produces(MediaType.APPLICATION_JSON)
-    public List<$Type$Output> getAll_$name$() {
-        return process.instances().values().stream()
-                .map(pi -> mapOutput(new $Type$Output(), pi.variables()))
-                .collect(Collectors.toList());
+    public List<$Type$Output> getAll_$name$(
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        try {
+            identitySupplier.buildIdentityProvider(user, groups);
+            return process.instances().values().stream()
+                    .map(pi -> mapOutput(new $Type$Output(), pi.variables()))
+                    .collect(Collectors.toList());
+        } finally {
+            IdentityProvider.set(null);
+        }
     }
 
     @APIResponses(
@@ -129,7 +146,11 @@ public class $Type$Resource {
             @APIResponse(
                 responseCode = "404",
                 description = "In case of instance with given id was not found",
-                content = @Content(mediaType = "application/json")),              
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "403",
+                description = "In case of instance with given id is not accessible to the caller",
+                content = @Content(mediaType = "application/json")),            
             @APIResponse(
                 responseCode = "200",
                 description = "Successfully retrieved instance",
@@ -140,11 +161,19 @@ public class $Type$Resource {
     @GET()
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public $Type$Output get_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id) {
-        return process.instances()
+    public $Type$Output get_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        try {
+            identitySupplier.buildIdentityProvider(user, groups);
+            
+            return process.instances()
                 .findById(id)
                 .map(pi -> mapOutput(new $Type$Output(), pi.variables()))
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+        } finally {
+            IdentityProvider.set(null);
+        }
     }
 
     @APIResponses(
@@ -156,7 +185,11 @@ public class $Type$Resource {
             @APIResponse(
                 responseCode = "404",
                 description = "In case of instance with given id was not found",
-                content = @Content(mediaType = "application/json")),              
+                content = @Content(mediaType = "application/json")),    
+            @APIResponse(
+                responseCode = "403",
+                description = "In case of instance with given id is not accessible to the caller",
+                content = @Content(mediaType = "application/json")),            
             @APIResponse(
                 responseCode = "200",
                 description = "Successfully deleted instance",
@@ -170,7 +203,10 @@ public class $Type$Resource {
     @org.eclipse.microprofile.metrics.annotation.Counted(name = "delete $name$", description = "Number of instances of $name$ deleted/aborted")
     @org.eclipse.microprofile.metrics.annotation.Timed(name = "duration of deleting $name$", description = "A measure of how long it takes to delete instance of $name$.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
     @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of deleted instances of $name$", description="Rate of deleted instances of $name$")    
-    public $Type$Output delete_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) final String id) {
+    public $Type$Output delete_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) final String id,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        identitySupplier.buildIdentityProvider(user, groups);
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)
@@ -190,7 +226,11 @@ public class $Type$Resource {
             @APIResponse(
                 responseCode = "404",
                 description = "In case of instance with given id was not found",
-                content = @Content(mediaType = "application/json")),              
+                content = @Content(mediaType = "application/json")),   
+            @APIResponse(
+                responseCode = "403",
+                description = "In case of instance with given id is not accessible to the caller",
+                content = @Content(mediaType = "application/json")),            
             @APIResponse(
                 responseCode = "200",
                 description = "Successfully updated instance",
@@ -203,7 +243,10 @@ public class $Type$Resource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public $Type$Output updateModel_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id, 
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
             @Parameter(description = "Updates to the data model for $name$ instance", required = true) $Type$ resource) {
+        identitySupplier.buildIdentityProvider(user, groups);
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)
@@ -223,7 +266,11 @@ public class $Type$Resource {
             @APIResponse(
                 responseCode = "404",
                 description = "In case of instance with given id was not found",
-                content = @Content(mediaType = "application/json")),              
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "403",
+                description = "In case of instance with given id is not accessible to the caller",
+                content = @Content(mediaType = "application/json")),            
             @APIResponse(
                 responseCode = "200",
                 description = "Successfully retrieved task of the instance",
@@ -237,12 +284,17 @@ public class $Type$Resource {
     public java.util.List<WorkItem.Descriptor> getTasks_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id, 
             @Parameter(description = "User identifier that the tasks should be fetched for", required = false) @QueryParam("user") final String user, 
             @Parameter(description = "Groups that the tasks should be fetched for", required = false) @QueryParam("group") final List<String> groups) {
-        
-        return process.instances()
+        try {
+            identitySupplier.buildIdentityProvider(user, groups);
+            
+            return process.instances()
                 .findById(id)
                 .map(pi -> pi.workItems(policies(user, groups)))
                 .map(l -> l.stream().map(WorkItem::toMap).collect(Collectors.toList()))
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+        } finally {
+            IdentityProvider.set(null);
+        }
     }
     
     @APIResponses(
@@ -254,7 +306,11 @@ public class $Type$Resource {
             @APIResponse(
                 responseCode = "404",
                 description = "In case of instance with given id was not found",
-                content = @Content(mediaType = "application/json")),              
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "403",
+                description = "In case of instance with given id is not accessible to the caller",
+                content = @Content(mediaType = "application/json")),            
             @APIResponse(
                 responseCode = "200",
                 description = "Successfully retrieved tags of the instance",
@@ -265,11 +321,18 @@ public class $Type$Resource {
     @GET()
     @Path("/{id}/tags")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Tag> get_tags_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id) {
-        return process.instances()
+    public Collection<Tag> get_tags_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        try {
+            identitySupplier.buildIdentityProvider(user, groups);
+            return process.instances()
                 .findById(id)
                 .map(pi -> pi.tags().get())
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+        } finally {
+            IdentityProvider.set(null);
+        }
     }
     
     @APIResponses(
@@ -281,7 +344,11 @@ public class $Type$Resource {
             @APIResponse(
                 responseCode = "404",
                 description = "In case of instance with given id was not found",
-                content = @Content(mediaType = "application/json")),              
+                content = @Content(mediaType = "application/json")),  
+            @APIResponse(
+                responseCode = "403",
+                description = "In case of instance with given id is not accessible to the caller",
+                content = @Content(mediaType = "application/json")),
             @APIResponse(
                 responseCode = "200",
                 description = "Successfully added tag to the instance",
@@ -293,8 +360,11 @@ public class $Type$Resource {
     @Path("/{id}/tags")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Tag> add_tag_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id, 
+    public Collection<Tag> add_tag_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id,             
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
             @Parameter(description = "Tag content that should be associated with the $name$ instance", required = true) Tag resource) {
+        identitySupplier.buildIdentityProvider(user, groups);
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)
@@ -314,7 +384,11 @@ public class $Type$Resource {
             @APIResponse(
                 responseCode = "404",
                 description = "In case of instance with given id was not found",
-                content = @Content(mediaType = "application/json")),              
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                    responseCode = "403",
+                    description = "In case of instance with given id is not accessible to the caller",
+                    content = @Content(mediaType = "application/json")),              
             @APIResponse(
                 responseCode = "200",
                 description = "Successfully removed tag from the instance",
@@ -326,7 +400,10 @@ public class $Type$Resource {
     @Path("/{id}/tags/{tagId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Collection<Tag> get_tags_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id, 
-            @Parameter(description = "Tag to be removed", required = true) @PathParam("tagId") String tagId) {
+            @Parameter(description = "Tag to be removed", required = true) @PathParam("tagId") String tagId,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        identitySupplier.buildIdentityProvider(user, groups);
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)
@@ -345,15 +422,8 @@ public class $Type$Resource {
         return mapOutput(new $Type$Output(), pi.variables());
     }
     
-    protected Policy[] policies(String user, List<String> groups) {
-        if (user == null) {
-            return new Policy[0];
-        } 
-        io.automatik.engine.api.auth.IdentityProvider identity = null;
-        if (user != null) {
-            identity = new io.automatik.engine.services.identity.StaticIdentityProvider(user, groups);
-        }
-        return new Policy[] {SecurityPolicy.of(identity)};
+    protected Policy[] policies(String user, List<String> groups) {         
+        return new Policy[] {SecurityPolicy.of(io.automatik.engine.api.auth.IdentityProvider.get())};
     }
     
     protected $Type$ mapInput($Type$Input input, $Type$ resource) {

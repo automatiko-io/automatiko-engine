@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 import io.automatik.engine.api.Model;
+import io.automatik.engine.api.auth.AccessPolicy;
 import io.automatik.engine.api.jobs.DurationExpirationTime;
 import io.automatik.engine.api.jobs.ExactExpirationTime;
 import io.automatik.engine.api.jobs.ExpirationTime;
@@ -22,6 +23,8 @@ import io.automatik.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatik.engine.api.workflow.ProcessInstances;
 import io.automatik.engine.api.workflow.ProcessInstancesFactory;
 import io.automatik.engine.api.workflow.Signal;
+import io.automatik.engine.workflow.auth.AccessPolicyFactory;
+import io.automatik.engine.workflow.auth.AllowAllAccessPolicy;
 import io.automatik.engine.workflow.base.core.timer.DateTimeUtils;
 import io.automatik.engine.workflow.base.core.timer.Timer;
 import io.automatik.engine.workflow.base.instance.LightProcessRuntime;
@@ -42,6 +45,8 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
     protected boolean activated;
     protected List<String> startTimerInstances = new ArrayList<>();
     protected ProcessRuntime processRuntime;
+
+    protected AccessPolicy<ProcessInstance<T>> accessPolicy = new AllowAllAccessPolicy<T>();
 
     protected AbstractProcess() {
         this(new LightProcessRuntimeServiceProvider());
@@ -67,7 +72,7 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
     }
 
     protected AbstractProcess(ProcessRuntimeServiceProvider services) {
-        this(services, new MapProcessInstances<T>());
+        this(services, new MapProcessInstances());
 
     }
 
@@ -122,7 +127,7 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
     }
 
     public Process<T> configure() {
-
+        this.accessPolicy = AccessPolicyFactory.newPolicy((String) process().getMetaData().get("accessPolicy"));
         registerListeners();
         if (isProcessFactorySet()) {
             this.instances = (MutableProcessInstances<T>) processInstancesFactory.createProcessInstances(this);
@@ -163,6 +168,11 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
             this.processRuntime.getJobsService().cancelJob(startTimerId);
         }
         this.activated = false;
+    }
+
+    @Override
+    public AccessPolicy<ProcessInstance<T>> accessPolicy() {
+        return accessPolicy;
     }
 
     protected ExpirationTime configureTimerInstance(Timer timer) {

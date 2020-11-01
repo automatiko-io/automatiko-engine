@@ -16,6 +16,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import io.automatik.engine.api.Model;
+import io.automatik.engine.api.auth.AccessDeniedException;
+import io.automatik.engine.api.auth.IdentityProvider;
 import io.automatik.engine.api.definition.process.Node;
 import io.automatik.engine.api.runtime.process.EventListener;
 import io.automatik.engine.api.runtime.process.ProcessRuntime;
@@ -65,6 +67,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     protected String rootProcessInstanceId;
     protected String rootProcessId;
 
+    protected String initiator;
+
     protected ProcessError processError;
 
     protected Tags tags;
@@ -82,11 +86,17 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         this.rt = rt;
         this.variables = variables;
 
+        if (!this.process.accessPolicy().canCreateInstance(IdentityProvider.get())) {
+            throw new AccessDeniedException("Access is denied to create new instance of process " + process.name());
+        }
+
         setCorrelationKey(businessKey);
         Map<String, Object> map = bind(variables);
         String processId = process.process().getId();
         syncProcessInstance((WorkflowProcessInstance) ((CorrelationAwareProcessRuntime) rt)
                 .createProcessInstance(processId, correlationKey, map));
+        ((io.automatik.engine.workflow.base.instance.ProcessInstance) this.processInstance)
+                .setInitiator(IdentityProvider.get().getName());
         // this applies to business keys only as non business keys process instances id
         // are always unique
         if (correlationKey != null && ((MutableProcessInstances<T>) process.instances()).exists(id)) {
@@ -109,8 +119,13 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         this.process = process;
         this.variables = variables;
         this.rt = null;
+
         syncProcessInstance((WorkflowProcessInstance) wpi);
         unbind(variables, processInstance.getVariables());
+
+        if (!this.process.accessPolicy().canReadInstance(IdentityProvider.get(), this)) {
+            throw new AccessDeniedException("Access is denied to access instance " + this.id);
+        }
     }
 
     public AbstractProcessInstance(AbstractProcess<T> process, T variables, ProcessRuntime rt,
@@ -118,7 +133,13 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         this.process = process;
         this.rt = rt;
         this.variables = variables;
+
         syncProcessInstance((WorkflowProcessInstance) wpi);
+        unbind(variables, processInstance.getVariables());
+
+        if (!this.process.accessPolicy().canReadInstance(IdentityProvider.get(), this)) {
+            throw new AccessDeniedException("Access is denied to access instance " + this.id);
+        }
         reconnect();
     }
 
@@ -174,6 +195,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         parentProcessInstanceId = "".equals(wpi.getParentProcessInstanceId()) ? null : wpi.getParentProcessInstanceId();
         rootProcessInstanceId = "".equals(wpi.getRootProcessInstanceId()) ? null : wpi.getRootProcessInstanceId();
         rootProcessId = "".equals(wpi.getRootProcessId()) ? null : wpi.getRootProcessId();
+        initiator = "".equals(((WorkflowProcessInstanceImpl) wpi).getInitiator()) ? null
+                : ((WorkflowProcessInstanceImpl) wpi).getInitiator();
         tags = buildTags();
 
         setCorrelationKey(wpi.getCorrelationKey());
@@ -242,6 +265,9 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     }
 
     public void abort() {
+        if (!this.process.accessPolicy().canDeleteInstance(IdentityProvider.get(), this)) {
+            throw new AccessDeniedException("Access is denied to delete instance " + this.id);
+        }
         synchronized (this) {
             String pid = processInstance().getId();
             unbind(variables, processInstance().getVariables());
@@ -253,6 +279,9 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     @Override
     public <S> void send(Signal<S> signal) {
+        if (!this.process.accessPolicy().canSignalInstance(IdentityProvider.get(), this)) {
+            throw new AccessDeniedException("Access is denied to signal instance " + this.id);
+        }
         synchronized (this) {
             if (signal.referenceId() != null) {
                 ((WorkflowProcessInstanceImpl) processInstance()).setReferenceId(signal.referenceId());
@@ -320,7 +349,16 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     }
 
     @Override
+    public Optional<String> initiator() {
+
+        return Optional.ofNullable(initiator);
+    }
+
+    @Override
     public void updateVariables(T updates) {
+        if (!this.process.accessPolicy().canUpdateInstance(IdentityProvider.get(), this)) {
+            throw new AccessDeniedException("Access is denied to update instance " + this.id);
+        }
         synchronized (this) {
             processInstance();
             Map<String, Object> map = bind(updates);

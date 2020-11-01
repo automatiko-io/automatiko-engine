@@ -52,10 +52,6 @@ public interface ProcessInstance
 
     boolean isSignalCompletion();
 
-    String getDeploymentId();
-
-    void setDeploymentId(String deploymentId);
-
     Date getStartDate();
 
     void setStartDate(Date date);
@@ -67,5 +63,9 @@ public interface ProcessInstance
     void configureSLA();
 
     void setReferenceId(String referenceId);
+
+    String getInitiator();
+
+    void setInitiator(String initiator);
 
 }

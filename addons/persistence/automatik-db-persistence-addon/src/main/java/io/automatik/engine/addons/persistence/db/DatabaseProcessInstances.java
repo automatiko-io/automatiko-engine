@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.automatik.engine.addons.persistence.db.model.ProcessInstanceEntity;
+import io.automatik.engine.api.auth.AccessDeniedException;
 import io.automatik.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatik.engine.api.workflow.MutableProcessInstances;
 import io.automatik.engine.api.workflow.Process;
@@ -60,7 +61,14 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
     public Collection<? extends ProcessInstance<ProcessInstanceEntity>> findByIdOrTag(ProcessInstanceReadMode mode,
             String... values) {
         return JpaOperations.stream(type, "id in (?1) or (?1) in elements(tags) ", Arrays.asList(values))
-                .map(e -> unmarshallInstance(mode, ((ProcessInstanceEntity) e)))
+                .map(e -> {
+                    try {
+                        return unmarshallInstance(mode, ((ProcessInstanceEntity) e));
+                    } catch (AccessDeniedException ex) {
+                        return null;
+                    }
+                })
+                .filter(pi -> pi != null)
                 .collect(Collectors.toList());
 
     }
@@ -68,7 +76,14 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
     @Override
     public Collection<ProcessInstance<ProcessInstanceEntity>> values(ProcessInstanceReadMode mode) {
         return JpaOperations.streamAll(type)
-                .map(e -> unmarshallInstance(mode, ((ProcessInstanceEntity) e)))
+                .map(e -> {
+                    try {
+                        return unmarshallInstance(mode, ((ProcessInstanceEntity) e));
+                    } catch (AccessDeniedException ex) {
+                        return null;
+                    }
+                })
+                .filter(pi -> pi != null)
                 .collect(Collectors.toList());
     }
 

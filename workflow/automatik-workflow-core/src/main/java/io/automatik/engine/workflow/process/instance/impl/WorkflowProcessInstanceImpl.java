@@ -135,6 +135,8 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
 
     private String referenceId;
 
+    private String initiator;
+
     private Collection<Tag> tags = new LinkedHashSet<Tag>();
 
     @Override
@@ -978,16 +980,6 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
         this.signalCompletion = signalCompletion;
     }
 
-    @Override
-    public String getDeploymentId() {
-        return deploymentId;
-    }
-
-    @Override
-    public void setDeploymentId(String deploymentId) {
-        this.deploymentId = deploymentId;
-    }
-
     public String getCorrelationKey() {
         if (correlationKey == null && getMetaData().get(CORRELATION_KEY) != null) {
             this.correlationKey = ((CorrelationKey) getMetaData().get(CORRELATION_KEY)).toExternalForm();
@@ -1080,6 +1072,19 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
     @Override
     public String getReferenceId() {
         return this.referenceId;
+    }
+
+    @Override
+    public String getInitiator() {
+        return initiator;
+    }
+
+    @Override
+    public void setInitiator(String initiator) {
+        // set only once to avoid overriding initiator
+        if (this.initiator == null) {
+            this.initiator = initiator;
+        }
     }
 
     private boolean isVariableExpression(String eventType) {

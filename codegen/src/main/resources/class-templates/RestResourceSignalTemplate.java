@@ -26,7 +26,11 @@ public class $Type$Resource {
             @APIResponse(
                 responseCode = "404",
                 description = "In case of instance with given id was not found",
-                content = @Content(mediaType = "application/json")),              
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "403",
+                description = "In case of instance with given id is not accessible to the caller",
+                content = @Content(mediaType = "application/json")),            
             @APIResponse(
                 responseCode = "200",
                 description = "Successfully aborted instance of $taskName$ task with given id",
@@ -41,7 +45,11 @@ public class $Type$Resource {
     @org.eclipse.microprofile.metrics.annotation.Counted(name = "Trigger on $name$ with signal '$signalName$'", description = "Number of instances of $name$ triggered with signal '$signalName$'")
     @org.eclipse.microprofile.metrics.annotation.Timed(name = "Duration of triggering $name$ instance with signal '$signalName$'", description = "A measure of how long it takes to trigger instance of $name$. with signal '$signalName$'", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
     @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of triggering instances of $name$ with signal '$signalName$'", description="Rate of triggering instances of $name$ with signal '$signalName$'")   
-    public $Type$Output signal(@PathParam("id") final String id, final $signalType$ data) {
+    public $Type$Output signal(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) final String id, 
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
+            final $signalType$ data) {
+        identitySupplier.buildIdentityProvider(user, groups);
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             pi.send(Sig.of("$signalName$", data));

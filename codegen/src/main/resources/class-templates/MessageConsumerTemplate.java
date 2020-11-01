@@ -6,6 +6,8 @@ import java.util.function.Function;
 import java.util.Optional;
 
 import io.automatik.engine.api.Application;
+import io.automatik.engine.api.auth.IdentityProvider;
+import io.automatik.engine.api.auth.TrustedIdentityProvider;
 import io.automatik.engine.api.event.DataEvent;
 import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
@@ -43,7 +45,7 @@ public class $Type$MessageConsumer {
 	public CompletionStage<Void> consume(Message<byte[]> msg) {
 	    final String trigger = "$Trigger$";
         try {
-            
+            IdentityProvider.set(new TrustedIdentityProvider("System<messaging>"));
             if (useCloudEvents.orElse(true)) {
                 final $DataEventType$ eventData = json.readValue(msg.getPayload(), $DataEventType$.class);
                 final $Type$ model = new $Type$();   

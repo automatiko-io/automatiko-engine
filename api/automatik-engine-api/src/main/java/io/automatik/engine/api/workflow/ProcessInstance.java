@@ -209,6 +209,13 @@ public interface ProcessInstance<T> {
     Optional<ProcessError> error();
 
     /**
+     * Returns optional initiator of the process instance
+     * 
+     * @return initiator (user id) if present
+     */
+    Optional<String> initiator();
+
+    /**
      * Returns tags associated with this process instances
      * 
      * @return currently associated tags

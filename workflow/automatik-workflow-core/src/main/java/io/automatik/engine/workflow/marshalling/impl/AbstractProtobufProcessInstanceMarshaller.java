@@ -73,8 +73,8 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         if (workFlow.getDescription() != null) {
             _instance.setDescription(workFlow.getDescription());
         }
-        if (workFlow.getDeploymentId() != null) {
-            _instance.setDeploymentId(workFlow.getDeploymentId());
+        if (workFlow.getInitiator() != null) {
+            _instance.setInitiator(workFlow.getInitiator());
         }
         _instance.addAllCompletedNodeIds(workFlow.getCompletedNodeIds());
         if (workFlow.getCorrelationKey() != null) {
@@ -117,7 +117,8 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         Collection<Tag> tags = workFlow.getTags();
         if (tags != null) {
             for (Tag tag : tags) {
-                _instance.addTags(AutomatikMessages.ProcessInstance.Tag.newBuilder().setId(tag.getId()).setValue(tag.getValue()));
+                _instance.addTags(
+                        AutomatikMessages.ProcessInstance.Tag.newBuilder().setId(tag.getId()).setValue(tag.getValue()));
             }
         }
 
@@ -672,7 +673,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         processInstance.setRootProcessInstanceId(_instance.getRootProcessInstanceId());
         processInstance.setRootProcessId(_instance.getRootProcessId());
         processInstance.setSignalCompletion(_instance.getSignalCompletion());
-        processInstance.setDeploymentId(_instance.getDeploymentId());
+        processInstance.setInitiator(_instance.getInitiator());
         processInstance.setCorrelationKey(_instance.getCorrelationKey());
         processInstance.setStartDate(new Date(_instance.getStartDate()));
         processInstance.internalSetSlaCompliance(_instance.getSlaCompliance());

@@ -2,30 +2,33 @@
 package io.automatik.engine.api.workflow;
 
 import io.automatik.engine.api.Model;
+import io.automatik.engine.api.auth.AccessPolicy;
 
 public interface Process<T> {
 
-	ProcessInstance<T> createInstance(T workingMemory);
+    ProcessInstance<T> createInstance(T workingMemory);
 
-	ProcessInstance<T> createInstance(String businessKey, T workingMemory);
+    ProcessInstance<T> createInstance(String businessKey, T workingMemory);
 
-	ProcessInstances<T> instances();
+    ProcessInstances<T> instances();
 
-	<S> void send(Signal<S> sig);
+    <S> void send(Signal<S> sig);
 
-	T createModel();
+    T createModel();
 
-	ProcessInstance<? extends Model> createInstance(Model m);
+    ProcessInstance<? extends Model> createInstance(Model m);
 
-	ProcessInstance<? extends Model> createInstance(String businessKey, Model m);
+    ProcessInstance<? extends Model> createInstance(String businessKey, Model m);
 
-	String id();
+    String id();
 
-	String name();
+    String name();
 
-	String version();
+    String version();
 
-	void activate();
+    void activate();
 
-	void deactivate();
+    void deactivate();
+
+    AccessPolicy<? extends ProcessInstance<T>> accessPolicy();
 }

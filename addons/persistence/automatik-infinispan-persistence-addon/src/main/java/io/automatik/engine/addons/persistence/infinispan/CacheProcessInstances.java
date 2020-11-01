@@ -15,6 +15,7 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.protostream.MessageMarshaller;
 
+import io.automatik.engine.api.auth.AccessDeniedException;
 import io.automatik.engine.api.workflow.MutableProcessInstances;
 import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
@@ -68,8 +69,15 @@ public class CacheProcessInstances implements MutableProcessInstances {
         for (String idOrTag : values) {
 
             cache.values().parallelStream()
-                    .map(data -> mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process)
-                            : marshaller.unmarshallReadOnlyProcessInstance(data, process))
+                    .map(data -> {
+                        try {
+                            return mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process)
+                                    : marshaller.unmarshallReadOnlyProcessInstance(data, process);
+                        } catch (AccessDeniedException e) {
+                            return null;
+                        }
+                    })
+                    .filter(pi -> pi != null)
                     .filter(pi -> {
                         if (pi.id().equals(resolveId(idOrTag)) || pi.tags().values().contains(idOrTag)) {
                             return true;
@@ -86,8 +94,15 @@ public class CacheProcessInstances implements MutableProcessInstances {
     @Override
     public Collection<? extends ProcessInstance> values(ProcessInstanceReadMode mode) {
         return cache.values().parallelStream()
-                .map(data -> mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process)
-                        : marshaller.unmarshallReadOnlyProcessInstance(data, process))
+                .map(data -> {
+                    try {
+                        return mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process)
+                                : marshaller.unmarshallReadOnlyProcessInstance(data, process);
+                    } catch (AccessDeniedException e) {
+                        return null;
+                    }
+                })
+                .filter(pi -> pi != null)
                 .collect(Collectors.toList());
     }
 

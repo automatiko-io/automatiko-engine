@@ -8,6 +8,7 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 
+import io.automatik.engine.api.auth.IdentityProvider;
 import io.automatik.engine.api.runtime.process.WorkItemNotFoundException;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.api.workflow.WorkItem;
@@ -26,7 +27,11 @@ public class $Type$Resource {
             @APIResponse(
                 responseCode = "404",
                 description = "In case of task instance with given id was not found",
-                content = @Content(mediaType = "application/json")),              
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "403",
+                description = "In case of instance with given id is not accessible to the caller",
+                content = @Content(mediaType = "application/json")),            
             @APIResponse(
                 responseCode = "200",
                 description = "Successfully created new instance of $taskName$ task",
@@ -41,7 +46,10 @@ public class $Type$Resource {
     @org.eclipse.microprofile.metrics.annotation.Counted(name = "Creating new $taskName$ task", description = "Number of $taskName$ tasks created")
     @org.eclipse.microprofile.metrics.annotation.Timed(name = "Duration of creatingnew $taskName$ task", description = "A measure of how long it takes to create $taskName$ tasks.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
     @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of creating $taskName$ tasks", description="Rate of creating $taskName$ tasks")   
-    public javax.ws.rs.core.Response signal(@PathParam("id") @Parameter(description = "Unique identifier of the owning instance", required = true) final String id) {
+    public javax.ws.rs.core.Response signal(@PathParam("id") @Parameter(description = "Unique identifier of the owning instance", required = true) final String id,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        identitySupplier.buildIdentityProvider(user, groups);
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
 
@@ -65,7 +73,11 @@ public class $Type$Resource {
                 @APIResponse(
                     responseCode = "404",
                     description = "In case of task instance with given id was not found",
-                    content = @Content(mediaType = "application/json")),              
+                    content = @Content(mediaType = "application/json")), 
+                @APIResponse(
+                    responseCode = "403",
+                    description = "In case of instance with given id is not accessible to the caller",
+                    content = @Content(mediaType = "application/json")),                
                 @APIResponse(
                     responseCode = "200",
                     description = "Successfully completed instance of $taskName$ task with given id",
@@ -86,6 +98,7 @@ public class $Type$Resource {
             @Parameter(description = "User identifier that the tasks should be completed with", required = false) @QueryParam("user") final String user, 
             @Parameter(description = "Groups that the tasks should be completed with", required = false) @QueryParam("group") final List<String> groups, final $TaskOutput$ model) {
         try {
+            identitySupplier.buildIdentityProvider(user, groups);
             return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
 
@@ -100,6 +113,8 @@ public class $Type$Resource {
             });
         } catch (WorkItemNotFoundException e) {
             return null;
+        } finally {
+            IdentityProvider.set(null);
         }
     }
     
@@ -112,7 +127,11 @@ public class $Type$Resource {
                 @APIResponse(
                     responseCode = "404",
                     description = "In case of task instance with given id was not found",
-                    content = @Content(mediaType = "application/json")),              
+                    content = @Content(mediaType = "application/json")), 
+                @APIResponse(
+                    responseCode = "403",
+                    description = "In case of instance with given id is not accessible to the caller",
+                    content = @Content(mediaType = "application/json")),                
                 @APIResponse(
                     responseCode = "200",
                     description = "Successfully retrieved instance of $taskName$ task with given id",
@@ -127,6 +146,7 @@ public class $Type$Resource {
             @Parameter(description = "Unique identifier of the task instance", required = true) @PathParam("workItemId") String workItemId, 
             @Parameter(description = "User identifier that the tasks should be retrieved for", required = false) @QueryParam("user") final String user, 
             @Parameter(description = "Groups that the tasks should be retrieved for", required = false) @QueryParam("group") final List<String> groups) {
+        identitySupplier.buildIdentityProvider(user, groups);
         try {
             ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             WorkItem workItem = pi.workItem(workItemId, policies(user, groups));
@@ -136,6 +156,8 @@ public class $Type$Resource {
             return $TaskInput$.fromMap(workItem.getId(), workItem.getName(), workItem.getParameters());
         } catch (WorkItemNotFoundException e) {
             return null;
+        } finally {
+            IdentityProvider.set(null);
         }
     }
     
@@ -148,7 +170,11 @@ public class $Type$Resource {
             @APIResponse(
                 responseCode = "404",
                 description = "In case of task instance with given id was not found",
-                content = @Content(mediaType = "application/json")),              
+                content = @Content(mediaType = "application/json")),  
+            @APIResponse(
+                responseCode = "403",
+                description = "In case of instance with given id is not accessible to the caller",
+                content = @Content(mediaType = "application/json")),            
             @APIResponse(
                 responseCode = "200",
                 description = "Successfully aborted instance of $taskName$ task with given id",
@@ -169,7 +195,7 @@ public class $Type$Resource {
             @Parameter(description = "Groups that the tasks should be aborted with", required = false) @QueryParam("group") final List<String> groups) {
         
         try {
-            
+            identitySupplier.buildIdentityProvider(user, groups);
             return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
                 

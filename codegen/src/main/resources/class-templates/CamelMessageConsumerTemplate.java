@@ -6,6 +6,8 @@ import java.util.function.Function;
 import java.util.Optional;
 
 import io.automatik.engine.api.Application;
+import io.automatik.engine.api.auth.IdentityProvider;
+import io.automatik.engine.api.auth.TrustedIdentityProvider;
 import io.automatik.engine.api.event.DataEvent;
 import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
@@ -40,7 +42,8 @@ public class $Type$MessageConsumer {
         try {
                         
             final $DataType$ eventData = convert(msg, $DataType$.class);
-            final $Type$ model = new $Type$();                
+            final $Type$ model = new $Type$();  
+            IdentityProvider.set(new TrustedIdentityProvider("System<messaging>"));
             io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             	String correlation = correlationPayload(eventData, msg);
             	if (correlation != null) {
