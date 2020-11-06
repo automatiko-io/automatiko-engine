@@ -44,6 +44,7 @@ import io.automatik.engine.api.workflow.ProcessInstancesFactory;
 import io.automatik.engine.codegen.BodyDeclarationComparator;
 import io.automatik.engine.codegen.CodegenUtils;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
+import io.automatik.engine.codegen.process.image.SvgProcessImageGenerator;
 import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.AbstractProcess;
 import io.automatik.engine.workflow.compiler.canonical.ProcessMetaData;
@@ -391,6 +392,17 @@ public class ProcessGenerator {
                 .addMember(createReadOnlyInstanceGenericWithWorkflowInstanceMethod(processInstanceFQCN))
                 .addMember(internalConfigure(processMetaData)).addMember(internalRegisterListeners(processMetaData))
                 .addMember(process(processMetaData));
+
+        SvgProcessImageGenerator imageGenerator = new SvgProcessImageGenerator(process);
+        String svg = imageGenerator.generate();
+
+        if (svg != null && !svg.isEmpty()) {
+            MethodDeclaration processImageMethod = new MethodDeclaration().setName("image").setModifiers(Keyword.PUBLIC)
+                    .setType(String.class)
+                    .setBody(new BlockStmt().addStatement(new ReturnStmt(new StringLiteralExpr().setString(svg))));
+
+            cls.addMember(processImageMethod);
+        }
 
         if (persistence) {
 

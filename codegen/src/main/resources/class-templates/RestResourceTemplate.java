@@ -1,5 +1,8 @@
 package com.myspace.demo;
 
+import java.io.OutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -16,8 +19,14 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.WebApplicationException;
 
 import io.automatik.engine.api.runtime.process.WorkItemNotFoundException;
 import io.automatik.engine.api.Application;
@@ -28,6 +37,7 @@ import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.api.workflow.ProcessInstanceExecutionException;
 import io.automatik.engine.api.workflow.ProcessInstanceNotFoundException;
+import io.automatik.engine.api.workflow.ProcessImageNotFoundException;
 import io.automatik.engine.api.workflow.Tag;
 import io.automatik.engine.api.workflow.WorkItem;
 import io.automatik.engine.api.workflow.workitem.Policy;
@@ -174,6 +184,85 @@ public class $Type$Resource {
         } finally {
             IdentityProvider.set(null);
         }
+    }
+    
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "500",
+                description = "In case of processing errors",
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "404",
+                description = "In case of instance with given id was not found",
+                content = @Content(mediaType = "application/json")), 
+            @APIResponse(
+                responseCode = "403",
+                description = "In case of instance with given id is not accessible to the caller",
+                content = @Content(mediaType = "application/json")),            
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully retrieved instance's image",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = String.class))) })
+    @Operation(hidden = true,
+        summary = "Retrieves $name$ instance's image for given id")    
+    @GET()
+    @Path("/{id}/image")
+    @Produces(MediaType.APPLICATION_SVG_XML)
+    public Response get_instance_image_$name$(@Context UriInfo uri, @PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        try {
+            identitySupplier.buildIdentityProvider(user, groups);
+            
+            ProcessInstance<$Type$> instance = process.instances()
+                .findById(id)
+                .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+            String image = instance.image(extractImageBaseUri(uri.getRequestUri().toString()));
+            
+            if (image == null) {
+                throw new ProcessImageNotFoundException(process.id());
+            }
+            StreamingOutput entity = new ImageStreamingOutput(image);     
+            ResponseBuilder builder = Response.ok().entity(entity);
+            
+            return builder
+                    .header("Content-Type", "image/svg+xml")
+                    .build();
+        } finally {
+            IdentityProvider.set(null);
+        }
+    }
+    
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "404",
+                description = "In case of image does not exist for $name$",
+                content = @Content(mediaType = "application/json")),           
+            @APIResponse(
+                responseCode = "200",
+                description = "Successfully retrieved instance's image",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = String.class))) })
+    @Operation(hidden = true,
+        summary = "Retrieves image for $name$")    
+    @GET()
+    @Path("/image")
+    @Produces(MediaType.APPLICATION_SVG_XML)
+    public Response get_image_$name$() {
+        String image = process.image();
+        
+        if (image == null) {
+            throw new ProcessImageNotFoundException(process.id());
+        }
+        StreamingOutput entity = new ImageStreamingOutput(image);    
+        ResponseBuilder builder = Response.ok().entity(entity);
+        
+        return builder
+                .header("Content-Type", "image/svg+xml")
+                .build();
     }
 
     @APIResponses(
@@ -436,5 +525,24 @@ public class $Type$Resource {
         output.fromMap(resource.getId(), resource.toMap());
         
         return output;
+    }
+    
+    protected String extractImageBaseUri(String requestUri) {
+        return requestUri.substring(0, requestUri.indexOf("/image"));
+    }
+    
+    protected class ImageStreamingOutput implements StreamingOutput {
+        
+        private String image;
+        
+        public ImageStreamingOutput(String image) {
+            this.image = image;
+        }
+        
+        @Override
+        public void write(OutputStream output) throws IOException, WebApplicationException {
+            
+            output.write(image.getBytes(StandardCharsets.UTF_8));                
+        }
     }
 }

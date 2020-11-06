@@ -218,11 +218,13 @@ public class GeneratorContext {
     }
 
     public void logInstructions() {
-        LOGGER.info("****************** Automatik Instructions *********************");
-        LOGGER.info("Following are set of information that can be useful down the line...");
+        if (!instructions.isEmpty()) {
+            LOGGER.info("****************** Automatik Instructions *********************");
+            LOGGER.info("Following are set of information that can be useful down the line...");
 
-        instructions.forEach(instruction -> LOGGER.info(instruction));
+            instructions.forEach(instruction -> LOGGER.info(instruction));
 
-        LOGGER.info("***************************************************************");
+            LOGGER.info("***************************************************************");
+        }
     }
 }

@@ -31,4 +31,8 @@ public interface Process<T> {
     void deactivate();
 
     AccessPolicy<? extends ProcessInstance<T>> accessPolicy();
+
+    default String image() {
+        return null;
+    }
 }

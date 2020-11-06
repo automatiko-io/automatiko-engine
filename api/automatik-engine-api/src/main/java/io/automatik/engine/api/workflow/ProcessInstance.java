@@ -272,4 +272,13 @@ public interface ProcessInstance<T> {
      */
     void disconnect();
 
+    /**
+     * Returns process image annotated with active nodes
+     * 
+     * @param path current path that allows to build image links
+     * 
+     * @return annotated process instance image
+     */
+    String image(String path);
+
 }

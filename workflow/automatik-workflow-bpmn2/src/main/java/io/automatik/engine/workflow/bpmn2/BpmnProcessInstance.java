@@ -324,5 +324,10 @@ public class BpmnProcessInstance extends AbstractProcessInstance<BpmnVariables> 
         public Optional<String> initiator() {
             return null;
         }
+
+        @Override
+        public String image(String path) {
+            return null;
+        }
     }
 }

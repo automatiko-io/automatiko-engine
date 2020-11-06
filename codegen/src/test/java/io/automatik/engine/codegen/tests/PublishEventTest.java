@@ -388,7 +388,8 @@ public class PublishEventTest extends AbstractCodegenTest {
         assertThat(processDataEvent.getAutomatikProcessId()).isEqualTo("ExclusiveSplit");
         assertThat(processDataEvent.getAutomatikProcessinstanceState()).isEqualTo("2");
 
-        ProcessInstanceEventBody body = assertProcessInstanceEvent(events.get(0), "ExclusiveSplit", "Test", 2);
+        ProcessInstanceEventBody body = assertProcessInstanceEvent(events.get(0), "ExclusiveSplit",
+                "Basic process with gateway decision", 2);
 
         assertThat(body.getNodeInstances()).hasSize(6).extractingResultOf("getNodeType").contains("StartNode",
                 "ActionNode", "Split", "Join", "EndNode", "WorkItemNode");

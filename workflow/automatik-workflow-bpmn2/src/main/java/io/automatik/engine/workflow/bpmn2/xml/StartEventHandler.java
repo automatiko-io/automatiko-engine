@@ -100,6 +100,7 @@ public class StartEventHandler extends AbstractNodeHandler {
                 ConstraintTrigger trigger = new ConstraintTrigger();
                 trigger.setConstraint(constraint);
                 startNode.addTrigger(trigger);
+                startNode.setMetaData(TRIGGER_TYPE, "Condition");
                 break;
             } else if ("signalEventDefinition".equals(nodeName)) {
                 String type = ((Element) xmlNode).getAttribute("signalRef");
@@ -138,6 +139,7 @@ public class StartEventHandler extends AbstractNodeHandler {
                 addTriggerWithInMappings(startNode, "Message-" + message.getName());
             } else if ("timerEventDefinition".equals(nodeName)) {
                 handleTimerNode(startNode, element, uri, localName, parser);
+                startNode.setMetaData(TRIGGER_TYPE, "Timer");
                 // following event definitions are only for event sub process and will be
                 // validated to not be included in top process definitions
             } else if ("errorEventDefinition".equals(nodeName)) {
@@ -166,6 +168,8 @@ public class StartEventHandler extends AbstractNodeHandler {
                     }
                     startNode.setMetaData("FaultCode", error.getErrorCode());
                     addTriggerWithInMappings(startNode, "Error-" + error.getErrorCode());
+
+                    startNode.setMetaData(TRIGGER_TYPE, "Error");
                 }
             } else if ("escalationEventDefinition".equals(nodeName)) {
                 String escalationRef = ((Element) xmlNode).getAttribute("escalationRef");
@@ -181,6 +185,7 @@ public class StartEventHandler extends AbstractNodeHandler {
                     }
 
                     addTriggerWithInMappings(startNode, "Escalation-" + escalation.getEscalationCode());
+                    startNode.setMetaData(TRIGGER_TYPE, "Escalation");
                 }
             } else if ("compensateEventDefinition".equals(nodeName)) {
                 handleCompensationNode(startNode, xmlNode);

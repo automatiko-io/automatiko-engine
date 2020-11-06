@@ -71,6 +71,13 @@
         </exclusion>
       </exclusions>
     </dependency>
+    
+    <!-- svg image generation -->
+    <dependency>
+      <groupId>org.jfree</groupId>
+      <artifactId>org.jfree.svg</artifactId>
+      <version>4.1</version>
+    </dependency>
 
     <!-- image metadata handling -->
     <dependency>

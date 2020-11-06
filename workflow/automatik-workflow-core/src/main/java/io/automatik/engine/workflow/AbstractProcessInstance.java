@@ -45,11 +45,13 @@ import io.automatik.engine.services.correlation.CorrelationKey;
 import io.automatik.engine.services.correlation.StringCorrelationKey;
 import io.automatik.engine.services.uow.ProcessInstanceWorkUnit;
 import io.automatik.engine.workflow.base.instance.InternalProcessRuntime;
+import io.automatik.engine.workflow.process.core.node.SubProcessNode;
 import io.automatik.engine.workflow.process.executable.core.ExecutableProcess;
 import io.automatik.engine.workflow.process.instance.NodeInstance;
 import io.automatik.engine.workflow.process.instance.NodeInstanceContainer;
 import io.automatik.engine.workflow.process.instance.impl.NodeInstanceImpl;
 import io.automatik.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
+import io.automatik.engine.workflow.process.instance.node.LambdaSubProcessNodeInstance;
 import io.automatik.engine.workflow.process.instance.node.WorkItemNodeInstance;
 
 public abstract class AbstractProcessInstance<T extends Model> implements ProcessInstance<T> {
@@ -583,6 +585,43 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     @Override
     public Collection<AdHocFragment> adHocFragments() {
         return ((WorkflowProcessInstance) processInstance()).adHocFragments();
+    }
+
+    @Override
+    public String image(String path) {
+        if (process().image() == null) {
+            return null;
+        }
+        StringBuilder script = new StringBuilder();
+        String image = process().image();
+
+        Collection<NodeInstance> activeInstances = ((WorkflowProcessInstanceImpl) processInstance()).getNodeInstances(true);
+        if (!activeInstances.isEmpty()) {
+            script.append("<script>");
+            script.append("function openInNewTab(url) {var win = window.open(url, '_blank');win.focus();}");
+            for (NodeInstance nodeInstance : activeInstances) {
+                script.append("document.getElementById('").append(nodeInstance.getNodeDefinitionId())
+                        .append("').style['stroke']='rgb(255, 0, 0)';\n");
+                script.append("document.getElementById('").append(nodeInstance.getNodeDefinitionId())
+                        .append("').style['stroke-width']='2';\n");
+                script.append("document.getElementById('").append(nodeInstance.getNodeDefinitionId())
+                        .append("').style['fill']='rgb(229, 209, 209)';\n");
+
+                if (nodeInstance instanceof LambdaSubProcessNodeInstance) {
+                    // add links for call activity
+                    LambdaSubProcessNodeInstance subprocess = (LambdaSubProcessNodeInstance) nodeInstance;
+                    String url = path + "/" + ((SubProcessNode) subprocess.getNode()).getProcessId() + "/"
+                            + subprocess.getProcessInstanceId() + "/image";
+
+                    script.append("document.getElementById('").append(nodeInstance.getNodeDefinitionId())
+                            .append("_image').onclick=function (e) {openInNewTab('" + url + "');};\n");
+                }
+            }
+            script.append("</script></svg>");
+
+            image = image.replaceAll("</svg>", script.toString());
+        }
+        return image;
     }
 
     protected void removeOnFinish() {
