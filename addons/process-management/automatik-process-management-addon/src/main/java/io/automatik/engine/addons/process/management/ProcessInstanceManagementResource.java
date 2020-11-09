@@ -50,7 +50,7 @@ import io.automatik.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatik.engine.workflow.AbstractProcess;
 import io.automatik.engine.workflow.process.core.WorkflowProcess;
 
-@Tag(name = "Process Management", description = "Process management operations on top of the service, ui located at /management/processes/ui", externalDocs = @ExternalDocumentation(description = "UI Manangement", url = "/management/processes/ui"))
+@Tag(name = "Process Management", description = "Process management operations on top of the service", externalDocs = @ExternalDocumentation(description = "Manangement UI", url = "/management/processes/ui"))
 @Path("/management/processes")
 public class ProcessInstanceManagementResource extends BaseProcessInstanceManagementResource<Response> {
 
