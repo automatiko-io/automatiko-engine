@@ -1,0 +1,347 @@
+
+<html lang="en">
+<head>
+<!-- Required meta tags -->
+<meta charset="utf-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<!-- optional script that can allow to use more advanced authorization setup such as keycloak etc -->
+<script src="/automatik-authorization.js"></script>
+
+<script>
+	function prettifyJson(json, prettify) {
+		if (typeof json !== 'string') {
+			if (prettify) {
+				json = JSON.stringify(json, undefined, 4);
+			} else {
+				json = JSON.stringify(json);
+			}
+		}
+		return json
+				.replace(
+						/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+						function(match) {
+							let cls = "<span>";
+							if (/^"/.test(match)) {
+								if (/:$/.test(match)) {
+									cls = "<span class='text-danger'>";
+								} else {
+									cls = "<span>";
+								}
+							} else if (/true|false/.test(match)) {
+								cls = "<span class='text-primary'>";
+							} else if (/null/.test(match)) {
+								cls = "<span class='text-info'>";
+							}
+							return cls + match + "</span>";
+						});
+	}
+
+	let instancesCollapsed = false;
+	$(document).ready(function() {
+		$.ajax({
+			url : '/management/processes',
+			type : 'GET',
+			dataType : 'json',
+			crossDomain : true,
+			success : function(data) {
+
+				loadProcessCards(data);
+			},
+		});
+	});
+
+	let loadInstances = function(id, divId) {
+
+		if (!instancesCollapsed) {
+
+			instancesCollapsed = true;
+			$("#" + divId).empty();
+			$.ajax({
+				url : '/management/processes/' + id + '/instances',
+				type : 'GET',
+				dataType : 'json',
+				crossDomain : true,
+				success : function(data) {
+
+					loadProcessInstanceTable(data, divId, id);
+				},
+			});
+		} else {
+
+			instancesCollapsed = false;
+		}
+	}
+
+	let loadInstance = function(id, instanceId) {
+
+		$.ajax({
+			url : '/management/processes/' + id + '/instances/' + instanceId,
+			type : 'GET',
+			dataType : 'json',
+			crossDomain : true,
+			success : function(data) {
+				showDetails(data);
+
+			},
+		});
+
+	}
+
+	let showDetails = function(instanceData) {
+
+		// clear modal's data
+		$("#piTags").empty();
+		$("#piSubinstances").empty();
+		$("#piVariables").empty();
+
+		$("#piTitle").text(
+				instanceData.description + " (" + instanceData.id + ")");
+		$("#piImage").replaceWith(
+				'<object id="piImage" data="' + instanceData.image
+						+ '" height="400" width="90%"></object>');
+
+		let tags = '';
+		instanceData.tags
+				.forEach(function(item) {
+					tags += '<span class="badge badge-dark">' + item
+							+ '</span> &nbsp;';
+				});
+		$("#piTags").append(tags);
+		// build subprocesses table
+		$('#piSubinstances').append(
+				'<thead>' + '<tr>' + '  <th scope="col">#</th>'
+						+ '  <th scope="col">Id</th>'
+						+ '  <th scope="col">Key</th>'
+						+ '  <th scope="col">Description</th>'
+						+ '  <th scope="col">Tags</th>'
+						+ '  <th scope="col"></th>' + '</tr>' + '</thead>'
+						+ '<tbody ></tbody>');
+		instanceData.subprocesses
+				.forEach(function(item, index) {
+					let tags = '';
+					item.tags.forEach(function(item) {
+						tags += '<span class="badge badge-light">' + item
+								+ '</span> &nbsp;';
+					});
+					$('#piSubinstances')
+							.append(
+									'<tr>' + ' <th scope="row">'
+											+ ++index
+											+ '</th>'
+											+ ' <td>'
+											+ item.id
+											+ '</td>'
+											+ ' <td>'
+											+ item.businessKey
+											+ '</td>'
+											+ ' <td>'
+											+ item.description
+											+ '</td>'
+											+ ' <td>'
+											+ tags
+											+ '</td>'
+											+ ' <td><button type="button" class="btn btn-sm btn-light" onclick="loadInstance(\''
+											+ item.processId + '\', \''
+											+ instanceData.id + ':' + item.id
+											+ '\')">Details</button></td>'
+											+ '</tr>');
+				});
+
+		// display variables as json			
+		$("#piVariables")
+				.html(
+						"<pre>" + prettifyJson(instanceData.variables, true)
+								+ "</pre>");
+		// lastly show modal
+		$('#instanceDetailsModal').modal();
+	};
+
+	let loadProcessInstanceTable = function(data, divId, processId) {
+		$('#' + divId).append(
+				'<thead>' + '<tr>' + '  <th scope="col">#</th>'
+						+ '  <th scope="col">Id</th>'
+						+ '  <th scope="col">Key</th>'
+						+ '  <th scope="col">Description</th>'
+						+ '  <th scope="col">Tags</th>'
+						+ '  <th scope="col"></th>' + '</tr>' + '</thead>'
+						+ '<tbody ></tbody>');
+		data
+				.forEach(function(item, index) {
+					let tags = '';
+					item.tags.forEach(function(item) {
+						tags += '<span class="badge badge-light">' + item
+								+ '</span> &nbsp;';
+					});
+					$('#' + divId)
+							.append(
+									'<tr>'
+											+ ' <th scope="row">'
+											+ ++index
+											+ '</th>'
+											+ ' <td>'
+											+ item.id
+											+ '</td>'
+											+ ' <td>'
+											+ item.businessKey
+											+ '</td>'
+											+ ' <td>'
+											+ item.description
+											+ '</td>'
+											+ ' <td>'
+											+ tags
+											+ '</td>'
+											+ ' <td><button type="button" class="btn btn-sm btn-light" onclick="loadInstance(\''
+											+ processId + '\', \'' + item.id
+											+ '\')">Details</button></td>'
+											+ '</tr>');
+				});
+	}
+
+	let loadProcessCards = function(data) {
+		var $cards = $('#processes');
+		var $newRow;
+		var rowCount = 0;
+		var lastRow = true;
+		data
+				.forEach(function(item, index) {
+					lastRow = true;
+					if (index++ % 3 == 0) {
+						$newRow = $('<div class="row">').appendTo($cards);
+						rowCount++;
+					}
+					$newRow
+							.append('<div class="col-4 d-flex align-items-stretch"><div class="card" style="width:400">'
+									+ '<img class="card-img-top" src="' + item.image +'" alt="Missing process image" height="200">'
+									+ '<div class="card-body">'
+									+ '  <h5 class="card-title">'
+									+ item.name
+									+ '</h5>'
+									+ '  <p class="card-text">'
+									+ item.description
+									+ '</p>'
+
+									+ '</div>'
+									+ '<div class="card-footer d-flex flex-column">'
+									+ '<a class="btn btn-dark btn-sm mt-auto" onclick="loadInstances(\''
+									+ item.id
+									+ '\', \'tableinstances_'
+									+ rowCount
+									+ '\');" data-toggle="collapse" href="#instances_'
+									+ rowCount
+									+ '" role="button" aria-expanded="false" aria-controls="instances_"'
+									+ item.id
+									+ '">'
+									+ 'Instances'
+									+ '</a>'
+									+ '<div id="expanded_' + item.id +'"></div>'
+									+ '</div>');
+					if (index % 3 == 0) {
+						lastRow = false;
+						$newRow = $(
+								'<div class="w-100 py-2"><div class="collapse" id="instances_' + rowCount +'"><table class="table table-bordered table-dark" id="tableinstances_' + rowCount +'"></table></div></div>')
+								.appendTo($cards);
+					}
+				});
+
+		if (lastRow) {
+			$newRow = $(
+					'<div class="w-100 py-2"><div class="collapse" id="instances_' + rowCount +'"><table class="table table-dark" id="tableinstances_' + rowCount +'"></table></div></div>')
+					.appendTo($cards);
+		}
+	};
+</script>
+<title>Manage processes :: Automatik</title>
+</head>
+<body>
+
+	<div class="jumbotron jumbotron-fluid">
+		<div class="container">
+			<h1 class="display-4">Available processes in the service</h1>
+			<p class="lead">Following section provides information about
+				currently available processes of this service.</p>
+		</div>
+
+		<div class="container" id="processes"></div>
+
+	</div>
+
+
+	<!-- process instance details scrollable modal -->
+	<div id="instanceDetailsModal" class="modal" tabindex="-1">
+		<div class="modal-dialog modal-xl">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 id="piTitle" class="modal-title">Process instance details</h5>
+					<button type="button" class="close" data-dismiss="modal"
+						aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="container">
+						<div class="row">
+							<div class="col-12">
+								<div id="piTags" class="float-right"></div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-12">
+								<object id="piImage" type="image/svg+xml" data="" height="400"
+									width="90%"> missing image </object>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-12">
+								<hr />
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-12">
+								<div class="page-header">
+									<h3>Subprocesses</h3>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-12">
+								<table class="table table-dark" id="piSubinstances"></table>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-12">
+								<hr />
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-12">
+								<div class="page-header">
+									<h3>Instance data</h3>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-12" id="piVariables"></div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary btn-sm"
+						data-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

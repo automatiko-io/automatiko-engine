@@ -24,8 +24,6 @@ public class BpmnProcess extends AbstractProcess<BpmnVariables> {
 
     private static BpmnProcessCompiler COMPILER = new BpmnProcessCompiler();
 
-    private final Process process;
-
     public BpmnProcess(Process p) {
         process = p;
     }
@@ -119,6 +117,11 @@ public class BpmnProcess extends AbstractProcess<BpmnVariables> {
 
     public static List<BpmnProcess> from(ProcessConfig config, Resource... resources) {
         return COMPILER.from(config, resources);
+    }
+
+    @Override
+    public Process buildProcess() {
+        return null;
     }
 
 }

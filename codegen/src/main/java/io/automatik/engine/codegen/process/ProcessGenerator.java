@@ -208,7 +208,7 @@ public class ProcessGenerator {
     private MethodDeclaration process(ProcessMetaData processMetaData) {
         return processMetaData.getGeneratedClassModel().findFirst(MethodDeclaration.class)
                 .orElseThrow(() -> new NoSuchElementException("Compilation unit doesn't contain a method declaration!"))
-                .setModifiers(Modifier.Keyword.PUBLIC).setType(Process.class.getCanonicalName()).setName("process");
+                .setModifiers(Modifier.Keyword.PUBLIC).setType(Process.class.getCanonicalName()).setName("buildProcess");
     }
 
     private MethodCallExpr createProcessRuntime() {

@@ -55,7 +55,7 @@ public class ProcessToExecModelGenerator {
                 extractSourcePath(process));
 
         Optional<MethodDeclaration> processMethod = parsedClazzFile.findFirst(MethodDeclaration.class,
-                sl -> sl.getName().asString().equals("process"));
+                sl -> sl.getName().asString().equals("buildProcess"));
 
         processVisitor.visitProcess(process, processMethod.get(), metadata);
 

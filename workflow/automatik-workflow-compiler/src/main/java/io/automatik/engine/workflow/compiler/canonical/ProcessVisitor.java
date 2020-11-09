@@ -79,7 +79,7 @@ import io.automatik.engine.workflow.util.PatternConstants;
 
 public class ProcessVisitor extends AbstractVisitor {
 
-    public static final String DEFAULT_VERSION = "1.0";
+    public static final String DEFAULT_VERSION = "";
 
     private Map<Class<?>, AbstractNodeVisitor<? extends io.automatik.engine.api.definition.process.Node>> nodesVisitors = new HashMap<>();
 

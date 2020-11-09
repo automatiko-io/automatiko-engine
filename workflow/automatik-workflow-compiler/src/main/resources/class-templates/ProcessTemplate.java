@@ -6,7 +6,7 @@ import io.automatik.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
 
 public class XXXProcess {
 
-    public static Process process() {
+    public static Process buildProcess() {
     	
     	return $process;
     }

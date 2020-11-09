@@ -48,6 +48,8 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
 
     protected AccessPolicy<ProcessInstance<T>> accessPolicy = new AllowAllAccessPolicy<T>();
 
+    protected io.automatik.engine.api.definition.process.Process process;
+
     protected AbstractProcess() {
         this(new LightProcessRuntimeServiceProvider());
     }
@@ -205,7 +207,14 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
         }
     }
 
-    public abstract io.automatik.engine.api.definition.process.Process process();
+    public io.automatik.engine.api.definition.process.Process process() {
+        if (this.process == null) {
+            this.process = buildProcess();
+        }
+        return this.process;
+    }
+
+    public abstract io.automatik.engine.api.definition.process.Process buildProcess();
 
     protected ProcessRuntime createProcessRuntime() {
         return new LightProcessRuntime(new LightProcessRuntimeContext(Collections.singletonList(process())), services);

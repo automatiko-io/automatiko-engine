@@ -478,9 +478,13 @@ public abstract class AbstractResourceGenerator {
     }
 
     private void interpolateUserTaskTypes(ClassOrInterfaceType t, String inputClazzName, String outputClazzName) {
-        SimpleName returnType = t.asClassOrInterfaceType().getName();
-        interpolateUserTaskTypes(returnType, inputClazzName, outputClazzName);
-        t.getTypeArguments().ifPresent(o -> interpolateUserTaskTypeArguments(o, inputClazzName, outputClazzName));
+        try {
+            SimpleName returnType = t.asClassOrInterfaceType().getName();
+            interpolateUserTaskTypes(returnType, inputClazzName, outputClazzName);
+            t.getTypeArguments().ifPresent(o -> interpolateUserTaskTypeArguments(o, inputClazzName, outputClazzName));
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
     }
 
     private void interpolateUserTaskTypes(SimpleName returnType, String inputClazzName, String outputClazzName) {

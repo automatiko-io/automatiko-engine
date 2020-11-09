@@ -37,8 +37,8 @@ import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.api.workflow.ProcessInstanceExecutionException;
 import io.automatik.engine.api.workflow.ProcessInstanceNotFoundException;
-import io.automatik.engine.api.workflow.ProcessImageNotFoundException;
 import io.automatik.engine.api.workflow.Tag;
+import io.automatik.engine.api.workflow.ProcessImageNotFoundException;
 import io.automatik.engine.api.workflow.WorkItem;
 import io.automatik.engine.api.workflow.workitem.Policy;
 import io.automatik.engine.workflow.Sig;
@@ -404,13 +404,13 @@ public class $Type$Resource {
                 responseCode = "200",
                 description = "Successfully retrieved tags of the instance",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Tag.class, type = SchemaType.ARRAY))) })
+                            schema = @Schema(implementation = TagInstance.class, type = SchemaType.ARRAY))) })
     @Operation(
         summary = "Retrieves tags associated with $name$ instance with given id") 
     @GET()
     @Path("/{id}/tags")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Tag> get_tags_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id,
+    public Collection<? extends Tag> get_tags_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         try {
@@ -440,19 +440,19 @@ public class $Type$Resource {
                 content = @Content(mediaType = "application/json")),
             @APIResponse(
                 responseCode = "200",
-                description = "Successfully added tag to the instance",
+                description = "Successfully added TagInstance to the instance",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Tag.class, type = SchemaType.ARRAY))) })
+                            schema = @Schema(implementation = TagInstance.class, type = SchemaType.ARRAY))) })
     @Operation(
-        summary = "Adds new tag to $name$ instance with given id")    
+        summary = "Adds new TagInstance to $name$ instance with given id")    
     @POST()
     @Path("/{id}/tags")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Tag> add_tag_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id,             
+    public Collection<? extends Tag> add_tag_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id,             
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
-            @Parameter(description = "Tag content that should be associated with the $name$ instance", required = true) Tag resource) {
+            @Parameter(description = "TagInstance content that should be associated with the $name$ instance", required = true) TagInstance resource) {
         identitySupplier.buildIdentityProvider(user, groups);
         return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
@@ -480,16 +480,16 @@ public class $Type$Resource {
                     content = @Content(mediaType = "application/json")),              
             @APIResponse(
                 responseCode = "200",
-                description = "Successfully removed tag from the instance",
+                description = "Successfully removed TagInstance from the instance",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Tag.class, type = SchemaType.ARRAY))) })
+                            schema = @Schema(implementation = TagInstance.class, type = SchemaType.ARRAY))) })
     @Operation(
-            summary = "Removes tag from $name$ instance with given id")     
+            summary = "Removes TagInstance from $name$ instance with given id")     
     @DELETE()
     @Path("/{id}/tags/{tagId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Tag> get_tags_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id, 
-            @Parameter(description = "Tag to be removed", required = true) @PathParam("tagId") String tagId,
+    public Collection<? extends Tag> get_tags_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id, 
+            @Parameter(description = "TagInstance to be removed", required = true) @PathParam("tagId") String tagId,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         identitySupplier.buildIdentityProvider(user, groups);
