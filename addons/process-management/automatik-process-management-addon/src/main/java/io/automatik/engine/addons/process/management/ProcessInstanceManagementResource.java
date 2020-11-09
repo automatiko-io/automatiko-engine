@@ -30,6 +30,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
+import org.eclipse.microprofile.openapi.annotations.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
@@ -49,7 +50,7 @@ import io.automatik.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatik.engine.workflow.AbstractProcess;
 import io.automatik.engine.workflow.process.core.WorkflowProcess;
 
-@Tag(name = "Process Management", description = "Process management operations on top of the service, ui located at /management/processes/ui")
+@Tag(name = "Process Management", description = "Process management operations on top of the service, ui located at /management/processes/ui", externalDocs = @ExternalDocumentation(description = "UI Manangement", url = "/management/processes/ui"))
 @Path("/management/processes")
 public class ProcessInstanceManagementResource extends BaseProcessInstanceManagementResource<Response> {
 
@@ -189,7 +190,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @APIResponses(value = {
             @APIResponse(responseCode = "404", description = "In case of instance with given id was not found", content = @Content(mediaType = "application/json")),
             @APIResponse(responseCode = "200", description = "List of available processes", content = @Content(mediaType = "application/json")) })
-    @Operation(summary = "Lists available public processes in the service")
+    @Operation(summary = "Returns process instance image with annotated active nodes")
     @SuppressWarnings("unchecked")
     @GET()
     @Path("/{processId}/instances/{instanceId}/image")
@@ -217,7 +218,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @APIResponses(value = {
             @APIResponse(responseCode = "404", description = "In case of instance with given id was not found", content = @Content(mediaType = "application/json")),
             @APIResponse(responseCode = "200", description = "List of available processes", content = @Content(mediaType = "application/json")) })
-    @Operation(summary = "Lists available public processes in the service")
+    @Operation(summary = "Returns error information for given process instance if the instance is in error")
     @Override
     @GET
     @Path("/{processId}/instances/{processInstanceId}/error")
@@ -231,7 +232,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @APIResponses(value = {
             @APIResponse(responseCode = "404", description = "In case of instance with given id was not found", content = @Content(mediaType = "application/json")),
             @APIResponse(responseCode = "200", description = "List of available processes", content = @Content(mediaType = "application/json")) })
-    @Operation(summary = "Lists available public processes in the service")
+    @Operation(summary = "Retruns node instances currently active in given process instance")
     @Override
     @GET
     @Path("/{processId}/instances/{processInstanceId}/nodeInstances")
@@ -245,7 +246,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @APIResponses(value = {
             @APIResponse(responseCode = "404", description = "In case of instance with given id was not found", content = @Content(mediaType = "application/json")),
             @APIResponse(responseCode = "200", description = "List of available processes", content = @Content(mediaType = "application/json")) })
-    @Operation(summary = "Lists available public processes in the service")
+    @Operation(summary = "Retriggers the node instance that is in error")
     @Override
     @POST
     @Path("/{processId}/instances/{processInstanceId}/retrigger")
@@ -259,7 +260,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @APIResponses(value = {
             @APIResponse(responseCode = "404", description = "In case of instance with given id was not found", content = @Content(mediaType = "application/json")),
             @APIResponse(responseCode = "200", description = "List of available processes", content = @Content(mediaType = "application/json")) })
-    @Operation(summary = "Lists available public processes in the service")
+    @Operation(summary = "Skips the node instance that is in error")
     @Override
     @POST
     @Path("/{processId}/instances/{processInstanceId}/skip")
@@ -273,7 +274,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @APIResponses(value = {
             @APIResponse(responseCode = "404", description = "In case of instance with given id was not found", content = @Content(mediaType = "application/json")),
             @APIResponse(responseCode = "200", description = "List of available processes", content = @Content(mediaType = "application/json")) })
-    @Operation(summary = "Lists available public processes in the service")
+    @Operation(summary = "Trigger new node instance of a given node in process instance")
     @Override
     @POST
     @Path("/{processId}/instances/{processInstanceId}/nodes/{nodeId}")
@@ -287,7 +288,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @APIResponses(value = {
             @APIResponse(responseCode = "404", description = "In case of instance with given id was not found", content = @Content(mediaType = "application/json")),
             @APIResponse(responseCode = "200", description = "List of available processes", content = @Content(mediaType = "application/json")) })
-    @Operation(summary = "Lists available public processes in the service")
+    @Operation(summary = "Retriggers (preior to triggering it cancels current instance) node instance in given process instance")
     @Override
     @POST
     @Path("/{processId}/instances/{processInstanceId}/nodeInstances/{nodeInstanceId}")
@@ -302,7 +303,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @APIResponses(value = {
             @APIResponse(responseCode = "404", description = "In case of instance with given id was not found", content = @Content(mediaType = "application/json")),
             @APIResponse(responseCode = "200", description = "List of available processes", content = @Content(mediaType = "application/json")) })
-    @Operation(summary = "Lists available public processes in the service")
+    @Operation(summary = "Cancels given node instance in the process instance")
     @Override
     @DELETE
     @Path("/{processId}/instances/{processInstanceId}/nodeInstances/{nodeInstanceId}")
@@ -317,7 +318,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @APIResponses(value = {
             @APIResponse(responseCode = "404", description = "In case of instance with given id was not found", content = @Content(mediaType = "application/json")),
             @APIResponse(responseCode = "200", description = "List of available processes", content = @Content(mediaType = "application/json")) })
-    @Operation(summary = "Lists available public processes in the service")
+    @Operation(summary = "Aborts given process instance")
     @Override
     @DELETE
     @Path("/{processId}/instances/{processInstanceId}")
