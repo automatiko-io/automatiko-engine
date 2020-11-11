@@ -40,7 +40,7 @@ public class GatewayTest extends AbstractCodegenTest {
 		assertThat(result.toMap()).hasSize(1).containsKey("x");
 		assertThat(result.toMap().get("x")).isEqualTo("test");
 
-		assertThat(p.instances().values()).hasSize(0);
+		assertThat(p.instances().values(1, 10)).hasSize(0);
 
 		// not test the other branch
 		processInstance = p.createInstance(m);
@@ -56,7 +56,7 @@ public class GatewayTest extends AbstractCodegenTest {
 		assertThat(result.toMap()).hasSize(1).containsKey("x");
 		assertThat(result.toMap().get("x")).isEqualTo("value");
 
-		assertThat(p.instances().values()).hasSize(0);
+		assertThat(p.instances().values(1, 10)).hasSize(0);
 	}
 
 }

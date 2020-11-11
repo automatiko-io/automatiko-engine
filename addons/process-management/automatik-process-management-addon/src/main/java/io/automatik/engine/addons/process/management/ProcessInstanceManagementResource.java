@@ -158,7 +158,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             identitySupplier.buildIdentityProvider(user, groups);
             Process<?> process = processData.get(processId);
 
-            process.instances().values().forEach(pi -> collected
+            process.instances().values(page, size).forEach(pi -> collected
                     .add(new ProcessInstanceDTO(pi.id(), pi.businessKey(), pi.description(), pi.tags().values(),
                             pi.error().isPresent(), processId)));
 

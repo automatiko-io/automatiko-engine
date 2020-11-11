@@ -12,11 +12,11 @@ public interface ProcessInstances<T> {
 
     Optional<? extends ProcessInstance<T>> findById(String id, ProcessInstanceReadMode mode);
 
-    default Collection<? extends ProcessInstance<T>> values() {
-        return values(ProcessInstanceReadMode.READ_ONLY);
+    default Collection<? extends ProcessInstance<T>> values(int page, int size) {
+        return values(ProcessInstanceReadMode.READ_ONLY, page, size);
     }
 
-    Collection<? extends ProcessInstance<T>> values(ProcessInstanceReadMode mode);
+    Collection<? extends ProcessInstance<T>> values(ProcessInstanceReadMode mode, int page, int size);
 
     default Collection<? extends ProcessInstance<T>> findByIdOrTag(String... values) {
         return findByIdOrTag(ProcessInstanceReadMode.MUTABLE, values);

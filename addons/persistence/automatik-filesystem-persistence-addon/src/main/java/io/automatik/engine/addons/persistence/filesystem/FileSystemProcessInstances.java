@@ -141,7 +141,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     }
 
     @Override
-    public Collection values(ProcessInstanceReadMode mode) {
+    public Collection values(ProcessInstanceReadMode mode, int page, int size) {
         try (Stream<Path> stream = Files.walk(storage)) {
             return stream.filter(file -> isValidProcessFile(file)).map(this::readBytesFromFile)
                     .map(b -> {
@@ -153,6 +153,8 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
                         }
                     })
                     .filter(pi -> pi != null)
+                    .skip(calculatePage(page, size))
+                    .limit(size)
                     .collect(Collectors.toList());
         } catch (IOException e) {
             throw new RuntimeException("Unable to read process instances ", e);

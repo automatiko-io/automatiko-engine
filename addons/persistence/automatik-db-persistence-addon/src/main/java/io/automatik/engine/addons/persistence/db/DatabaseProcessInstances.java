@@ -74,8 +74,8 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
     }
 
     @Override
-    public Collection<ProcessInstance<ProcessInstanceEntity>> values(ProcessInstanceReadMode mode) {
-        return JpaOperations.streamAll(type)
+    public Collection<ProcessInstance<ProcessInstanceEntity>> values(ProcessInstanceReadMode mode, int page, int size) {
+        return JpaOperations.findAll(type).page(calculatePage(page, size), size).stream()
                 .map(e -> {
                     try {
                         return unmarshallInstance(mode, ((ProcessInstanceEntity) e));

@@ -140,8 +140,8 @@ public class CollectingUnitOfWork implements UnitOfWork {
         }
 
         @Override
-        public Collection values(ProcessInstanceReadMode mode) {
-            return delegate.values(mode);
+        public Collection values(ProcessInstanceReadMode mode, int page, int size) {
+            return delegate.values(mode, page, size);
         }
 
         @Override

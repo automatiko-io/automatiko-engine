@@ -47,9 +47,9 @@ public class OrdersProcessService {
 		assert (((Order) result.toMap().get("order")).getTotal() > 0);
 
 		ProcessInstances<? extends Model> orderItemProcesses = orderItemsProcess.instances();
-		assert (orderItemProcesses.values().size() == 1);
+		assert (orderItemProcesses.values(1, 10).size() == 1);
 
-		ProcessInstance<?> childProcessInstance = orderItemProcesses.values().iterator().next();
+		ProcessInstance<?> childProcessInstance = orderItemProcesses.values(1, 10).iterator().next();
 
 		List<WorkItem> workItems = childProcessInstance.workItems();
 		assert (workItems.size()) == 1;
@@ -61,8 +61,8 @@ public class OrdersProcessService {
 		assert (io.automatik.engine.api.runtime.process.ProcessInstance.STATE_COMPLETED == processInstance.status());
 
 		// no active process instances for both orders and order items processes
-		assert (orderProcess.instances().values().size() == 0);
-		assert (orderItemsProcess.instances().values().size() == 0);
+		assert (orderProcess.instances().values(1, 10).size() == 0);
+		assert (orderItemsProcess.instances().values(1, 10).size() == 0);
 
 		return "OK";
 	}

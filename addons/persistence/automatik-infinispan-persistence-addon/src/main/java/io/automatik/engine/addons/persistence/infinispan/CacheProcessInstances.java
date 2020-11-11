@@ -92,7 +92,7 @@ public class CacheProcessInstances implements MutableProcessInstances {
     }
 
     @Override
-    public Collection<? extends ProcessInstance> values(ProcessInstanceReadMode mode) {
+    public Collection<? extends ProcessInstance> values(ProcessInstanceReadMode mode, int page, int size) {
         return cache.values().parallelStream()
                 .map(data -> {
                     try {
@@ -103,6 +103,8 @@ public class CacheProcessInstances implements MutableProcessInstances {
                     }
                 })
                 .filter(pi -> pi != null)
+                .skip(calculatePage(page, size))
+                .limit(size)
                 .collect(Collectors.toList());
     }
 

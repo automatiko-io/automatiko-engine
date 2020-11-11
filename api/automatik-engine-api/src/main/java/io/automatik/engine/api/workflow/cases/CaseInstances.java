@@ -10,9 +10,9 @@ public interface CaseInstances<T> extends ProcessInstances<T> {
 
     Optional<CaseInstance<T>> findById(String i);
 
-    Collection<CaseInstance<T>> values();
+    Collection<CaseInstance<T>> values(int page, int size);
 
     Optional<CaseInstance<T>> findById(String i, ProcessInstanceReadMode mode);
 
-    Collection<CaseInstance<T>> values(ProcessInstanceReadMode mode);
+    Collection<CaseInstance<T>> values(ProcessInstanceReadMode mode, int page, int size);
 }

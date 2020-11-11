@@ -33,8 +33,10 @@ public class MapProcessInstances implements MutableProcessInstances {
     }
 
     @Override
-    public Collection<ProcessInstance> values(ProcessInstanceReadMode mode) {
+    public Collection<ProcessInstance> values(ProcessInstanceReadMode mode, int page, int size) {
         return instances.values().stream().filter(pi -> pi.process().accessPolicy().canReadInstance(IdentityProvider.get(), pi))
+                .skip(calculatePage(page, size))
+                .limit(size)
                 .collect(Collectors.toList());
     }
 

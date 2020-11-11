@@ -5,10 +5,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.Consumes;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -28,20 +26,20 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.WebApplicationException;
 
-import io.automatik.engine.api.runtime.process.WorkItemNotFoundException;
 import io.automatik.engine.api.Application;
 import io.automatik.engine.api.auth.IdentityProvider;
 import io.automatik.engine.api.auth.IdentitySupplier;
 import io.automatik.engine.api.auth.SecurityPolicy;
+import io.automatik.engine.workflow.Sig;
 import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.api.workflow.ProcessInstanceExecutionException;
 import io.automatik.engine.api.workflow.ProcessInstanceNotFoundException;
+import io.automatik.engine.api.runtime.process.WorkItemNotFoundException;
 import io.automatik.engine.api.workflow.Tag;
 import io.automatik.engine.api.workflow.ProcessImageNotFoundException;
 import io.automatik.engine.api.workflow.WorkItem;
 import io.automatik.engine.api.workflow.workitem.Policy;
-import io.automatik.engine.workflow.Sig;
 import io.automatik.engine.workflow.base.instance.TagInstance;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -51,9 +49,6 @@ import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @org.eclipse.microprofile.openapi.annotations.tags.Tag(name="$processname$", description="$processdocumentation$")
 @Path("/$name$")
@@ -135,11 +130,13 @@ public class $Type$Resource {
     @GET()
     @Produces(MediaType.APPLICATION_JSON)
     public List<$Type$Output> getAll_$name$(
+            @Parameter(description = "Pagination - page to start on", required = false) @QueryParam(value = "page") @DefaultValue("1") int page,
+            @Parameter(description = "Pagination - number of items to return", required = false) @QueryParam(value = "size") @DefaultValue("10") int size,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         try {
             identitySupplier.buildIdentityProvider(user, groups);
-            return process.instances().values().stream()
+            return process.instances().values(page, size).stream()
                     .map(pi -> mapOutput(new $Type$Output(), pi.variables()))
                     .collect(Collectors.toList());
         } finally {

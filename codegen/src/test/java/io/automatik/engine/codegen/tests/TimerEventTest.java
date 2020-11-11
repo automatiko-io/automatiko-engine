@@ -211,7 +211,7 @@ public class TimerEventTest extends AbstractCodegenTest {
 		boolean completed = listener.waitTillCompleted(5000);
 		assertThat(completed).isTrue();
 
-		Collection<?> instances = p.instances().values();
+		Collection<?> instances = p.instances().values(1, 10);
 		assertThat(instances).hasSize(1);
 
 		ProcessInstance<?> processInstance = (ProcessInstance<?>) instances.iterator().next();
@@ -222,7 +222,7 @@ public class TimerEventTest extends AbstractCodegenTest {
 		processInstance.abort();
 		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ABORTED);
 
-		instances = p.instances().values();
+		instances = p.instances().values(1, 10);
 		assertThat(instances).hasSize(0);
 
 	}
@@ -243,7 +243,7 @@ public class TimerEventTest extends AbstractCodegenTest {
 		boolean completed = listener.waitTillCompleted(5000);
 		assertThat(completed).isTrue();
 
-		Collection<?> instances = p.instances().values();
+		Collection<?> instances = p.instances().values(1, 10);
 		assertThat(instances).hasSize(2);
 
 		ProcessInstance<?> processInstance = (ProcessInstance<?>) instances.iterator().next();
@@ -258,11 +258,11 @@ public class TimerEventTest extends AbstractCodegenTest {
 		completed = listener.waitTillCompleted(3000);
 		assertThat(completed).isFalse();
 		// same amount of instances should be active as before deactivation
-		instances = p.instances().values();
+		instances = p.instances().values(1, 10);
 		assertThat(instances).hasSize(2);
 		// clean up by aborting all instances
 		instances.forEach(i -> ((ProcessInstance<?>) i).abort());
-		instances = p.instances().values();
+		instances = p.instances().values(1, 10);
 		assertThat(instances).hasSize(0);
 
 	}

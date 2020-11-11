@@ -125,7 +125,7 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
 
     @Override
     public <S> void send(Signal<S> signal) {
-        instances().values(ProcessInstanceReadMode.MUTABLE).forEach(pi -> pi.send(signal));
+        instances().values(ProcessInstanceReadMode.MUTABLE, 1, 10).forEach(pi -> pi.send(signal));
     }
 
     public Process<T> configure() {

@@ -9,7 +9,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 
 import io.automatik.engine.api.auth.IdentityProvider;
-import io.automatik.engine.api.runtime.process.WorkItemNotFoundException;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.api.workflow.WorkItem;
 import io.automatik.engine.workflow.Sig;

@@ -20,7 +20,6 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
 
-import io.automatik.engine.api.runtime.process.WorkItemNotFoundException;
 import io.automatik.engine.api.Application;
 import io.automatik.engine.api.auth.SecurityPolicy;
 import io.automatik.engine.api.workflow.Process;
@@ -28,10 +27,6 @@ import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.api.workflow.ProcessInstanceExecutionException;
 import io.automatik.engine.api.workflow.WorkItem;
 import io.automatik.engine.api.workflow.workitem.Policy;
-
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Path("/$name$")
 public class $Type$ReactiveResource {
@@ -70,7 +65,7 @@ public class $Type$ReactiveResource {
     @Produces(MediaType.APPLICATION_JSON)
     public CompletionStage<List<$Type$Output>> getAll_$name$() {
         return CompletableFuture.supplyAsync(() -> {
-            return process.instances().values().stream()
+            return process.instances().values(1, 10).stream()
                     .map(pi -> mapOutput(new $Type$Output(), pi.variables()))
                  .collect(Collectors.toList());
         });   

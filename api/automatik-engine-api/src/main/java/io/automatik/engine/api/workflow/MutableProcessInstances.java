@@ -52,4 +52,12 @@ public interface MutableProcessInstances<T> extends ProcessInstances<T> {
     default boolean useCompositeIdForSubprocess() {
         return true;
     }
+
+    default int calculatePage(int page, int size) {
+        if (page >= 1) {
+            return 0;
+        }
+
+        return (page - 1) * size;
+    }
 }

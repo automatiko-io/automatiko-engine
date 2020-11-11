@@ -73,7 +73,7 @@ public class FileSystemProcessInstancesTest {
 
         process.setProcessInstancesFactory(new FileSystemProcessInstancesFactory());
         process.configure();
-        process.instances().values(ProcessInstanceReadMode.MUTABLE).forEach(p -> p.abort());
+        process.instances().values(ProcessInstanceReadMode.MUTABLE, 1, 10).forEach(p -> p.abort());
         return process;
     }
 
@@ -135,9 +135,9 @@ public class FileSystemProcessInstancesTest {
 
         ProcessInstances<BpmnVariables> instances = process.instances();
         assertThat(instances.size()).isOne();
-        ProcessInstance<BpmnVariables> pi = instances.values().stream().findFirst().get();
+        ProcessInstance<BpmnVariables> pi = instances.values(1, 10).stream().findFirst().get();
         assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> pi.abort());
-        instances.values(ProcessInstanceReadMode.MUTABLE).stream().findFirst().get().abort();
+        instances.values(ProcessInstanceReadMode.MUTABLE, 1, 10).stream().findFirst().get().abort();
         assertThat(instances.size()).isZero();
     }
 
@@ -168,7 +168,7 @@ public class FileSystemProcessInstancesTest {
 
         assertThat(processInstance.description()).isEqualTo("User Task");
 
-        assertThat(process.instances().values().iterator().next().workItems(securityPolicy)).hasSize(1);
+        assertThat(process.instances().values(1, 10).iterator().next().workItems(securityPolicy)).hasSize(1);
 
         WorkItem workItem = processInstance.workItems(securityPolicy).get(0);
         assertThat(workItem).isNotNull();
@@ -236,7 +236,7 @@ public class FileSystemProcessInstancesTest {
         assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
         assertThat(processInstance.description()).isEqualTo("User Task");
 
-        assertThat(process.instances().values()).hasSize(1);
+        assertThat(process.instances().values(1, 10)).hasSize(1);
 
         FileSystemProcessInstances fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
         verify(fileSystemBasedStorage, times(2)).create(any(), any());
@@ -289,7 +289,7 @@ public class FileSystemProcessInstancesTest {
         assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
         assertThat(processInstance.description()).isEqualTo("User Task");
 
-        assertThat(process.instances().values()).hasSize(1);
+        assertThat(process.instances().values(1, 10)).hasSize(1);
 
         FileSystemProcessInstances fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
         verify(fileSystemBasedStorage, times(2)).create(any(), any());
@@ -336,7 +336,7 @@ public class FileSystemProcessInstancesTest {
 
         assertThat(processInstance.description()).isEqualTo("User Task");
 
-        assertThat(process.instances().values().iterator().next().workItems(securityPolicy)).hasSize(1);
+        assertThat(process.instances().values(1, 10).iterator().next().workItems(securityPolicy)).hasSize(1);
 
         WorkItem workItem = processInstance.workItems(securityPolicy).get(0);
         assertThat(workItem).isNotNull();
