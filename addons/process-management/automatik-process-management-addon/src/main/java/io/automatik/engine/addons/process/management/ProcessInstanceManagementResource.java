@@ -42,6 +42,8 @@ import io.automatik.engine.addons.process.management.model.ProcessDTO;
 import io.automatik.engine.addons.process.management.model.ProcessInstanceDTO;
 import io.automatik.engine.addons.process.management.model.ProcessInstanceDetailsDTO;
 import io.automatik.engine.api.Application;
+import io.automatik.engine.api.auth.IdentityProvider;
+import io.automatik.engine.api.auth.IdentitySupplier;
 import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessImageNotFoundException;
 import io.automatik.engine.api.workflow.ProcessInstance;
@@ -54,20 +56,25 @@ import io.automatik.engine.workflow.process.core.WorkflowProcess;
 @Path("/management/processes")
 public class ProcessInstanceManagementResource extends BaseProcessInstanceManagementResource<Response> {
 
+    private IdentitySupplier identitySupplier;
+
     // CDI
     public ProcessInstanceManagementResource() {
-        this((Map<String, Process<?>>) null, null);
+        this((Map<String, Process<?>>) null, null, null);
     }
 
-    public ProcessInstanceManagementResource(Map<String, Process<?>> process, Application application) {
+    public ProcessInstanceManagementResource(Map<String, Process<?>> process, Application application,
+            IdentitySupplier identitySupplier) {
         super(process, application);
+        this.identitySupplier = identitySupplier;
     }
 
     @Inject
-    public ProcessInstanceManagementResource(Application application, Instance<Process<?>> availableProcesses) {
+    public ProcessInstanceManagementResource(Application application, Instance<Process<?>> availableProcesses,
+            IdentitySupplier identitySupplier) {
         super(availableProcesses == null ? Collections.emptyMap()
                 : availableProcesses.stream().collect(Collectors.toMap(p -> p.id(), p -> p)), application);
-
+        this.identitySupplier = identitySupplier;
     }
 
     @Override
@@ -104,28 +111,34 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @Produces(MediaType.APPLICATION_JSON)
     public List<ProcessDTO> get(@Context UriInfo uriInfo,
             @Parameter(description = "Pagination - page to start on", required = false) @QueryParam(value = "page") @DefaultValue("1") int page,
-            @Parameter(description = "Pagination - number of items to return", required = false) @QueryParam(value = "size") @DefaultValue("10") int size) {
+            @Parameter(description = "Pagination - number of items to return", required = false) @QueryParam(value = "size") @DefaultValue("10") int size,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         List<ProcessDTO> collected = new ArrayList<ProcessDTO>();
+        try {
+            identitySupplier.buildIdentityProvider(user, groups);
+            for (String id : processData.keySet()) {
+                Process<?> process = processData.get(id);
 
-        for (String id : processData.keySet()) {
-            Process<?> process = processData.get(id);
+                if (!WorkflowProcess.PUBLIC_VISIBILITY
+                        .equals(((WorkflowProcess) ((AbstractProcess<?>) process).process()).getVisibility())) {
+                    continue;
+                }
 
-            if (!WorkflowProcess.PUBLIC_VISIBILITY
-                    .equals(((WorkflowProcess) ((AbstractProcess<?>) process).process()).getVisibility())) {
-                continue;
+                String pathprefix = "";
+                if (process.version() != null) {
+                    pathprefix = "v" + process.version().replaceAll("\\.", "_") + "/";
+                }
+
+                collected.add(new ProcessDTO(id, process.version(), process.name(),
+                        (String) ((AbstractProcess<?>) process).process().getMetaData().get("Documentation"),
+                        uriInfo.getBaseUri().toString() + pathprefix + ((AbstractProcess<?>) process).process().getId()
+                                + "/image"));
             }
-
-            String pathprefix = "";
-            if (process.version() != null) {
-                pathprefix = "v" + process.version().replaceAll("\\.", "_") + "/";
-            }
-
-            collected.add(new ProcessDTO(id, process.version(), process.name(),
-                    (String) ((AbstractProcess<?>) process).process().getMetaData().get("Documentation"),
-                    uriInfo.getBaseUri().toString() + pathprefix + ((AbstractProcess<?>) process).process().getId()
-                            + "/image"));
+            return collected;
+        } finally {
+            IdentityProvider.set(null);
         }
-        return collected;
     }
 
     @APIResponses(value = {
@@ -137,16 +150,22 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     public List<ProcessInstanceDTO> getInstances(@Context UriInfo uriInfo,
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "Pagination - page to start on", required = false) @QueryParam(value = "page") @DefaultValue("1") int page,
-            @Parameter(description = "Pagination - number of items to return", required = false) @QueryParam(value = "size") @DefaultValue("10") int size) {
+            @Parameter(description = "Pagination - number of items to return", required = false) @QueryParam(value = "size") @DefaultValue("10") int size,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         List<ProcessInstanceDTO> collected = new ArrayList<ProcessInstanceDTO>();
+        try {
+            identitySupplier.buildIdentityProvider(user, groups);
+            Process<?> process = processData.get(processId);
 
-        Process<?> process = processData.get(processId);
+            process.instances().values().forEach(pi -> collected
+                    .add(new ProcessInstanceDTO(pi.id(), pi.businessKey(), pi.description(), pi.tags().values(),
+                            pi.error().isPresent(), processId)));
 
-        process.instances().values().forEach(pi -> collected
-                .add(new ProcessInstanceDTO(pi.id(), pi.businessKey(), pi.description(), pi.tags().values(),
-                        pi.error().isPresent(), processId)));
-
-        return collected;
+            return collected;
+        } finally {
+            IdentityProvider.set(null);
+        }
     }
 
     @APIResponses(value = {
@@ -159,32 +178,39 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @Produces(MediaType.APPLICATION_JSON)
     public ProcessInstanceDetailsDTO getInstance(@Context UriInfo uriInfo,
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
-            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("instanceId") String instanceId) {
+            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("instanceId") String instanceId,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        try {
+            identitySupplier.buildIdentityProvider(user, groups);
+            Process<?> process = processData.get(processId);
 
-        Process<?> process = processData.get(processId);
+            Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId,
+                    ProcessInstanceReadMode.READ_ONLY);
 
-        Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId,
-                ProcessInstanceReadMode.READ_ONLY);
+            if (instance.isEmpty()) {
+                throw new ProcessInstanceNotFoundException(instanceId);
+            }
 
-        if (instance.isEmpty()) {
-            throw new ProcessInstanceNotFoundException(instanceId);
+            ProcessInstance<?> pi = instance.get();
+            ProcessInstanceDetailsDTO details = new ProcessInstanceDetailsDTO();
+            details.setId(pi.id());
+            details.setBusinessKey(pi.businessKey());
+            details.setDescription(pi.description());
+            details.setFailed(pi.error().isPresent());
+            details.setImage(
+                    uriInfo.getBaseUri().toString() + "/management/processes/" + processId + "/instances/" + instanceId
+                            + "/image");
+            details.setTags(pi.tags().values());
+            details.setVariables(pi.variables());
+            details.setSubprocesses(pi.subprocesses().stream()
+                    .map(spi -> new ProcessInstanceDTO(spi.id(), spi.businessKey(), spi.description(), pi.tags().values(),
+                            spi.error().isPresent(), spi.process().id()))
+                    .collect(Collectors.toList()));
+            return details;
+        } finally {
+            IdentityProvider.set(null);
         }
-
-        ProcessInstance<?> pi = instance.get();
-        ProcessInstanceDetailsDTO details = new ProcessInstanceDetailsDTO();
-        details.setId(pi.id());
-        details.setBusinessKey(pi.businessKey());
-        details.setDescription(pi.description());
-        details.setFailed(pi.error().isPresent());
-        details.setImage(
-                uriInfo.getBaseUri().toString() + "/management/processes/" + processId + "/instances/" + instanceId + "/image");
-        details.setTags(pi.tags().values());
-        details.setVariables(pi.variables());
-        details.setSubprocesses(pi.subprocesses().stream()
-                .map(spi -> new ProcessInstanceDTO(spi.id(), spi.businessKey(), spi.description(), pi.tags().values(),
-                        spi.error().isPresent(), spi.process().id()))
-                .collect(Collectors.toList()));
-        return details;
     }
 
     @APIResponses(value = {
@@ -197,22 +223,29 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @Produces(MediaType.APPLICATION_SVG_XML)
     public Response getInstanceImage(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
-            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("instanceId") String instanceId) {
-        Process<?> process = processData.get(processId);
-        String image = process.image();
-        if (image == null) {
-            throw new ProcessImageNotFoundException(process.id());
-        }
+            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("instanceId") String instanceId,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        try {
+            identitySupplier.buildIdentityProvider(user, groups);
+            Process<?> process = processData.get(processId);
+            String image = process.image();
+            if (image == null) {
+                throw new ProcessImageNotFoundException(process.id());
+            }
 
-        Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId,
-                ProcessInstanceReadMode.READ_ONLY);
+            Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId,
+                    ProcessInstanceReadMode.READ_ONLY);
 
-        if (instance.isEmpty()) {
-            throw new ProcessInstanceNotFoundException(instanceId);
+            if (instance.isEmpty()) {
+                throw new ProcessInstanceNotFoundException(instanceId);
+            }
+            StreamingOutput entity = new ImageStreamingOutput(instance.get().image(""));
+            ResponseBuilder builder = Response.ok().entity(entity);
+            return builder.header("Content-Type", "image/svg+xml").build();
+        } finally {
+            IdentityProvider.set(null);
         }
-        StreamingOutput entity = new ImageStreamingOutput(instance.get().image(""));
-        ResponseBuilder builder = Response.ok().entity(entity);
-        return builder.header("Content-Type", "image/svg+xml").build();
     }
 
     @APIResponses(value = {
@@ -225,7 +258,10 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @Produces(MediaType.APPLICATION_JSON)
     public Response getInstanceInError(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
-            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("processInstanceId") String processInstanceId) {
+            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("processInstanceId") String processInstanceId,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        identitySupplier.buildIdentityProvider(user, groups);
         return doGetInstanceInError(processId, processInstanceId);
     }
 
@@ -239,7 +275,10 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @Produces(MediaType.APPLICATION_JSON)
     public Response getWorkItemsInProcessInstance(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
-            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("processInstanceId") String processInstanceId) {
+            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("processInstanceId") String processInstanceId,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        identitySupplier.buildIdentityProvider(user, groups);
         return doGetWorkItemsInProcessInstance(processId, processInstanceId);
     }
 
@@ -253,7 +292,10 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @Produces(MediaType.APPLICATION_JSON)
     public Response retriggerInstanceInError(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
-            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("processInstanceId") String processInstanceId) {
+            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("processInstanceId") String processInstanceId,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        identitySupplier.buildIdentityProvider(user, groups);
         return doRetriggerInstanceInError(processId, processInstanceId);
     }
 
@@ -267,7 +309,10 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @Produces(MediaType.APPLICATION_JSON)
     public Response skipInstanceInError(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
-            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("processInstanceId") String processInstanceId) {
+            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("processInstanceId") String processInstanceId,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        identitySupplier.buildIdentityProvider(user, groups);
         return doSkipInstanceInError(processId, processInstanceId);
     }
 
@@ -281,7 +326,11 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @Produces(MediaType.APPLICATION_JSON)
     public Response triggerNodeInstanceId(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
-            @PathParam("processInstanceId") String processInstanceId, @PathParam("nodeId") String nodeId) {
+            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("processInstanceId") String processInstanceId,
+            @Parameter(description = "Unique identifier of the node to be triggered", required = true) @PathParam("nodeId") String nodeId,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        identitySupplier.buildIdentityProvider(user, groups);
         return doTriggerNodeInstanceId(processId, processInstanceId, nodeId);
     }
 
@@ -296,7 +345,10 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     public Response retriggerNodeInstanceId(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("processInstanceId") String processInstanceId,
-            @Parameter(description = "Unique identifier of the node instance", required = true) @PathParam("nodeInstanceId") String nodeInstanceId) {
+            @Parameter(description = "Unique identifier of the node instance", required = true) @PathParam("nodeInstanceId") String nodeInstanceId,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        identitySupplier.buildIdentityProvider(user, groups);
         return doRetriggerNodeInstanceId(processId, processInstanceId, nodeInstanceId);
     }
 
@@ -311,7 +363,10 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     public Response cancelNodeInstanceId(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("processInstanceId") String processInstanceId,
-            @Parameter(description = "Unique identifier of the node instance", required = true) @PathParam("nodeInstanceId") String nodeInstanceId) {
+            @Parameter(description = "Unique identifier of the node instance", required = true) @PathParam("nodeInstanceId") String nodeInstanceId,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        identitySupplier.buildIdentityProvider(user, groups);
         return doCancelNodeInstanceId(processId, processInstanceId, nodeInstanceId);
     }
 
@@ -325,7 +380,10 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @Produces(MediaType.APPLICATION_JSON)
     public Response cancelProcessInstanceId(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
-            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("processInstanceId") String processInstanceId) {
+            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("processInstanceId") String processInstanceId,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        identitySupplier.buildIdentityProvider(user, groups);
         return doCancelProcessInstanceId(processId, processInstanceId);
     }
 

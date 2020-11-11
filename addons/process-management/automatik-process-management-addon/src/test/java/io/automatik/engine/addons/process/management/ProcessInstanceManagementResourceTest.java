@@ -12,6 +12,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -32,10 +34,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
 import io.automatik.engine.api.Application;
+import io.automatik.engine.api.auth.IdentityProvider;
+import io.automatik.engine.api.auth.IdentitySupplier;
 import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessError;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.api.workflow.ProcessInstances;
+import io.automatik.engine.services.identity.StaticIdentityProvider;
 import io.automatik.engine.services.uow.CollectingUnitOfWorkFactory;
 import io.automatik.engine.services.uow.DefaultUnitOfWorkManager;
 
@@ -93,13 +98,21 @@ public class ProcessInstanceManagementResourceTest {
 
         lenient().when(application.unitOfWorkManager())
                 .thenReturn(new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory()));
-        resource = spy(new ProcessInstanceManagementResource(processes, application));
+
+        IdentitySupplier identitySupplier = new IdentitySupplier() {
+
+            @Override
+            public IdentityProvider buildIdentityProvider(String user, List<String> roles) {
+                return new StaticIdentityProvider("test");
+            }
+        };
+        resource = spy(new ProcessInstanceManagementResource(processes, application, identitySupplier));
     }
 
     @Test
     public void testGetErrorInfo() {
 
-        Response response = resource.getInstanceInError("test", "xxxxx");
+        Response response = resource.getInstanceInError("test", "xxxxx", null, Collections.emptyList());
         assertThat(response).isNotNull();
 
         verify(responseBuilder, times(1)).status((StatusType) Status.OK);
@@ -124,7 +137,7 @@ public class ProcessInstanceManagementResourceTest {
             }
         }).when(error).retrigger();
 
-        Response response = resource.retriggerInstanceInError(PROCESS_ID, PROCESS_INSTANCE_ID);
+        Response response = resource.retriggerInstanceInError(PROCESS_ID, PROCESS_INSTANCE_ID, null, Collections.emptyList());
         assertThat(response).isNotNull();
 
         verify(responseBuilder, times(1)).status((StatusType) Status.OK);
@@ -139,37 +152,37 @@ public class ProcessInstanceManagementResourceTest {
 
     @Test
     public void testGetWorkItemsInProcessInstance() {
-        resource.getWorkItemsInProcessInstance(PROCESS_ID, PROCESS_INSTANCE_ID);
+        resource.getWorkItemsInProcessInstance(PROCESS_ID, PROCESS_INSTANCE_ID, null, Collections.emptyList());
         verify(resource).doGetWorkItemsInProcessInstance(PROCESS_ID, PROCESS_INSTANCE_ID);
     }
 
     @Test
     public void testSkipInstanceInError() {
-        resource.skipInstanceInError(PROCESS_ID, PROCESS_INSTANCE_ID);
+        resource.skipInstanceInError(PROCESS_ID, PROCESS_INSTANCE_ID, null, Collections.emptyList());
         verify(resource).doSkipInstanceInError(PROCESS_ID, PROCESS_INSTANCE_ID);
     }
 
     @Test
     public void testTriggerNodeInstanceId() {
-        resource.triggerNodeInstanceId(PROCESS_ID, PROCESS_INSTANCE_ID, NODE_ID);
+        resource.triggerNodeInstanceId(PROCESS_ID, PROCESS_INSTANCE_ID, NODE_ID, null, Collections.emptyList());
         verify(resource).doTriggerNodeInstanceId(PROCESS_ID, PROCESS_INSTANCE_ID, NODE_ID);
     }
 
     @Test
     public void testRetriggerNodeInstanceId() {
-        resource.retriggerNodeInstanceId(PROCESS_ID, PROCESS_INSTANCE_ID, NODE_ID);
+        resource.retriggerNodeInstanceId(PROCESS_ID, PROCESS_INSTANCE_ID, NODE_ID, null, Collections.emptyList());
         verify(resource).doRetriggerNodeInstanceId(PROCESS_ID, PROCESS_INSTANCE_ID, NODE_ID);
     }
 
     @Test
     public void testCancelNodeInstanceId() {
-        resource.cancelNodeInstanceId(PROCESS_ID, PROCESS_INSTANCE_ID, NODE_ID);
+        resource.cancelNodeInstanceId(PROCESS_ID, PROCESS_INSTANCE_ID, NODE_ID, null, Collections.emptyList());
         verify(resource).doCancelNodeInstanceId(PROCESS_ID, PROCESS_INSTANCE_ID, NODE_ID);
     }
 
     @Test
     public void testCancelProcessInstanceId() {
-        resource.cancelProcessInstanceId(PROCESS_ID, PROCESS_INSTANCE_ID);
+        resource.cancelProcessInstanceId(PROCESS_ID, PROCESS_INSTANCE_ID, null, Collections.emptyList());
         verify(resource).doCancelProcessInstanceId(PROCESS_ID, PROCESS_INSTANCE_ID);
     }
 

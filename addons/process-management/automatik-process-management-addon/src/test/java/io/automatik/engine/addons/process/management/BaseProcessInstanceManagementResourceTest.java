@@ -95,42 +95,53 @@ class BaseProcessInstanceManagementResourceTest {
             }
 
             @Override
-            public Object getInstanceInError(String processId, String processInstanceId) {
+            public Object getInstanceInError(String processId, String processInstanceId, String user, List groups) {
+                // TODO Auto-generated method stub
                 return null;
             }
 
             @Override
-            public Object getWorkItemsInProcessInstance(String processId, String processInstanceId) {
+            public Object getWorkItemsInProcessInstance(String processId, String processInstanceId, String user, List groups) {
+                // TODO Auto-generated method stub
                 return null;
             }
 
             @Override
-            public Object retriggerInstanceInError(String processId, String processInstanceId) {
+            public Object retriggerInstanceInError(String processId, String processInstanceId, String user, List groups) {
+                // TODO Auto-generated method stub
                 return null;
             }
 
             @Override
-            public Object skipInstanceInError(String processId, String processInstanceId) {
+            public Object skipInstanceInError(String processId, String processInstanceId, String user, List groups) {
+                // TODO Auto-generated method stub
                 return null;
             }
 
             @Override
-            public Object triggerNodeInstanceId(String processId, String processInstanceId, String nodeId) {
+            public Object triggerNodeInstanceId(String processId, String processInstanceId, String nodeId, String user,
+                    List groups) {
+                // TODO Auto-generated method stub
                 return null;
             }
 
             @Override
-            public Object retriggerNodeInstanceId(String processId, String processInstanceId, String nodeInstanceId) {
+            public Object retriggerNodeInstanceId(String processId, String processInstanceId, String nodeInstanceId,
+                    String user, List groups) {
+                // TODO Auto-generated method stub
                 return null;
             }
 
             @Override
-            public Object cancelNodeInstanceId(String processId, String processInstanceId, String nodeInstanceId) {
+            public Object cancelNodeInstanceId(String processId, String processInstanceId, String nodeInstanceId, String user,
+                    List groups) {
+                // TODO Auto-generated method stub
                 return null;
             }
 
             @Override
-            public Object cancelProcessInstanceId(String processId, String processInstanceId) {
+            public Object cancelProcessInstanceId(String processId, String processInstanceId, String user, List groups) {
+                // TODO Auto-generated method stub
                 return null;
             }
         });
