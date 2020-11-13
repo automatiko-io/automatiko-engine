@@ -377,7 +377,14 @@ public class AutomatikQuarkusProcessor {
                 f.setAccessible(true);
                 List<ClassPathElement> element = (List<ClassPathElement>) f.get(cl);
 
-                element.add(new MemoryClassPathElement(classes));
+                element.add(new MemoryClassPathElement(classes) {
+
+                    @Override
+                    public Path getRoot() {
+                        return fileManager.getLocation(StandardLocation.CLASS_OUTPUT).iterator().next().toPath();
+                    }
+
+                });
 
                 f = cl.getClass().getDeclaredField("state");
                 f.setAccessible(true);
