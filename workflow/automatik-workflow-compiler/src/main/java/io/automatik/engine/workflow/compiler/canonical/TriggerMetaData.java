@@ -24,132 +24,155 @@ import io.automatik.engine.services.utils.StringUtils;
 
 public class TriggerMetaData {
 
-	public enum TriggerType {
-		ConsumeMessage, ProduceMessage, Signal
-	}
+    public enum TriggerType {
+        ConsumeMessage,
+        ProduceMessage,
+        Signal
+    }
 
-	// name of the trigger derived from message or signal
-	private String name;
-	// type of the trigger e.g. message, signal, timer...
-	private TriggerType type;
-	// data type of the event associated with this trigger
-	private String dataType;
-	// reference in the model of the process the event should be mapped to
-	private String modelRef;
-	// reference to owner of the trigger usually node
-	private String ownerId;
+    // name of the trigger derived from message or signal
+    private String name;
+    // type of the trigger e.g. message, signal, timer...
+    private TriggerType type;
+    // data type of the event associated with this trigger
+    private String dataType;
+    // reference in the model of the process the event should be mapped to
+    private String modelRef;
+    // reference to owner of the trigger usually node
+    private String ownerId;
+    // human readable description that can be used in instructions
+    private String description;
 
-	// optional correlation to be used when trigger has be executed
-	private String correlation;
-	private String correlationExpression;
+    // optional correlation to be used when trigger has be executed
+    private String correlation;
+    private String correlationExpression;
 
-	public TriggerMetaData(String name, String type, String dataType, String modelRef, String ownerId) {
-		this(name, type, dataType, modelRef, ownerId, null, null);
-	}
+    private boolean start = false;
 
-	public TriggerMetaData(String name, String type, String dataType, String modelRef, String ownerId,
-			String correlation, String correlationExpression) {
-		this.name = name;
-		this.type = TriggerType.valueOf(type);
-		this.dataType = dataType;
-		this.modelRef = modelRef;
-		this.ownerId = ownerId;
-		this.correlation = correlation;
-		this.correlationExpression = correlationExpression;
-	}
+    public TriggerMetaData(String name, String type, String dataType, String modelRef, String ownerId, String description) {
+        this(name, type, dataType, modelRef, ownerId, description, null, null);
+    }
 
-	public String getName() {
-		return name;
-	}
+    public TriggerMetaData(String name, String type, String dataType, String modelRef, String ownerId, String description,
+            String correlation, String correlationExpression) {
+        this.name = name;
+        this.type = TriggerType.valueOf(type);
+        this.dataType = dataType;
+        this.modelRef = modelRef;
+        this.ownerId = ownerId;
+        this.description = description;
+        this.correlation = correlation;
+        this.correlationExpression = correlationExpression;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public TriggerType getType() {
-		return type;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public void setType(TriggerType type) {
-		this.type = type;
-	}
+    public TriggerType getType() {
+        return type;
+    }
 
-	public String getDataType() {
-		return dataType;
-	}
+    public void setType(TriggerType type) {
+        this.type = type;
+    }
 
-	public void setDataType(String dataType) {
-		this.dataType = dataType;
-	}
+    public String getDataType() {
+        return dataType;
+    }
 
-	public String getModelRef() {
-		return modelRef;
-	}
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
+    }
 
-	public void setModelRef(String modelRef) {
-		this.modelRef = modelRef;
-	}
+    public String getModelRef() {
+        return modelRef;
+    }
 
-	public String getOwnerId() {
-		return ownerId;
-	}
+    public void setModelRef(String modelRef) {
+        this.modelRef = modelRef;
+    }
 
-	public void setOwnerId(String ownerId) {
-		this.ownerId = ownerId;
-	}
+    public String getOwnerId() {
+        return ownerId;
+    }
 
-	public String getCorrelation() {
-		return correlation;
-	}
+    public void setOwnerId(String ownerId) {
+        this.ownerId = ownerId;
+    }
 
-	public void setCorrelation(String correlation) {
-		this.correlation = correlation;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public String getCorrelationExpression() {
-		return correlationExpression;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public void setCorrelationExpression(String correlationExpression) {
-		this.correlationExpression = correlationExpression;
-	}
+    public String getCorrelation() {
+        return correlation;
+    }
 
-	public TriggerMetaData validate() {
-		if (TriggerType.ConsumeMessage.equals(type) || TriggerType.ProduceMessage.equals(type)) {
+    public void setCorrelation(String correlation) {
+        this.correlation = correlation;
+    }
 
-			if (StringUtils.isEmpty(name) || StringUtils.isEmpty(dataType) || StringUtils.isEmpty(modelRef)) {
-				throw new IllegalArgumentException("Message Trigger information is not complete " + this);
-			}
-		} else if (TriggerType.Signal.equals(type) && StringUtils.isEmpty(name)) {
-			throw new IllegalArgumentException("Signal Trigger information is not complete " + this);
-		}
+    public String getCorrelationExpression() {
+        return correlationExpression;
+    }
 
-		return this;
-	}
+    public void setCorrelationExpression(String correlationExpression) {
+        this.correlationExpression = correlationExpression;
+    }
 
-	@Override
-	public String toString() {
-		return "TriggerMetaData [name=" + name + ", type=" + type + ", dataType=" + dataType + ", modelRef=" + modelRef
-				+ "]";
-	}
+    public boolean isStart() {
+        return start;
+    }
 
-	public static LambdaExpr buildLambdaExpr(Node node, ProcessMetaData metadata) {
-		Map<String, Object> nodeMetaData = node.getMetaData();
-		TriggerMetaData triggerMetaData = new TriggerMetaData((String) nodeMetaData.get(TRIGGER_REF),
-				(String) nodeMetaData.get(TRIGGER_TYPE), (String) nodeMetaData.get(MESSAGE_TYPE),
-				(String) nodeMetaData.get(MAPPING_VARIABLE), String.valueOf(node.getId())).validate();
-		metadata.addTrigger(triggerMetaData);
+    public void setStart(boolean start) {
+        this.start = start;
+    }
 
-		// and add trigger action
-		BlockStmt actionBody = new BlockStmt();
-		CastExpr variable = new CastExpr(new ClassOrInterfaceType(null, triggerMetaData.getDataType()),
-				new MethodCallExpr(new NameExpr(KCONTEXT_VAR), "getVariable")
-						.addArgument(new StringLiteralExpr(triggerMetaData.getModelRef())));
-		MethodCallExpr producerMethodCall = new MethodCallExpr(new NameExpr("producer_" + node.getId()), "produce")
-				.addArgument(new MethodCallExpr(new NameExpr("kcontext"), "getProcessInstance")).addArgument(variable);
-		actionBody.addStatement(producerMethodCall);
-		return new LambdaExpr(new Parameter(new UnknownType(), KCONTEXT_VAR), // (kcontext) ->
-				actionBody);
-	}
+    public TriggerMetaData validate() {
+        if (TriggerType.ConsumeMessage.equals(type) || TriggerType.ProduceMessage.equals(type)) {
+
+            if (StringUtils.isEmpty(name) || StringUtils.isEmpty(dataType) || StringUtils.isEmpty(modelRef)) {
+                throw new IllegalArgumentException("Message Trigger information is not complete " + this);
+            }
+        } else if (TriggerType.Signal.equals(type) && StringUtils.isEmpty(name)) {
+            throw new IllegalArgumentException("Signal Trigger information is not complete " + this);
+        }
+
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "TriggerMetaData [name=" + name + ", type=" + type + ", dataType=" + dataType + ", modelRef=" + modelRef
+                + "]";
+    }
+
+    public static LambdaExpr buildLambdaExpr(Node node, ProcessMetaData metadata) {
+        Map<String, Object> nodeMetaData = node.getMetaData();
+        TriggerMetaData triggerMetaData = new TriggerMetaData((String) nodeMetaData.get(TRIGGER_REF),
+                (String) nodeMetaData.get(TRIGGER_TYPE), (String) nodeMetaData.get(MESSAGE_TYPE),
+                (String) nodeMetaData.get(MAPPING_VARIABLE), String.valueOf(node.getId()), node.getName()).validate();
+        metadata.addTrigger(triggerMetaData);
+
+        // and add trigger action
+        BlockStmt actionBody = new BlockStmt();
+        CastExpr variable = new CastExpr(new ClassOrInterfaceType(null, triggerMetaData.getDataType()),
+                new MethodCallExpr(new NameExpr(KCONTEXT_VAR), "getVariable")
+                        .addArgument(new StringLiteralExpr(triggerMetaData.getModelRef())));
+        MethodCallExpr producerMethodCall = new MethodCallExpr(new NameExpr("producer_" + node.getId()), "produce")
+                .addArgument(new MethodCallExpr(new NameExpr("kcontext"), "getProcessInstance")).addArgument(variable);
+        actionBody.addStatement(producerMethodCall);
+        return new LambdaExpr(new Parameter(new UnknownType(), KCONTEXT_VAR), // (kcontext) ->
+                actionBody);
+    }
 
 }

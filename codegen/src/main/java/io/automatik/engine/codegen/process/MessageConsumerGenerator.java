@@ -4,15 +4,18 @@ package io.automatik.engine.codegen.process;
 import static com.github.javaparser.StaticJavaParser.parse;
 import static io.automatik.engine.codegen.CodeGenConstants.CAMEL_CONNECTOR;
 import static io.automatik.engine.codegen.CodeGenConstants.INCOMING_PROP_PREFIX;
+import static io.automatik.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR;
 import static io.automatik.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
 import static io.automatik.engine.codegen.CodegenUtils.interpolateTypes;
 import static io.automatik.engine.codegen.CodegenUtils.isApplicationField;
 import static io.automatik.engine.codegen.CodegenUtils.isProcessField;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Modifier.Keyword;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -43,6 +46,7 @@ public class MessageConsumerGenerator {
     private final String processClazzName;
     private String processId;
     private String dataClazzName;
+    private String classPrefix;
     private String modelfqcn;
     private final String processName;
     private final String appCanonicalName;
@@ -59,7 +63,7 @@ public class MessageConsumerGenerator {
         this.packageName = process.getPackageName();
         this.processId = process.getId();
         this.processName = processId.substring(processId.lastIndexOf('.') + 1);
-        String classPrefix = StringUtils.capitalize(processName) + CodegenUtils.version(process.getVersion());
+        this.classPrefix = StringUtils.capitalize(processName) + CodegenUtils.version(process.getVersion());
         this.resourceClazzName = classPrefix + "MessageConsumer_" + trigger.getOwnerId();
         this.relativePath = packageName.replace(".", "/") + "/" + resourceClazzName + ".java";
         this.modelfqcn = modelfqcn;
@@ -87,18 +91,61 @@ public class MessageConsumerGenerator {
     }
 
     protected void appendConnectorSpecificProperties(String connector) {
+        String sanitizedName = CodegenUtils.triggerSanitizedName(trigger, process.getVersion());
         if (connector.equals(MQTT_CONNECTOR)) {
-            String sanitizedName = CodegenUtils.triggerSanitizedName(trigger, process.getVersion());
+
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".topic", trigger.getName());
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".host", "localhost");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".port", "1883");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".client-id",
-                    sanitizedName + "-consumer");
+                    classPrefix + "-consumer");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".failure-strategy", "ignore");
             context.setApplicationProperty("quarkus.automatik.messaging.as-cloudevents", "false");
+
+            context.addInstruction(
+                    "Properties for MQTT based message event '" + trigger.getDescription() + "'");
+            context.addInstruction(
+                    "\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                            + ".topic' should be used to configure MQTT topic defaults to '" + trigger.getName() + "'");
+            context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                    + ".host' should be used to configure MQTT host that defaults to localhost");
+            context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                    + ".port' should be used to configure MQTT port that defaults to 1883");
+            context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                    + ".client-id' should be used to configure MQTT client id that defaults to '" + classPrefix
+                    + "-consumer'");
+
         } else if (connector.equals(CAMEL_CONNECTOR)) {
-            String sanitizedName = CodegenUtils.triggerSanitizedName(trigger, process.getVersion());
+
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".endpoint-uri", "");
+            context.addInstruction(
+                    "Properties for Apache Camel based message event '" + trigger.getDescription() + "'");
+            context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                    + ".endpoint-uri' should be used to configure Apache Camel location");
+        } else if (connector.equals(KAFKA_CONNECTOR)) {
+
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".bootstrap.servers", "localhost:9092");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".topic", trigger.getName());
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".key.deserializer",
+                    "org.apache.kafka.common.serialization.StringDeserializer");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".value.deserializer",
+                    "org.apache.kafka.common.serialization.StringDeserializer");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".group.id",
+                    classPrefix + "-consumer");
+            context.addInstruction(
+                    "Properties for Apache Kafka based message event '" + trigger.getDescription() + "'");
+            context.addInstruction(
+                    "\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                            + ".topic' should be used to configure Kafka topic defaults to '" + trigger.getName() + "'");
+            context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                    + ".bootstrap.servers' should be used to configure Kafka bootstrap servers host that defaults to localhost:9092");
+            context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                    + ".key.deserializer' should be used to configure key deserializer port that defaults to StringDeserializer");
+            context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                    + ".value.deserializer' should be used to configure key deserializer port that defaults to StringDeserializer");
+            context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                    + ".group.id' should be used to configure Kafka group id that defaults to '" + classPrefix
+                    + "-consumer'");
         }
     }
 
@@ -107,6 +154,8 @@ public class MessageConsumerGenerator {
             return "/class-templates/MQTTMessageConsumerTemplate.java";
         } else if (connector.equals(CAMEL_CONNECTOR)) {
             return "/class-templates/CamelMessageConsumerTemplate.java";
+        } else if (connector.equals(KAFKA_CONNECTOR)) {
+            return "/class-templates/KafkaMessageConsumerTemplate.java";
         } else {
             return "/class-templates/MessageConsumerTemplate.java";
         }
@@ -148,6 +197,9 @@ public class MessageConsumerGenerator {
 
                     md.findAll(CastExpr.class)
                             .forEach(c -> c.setType(c.getTypeAsString().replace("$DataType$", trigger.getDataType())));
+                    md.findAll(ClassOrInterfaceType.class)
+                            .forEach(t -> t.setName(t.getNameAsString().replace("$DataType$", trigger.getDataType())));
+
                 });
 
         if (trigger.getModelRef().startsWith("#")) {
@@ -220,6 +272,11 @@ public class MessageConsumerGenerator {
                     });
 
         }
+
+        template.addMember(
+                new MethodDeclaration().setName("canStartInstance").setType(Boolean.class).setModifiers(Keyword.PROTECTED)
+                        .setBody(new BlockStmt().addStatement(new ReturnStmt(new BooleanLiteralExpr(trigger.isStart())))));
+
         template.getMembers().sort(new BodyDeclarationComparator());
         return clazz.toString();
     }

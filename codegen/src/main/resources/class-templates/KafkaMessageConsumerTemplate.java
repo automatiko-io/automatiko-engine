@@ -33,6 +33,9 @@ public class $Type$MessageConsumer {
     Optional<Boolean> useCloudEvents = Optional.of(false);
     
     javax.enterprise.inject.Instance<io.automatik.engine.api.io.InputConverter<$DataType$>> converter;
+    
+    @javax.inject.Inject
+    ObjectMapper json;
 
     public void configure() {
 
@@ -41,24 +44,30 @@ public class $Type$MessageConsumer {
 	public CompletionStage<Void> consume(Message<?> msg) {
 	    final String trigger = "$Trigger$";
         try {
-                        
-            final $DataType$ eventData = convert(msg, $DataType$.class);
+            io.smallrye.reactive.messaging.kafka.KafkaRecord<?, ?> record = (io.smallrye.reactive.messaging.kafka.KafkaRecord<?, ?>) msg;
+            
+            final $DataType$ eventData = convert(record, $DataType$.class);
             final $Type$ model = new $Type$();  
             IdentityProvider.set(new TrustedIdentityProvider("System<messaging>"));
             io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-            	String correlation = correlationPayload(eventData, msg);
+                String correlation;
+                if (record.getKey() != null) {
+                    correlation = ((io.smallrye.reactive.messaging.kafka.KafkaRecord<?, ?>) msg).getKey().toString();
+                } else {
+                    correlation = correlationPayload(eventData, msg);
+                }
             	if (correlation != null) {
             		LOGGER.debug("Correlation ({}) is set, attempting to find if there is matching instance already active", correlation);
             		Collection possiblyFound = process.instances().findByIdOrTag(io.automatik.engine.api.workflow.ProcessInstanceReadMode.MUTABLE, correlation);
-            		if (!possiblyFound.isEmpty()) {
-            		    
-            		    possiblyFound.forEach(pi -> {
-                			ProcessInstance pInstance = (ProcessInstance) pi;
-                			LOGGER.debug("Found process instance {} matching correlation {}, signaling instead of starting new instance", pInstance.id(), correlation);
-                			pInstance.send(Sig.of(canStartInstance() ? trigger : "Message-" + trigger, eventData));
-            		    });
-            			return null;
-            		}
+                    if (!possiblyFound.isEmpty()) {
+                        
+                        possiblyFound.forEach(pi -> {
+                            ProcessInstance pInstance = (ProcessInstance) pi;
+                            LOGGER.debug("Found process instance {} matching correlation {}, signaling instead of starting new instance", pInstance.id(), correlation);
+                            pInstance.send(Sig.of(canStartInstance() ? trigger : "Message-" + trigger, eventData));
+                        });
+                        return null;
+                    }
             		
                 }
             	if (canStartInstance()) {
@@ -71,9 +80,10 @@ public class $Type$MessageConsumer {
                     	ProcessInstance<$Type$> pi = process.instances().findById(correlation).get();
                     	pi.send(Sig.of(trigger, eventData));
                     }
-            	} else {
-            	    LOGGER.warn("Received message without reference id and no correlation is set/matched, for trigger not capable of starting new instance '{}'", trigger);
-            	}
+                } else {
+                    LOGGER.warn("Received message without reference id and no correlation is set/matched, for trigger not capable of starting new instance '{}'", trigger);
+                }
+                
                 return null;
             });
             
@@ -86,7 +96,7 @@ public class $Type$MessageConsumer {
     }
 	
 	protected String correlationPayload(Object eventData, Message<?> message) {
-		
+	    
 		return null;
 	}
 	 
@@ -95,23 +105,17 @@ public class $Type$MessageConsumer {
 		return null;
 	}
 	
-	protected $DataType$ convert(Message<?> message, Class<?> clazz) {
+	protected $DataType$ convert(Message<?> message, Class<?> clazz) throws Exception {
 	    Object payload = message.getPayload();
 	    
 	    if (converter != null && !converter.isUnsatisfied()) {
-	        payload = converter.get().convert(((io.smallrye.reactive.messaging.camel.CamelMessage<?>) message).getExchange().getIn());
+	        payload = converter.get().convert(message);
+	    }
+	    	    
+	    if (payload instanceof String) {
+	        return ($DataType$) json.readValue(payload.toString(), $DataType$.class);
 	    }
 	    
 	    return ($DataType$) payload;
-	}
-	
-	public String header(String name, Message<?> message) {
-	    Object value = ((io.smallrye.reactive.messaging.camel.CamelMessage<?>) message).getExchange().getIn().getHeader(name);
-	    
-	    if (value != null) {
-	        return value.toString();
-	    }
-	    
-	    return null;
 	}
 }

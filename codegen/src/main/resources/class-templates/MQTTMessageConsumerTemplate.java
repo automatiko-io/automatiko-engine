@@ -3,6 +3,7 @@ package com.myspace.demo;
 import java.util.TimeZone;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
+import java.util.Collection;
 import java.util.Optional;
 
 import io.automatik.engine.api.Application;
@@ -30,13 +31,11 @@ public class $Type$MessageConsumer {
     Application application;
     
     Optional<Boolean> useCloudEvents = Optional.of(false);
-  
     
-    private ObjectMapper json = new ObjectMapper();
-
-    {
-        json.setDateFormat(new StdDateFormat().withColonInTimeZone(true).withTimeZone(TimeZone.getDefault()));
-    }
+    javax.enterprise.inject.Instance<io.automatik.engine.api.io.InputConverter<$DataType$>> converter;
+  
+    @javax.inject.Inject
+    ObjectMapper json;
 
     public void configure() {
 
@@ -46,63 +45,26 @@ public class $Type$MessageConsumer {
 	    final String trigger = "$Trigger$";
         try {
             IdentityProvider.set(new TrustedIdentityProvider("System<messaging>"));
-            if (useCloudEvents.orElse(true)) {
-                final $DataEventType$ eventData = json.readValue(msg.getPayload(), $DataEventType$.class);
-                final $Type$ model = new $Type$();   
-                io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-                    
-                    if (eventData.getAutomatikReferenceId() != null) {
-                        LOGGER.debug("Received message with reference id '{}' going to use it to send signal '{}'", eventData.getAutomatikReferenceId(), trigger);
-                        process.instances().findById(eventData.getAutomatikReferenceId()).ifPresent(pi -> pi.send(Sig.of("Message-"+trigger, eventData.getData(), eventData.getAutomatikProcessinstanceId())));
-                    } else {  
-                    	String correlation = correlationEvent(eventData, msg);
-                    	if (correlation != null) {
-                    		LOGGER.debug("Correlation ({}) is set, attempting to find if there is matching instance already active", correlation);
-                    		Optional possiblyFound = process.instances().findById(correlation);
-                    		if (possiblyFound.isPresent()) {
-                    			ProcessInstance pInstance = (ProcessInstance) possiblyFound.get();
-                    			LOGGER.debug("Found process instance {} matching correlation {}, signaling instead of starting new instance", pInstance.id(), correlation);
-                    			pInstance.send(Sig.of(trigger, eventData.getData()));
-                    			return null;
-                    		}
-                    		
-                        } 
-                        LOGGER.debug("Received message without reference id and no correlation is set/matched, staring new process instance with trigger '{}'", trigger);                        
+
+            final $DataType$ eventData = convert(msg, $DataType$.class);
+            final $Type$ model = new $Type$();                
+            io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+            	String correlation = correlationPayload(eventData, msg);
+            	if (correlation != null) {
+            		LOGGER.debug("Correlation ({}) is set, attempting to find if there is matching instance already active", correlation);
+            		Collection possiblyFound = process.instances().findByIdOrTag(io.automatik.engine.api.workflow.ProcessInstanceReadMode.MUTABLE, correlation);
+                    if (!possiblyFound.isEmpty()) {
                         
-                        if (eventData.getAutomatikStartFromNode() != null) {
-                        	model.set$ModelRef$(eventData.getData());
-                        	ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
-                        	
-                            pi.startFrom(eventData.getAutomatikStartFromNode(), eventData.getAutomatikProcessinstanceId());
-                        } else {
-                        	try {
-                        		ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
-                        	
-                        		pi.start(trigger, eventData.getAutomatikProcessinstanceId(), eventData.getData());
-                        	}  catch (ProcessInstanceDuplicatedException e) {
-                            	ProcessInstance<$Type$> pi = process.instances().findById(correlation).get();
-                            	pi.send(Sig.of(trigger, eventData.getData()));
-                            }
-                        }
+                        possiblyFound.forEach(pi -> {
+                            ProcessInstance pInstance = (ProcessInstance) pi;
+                            LOGGER.debug("Found process instance {} matching correlation {}, signaling instead of starting new instance", pInstance.id(), correlation);
+                            pInstance.send(Sig.of(canStartInstance() ? trigger : "Message-" + trigger, eventData));
+                        });
+                        return null;
                     }
-                    return null;
-                });                
-            } else {
-                final $DataType$ eventData = json.readValue(msg.getPayload(), $DataType$.class);
-                final $Type$ model = new $Type$();                
-                io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-                	String correlation = correlationPayload(eventData, msg);
-                	if (correlation != null) {
-                		LOGGER.debug("Correlation ({}) is set, attempting to find if there is matching instance already active", correlation);
-                		Optional possiblyFound = process.instances().findById(correlation);
-                		if (possiblyFound.isPresent()) {
-                			ProcessInstance pInstance = (ProcessInstance) possiblyFound.get();
-                			LOGGER.debug("Found process instance {} matching correlation {}, signaling instead of starting new instance", pInstance.id(), correlation);
-                			pInstance.send(Sig.of(trigger, eventData));
-                			return null;
-                		}
-                		
-                    } 
+            		
+                } 
+            	if (canStartInstance()) {
                     LOGGER.debug("Received message without reference id and no correlation is set/matched, staring new process instance with trigger '{}'", trigger);
                     try {
                     	ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
@@ -112,10 +74,13 @@ public class $Type$MessageConsumer {
                     	ProcessInstance<$Type$> pi = process.instances().findById(correlation).get();
                     	pi.send(Sig.of(trigger, eventData));
                     }
-                    
-                    return null;
-                });
-            }
+            	} else {
+                    LOGGER.warn("Received message without reference id and no correlation is set/matched, for trigger not capable of starting new instance '{}'", trigger);
+                }
+                
+                return null;
+            });
+            
             
             return msg.ack();
         } catch (Exception e) {
@@ -152,4 +117,14 @@ public class $Type$MessageConsumer {
 		
 		return builder.toString();
 	}
+	
+	protected $DataType$ convert(Message<byte[]> message, Class<?> clazz) throws Exception {
+        Object payload = message.getPayload();
+        
+        if (converter != null && !converter.isUnsatisfied()) {
+            payload = converter.get().convert(message);
+        }
+        
+        return ($DataType$) json.readValue(message.getPayload(), $DataType$.class);
+    }
 }

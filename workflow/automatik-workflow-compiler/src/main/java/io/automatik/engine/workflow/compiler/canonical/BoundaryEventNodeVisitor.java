@@ -26,39 +26,39 @@ import io.automatik.engine.workflow.process.executable.core.factory.BoundaryEven
 
 public class BoundaryEventNodeVisitor extends AbstractNodeVisitor<BoundaryEventNode> {
 
-	@Override
-	protected String getNodeKey() {
-		return "boundaryEventNode";
-	}
+    @Override
+    protected String getNodeKey() {
+        return "boundaryEventNode";
+    }
 
-	@Override
-	public void visitNode(WorkflowProcess process, String factoryField, BoundaryEventNode node, BlockStmt body,
-			VariableScope variableScope, ProcessMetaData metadata) {
-		body.addStatement(getAssignedFactoryMethod(factoryField, BoundaryEventNodeFactory.class, getNodeId(node),
-				getNodeKey(), new LongLiteralExpr(node.getId()))).addStatement(getNameMethod(node, "BoundaryEvent"))
-				.addStatement(
-						getFactoryMethod(getNodeId(node), METHOD_EVENT_TYPE, new StringLiteralExpr(node.getType())))
-				.addStatement(getFactoryMethod(getNodeId(node), METHOD_ATTACHED_TO,
-						new StringLiteralExpr(node.getAttachedToNodeId())))
-				.addStatement(getFactoryMethod(getNodeId(node), METHOD_SCOPE, getOrNullExpr(node.getScope())));
+    @Override
+    public void visitNode(WorkflowProcess process, String factoryField, BoundaryEventNode node, BlockStmt body,
+            VariableScope variableScope, ProcessMetaData metadata) {
+        body.addStatement(getAssignedFactoryMethod(factoryField, BoundaryEventNodeFactory.class, getNodeId(node),
+                getNodeKey(), new LongLiteralExpr(node.getId()))).addStatement(getNameMethod(node, "BoundaryEvent"))
+                .addStatement(
+                        getFactoryMethod(getNodeId(node), METHOD_EVENT_TYPE, new StringLiteralExpr(node.getType())))
+                .addStatement(getFactoryMethod(getNodeId(node), METHOD_ATTACHED_TO,
+                        new StringLiteralExpr(node.getAttachedToNodeId())))
+                .addStatement(getFactoryMethod(getNodeId(node), METHOD_SCOPE, getOrNullExpr(node.getScope())));
 
-		Variable variable = null;
-		if (node.getVariableName() != null) {
-			body.addStatement(getFactoryMethod(getNodeId(node), METHOD_VARIABLE_NAME,
-					new StringLiteralExpr(node.getVariableName())));
-			variable = variableScope.findVariable(node.getVariableName());
-		}
+        Variable variable = null;
+        if (node.getVariableName() != null) {
+            body.addStatement(getFactoryMethod(getNodeId(node), METHOD_VARIABLE_NAME,
+                    new StringLiteralExpr(node.getVariableName())));
+            variable = variableScope.findVariable(node.getVariableName());
+        }
 
-		if (EVENT_TYPE_SIGNAL.equals(node.getMetaData(EVENT_TYPE))) {
-			metadata.addSignal(node.getType(), variable != null ? variable.getType().getStringType() : null);
-		} else if (EVENT_TYPE_MESSAGE.equals(node.getMetaData(EVENT_TYPE))) {
-			Map<String, Object> nodeMetaData = node.getMetaData();
-			metadata.addTrigger(new TriggerMetaData((String) nodeMetaData.get(TRIGGER_REF),
-					(String) nodeMetaData.get(TRIGGER_TYPE), (String) nodeMetaData.get(MESSAGE_TYPE),
-					node.getVariableName(), String.valueOf(node.getId())).validate());
-		}
+        if (EVENT_TYPE_SIGNAL.equals(node.getMetaData(EVENT_TYPE))) {
+            metadata.addSignal(node.getType(), variable != null ? variable.getType().getStringType() : null);
+        } else if (EVENT_TYPE_MESSAGE.equals(node.getMetaData(EVENT_TYPE))) {
+            Map<String, Object> nodeMetaData = node.getMetaData();
+            metadata.addTrigger(new TriggerMetaData((String) nodeMetaData.get(TRIGGER_REF),
+                    (String) nodeMetaData.get(TRIGGER_TYPE), (String) nodeMetaData.get(MESSAGE_TYPE),
+                    node.getVariableName(), String.valueOf(node.getId()), node.getName()).validate());
+        }
 
-		visitMetaData(node.getMetaData(), body, getNodeId(node));
-		body.addStatement(getDoneMethod(getNodeId(node)));
-	}
+        visitMetaData(node.getMetaData(), body, getNodeId(node));
+        body.addStatement(getDoneMethod(getNodeId(node)));
+    }
 }
