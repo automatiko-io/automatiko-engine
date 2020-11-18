@@ -20,6 +20,9 @@
 <script src="/automatik-authorization.js"></script>
 
 <style>
+.active-card {
+     border: 5px solid black;
+ }
 .notify-badge{
     position: absolute;
     right:-10px;
@@ -34,8 +37,13 @@
 </style>
 
 <script>
+	var instancesCollapsed = false;
 	var hasMore = false;
 	var currentPage = 1;
+	var currentProcess;
+	var currentPIDiv;
+	
+	
 	function prettifyJson(json, prettify) {
 		if (typeof json !== 'string') {
 			if (prettify) {
@@ -64,7 +72,7 @@
 						});
 	}
 
-	let instancesCollapsed = false;
+	
 	$(document).ready(function() {
 		$.ajax({
 			url : '/management/processes',
@@ -79,9 +87,20 @@
 	});
 
 	let loadInstances = function(id, divId) {
+		
+		if (id != currentProcess) {			
+			currentPage = 1;
+			$("#" + currentPIDiv).empty();
+			instancesCollapsed = false;
+			$("#card_" + currentProcess).removeClass('active-card');
+			$(".collapse").removeClass('show');
+		}
 
 		if (!instancesCollapsed) {
-			
+			$(".collapse").addClass('show');
+			currentProcess = id;
+			currentPIDiv = divId;
+			$("#card_" + id).addClass('active-card');
 			instancesCollapsed = true;
 			$("#" + divId).empty();
 			$.ajax({
@@ -92,11 +111,14 @@
 				success : function(data) {
 
 					loadProcessInstanceTable(data, divId, id);
+					
 				},
 			});
 		} else {
 			currentPage = 1;
 			instancesCollapsed = false;
+			$("#card_" + id).removeClass('active-card');
+			$(".collapse").removeClass('show');
 		}
 	}
 
@@ -257,7 +279,7 @@
 						rowCount++;
 					}
 					$newRow
-							.append('<div class="col-4 d-flex align-items-stretch"><div class="card" style="width:400"><span class="notify-badge">' + item.activeInstances +'</span>'
+							.append('<div class="col-4 d-flex align-items-stretch"><div id="card_' + item.id +'" class="card" style="width:400"><span class="notify-badge">' + item.activeInstances +'</span>'
 									+ '<img class="card-img-top" src="' + item.image +'" alt="Missing process image" height="200">'
 									+ '<div class="card-body">'
 									+ '  <h5 class="card-title">'
@@ -273,9 +295,9 @@
 									+ item.id
 									+ '\', \'tableinstances_'
 									+ rowCount
-									+ '\');" data-toggle="collapse" href="#instances_'
+									+ '\');" href="#instances_'
 									+ rowCount
-									+ '" role="button" aria-expanded="false" aria-controls="instances_"'
+									+ '" role="button" aria-controls="instances_"'
 									+ item.id
 									+ '">'
 									+ 'Instances'
