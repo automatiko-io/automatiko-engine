@@ -19,7 +19,23 @@
 <!-- optional script that can allow to use more advanced authorization setup such as keycloak etc -->
 <script src="/automatik-authorization.js"></script>
 
+<style>
+.notify-badge{
+    position: absolute;
+    right:-10px;
+    top:-15px;
+    background:black;
+    text-align: center;
+    border-radius: 30px 30px 30px 30px;
+    color:white;
+    padding:5px 10px;
+    font-size:20px;
+}
+</style>
+
 <script>
+	var hasMore = false;
+	var currentPage = 1;
 	function prettifyJson(json, prettify) {
 		if (typeof json !== 'string') {
 			if (prettify) {
@@ -65,7 +81,7 @@
 	let loadInstances = function(id, divId) {
 
 		if (!instancesCollapsed) {
-
+			
 			instancesCollapsed = true;
 			$("#" + divId).empty();
 			$.ajax({
@@ -79,7 +95,7 @@
 				},
 			});
 		} else {
-
+			currentPage = 1;
 			instancesCollapsed = false;
 		}
 	}
@@ -177,6 +193,8 @@
 						+ '  <th scope="col">Tags</th>'
 						+ '  <th scope="col"></th>' + '</tr>' + '</thead>'
 						+ '<tbody ></tbody>');
+		
+		hasMore = data.length == 10;
 		data
 				.forEach(function(item, index) {
 					let tags = '';
@@ -188,7 +206,7 @@
 							.append(
 									'<tr>'
 											+ ' <th scope="row">'
-											+ ++index
+											+ (++index + ((currentPage - 1) * 10))
 											+ '</th>'
 											+ ' <td>'
 											+ item.id
@@ -207,6 +225,23 @@
 											+ '\')">Details</button></td>'
 											+ '</tr>');
 				});
+				
+				$('#' + divId)
+				.append('<tr><td colspan="6"><nav aria-label="Procss instance list navigation">'
+			  + '<ul class="pagination pagination-sm justify-content-center">'
+			  + '  <li id="prev_' + processId+ '" class="page-item">'
+			  + '    <a class="page-link" href="#" tabindex="-1" onclick="prevPage(\''
+				+ processId + '\', \'' + divId
+				+ '\')">Previous</a>'
+			  + '  </li>'
+			  + '  <li class="page-item">'
+			  + '    <a class="page-link" href="#" onclick="nextPage(\''
+				+ processId + '\', \'' + divId
+				+ '\')">Next</a>'
+			  + '  </li>'
+			  + '</ul>'
+			  + '</nav></td></tr>'
+				);
 	}
 
 	let loadProcessCards = function(data) {
@@ -222,7 +257,7 @@
 						rowCount++;
 					}
 					$newRow
-							.append('<div class="col-4 d-flex align-items-stretch"><div class="card" style="width:400">'
+							.append('<div class="col-4 d-flex align-items-stretch"><div class="card" style="width:400"><span class="notify-badge">' + item.activeInstances +'</span>'
 									+ '<img class="card-img-top" src="' + item.image +'" alt="Missing process image" height="200">'
 									+ '<div class="card-body">'
 									+ '  <h5 class="card-title">'
@@ -261,6 +296,42 @@
 					.appendTo($cards);
 		}
 	};
+	
+	let nextPage = function(id, divId) {
+		if (hasMore) {
+			currentPage++;
+			instancesCollapsed = true;
+			$("#" + divId).empty();
+			$.ajax({
+				url : '/management/processes/' + id + '/instances?page=' + currentPage,
+				type : 'GET',
+				dataType : 'json',
+				crossDomain : true,
+				success : function(data) {
+	
+					loadProcessInstanceTable(data, divId, id);
+				},
+			});
+		}
+	}
+	
+	let prevPage = function(id, divId) {
+		if (currentPage > 1) {
+			currentPage--;
+			instancesCollapsed = true;
+			$("#" + divId).empty();
+			$.ajax({
+				url : '/management/processes/' + id + '/instances?page=' + currentPage,
+				type : 'GET',
+				dataType : 'json',
+				crossDomain : true,
+				success : function(data) {
+
+					loadProcessInstanceTable(data, divId, id);
+				},
+			});
+		}
+	}
 </script>
 <title>Manage processes :: Automatik</title>
 </head>

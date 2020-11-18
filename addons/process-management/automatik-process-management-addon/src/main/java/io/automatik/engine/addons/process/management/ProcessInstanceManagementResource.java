@@ -133,7 +133,8 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
                 collected.add(new ProcessDTO(id, process.version(), process.name(),
                         (String) ((AbstractProcess<?>) process).process().getMetaData().get("Documentation"),
                         uriInfo.getBaseUri().toString() + pathprefix + ((AbstractProcess<?>) process).process().getId()
-                                + "/image"));
+                                + "/image",
+                        process.instances().size()));
             }
             return collected;
         } finally {

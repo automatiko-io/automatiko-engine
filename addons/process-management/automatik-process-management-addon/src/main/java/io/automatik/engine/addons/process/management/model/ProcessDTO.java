@@ -12,16 +12,19 @@ public class ProcessDTO {
 
     private String image;
 
+    private long activeInstances;
+
     public ProcessDTO() {
 
     }
 
-    public ProcessDTO(String id, String version, String name, String description, String image) {
+    public ProcessDTO(String id, String version, String name, String description, String image, long activeInstances) {
         this.id = id;
         this.version = version == null ? "" : version;
         this.name = name;
         this.description = description;
         this.image = image;
+        this.activeInstances = activeInstances;
     }
 
     public String getId() {
@@ -62,6 +65,14 @@ public class ProcessDTO {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public long getActiveInstances() {
+        return activeInstances;
+    }
+
+    public void setActiveInstances(long activeInstances) {
+        this.activeInstances = activeInstances;
     }
 
     @Override

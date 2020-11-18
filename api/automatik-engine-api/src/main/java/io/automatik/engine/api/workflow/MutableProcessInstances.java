@@ -54,7 +54,7 @@ public interface MutableProcessInstances<T> extends ProcessInstances<T> {
     }
 
     default int calculatePage(int page, int size) {
-        if (page >= 1) {
+        if (page <= 1) {
             return 0;
         }
 
