@@ -13,51 +13,52 @@ import io.automatik.engine.workflow.base.instance.context.variable.VariableScope
 
 public abstract class AbstractProcessInstanceFactory implements ProcessInstanceFactory {
 
-	public ProcessInstance createProcessInstance(Process process, CorrelationKey correlationKey,
-			InternalProcessRuntime runtime, Map<String, Object> parameters, VariableInitializer variableInitializer) {
-		ProcessInstance processInstance = createProcessInstance();
-		processInstance.setProcessRuntime(runtime);
-		processInstance.setProcess(process);
+    public ProcessInstance createProcessInstance(Process process, CorrelationKey correlationKey,
+            InternalProcessRuntime runtime, Map<String, Object> parameters, VariableInitializer variableInitializer) {
+        ProcessInstance processInstance = createProcessInstance();
+        processInstance.setProcessRuntime(runtime);
+        processInstance.setProcess(process);
 
-		if (correlationKey != null) {
-			processInstance.getMetaData().put("CorrelationKey", correlationKey);
-		}
+        if (correlationKey != null) {
+            processInstance.getMetaData().put("CorrelationKey", correlationKey);
+        }
 
-		runtime.getProcessInstanceManager().addProcessInstance(processInstance, correlationKey);
+        runtime.getProcessInstanceManager().addProcessInstance(processInstance, correlationKey);
 
-		// set variable default values
-		// TODO: should be part of processInstanceImpl?
-		VariableScope variableScope = (VariableScope) ((ContextContainer) process)
-				.getDefaultContext(VariableScope.VARIABLE_SCOPE);
-		VariableScopeInstance variableScopeInstance = (VariableScopeInstance) processInstance
-				.getContextInstance(VariableScope.VARIABLE_SCOPE);
-		// set input parameters
-		if (parameters != null) {
-			if (variableScope != null) {
-				for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+        // set variable default values
+        // TODO: should be part of processInstanceImpl?
+        VariableScope variableScope = (VariableScope) ((ContextContainer) process)
+                .getDefaultContext(VariableScope.VARIABLE_SCOPE);
+        VariableScopeInstance variableScopeInstance = (VariableScopeInstance) processInstance
+                .getContextInstance(VariableScope.VARIABLE_SCOPE);
+        // set input parameters
+        if (parameters != null) {
+            if (variableScope != null) {
+                for (Map.Entry<String, Object> entry : parameters.entrySet()) {
 
-					variableScope.validateVariable(process.getName(), entry.getKey(), entry.getValue());
-					variableScopeInstance.setVariable(entry.getKey(), entry.getValue());
-				}
-			} else {
-				throw new IllegalArgumentException("This process does not support parameters!");
-			}
-		}
+                    variableScope.validateVariable(process.getName(), entry.getKey(), entry.getValue());
+                    variableScopeInstance.setVariable(entry.getKey(), entry.getValue());
+                }
+            } else {
+                throw new IllegalArgumentException("This process does not support parameters!");
+            }
+        }
 
-		for (Variable var : variableScope.getVariables()) {
-			if (var.hasTag(Variable.AUTO_INITIALIZED) && variableScopeInstance.getVariable(var.getName()) == null) {
-				Object value = variableInitializer.initialize(var.getName(), var.getType().getClassType());
+        for (Variable var : variableScope.getVariables()) {
+            if ((var.hasTag(Variable.AUTO_INITIALIZED) || var.getMetaData(Variable.DEFAULT_VALUE) != null)
+                    && variableScopeInstance.getVariable(var.getName()) == null) {
+                Object value = variableInitializer.initialize(var, variableScopeInstance.getVariables());
 
-				variableScope.validateVariable(process.getName(), var.getName(), value);
-				variableScopeInstance.setVariable(var.getName(), value);
-			}
-		}
+                variableScope.validateVariable(process.getName(), var.getName(), value);
+                variableScopeInstance.setVariable(var.getName(), value);
+            }
+        }
 
-		variableScopeInstance.enforceRequiredVariables();
+        variableScopeInstance.enforceRequiredVariables();
 
-		return processInstance;
-	}
+        return processInstance;
+    }
 
-	public abstract ProcessInstance createProcessInstance();
+    public abstract ProcessInstance createProcessInstance();
 
 }

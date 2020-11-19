@@ -1,7 +1,7 @@
 
 package io.automatik.engine.workflow.base.core;
 
-import io.automatik.engine.workflow.base.core.datatype.DataType;
+import io.automatik.engine.api.workflow.datatype.DataType;
 
 public interface TypeObject {
 

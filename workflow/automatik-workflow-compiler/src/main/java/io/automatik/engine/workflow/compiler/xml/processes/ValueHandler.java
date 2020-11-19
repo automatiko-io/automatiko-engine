@@ -9,8 +9,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import io.automatik.engine.api.workflow.datatype.DataType;
 import io.automatik.engine.workflow.base.core.ValueObject;
-import io.automatik.engine.workflow.base.core.datatype.DataType;
 import io.automatik.engine.workflow.compiler.xml.BaseAbstractHandler;
 import io.automatik.engine.workflow.compiler.xml.ExtensibleXmlParser;
 import io.automatik.engine.workflow.compiler.xml.Handler;

@@ -2,7 +2,7 @@ package io.automatik.engine.workflow.bpmn2.core;
 
 import java.io.Serializable;
 
-import io.automatik.engine.workflow.base.core.datatype.DataType;
+import io.automatik.engine.api.workflow.datatype.DataType;
 
 public class DataStore implements Serializable {
 

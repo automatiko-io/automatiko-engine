@@ -1,5 +1,5 @@
 
-package io.automatik.engine.workflow.base.core.datatype;
+package io.automatik.engine.api.workflow.datatype;
 
 import java.io.Externalizable;
 

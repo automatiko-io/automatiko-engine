@@ -8,12 +8,12 @@ import static io.automatik.engine.workflow.process.executable.core.ExecutablePro
 import static io.automatik.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_NAME;
 import static io.automatik.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_PACKAGE_NAME;
 import static io.automatik.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_VALIDATE;
-import static io.automatik.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_VARIABLE;
 import static io.automatik.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_VERSION;
 import static io.automatik.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_VISIBILITY;
 import static io.automatik.engine.workflow.process.executable.core.Metadata.HIDDEN;
 import static io.automatik.engine.workflow.process.executable.core.Metadata.LINK_NODE_HIDDEN;
 import static io.automatik.engine.workflow.process.executable.core.Metadata.UNIQUE_ID;
+import static io.automatik.engine.workflow.process.executable.core.factory.NodeFactory.METHOD_DONE;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,6 +30,7 @@ import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -75,6 +76,7 @@ import io.automatik.engine.workflow.process.core.node.SubProcessNode;
 import io.automatik.engine.workflow.process.core.node.TimerNode;
 import io.automatik.engine.workflow.process.core.node.WorkItemNode;
 import io.automatik.engine.workflow.process.executable.core.ExecutableProcessFactory;
+import io.automatik.engine.workflow.process.executable.core.factory.VariableFactory;
 import io.automatik.engine.workflow.util.PatternConstants;
 
 public class ProcessVisitor extends AbstractVisitor {
@@ -198,7 +200,7 @@ public class ProcessVisitor extends AbstractVisitor {
                 if (!visitedVariables.add(variable.getName())) {
                     continue;
                 }
-                String tags = (String) variable.getMetaData(Variable.VARIABLE_TAGS);
+
                 ClassOrInterfaceType variableType = new ClassOrInterfaceType(null,
                         ObjectDataType.class.getSimpleName());
                 ObjectCreationExpr variableValue = new ObjectCreationExpr(null, variableType,
@@ -206,12 +208,30 @@ public class ProcessVisitor extends AbstractVisitor {
                                 new ClassExpr(new ClassOrInterfaceType(null,
                                         ClassUtils.parseClassname(variable.getType().getStringType()))),
                                 new StringLiteralExpr(variable.getType().getStringType())));
-                body.addStatement(
-                        getFactoryMethod(FACTORY_FIELD_NAME, METHOD_VARIABLE, new StringLiteralExpr(variable.getName()),
-                                variableValue, new StringLiteralExpr(Variable.VARIABLE_TAGS),
-                                tags != null ? new StringLiteralExpr(tags) : new NullLiteralExpr()));
+
+                body.addStatement(getAssignedFactoryMethod(FACTORY_FIELD_NAME, VariableFactory.class,
+                        "$var_" + variable.getSanitizedName(), "variable",
+                        new Expression[] { new StringLiteralExpr(""), new StringLiteralExpr(variable.getName()),
+                                variableValue }));
+
+                visitMetaData(variable.getMetaData(), body, "$var_" + variable.getSanitizedName());
+                body.addStatement(getFactoryMethod("$var_" + variable.getSanitizedName(), METHOD_DONE));
             }
         }
+    }
+
+    protected AssignExpr getAssignedFactoryMethod(String factoryField, Class<?> typeClass, String variableName,
+            String methodName, Expression... args) {
+        ClassOrInterfaceType type = new ClassOrInterfaceType(null, typeClass.getCanonicalName());
+
+        MethodCallExpr variableMethod = new MethodCallExpr(new NameExpr(factoryField), methodName);
+
+        for (Expression arg : args) {
+            variableMethod.addArgument(arg);
+        }
+
+        return new AssignExpr(new VariableDeclarationExpr(type, variableName), variableMethod,
+                AssignExpr.Operator.ASSIGN);
     }
 
     private void visitSubVariableScopes(io.automatik.engine.api.definition.process.Node[] nodes, BlockStmt body,

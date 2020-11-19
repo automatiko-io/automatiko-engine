@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import io.automatik.engine.workflow.base.core.datatype.DataType;
+import io.automatik.engine.api.workflow.datatype.DataType;
 
 /**
  * Representation of an undefined datatype.

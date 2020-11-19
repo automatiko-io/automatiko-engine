@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import io.automatik.engine.api.definition.process.Node;
 import io.automatik.engine.api.definition.process.NodeContainer;
+import io.automatik.engine.api.workflow.datatype.DataType;
 import io.automatik.engine.workflow.base.core.ContextContainer;
 import io.automatik.engine.workflow.base.core.FunctionTagDefinition;
 import io.automatik.engine.workflow.base.core.StaticTagDefinition;
@@ -32,8 +33,6 @@ import io.automatik.engine.workflow.base.core.context.exception.ActionExceptionH
 import io.automatik.engine.workflow.base.core.context.exception.ExceptionHandler;
 import io.automatik.engine.workflow.base.core.context.exception.ExceptionScope;
 import io.automatik.engine.workflow.base.core.context.swimlane.Swimlane;
-import io.automatik.engine.workflow.base.core.context.variable.Variable;
-import io.automatik.engine.workflow.base.core.datatype.DataType;
 import io.automatik.engine.workflow.base.core.event.EventFilter;
 import io.automatik.engine.workflow.base.core.event.EventTypeFilter;
 import io.automatik.engine.workflow.base.core.timer.Timer;
@@ -51,6 +50,7 @@ import io.automatik.engine.workflow.process.core.node.EventTrigger;
 import io.automatik.engine.workflow.process.core.node.StartNode;
 import io.automatik.engine.workflow.process.core.node.StateBasedNode;
 import io.automatik.engine.workflow.process.core.node.Trigger;
+import io.automatik.engine.workflow.process.executable.core.factory.VariableFactory;
 import io.automatik.engine.workflow.process.executable.core.validation.ExecutableProcessValidator;
 
 public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
@@ -78,7 +78,7 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
         setNodeContainer(process);
     }
 
-    protected ExecutableProcess getExecutableProcess() {
+    public ExecutableProcess getExecutableProcess() {
         return (ExecutableProcess) getNodeContainer();
     }
 
@@ -135,6 +135,12 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
         return this;
     }
 
+    public VariableFactory variable(String id, String name, DataType type) {
+        VariableFactory variableFactory = new VariableFactory(this);
+        variableFactory.variable(name, type);
+        return variableFactory;
+    }
+
     public ExecutableProcessFactory variable(String name, DataType type) {
         return variable(name, type, null);
     }
@@ -149,15 +155,9 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
 
     public ExecutableProcessFactory variable(String name, DataType type, Object value, String metaDataName,
             Object metaDataValue) {
-        Variable variable = new Variable();
-        variable.setName(name);
-        variable.setType(type);
-        variable.setValue(value);
-        if (metaDataName != null && metaDataValue != null) {
-            variable.setMetaData(metaDataName, metaDataValue);
-        }
-        getExecutableProcess().getVariableScope().getVariables().add(variable);
-        return this;
+        VariableFactory variableFactory = new VariableFactory(this);
+        variableFactory.variable(name, type, value, metaDataName, metaDataValue);
+        return variableFactory.done();
     }
 
     public ExecutableProcessFactory swimlane(String name) {

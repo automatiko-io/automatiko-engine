@@ -3,8 +3,8 @@ package io.automatik.engine.workflow.base.core.impl;
 
 import java.io.Serializable;
 
+import io.automatik.engine.api.workflow.datatype.DataType;
 import io.automatik.engine.workflow.base.core.ParameterDefinition;
-import io.automatik.engine.workflow.base.core.datatype.DataType;
 
 public class ParameterDefinitionImpl implements ParameterDefinition, Serializable {
 

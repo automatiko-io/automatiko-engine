@@ -3,10 +3,10 @@ package io.automatik.engine.workflow.process.executable.core.factory;
 
 import java.util.Set;
 
+import io.automatik.engine.api.workflow.datatype.DataType;
 import io.automatik.engine.workflow.base.core.ParameterDefinition;
 import io.automatik.engine.workflow.base.core.Work;
 import io.automatik.engine.workflow.base.core.context.variable.Mappable;
-import io.automatik.engine.workflow.base.core.datatype.DataType;
 import io.automatik.engine.workflow.base.core.impl.ParameterDefinitionImpl;
 import io.automatik.engine.workflow.base.core.impl.WorkImpl;
 import io.automatik.engine.workflow.process.core.Node;

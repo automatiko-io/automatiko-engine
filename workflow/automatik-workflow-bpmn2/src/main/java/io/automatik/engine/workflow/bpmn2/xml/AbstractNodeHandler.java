@@ -21,10 +21,10 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import io.automatik.engine.api.workflow.datatype.DataType;
 import io.automatik.engine.workflow.base.core.ContextContainer;
 import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
-import io.automatik.engine.workflow.base.core.datatype.DataType;
 import io.automatik.engine.workflow.base.core.datatype.impl.type.BooleanDataType;
 import io.automatik.engine.workflow.base.core.datatype.impl.type.FloatDataType;
 import io.automatik.engine.workflow.base.core.datatype.impl.type.IntegerDataType;

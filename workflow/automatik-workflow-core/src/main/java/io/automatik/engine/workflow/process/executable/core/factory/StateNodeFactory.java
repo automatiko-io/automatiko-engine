@@ -3,8 +3,8 @@ package io.automatik.engine.workflow.process.executable.core.factory;
 
 import static io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE;
 
+import io.automatik.engine.api.workflow.datatype.DataType;
 import io.automatik.engine.workflow.base.core.context.exception.ExceptionHandler;
-import io.automatik.engine.workflow.base.core.datatype.DataType;
 import io.automatik.engine.workflow.process.core.NodeContainer;
 import io.automatik.engine.workflow.process.core.impl.ConnectionRef;
 import io.automatik.engine.workflow.process.core.impl.ConstraintImpl;

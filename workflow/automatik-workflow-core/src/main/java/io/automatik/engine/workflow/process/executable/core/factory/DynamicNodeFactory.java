@@ -4,8 +4,8 @@ package io.automatik.engine.workflow.process.executable.core.factory;
 import java.util.function.Predicate;
 
 import io.automatik.engine.api.runtime.process.ProcessContext;
+import io.automatik.engine.api.workflow.datatype.DataType;
 import io.automatik.engine.workflow.base.core.context.exception.ExceptionHandler;
-import io.automatik.engine.workflow.base.core.datatype.DataType;
 import io.automatik.engine.workflow.process.core.NodeContainer;
 import io.automatik.engine.workflow.process.core.node.CompositeContextNode;
 import io.automatik.engine.workflow.process.core.node.DynamicNode;

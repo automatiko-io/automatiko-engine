@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.automatik.engine.api.definition.process.Node;
+import io.automatik.engine.api.workflow.datatype.DataType;
 import io.automatik.engine.workflow.base.core.Context;
 import io.automatik.engine.workflow.base.core.context.AbstractContext;
 import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
-import io.automatik.engine.workflow.base.core.datatype.DataType;
 import io.automatik.engine.workflow.process.core.impl.ConnectionImpl;
 import io.automatik.engine.workflow.process.core.impl.ExtendedNodeImpl;
 

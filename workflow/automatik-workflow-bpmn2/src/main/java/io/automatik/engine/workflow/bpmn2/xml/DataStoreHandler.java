@@ -10,7 +10,7 @@ import java.util.Map;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-import io.automatik.engine.workflow.base.core.datatype.DataType;
+import io.automatik.engine.api.workflow.datatype.DataType;
 import io.automatik.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
 import io.automatik.engine.workflow.bpmn2.core.DataStore;
 import io.automatik.engine.workflow.bpmn2.core.Definitions;

@@ -6,8 +6,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.List;
 
+import io.automatik.engine.api.workflow.datatype.DataType;
 import io.automatik.engine.workflow.base.core.TypeObject;
-import io.automatik.engine.workflow.base.core.datatype.DataType;
 
 /**
  * Representation of a list datatype. All elements in the list must have the

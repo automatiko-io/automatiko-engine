@@ -10,9 +10,9 @@ import java.util.Map;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import io.automatik.engine.api.workflow.datatype.DataType;
 import io.automatik.engine.workflow.base.core.ParameterDefinition;
 import io.automatik.engine.workflow.base.core.Work;
-import io.automatik.engine.workflow.base.core.datatype.DataType;
 import io.automatik.engine.workflow.compiler.xml.ExtensibleXmlParser;
 import io.automatik.engine.workflow.compiler.xml.XmlWorkflowProcessDumper;
 import io.automatik.engine.workflow.process.core.Node;

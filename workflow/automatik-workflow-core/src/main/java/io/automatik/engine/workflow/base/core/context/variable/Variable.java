@@ -11,16 +11,16 @@ import java.util.Optional;
 
 import javax.lang.model.SourceVersion;
 
+import io.automatik.engine.api.workflow.datatype.DataType;
 import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.base.core.ValueObject;
-import io.automatik.engine.workflow.base.core.datatype.DataType;
 import io.automatik.engine.workflow.base.core.datatype.impl.type.UndefinedDataType;
 
 /**
  * Default implementation of a variable.
  * 
  */
-public class Variable implements ValueObject, Serializable {
+public class Variable implements ValueObject, Serializable, io.automatik.engine.api.workflow.Variable {
 
     private static final long serialVersionUID = 510l;
 
@@ -36,6 +36,8 @@ public class Variable implements ValueObject, Serializable {
     public static final String AUTO_INITIALIZED = "auto-initialized";
     public static final String BUSINESS_KEY = "business-key";
     public static final String INITIATOR = "initiator";
+
+    public static final String DEFAULT_VALUE = "value";
 
     private String id;
     private String name;

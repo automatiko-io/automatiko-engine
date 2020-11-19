@@ -13,9 +13,9 @@ import org.mvel2.MVEL;
 
 import io.automatik.engine.api.runtime.process.DataTransformer;
 import io.automatik.engine.api.runtime.process.NodeInstance;
+import io.automatik.engine.api.workflow.datatype.DataType;
 import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
-import io.automatik.engine.workflow.base.core.datatype.DataType;
 import io.automatik.engine.workflow.base.core.event.EventTransformer;
 import io.automatik.engine.workflow.base.core.impl.DataTransformerRegistry;
 import io.automatik.engine.workflow.base.instance.InternalProcessRuntime;
