@@ -84,12 +84,28 @@ public class OpenAPIClientGenerator {
 
             Iterator<CodegenOperation> it = operation.iterator();
             while (it.hasNext()) {
+
                 CodegenOperation codegenOperation = (CodegenOperation) it.next();
                 if (!openApiMetadata.operations().contains(codegenOperation.operationId)) {
                     it.remove();
                 } else {
-                    codegenOperation.allParams.forEach(p -> usedTypes.add("io.automatik.engine.app.rest.model." + p.dataType));
-                    usedTypes.add("io.automatik.engine.app.rest.model." + codegenOperation.returnType);
+                    if (isServerlessWorkflow()) {
+                        codegenOperation.allParams.forEach(p -> {
+                            if (isServerlessWorkflow() && p.isBodyParam) {
+                                p.dataType = "com.fasterxml.jackson.databind.JsonNode";
+                            } else {
+                                usedTypes.add("io.automatik.engine.app.rest.model." + p.dataType);
+                            }
+                        });
+
+                        codegenOperation.returnType = "com.fasterxml.jackson.databind.JsonNode";
+
+                    } else {
+                        codegenOperation.allParams.forEach(p -> {
+                            usedTypes.add("io.automatik.engine.app.rest.model." + p.dataType);
+                        });
+                        usedTypes.add("io.automatik.engine.app.rest.model." + codegenOperation.returnType);
+                    }
                 }
             }
 
@@ -188,10 +204,11 @@ public class OpenAPIClientGenerator {
                             CompilationUnit unit = com.github.javaparser.StaticJavaParser.parse(contents);
                             ClassOrInterfaceDeclaration template = unit.findFirst(ClassOrInterfaceDeclaration.class)
                                     .get();
-                            if (unit.getPackageDeclaration().get().getNameAsString().equals("io.automatik.engine.app.rest")) {
+                            if (!isServerlessWorkflow() && unit.getPackageDeclaration().get().getNameAsString()
+                                    .equals("io.automatik.engine.app.rest")) {
                                 // add wildcard import to all model classes generated
                                 unit.addImport("io.automatik.engine.app.rest.model.*");
-                            } else if (unit.getPackageDeclaration().get().getNameAsString()
+                            } else if (!isServerlessWorkflow() && unit.getPackageDeclaration().get().getNameAsString()
                                     .equals("io.automatik.engine.app.rest.model")) {
                                 // find all import definitions that reference other model classes and add them to used types
                                 unit.getImports().stream()
@@ -298,6 +315,13 @@ public class OpenAPIClientGenerator {
         } else if (!resourceClazzName.equals(other.resourceClazzName))
             return false;
         return true;
+    }
+
+    protected boolean isServerlessWorkflow() {
+
+        return ProcessCodegen.SUPPORTED_SW_EXTENSIONS.keySet().stream()
+                .filter(ext -> process.getResource().getSourcePath().endsWith(ext)).findAny().isPresent();
+
     }
 
 }

@@ -65,7 +65,6 @@ public class WorkItemNodeVisitor<T extends WorkItemNode> extends AbstractNodeVis
 			VariableScope variableScope, ProcessMetaData metadata) {
 		Work work = node.getWork();
 		String workName = node.getWork().getName();
-
 		if (workName.equals("Service Task")) {
 			ServiceTaskDescriptor d = new ServiceTaskDescriptor(process, node, contextClassLoader);
 			String mangledName = d.mangledName();

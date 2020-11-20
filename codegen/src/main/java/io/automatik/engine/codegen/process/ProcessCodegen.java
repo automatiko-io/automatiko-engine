@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import io.automatik.engine.workflow.serverless.parser.ServerlessWorkflowParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -65,7 +66,6 @@ import io.automatik.engine.workflow.compiler.canonical.TriggerMetaData;
 import io.automatik.engine.workflow.compiler.canonical.UserTaskModelMetaData;
 import io.automatik.engine.workflow.compiler.xml.SemanticModules;
 import io.automatik.engine.workflow.compiler.xml.XmlProcessReader;
-import io.automatik.engine.workflow.serverless.parser.ServerlessWorkflowParser;
 
 /**
  * Entry point to process code generation
@@ -382,6 +382,7 @@ public class ProcessCodegen extends AbstractGenerator {
                     }
                 }
             }
+
             if (metaData.getOpenAPIs() != null) {
 
                 for (OpenAPIMetaData api : metaData.getOpenAPIs()) {

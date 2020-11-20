@@ -10,8 +10,10 @@
         "kind": "default"
       },
       "data": {
-        "name": "john",
-        "age": "15"
+        "person": {
+          "name": "john",
+          "age": 15
+        }
       },
       "transition": {
         "nextState": "ChooseOnAge"
@@ -22,24 +24,22 @@
       "type": "switch",
       "dataConditions": [
         {
-          "path": "$.age",
-          "value": "18",
-          "operator": "greaterthanorequals",
+          "condition": "{{ $.person[?(@.age >= 18)] }}",
           "transition": {
             "nextState": "Approve"
           }
         },
         {
-          "path": "$.age",
-          "value": "18",
-          "operator": "lessthan",
+          "condition": "{{ $.person[?(@.age < 18)] }}",
           "transition": {
             "nextState": "Deny"
           }
         }
       ],
       "default": {
-        "nextState": "Approve"
+        "transition": {
+          "nextState": "Approve"
+        }
       }
     },
     {

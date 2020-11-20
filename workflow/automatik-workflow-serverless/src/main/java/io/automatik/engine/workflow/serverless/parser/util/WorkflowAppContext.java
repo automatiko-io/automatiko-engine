@@ -1,3 +1,4 @@
+
 package io.automatik.engine.workflow.serverless.parser.util;
 
 import org.slf4j.Logger;
@@ -8,43 +9,42 @@ import java.util.Properties;
 
 public class WorkflowAppContext {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowAppContext.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowAppContext.class);
 
-	private static final String APP_PROPERTIES_FILE_NAME = "application.properties";
-	private static final String DEFAULT_PROP_VALUE = "";
+    private static final String APP_PROPERTIES_FILE_NAME = "application.properties";
+    private static final String DEFAULT_PROP_VALUE = "";
 
-	private Properties applicationProperties;
+    private Properties applicationProperties;
 
-	public static WorkflowAppContext ofAppResources() {
-		Properties properties = new Properties();
+    public static WorkflowAppContext ofAppResources() {
+        Properties properties = new Properties();
 
-		try (InputStream is = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(APP_PROPERTIES_FILE_NAME)) {
-			properties.load(is);
-		} catch (Exception e) {
-			LOGGER.debug("Unable to load {}", APP_PROPERTIES_FILE_NAME);
-		}
-		return new WorkflowAppContext(properties);
-	}
+        try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(APP_PROPERTIES_FILE_NAME)) {
+            properties.load(is);
+        } catch (Exception e) {
+            LOGGER.debug("Unable to load {}", APP_PROPERTIES_FILE_NAME);
+        }
+        return new WorkflowAppContext(properties);
+    }
 
-	public static WorkflowAppContext ofProperties(Properties props) {
-		return new WorkflowAppContext(props);
-	}
+    public static WorkflowAppContext ofProperties(Properties props) {
+        return new WorkflowAppContext(props);
+    }
 
-	private WorkflowAppContext(Properties properties) {
-		this.applicationProperties = properties;
-	}
+    private WorkflowAppContext(Properties properties) {
+        this.applicationProperties = properties;
+    }
 
-	public String getApplicationProperty(String key) {
-		if (applicationProperties != null && applicationProperties.containsKey(key)) {
-			return applicationProperties.getProperty(key);
-		} else {
-			return DEFAULT_PROP_VALUE;
-		}
-	}
+    public String getApplicationProperty(String key) {
+        if (applicationProperties != null && applicationProperties.containsKey(key)) {
+            return applicationProperties.getProperty(key);
+        } else {
+            return DEFAULT_PROP_VALUE;
+        }
+    }
 
-	public Properties getApplicationProperties() {
-		return this.applicationProperties;
-	}
+    public Properties getApplicationProperties() {
+        return this.applicationProperties;
+    }
 
 }

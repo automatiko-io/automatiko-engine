@@ -133,8 +133,10 @@
     <version.org.slf4j>1.7.30</version.org.slf4j>
     <version.testcontainers>1.14.3</version.testcontainers>
     <version.xmlunit>2.2.1</version.xmlunit>
-    <version.jsonschema2pojo-maven-plugin>1.0.1</version.jsonschema2pojo-maven-plugin>
     <version.org.openapitools>4.3.1</version.org.openapitools>
+
+    <!-- SW -->
+    <verion.io.serverlessworkflow>1.0.1.Final</verion.io.serverlessworkflow>
 
     <!-- container images for testing -->
     <container.image.infinispan>quay.io/infinispan/server:${version.org.infinispan.image}</container.image.infinispan>
@@ -665,6 +667,28 @@
         <version>${version.com.github.victools}</version>
       </dependency>
 
+      <!-- Serverless Workflow -->
+      <dependency>
+        <groupId>io.serverlessworkflow</groupId>
+        <artifactId>serverlessworkflow-api</artifactId>
+        <version>${verion.io.serverlessworkflow}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.serverlessworkflow</groupId>
+        <artifactId>serverlessworkflow-spi</artifactId>
+        <version>${verion.io.serverlessworkflow}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.serverlessworkflow</groupId>
+        <artifactId>serverlessworkflow-validation</artifactId>
+        <version>${verion.io.serverlessworkflow}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.serverlessworkflow</groupId>
+        <artifactId>serverlessworkflow-diagram</artifactId>
+        <version>${verion.io.serverlessworkflow}</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 
@@ -987,11 +1011,6 @@
           <groupId>io.quarkus</groupId>
           <artifactId>quarkus-bootstrap-maven-plugin</artifactId>
           <version>${version.io.quarkus}</version>
-        </plugin>
-        <plugin>
-          <groupId>org.jsonschema2pojo</groupId>
-          <artifactId>jsonschema2pojo-maven-plugin</artifactId>
-          <version>${version.jsonschema2pojo-maven-plugin}</version>
         </plugin>
       </plugins>
     </pluginManagement>

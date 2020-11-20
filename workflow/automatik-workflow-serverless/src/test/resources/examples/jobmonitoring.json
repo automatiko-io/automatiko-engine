@@ -1,0 +1,160 @@
+{
+  "id": "jobmonitoring",
+  "version": "1.0",
+  "name": "Job Monitoring",
+  "description": "Monitor finished execution of a submitted job",
+  "functions": [
+    {
+      "name": "submitJob",
+      "operation": "http://myapis.org/monitorapi.json#doSubmit"
+    },
+    {
+      "name": "checkJobStatus",
+      "operation": "http://myapis.org/monitorapi.json#checkStatus"
+    },
+    {
+      "name": "reportJobSuceeded",
+      "operation": "http://myapis.org/monitorapi.json#reportSucceeded"
+    },
+    {
+      "name": "reportJobFailed",
+      "operation": "http://myapis.org/monitorapi.json#reportFailure"
+    }
+  ],
+  "states":[
+    {
+      "name":"SubmitJob",
+      "type":"operation",
+      "start": {
+        "kind": "default"
+      },
+      "actionMode":"sequential",
+      "actions":[
+        {
+          "functionRef": {
+            "refName": "submitJob",
+            "parameters": {
+              "name": "{{ $.job.name }}"
+            }
+          },
+          "actionDataFilter": {
+            "dataResultsPath": "{{ $.jobuid }}"
+          }
+        }
+      ],
+      "onErrors": [
+        {
+          "error": "*",
+          "transition": {
+            "nextState": "SubmitError"
+          }
+        }
+      ],
+      "stateDataFilter": {
+        "dataOutputPath": "{{ $.jobuid }}"
+      },
+      "transition": {
+        "nextState":"WaitForCompletion"
+      }
+    },
+    {
+      "name": "SubmitError",
+      "type": "subflow",
+      "workflowId": "handleJobSubmissionErrorWorkflow",
+      "end": {
+        "kind": "default"
+      }
+    },
+    {
+      "name": "WaitForCompletion",
+      "type": "delay",
+      "timeDelay": "PT5S",
+      "transition": {
+        "nextState":"GetJobStatus"
+      }
+    },
+    {
+      "name":"GetJobStatus",
+      "type":"operation",
+      "actionMode":"sequential",
+      "actions":[
+        {
+          "functionRef": {
+            "refName": "checkJobStatus",
+            "parameters": {
+              "name": "{{ $.jobuid }}"
+            }
+          },
+          "actionDataFilter": {
+            "dataResultsPath": "{{ $.jobstatus }}"
+          }
+        }
+      ],
+      "stateDataFilter": {
+        "dataOutputPath": "{{ $.jobstatus }}"
+      },
+      "transition": {
+        "nextState":"DetermineCompletion"
+      }
+    },
+    {
+      "name":"DetermineCompletion",
+      "type":"switch",
+      "dataConditions": [
+        {
+          "condition": "{{ $[?(@.jobstatus == 'SUCCEEDED')] }}",
+          "transition": {
+            "nextState": "JobSucceeded"
+          }
+        },
+        {
+          "condition": "{{ $[?(@.jobstatus == 'FAILED')] }}",
+          "transition": {
+            "nextState": "JobFailed"
+          }
+        }
+      ],
+      "default": {
+        "transition": {
+          "nextState": "WaitForCompletion"
+        }
+      }
+    },
+    {
+      "name":"JobSucceeded",
+      "type":"operation",
+      "actionMode":"sequential",
+      "actions":[
+        {
+          "functionRef": {
+            "refName": "reportJobSuceeded",
+            "parameters": {
+              "name": "{{ $.jobuid }}"
+            }
+          }
+        }
+      ],
+      "end": {
+        "kind": "default"
+      }
+    },
+    {
+      "name":"JobFailed",
+      "type":"operation",
+      "actionMode":"sequential",
+      "actions":[
+        {
+          "functionRef": {
+            "refName": "reportJobFailed",
+            "parameters": {
+              "name": "{{ $.jobuid }}"
+            }
+          }
+        }
+      ],
+      "end": {
+        "kind": "default"
+      }
+    }
+  ]
+}
