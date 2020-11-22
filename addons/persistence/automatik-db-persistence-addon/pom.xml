@@ -38,6 +38,10 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-hibernate-orm-panache</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-context-propagation</artifactId>
+    </dependency>
 
     <!-- json based marshalling of variables -->
     <dependency>

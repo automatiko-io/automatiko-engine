@@ -7,93 +7,122 @@ import java.util.UUID;
 
 public class ProcessInstanceJobDescription implements JobDescription {
 
-	public static final Integer DEFAULT_PRIORITY = 5;
+    public static final Integer DEFAULT_PRIORITY = 5;
 
-	private final String id;
+    private final String id;
 
-	private final ExpirationTime expirationTime;
+    private final ExpirationTime expirationTime;
 
-	private final Integer priority;
+    private final Integer priority;
 
-	private final String processInstanceId;
-	private final String rootProcessInstanceId;
-	private final String processId;
-	private final String processVersion;
-	private final String rootProcessId;
+    private final String processInstanceId;
+    private final String rootProcessInstanceId;
+    private final String processId;
+    private final String processVersion;
+    private final String rootProcessId;
 
-	private ProcessInstanceJobDescription(long timerId, ExpirationTime expirationTime, Integer priority,
-			String processInstanceId, String rootProcessInstanceId, String processId, String processVersion,
-			String rootProcessId) {
-		this.id = UUID.randomUUID().toString() + "_" + timerId;
-		this.expirationTime = requireNonNull(expirationTime);
-		this.priority = requireNonNull(priority);
-		this.processInstanceId = requireNonNull(processInstanceId);
-		this.rootProcessInstanceId = rootProcessInstanceId;
-		this.processId = processId;
-		this.processVersion = processVersion;
-		this.rootProcessId = rootProcessId;
-	}
+    private final String triggerType;
 
-	public static ProcessInstanceJobDescription of(long timerId, ExpirationTime expirationTime,
-			String processInstanceId, String processId, String processVersion) {
-		return of(timerId, expirationTime, processInstanceId, null, processId, processVersion, null);
-	}
+    private ProcessInstanceJobDescription(long timerId, ExpirationTime expirationTime, Integer priority,
+            String processInstanceId, String rootProcessInstanceId, String processId, String processVersion,
+            String rootProcessId, String triggerType) {
+        this.id = UUID.randomUUID().toString() + "_" + timerId;
+        this.expirationTime = requireNonNull(expirationTime);
+        this.priority = requireNonNull(priority);
+        this.processInstanceId = requireNonNull(processInstanceId);
+        this.rootProcessInstanceId = rootProcessInstanceId;
+        this.processId = processId;
+        this.processVersion = processVersion;
+        this.rootProcessId = rootProcessId;
+        this.triggerType = requireNonNull(triggerType);
+    }
 
-	public static ProcessInstanceJobDescription of(long timerId, ExpirationTime expirationTime,
-			String processInstanceId, String rootProcessInstanceId, String processId, String processVersion,
-			String rootProcessId) {
-		return of(timerId, expirationTime, DEFAULT_PRIORITY, processInstanceId, rootProcessInstanceId, processId,
-				processVersion, rootProcessId);
-	}
+    public static ProcessInstanceJobDescription of(long timerId, ExpirationTime expirationTime,
+            String processInstanceId, String processId, String processVersion) {
+        return of(timerId, expirationTime, processInstanceId, null, processId, processVersion, null);
+    }
 
-	public static ProcessInstanceJobDescription of(long timerId, ExpirationTime expirationTime, Integer priority,
-			String processInstanceId, String rootProcessInstanceId, String processId, String processVersion,
-			String rootProcessId) {
+    public static ProcessInstanceJobDescription of(long timerId, ExpirationTime expirationTime,
+            String processInstanceId, String rootProcessInstanceId, String processId, String processVersion,
+            String rootProcessId) {
+        return of(timerId, expirationTime, DEFAULT_PRIORITY, processInstanceId, rootProcessInstanceId, processId,
+                processVersion, rootProcessId);
+    }
 
-		return new ProcessInstanceJobDescription(timerId, expirationTime, priority, processInstanceId,
-				rootProcessInstanceId, processId, processVersion, rootProcessId);
-	}
+    public static ProcessInstanceJobDescription of(long timerId, ExpirationTime expirationTime, Integer priority,
+            String processInstanceId, String rootProcessInstanceId, String processId, String processVersion,
+            String rootProcessId) {
 
-	@Override
-	public String id() {
-		return id;
-	}
+        return new ProcessInstanceJobDescription(timerId, expirationTime, priority, processInstanceId,
+                rootProcessInstanceId, processId, processVersion, rootProcessId, "timerTriggered");
+    }
 
-	@Override
-	public ExpirationTime expirationTime() {
-		return expirationTime;
-	}
+    public static ProcessInstanceJobDescription of(long timerId, String triggerType, ExpirationTime expirationTime,
+            String processInstanceId, String processId, String processVersion) {
+        return of(timerId, triggerType, expirationTime, processInstanceId, null, processId, processVersion, null);
+    }
 
-	@Override
-	public Integer priority() {
-		return priority;
-	}
+    public static ProcessInstanceJobDescription of(long timerId, String triggerType, ExpirationTime expirationTime,
+            String processInstanceId, String rootProcessInstanceId, String processId, String processVersion,
+            String rootProcessId) {
+        return of(timerId, triggerType, expirationTime, DEFAULT_PRIORITY, processInstanceId, rootProcessInstanceId, processId,
+                processVersion, rootProcessId);
+    }
 
-	public String processInstanceId() {
-		return processInstanceId;
-	}
+    public static ProcessInstanceJobDescription of(long timerId, String triggerType, ExpirationTime expirationTime,
+            Integer priority,
+            String processInstanceId, String rootProcessInstanceId, String processId, String processVersion,
+            String rootProcessId) {
 
-	public String rootProcessInstanceId() {
-		return rootProcessInstanceId;
-	}
+        return new ProcessInstanceJobDescription(timerId, expirationTime, priority, processInstanceId,
+                rootProcessInstanceId, processId, processVersion, rootProcessId, triggerType);
+    }
 
-	public String processId() {
-		return processId;
-	}
+    @Override
+    public String id() {
+        return id;
+    }
 
-	public String processVersion() {
-		return processVersion;
-	}
+    @Override
+    public ExpirationTime expirationTime() {
+        return expirationTime;
+    }
 
-	public String rootProcessId() {
-		return rootProcessId;
-	}
+    @Override
+    public Integer priority() {
+        return priority;
+    }
 
-	@Override
-	public String toString() {
-		return "ProcessInstanceJobDescription{" + "id='" + id + '\'' + ", expirationTime=" + expirationTime
-				+ ", priority=" + priority + ", processInstanceId='" + processInstanceId + '\''
-				+ ", rootProcessInstanceId='" + rootProcessInstanceId + '\'' + ", processId='" + processId + '\''
-				+ ", rootProcessId='" + rootProcessId + '\'' + '}';
-	}
+    public String processInstanceId() {
+        return processInstanceId;
+    }
+
+    public String rootProcessInstanceId() {
+        return rootProcessInstanceId;
+    }
+
+    public String processId() {
+        return processId;
+    }
+
+    public String processVersion() {
+        return processVersion;
+    }
+
+    public String rootProcessId() {
+        return rootProcessId;
+    }
+
+    public String triggerType() {
+        return triggerType;
+    }
+
+    @Override
+    public String toString() {
+        return "ProcessInstanceJobDescription{" + "id='" + id + '\'' + ", expirationTime=" + expirationTime
+                + ", triggerType='" + triggerType + '\''
+                + ", priority=" + priority + ", processInstanceId='" + processInstanceId + '\''
+                + ", rootProcessInstanceId='" + rootProcessInstanceId + '\'' + ", processId='" + processId + '\''
+                + ", rootProcessId='" + rootProcessId + '\'' + '}';
+    }
 }

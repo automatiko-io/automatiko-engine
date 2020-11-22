@@ -72,7 +72,7 @@ public class FileSystemBasedJobService implements JobsService {
 
         this.unitOfWorkManager = application.unitOfWorkManager();
 
-        this.scheduler = new ScheduledThreadPoolExecutor(threads);
+        this.scheduler = new ScheduledThreadPoolExecutor(threads, r -> new Thread(r, "automatik-jobs-executor"));
     }
 
     public void scheduleOnLoad(@Observes StartupEvent event) {
@@ -118,24 +118,24 @@ public class FileSystemBasedJobService implements JobsService {
         ScheduledJob scheduledJob = null;
         if (description.expirationTime().repeatInterval() != null) {
             future = scheduler.scheduleAtFixedRate(
-                    new SignalProcessInstanceOnExpiredTimer(description.id(),
+                    new SignalProcessInstanceOnExpiredTimer(description.id(), description.triggerType(),
                             description.processId() + version(description.processVersion()),
                             description.processInstanceId(), false, description.expirationTime().repeatLimit()),
                     calculateDelay(description.expirationTime().get()), description.expirationTime().repeatInterval(),
                     TimeUnit.MILLISECONDS);
 
-            scheduledJob = new ScheduledJob(description.id(),
+            scheduledJob = new ScheduledJob(description.id(), description.triggerType(),
                     description.processId() + version(description.processVersion()), false,
                     description.processInstanceId(), description.expirationTime().repeatLimit(),
                     description.expirationTime().repeatInterval(), description.expirationTime().get());
         } else {
             future = scheduler.schedule(
-                    new SignalProcessInstanceOnExpiredTimer(description.id(),
+                    new SignalProcessInstanceOnExpiredTimer(description.id(), description.triggerType(),
                             description.processId() + version(description.processVersion()),
                             description.processInstanceId(), true, -1),
                     calculateDelay(description.expirationTime().get()), TimeUnit.MILLISECONDS);
 
-            scheduledJob = new ScheduledJob(description.id(),
+            scheduledJob = new ScheduledJob(description.id(), description.triggerType(),
                     description.processId() + version(description.processVersion()), true,
                     description.processInstanceId(), -1, null, description.expirationTime().get());
         }
@@ -199,13 +199,13 @@ public class FileSystemBasedJobService implements JobsService {
             if (job.getProcessInstanceId() != null) {
                 if (job.getReapeatInterval() != null) {
                     future = scheduler.scheduleAtFixedRate(
-                            new SignalProcessInstanceOnExpiredTimer(job.getId(), job.getProcessId(),
+                            new SignalProcessInstanceOnExpiredTimer(job.getId(), job.getTriggerType(), job.getProcessId(),
                                     job.getProcessInstanceId(), false, job.getLimit()),
                             calculateDelay(job.getFireTime()), job.getReapeatInterval(), TimeUnit.MILLISECONDS);
 
                 } else {
                     future = scheduler.schedule(
-                            new SignalProcessInstanceOnExpiredTimer(job.getId(), job.getProcessId(),
+                            new SignalProcessInstanceOnExpiredTimer(job.getId(), job.getTriggerType(), job.getProcessId(),
                                     job.getProcessInstanceId(), true, -1),
                             calculateDelay(job.getFireTime()), TimeUnit.MILLISECONDS);
                 }
@@ -266,11 +266,13 @@ public class FileSystemBasedJobService implements JobsService {
         private final String processId;
         private boolean removeAtExecution;
         private String processInstanceId;
+        private final String trigger;
         private Integer limit;
 
-        private SignalProcessInstanceOnExpiredTimer(String id, String processId, String processInstanceId,
+        private SignalProcessInstanceOnExpiredTimer(String id, String trigger, String processId, String processInstanceId,
                 boolean removeAtExecution, Integer limit) {
             this.id = id;
+            this.trigger = trigger;
             this.processId = processId;
             this.processInstanceId = processInstanceId;
             this.removeAtExecution = removeAtExecution;
@@ -295,7 +297,7 @@ public class FileSystemBasedJobService implements JobsService {
                         ProcessInstance<?> processInstance = processInstanceFound.get();
                         String[] ids = id.split("_");
                         processInstance
-                                .send(Sig.of("timerTriggered", TimerInstance.with(Long.parseLong(ids[1]), id, limit)));
+                                .send(Sig.of(trigger, TimerInstance.with(Long.parseLong(ids[1]), id, limit)));
                         if (limit == 0) {
                             scheduledJobs.remove(id).cancel(false);
                             removeScheduledJob(id);
