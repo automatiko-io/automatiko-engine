@@ -195,6 +195,12 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
             _node.setSlaTimerId(
                     ((io.automatik.engine.workflow.process.instance.NodeInstance) nodeInstance).getSlaTimerId());
         }
+        if (((NodeInstanceImpl) nodeInstance).getRetryJobId() != null) {
+            _node.setRetryJobId(((NodeInstanceImpl) nodeInstance).getRetryJobId());
+        }
+        if (((NodeInstanceImpl) nodeInstance).getRetryAttempts() != null) {
+            _node.setRetryAttempts(((NodeInstanceImpl) nodeInstance).getRetryAttempts());
+        }
 
         _node.setContent(writeNodeInstanceContent(_node, nodeInstance, context));
         return _node.build();
@@ -784,6 +790,9 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
             nodeInstance.internalSetSlaDueDate(new Date(_node.getSlaDueDate()));
         }
         nodeInstance.internalSetSlaTimerId(_node.getSlaTimerId());
+
+        nodeInstance.internalSetRetryJobId(_node.getRetryJobId());
+        nodeInstance.internalSetRetryAttempts(_node.getRetryAttempts());
 
         switch (_node.getContent().getType()) {
             case COMPOSITE_CONTEXT_NODE:

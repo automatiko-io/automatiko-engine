@@ -76,7 +76,6 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
                 timerInstances.add(jobId);
             }
         }
-
         ((WorkflowProcessInstanceImpl) getProcessInstance())
                 .addActivatingNodeId((String) getNode().getMetaData().get("UniqueId"));
     }
@@ -226,6 +225,9 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
         } else if (("slaViolation:" + getId()).equals(type)) {
 
             handleSLAViolation();
+        } else if (("retry:" + getId()).equals(type)) {
+
+            retry();
         } else {
             List<String> exitEvents = (List<String>) getNode().getMetaData().get(NodeImpl.EXIT_EVENTS);
             if (exitEvents != null && exitEvents.contains(type)) {
@@ -321,6 +323,7 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
                 .setCurrentLevel(getLevel());
         cancelTimers();
         removeCompletionListeners();
+        getProcessInstance().removeEventListener("slaViolation:" + getId(), this, true);
         super.triggerCompleted(type, remove);
     }
 
@@ -357,6 +360,11 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
             for (String id : timerInstances) {
                 jobService.cancelJob(id);
             }
+        }
+
+        if (retryJobId != null) {
+            JobsService jobService = getProcessInstance().getProcessRuntime().getJobsService();
+            jobService.cancelJob(retryJobId);
         }
     }
 
@@ -430,6 +438,15 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
                     getProcessInstance().removeEventListener(event, this, false);
                 }
             }
+        }
+    }
+
+    @Override
+    public void internalSetRetryJobId(String retryJobId) {
+        if (retryJobId != null && !retryJobId.isEmpty()) {
+            this.retryJobId = retryJobId;
+
+            getProcessInstance().addEventListener("retry:" + getId(), this, true);
         }
     }
 

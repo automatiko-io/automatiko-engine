@@ -5,11 +5,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import io.automatik.engine.api.Application;
 import io.automatik.engine.api.Model;
@@ -17,6 +20,8 @@ import io.automatik.engine.api.workflow.Process;
 import io.automatik.engine.api.workflow.ProcessInstance;
 import io.automatik.engine.codegen.AbstractCodegenTest;
 import io.automatik.engine.codegen.process.ProcessCodegenException;
+import io.automatik.engine.workflow.DefaultProcessEventListenerConfig;
+import io.automatik.engine.workflow.compiler.util.NodeLeftCountDownProcessEventListener;
 
 public class ServiceTaskTest extends AbstractCodegenTest {
 
@@ -41,6 +46,119 @@ public class ServiceTaskTest extends AbstractCodegenTest {
         Model result = (Model) processInstance.variables();
         assertThat(result.toMap()).hasSize(1).containsKeys("s");
         assertThat(result.toMap().get("s")).isNotNull().isEqualTo("Hello john!");
+    }
+
+    @Test
+    @Timeout(unit = TimeUnit.SECONDS, value = 10)
+    public void testBasicServiceProcessTaskWithRetry() throws Exception {
+
+        Application app = generateCodeProcessesOnly("servicetask/ServiceProcessRetry.bpmn2");
+        assertThat(app).isNotNull();
+
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("Print error", 1);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("s", "john");
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        listener.waitTillCompleted();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(1).containsKeys("s");
+        assertThat(result.toMap().get("s")).isNotNull().isEqualTo("john");
+    }
+
+    @Test
+    @Timeout(unit = TimeUnit.SECONDS, value = 10)
+    public void testBasicServiceProcessTaskWithRetryDefaultLimit() throws Exception {
+
+        Application app = generateCodeProcessesOnly("servicetask/ServiceProcessRetryDefLimit.bpmn2");
+        assertThat(app).isNotNull();
+
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("Print error", 1);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("s", "john");
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        listener.waitTillCompleted();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(1).containsKeys("s");
+        assertThat(result.toMap().get("s")).isNotNull().isEqualTo("john");
+    }
+
+    @Test
+    @Timeout(unit = TimeUnit.SECONDS, value = 10000)
+    public void testBasicServiceProcessTaskWithRetrySuccessful() throws Exception {
+
+        Application app = generateCodeProcessesOnly("servicetask/ServiceProcessRetry.bpmn2");
+        assertThat(app).isNotNull();
+
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("EndProcess", 1);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("s", "john");
+        m.fromMap(parameters);
+
+        ProcessInstance processInstance = p.createInstance(m);
+        processInstance.start();
+        m.fromMap(Collections.singletonMap("s", "mary"));
+        processInstance.updateVariables(m);
+
+        listener.waitTillCompleted();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(1).containsKeys("s");
+        assertThat(result.toMap().get("s")).isNotNull().isEqualTo("Hello mary!");
+    }
+
+    @Test
+    @Timeout(unit = TimeUnit.SECONDS, value = 10000)
+    public void testBasicServiceProcessTaskWithRetryAbort() throws Exception {
+
+        Application app = generateCodeProcessesOnly("servicetask/ServiceProcessRetry.bpmn2");
+        assertThat(app).isNotNull();
+
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("EndProcess", 1);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("s", "john");
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        listener.waitTillCompleted(1500);
+
+        processInstance.abort();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ABORTED);
     }
 
     @Test

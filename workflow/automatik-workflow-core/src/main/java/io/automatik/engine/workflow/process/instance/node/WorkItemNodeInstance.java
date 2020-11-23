@@ -129,11 +129,7 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         if (getNodeInstanceContainer().getNodeInstance(getId()) == null) {
             return;
         }
-        // TODO this should be included for ruleflow only, not for BPEL
-        // if (!Node.CONNECTION_DEFAULT_TYPE.equals(type)) {
-        // throw new IllegalArgumentException(
-        // "A WorkItemNode only accepts default incoming connections!");
-        // }
+
         WorkItemNode workItemNode = getWorkItemNode();
         createWorkItem(workItemNode);
         if (workItemNode.isWaitForCompletion()) {
@@ -152,10 +148,13 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
             throw wihnfe;
         } catch (ProcessWorkItemHandlerException handlerException) {
             this.workItemId = workItem.getId();
+            removeEventListeners();
             handleWorkItemHandlerException(handlerException, workItem);
         } catch (WorkItemExecutionError e) {
+            removeEventListeners();
             handleException(e.getErrorCode(), e);
         } catch (Exception e) {
+            removeEventListeners();
             String exceptionName = e.getClass().getName();
             handleException(exceptionName, e);
         }
@@ -176,7 +175,7 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         // workItemId must be set otherwise cancel activity will not find the right work
         // item
         this.workItemId = workItem.getId();
-        exceptionScopeInstance.handleException(exceptionName, e);
+        exceptionScopeInstance.handleException(this, exceptionName, e);
     }
 
     protected WorkItem newWorkItem() {
@@ -185,11 +184,13 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
 
     protected WorkItem createWorkItem(WorkItemNode workItemNode) {
         Work work = workItemNode.getWork();
-        workItem = newWorkItem();
-        ((WorkItemImpl) workItem).setName(work.getName());
-        ((WorkItemImpl) workItem).setProcessInstanceId(getProcessInstance().getId());
-        ((WorkItemImpl) workItem).setParameters(new HashMap<>(work.getParameters()));
-        workItem.setStartDate(new Date());
+        if (workItem == null) {
+            workItem = newWorkItem();
+            ((WorkItemImpl) workItem).setName(work.getName());
+            ((WorkItemImpl) workItem).setProcessInstanceId(getProcessInstance().getId());
+            ((WorkItemImpl) workItem).setParameters(new HashMap<>(work.getParameters()));
+            workItem.setStartDate(new Date());
+        }
         // if there are any dynamic parameters add them
         if (dynamicParameters != null) {
             workItem.getParameters().putAll(dynamicParameters);
@@ -630,7 +631,7 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
                             "Unable to execute work item " + handlerException.getMessage(), handlerException.getCause());
                 }
 
-                exceptionScopeInstance.handleException(exceptionName, handlerException.getCause());
+                exceptionScopeInstance.handleException(this, exceptionName, handlerException.getCause());
                 break;
             case RETRY:
                 Map<String, Object> parameters = new HashMap<>(getWorkItem().getParameters());
@@ -706,4 +707,11 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
 
         return builder.toString();
     }
+
+    @Override
+    public void retry() {
+
+        super.retry();
+    }
+
 }

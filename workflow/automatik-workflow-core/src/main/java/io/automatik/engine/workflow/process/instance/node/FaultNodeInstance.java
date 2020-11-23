@@ -25,94 +25,94 @@ import io.automatik.engine.workflow.process.instance.impl.NodeInstanceImpl;
  */
 public class FaultNodeInstance extends NodeInstanceImpl {
 
-	private static final long serialVersionUID = 510l;
-	private static final Logger logger = LoggerFactory.getLogger(FaultNodeInstance.class);
+    private static final long serialVersionUID = 510l;
+    private static final Logger logger = LoggerFactory.getLogger(FaultNodeInstance.class);
 
-	protected FaultNode getFaultNode() {
-		return (FaultNode) getNode();
-	}
+    protected FaultNode getFaultNode() {
+        return (FaultNode) getNode();
+    }
 
-	public void internalTrigger(final NodeInstance from, String type) {
-		if (!io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE.equals(type)) {
-			throw new IllegalArgumentException("A FaultNode only accepts default incoming connections!");
-		}
-		triggerTime = new Date();
-		String faultName = getFaultName();
-		ExceptionScopeInstance exceptionScopeInstance = getExceptionScopeInstance(faultName);
-		NodeInstanceContainer nodeInstanceContainer = (NodeInstanceContainer) getNodeInstanceContainer();
-		nodeInstanceContainer.removeNodeInstance(this);
-		boolean exceptionHandled = false;
-		if (getFaultNode().isTerminateParent()) {
-			// handle exception before canceling nodes to allow boundary event to catch the
-			// events
-			if (exceptionScopeInstance != null) {
-				exceptionHandled = true;
-				handleException(faultName, exceptionScopeInstance);
-			}
-			if (nodeInstanceContainer instanceof CompositeNodeInstance) {
+    public void internalTrigger(final NodeInstance from, String type) {
+        if (!io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE.equals(type)) {
+            throw new IllegalArgumentException("A FaultNode only accepts default incoming connections!");
+        }
+        triggerTime = new Date();
+        String faultName = getFaultName();
+        ExceptionScopeInstance exceptionScopeInstance = getExceptionScopeInstance(faultName);
+        NodeInstanceContainer nodeInstanceContainer = (NodeInstanceContainer) getNodeInstanceContainer();
+        nodeInstanceContainer.removeNodeInstance(this);
+        boolean exceptionHandled = false;
+        if (getFaultNode().isTerminateParent()) {
+            // handle exception before canceling nodes to allow boundary event to catch the
+            // events
+            if (exceptionScopeInstance != null) {
+                exceptionHandled = true;
+                handleException(faultName, exceptionScopeInstance);
+            }
+            if (nodeInstanceContainer instanceof CompositeNodeInstance) {
 
-				((CompositeNodeInstance) nodeInstanceContainer).cancel();
-			} else if (nodeInstanceContainer instanceof WorkflowProcessInstance) {
-				Collection<NodeInstance> nodeInstances = ((WorkflowProcessInstance) nodeInstanceContainer)
-						.getNodeInstances();
-				for (NodeInstance nodeInstance : nodeInstances) {
-					((io.automatik.engine.workflow.process.instance.NodeInstance) nodeInstance).cancel();
-				}
-			}
-		}
-		if (exceptionScopeInstance != null) {
-			if (!exceptionHandled) {
-				handleException(faultName, exceptionScopeInstance);
-			}
-			boolean hidden = false;
-			if (getNode().getMetaData().get("hidden") != null) {
-				hidden = true;
-			}
-			if (!hidden) {
-				InternalProcessRuntime runtime = getProcessInstance().getProcessRuntime();
-				runtime.getProcessEventSupport().fireBeforeNodeLeft(this, runtime);
-			}
+                ((CompositeNodeInstance) nodeInstanceContainer).cancel();
+            } else if (nodeInstanceContainer instanceof WorkflowProcessInstance) {
+                Collection<NodeInstance> nodeInstances = ((WorkflowProcessInstance) nodeInstanceContainer)
+                        .getNodeInstances();
+                for (NodeInstance nodeInstance : nodeInstances) {
+                    ((io.automatik.engine.workflow.process.instance.NodeInstance) nodeInstance).cancel();
+                }
+            }
+        }
+        if (exceptionScopeInstance != null) {
+            if (!exceptionHandled) {
+                handleException(faultName, exceptionScopeInstance);
+            }
+            boolean hidden = false;
+            if (getNode().getMetaData().get("hidden") != null) {
+                hidden = true;
+            }
+            if (!hidden) {
+                InternalProcessRuntime runtime = getProcessInstance().getProcessRuntime();
+                runtime.getProcessEventSupport().fireBeforeNodeLeft(this, runtime);
+            }
 
-			((NodeInstanceContainer) getNodeInstanceContainer()).nodeInstanceCompleted(this, null);
+            ((NodeInstanceContainer) getNodeInstanceContainer()).nodeInstanceCompleted(this, null);
 
-			if (!hidden) {
-				InternalProcessRuntime runtime = getProcessInstance().getProcessRuntime();
-				runtime.getProcessEventSupport().fireAfterNodeLeft(this, runtime);
-			}
-		} else {
+            if (!hidden) {
+                InternalProcessRuntime runtime = getProcessInstance().getProcessRuntime();
+                runtime.getProcessEventSupport().fireAfterNodeLeft(this, runtime);
+            }
+        } else {
 
-			((ProcessInstance) getProcessInstance()).setState(ProcessInstance.STATE_ABORTED, faultName, getFaultData());
+            ((ProcessInstance) getProcessInstance()).setState(ProcessInstance.STATE_ABORTED, faultName, getFaultData());
 
-		}
-	}
+        }
+    }
 
-	protected ExceptionScopeInstance getExceptionScopeInstance(String faultName) {
-		return (ExceptionScopeInstance) resolveContextInstance(ExceptionScope.EXCEPTION_SCOPE, faultName);
-	}
+    protected ExceptionScopeInstance getExceptionScopeInstance(String faultName) {
+        return (ExceptionScopeInstance) resolveContextInstance(ExceptionScope.EXCEPTION_SCOPE, faultName);
+    }
 
-	protected String getFaultName() {
-		return getFaultNode().getFaultName();
-	}
+    protected String getFaultName() {
+        return getFaultNode().getFaultName();
+    }
 
-	protected Object getFaultData() {
-		Object value = null;
-		String faultVariable = getFaultNode().getFaultVariable();
-		if (faultVariable != null) {
-			VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
-					VariableScope.VARIABLE_SCOPE, faultVariable);
-			if (variableScopeInstance != null) {
-				value = variableScopeInstance.getVariable(faultVariable);
-			} else {
-				logger.error("Could not find variable scope for variable {}", faultVariable);
-				logger.error("when trying to execute fault node {}", getFaultNode().getName());
-				logger.error("Continuing without setting value.");
-			}
-		}
-		return value;
-	}
+    protected Object getFaultData() {
+        Object value = null;
+        String faultVariable = getFaultNode().getFaultVariable();
+        if (faultVariable != null) {
+            VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+                    VariableScope.VARIABLE_SCOPE, faultVariable);
+            if (variableScopeInstance != null) {
+                value = variableScopeInstance.getVariable(faultVariable);
+            } else {
+                logger.error("Could not find variable scope for variable {}", faultVariable);
+                logger.error("when trying to execute fault node {}", getFaultNode().getName());
+                logger.error("Continuing without setting value.");
+            }
+        }
+        return value;
+    }
 
-	protected void handleException(String faultName, ExceptionScopeInstance exceptionScopeInstance) {
-		exceptionScopeInstance.handleException(faultName, getFaultData());
-	}
+    protected void handleException(String faultName, ExceptionScopeInstance exceptionScopeInstance) {
+        exceptionScopeInstance.handleException(this, faultName, getFaultData());
+    }
 
 }

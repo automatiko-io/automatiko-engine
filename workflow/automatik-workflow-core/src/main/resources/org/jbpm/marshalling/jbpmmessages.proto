@@ -173,6 +173,8 @@ message ProcessInstance {
         optional int64 sla_due_date = 7;
         optional int32 sla_compliance = 8;
         optional int64 trigger_date = 9;
+        optional string retry_job_id = 10;
+        optional int32 retry_attempts = 11;
     }
 
     message ExclusiveGroupInstance {

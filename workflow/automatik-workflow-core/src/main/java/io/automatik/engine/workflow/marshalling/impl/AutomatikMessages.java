@@ -13293,6 +13293,34 @@ public final class AutomatikMessages {
        * @return The triggerDate.
        */
       long getTriggerDate();
+
+      /**
+       * <code>optional string retry_job_id = 10;</code>
+       * @return Whether the retryJobId field is set.
+       */
+      boolean hasRetryJobId();
+      /**
+       * <code>optional string retry_job_id = 10;</code>
+       * @return The retryJobId.
+       */
+      java.lang.String getRetryJobId();
+      /**
+       * <code>optional string retry_job_id = 10;</code>
+       * @return The bytes for retryJobId.
+       */
+      com.google.protobuf.ByteString
+          getRetryJobIdBytes();
+
+      /**
+       * <code>optional int32 retry_attempts = 11;</code>
+       * @return Whether the retryAttempts field is set.
+       */
+      boolean hasRetryAttempts();
+      /**
+       * <code>optional int32 retry_attempts = 11;</code>
+       * @return The retryAttempts.
+       */
+      int getRetryAttempts();
     }
     /**
      * Protobuf type {@code io.automatik.engine.workflow.marshalling.ProcessInstance.NodeInstance}
@@ -13309,6 +13337,7 @@ public final class AutomatikMessages {
       private NodeInstance() {
         id_ = "";
         slaTimerId_ = "";
+        retryJobId_ = "";
       }
 
       @java.lang.Override
@@ -13390,6 +13419,17 @@ public final class AutomatikMessages {
               case 72: {
                 bitField0_ |= 0x00000080;
                 triggerDate_ = input.readInt64();
+                break;
+              }
+              case 82: {
+                com.google.protobuf.ByteString bs = input.readBytes();
+                bitField0_ |= 0x00000100;
+                retryJobId_ = bs;
+                break;
+              }
+              case 88: {
+                bitField0_ |= 0x00000200;
+                retryAttempts_ = input.readInt32();
                 break;
               }
               default: {
@@ -13642,6 +13682,73 @@ public final class AutomatikMessages {
         return triggerDate_;
       }
 
+      public static final int RETRY_JOB_ID_FIELD_NUMBER = 10;
+      private volatile java.lang.Object retryJobId_;
+      /**
+       * <code>optional string retry_job_id = 10;</code>
+       * @return Whether the retryJobId field is set.
+       */
+      @java.lang.Override
+      public boolean hasRetryJobId() {
+        return ((bitField0_ & 0x00000100) != 0);
+      }
+      /**
+       * <code>optional string retry_job_id = 10;</code>
+       * @return The retryJobId.
+       */
+      @java.lang.Override
+      public java.lang.String getRetryJobId() {
+        java.lang.Object ref = retryJobId_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            retryJobId_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>optional string retry_job_id = 10;</code>
+       * @return The bytes for retryJobId.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString
+          getRetryJobIdBytes() {
+        java.lang.Object ref = retryJobId_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          retryJobId_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      public static final int RETRY_ATTEMPTS_FIELD_NUMBER = 11;
+      private int retryAttempts_;
+      /**
+       * <code>optional int32 retry_attempts = 11;</code>
+       * @return Whether the retryAttempts field is set.
+       */
+      @java.lang.Override
+      public boolean hasRetryAttempts() {
+        return ((bitField0_ & 0x00000200) != 0);
+      }
+      /**
+       * <code>optional int32 retry_attempts = 11;</code>
+       * @return The retryAttempts.
+       */
+      @java.lang.Override
+      public int getRetryAttempts() {
+        return retryAttempts_;
+      }
+
       private byte memoizedIsInitialized = -1;
       @java.lang.Override
       public final boolean isInitialized() {
@@ -13679,6 +13786,12 @@ public final class AutomatikMessages {
         }
         if (((bitField0_ & 0x00000080) != 0)) {
           output.writeInt64(9, triggerDate_);
+        }
+        if (((bitField0_ & 0x00000100) != 0)) {
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 10, retryJobId_);
+        }
+        if (((bitField0_ & 0x00000200) != 0)) {
+          output.writeInt32(11, retryAttempts_);
         }
         unknownFields.writeTo(output);
       }
@@ -13718,6 +13831,13 @@ public final class AutomatikMessages {
         if (((bitField0_ & 0x00000080) != 0)) {
           size += com.google.protobuf.CodedOutputStream
             .computeInt64Size(9, triggerDate_);
+        }
+        if (((bitField0_ & 0x00000100) != 0)) {
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, retryJobId_);
+        }
+        if (((bitField0_ & 0x00000200) != 0)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeInt32Size(11, retryAttempts_);
         }
         size += unknownFields.getSerializedSize();
         memoizedSize = size;
@@ -13774,6 +13894,16 @@ public final class AutomatikMessages {
           if (getTriggerDate()
               != other.getTriggerDate()) return false;
         }
+        if (hasRetryJobId() != other.hasRetryJobId()) return false;
+        if (hasRetryJobId()) {
+          if (!getRetryJobId()
+              .equals(other.getRetryJobId())) return false;
+        }
+        if (hasRetryAttempts() != other.hasRetryAttempts()) return false;
+        if (hasRetryAttempts()) {
+          if (getRetryAttempts()
+              != other.getRetryAttempts()) return false;
+        }
         if (!unknownFields.equals(other.unknownFields)) return false;
         return true;
       }
@@ -13819,6 +13949,14 @@ public final class AutomatikMessages {
           hash = (37 * hash) + TRIGGER_DATE_FIELD_NUMBER;
           hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
               getTriggerDate());
+        }
+        if (hasRetryJobId()) {
+          hash = (37 * hash) + RETRY_JOB_ID_FIELD_NUMBER;
+          hash = (53 * hash) + getRetryJobId().hashCode();
+        }
+        if (hasRetryAttempts()) {
+          hash = (37 * hash) + RETRY_ATTEMPTS_FIELD_NUMBER;
+          hash = (53 * hash) + getRetryAttempts();
         }
         hash = (29 * hash) + unknownFields.hashCode();
         memoizedHashCode = hash;
@@ -13974,6 +14112,10 @@ public final class AutomatikMessages {
           bitField0_ = (bitField0_ & ~0x00000040);
           triggerDate_ = 0L;
           bitField0_ = (bitField0_ & ~0x00000080);
+          retryJobId_ = "";
+          bitField0_ = (bitField0_ & ~0x00000100);
+          retryAttempts_ = 0;
+          bitField0_ = (bitField0_ & ~0x00000200);
           return this;
         }
 
@@ -14037,6 +14179,14 @@ public final class AutomatikMessages {
           if (((from_bitField0_ & 0x00000080) != 0)) {
             result.triggerDate_ = triggerDate_;
             to_bitField0_ |= 0x00000080;
+          }
+          if (((from_bitField0_ & 0x00000100) != 0)) {
+            to_bitField0_ |= 0x00000100;
+          }
+          result.retryJobId_ = retryJobId_;
+          if (((from_bitField0_ & 0x00000200) != 0)) {
+            result.retryAttempts_ = retryAttempts_;
+            to_bitField0_ |= 0x00000200;
           }
           result.bitField0_ = to_bitField0_;
           onBuilt();
@@ -14114,6 +14264,14 @@ public final class AutomatikMessages {
           }
           if (other.hasTriggerDate()) {
             setTriggerDate(other.getTriggerDate());
+          }
+          if (other.hasRetryJobId()) {
+            bitField0_ |= 0x00000100;
+            retryJobId_ = other.retryJobId_;
+            onChanged();
+          }
+          if (other.hasRetryAttempts()) {
+            setRetryAttempts(other.getRetryAttempts());
           }
           this.mergeUnknownFields(other.unknownFields);
           onChanged();
@@ -14624,6 +14782,129 @@ public final class AutomatikMessages {
         public Builder clearTriggerDate() {
           bitField0_ = (bitField0_ & ~0x00000080);
           triggerDate_ = 0L;
+          onChanged();
+          return this;
+        }
+
+        private java.lang.Object retryJobId_ = "";
+        /**
+         * <code>optional string retry_job_id = 10;</code>
+         * @return Whether the retryJobId field is set.
+         */
+        public boolean hasRetryJobId() {
+          return ((bitField0_ & 0x00000100) != 0);
+        }
+        /**
+         * <code>optional string retry_job_id = 10;</code>
+         * @return The retryJobId.
+         */
+        public java.lang.String getRetryJobId() {
+          java.lang.Object ref = retryJobId_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              retryJobId_ = s;
+            }
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>optional string retry_job_id = 10;</code>
+         * @return The bytes for retryJobId.
+         */
+        public com.google.protobuf.ByteString
+            getRetryJobIdBytes() {
+          java.lang.Object ref = retryJobId_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            retryJobId_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>optional string retry_job_id = 10;</code>
+         * @param value The retryJobId to set.
+         * @return This builder for chaining.
+         */
+        public Builder setRetryJobId(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000100;
+          retryJobId_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string retry_job_id = 10;</code>
+         * @return This builder for chaining.
+         */
+        public Builder clearRetryJobId() {
+          bitField0_ = (bitField0_ & ~0x00000100);
+          retryJobId_ = getDefaultInstance().getRetryJobId();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string retry_job_id = 10;</code>
+         * @param value The bytes for retryJobId to set.
+         * @return This builder for chaining.
+         */
+        public Builder setRetryJobIdBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000100;
+          retryJobId_ = value;
+          onChanged();
+          return this;
+        }
+
+        private int retryAttempts_ ;
+        /**
+         * <code>optional int32 retry_attempts = 11;</code>
+         * @return Whether the retryAttempts field is set.
+         */
+        @java.lang.Override
+        public boolean hasRetryAttempts() {
+          return ((bitField0_ & 0x00000200) != 0);
+        }
+        /**
+         * <code>optional int32 retry_attempts = 11;</code>
+         * @return The retryAttempts.
+         */
+        @java.lang.Override
+        public int getRetryAttempts() {
+          return retryAttempts_;
+        }
+        /**
+         * <code>optional int32 retry_attempts = 11;</code>
+         * @param value The retryAttempts to set.
+         * @return This builder for chaining.
+         */
+        public Builder setRetryAttempts(int value) {
+          bitField0_ |= 0x00000200;
+          retryAttempts_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional int32 retry_attempts = 11;</code>
+         * @return This builder for chaining.
+         */
+        public Builder clearRetryAttempts() {
+          bitField0_ = (bitField0_ & ~0x00000200);
+          retryAttempts_ = 0;
           onChanged();
           return this;
         }
@@ -49735,7 +50016,7 @@ public final class AutomatikMessages {
       ".marshalling.Trigger\"T\n\013TriggerType\022\010\n\004C" +
       "RON\020\000\022\014\n\010INTERVAL\020\001\022\021\n\rPOINT_IN_TIME\020\002\022\032" +
       "\n\026COMPOSITE_MAX_DURATION\020\003\"\024\n\013ProcessDat" +
-      "a*\005\010\n\020\310\001\"\231(\n\017ProcessInstance\022\024\n\014process_" +
+      "a*\005\010\n\020\310\001\"\307(\n\017ProcessInstance\022\024\n\014process_" +
       "type\030\001 \001(\t\022\n\n\002id\030\002 \001(\t\022\022\n\nprocess_id\030\003 \001" +
       "(\t\022\r\n\005state\030\004 \001(\005\022\035\n\025node_instance_count" +
       "er\030\005 \001(\003\022\023\n\013process_xml\030\013 \001(\t\022\"\n\032parent_" +
@@ -49768,152 +50049,154 @@ public final class AutomatikMessages {
       "nstanchChildren\022\022\n\nprocess_id\030\001 \001(\t\022\013\n\003i" +
       "ds\030\002 \003(\t\032 \n\003Tag\022\n\n\002id\030\001 \001(\t\022\r\n\005value\030\002 \001" +
       "(\t\032=\n\027SwimlaneContextInstance\022\020\n\010swimlan" +
-      "e\030\001 \001(\t\022\020\n\010actor_id\030\002 \001(\t\032\364\001\n\014NodeInstan" +
+      "e\030\001 \001(\t\022\020\n\010actor_id\030\002 \001(\t\032\242\002\n\014NodeInstan" +
       "ce\022\n\n\002id\030\001 \001(\t\022\017\n\007node_id\030\002 \001(\003\022^\n\007conte" +
       "nt\030\004 \001(\0132M.io.automatik.engine.workflow." +
       "marshalling.ProcessInstance.NodeInstance" +
       "Content\022\r\n\005level\030\005 \001(\005\022\024\n\014sla_timer_id\030\006" +
       " \001(\t\022\024\n\014sla_due_date\030\007 \001(\003\022\026\n\016sla_compli" +
-      "ance\030\010 \001(\005\022\024\n\014trigger_date\030\t \001(\003\0328\n\026Excl" +
-      "usiveGroupInstance\022\036\n\026group_node_instanc" +
-      "e_id\030\001 \003(\t\032\356\030\n\023NodeInstanceContent\022X\n\004ty" +
-      "pe\030\001 \001(\0162J.io.automatik.engine.workflow." +
-      "marshalling.ProcessInstance.NodeInstance" +
-      "Type\022k\n\010rule_set\030\002 \001(\0132Y.io.automatik.en" +
-      "gine.workflow.marshalling.ProcessInstanc" +
-      "e.NodeInstanceContent.RuleSetNode\022o\n\nhum" +
-      "an_task\030\003 \001(\0132[.io.automatik.engine.work" +
-      "flow.marshalling.ProcessInstance.NodeIns" +
-      "tanceContent.HumanTaskNode\022m\n\twork_item\030" +
-      "\004 \001(\0132Z.io.automatik.engine.workflow.mar" +
-      "shalling.ProcessInstance.NodeInstanceCon" +
-      "tent.WorkItemNode\022q\n\013sub_process\030\005 \001(\0132\\" +
-      ".io.automatik.engine.workflow.marshallin" +
-      "g.ProcessInstance.NodeInstanceContent.Su" +
-      "bProcessNode\022n\n\tmilestone\030\006 \001(\0132[.io.aut" +
-      "omatik.engine.workflow.marshalling.Proce" +
-      "ssInstance.NodeInstanceContent.Milestone" +
-      "Node\022f\n\005event\030\007 \001(\0132W.io.automatik.engin" +
+      "ance\030\010 \001(\005\022\024\n\014trigger_date\030\t \001(\003\022\024\n\014retr" +
+      "y_job_id\030\n \001(\t\022\026\n\016retry_attempts\030\013 \001(\005\0328" +
+      "\n\026ExclusiveGroupInstance\022\036\n\026group_node_i" +
+      "nstance_id\030\001 \003(\t\032\356\030\n\023NodeInstanceContent" +
+      "\022X\n\004type\030\001 \001(\0162J.io.automatik.engine.wor" +
+      "kflow.marshalling.ProcessInstance.NodeIn" +
+      "stanceType\022k\n\010rule_set\030\002 \001(\0132Y.io.automa" +
+      "tik.engine.workflow.marshalling.ProcessI" +
+      "nstance.NodeInstanceContent.RuleSetNode\022" +
+      "o\n\nhuman_task\030\003 \001(\0132[.io.automatik.engin" +
       "e.workflow.marshalling.ProcessInstance.N" +
-      "odeInstanceContent.EventNode\022f\n\005timer\030\010 " +
-      "\001(\0132W.io.automatik.engine.workflow.marsh" +
-      "alling.ProcessInstance.NodeInstanceConte" +
-      "nt.TimerNode\022d\n\004join\030\t \001(\0132V.io.automati" +
-      "k.engine.workflow.marshalling.ProcessIns" +
-      "tance.NodeInstanceContent.JoinNode\022f\n\005st" +
-      "ate\030\n \001(\0132W.io.automatik.engine.workflow" +
-      ".marshalling.ProcessInstance.NodeInstanc" +
-      "eContent.StateNode\022u\n\tcomposite\030\013 \001(\0132b." +
+      "odeInstanceContent.HumanTaskNode\022m\n\twork" +
+      "_item\030\004 \001(\0132Z.io.automatik.engine.workfl" +
+      "ow.marshalling.ProcessInstance.NodeInsta" +
+      "nceContent.WorkItemNode\022q\n\013sub_process\030\005" +
+      " \001(\0132\\.io.automatik.engine.workflow.mars" +
+      "halling.ProcessInstance.NodeInstanceCont" +
+      "ent.SubProcessNode\022n\n\tmilestone\030\006 \001(\0132[." +
       "io.automatik.engine.workflow.marshalling" +
-      ".ProcessInstance.NodeInstanceContent.Com" +
-      "positeContextNode\022k\n\010for_each\030\014 \001(\0132Y.io" +
-      ".automatik.engine.workflow.marshalling.P" +
-      "rocessInstance.NodeInstanceContent.ForEa" +
-      "chNode\022q\n\013async_event\030\r \001(\0132\\.io.automat" +
-      "ik.engine.workflow.marshalling.ProcessIn" +
-      "stance.NodeInstanceContent.AsyncEventNod" +
-      "e\032\350\001\n\013RuleSetNode\022\031\n\021timer_instance_id\030\001" +
-      " \003(\t\022x\n\010mapEntry\030\002 \003(\0132f.io.automatik.en" +
-      "gine.workflow.marshalling.ProcessInstanc" +
-      "e.NodeInstanceContent.RuleSetNode.TextMa" +
-      "pEntry\022\027\n\017rule_flow_group\030\003 \001(\t\032+\n\014TextM" +
-      "apEntry\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\032\273\001\n" +
-      "\rHumanTaskNode\022\024\n\014work_item_id\030\001 \001(\t\022\031\n\021" +
-      "timer_instance_id\030\002 \003(\t\022*\n\"error_handlin" +
-      "g_process_instance_id\030\003 \001(\t\022M\n\010workitem\030" +
-      "\004 \001(\0132;.io.automatik.engine.workflow.mar" +
-      "shalling.HumanTaskWorkItem\032\261\001\n\014WorkItemN" +
-      "ode\022\024\n\014work_item_id\030\001 \001(\t\022\031\n\021timer_insta" +
-      "nce_id\030\002 \003(\t\022*\n\"error_handling_process_i" +
-      "nstance_id\030\003 \001(\t\022D\n\010workitem\030\004 \001(\01322.io." +
-      "automatik.engine.workflow.marshalling.Wo" +
-      "rkItem\032g\n\016SubProcessNode\022\033\n\023process_inst" +
-      "ance_id\030\001 \001(\t\022\031\n\021timer_instance_id\030\002 \003(\t" +
-      "\022\035\n\025process_instance_name\030\003 \001(\t\032*\n\rMiles" +
-      "toneNode\022\031\n\021timer_instance_id\030\001 \003(\t\032\013\n\tE" +
-      "ventNode\032\035\n\tTimerNode\022\020\n\010timer_id\030\001 \001(\t\032" +
-      "\260\001\n\010JoinNode\022s\n\007trigger\030\001 \003(\0132b.io.autom" +
-      "atik.engine.workflow.marshalling.Process" +
-      "Instance.NodeInstanceContent.JoinNode.Jo" +
-      "inTrigger\032/\n\013JoinTrigger\022\017\n\007node_id\030\001 \001(" +
-      "\003\022\017\n\007counter\030\002 \001(\005\032&\n\tStateNode\022\031\n\021timer" +
-      "_instance_id\030\001 \003(\t\032\224\003\n\024CompositeContextN" +
-      "ode\022\031\n\021timer_instance_id\030\002 \003(\t\022D\n\010variab" +
-      "le\030\003 \003(\01322.io.automatik.engine.workflow." +
-      "marshalling.Variable\022]\n\rnode_instance\030\004 " +
-      "\003(\0132F.io.automatik.engine.workflow.marsh" +
-      "alling.ProcessInstance.NodeInstance\022i\n\017e" +
-      "xclusive_group\030\005 \003(\0132P.io.automatik.engi" +
-      "ne.workflow.marshalling.ProcessInstance." +
-      "ExclusiveGroupInstance\022Q\n\017iterationLevel" +
-      "s\030\006 \003(\01328.io.automatik.engine.workflow.m" +
-      "arshalling.IterationLevel\032\241\002\n\013ForEachNod" +
-      "e\022]\n\rnode_instance\030\001 \003(\0132F.io.automatik." +
-      "engine.workflow.marshalling.ProcessInsta" +
-      "nce.NodeInstance\022D\n\010variable\030\002 \003(\01322.io." +
-      "automatik.engine.workflow.marshalling.Va" +
-      "riable\022Q\n\017iterationLevels\030\003 \003(\01328.io.aut" +
-      "omatik.engine.workflow.marshalling.Itera" +
-      "tionLevel\022\032\n\022sequential_counter\030\004 \001(\005\032$\n" +
-      "\016AsyncEventNode\022\022\n\nevent_type\030\001 \001(\t\"\276\002\n\020" +
-      "NodeInstanceType\022\021\n\rRULE_SET_NODE\020\000\022\023\n\017H" +
-      "UMAN_TASK_NODE\020\001\022\022\n\016WORK_ITEM_NODE\020\002\022\023\n\017" +
-      "SUBPROCESS_NODE\020\003\022\022\n\016MILESTONE_NODE\020\004\022\016\n" +
-      "\nEVENT_NODE\020\005\022\016\n\nTIMER_NODE\020\006\022\r\n\tJOIN_NO" +
-      "DE\020\007\022\016\n\nSTATE_NODE\020\010\022\032\n\026COMPOSITE_CONTEX" +
-      "T_NODE\020\t\022\021\n\rFOR_EACH_NODE\020\n\022\020\n\014DYNAMIC_N" +
-      "ODE\020\013\022\031\n\025EVENT_SUBPROCESS_NODE\020\014\022\024\n\020ASYN" +
-      "C_EVENT_NODE\020\r\022\024\n\020SUB_PROCESS_NODE\020\016\"R\n\010" +
-      "Variable\022\014\n\004name\030\001 \001(\t\022\026\n\016strategy_index" +
-      "\030\002 \001(\005\022\r\n\005value\030\003 \001(\014\022\021\n\tdata_type\030\004 \001(\t" +
-      "\"\254\002\n\010WorkItem\022\n\n\002id\030\001 \001(\t\022\034\n\024process_ins" +
-      "tances_id\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\r\n\005state\030\004" +
-      " \001(\005\022D\n\010variable\030\005 \003(\01322.io.automatik.en" +
-      "gine.workflow.marshalling.Variable\022\025\n\rde" +
-      "ployment_id\030\006 \001(\t\022\030\n\020node_instance_id\030\007 " +
-      "\001(\t\022\017\n\007node_id\030\010 \001(\003\022\020\n\010phase_id\030\t \001(\t\022\024" +
-      "\n\014phase_status\030\n \001(\t\022\022\n\nstart_date\030\013 \001(\003" +
-      "\022\025\n\rcomplete_date\030\014 \001(\003\"\226\004\n\021HumanTaskWor" +
-      "kItem\022\n\n\002id\030\001 \001(\t\022\034\n\024process_instances_i" +
-      "d\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\r\n\005state\030\004 \001(\005\022D\n\010" +
-      "variable\030\005 \003(\01322.io.automatik.engine.wor" +
-      "kflow.marshalling.Variable\022\025\n\rdeployment" +
-      "_id\030\006 \001(\t\022\030\n\020node_instance_id\030\007 \001(\t\022\017\n\007n" +
-      "ode_id\030\010 \001(\003\022\020\n\010phase_id\030\t \001(\t\022\024\n\014phase_" +
-      "status\030\n \001(\t\022\022\n\nstart_date\030\013 \001(\003\022\025\n\rcomp" +
-      "lete_date\030\014 \001(\003\022\021\n\ttask_name\030\r \001(\t\022\030\n\020ta" +
-      "sk_description\030\016 \001(\t\022\025\n\rtask_priority\030\017 " +
-      "\001(\t\022\024\n\014actual_owner\030\020 \001(\t\022\021\n\tpot_users\030\021" +
-      " \003(\t\022\022\n\npot_groups\030\022 \003(\t\022\026\n\016excluded_use" +
-      "rs\030\023 \003(\t\022\023\n\013admin_users\030\024 \003(\t\022\024\n\014admin_g" +
-      "roups\030\025 \003(\t\022\033\n\023task_reference_name\030\026 \001(\t" +
-      "\"\211\003\n\014ProcessTimer\022S\n\005timer\030\001 \001(\0132D.io.au" +
+      ".ProcessInstance.NodeInstanceContent.Mil" +
+      "estoneNode\022f\n\005event\030\007 \001(\0132W.io.automatik" +
+      ".engine.workflow.marshalling.ProcessInst" +
+      "ance.NodeInstanceContent.EventNode\022f\n\005ti" +
+      "mer\030\010 \001(\0132W.io.automatik.engine.workflow" +
+      ".marshalling.ProcessInstance.NodeInstanc" +
+      "eContent.TimerNode\022d\n\004join\030\t \001(\0132V.io.au" +
       "tomatik.engine.workflow.marshalling.Proc" +
-      "essTimer.TimerInstance\022B\n\007trigger\030\002 \001(\0132" +
-      "1.io.automatik.engine.workflow.marshalli" +
-      "ng.Trigger\032\337\001\n\rTimerInstance\022\n\n\002id\030\001 \001(\003" +
-      "\022\020\n\010timer_id\030\002 \001(\t\022\r\n\005delay\030\003 \001(\003\022\016\n\006per" +
-      "iod\030\004 \001(\003\022\033\n\023process_instance_id\030\005 \001(\t\022\026" +
-      "\n\016activated_time\030\006 \001(\003\022\026\n\016last_triggered" +
-      "\030\007 \001(\003\022\034\n\024DEPRECATED_sessionId\030\010 \001(\005\022\021\n\t" +
-      "sessionId\030\t \001(\003\022\023\n\013repeatLimit\030\n \001(\005\"+\n\016" +
-      "IterationLevel\022\n\n\002id\030\001 \001(\t\022\r\n\005level\030\002 \001(" +
-      "\005\"Y\n\021VariableContainer\022D\n\010variable\030\001 \003(\013" +
-      "22.io.automatik.engine.workflow.marshall" +
-      "ing.Variable:\212\001\n\020process_instance\0225.io.a" +
+      "essInstance.NodeInstanceContent.JoinNode" +
+      "\022f\n\005state\030\n \001(\0132W.io.automatik.engine.wo" +
+      "rkflow.marshalling.ProcessInstance.NodeI" +
+      "nstanceContent.StateNode\022u\n\tcomposite\030\013 " +
+      "\001(\0132b.io.automatik.engine.workflow.marsh" +
+      "alling.ProcessInstance.NodeInstanceConte" +
+      "nt.CompositeContextNode\022k\n\010for_each\030\014 \001(" +
+      "\0132Y.io.automatik.engine.workflow.marshal" +
+      "ling.ProcessInstance.NodeInstanceContent" +
+      ".ForEachNode\022q\n\013async_event\030\r \001(\0132\\.io.a" +
       "utomatik.engine.workflow.marshalling.Pro" +
-      "cessData\030\n \003(\01329.io.automatik.engine.wor" +
-      "kflow.marshalling.ProcessInstance:|\n\twor" +
-      "k_item\0225.io.automatik.engine.workflow.ma" +
-      "rshalling.ProcessData\030\013 \003(\01322.io.automat" +
-      "ik.engine.workflow.marshalling.WorkItem:" +
-      "G\n\010timer_id\0225.io.automatik.engine.workfl" +
-      "ow.marshalling.ProcessData\030\r \001(\003:\204\001\n\rpro" +
-      "cess_timer\0225.io.automatik.engine.workflo" +
-      "w.marshalling.ProcessData\030\014 \003(\01326.io.aut" +
-      "omatik.engine.workflow.marshalling.Proce" +
-      "ssTimerBB\n-io.automatik.engine.workflow." +
-      "marshalling.implB\021AutomatikMessages"
+      "cessInstance.NodeInstanceContent.AsyncEv" +
+      "entNode\032\350\001\n\013RuleSetNode\022\031\n\021timer_instanc" +
+      "e_id\030\001 \003(\t\022x\n\010mapEntry\030\002 \003(\0132f.io.automa" +
+      "tik.engine.workflow.marshalling.ProcessI" +
+      "nstance.NodeInstanceContent.RuleSetNode." +
+      "TextMapEntry\022\027\n\017rule_flow_group\030\003 \001(\t\032+\n" +
+      "\014TextMapEntry\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001" +
+      "(\t\032\273\001\n\rHumanTaskNode\022\024\n\014work_item_id\030\001 \001" +
+      "(\t\022\031\n\021timer_instance_id\030\002 \003(\t\022*\n\"error_h" +
+      "andling_process_instance_id\030\003 \001(\t\022M\n\010wor" +
+      "kitem\030\004 \001(\0132;.io.automatik.engine.workfl" +
+      "ow.marshalling.HumanTaskWorkItem\032\261\001\n\014Wor" +
+      "kItemNode\022\024\n\014work_item_id\030\001 \001(\t\022\031\n\021timer" +
+      "_instance_id\030\002 \003(\t\022*\n\"error_handling_pro" +
+      "cess_instance_id\030\003 \001(\t\022D\n\010workitem\030\004 \001(\013" +
+      "22.io.automatik.engine.workflow.marshall" +
+      "ing.WorkItem\032g\n\016SubProcessNode\022\033\n\023proces" +
+      "s_instance_id\030\001 \001(\t\022\031\n\021timer_instance_id" +
+      "\030\002 \003(\t\022\035\n\025process_instance_name\030\003 \001(\t\032*\n" +
+      "\rMilestoneNode\022\031\n\021timer_instance_id\030\001 \003(" +
+      "\t\032\013\n\tEventNode\032\035\n\tTimerNode\022\020\n\010timer_id\030" +
+      "\001 \001(\t\032\260\001\n\010JoinNode\022s\n\007trigger\030\001 \003(\0132b.io" +
+      ".automatik.engine.workflow.marshalling.P" +
+      "rocessInstance.NodeInstanceContent.JoinN" +
+      "ode.JoinTrigger\032/\n\013JoinTrigger\022\017\n\007node_i" +
+      "d\030\001 \001(\003\022\017\n\007counter\030\002 \001(\005\032&\n\tStateNode\022\031\n" +
+      "\021timer_instance_id\030\001 \003(\t\032\224\003\n\024CompositeCo" +
+      "ntextNode\022\031\n\021timer_instance_id\030\002 \003(\t\022D\n\010" +
+      "variable\030\003 \003(\01322.io.automatik.engine.wor" +
+      "kflow.marshalling.Variable\022]\n\rnode_insta" +
+      "nce\030\004 \003(\0132F.io.automatik.engine.workflow" +
+      ".marshalling.ProcessInstance.NodeInstanc" +
+      "e\022i\n\017exclusive_group\030\005 \003(\0132P.io.automati" +
+      "k.engine.workflow.marshalling.ProcessIns" +
+      "tance.ExclusiveGroupInstance\022Q\n\017iteratio" +
+      "nLevels\030\006 \003(\01328.io.automatik.engine.work" +
+      "flow.marshalling.IterationLevel\032\241\002\n\013ForE" +
+      "achNode\022]\n\rnode_instance\030\001 \003(\0132F.io.auto" +
+      "matik.engine.workflow.marshalling.Proces" +
+      "sInstance.NodeInstance\022D\n\010variable\030\002 \003(\013" +
+      "22.io.automatik.engine.workflow.marshall" +
+      "ing.Variable\022Q\n\017iterationLevels\030\003 \003(\01328." +
+      "io.automatik.engine.workflow.marshalling" +
+      ".IterationLevel\022\032\n\022sequential_counter\030\004 " +
+      "\001(\005\032$\n\016AsyncEventNode\022\022\n\nevent_type\030\001 \001(" +
+      "\t\"\276\002\n\020NodeInstanceType\022\021\n\rRULE_SET_NODE\020" +
+      "\000\022\023\n\017HUMAN_TASK_NODE\020\001\022\022\n\016WORK_ITEM_NODE" +
+      "\020\002\022\023\n\017SUBPROCESS_NODE\020\003\022\022\n\016MILESTONE_NOD" +
+      "E\020\004\022\016\n\nEVENT_NODE\020\005\022\016\n\nTIMER_NODE\020\006\022\r\n\tJ" +
+      "OIN_NODE\020\007\022\016\n\nSTATE_NODE\020\010\022\032\n\026COMPOSITE_" +
+      "CONTEXT_NODE\020\t\022\021\n\rFOR_EACH_NODE\020\n\022\020\n\014DYN" +
+      "AMIC_NODE\020\013\022\031\n\025EVENT_SUBPROCESS_NODE\020\014\022\024" +
+      "\n\020ASYNC_EVENT_NODE\020\r\022\024\n\020SUB_PROCESS_NODE" +
+      "\020\016\"R\n\010Variable\022\014\n\004name\030\001 \001(\t\022\026\n\016strategy" +
+      "_index\030\002 \001(\005\022\r\n\005value\030\003 \001(\014\022\021\n\tdata_type" +
+      "\030\004 \001(\t\"\254\002\n\010WorkItem\022\n\n\002id\030\001 \001(\t\022\034\n\024proce" +
+      "ss_instances_id\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\r\n\005s" +
+      "tate\030\004 \001(\005\022D\n\010variable\030\005 \003(\01322.io.automa" +
+      "tik.engine.workflow.marshalling.Variable" +
+      "\022\025\n\rdeployment_id\030\006 \001(\t\022\030\n\020node_instance" +
+      "_id\030\007 \001(\t\022\017\n\007node_id\030\010 \001(\003\022\020\n\010phase_id\030\t" +
+      " \001(\t\022\024\n\014phase_status\030\n \001(\t\022\022\n\nstart_date" +
+      "\030\013 \001(\003\022\025\n\rcomplete_date\030\014 \001(\003\"\226\004\n\021HumanT" +
+      "askWorkItem\022\n\n\002id\030\001 \001(\t\022\034\n\024process_insta" +
+      "nces_id\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\r\n\005state\030\004 \001" +
+      "(\005\022D\n\010variable\030\005 \003(\01322.io.automatik.engi" +
+      "ne.workflow.marshalling.Variable\022\025\n\rdepl" +
+      "oyment_id\030\006 \001(\t\022\030\n\020node_instance_id\030\007 \001(" +
+      "\t\022\017\n\007node_id\030\010 \001(\003\022\020\n\010phase_id\030\t \001(\t\022\024\n\014" +
+      "phase_status\030\n \001(\t\022\022\n\nstart_date\030\013 \001(\003\022\025" +
+      "\n\rcomplete_date\030\014 \001(\003\022\021\n\ttask_name\030\r \001(\t" +
+      "\022\030\n\020task_description\030\016 \001(\t\022\025\n\rtask_prior" +
+      "ity\030\017 \001(\t\022\024\n\014actual_owner\030\020 \001(\t\022\021\n\tpot_u" +
+      "sers\030\021 \003(\t\022\022\n\npot_groups\030\022 \003(\t\022\026\n\016exclud" +
+      "ed_users\030\023 \003(\t\022\023\n\013admin_users\030\024 \003(\t\022\024\n\014a" +
+      "dmin_groups\030\025 \003(\t\022\033\n\023task_reference_name" +
+      "\030\026 \001(\t\"\211\003\n\014ProcessTimer\022S\n\005timer\030\001 \001(\0132D" +
+      ".io.automatik.engine.workflow.marshallin" +
+      "g.ProcessTimer.TimerInstance\022B\n\007trigger\030" +
+      "\002 \001(\01321.io.automatik.engine.workflow.mar" +
+      "shalling.Trigger\032\337\001\n\rTimerInstance\022\n\n\002id" +
+      "\030\001 \001(\003\022\020\n\010timer_id\030\002 \001(\t\022\r\n\005delay\030\003 \001(\003\022" +
+      "\016\n\006period\030\004 \001(\003\022\033\n\023process_instance_id\030\005" +
+      " \001(\t\022\026\n\016activated_time\030\006 \001(\003\022\026\n\016last_tri" +
+      "ggered\030\007 \001(\003\022\034\n\024DEPRECATED_sessionId\030\010 \001" +
+      "(\005\022\021\n\tsessionId\030\t \001(\003\022\023\n\013repeatLimit\030\n \001" +
+      "(\005\"+\n\016IterationLevel\022\n\n\002id\030\001 \001(\t\022\r\n\005leve" +
+      "l\030\002 \001(\005\"Y\n\021VariableContainer\022D\n\010variable" +
+      "\030\001 \003(\01322.io.automatik.engine.workflow.ma" +
+      "rshalling.Variable:\212\001\n\020process_instance\022" +
+      "5.io.automatik.engine.workflow.marshalli" +
+      "ng.ProcessData\030\n \003(\01329.io.automatik.engi" +
+      "ne.workflow.marshalling.ProcessInstance:" +
+      "|\n\twork_item\0225.io.automatik.engine.workf" +
+      "low.marshalling.ProcessData\030\013 \003(\01322.io.a" +
+      "utomatik.engine.workflow.marshalling.Wor" +
+      "kItem:G\n\010timer_id\0225.io.automatik.engine." +
+      "workflow.marshalling.ProcessData\030\r \001(\003:\204" +
+      "\001\n\rprocess_timer\0225.io.automatik.engine.w" +
+      "orkflow.marshalling.ProcessData\030\014 \003(\01326." +
+      "io.automatik.engine.workflow.marshalling" +
+      ".ProcessTimerBB\n-io.automatik.engine.wor" +
+      "kflow.marshalling.implB\021AutomatikMessage" +
+      "s"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -50008,7 +50291,7 @@ public final class AutomatikMessages {
     internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_NodeInstance_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_NodeInstance_descriptor,
-        new java.lang.String[] { "Id", "NodeId", "Content", "Level", "SlaTimerId", "SlaDueDate", "SlaCompliance", "TriggerDate", });
+        new java.lang.String[] { "Id", "NodeId", "Content", "Level", "SlaTimerId", "SlaDueDate", "SlaCompliance", "TriggerDate", "RetryJobId", "RetryAttempts", });
     internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_ExclusiveGroupInstance_descriptor =
       internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(4);
     internal_static_io_automatik_engine_workflow_marshalling_ProcessInstance_ExclusiveGroupInstance_fieldAccessorTable = new

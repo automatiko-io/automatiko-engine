@@ -444,6 +444,8 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
         exceptionHandler.setAction(action);
         exceptionHandler.setFaultVariable(variable);
         exceptionScope.setExceptionHandler(hasErrorCode ? errorCode : null, exceptionHandler);
+        exceptionHandler.setRetryAfter((Integer) node.getMetaData().get("ErrorRetry"));
+        exceptionHandler.setRetryLimit((Integer) node.getMetaData().get("ErrorRetryLimit"));
         if (errorStructureRef != null) {
             exceptionScope.setExceptionHandler(errorStructureRef, exceptionHandler);
         }

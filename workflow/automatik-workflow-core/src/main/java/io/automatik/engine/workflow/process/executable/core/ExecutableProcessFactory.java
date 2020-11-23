@@ -336,6 +336,8 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
                 SignalProcessInstanceAction.PROCESS_INSTANCE_SCOPE));
         exceptionHandler.setAction(action);
         exceptionHandler.setFaultVariable(variable);
+        exceptionHandler.setRetryAfter((Integer) node.getMetaData().get("ErrorRetry"));
+        exceptionHandler.setRetryLimit((Integer) node.getMetaData().get("ErrorRetryLimit"));
         exceptionScope.setExceptionHandler(hasErrorCode ? errorCode : null, exceptionHandler);
         if (errorStructureRef != null) {
             exceptionScope.setExceptionHandler(errorStructureRef, exceptionHandler);

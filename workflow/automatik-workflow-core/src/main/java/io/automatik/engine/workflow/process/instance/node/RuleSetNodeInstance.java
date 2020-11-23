@@ -105,13 +105,13 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
     private void handleException(Throwable e) {
         ExceptionScopeInstance exceptionScopeInstance = getExceptionScopeInstance(e);
         if (exceptionScopeInstance != null) {
-            exceptionScopeInstance.handleException(e.getClass().getName(), e);
+            exceptionScopeInstance.handleException(this, e.getClass().getName(), e);
         } else {
             Throwable rootCause = getRootException(e);
             if (rootCause != null) {
                 exceptionScopeInstance = getExceptionScopeInstance(rootCause);
                 if (exceptionScopeInstance != null) {
-                    exceptionScopeInstance.handleException(rootCause.getClass().getName(), rootCause);
+                    exceptionScopeInstance.handleException(this, rootCause.getClass().getName(), rootCause);
 
                     return;
                 }

@@ -4,6 +4,7 @@ package io.automatik.engine.services.jobs.impl;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -63,13 +64,15 @@ public class InMemoryJobService implements JobsService {
     @Override
     public String scheduleProcessInstanceJob(ProcessInstanceJobDescription description) {
         ScheduledFuture<?> future = null;
+
         if (description.expirationTime().repeatInterval() != null) {
             future = scheduler.scheduleAtFixedRate(
-                    new SignalProcessInstanceOnExpiredTimer(description.id(), description.processInstanceId(), false,
+                    new SignalProcessInstanceOnExpiredTimer(description.id(), description.triggerType(),
+                            description.processInstanceId(), false,
                             description.expirationTime().repeatLimit()),
                     calculateDelay(description), description.expirationTime().repeatInterval(), TimeUnit.MILLISECONDS);
         } else {
-            future = scheduler.schedule(new SignalProcessInstanceOnExpiredTimer(description.id(),
+            future = scheduler.schedule(new SignalProcessInstanceOnExpiredTimer(description.id(), description.triggerType(),
                     description.processInstanceId(), true, -1), calculateDelay(description), TimeUnit.MILLISECONDS);
         }
         scheduledJobs.put(description.id(), future);
@@ -127,12 +130,15 @@ public class InMemoryJobService implements JobsService {
         private final String id;
         private boolean removeAtExecution;
         private String processInstanceId;
+        private String trigger;
         private Integer limit;
 
-        private SignalProcessInstanceOnExpiredTimer(String id, String processInstanceId, boolean removeAtExecution,
+        private SignalProcessInstanceOnExpiredTimer(String id, String trigger, String processInstanceId,
+                boolean removeAtExecution,
                 Integer limit) {
             this.id = id;
             this.processInstanceId = processInstanceId;
+            this.trigger = trigger;
             this.removeAtExecution = removeAtExecution;
             this.limit = limit;
         }
@@ -147,9 +153,9 @@ public class InMemoryJobService implements JobsService {
                     if (pi != null) {
                         String[] ids = id.split("_");
                         limit--;
-                        pi.signalEvent("timerTriggered", TimerInstance.with(Long.valueOf(ids[1]), id, limit));
+                        pi.signalEvent(trigger, TimerInstance.with(Long.valueOf(ids[1]), id, limit));
                         if (limit == 0) {
-                            scheduledJobs.remove(id).cancel(false);
+                            Optional.ofNullable(scheduledJobs.remove(id)).ifPresent(s -> s.cancel(false));
                         }
                     } else {
                         // since owning process instance does not exist cancel timers

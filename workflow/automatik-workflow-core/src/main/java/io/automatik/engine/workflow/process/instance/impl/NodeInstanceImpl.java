@@ -68,6 +68,9 @@ public abstract class NodeInstanceImpl
     protected Date triggerTime;
     protected Date leaveTime;
 
+    protected String retryJobId;
+    protected Integer retryAttempts;
+
     protected NodeInstanceState nodeInstanceState = NodeInstanceState.Created;
 
     protected transient Map<String, Object> dynamicParameters;
@@ -120,6 +123,24 @@ public abstract class NodeInstanceImpl
     @Override
     public NodeInstanceState getNodeInstanceState() {
         return nodeInstanceState;
+    }
+
+    public String getRetryJobId() {
+        return retryJobId;
+    }
+
+    public void internalSetRetryJobId(String retryJobId) {
+        if (retryJobId != null && !retryJobId.isEmpty()) {
+            this.retryJobId = retryJobId;
+        }
+    }
+
+    public Integer getRetryAttempts() {
+        return retryAttempts;
+    }
+
+    public void internalSetRetryAttempts(Integer retryAttempts) {
+        this.retryAttempts = retryAttempts;
     }
 
     public void setNodeInstanceContainer(NodeInstanceContainer nodeInstanceContainer) {
@@ -245,7 +266,7 @@ public abstract class NodeInstanceImpl
                         "Unable to execute Action: " + e.getMessage(), e);
             }
 
-            exceptionScopeInstance.handleException(exceptionName, e);
+            exceptionScopeInstance.handleException(this, exceptionName, e);
             cancel();
         }
     }
@@ -454,6 +475,41 @@ public abstract class NodeInstanceImpl
                 .getNodeInstance(getNode().getParentContainer().getNode(nodeId));
         triggerNodeInstance(nodeInstance, io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE,
                 fireEvents);
+    }
+
+    public void retry() {
+
+        boolean hidden = false;
+        if (getNode().getMetaData().get(HIDDEN) != null) {
+            hidden = true;
+        }
+        InternalProcessRuntime runtime = getProcessInstance().getProcessRuntime();
+
+        try {
+
+            internalChangeState(NodeInstanceState.Active);
+
+            internalTrigger(this, io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
+
+            Collection<Connection> outgoing = getNode()
+                    .getOutgoingConnections(io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
+            for (Connection conn : outgoing) {
+                if (conn.getTo().getId() == getNodeId()) {
+                    this.metaData.put(OUTGOING_CONNECTION, conn.getMetaData().get(UNIQUE_ID));
+                    break;
+                }
+            }
+            if (!hidden) {
+                runtime.getProcessEventSupport().fireAfterNodeLeft(this, runtime);
+            }
+        } catch (Exception e) {
+            captureError(e);
+            internalChangeState(NodeInstanceState.Failed);
+            runtime.getProcessEventSupport().fireAfterNodeInstanceFailed(getProcessInstance(), this, e, runtime);
+            // stop after capturing error
+            return;
+        }
+
     }
 
     public Context resolveContext(String contextId, Object param) {
