@@ -7,7 +7,7 @@
     <artifactId>persistence</artifactId>
     <version>0.0.0-SNAPSHOT</version>
   </parent>
-  <groupId>io.automatik.platform.addons.addons</groupId>
+  <groupId>io.automatik.platform.addons</groupId>
   <artifactId>automatik-db-persistence-addon</artifactId>
 
   <name>Automatik Platform Engine :: Add-Ons :: Persistence :: Database (RDBMS)</name>

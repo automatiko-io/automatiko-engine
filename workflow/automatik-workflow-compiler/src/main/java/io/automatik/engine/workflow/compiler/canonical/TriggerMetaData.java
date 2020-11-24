@@ -27,7 +27,8 @@ public class TriggerMetaData {
     public enum TriggerType {
         ConsumeMessage,
         ProduceMessage,
-        Signal
+        Signal,
+        Error
     }
 
     // name of the trigger derived from message or signal

@@ -16,6 +16,7 @@ import io.automatik.engine.workflow.base.core.event.EventTransformerImpl;
 import io.automatik.engine.workflow.base.core.event.EventTypeFilter;
 import io.automatik.engine.workflow.base.core.event.NonAcceptingEventTypeFilter;
 import io.automatik.engine.workflow.base.core.impl.DataTransformerRegistry;
+import io.automatik.engine.workflow.base.core.timer.DateTimeUtils;
 import io.automatik.engine.workflow.base.core.timer.Timer;
 import io.automatik.engine.workflow.bpmn2.core.Error;
 import io.automatik.engine.workflow.bpmn2.core.Escalation;
@@ -170,6 +171,15 @@ public class StartEventHandler extends AbstractNodeHandler {
                     addTriggerWithInMappings(startNode, "Error-" + error.getErrorCode());
 
                     startNode.setMetaData(TRIGGER_TYPE, "Error");
+                    startNode.setMetaData(TRIGGER_REF, "Error-" + error.getErrorCode());
+                    if (error.getMetaData().get("retry") != null) {
+                        startNode.setMetaData("ErrorRetry",
+                                ((Long) DateTimeUtils.parseDuration((String) error.getMetaData().get("retry"))).intValue());
+                        if (error.getMetaData().get("retryLimit") != null) {
+                            startNode.setMetaData("ErrorRetryLimit",
+                                    Integer.parseInt((String) error.getMetaData().get("retryLimit")));
+                        }
+                    }
                 }
             } else if ("escalationEventDefinition".equals(nodeName)) {
                 String escalationRef = ((Element) xmlNode).getAttribute("escalationRef");

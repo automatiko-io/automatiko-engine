@@ -290,6 +290,10 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
         if (slaCompliance == io.automatik.engine.api.runtime.process.ProcessInstance.SLA_PENDING) {
             getProcessInstance().addEventListener("slaViolation:" + getId(), this, true);
         }
+        if (retryJobId != null && !retryJobId.isEmpty()) {
+
+            getProcessInstance().addEventListener("retry:" + getId(), this, true);
+        }
         addCompletionListeners();
     }
 
@@ -442,11 +446,17 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
     }
 
     @Override
+    public void registerRetryEventListener() {
+        if (retryJobId != null && !retryJobId.isEmpty()) {
+            getProcessInstance().addEventListener("retry:" + getId(), this, true);
+        }
+    }
+
+    @Override
     public void internalSetRetryJobId(String retryJobId) {
         if (retryJobId != null && !retryJobId.isEmpty()) {
             this.retryJobId = retryJobId;
 
-            getProcessInstance().addEventListener("retry:" + getId(), this, true);
         }
     }
 

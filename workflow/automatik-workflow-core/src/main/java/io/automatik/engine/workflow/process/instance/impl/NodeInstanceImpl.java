@@ -143,6 +143,10 @@ public abstract class NodeInstanceImpl
         this.retryAttempts = retryAttempts;
     }
 
+    public void registerRetryEventListener() {
+
+    }
+
     public void setNodeInstanceContainer(NodeInstanceContainer nodeInstanceContainer) {
         this.nodeInstanceContainer = (io.automatik.engine.workflow.process.instance.NodeInstanceContainer) nodeInstanceContainer;
         if (nodeInstanceContainer != null) {

@@ -20,80 +20,132 @@ import io.automatik.engine.workflow.compiler.util.NodeLeftCountDownProcessEventL
 
 public class EventSubProcessTest extends AbstractCodegenTest {
 
-	@Test
-	public void testEventSignalSubProcess() throws Exception {
+    @Test
+    public void testEventSignalSubProcess() throws Exception {
 
-		Application app = generateCodeProcessesOnly("event-subprocess/EventSubprocessSignal.bpmn2");
-		assertThat(app).isNotNull();
+        Application app = generateCodeProcessesOnly("event-subprocess/EventSubprocessSignal.bpmn2");
+        assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("EventSubprocessSignal_1");
+        Process<? extends Model> p = app.processes().processById("EventSubprocessSignal_1");
 
-		Model m = p.createModel();
-		Map<String, Object> parameters = new HashMap<>();
-		m.fromMap(parameters);
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        m.fromMap(parameters);
 
-		ProcessInstance<?> processInstance = p.createInstance(m);
-		processInstance.start();
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
 
-		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
 
-		processInstance.send(Sig.of("MySignal", null));
+        processInstance.send(Sig.of("MySignal", null));
 
-		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ABORTED);
-	}
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ABORTED);
+    }
 
-	@Test
-	public void testEventSignalSubProcessWithData() throws Exception {
+    @Test
+    public void testEventSignalSubProcessWithData() throws Exception {
 
-		Application app = generateCodeProcessesOnly("event-subprocess/EventSubprocessSignalWithData.bpmn2");
-		assertThat(app).isNotNull();
+        Application app = generateCodeProcessesOnly("event-subprocess/EventSubprocessSignalWithData.bpmn2");
+        assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("EventSubprocessSignal_1");
+        Process<? extends Model> p = app.processes().processById("EventSubprocessSignal_1");
 
-		Model m = p.createModel();
-		Map<String, Object> parameters = new HashMap<>();
-		m.fromMap(parameters);
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        m.fromMap(parameters);
 
-		ProcessInstance<?> processInstance = p.createInstance(m);
-		processInstance.start();
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
 
-		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
 
-		processInstance.send(Sig.of("MySignal", new Person("john", 20)));
+        processInstance.send(Sig.of("MySignal", new Person("john", 20)));
 
-		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
-		Model result = (Model) processInstance.variables();
-		assertThat(result.toMap()).hasSize(1).containsKeys("person");
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(1).containsKeys("person");
 
-		Person person = (Person) result.toMap().get("person");
-		assertThat(person).isNotNull();
-		assertThat(person.getName()).isEqualTo("john");
+        Person person = (Person) result.toMap().get("person");
+        assertThat(person).isNotNull();
+        assertThat(person.getName()).isEqualTo("john");
 
-	}
+    }
 
-	@Test
-	public void testEventTimerSubProcess() throws Exception {
+    @Test
+    public void testEventTimerSubProcess() throws Exception {
 
-		Application app = generateCodeProcessesOnly("event-subprocess/EventSubprocessTimer.bpmn2");
-		assertThat(app).isNotNull();
+        Application app = generateCodeProcessesOnly("event-subprocess/EventSubprocessTimer.bpmn2");
+        assertThat(app).isNotNull();
 
-		NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("start-sub", 1);
-		((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("start-sub", 1);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
 
-		Process<? extends Model> p = app.processes().processById("EventSubprocessTimer_1");
+        Process<? extends Model> p = app.processes().processById("EventSubprocessTimer_1");
 
-		Model m = p.createModel();
-		Map<String, Object> parameters = new HashMap<>();
-		m.fromMap(parameters);
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        m.fromMap(parameters);
 
-		ProcessInstance<?> processInstance = p.createInstance(m);
-		processInstance.start();
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
 
-		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
 
-		boolean completed = listener.waitTillCompleted(30000000);
-		assertThat(completed).isTrue();
+        boolean completed = listener.waitTillCompleted(3000);
+        assertThat(completed).isTrue();
 
-		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ABORTED);
-	}
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ABORTED);
+    }
+
+    @Test
+    public void testEventErrorSubProcess() throws Exception {
+
+        Application app = generateCodeProcessesOnly("event-subprocess/EventSubprocessError.bpmn2");
+        assertThat(app).isNotNull();
+
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("end-sub", 1);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+
+        Process<? extends Model> p = app.processes().processById("EventSubprocessError_1");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("name", "john");
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        listener.waitTillCompleted(5000);
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ABORTED);
+    }
+
+    @Test
+    public void testEventErrorSubProcessDefaultHander() throws Exception {
+
+        Application app = generateCodeProcessesOnly("event-subprocess/EventSubprocessErrorDefault.bpmn2");
+        assertThat(app).isNotNull();
+
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("end-sub", 1);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+
+        Process<? extends Model> p = app.processes().processById("EventSubprocessError_1");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("name", "john");
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        listener.waitTillCompleted(5000);
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ABORTED);
+    }
 }

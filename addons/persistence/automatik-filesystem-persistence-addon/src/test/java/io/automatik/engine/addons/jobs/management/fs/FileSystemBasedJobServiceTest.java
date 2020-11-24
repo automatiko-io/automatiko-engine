@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import io.automatik.engine.addons.persistence.filesystem.job.FileSystemBasedJobService;
 import io.automatik.engine.api.Application;
 import io.automatik.engine.api.jobs.DurationExpirationTime;
 import io.automatik.engine.api.jobs.ProcessInstanceJobDescription;

@@ -47,6 +47,7 @@ public class DefaultExceptionScopeInstance extends ExceptionScopeInstance {
                                     getProcessInstance().getRootProcessId()));
                     ((NodeInstanceImpl) nodeInstance).internalSetRetryJobId(jobId);
                     ((NodeInstanceImpl) nodeInstance).internalSetRetryAttempts(retryAttempts);
+                    ((NodeInstanceImpl) nodeInstance).registerRetryEventListener();
                 } else {
                     ((NodeInstanceImpl) nodeInstance).internalSetRetryAttempts(retryAttempts + 1);
                 }
@@ -78,7 +79,7 @@ public class DefaultExceptionScopeInstance extends ExceptionScopeInstance {
 
     private boolean retryAvailable(io.automatik.engine.api.runtime.process.NodeInstance nodeInstance,
             ActionExceptionHandler exceptionHandler) {
-        if (exceptionHandler.getRetryAfter() > 0) {
+        if (exceptionHandler.getRetryAfter() != null && exceptionHandler.getRetryAfter() > 0) {
 
             Integer retryAttempts = ((NodeInstanceImpl) nodeInstance).getRetryAttempts();
             if (retryAttempts == null || retryAttempts < exceptionHandler.getRetryLimit()) {

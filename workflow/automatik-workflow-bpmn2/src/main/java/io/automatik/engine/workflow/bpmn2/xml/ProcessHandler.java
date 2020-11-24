@@ -836,6 +836,9 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
                                                     faultVariable, SignalProcessInstanceAction.PROCESS_INSTANCE_SCOPE));
                                             exceptionHandler.setAction(action);
                                             exceptionHandler.setFaultVariable(faultVariable);
+                                            exceptionHandler.setRetryAfter((Integer) subNode.getMetaData().get("ErrorRetry"));
+                                            exceptionHandler
+                                                    .setRetryLimit((Integer) subNode.getMetaData().get("ErrorRetryLimit"));
                                             if (faultCode != null) {
                                                 String trimmedType = type.replaceFirst(replaceRegExp, "");
                                                 exceptionScope.setExceptionHandler(trimmedType, exceptionHandler);

@@ -33,6 +33,7 @@ import io.automatik.engine.workflow.base.core.context.exception.ActionExceptionH
 import io.automatik.engine.workflow.base.core.context.exception.ExceptionHandler;
 import io.automatik.engine.workflow.base.core.context.exception.ExceptionScope;
 import io.automatik.engine.workflow.base.core.context.swimlane.Swimlane;
+import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.core.event.EventFilter;
 import io.automatik.engine.workflow.base.core.event.EventTypeFilter;
 import io.automatik.engine.workflow.base.core.timer.Timer;
@@ -47,6 +48,7 @@ import io.automatik.engine.workflow.process.core.node.EndNode;
 import io.automatik.engine.workflow.process.core.node.EventNode;
 import io.automatik.engine.workflow.process.core.node.EventSubProcessNode;
 import io.automatik.engine.workflow.process.core.node.EventTrigger;
+import io.automatik.engine.workflow.process.core.node.FaultNode;
 import io.automatik.engine.workflow.process.core.node.StartNode;
 import io.automatik.engine.workflow.process.core.node.StateBasedNode;
 import io.automatik.engine.workflow.process.core.node.Trigger;
@@ -379,7 +381,7 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
     }
 
     private void postProcessNodes(ExecutableProcess process, NodeContainer container) {
-
+        List<String> eventSubProcessHandlers = new ArrayList<String>();
         for (Node node : container.getNodes()) {
             if (node instanceof NodeContainer) {
                 // prepare event sub process
@@ -391,16 +393,27 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
                         // avoids cyclomatic complexity
                         if (subNode instanceof StartNode) {
 
-                            processEventSubprocessStartNode(((StartNode) subNode), eventSubProcessNode);
+                            processEventSubprocessStartNode(process, ((StartNode) subNode), eventSubProcessNode,
+                                    eventSubProcessHandlers);
                         }
                     }
                 }
                 postProcessNodes(process, (NodeContainer) node);
             }
         }
+        // process fault node to disable termnate parent if there is event subprocess handler
+        for (Node node : container.getNodes()) {
+            if (node instanceof FaultNode) {
+                FaultNode faultNode = (FaultNode) node;
+                if (eventSubProcessHandlers.contains(faultNode.getFaultName())) {
+                    faultNode.setTerminateParent(false);
+                }
+            }
+        }
     }
 
-    private void processEventSubprocessStartNode(StartNode subNode, EventSubProcessNode eventSubProcessNode) {
+    private void processEventSubprocessStartNode(ExecutableProcess process, StartNode subNode,
+            EventSubProcessNode eventSubProcessNode, List<String> eventSubProcessHandlers) {
         List<Trigger> triggers = subNode.getTriggers();
         if (triggers != null) {
 
@@ -410,9 +423,58 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
 
                     for (EventFilter filter : filters) {
                         eventSubProcessNode.addEvent((EventTypeFilter) filter);
+
+                        String type = ((EventTypeFilter) filter).getType();
+                        if (type.startsWith("Error-") || type.startsWith("Escalation")) {
+                            String faultCode = (String) subNode.getMetaData().get("FaultCode");
+                            String replaceRegExp = "Error-|Escalation-";
+                            final String signalType = type;
+
+                            ExceptionScope exceptionScope = (ExceptionScope) ((ContextContainer) eventSubProcessNode
+                                    .getParentContainer())
+                                            .getDefaultContext(ExceptionScope.EXCEPTION_SCOPE);
+                            if (exceptionScope == null) {
+                                exceptionScope = new ExceptionScope();
+                                ((ContextContainer) eventSubProcessNode.getParentContainer())
+                                        .addContext(exceptionScope);
+                                ((ContextContainer) eventSubProcessNode.getParentContainer())
+                                        .setDefaultContext(exceptionScope);
+                            }
+                            String faultVariable = null;
+                            if (trigger.getInAssociations() != null
+                                    && !trigger.getInAssociations().isEmpty()) {
+                                faultVariable = findVariable(trigger.getInAssociations().get(0).getSources().get(0),
+                                        process.getVariableScope());
+                            }
+
+                            ActionExceptionHandler exceptionHandler = new ActionExceptionHandler();
+                            ConsequenceAction action = new ConsequenceAction("java", "");
+                            action.setMetaData("Action", new SignalProcessInstanceAction(signalType,
+                                    faultVariable, SignalProcessInstanceAction.PROCESS_INSTANCE_SCOPE));
+                            exceptionHandler.setAction(action);
+                            exceptionHandler.setFaultVariable(faultVariable);
+                            exceptionHandler.setRetryAfter((Integer) subNode.getMetaData().get("ErrorRetry"));
+                            exceptionHandler.setRetryLimit((Integer) subNode.getMetaData().get("ErrorRetryLimit"));
+                            if (faultCode != null) {
+                                String trimmedType = type.replaceFirst(replaceRegExp, "");
+                                exceptionScope.setExceptionHandler(trimmedType, exceptionHandler);
+                                eventSubProcessHandlers.add(trimmedType);
+                            } else {
+                                exceptionScope.setExceptionHandler(faultCode, exceptionHandler);
+                            }
+                        }
                     }
                 }
             }
         }
+    }
+
+    protected String findVariable(String variableName, VariableScope variableScope) {
+        if (variableName == null) {
+            return null;
+        }
+
+        return variableScope.getVariables().stream().filter(v -> v.matchByIdOrName(variableName)).map(v -> v.getName())
+                .findFirst().orElse(variableName);
     }
 }

@@ -1,4 +1,4 @@
-package io.automatik.engine.addons.jobs.management.fs;
+package io.automatik.engine.addons.persistence.filesystem.job;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -41,11 +41,9 @@ import io.automatik.engine.api.workflow.Processes;
 import io.automatik.engine.services.time.TimerInstance;
 import io.automatik.engine.services.uow.UnitOfWorkExecutor;
 import io.automatik.engine.workflow.Sig;
-import io.quarkus.arc.properties.IfBuildProperty;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
 
-@IfBuildProperty(name = "quarkus.automatik.jobs.type", stringValue = "filesystem")
 @ApplicationScoped
 public class FileSystemBasedJobService implements JobsService {
 
@@ -64,7 +62,8 @@ public class FileSystemBasedJobService implements JobsService {
     protected Map<String, Process<? extends Model>> mappedProcesses = new HashMap<>();
 
     @Inject
-    public FileSystemBasedJobService(@ConfigProperty(name = "quarkus.automatik.jobs.filesystem.path") String storage,
+    public FileSystemBasedJobService(
+            @ConfigProperty(name = "quarkus.automatik.jobs.filesystem.path", defaultValue = ".") String storage,
             @ConfigProperty(name = "quarkus.automatik.jobs.filesystem.threads", defaultValue = "1") int threads,
             Processes processes, Application application) {
         this.storage = storage;

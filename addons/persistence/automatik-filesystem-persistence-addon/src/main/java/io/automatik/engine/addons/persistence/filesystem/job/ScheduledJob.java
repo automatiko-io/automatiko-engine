@@ -1,4 +1,4 @@
-package io.automatik.engine.addons.jobs.management.fs;
+package io.automatik.engine.addons.persistence.filesystem.job;
 
 import java.time.ZonedDateTime;
 
