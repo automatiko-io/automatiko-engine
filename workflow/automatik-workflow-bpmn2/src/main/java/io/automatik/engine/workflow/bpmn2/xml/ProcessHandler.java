@@ -776,13 +776,9 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
             if (node instanceof StateNode) {
                 StateNode stateNode = (StateNode) node;
                 String condition = (String) stateNode.getMetaData("Condition");
-                Constraint constraint = new ConstraintImpl();
-                constraint.setConstraint(condition);
-                constraint.setType("rule");
-                for (io.automatik.engine.api.definition.process.Connection connection : stateNode
-                        .getDefaultOutgoingConnections()) {
-                    stateNode.setConstraint(connection, constraint);
-                }
+                stateNode.setCondition(context -> {
+                    return (boolean) MVEL.executeExpression(condition, context.getProcessInstance().getVariables());
+                });
             } else if (node instanceof NodeContainer) {
                 // prepare event sub process
                 if (node instanceof EventSubProcessNode) {
@@ -890,6 +886,11 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
                                     EventTypeFilter eventTypeFilter = new EventTypeFilter();
                                     eventTypeFilter.setType(type);
                                     eventSubProcessNode.addEvent(eventTypeFilter);
+
+                                    ((StartNode) subNode).setCondition(context -> {
+                                        return (boolean) MVEL.executeExpression(constraintTrigger.getConstraint(),
+                                                context.getProcessInstance().getVariables());
+                                    });
                                 }
                             }
                         }

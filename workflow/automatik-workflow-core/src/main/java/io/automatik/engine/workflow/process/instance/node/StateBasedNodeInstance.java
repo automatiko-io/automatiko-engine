@@ -15,6 +15,7 @@ import org.mvel2.MVEL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.automatik.engine.api.event.process.ContextAwareEventListener;
 import io.automatik.engine.api.jobs.DurationExpirationTime;
 import io.automatik.engine.api.jobs.ExactExpirationTime;
 import io.automatik.engine.api.jobs.ExpirationTime;
@@ -24,6 +25,7 @@ import io.automatik.engine.api.runtime.process.EventListener;
 import io.automatik.engine.api.runtime.process.NodeInstance;
 import io.automatik.engine.services.time.TimerInstance;
 import io.automatik.engine.workflow.base.core.ContextContainer;
+import io.automatik.engine.workflow.base.core.context.ProcessContext;
 import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.core.timer.DateTimeUtils;
@@ -78,6 +80,19 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
         }
         ((WorkflowProcessInstanceImpl) getProcessInstance())
                 .addActivatingNodeId((String) getNode().getMetaData().get("UniqueId"));
+        if (getExtendedNode().hasCondition()) {
+
+            getProcessInstance().getProcessRuntime().addEventListener(ContextAwareEventListener.using(getId(), listener -> {
+                ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
+                context.setProcessInstance(getProcessInstance());
+                context.setNodeInstance(this);
+                if (getExtendedNode().isMet(context)) {
+                    getProcessInstance().getProcessRuntime().removeEventListener(listener);
+                    getProcessInstance().signalEvent((String) getExtendedNode().getMetaData("ConditionEventType"), null);
+
+                }
+            }));
+        }
     }
 
     @Override
@@ -294,6 +309,19 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
 
             getProcessInstance().addEventListener("retry:" + getId(), this, true);
         }
+        if (getExtendedNode().hasCondition()) {
+
+            getProcessInstance().getProcessRuntime().addEventListener(ContextAwareEventListener.using(getId(), listener -> {
+                ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
+                context.setProcessInstance(getProcessInstance());
+                context.setNodeInstance(this);
+                if (getExtendedNode().isMet(context)) {
+                    getProcessInstance().getProcessRuntime().removeEventListener(listener);
+                    getProcessInstance().signalEvent((String) getExtendedNode().getMetaData("ConditionEventType"), null);
+
+                }
+            }));
+        }
         addCompletionListeners();
     }
 
@@ -308,6 +336,7 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
         getProcessInstance().removeEventListener("timerTriggered", this, false);
         getProcessInstance().removeEventListener("timer", this, true);
         getProcessInstance().removeEventListener("slaViolation:" + getId(), this, true);
+        getProcessInstance().getProcessRuntime().removeEventListener(ContextAwareEventListener.using(getId(), null));
         removeCompletionListeners();
     }
 

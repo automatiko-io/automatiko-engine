@@ -337,7 +337,7 @@ public class TaskHandler extends AbstractNodeHandler {
             MilestoneNode milestoneNode = new MilestoneNode();
             milestoneNode.setId(workItemNode.getId());
             milestoneNode.setMetaData(workItemNode.getMetaData());
-            milestoneNode.setCondition(milestoneCondition);
+            milestoneNode.setConditionExpression(milestoneCondition);
             milestoneNode.setName(workItemNode.getName());
             milestoneNode.setParentContainer(workItemNode.getParentContainer());
 

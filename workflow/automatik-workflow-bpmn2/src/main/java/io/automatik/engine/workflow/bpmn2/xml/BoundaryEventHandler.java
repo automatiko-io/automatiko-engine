@@ -87,7 +87,7 @@ public class BoundaryEventHandler extends AbstractNodeHandler {
                 break;
             } else if ("conditionalEventDefinition".equals(nodeName)) {
                 handleConditionNode(node, element, uri, localName, parser, attachedTo, cancelActivity);
-                node.setMetaData(EVENT_TYPE, "conditional");
+                node.setMetaData(EVENT_TYPE, "condition");
                 break;
             } else if ("messageEventDefinition".equals(nodeName)) {
                 handleMessageNode(node, element, uri, localName, parser, attachedTo, cancelActivity);

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
 
 import io.automatik.engine.api.definition.process.Connection;
 import io.automatik.engine.api.definition.process.NodeContainer;
@@ -42,6 +43,8 @@ public abstract class NodeImpl implements Node, ContextResolver {
     private transient Optional<ExpressionCondition> completionCheck;
 
     protected Map<ConnectionRef, Constraint> constraints = new HashMap<ConnectionRef, Constraint>();
+
+    protected Predicate<io.automatik.engine.api.runtime.process.ProcessContext> conditionPredicate;
 
     public NodeImpl() {
         this.id = -1;
@@ -368,4 +371,19 @@ public abstract class NodeImpl implements Node, ContextResolver {
         return result;
     }
 
+    public void setCondition(Predicate<io.automatik.engine.api.runtime.process.ProcessContext> conditionPredicate) {
+        this.conditionPredicate = conditionPredicate;
+    }
+
+    public Predicate<io.automatik.engine.api.runtime.process.ProcessContext> getCondition() {
+        return this.conditionPredicate;
+    }
+
+    public boolean isMet(io.automatik.engine.api.runtime.process.ProcessContext context) {
+        return conditionPredicate == null || conditionPredicate.test(context);
+    }
+
+    public boolean hasCondition() {
+        return this.conditionPredicate != null;
+    }
 }

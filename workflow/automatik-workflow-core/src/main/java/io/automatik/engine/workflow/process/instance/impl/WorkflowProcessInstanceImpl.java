@@ -475,6 +475,11 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
                                 node);
                         eventSubProcess.trigger(null,
                                 io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
+                    } else if (((EventSubProcessNode) node).findStartNode().hasCondition()) {
+                        EventSubProcessNodeInstance eventSubProcess = (EventSubProcessNodeInstance) getNodeInstance(
+                                node);
+                        eventSubProcess.trigger(null,
+                                io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
                     }
                 }
             }

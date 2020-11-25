@@ -42,7 +42,7 @@ public class MilestoneNodeInstance extends StateBasedNodeInstance {
         if (getProcessInstance() instanceof ExecutableProcessInstance) {
 
             ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime()).setNodeInstance(this);
-            return getMilestoneNode().canComplete(context);
+            return getMilestoneNode().isMet(context);
         } else {
             if (((Node) getNode()).getCompletionCheck().isPresent()) {
 
@@ -64,7 +64,7 @@ public class MilestoneNodeInstance extends StateBasedNodeInstance {
     }
 
     private void addCompletionEventListener() {
-        getProcessInstance().getProcessRuntime().addEventListener(ContextAwareEventListener.using(listener -> {
+        getProcessInstance().getProcessRuntime().addEventListener(ContextAwareEventListener.using(getId(), listener -> {
             if (isCompleted()) {
                 triggerCompleted();
                 getProcessInstance().getProcessRuntime().removeEventListener(listener);
@@ -76,6 +76,7 @@ public class MilestoneNodeInstance extends StateBasedNodeInstance {
     public void removeEventListeners() {
         super.removeEventListeners();
         getProcessInstance().removeEventListener(getActivationEventType(), this, true);
+        getProcessInstance().getProcessRuntime().removeEventListener(ContextAwareEventListener.using(getId(), null));
     }
 
     private String getActivationEventType() {

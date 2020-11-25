@@ -12,51 +12,51 @@ import io.automatik.engine.workflow.process.core.impl.ExtendedNodeImpl;
 
 public class StateBasedNode extends ExtendedNodeImpl {
 
-	private static final long serialVersionUID = 510l;
+    private static final long serialVersionUID = 510l;
 
-	private Map<Timer, ProcessAction> timers;
+    private Map<Timer, ProcessAction> timers;
 
-	private List<String> boundaryEvents;
+    private List<String> boundaryEvents;
 
-	public Map<Timer, ProcessAction> getTimers() {
-		return timers;
-	}
+    public Map<Timer, ProcessAction> getTimers() {
+        return timers;
+    }
 
-	public void addTimer(Timer timer, ProcessAction action) {
-		if (timers == null) {
-			timers = new HashMap<Timer, ProcessAction>();
-		}
-		if (timer.getId() == 0) {
-			long id = 0;
-			for (Timer t : timers.keySet()) {
-				if (t.getId() > id) {
-					id = t.getId();
-				}
-			}
-			timer.setId(++id);
-		}
-		timers.put(timer, action);
-	}
+    public void addTimer(Timer timer, ProcessAction action) {
+        if (timers == null) {
+            timers = new HashMap<Timer, ProcessAction>();
+        }
+        if (timer.getId() == 0) {
+            long id = 0;
+            for (Timer t : timers.keySet()) {
+                if (t.getId() > id) {
+                    id = t.getId();
+                }
+            }
+            timer.setId(++id);
+        }
+        timers.put(timer, action);
+    }
 
-	public void removeAllTimers() {
-		if (timers != null) {
-			timers.clear();
-		}
-	}
+    public void removeAllTimers() {
+        if (timers != null) {
+            timers.clear();
+        }
+    }
 
-	public void addBoundaryEvents(String boundaryEvent) {
-		if (this.boundaryEvents == null) {
-			this.boundaryEvents = new ArrayList<String>();
-		}
-		this.boundaryEvents.add(boundaryEvent);
-	}
+    public void addBoundaryEvents(String boundaryEvent) {
+        if (this.boundaryEvents == null) {
+            this.boundaryEvents = new ArrayList<String>();
+        }
+        this.boundaryEvents.add(boundaryEvent);
+    }
 
-	public void setBoundaryEvents(List<String> boundaryEvents) {
-		this.boundaryEvents = boundaryEvents;
-	}
+    public void setBoundaryEvents(List<String> boundaryEvents) {
+        this.boundaryEvents = boundaryEvents;
+    }
 
-	public List<String> getBoundaryEvents() {
-		return boundaryEvents;
-	}
+    public List<String> getBoundaryEvents() {
+        return boundaryEvents;
+    }
 
 }

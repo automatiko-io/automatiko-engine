@@ -43,7 +43,9 @@ import io.automatik.engine.workflow.base.instance.impl.actions.CancelNodeInstanc
 import io.automatik.engine.workflow.base.instance.impl.actions.SignalProcessInstanceAction;
 import io.automatik.engine.workflow.process.core.ProcessAction;
 import io.automatik.engine.workflow.process.core.impl.ConsequenceAction;
+import io.automatik.engine.workflow.process.core.impl.ExtendedNodeImpl;
 import io.automatik.engine.workflow.process.core.node.CompositeNode;
+import io.automatik.engine.workflow.process.core.node.ConstraintTrigger;
 import io.automatik.engine.workflow.process.core.node.EndNode;
 import io.automatik.engine.workflow.process.core.node.EventNode;
 import io.automatik.engine.workflow.process.core.node.EventSubProcessNode;
@@ -256,6 +258,8 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
                             linkBoundarySignalEvent(node, attachedTo);
                         } else if (type.startsWith("Error-")) {
                             linkBoundaryErrorEvent(nodeContainer, node, attachedTo, attachedNode);
+                        } else if (type.startsWith("Condition-") || type.startsWith("RuleFlowStateEvent-")) {
+                            linkBoundaryConditionEvent(nodeContainer, node, attachedTo, attachedNode);
                         }
                     }
                 }
@@ -353,6 +357,29 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
         cancelAction.setMetaData("Action", new CancelNodeInstanceAction(attachedTo));
         actions.add(cancelAction);
         ((EventNode) node).setActions(EndNode.EVENT_NODE_EXIT, actions);
+    }
+
+    private void linkBoundaryConditionEvent(NodeContainer nodeContainer, Node node, String attachedTo,
+            Node attachedNode) {
+        String processId = ((ExecutableProcess) nodeContainer).getId();
+        String eventType = "RuleFlowStateEvent-" + processId + "-" + ((EventNode) node).getUniqueId() + "-"
+                + attachedTo;
+        ((EventTypeFilter) ((EventNode) node).getEventFilters().get(0)).setType(eventType);
+
+        ((ExtendedNodeImpl) attachedNode).setCondition(((EventNode) node).getCondition());
+        ((ExtendedNodeImpl) attachedNode).setMetaData("ConditionEventType", eventType);
+
+        boolean cancelActivity = (Boolean) node.getMetaData().get("CancelActivity");
+        if (cancelActivity) {
+            List<ProcessAction> actions = ((EventNode) node).getActions(EndNode.EVENT_NODE_EXIT);
+            if (actions == null) {
+                actions = new ArrayList<ProcessAction>();
+            }
+            ConsequenceAction consequenceAction = new ConsequenceAction("java", "");
+            consequenceAction.setMetaData("Action", new CancelNodeInstanceAction(attachedTo));
+            actions.add(consequenceAction);
+            ((EventNode) node).setActions(EndNode.EVENT_NODE_EXIT, actions);
+        }
     }
 
     protected ProcessAction timerAction(String type) {
@@ -461,6 +488,14 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
                                 eventSubProcessHandlers.add(trimmedType);
                             } else {
                                 exceptionScope.setExceptionHandler(faultCode, exceptionHandler);
+                            }
+                        } else if (trigger instanceof ConstraintTrigger) {
+                            ConstraintTrigger constraintTrigger = (ConstraintTrigger) trigger;
+
+                            if (constraintTrigger.getConstraint() != null) {
+                                EventTypeFilter eventTypeFilter = new EventTypeFilter();
+                                eventTypeFilter.setType(type);
+                                eventSubProcessNode.addEvent(eventTypeFilter);
                             }
                         }
                     }

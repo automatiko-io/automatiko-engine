@@ -101,6 +101,7 @@ public class StartEventHandler extends AbstractNodeHandler {
                 ConstraintTrigger trigger = new ConstraintTrigger();
                 trigger.setConstraint(constraint);
                 startNode.addTrigger(trigger);
+                startNode.setMetaData(TRIGGER_REF, "Condition-" + node.getId());
                 startNode.setMetaData(TRIGGER_TYPE, "Condition");
                 break;
             } else if ("signalEventDefinition".equals(nodeName)) {

@@ -72,7 +72,7 @@ public class DynamicNodeInstance extends CompositeContextNodeInstance {
     }
 
     private void addActivationListener() {
-        getProcessInstance().getProcessRuntime().addEventListener(ContextAwareEventListener.using(listener -> {
+        getProcessInstance().getProcessRuntime().addEventListener(ContextAwareEventListener.using(getId(), listener -> {
             if (canActivate() && getState() == ProcessInstance.STATE_PENDING) {
                 triggerActivated();
                 getProcessInstance().getProcessRuntime().removeEventListener(listener);
@@ -81,11 +81,17 @@ public class DynamicNodeInstance extends CompositeContextNodeInstance {
     }
 
     private void addCompletionListener() {
-        getProcessInstance().getProcessRuntime().addEventListener(ContextAwareEventListener.using(listener -> {
+        getProcessInstance().getProcessRuntime().addEventListener(ContextAwareEventListener.using(getId(), listener -> {
             if (canComplete()) {
                 triggerCompleted(CONNECTION_DEFAULT_TYPE);
             }
         }));
+    }
+
+    @Override
+    public void removeEventListeners() {
+        super.removeEventListeners();
+        getProcessInstance().getProcessRuntime().removeEventListener(ContextAwareEventListener.using(getId(), null));
     }
 
     @Override

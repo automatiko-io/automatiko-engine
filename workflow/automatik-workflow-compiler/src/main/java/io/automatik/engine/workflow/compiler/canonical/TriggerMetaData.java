@@ -28,7 +28,8 @@ public class TriggerMetaData {
         ConsumeMessage,
         ProduceMessage,
         Signal,
-        Error
+        Error,
+        Condition
     }
 
     // name of the trigger derived from message or signal

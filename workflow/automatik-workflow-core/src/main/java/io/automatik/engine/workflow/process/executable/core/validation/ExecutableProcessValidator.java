@@ -412,7 +412,8 @@ public class ExecutableProcessValidator implements ProcessValidator {
                                         "Event subprocess is not allowed to have more than one start node.");
                             }
                             if (startNode.getTimer() == null
-                                    && (startNode.getTriggers() == null || startNode.getTriggers().isEmpty())) {
+                                    && (startNode.getTriggers() == null || startNode.getTriggers().isEmpty())
+                                    && !startNode.hasCondition()) {
                                 addErrorMessage(process, startNode, errors,
                                         "Start in Event SubProcess '" + compositeNode.getName() + "' ["
                                                 + compositeNode.getId()

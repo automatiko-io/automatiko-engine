@@ -3,7 +3,9 @@ package io.automatik.engine.workflow.process.executable.core.factory;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
+import io.automatik.engine.api.runtime.process.ProcessContext;
 import io.automatik.engine.workflow.base.core.event.EventTypeFilter;
 import io.automatik.engine.workflow.base.core.timer.Timer;
 import io.automatik.engine.workflow.base.instance.impl.Action;
@@ -90,6 +92,11 @@ public class StartNodeFactory extends ExtendedNodeFactory {
         }
         DataAssociation dataAssociation = new DataAssociation(source, target, assignments, null);
         getStartNode().addOutAssociation(dataAssociation);
+        return this;
+    }
+
+    public StartNodeFactory condition(Predicate<ProcessContext> condition) {
+        getStartNode().setCondition(condition);
         return this;
     }
 }

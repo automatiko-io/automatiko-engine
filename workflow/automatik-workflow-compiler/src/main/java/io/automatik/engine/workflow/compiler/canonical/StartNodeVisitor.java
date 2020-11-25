@@ -1,6 +1,7 @@
 
 package io.automatik.engine.workflow.compiler.canonical;
 
+import static io.automatik.engine.workflow.process.executable.core.Metadata.EVENT_TYPE_CONDITION;
 import static io.automatik.engine.workflow.process.executable.core.Metadata.EVENT_TYPE_SIGNAL;
 import static io.automatik.engine.workflow.process.executable.core.Metadata.MESSAGE_TYPE;
 import static io.automatik.engine.workflow.process.executable.core.Metadata.TRIGGER_CORRELATION;
@@ -8,6 +9,7 @@ import static io.automatik.engine.workflow.process.executable.core.Metadata.TRIG
 import static io.automatik.engine.workflow.process.executable.core.Metadata.TRIGGER_MAPPING;
 import static io.automatik.engine.workflow.process.executable.core.Metadata.TRIGGER_REF;
 import static io.automatik.engine.workflow.process.executable.core.Metadata.TRIGGER_TYPE;
+import static io.automatik.engine.workflow.process.executable.core.factory.MilestoneNodeFactory.METHOD_CONDITION;
 import static io.automatik.engine.workflow.process.executable.core.factory.StartNodeFactory.METHOD_INTERRUPTING;
 import static io.automatik.engine.workflow.process.executable.core.factory.StartNodeFactory.METHOD_TIMER;
 import static io.automatik.engine.workflow.process.executable.core.factory.StartNodeFactory.METHOD_TRIGGER;
@@ -27,6 +29,7 @@ import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.core.timer.Timer;
 import io.automatik.engine.workflow.process.core.node.Assignment;
+import io.automatik.engine.workflow.process.core.node.ConstraintTrigger;
 import io.automatik.engine.workflow.process.core.node.DataAssociation;
 import io.automatik.engine.workflow.process.core.node.StartNode;
 import io.automatik.engine.workflow.process.executable.core.factory.StartNodeFactory;
@@ -83,7 +86,7 @@ public class StartNodeVisitor extends AbstractNodeVisitor<StartNode> {
             }
             metadata.addTrigger(trigger);
 
-            handleSignal(node, nodeMetaData, body, variableScope, metadata);
+            handleTrigger(node, nodeMetaData, body, variableScope, metadata);
         } else {
             // since there is start node without trigger then make sure it is startable
             metadata.setStartable(true);
@@ -91,7 +94,7 @@ public class StartNodeVisitor extends AbstractNodeVisitor<StartNode> {
 
     }
 
-    protected void handleSignal(StartNode startNode, Map<String, Object> nodeMetaData, BlockStmt body,
+    protected void handleTrigger(StartNode startNode, Map<String, Object> nodeMetaData, BlockStmt body,
             VariableScope variableScope, ProcessMetaData metadata) {
         if (EVENT_TYPE_SIGNAL.equalsIgnoreCase((String) startNode.getMetaData(TRIGGER_TYPE))) {
             Variable variable = null;
@@ -117,6 +120,10 @@ public class StartNodeVisitor extends AbstractNodeVisitor<StartNode> {
             }
             metadata.addSignal((String) nodeMetaData.get(MESSAGE_TYPE),
                     variable != null ? variable.getType().getStringType() : null);
+        } else if (EVENT_TYPE_CONDITION.equalsIgnoreCase((String) startNode.getMetaData(TRIGGER_TYPE))) {
+            ConstraintTrigger constraintTrigger = (ConstraintTrigger) startNode.getTriggers().get(0);
+            body.addStatement(getFactoryMethod(getNodeId(startNode), METHOD_CONDITION,
+                    createLambdaExpr(constraintTrigger.getConstraint(), variableScope)));
         } else {
             String triggerMapping = (String) nodeMetaData.get(TRIGGER_MAPPING);
             body.addStatement(getFactoryMethod(getNodeId(startNode), METHOD_TRIGGER,

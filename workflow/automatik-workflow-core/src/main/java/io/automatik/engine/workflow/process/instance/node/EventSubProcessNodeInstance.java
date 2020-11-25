@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import io.automatik.engine.api.definition.process.NodeContainer;
+import io.automatik.engine.api.event.process.ContextAwareEventListener;
 import io.automatik.engine.api.runtime.process.NodeInstance;
+import io.automatik.engine.workflow.base.core.context.ProcessContext;
 import io.automatik.engine.workflow.base.instance.ProcessInstance;
 import io.automatik.engine.workflow.process.core.node.EventSubProcessNode;
 import io.automatik.engine.workflow.process.core.node.StartNode;
@@ -25,6 +27,7 @@ public class EventSubProcessNodeInstance extends CompositeContextNodeInstance {
 
     @Override
     public void internalTrigger(NodeInstance from, String type) {
+        addEventListeners();
         super.internalTriggerOnlyParent(from, type);
     }
 
@@ -84,5 +87,29 @@ public class EventSubProcessNodeInstance extends CompositeContextNodeInstance {
 
     protected List<String> resolveVariables(List<String> events) {
         return events.stream().map(event -> resolveVariable(event)).collect(Collectors.toList());
+    }
+
+    @Override
+    public void addEventListeners() {
+        super.addEventListeners();
+        StartNode startNode = getCompositeNode().findStartNode();
+        if (startNode.hasCondition()) {
+            getProcessInstance().getProcessRuntime().addEventListener(ContextAwareEventListener.using(getId(), listener -> {
+                ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
+                context.setProcessInstance(getProcessInstance());
+                context.setNodeInstance(this);
+                if (startNode.isMet(context)) {
+                    getProcessInstance().getProcessRuntime().removeEventListener(listener);
+                    signalEvent(getCompositeNode().getEvents().get(0), null);
+
+                }
+            }));
+        }
+    }
+
+    @Override
+    public void removeEventListeners() {
+        getProcessInstance().getProcessRuntime().removeEventListener(ContextAwareEventListener.using(getId(), null));
+        super.removeEventListeners();
     }
 }

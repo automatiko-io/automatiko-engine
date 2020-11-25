@@ -14,25 +14,25 @@ import io.automatik.engine.workflow.process.executable.core.factory.MilestoneNod
 
 public class MilestoneNodeVisitor extends AbstractNodeVisitor<MilestoneNode> {
 
-	@Override
-	protected String getNodeKey() {
-		return "milestoneNode";
-	}
+    @Override
+    protected String getNodeKey() {
+        return "milestoneNode";
+    }
 
-	@Override
-	public void visitNode(WorkflowProcess process, String factoryField, MilestoneNode node, BlockStmt body,
-			VariableScope variableScope, ProcessMetaData metadata) {
-		body.addStatement(getAssignedFactoryMethod(factoryField, MilestoneNodeFactory.class, getNodeId(node),
-				getNodeKey(), new LongLiteralExpr(node.getId()))).addStatement(getNameMethod(node, "Milestone"));
-		if (node.getCondition() != null && !node.getCondition().trim().isEmpty()) {
-			body.addStatement(getConditionStatement(node, variableScope));
-		}
-		body.addStatement(getDoneMethod(getNodeId(node)));
-		visitMetaData(node.getMetaData(), body, getNodeId(node));
-	}
+    @Override
+    public void visitNode(WorkflowProcess process, String factoryField, MilestoneNode node, BlockStmt body,
+            VariableScope variableScope, ProcessMetaData metadata) {
+        body.addStatement(getAssignedFactoryMethod(factoryField, MilestoneNodeFactory.class, getNodeId(node),
+                getNodeKey(), new LongLiteralExpr(node.getId()))).addStatement(getNameMethod(node, "Milestone"));
+        if (node.getConditionExpression() != null && !node.getConditionExpression().trim().isEmpty()) {
+            body.addStatement(getConditionStatement(node, variableScope));
+        }
+        body.addStatement(getDoneMethod(getNodeId(node)));
+        visitMetaData(node.getMetaData(), body, getNodeId(node));
+    }
 
-	private MethodCallExpr getConditionStatement(MilestoneNode node, VariableScope scope) {
-		return getFactoryMethod(getNodeId(node), METHOD_CONDITION, createLambdaExpr(node.getCondition(), scope));
-	}
+    private MethodCallExpr getConditionStatement(MilestoneNode node, VariableScope scope) {
+        return getFactoryMethod(getNodeId(node), METHOD_CONDITION, createLambdaExpr(node.getConditionExpression(), scope));
+    }
 
 }

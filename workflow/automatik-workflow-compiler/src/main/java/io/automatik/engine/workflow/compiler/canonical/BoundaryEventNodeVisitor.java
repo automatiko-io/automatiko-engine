@@ -2,6 +2,7 @@
 package io.automatik.engine.workflow.compiler.canonical;
 
 import static io.automatik.engine.workflow.process.executable.core.Metadata.EVENT_TYPE;
+import static io.automatik.engine.workflow.process.executable.core.Metadata.EVENT_TYPE_CONDITION;
 import static io.automatik.engine.workflow.process.executable.core.Metadata.EVENT_TYPE_MESSAGE;
 import static io.automatik.engine.workflow.process.executable.core.Metadata.EVENT_TYPE_SIGNAL;
 import static io.automatik.engine.workflow.process.executable.core.Metadata.MESSAGE_TYPE;
@@ -11,6 +12,7 @@ import static io.automatik.engine.workflow.process.executable.core.factory.Bound
 import static io.automatik.engine.workflow.process.executable.core.factory.EventNodeFactory.METHOD_EVENT_TYPE;
 import static io.automatik.engine.workflow.process.executable.core.factory.EventNodeFactory.METHOD_SCOPE;
 import static io.automatik.engine.workflow.process.executable.core.factory.EventNodeFactory.METHOD_VARIABLE_NAME;
+import static io.automatik.engine.workflow.process.executable.core.factory.MilestoneNodeFactory.METHOD_CONDITION;
 
 import java.util.Map;
 
@@ -56,6 +58,10 @@ public class BoundaryEventNodeVisitor extends AbstractNodeVisitor<BoundaryEventN
             metadata.addTrigger(new TriggerMetaData((String) nodeMetaData.get(TRIGGER_REF),
                     (String) nodeMetaData.get(TRIGGER_TYPE), (String) nodeMetaData.get(MESSAGE_TYPE),
                     node.getVariableName(), String.valueOf(node.getId()), node.getName()).validate());
+        } else if (EVENT_TYPE_CONDITION.equalsIgnoreCase((String) node.getMetaData(EVENT_TYPE))) {
+            String condition = (String) node.getMetaData("Condition");
+            body.addStatement(getFactoryMethod(getNodeId(node), METHOD_CONDITION,
+                    createLambdaExpr(condition, variableScope)));
         }
 
         visitMetaData(node.getMetaData(), body, getNodeId(node));
