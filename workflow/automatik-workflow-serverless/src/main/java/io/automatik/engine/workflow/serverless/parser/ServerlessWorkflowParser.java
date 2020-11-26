@@ -14,6 +14,7 @@ import io.serverlessworkflow.api.Workflow;
 import io.serverlessworkflow.api.actions.Action;
 import io.serverlessworkflow.api.branches.Branch;
 import io.serverlessworkflow.api.end.End;
+import io.serverlessworkflow.api.error.Error;
 import io.serverlessworkflow.api.events.EventDefinition;
 import io.serverlessworkflow.api.functions.FunctionDefinition;
 import io.serverlessworkflow.api.interfaces.State;
@@ -60,6 +61,7 @@ public class ServerlessWorkflowParser {
         Workflow workflow = objectMapper.readValue(ServerlessWorkflowUtils.readWorkflowFile(workflowFile), Workflow.class);
         ExecutableProcess process = factory.createProcess(workflow);
         Map<String, Map<String, Long>> nameToNodeId = new HashMap<>();
+        Map<Long, Error> boundaryIdToError = new HashMap<>();
 
         if (!ServerlessWorkflowUtils.includesSupportedStates(workflow)) {
             LOGGER.warn("workflow includes currently unsupported states.");
@@ -104,7 +106,7 @@ public class ServerlessWorkflowParser {
                 }
 
                 CompositeContextNode embeddedSubProcess = factory.subProcessNode(idCounter.getAndIncrement(), state.getName(), process);
-                handleActions(workflowFunctions, eventState.getOnEvents().get(0).getActions(), process, embeddedSubProcess);
+                handleActions(state, workflowFunctions, eventState.getOnEvents().get(0).getActions(), process, embeddedSubProcess, workflow, boundaryIdToError);
 
                 List<String> onEventRefs = eventState.getOnEvents().get(0).getEventRefs();
                 if (onEventRefs.size() == 1) {
@@ -133,7 +135,7 @@ public class ServerlessWorkflowParser {
             if (state.getType().equals(DefaultState.Type.OPERATION)) {
                 OperationState operationState = (OperationState) state;
                 CompositeContextNode embeddedSubProcess = factory.subProcessNode(idCounter.getAndIncrement(), state.getName(), process);
-                handleActions(workflowFunctions, operationState.getActions(), process, embeddedSubProcess);
+                handleActions(state, workflowFunctions, operationState.getActions(), process, embeddedSubProcess, workflow, boundaryIdToError);
 
                 if (state.getStart() != null) {
                     factory.connect(workflowStartNode.getId(), embeddedSubProcess.getId(), workflowStartNode.getId() + "_" + embeddedSubProcess.getId(), process);
@@ -331,6 +333,27 @@ public class ServerlessWorkflowParser {
             }
         }
 
+        // finish connecting boundary events
+        for (Map.Entry<Long, Error> entry : boundaryIdToError.entrySet()) {
+            Long boundaryEventId = entry.getKey();
+            Error errorObj = entry.getValue();
+
+            if(errorObj.getTransition() != null) {
+                long targetId = nameToNodeId.get(errorObj.getTransition().getNextState()).get(NODETOID_START);
+                factory.connect(boundaryEventId, targetId, boundaryEventId + "_" + targetId, process);
+            }
+
+            if(errorObj.getEnd() != null) {
+                if (errorObj.getEnd().getKind() == End.Kind.EVENT) {
+                    EndNode boundaryEndNode = factory.messageEndNode(idCounter.getAndIncrement(), NODE_END_NAME, workflow, errorObj.getEnd(), process);
+                    factory.connect(boundaryEventId, boundaryEndNode.getId(), boundaryEventId + "_" + boundaryEndNode.getId(), process);
+                } else {
+                    EndNode boundaryEndNode = factory.endNode(idCounter.getAndIncrement(), NODE_END_NAME, true, process);
+                    factory.connect(boundaryEventId, boundaryEndNode.getId(), boundaryEventId + "_" + boundaryEndNode, process);
+                }
+            }
+        }
+
         factory.validate(process);
         return process;
     }
@@ -350,7 +373,7 @@ public class ServerlessWorkflowParser {
 
                     EventNode eventNode = factory.consumeEventNode(idCounter.getAndIncrement(), eventDefinition, process);
 
-                    factory.connect(eventSplit.getId(), eventNode.getId(), eventSplit.getId() + "_" + eventNode, process);
+                    factory.connect(eventSplit.getId(), eventNode.getId(), eventSplit.getId() + "_" + eventNode.getId(), process);
                     factory.connect(eventNode.getId(), targetId, eventNode.getId() + "_" + targetId, process);
 
                 }
@@ -468,7 +491,7 @@ public class ServerlessWorkflowParser {
         }
     }
 
-    protected void handleActions(List<FunctionDefinition> workflowFunctions, List<Action> actions, ExecutableProcess process, CompositeContextNode embeddedSubProcess) {
+    protected void handleActions(State state, List<FunctionDefinition> workflowFunctions, List<Action> actions, ExecutableProcess process, CompositeContextNode embeddedSubProcess, Workflow workflow, Map<Long, Error> boundaryIdToError) {
         if (workflowFunctions != null && actions != null && !actions.isEmpty()) {
             StartNode embeddedStartNode = factory.startNode(idCounter.getAndIncrement(), "EmbeddedStart", embeddedSubProcess);
             Node start = embeddedStartNode;
@@ -498,7 +521,18 @@ public class ServerlessWorkflowParser {
             } catch (NullPointerException e) {
                 LOGGER.warn("unable to connect current node to embedded end node");
             }
+
+            // error / retry handling - add to the subprocess level
+            if(state.getOnErrors() != null && state.getOnErrors().size() > 0) {
+                addErrorHandlingAndRetries(state.getOnErrors(), process, workflow, embeddedSubProcess, boundaryIdToError);
+            }
         }
     }
 
+    protected void addErrorHandlingAndRetries(List<Error> errorDefs, ExecutableProcess process, Workflow workflow, CompositeContextNode embeddedSubProcess, Map<Long, Error> boundaryIdToError) {
+        for(Error errorDef : errorDefs) {
+            BoundaryEventNode boundaryEventNode = factory.errorBoundaryEventNode(idCounter.getAndIncrement(), errorDef, process, embeddedSubProcess, workflow);
+            boundaryIdToError.put(boundaryEventNode.getId(), errorDef);
+        }
+    }
 }

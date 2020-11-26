@@ -8,6 +8,7 @@ import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
 import io.automatik.engine.workflow.base.core.event.EventTypeFilter;
 import io.automatik.engine.workflow.base.core.impl.WorkImpl;
+import io.automatik.engine.workflow.base.core.timer.DateTimeUtils;
 import io.automatik.engine.workflow.base.core.timer.Timer;
 import io.automatik.engine.workflow.base.core.validation.ProcessValidationError;
 import io.automatik.engine.workflow.process.core.NodeContainer;
@@ -23,8 +24,10 @@ import io.automatik.engine.workflow.serverless.parser.util.ServerlessWorkflowUti
 import io.automatik.engine.workflow.serverless.parser.util.WorkflowAppContext;
 import io.serverlessworkflow.api.Workflow;
 import io.serverlessworkflow.api.end.End;
+import io.serverlessworkflow.api.error.Error;
 import io.serverlessworkflow.api.events.EventDefinition;
 import io.serverlessworkflow.api.functions.FunctionDefinition;
+import io.serverlessworkflow.api.retry.RetryDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +44,6 @@ public class ServerlessWorkflowFactory {
     public static final String EOL = System.getProperty("line.separator");
     public static final String DEFAULT_WORKFLOW_ID = "serverless";
     public static final String DEFAULT_WORKFLOW_NAME = "workflow";
-    public static final String DEFAULT_WORKFLOW_VERSION = "1.0";
     public static final String DEFAULT_PACKAGE_NAME = "io.automatik.serverless";
     public static final String DEFAULT_VISIBILITY = "Public";
     public static final String DEFAULT_DECISION = "decision";
@@ -50,8 +52,6 @@ public class ServerlessWorkflowFactory {
     public static final String UNIQUE_ID_PARAM = "UniqueId";
     public static final String EVENTBASED_PARAM = "EventBased";
     public static final String DEFAULT_SERVICE_IMPL = "Java";
-    public static final String SERVICE_INTERFACE_KEY = "interface";
-    public static final String SERVICE_OPERATION_KEY = "operation";
     public static final String SERVICE_IMPL_KEY = "implementation";
     public static final String SERVICE_ENDPOINT = "endpoint";
     public static final String DEFAULT_HT_TASKNAME = "workflowhtask";
@@ -60,9 +60,9 @@ public class ServerlessWorkflowFactory {
     public static final String HT_SKIPPABLE = "skippable";
     public static final String HTP_GROUPID = "groupid";
     public static final String HT_ACTORID = "actorid";
-    public static final String DM_NAMESPACE = "namespace";
-    public static final String DM_MODEL = "model";
     public static final String SERVICE_TASK_TYPE = "Service Task";
+    public static final int DEFAULT_RETRY_LIMIT = 3;
+    public static final int DEFAULT_RETRY_AFTER = 1000;
 
     private WorkflowAppContext workflowAppContext;
 
@@ -388,6 +388,8 @@ public class ServerlessWorkflowFactory {
         subProcessNode.setId(id);
         subProcessNode.setName(name);
         subProcessNode.setAutoComplete(true);
+        subProcessNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(subProcessNode.getId()));
+
         nodeContainer.addNode(subProcessNode);
 
         return subProcessNode;
@@ -477,25 +479,40 @@ public class ServerlessWorkflowFactory {
 
     public RuleSetNode ruleSetNode(long id, String name, FunctionDefinition function, NodeContainer nodeContainer) {
         RuleSetNode ruleSetNode = new RuleSetNode();
-//        ruleSetNode.setId(id);
-//        ruleSetNode.setName(name);
-//
-//        RuleSetNode.RuleType.Decision decision =
-//
-//        ublic static Decision decision(String namespace, String model, String name, boolean decisionService) {
-//
-//        ruleSetNode.setDecisionModel(RuleSetNode.RuleType.decision(ServerlessWorkflowUtils.resolveFunctionMetadata(function, DM_NAMESPACE, workflowAppContext)),
-//                ServerlessWorkflowUtils.resolveFunctionMetadata(function, DM_MODEL, workflowAppContext)),
-//                ServerlessWorkflowUtils.resolveFunctionMetadata(function, DM_MODEL, workflowAppContext)), true);
-//        ruleSetNode.setLanguage(RuleSetNode.DMN_LANG);
-//
-//        ruleSetNode.addInMapping(DEFAULT_WORKFLOW_VAR, DEFAULT_WORKFLOW_VAR);
-//        ruleSetNode.addOutMapping(DEFAULT_WORKFLOW_VAR, DEFAULT_WORKFLOW_VAR);
-//
-//        nodeContainer.addNode(ruleSetNode);
-//
         return ruleSetNode;
     }
+
+   public BoundaryEventNode errorBoundaryEventNode(long id, Error error, ExecutableProcess process, CompositeContextNode embeddedSubProcess, Workflow workflow) {
+       BoundaryEventNode boundaryEventNode = new BoundaryEventNode();
+
+       boundaryEventNode.setId(id);
+       boundaryEventNode.setName(error.getError());
+
+       EventTypeFilter filter = new EventTypeFilter();
+       filter.setType("Error-" + embeddedSubProcess.getId() + "-" + error.getCode());
+       boundaryEventNode.addEventFilter(filter);
+
+       boundaryEventNode.setAttachedToNodeId(Long.toString(embeddedSubProcess.getId()));
+
+       boundaryEventNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
+       boundaryEventNode.setMetaData("EventType", "error");
+       boundaryEventNode.setMetaData("ErrorEvent", error.getCode());
+       boundaryEventNode.setMetaData("AttachedTo", Long.toString(embeddedSubProcess.getId()));
+       boundaryEventNode.setMetaData("HasErrorEvent", true);
+
+       if(error.getRetryRef() != null && error.getRetryRef().length() > 0) {
+           RetryDefinition retryDefinition = ServerlessWorkflowUtils.getWorkflowRetryFor(workflow, error.getRetryRef());
+
+           int delayAsInt = ((Long) DateTimeUtils.parseDuration(retryDefinition.getDelay())).intValue();
+
+           boundaryEventNode.setMetaData("ErrorRetry", retryDefinition.getDelay() == null ? DEFAULT_RETRY_AFTER : delayAsInt);
+           boundaryEventNode.setMetaData("ErrorRetryLimit", retryDefinition.getMaxAttempts() == null ? DEFAULT_RETRY_LIMIT : Integer.parseInt(retryDefinition.getMaxAttempts()));
+       }
+
+       process.addNode(boundaryEventNode);
+       return boundaryEventNode;
+   }
+
 
     public void connect(long fromId, long toId, String uniqueId, NodeContainer nodeContainer) {
         Node from = nodeContainer.getNode(fromId);

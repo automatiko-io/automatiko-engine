@@ -22,6 +22,7 @@ import io.serverlessworkflow.api.interfaces.State;
 import io.serverlessworkflow.api.mapper.BaseObjectMapper;
 import io.serverlessworkflow.api.mapper.JsonObjectMapper;
 import io.serverlessworkflow.api.mapper.YamlObjectMapper;
+import io.serverlessworkflow.api.retry.RetryDefinition;
 import io.serverlessworkflow.api.states.DefaultState;
 import io.serverlessworkflow.api.states.ParallelState;
 
@@ -120,6 +121,12 @@ public class ServerlessWorkflowUtils {
     public static EventDefinition getWorkflowEventFor(Workflow workflow, String eventName) {
         return workflow.getEvents().getEventDefs().stream()
                 .filter(wt -> wt.getName().equals(eventName))
+                .findFirst().get();
+    }
+    
+    public static RetryDefinition getWorkflowRetryFor(Workflow workflow, String retryName) {
+        return workflow.getRetries().getRetryDefs().stream()
+                .filter(wt -> wt.getName().equals(retryName))
                 .findFirst().get();
     }
 

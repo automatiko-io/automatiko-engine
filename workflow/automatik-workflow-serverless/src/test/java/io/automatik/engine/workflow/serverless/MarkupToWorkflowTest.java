@@ -2,11 +2,11 @@ package io.automatik.engine.workflow.serverless;
 
 import io.automatik.engine.workflow.serverless.utils.WorkflowTestUtils;
 import io.serverlessworkflow.api.Workflow;
+import io.serverlessworkflow.api.states.OperationState;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MarkupToWorkflowTest {
 
@@ -68,4 +68,27 @@ public class MarkupToWorkflowTest {
         assertNotNull(workflow.getEvents());
         assertTrue(workflow.getEvents().getEventDefs().size() == 2);
     }
+    @ParameterizedTest
+    @ValueSource(strings = {"/features/retryforservicecall.json", "/features/retryforservicecall.yml"})
+    public void testRetryForServiceCall(String workflowLocation) {
+        Workflow workflow = Workflow.fromSource(WorkflowTestUtils.readWorkflowFile(workflowLocation));
+
+        assertNotNull(workflow);
+        assertNotNull(workflow.getId());
+        assertNotNull(workflow.getName());
+        assertNotNull(workflow.getStates());
+        assertNotNull(workflow.getRetries());
+
+        assertEquals(1, workflow.getRetries().getRetryDefs().size());
+        assertEquals(1, workflow.getStates().size());
+
+        assertTrue(workflow.getStates().get(0) instanceof OperationState);
+
+        OperationState operationState = (OperationState) workflow.getStates().get(0);
+        assertNotNull(operationState);
+        assertNotNull(operationState.getOnErrors());
+        assertEquals(1, operationState.getOnErrors().size());
+
+    }
+
 }

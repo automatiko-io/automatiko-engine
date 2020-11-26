@@ -1,0 +1,43 @@
+{
+  "id": "retriesworkflow",
+  "name": "RetriesOnServiceCall",
+  "version": "1.0",
+  "functions": [
+    {
+      "name": "FirstService",
+      "operation": "api/services.json#first"
+    }
+  ],
+  "retries": [
+    {
+      "name": "InternalServerErrorRetryStrategy",
+      "delay": "PT1S",
+      "maxAttempts": 10
+    }
+  ],
+  "states": [
+    {
+      "name": "ExecService",
+      "type": "operation",
+      "start": {"kind":"default"},
+      "actions": [
+        {
+          "functionRef": {
+            "refName": "FirstService"
+          }
+        }
+      ],
+      "onErrors": [
+        {
+          "error": "Service down",
+          "code": "500",
+          "retryRef": "InternalServerErrorRetryStrategy",
+          "end": {
+            "kind":"default"
+          }
+        }
+      ],
+      "end": {"kind": "default"}
+    }
+  ]
+}
