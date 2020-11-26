@@ -68,10 +68,10 @@
     </bpmn2:endEvent>
     <bpmn2:sequenceFlow id="_1-_2" sourceRef="_1" targetRef="_2"/>
     <bpmn2:sequenceFlow id="_2-_3" name="First" sourceRef="_2" targetRef="_3">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="FormalExpression_9" language="http://www.java.com/java">x.equals(&quot;First&quot;)</bpmn2:conditionExpression>
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="FormalExpression_9" language="http://www.java.com/java">isEqual(x, &quot;First&quot;)</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="_2-_4" name="Second" sourceRef="_2" targetRef="_4">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="FormalExpression_10" language="http://www.java.com/java">x.equals(&quot;Second&quot;)</bpmn2:conditionExpression>
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="FormalExpression_10" language="http://www.java.com/java">isEqual(x, &quot;Second&quot;)</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="_3-_5" sourceRef="_3" targetRef="_5"/>
     <bpmn2:sequenceFlow id="_4-_5" sourceRef="_4" targetRef="_5"/>

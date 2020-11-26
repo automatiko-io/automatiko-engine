@@ -511,11 +511,15 @@ public class AutomatikQuarkusProcessor {
     private GeneratorContext buildContext(AutomatikBuildTimeConfig config, AppPaths appPaths, IndexView index) {
         GeneratorContext generationContext = QuarkusGeneratorContext.ofResourcePath(appPaths.getResourceFiles()[0],
                 appPaths.getFirstClassesPath().toFile());
+
         generationContext
                 .withBuildContext(new QuarkusApplicationBuildContext(config, className -> {
                     DotName classDotName = createDotName(className);
                     return !index.getAnnotations(classDotName).isEmpty() || index.getClassByName(classDotName) != null;
 
+                }, className -> {
+                    return index.getAllKnownImplementors(createDotName(className)).stream().map(c -> c.name().toString())
+                            .collect(Collectors.toList());
                 }));
 
         return AutomatikBuildData.create(config, generationContext).getGenerationContext();

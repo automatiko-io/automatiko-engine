@@ -75,7 +75,8 @@ public class AbstractCodegenTest {
                 new File("target/classes"));
 
         // Testing based on Quarkus as Default
-        context.withBuildContext(new QuarkusApplicationBuildContext(config, (className -> false)));
+        context.withBuildContext(
+                new QuarkusApplicationBuildContext(config, (className -> false), c -> Collections.emptyList()));
 
         ApplicationGenerator appGen = new ApplicationGenerator(this.getClass().getPackage().getName(),
                 new File("target/codegen-tests")).withGeneratorContext(context).withRuleUnits(hasRuleUnit)

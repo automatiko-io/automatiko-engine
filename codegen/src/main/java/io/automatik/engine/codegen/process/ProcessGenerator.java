@@ -9,6 +9,7 @@ import java.util.NoSuchElementException;
 import javax.lang.model.SourceVersion;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Modifier.Keyword;
 import com.github.javaparser.ast.NodeList;
@@ -35,6 +36,7 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.UnknownType;
 
+import io.automatik.engine.api.Functions;
 import io.automatik.engine.api.Model;
 import io.automatik.engine.api.definition.process.Process;
 import io.automatik.engine.api.definition.process.WorkflowProcess;
@@ -43,8 +45,10 @@ import io.automatik.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatik.engine.api.workflow.ProcessInstancesFactory;
 import io.automatik.engine.codegen.BodyDeclarationComparator;
 import io.automatik.engine.codegen.CodegenUtils;
+import io.automatik.engine.codegen.GeneratorContext;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatik.engine.codegen.process.image.SvgProcessImageGenerator;
+import io.automatik.engine.services.execution.BaseFunctions;
 import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.AbstractProcess;
 import io.automatik.engine.workflow.compiler.canonical.ProcessMetaData;
@@ -61,6 +65,8 @@ public class ProcessGenerator {
     private static final String BUSINESS_KEY = "businessKey";
     private static final String CREATE_MODEL = "createModel";
     private static final String WPI = "wpi";
+
+    private final GeneratorContext context;
 
     private final String packageName;
     private final WorkflowProcess process;
@@ -79,9 +85,10 @@ public class ProcessGenerator {
 
     private List<CompilationUnit> additionalClasses = new ArrayList<>();
 
-    public ProcessGenerator(WorkflowProcess process, ProcessExecutableModelGenerator processGenerator, String typeName,
+    public ProcessGenerator(GeneratorContext context, WorkflowProcess process, ProcessExecutableModelGenerator processGenerator,
+            String typeName,
             String modelTypeName, String appCanonicalName) {
-
+        this.context = context;
         this.appCanonicalName = appCanonicalName;
 
         this.packageName = process.getPackageName();
@@ -119,6 +126,11 @@ public class ProcessGenerator {
         CompilationUnit compilationUnit = new CompilationUnit(packageName);
         compilationUnit.addImport("io.automatik.engine.workflow.base.core.datatype.impl.type.ObjectDataType");
         compilationUnit.addImport("io.automatik.engine.workflow.process.executable.core.ExecutableProcessFactory");
+        compilationUnit.addImport(new ImportDeclaration(BaseFunctions.class.getCanonicalName(), true, true));
+
+        context.getBuildContext().classThatImplement(Functions.class.getCanonicalName())
+                .forEach(c -> compilationUnit.addImport(new ImportDeclaration(c, true, true)));
+
         compilationUnit.getTypes().add(classDeclaration());
         return compilationUnit;
     }
