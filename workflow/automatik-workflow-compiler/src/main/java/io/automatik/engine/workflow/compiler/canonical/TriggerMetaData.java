@@ -7,6 +7,7 @@ import static io.automatik.engine.workflow.process.executable.core.Metadata.MESS
 import static io.automatik.engine.workflow.process.executable.core.Metadata.TRIGGER_REF;
 import static io.automatik.engine.workflow.process.executable.core.Metadata.TRIGGER_TYPE;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.github.javaparser.ast.body.Parameter;
@@ -50,6 +51,8 @@ public class TriggerMetaData {
     private String correlationExpression;
 
     private boolean start = false;
+
+    private Map<String, Object> context = new HashMap<String, Object>();
 
     public TriggerMetaData(String name, String type, String dataType, String modelRef, String ownerId, String description) {
         this(name, type, dataType, modelRef, ownerId, description, null, null);
@@ -163,6 +166,7 @@ public class TriggerMetaData {
         TriggerMetaData triggerMetaData = new TriggerMetaData((String) nodeMetaData.get(TRIGGER_REF),
                 (String) nodeMetaData.get(TRIGGER_TYPE), (String) nodeMetaData.get(MESSAGE_TYPE),
                 (String) nodeMetaData.get(MAPPING_VARIABLE), String.valueOf(node.getId()), node.getName()).validate();
+        triggerMetaData.addContext(node.getMetaData());
         metadata.addTrigger(triggerMetaData);
 
         // and add trigger action
@@ -177,4 +181,20 @@ public class TriggerMetaData {
                 actionBody);
     }
 
+    public Object getContext(String name) {
+        return context.get(name);
+    }
+
+    public Object getContext(String name, String defaultValue) {
+        Object value = getContext(name);
+        if (value == null) {
+            return defaultValue;
+        }
+
+        return value;
+    }
+
+    public void addContext(Map<String, Object> data) {
+        this.context.putAll(data);
+    }
 }

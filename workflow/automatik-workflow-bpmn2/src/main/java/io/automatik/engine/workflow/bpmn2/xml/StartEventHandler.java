@@ -137,6 +137,9 @@ public class StartEventHandler extends AbstractNodeHandler {
                 startNode.setMetaData(TRIGGER_REF, message.getName());
                 startNode.setMetaData(TRIGGER_CORRELATION, message.getCorrelation());
                 startNode.setMetaData(TRIGGER_CORRELATION_EXPR, message.getCorrelationExpression());
+                startNode.setMetaData("connector",
+                        message.getMetaData().getOrDefault("connector", startNode.getMetaData("connector")));
+                startNode.setMetaData("topic", message.getMetaData().getOrDefault("topic", startNode.getMetaData("topic")));
 
                 addTriggerWithInMappings(startNode, "Message-" + message.getName());
             } else if ("timerEventDefinition".equals(nodeName)) {

@@ -113,7 +113,7 @@ public class ModelMetaData {
                 new MethodCallExpr(new ThisExpr(), "id"));
 
         return new MethodCallExpr(new NameExpr(variableName), "fromMap")
-                .addArgument(businessKeyOrId).addArgument(mapVarName);
+                .addArgument(new MethodCallExpr(new ThisExpr(), "id")).addArgument(mapVarName);
     }
 
     public MethodCallExpr toMap(String varName) {

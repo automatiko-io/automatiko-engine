@@ -277,7 +277,7 @@ public class SvgProcessImageGenerator {
             drawCenteredIcon(g2, end.getBounds(), "ErrorEventDefinition.png");
         } else if ("escalation".equals(node.getMetaData().get("EventType"))) {
             drawCenteredIcon(g2, end.getBounds(), "EscalationEventDefinition.png");
-        } else if ("conditional".equals(node.getMetaData().get("EventType")) || node instanceof StateNode) {
+        } else if ("condition".equals(node.getMetaData().get("EventType")) || node instanceof StateNode) {
             drawCenteredIcon(g2, end.getBounds(), "ConditionalEventDefinition.png");
         }
 

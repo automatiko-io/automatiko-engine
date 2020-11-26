@@ -137,7 +137,7 @@ public class $Type$Resource {
         try {
             identitySupplier.buildIdentityProvider(user, groups);
             return process.instances().values(page, size).stream()
-                    .map(pi -> mapOutput(new $Type$Output(), pi.variables()))
+                    .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
                     .collect(Collectors.toList());
         } finally {
             IdentityProvider.set(null);
@@ -176,7 +176,7 @@ public class $Type$Resource {
             
             return process.instances()
                 .findById(id)
-                .map(pi -> mapOutput(new $Type$Output(), pi.variables()))
+                .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
         } finally {
             IdentityProvider.set(null);
@@ -339,7 +339,7 @@ public class $Type$Resource {
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
         
             pi.updateVariables(resource);
-            return mapOutput(new $Type$Output(), pi.variables());
+            return mapOutput(new $Type$Output(), pi.variables(), pi.businessKey());
         });
     }
     
@@ -370,17 +370,15 @@ public class $Type$Resource {
     public java.util.List<WorkItem.Descriptor> getTasks_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id, 
             @Parameter(description = "User identifier that the tasks should be fetched for", required = false) @QueryParam("user") final String user, 
             @Parameter(description = "Groups that the tasks should be fetched for", required = false) @QueryParam("group") final List<String> groups) {
-        try {
+        
             identitySupplier.buildIdentityProvider(user, groups);
-            
-            return process.instances()
-                .findById(id)
-                .map(pi -> pi.workItems(policies(user, groups)))
-                .map(l -> l.stream().map(WorkItem::toMap).collect(Collectors.toList()))
-                .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
-        } finally {
-            IdentityProvider.set(null);
-        }
+            return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                return process.instances()
+                    .findById(id, io.automatik.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
+                    .map(pi -> pi.workItems(policies(user, groups)))
+                    .map(l -> l.stream().map(WorkItem::toMap).collect(Collectors.toList()))
+                    .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+            });
     }
     
     @APIResponses(
@@ -410,15 +408,14 @@ public class $Type$Resource {
     public Collection<? extends Tag> get_tags_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
-        try {
+        
             identitySupplier.buildIdentityProvider(user, groups);
-            return process.instances()
-                .findById(id)
-                .map(pi -> pi.tags().get())
-                .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
-        } finally {
-            IdentityProvider.set(null);
-        }
+            return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                return process.instances()
+                    .findById(id, io.automatik.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
+                    .map(pi -> pi.tags().get())
+                    .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+            });
     }
     
     @APIResponses(
@@ -505,7 +502,7 @@ public class $Type$Resource {
             throw new ProcessInstanceExecutionException(pi.id(), pi.error().get().failedNodeId(), pi.error().get().errorMessage());
         }
         
-        return mapOutput(new $Type$Output(), pi.variables());
+        return mapOutput(new $Type$Output(), pi.variables(), pi.businessKey());
     }
     
     protected Policy[] policies(String user, List<String> groups) {         
@@ -518,8 +515,8 @@ public class $Type$Resource {
         return resource;
     }
     
-    protected $Type$Output mapOutput($Type$Output output, $Type$ resource) {
-        output.fromMap(resource.getId(), resource.toMap());
+    protected $Type$Output mapOutput($Type$Output output, $Type$ resource, String businessKey) {
+        output.fromMap(businessKey != null ? businessKey: resource.getId(), resource.toMap());
         
         return output;
     }

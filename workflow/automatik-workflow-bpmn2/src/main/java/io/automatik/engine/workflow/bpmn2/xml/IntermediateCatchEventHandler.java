@@ -215,6 +215,9 @@ public class IntermediateCatchEventHandler extends AbstractNodeHandler {
                 eventNode.setMetaData("TriggerRef", message.getName());
                 eventNode.setMetaData("TriggerCorrelation", message.getCorrelation());
                 eventNode.setMetaData("TriggerCorrelationExpr", message.getCorrelationExpression());
+                eventNode.setMetaData("connector",
+                        message.getMetaData().getOrDefault("connector", eventNode.getMetaData("connector")));
+                eventNode.setMetaData("topic", message.getMetaData().getOrDefault("topic", eventNode.getMetaData("topic")));
                 List<EventFilter> eventFilters = new ArrayList<EventFilter>();
                 EventTypeFilter eventFilter = new EventTypeFilter();
                 eventFilter.setType("Message-" + message.getName());

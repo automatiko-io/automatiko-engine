@@ -77,7 +77,8 @@ public class MessageProducerGenerator {
         String sanitizedName = CodegenUtils.triggerSanitizedName(trigger, process.getVersion());
         if (connector.equals(MQTT_CONNECTOR)) {
 
-            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".topic", trigger.getName());
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".topic",
+                    (String) trigger.getContext("topic", trigger.getName()));
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".host", "localhost");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".port", "1883");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".client-id",
@@ -88,7 +89,8 @@ public class MessageProducerGenerator {
                     "Properties for MQTT based message event '" + trigger.getDescription() + "'");
             context.addInstruction(
                     "\t'" + OUTGOING_PROP_PREFIX + sanitizedName
-                            + ".topic' should be used to configure MQTT topic defaults to '" + trigger.getName() + "'");
+                            + ".topic' should be used to configure MQTT topic defaults to '"
+                            + trigger.getContext("topic", trigger.getName()) + "'");
             context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
                     + ".host' should be used to configure MQTT host that defaults to localhost");
             context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
@@ -106,7 +108,8 @@ public class MessageProducerGenerator {
         } else if (connector.equals(KAFKA_CONNECTOR)) {
 
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".bootstrap.servers", "localhost:9092");
-            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".topic", trigger.getName());
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".topic",
+                    (String) trigger.getContext("topic", trigger.getName()));
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".key.serializer",
                     "org.apache.kafka.common.serialization.StringSerializer");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".value.serializer",
@@ -118,7 +121,8 @@ public class MessageProducerGenerator {
                     "Properties for Apache Kafka based message event '" + trigger.getDescription() + "'");
             context.addInstruction(
                     "\t'" + OUTGOING_PROP_PREFIX + sanitizedName
-                            + ".topic' should be used to configure Kafka topic defaults to '" + trigger.getName() + "'");
+                            + ".topic' should be used to configure Kafka topic defaults to '"
+                            + trigger.getContext("topic", trigger.getName()) + "'");
             context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
                     + ".bootstrap.servers' should be used to configure Kafka bootstrap servers host that defaults to localhost:9092");
             context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
@@ -146,7 +150,8 @@ public class MessageProducerGenerator {
     public String generate() {
 
         String sanitizedName = CodegenUtils.triggerSanitizedName(trigger, process.getVersion());
-        String connector = CodegenUtils.getConnector(context);
+        String connector = CodegenUtils.getConnector(OUTGOING_PROP_PREFIX + sanitizedName + ".connector", context,
+                (String) trigger.getContext("connector"));
         if (connector != null) {
 
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".connector", connector);

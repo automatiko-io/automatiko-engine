@@ -55,6 +55,7 @@ public class EventNodeVisitor extends AbstractNodeVisitor<EventNode> {
                         node.getVariableName(), String.valueOf(node.getId()), node.getName(),
                         (String) nodeMetaData.get(TRIGGER_CORRELATION),
                         (String) nodeMetaData.get(TRIGGER_CORRELATION_EXPR)).validate();
+                triggerMetaData.addContext(node.getMetaData());
                 metadata.addTrigger(triggerMetaData);
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException(MessageFormat

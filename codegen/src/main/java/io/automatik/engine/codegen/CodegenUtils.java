@@ -127,8 +127,17 @@ public class CodegenUtils {
         return extractMethod;
     }
 
-    public static String getConnector(GeneratorContext context) {
+    public static String getConnector(String propertyName, GeneratorContext context, String connector) {
 
+        if (connector != null) {
+            return matchConnectorByName(connector);
+        }
+
+        if (context.getApplicationProperty(propertyName).isPresent()) {
+            return matchConnectorByName(context.getApplicationProperty(propertyName).get());
+        }
+
+        // auto discovery by classpath scan
         if (context.getBuildContext().hasClassAvailable(MQTT_CONNECTOR_CLASS)) {
             return MQTT_CONNECTOR;
         } else if (context.getBuildContext().hasClassAvailable(KAFKA_CONNECTOR_CLASS)) {
@@ -136,6 +145,20 @@ public class CodegenUtils {
         } else if (context.getBuildContext().hasClassAvailable(AMQP_CONNECTOR_CLASS)) {
             return AMQP_CONNECTOR;
         } else if (context.getBuildContext().hasClassAvailable(CAMEL_CONNECTOR_CLASS)) {
+            return CAMEL_CONNECTOR;
+        }
+
+        return "unknown";
+    }
+
+    public static String matchConnectorByName(String connector) {
+        if (connector.toLowerCase().endsWith("mqtt")) {
+            return MQTT_CONNECTOR;
+        } else if (connector.toLowerCase().endsWith("kafka")) {
+            return KAFKA_CONNECTOR;
+        } else if (connector.toLowerCase().endsWith("amqp")) {
+            return AMQP_CONNECTOR;
+        } else if (connector.toLowerCase().endsWith("camel")) {
             return CAMEL_CONNECTOR;
         }
 

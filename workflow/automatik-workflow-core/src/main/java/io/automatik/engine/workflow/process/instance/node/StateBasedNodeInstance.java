@@ -314,7 +314,6 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
             getProcessInstance().getProcessRuntime().addEventListener(ContextAwareEventListener.using(getId(), listener -> {
                 ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
                 context.setProcessInstance(getProcessInstance());
-                context.setNodeInstance(this);
                 if (getExtendedNode().isMet(context)) {
                     getProcessInstance().getProcessRuntime().removeEventListener(listener);
                     getProcessInstance().signalEvent((String) getExtendedNode().getMetaData("ConditionEventType"), null);
@@ -336,7 +335,9 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
         getProcessInstance().removeEventListener("timerTriggered", this, false);
         getProcessInstance().removeEventListener("timer", this, true);
         getProcessInstance().removeEventListener("slaViolation:" + getId(), this, true);
-        getProcessInstance().getProcessRuntime().removeEventListener(ContextAwareEventListener.using(getId(), null));
+        if (getProcessInstance().getProcessRuntime() != null) {
+            getProcessInstance().getProcessRuntime().removeEventListener(ContextAwareEventListener.using(getId(), null));
+        }
         removeCompletionListeners();
     }
 

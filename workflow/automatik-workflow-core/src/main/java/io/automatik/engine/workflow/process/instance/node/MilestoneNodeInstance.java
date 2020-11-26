@@ -76,7 +76,9 @@ public class MilestoneNodeInstance extends StateBasedNodeInstance {
     public void removeEventListeners() {
         super.removeEventListeners();
         getProcessInstance().removeEventListener(getActivationEventType(), this, true);
-        getProcessInstance().getProcessRuntime().removeEventListener(ContextAwareEventListener.using(getId(), null));
+        if (getProcessInstance().getProcessRuntime() != null) {
+            getProcessInstance().getProcessRuntime().removeEventListener(ContextAwareEventListener.using(getId(), null));
+        }
     }
 
     private String getActivationEventType() {

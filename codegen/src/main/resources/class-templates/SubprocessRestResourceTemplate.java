@@ -76,7 +76,7 @@ public class $Type$Resource {
             if (parent != null) {
         	
             	return (List<$Type$Output>) parent.subprocesses().stream()
-                    .map(pi -> mapOutput(new $Type$Output(), ($Type$) ((ProcessInstance)pi).variables()))
+                    .map(pi -> mapOutput(new $Type$Output(), ($Type$) ((ProcessInstance)pi).variables(), ((ProcessInstance)pi).businessKey()))
                     .collect(java.util.stream.Collectors.toList());
             } else {
             	return java.util.Collections.emptyList();
@@ -144,7 +144,7 @@ public class $Type$Resource {
             identitySupplier.buildIdentityProvider(user, groups);
             return subprocess_$name$.instances()
                 .findById($parentprocessid$ + ":" + id_$name$)
-                .map(pi -> mapOutput(new $Type$Output(), pi.variables()))
+                .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
         } finally {
             IdentityProvider.set(null);
@@ -266,7 +266,7 @@ public class $Type$Resource {
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
 
             pi.updateVariables(resource);
-            return mapOutput(new $Type$Output(), pi.variables());
+            return mapOutput(new $Type$Output(), pi.variables(), pi.businessKey());
 
         });
     }
@@ -292,16 +292,15 @@ public class $Type$Resource {
     @Path("$prefix$/$name$/{id_$name$}/tasks")
     @Produces(MediaType.APPLICATION_JSON)
     public java.util.List<WorkItem.Descriptor> getTasks_$name$(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$, @QueryParam("user") final String user, @QueryParam("group") final List<String> groups) {
-        try {
-            identitySupplier.buildIdentityProvider(user, groups);
+        
+        identitySupplier.buildIdentityProvider(user, groups);
+        return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             return subprocess_$name$.instances()
-                .findById($parentprocessid$ + ":" + id_$name$)
+                .findById($parentprocessid$ + ":" + id_$name$, io.automatik.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
                 .map(pi -> pi.workItems(policies(user, groups)))
                 .map(l -> l.stream().map(WorkItem::toMap).collect(Collectors.toList()))
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
-        } finally {
-            IdentityProvider.set(null);
-        }
+        });
     }
     
     protected $Type$Output getSubModel_$name$(ProcessInstance<$Type$> pi) {
@@ -309,7 +308,7 @@ public class $Type$Resource {
             throw new ProcessInstanceExecutionException(pi.id(), pi.error().get().failedNodeId(), pi.error().get().errorMessage());
         }
         
-        return mapOutput(new $Type$Output(), pi.variables());
+        return mapOutput(new $Type$Output(), pi.variables(), pi.businessKey());
     }
 
     
@@ -319,8 +318,8 @@ public class $Type$Resource {
         return resource;
     }
     
-    protected $Type$Output mapOutput($Type$Output output, $Type$ resource) {
-        output.fromMap(resource.getId(), resource.toMap());
+    protected $Type$Output mapOutput($Type$Output output, $Type$ resource, String businessKey) {
+        output.fromMap(businessKey != null ? businessKey: resource.getId(), resource.toMap());
         
         return output;
     }

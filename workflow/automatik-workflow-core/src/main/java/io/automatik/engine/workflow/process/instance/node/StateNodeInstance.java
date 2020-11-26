@@ -111,7 +111,9 @@ public class StateNodeInstance extends CompositeContextNodeInstance implements E
     public void removeEventListeners() {
         super.removeEventListeners();
         getProcessInstance().removeEventListener("signal", this, false);
-        getProcessInstance().getProcessRuntime().removeEventListener(ContextAwareEventListener.using(getId(), null));
+        if (getProcessInstance().getProcessRuntime() != null) {
+            getProcessInstance().getProcessRuntime().removeEventListener(ContextAwareEventListener.using(getId(), null));
+        }
     }
 
     public String[] getEventTypes() {

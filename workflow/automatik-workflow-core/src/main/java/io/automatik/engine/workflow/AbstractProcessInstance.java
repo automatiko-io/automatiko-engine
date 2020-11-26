@@ -470,7 +470,10 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                 reconnect();
             }
         }
-
+        if (this.rt != null && ((WorkflowProcessInstanceImpl) processInstance).getProcessRuntime() == null) {
+            ((WorkflowProcessInstanceImpl) processInstance).setProcessRuntime((InternalProcessRuntime) getProcessRuntime());
+            reconnect();
+        }
         return this.processInstance;
     }
 

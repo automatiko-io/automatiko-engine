@@ -80,6 +80,7 @@ public class StartNodeVisitor extends AbstractNodeVisitor<StartNode> {
                     (String) nodeMetaData.get(MESSAGE_TYPE), (String) nodeMetaData.get(TRIGGER_MAPPING),
                     String.valueOf(node.getId()), node.getName(), (String) nodeMetaData.get(TRIGGER_CORRELATION),
                     (String) nodeMetaData.get(TRIGGER_CORRELATION_EXPR)).validate();
+            trigger.addContext(node.getMetaData());
             // mark the trigger as capable of starting new instance only if this is top level start node
             if (node.getParentContainer() instanceof WorkflowProcess) {
                 trigger.setStart(true);
