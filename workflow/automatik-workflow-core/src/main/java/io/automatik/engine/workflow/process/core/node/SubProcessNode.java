@@ -2,6 +2,7 @@
 package io.automatik.engine.workflow.process.core.node;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,7 +27,9 @@ import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.core.impl.ContextContainerImpl;
 import io.automatik.engine.workflow.base.core.impl.DataTransformerRegistry;
 import io.automatik.engine.workflow.base.instance.context.variable.VariableScopeInstance;
+import io.automatik.engine.workflow.base.instance.impl.AssignmentAction;
 import io.automatik.engine.workflow.base.instance.impl.util.VariableUtil;
+import io.automatik.engine.workflow.base.instance.impl.workitem.WorkItemImpl;
 import io.automatik.engine.workflow.process.instance.NodeInstance;
 import io.automatik.engine.workflow.process.instance.impl.NodeInstanceResolverFactory;
 import io.automatik.engine.workflow.util.PatternConstants;
@@ -146,17 +149,38 @@ public class SubProcessNode extends StateBasedNode implements Mappable, ContextC
         return out;
     }
 
-    public void adjustOutMapping(String forEachOutVariable) {
+    public List<DataAssociation> adjustOutMapping(String forEachOutVariable) {
+        List<DataAssociation> result = new ArrayList<DataAssociation>();
+
         if (forEachOutVariable == null) {
-            return;
+            return result;
         }
         Iterator<DataAssociation> it = outMapping.iterator();
         while (it.hasNext()) {
             DataAssociation association = it.next();
             if (forEachOutVariable.equals(association.getTarget())) {
                 it.remove();
+                result.add(association);
             }
         }
+        return result;
+    }
+
+    public List<DataAssociation> adjustInMapping(String forEachInVariable) {
+        List<DataAssociation> result = new ArrayList<DataAssociation>();
+        if (forEachInVariable == null) {
+            return result;
+        }
+        Iterator<DataAssociation> it = inMapping.iterator();
+        while (it.hasNext()) {
+            DataAssociation association = it.next();
+            if (association.getSources().contains(forEachInVariable)) {
+                it.remove();
+                result.add(association);
+            }
+        }
+
+        return result;
     }
 
     public void addOutAssociation(DataAssociation dataAssociation) {
@@ -280,7 +304,7 @@ public class SubProcessNode extends StateBasedNode implements Mappable, ContextC
                                     getSourceParameters(ctx, mapping));
 
                         }
-                    } else {
+                    } else if (mapping.getAssignments() == null || mapping.getAssignments().isEmpty()) {
 
                         VariableScopeInstance variableScopeInstance = (VariableScopeInstance) ((NodeInstance) ctx
                                 .getNodeInstance()).resolveContextInstance(VariableScope.VARIABLE_SCOPE,
@@ -299,7 +323,10 @@ public class SubProcessNode extends StateBasedNode implements Mappable, ContextC
                                 }
                             }
                         }
+                    } else {
+                        mapping.getAssignments().stream().forEach(a -> handleAssignment(ctx, parameters, a));
                     }
+
                     if (parameterValue != null) {
                         parameters.put(mapping.getTarget(), parameterValue);
                     }
@@ -375,6 +402,18 @@ public class SubProcessNode extends StateBasedNode implements Mappable, ContextC
                         // ignore it as this might be thrown in case of canceling already aborted instance
                     }
                 });
+            }
+
+            private void handleAssignment(ProcessContext ctx, Map<String, Object> output, Assignment assignment) {
+                AssignmentAction action = (AssignmentAction) assignment.getMetaData("Action");
+                try {
+                    WorkItemImpl workItem = new WorkItemImpl();
+                    action.execute(workItem, ctx);
+
+                    output.putAll(workItem.getParameters());
+                } catch (Exception e) {
+                    throw new RuntimeException("unable to execute Assignment", e);
+                }
             }
 
         };

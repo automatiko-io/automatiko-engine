@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 
@@ -300,8 +301,12 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
                     Transformation transformation = association.getTransformation();
                     DataTransformer transformer = DataTransformerRegistry.get().find(transformation.getLanguage());
                     if (transformer != null) {
-                        Object parameterValue = transformer.transform(transformation.getCompiledExpression(),
-                                workItem.getResults());
+                        Map<String, Object> dataSet = new HashMap<String, Object>();
+                        dataSet.putAll(workItem.getParameters());
+                        dataSet.putAll(workItem.getResults());
+
+                        Object parameterValue = transformer.transform(transformation.getCompiledExpression(), dataSet);
+
                         VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
                                 VARIABLE_SCOPE, association.getTarget());
                         if (variableScopeInstance != null && parameterValue != null) {
@@ -682,10 +687,12 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         }
 
         List<NamedDataType> outputs = new ArrayList<>();
-        VariableScope variableScope = (VariableScope) getProcessInstance().getContextContainer()
-                .getDefaultContext(VARIABLE_SCOPE);
-        getWorkItemNode().getOutAssociations().forEach(da -> da.getSources()
-                .forEach(s -> outputs.add(new NamedDataType(s, variableScope.findVariable(da.getTarget()).getType()))));
+        Map<String, Object> dataOutputs = (Map<String, Object>) getWorkItemNode().getMetaData().getOrDefault("DataOutputs",
+                Collections.emptyMap());
+
+        for (Entry<String, Object> dOut : dataOutputs.entrySet()) {
+            outputs.add(new NamedDataType(dOut.getKey(), dOut.getValue()));
+        }
 
         GroupedNamedDataType dataTypes = new GroupedNamedDataType();
         dataTypes.add("Input", inputs);

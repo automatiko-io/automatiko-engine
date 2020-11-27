@@ -2,6 +2,7 @@
 package io.automatik.engine.workflow.bpmn2.xml;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -96,6 +97,8 @@ public class BoundaryEventHandler extends AbstractNodeHandler {
             }
             xmlNode = xmlNode.getNextSibling();
         }
+        node.setMetaData("DataOutputs", new HashMap<String, String>(dataOutputTypes));
+
         NodeContainer nodeContainer = (NodeContainer) parser.getParent();
         nodeContainer.addNode(node);
         ((ProcessBuildData) parser.getData()).addNode(node);
@@ -125,6 +128,8 @@ public class BoundaryEventHandler extends AbstractNodeHandler {
                 String id = ((Element) xmlNode).getAttribute("id");
                 String outputName = ((Element) xmlNode).getAttribute("name");
                 dataOutputs.put(id, outputName);
+
+                populateDataOutputs(xmlNode, outputName, parser);
             } else if ("dataOutputAssociation".equals(nodeName)) {
                 readDataOutputAssociation(xmlNode, eventNode, parser);
             } else if ("escalationEventDefinition".equals(nodeName)) {
@@ -169,6 +174,8 @@ public class BoundaryEventHandler extends AbstractNodeHandler {
                 String id = ((Element) xmlNode).getAttribute("id");
                 String outputName = ((Element) xmlNode).getAttribute("name");
                 dataOutputs.put(id, outputName);
+
+                populateDataOutputs(xmlNode, outputName, parser);
             } else if ("dataOutputAssociation".equals(nodeName)) {
                 readDataOutputAssociation(xmlNode, eventNode, parser);
             } else if ("errorEventDefinition".equals(nodeName)) {
@@ -339,6 +346,8 @@ public class BoundaryEventHandler extends AbstractNodeHandler {
                 String id = ((Element) xmlNode).getAttribute("id");
                 String outputName = ((Element) xmlNode).getAttribute("name");
                 dataOutputs.put(id, outputName);
+
+                populateDataOutputs(xmlNode, outputName, parser);
             }
             if ("dataOutputAssociation".equals(nodeName)) {
                 readDataOutputAssociation(xmlNode, eventNode, parser);
@@ -376,6 +385,8 @@ public class BoundaryEventHandler extends AbstractNodeHandler {
                 String id = ((Element) xmlNode).getAttribute("id");
                 String outputName = ((Element) xmlNode).getAttribute("name");
                 dataOutputs.put(id, outputName);
+
+                populateDataOutputs(xmlNode, outputName, parser);
             } else if ("dataOutputAssociation".equals(nodeName)) {
                 readDataOutputAssociation(xmlNode, eventNode, parser);
             } else if ("conditionalEventDefinition".equals(nodeName)) {
@@ -414,6 +425,8 @@ public class BoundaryEventHandler extends AbstractNodeHandler {
                 String id = ((Element) xmlNode).getAttribute("id");
                 String outputName = ((Element) xmlNode).getAttribute("name");
                 dataOutputs.put(id, outputName);
+
+                populateDataOutputs(xmlNode, outputName, parser);
             } else if ("dataOutputAssociation".equals(nodeName)) {
                 readDataOutputAssociation(xmlNode, eventNode, parser);
             } else if ("messageEventDefinition".equals(nodeName)) {
@@ -487,6 +500,24 @@ public class BoundaryEventHandler extends AbstractNodeHandler {
 
         eventNode.setVariableName(findVariable(to, parser));
 
+    }
+
+    protected void populateDataOutputs(org.w3c.dom.Node xmlNode, String outputName, ExtensibleXmlParser parser) {
+        Map<String, ItemDefinition> itemDefinitions = (Map<String, ItemDefinition>) ((ProcessBuildData) parser.getData())
+                .getMetaData("ItemDefinitions");
+        String itemSubjectRef = ((Element) xmlNode).getAttribute("itemSubjectRef");
+
+        if (itemSubjectRef == null || itemSubjectRef.isEmpty()) {
+            String dataType = ((Element) xmlNode).getAttribute("dtype");
+            if (dataType == null || dataType.isEmpty()) {
+                dataType = "java.lang.String";
+            }
+            dataOutputTypes.put(outputName, dataType);
+        } else if (itemDefinitions.get(itemSubjectRef) != null) {
+            dataOutputTypes.put(outputName, itemDefinitions.get(itemSubjectRef).getStructureRef());
+        } else {
+            dataOutputTypes.put(outputName, "java.lang.Object");
+        }
     }
 
     public void writeNode(Node node, StringBuilder xmlDump, int metaDataType) {

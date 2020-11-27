@@ -2,6 +2,8 @@
 package io.automatik.engine.workflow.process.core.node;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import io.automatik.engine.api.definition.process.Node;
@@ -10,6 +12,7 @@ import io.automatik.engine.workflow.base.core.Context;
 import io.automatik.engine.workflow.base.core.context.AbstractContext;
 import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
+import io.automatik.engine.workflow.process.core.ExpressionCondition;
 import io.automatik.engine.workflow.process.core.impl.ConnectionImpl;
 import io.automatik.engine.workflow.process.core.impl.ExtendedNodeImpl;
 
@@ -33,6 +36,13 @@ public class ForEachNode extends CompositeContextNode {
     private boolean waitForCompletion = true;
 
     private boolean sequential = false;
+
+    private String expressionLang;
+
+    private ExpressionCondition expressionConition;
+
+    private List<DataAssociation> inMapping = new LinkedList<DataAssociation>();
+    private List<DataAssociation> outMapping = new LinkedList<DataAssociation>();
 
     public ForEachNode() {
         // Split
@@ -181,7 +191,7 @@ public class ForEachNode extends CompositeContextNode {
             variableScope.setVariables(variables);
         }
         Variable variable = new Variable();
-        variable.setId(variableName);
+        variable.setId((String) getMetaData().getOrDefault("MIInput", variableName));
         variable.setName(variableName);
         variable.setType(type);
         variables.add(variable);
@@ -197,13 +207,13 @@ public class ForEachNode extends CompositeContextNode {
             variableScope.setVariables(variables);
         }
         Variable variable = new Variable();
-        variable.setId(variableName);
+        variable.setId((String) getMetaData().getOrDefault("MIOutput", variableName));
         variable.setName(variableName);
         variable.setType(type);
         variables.add(variable);
 
         Variable tmpvariable = new Variable();
-        variable.setId("foreach_output");
+        tmpvariable.setId("foreach_output");
         tmpvariable.setName("foreach_output");
         tmpvariable.setType(type);
         variables.add(tmpvariable);
@@ -297,4 +307,45 @@ public class ForEachNode extends CompositeContextNode {
     public void setSequential(boolean sequential) {
         this.sequential = sequential;
     }
+
+    public String getExpressionLang() {
+        return expressionLang;
+    }
+
+    public void setExpressionLang(String expressionLang) {
+        this.expressionLang = expressionLang;
+    }
+
+    public ExpressionCondition getExpressionConition() {
+        return expressionConition;
+    }
+
+    public void setExpressionConition(ExpressionCondition expressionConition) {
+        this.expressionConition = expressionConition;
+    }
+
+    public void addInAssociation(DataAssociation dataAssociation) {
+        inMapping.add(dataAssociation);
+    }
+
+    public void addInAssociation(List<DataAssociation> dataAssociations) {
+        inMapping.addAll(dataAssociations);
+    }
+
+    public List<DataAssociation> getInAssociations() {
+        return Collections.unmodifiableList(inMapping);
+    }
+
+    public void addOutAssociation(DataAssociation dataAssociation) {
+        outMapping.add(dataAssociation);
+    }
+
+    public void addOutAssociation(List<DataAssociation> dataAssociations) {
+        outMapping.addAll(dataAssociations);
+    }
+
+    public List<DataAssociation> getOutAssociations() {
+        return Collections.unmodifiableList(outMapping);
+    }
+
 }

@@ -7,6 +7,7 @@ import java.util.Optional;
 import io.automatik.engine.api.definition.process.Connection;
 import io.automatik.engine.api.definition.process.NodeContainer;
 import io.automatik.engine.workflow.base.core.Contextable;
+import io.automatik.engine.workflow.base.core.VariableExpression;
 
 /**
  * Represents a node in a RuleFlow.
@@ -51,5 +52,9 @@ public interface Node extends io.automatik.engine.api.definition.process.Node, C
     Optional<ExpressionCondition> getCompletionCheck();
 
     void setCompletionCheck(Optional<ExpressionCondition> completionCheck);
+
+    VariableExpression getVariableExpression();
+
+    void setVariableExpression(VariableExpression variableExpression);
 
 }

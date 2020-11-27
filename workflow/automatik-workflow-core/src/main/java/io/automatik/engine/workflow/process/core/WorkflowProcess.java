@@ -83,6 +83,8 @@ public interface WorkflowProcess
 
     boolean isDynamic();
 
+    boolean isExecutable();
+
     Integer getProcessType();
 
     List<Node> getNodesRecursively();

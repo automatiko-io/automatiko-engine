@@ -113,8 +113,9 @@ public class SubProcessHandler extends AbstractNodeHandler {
         List<IntermediateLink> throwLinks = (List<IntermediateLink>) compositeNode.getMetaData(ProcessHandler.LINKS);
         ProcessHandler.linkIntermediateLinks(compositeNode, throwLinks);
 
-        ProcessHandler.linkConnections(compositeNode, connections);
-        ProcessHandler.linkBoundaryEvents(compositeNode);
+        ProcessHandler processHandler = new ProcessHandler();
+        processHandler.linkConnections(compositeNode, connections);
+        processHandler.linkBoundaryEvents(compositeNode);
 
         // This must be done *after* linkConnections(process, connections)
         // because it adds hidden connections for compensations
@@ -156,8 +157,9 @@ public class SubProcessHandler extends AbstractNodeHandler {
         handleScript(forEachNode, element, "onExit");
 
         List<SequenceFlow> connections = (List<SequenceFlow>) forEachNode.getMetaData(ProcessHandler.CONNECTIONS);
-        ProcessHandler.linkConnections(forEachNode, connections);
-        ProcessHandler.linkBoundaryEvents(forEachNode);
+        ProcessHandler processHandler = new ProcessHandler();
+        processHandler.linkConnections(forEachNode, connections);
+        processHandler.linkBoundaryEvents(forEachNode);
 
         // This must be done *after* linkConnections(process, connections)
         // because it adds hidden connections for compensations

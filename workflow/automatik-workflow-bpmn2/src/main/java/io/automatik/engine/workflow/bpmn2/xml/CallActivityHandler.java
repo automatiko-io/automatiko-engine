@@ -2,6 +2,7 @@
 package io.automatik.engine.workflow.bpmn2.xml;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.w3c.dom.Element;
@@ -18,6 +19,7 @@ import io.automatik.engine.workflow.compiler.xml.XmlDumper;
 import io.automatik.engine.workflow.process.core.Node;
 import io.automatik.engine.workflow.process.core.NodeContainer;
 import io.automatik.engine.workflow.process.core.impl.NodeImpl;
+import io.automatik.engine.workflow.process.core.node.DataAssociation;
 import io.automatik.engine.workflow.process.core.node.ForEachNode;
 import io.automatik.engine.workflow.process.core.node.SubProcessNode;
 import io.automatik.engine.workflow.process.core.node.Transformation;
@@ -112,7 +114,7 @@ public class CallActivityHandler extends AbstractNodeHandler {
                 // remove output collection data output of for each to avoid problems when
                 // running in variable strict mode
                 if (orignalNode instanceof SubProcessNode) {
-                    ((SubProcessNode) orignalNode).adjustOutMapping(forEachNode.getOutputCollectionExpression());
+                    adjustNodeConfiguration(orignalNode, forEachNode);
                 }
 
                 Map<String, String> dataInputs = (Map<String, String>) orignalNode.getMetaData().remove("DataInputs");
@@ -132,6 +134,20 @@ public class CallActivityHandler extends AbstractNodeHandler {
         nodeContainer.addNode(node);
         ((ProcessBuildData) parser.getData()).addNode(node);
         return node;
+    }
+
+    protected void adjustNodeConfiguration(Node orignalNode, ForEachNode forEachNode) {
+
+        List<DataAssociation> inputs = ((SubProcessNode) orignalNode).adjustInMapping(forEachNode.getCollectionExpression());
+        List<DataAssociation> outputs = ((SubProcessNode) orignalNode)
+                .adjustOutMapping(forEachNode.getOutputCollectionExpression());
+
+        if (inputs != null) {
+            forEachNode.addInAssociation(inputs);
+        }
+        if (outputs != null) {
+            forEachNode.addOutAssociation(outputs);
+        }
     }
 
     protected void readIoSpecification(org.w3c.dom.Node xmlNode, Map<String, String> dataInputs,

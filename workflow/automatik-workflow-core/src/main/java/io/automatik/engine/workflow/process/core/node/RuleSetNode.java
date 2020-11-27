@@ -2,8 +2,10 @@
 package io.automatik.engine.workflow.process.core.node;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -239,6 +241,40 @@ public class RuleSetNode extends StateBasedNode implements ContextContainer, Map
 
     public List<DataAssociation> getOutAssociations() {
         return Collections.unmodifiableList(outMapping);
+    }
+
+    public List<DataAssociation> adjustOutMapping(String forEachOutVariable) {
+        List<DataAssociation> result = new ArrayList<DataAssociation>();
+        if (forEachOutVariable == null) {
+            return result;
+        }
+        Iterator<DataAssociation> it = outMapping.iterator();
+        while (it.hasNext()) {
+            DataAssociation association = it.next();
+            if (forEachOutVariable.equals(association.getTarget())) {
+                it.remove();
+                result.add(association);
+            }
+        }
+
+        return result;
+    }
+
+    public List<DataAssociation> adjustInMapping(String forEachInVariable) {
+        List<DataAssociation> result = new ArrayList<DataAssociation>();
+        if (forEachInVariable == null) {
+            return result;
+        }
+        Iterator<DataAssociation> it = inMapping.iterator();
+        while (it.hasNext()) {
+            DataAssociation association = it.next();
+            if (association.getSources().contains(forEachInVariable)) {
+                it.remove();
+                result.add(association);
+            }
+        }
+
+        return result;
     }
 
     public Map<String, Object> getParameters() {

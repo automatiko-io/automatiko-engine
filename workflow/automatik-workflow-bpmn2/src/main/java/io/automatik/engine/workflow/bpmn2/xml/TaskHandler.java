@@ -322,7 +322,7 @@ public class TaskHandler extends AbstractNodeHandler {
                 // remove output collection data output of for each to avoid problems when
                 // running in variable strict mode
                 if (orignalNode instanceof WorkItemNode) {
-                    ((WorkItemNode) orignalNode).adjustOutMapping(forEachNode.getOutputCollectionExpression());
+                    adjustNodeConfiguration(orignalNode, forEachNode);
                 }
 
                 break;
@@ -349,6 +349,10 @@ public class TaskHandler extends AbstractNodeHandler {
         ((ProcessBuildData) parser.getData()).addNode(node);
 
         return node;
+    }
+
+    protected void adjustNodeConfiguration(Node orignalNode, ForEachNode forEachNode) {
+
     }
 
     protected void handleForEachNode(final Node node, final Element element, final String uri, final String localName,

@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -800,9 +801,17 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
 
                     NamedDataType dataType = null;
                     if (((EventNodeInterface) n).getVariableName() != null) {
-                        Variable eventVar = variableScope.findVariable(((EventNodeInterface) n).getVariableName());
-                        if (eventVar != null) {
-                            dataType = new NamedDataType(eventVar.getName(), eventVar.getType());
+                        Map<String, Object> dataOutputs = (Map<String, Object>) n.getMetaData().get("DataOutputs");
+                        if (dataOutputs != null) {
+                            for (Entry<String, Object> dOut : dataOutputs.entrySet()) {
+                                dataType = new NamedDataType(dOut.getKey(), dOut.getValue());
+                            }
+                        } else {
+
+                            Variable eventVar = variableScope.findVariable(((EventNodeInterface) n).getVariableName());
+                            if (eventVar != null) {
+                                dataType = new NamedDataType(eventVar.getName(), eventVar.getType());
+                            }
                         }
                     }
                     if (n instanceof BoundaryEventNode) {

@@ -92,7 +92,7 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
 
                     throw new RuntimeException("DMN result errors:: " + modelInstance.buildErrorMessage(dmnResult));
                 }
-                processOutputs(modelInstance.getResultData(dmnResult));
+                processOutputs(inputs, modelInstance.getResultData(dmnResult));
                 triggerCompleted();
             } else {
                 throw new UnsupportedOperationException("Unsupported Rule Type: " + ruleType);
@@ -138,7 +138,7 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
         super.cancel();
     }
 
-    private void processOutputs(Map<String, Object> objects) {
+    private void processOutputs(Map<String, Object> inputs, Map<String, Object> objects) {
         RuleSetNode ruleSetNode = getRuleSetNode();
         if (ruleSetNode != null) {
             for (Iterator<DataAssociation> iterator = ruleSetNode.getOutAssociations().iterator(); iterator
@@ -148,7 +148,12 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
                     Transformation transformation = association.getTransformation();
                     DataTransformer transformer = DataTransformerRegistry.get().find(transformation.getLanguage());
                     if (transformer != null) {
-                        Object parameterValue = transformer.transform(transformation.getCompiledExpression(), objects);
+                        Map<String, Object> dataSet = new HashMap<String, Object>();
+                        dataSet.putAll(inputs);
+                        dataSet.putAll(objects);
+
+                        Object parameterValue = transformer.transform(transformation.getCompiledExpression(), dataSet);
+
                         VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
                                 VariableScope.VARIABLE_SCOPE, association.getTarget());
                         if (variableScopeInstance != null && parameterValue != null) {

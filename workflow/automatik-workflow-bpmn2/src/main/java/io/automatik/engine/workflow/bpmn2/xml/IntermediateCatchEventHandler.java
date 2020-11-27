@@ -3,6 +3,7 @@ package io.automatik.engine.workflow.bpmn2.xml;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +19,7 @@ import io.automatik.engine.workflow.base.core.event.EventTypeFilter;
 import io.automatik.engine.workflow.base.core.impl.DataTransformerRegistry;
 import io.automatik.engine.workflow.base.core.timer.Timer;
 import io.automatik.engine.workflow.bpmn2.core.IntermediateLink;
+import io.automatik.engine.workflow.bpmn2.core.ItemDefinition;
 import io.automatik.engine.workflow.bpmn2.core.Message;
 import io.automatik.engine.workflow.compiler.xml.ExtensibleXmlParser;
 import io.automatik.engine.workflow.compiler.xml.ProcessBuildData;
@@ -94,6 +96,8 @@ public class IntermediateCatchEventHandler extends AbstractNodeHandler {
             }
             xmlNode = xmlNode.getNextSibling();
         }
+        node.setMetaData("DataOutputs", new HashMap<String, String>(dataOutputTypes));
+
         NodeContainer nodeContainer = (NodeContainer) parser.getParent();
         nodeContainer.addNode(node);
         ((ProcessBuildData) parser.getData()).addNode(node);
@@ -165,6 +169,8 @@ public class IntermediateCatchEventHandler extends AbstractNodeHandler {
                 String id = ((Element) xmlNode).getAttribute("id");
                 String outputName = ((Element) xmlNode).getAttribute("name");
                 dataOutputs.put(id, outputName);
+
+                populateDataOutputs(xmlNode, outputName, parser);
             } else if ("dataOutputAssociation".equals(nodeName)) {
                 readDataOutputAssociation(xmlNode, eventNode);
             } else if ("signalEventDefinition".equals(nodeName)) {
@@ -196,6 +202,8 @@ public class IntermediateCatchEventHandler extends AbstractNodeHandler {
             String name = ((Element) xmlNode).getAttribute("name");
             if ("dataOutput".equals(nodeName)) {
                 dataOutputs.put(id, name);
+
+                populateDataOutputs(xmlNode, name, parser);
             } else if ("dataOutputAssociation".equals(nodeName)) {
                 readDataOutputAssociation(xmlNode, eventNode);
             } else if ("messageEventDefinition".equals(nodeName)) {
@@ -330,6 +338,24 @@ public class IntermediateCatchEventHandler extends AbstractNodeHandler {
                 eventNode.setVariableName(to);
             }
 
+        }
+    }
+
+    protected void populateDataOutputs(org.w3c.dom.Node xmlNode, String outputName, ExtensibleXmlParser parser) {
+        Map<String, ItemDefinition> itemDefinitions = (Map<String, ItemDefinition>) ((ProcessBuildData) parser.getData())
+                .getMetaData("ItemDefinitions");
+        String itemSubjectRef = ((Element) xmlNode).getAttribute("itemSubjectRef");
+
+        if (itemSubjectRef == null || itemSubjectRef.isEmpty()) {
+            String dataType = ((Element) xmlNode).getAttribute("dtype");
+            if (dataType == null || dataType.isEmpty()) {
+                dataType = "java.lang.String";
+            }
+            dataOutputTypes.put(outputName, dataType);
+        } else if (itemDefinitions.get(itemSubjectRef) != null) {
+            dataOutputTypes.put(outputName, itemDefinitions.get(itemSubjectRef).getStructureRef());
+        } else {
+            dataOutputTypes.put(outputName, "java.lang.Object");
         }
     }
 

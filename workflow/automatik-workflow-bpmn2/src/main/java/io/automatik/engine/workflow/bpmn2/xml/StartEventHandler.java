@@ -2,6 +2,7 @@
 package io.automatik.engine.workflow.bpmn2.xml;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +21,7 @@ import io.automatik.engine.workflow.base.core.timer.DateTimeUtils;
 import io.automatik.engine.workflow.base.core.timer.Timer;
 import io.automatik.engine.workflow.bpmn2.core.Error;
 import io.automatik.engine.workflow.bpmn2.core.Escalation;
+import io.automatik.engine.workflow.bpmn2.core.ItemDefinition;
 import io.automatik.engine.workflow.bpmn2.core.Message;
 import io.automatik.engine.workflow.bpmn2.core.Signal;
 import io.automatik.engine.workflow.compiler.xml.ExtensibleXmlParser;
@@ -73,7 +75,7 @@ public class StartEventHandler extends AbstractNodeHandler {
         while (xmlNode != null) {
             String nodeName = xmlNode.getNodeName();
             if ("dataOutput".equals(nodeName)) {
-                readDataOutput(xmlNode);
+                readDataOutput(xmlNode, parser);
             } else if ("dataOutputAssociation".equals(nodeName)) {
                 readDataOutputAssociation(xmlNode, startNode);
             } else if ("outputSet".equals(nodeName)) {
@@ -206,6 +208,8 @@ public class StartEventHandler extends AbstractNodeHandler {
             }
             xmlNode = xmlNode.getNextSibling();
         }
+
+        node.setMetaData("DataOutputs", new HashMap<String, String>(dataOutputTypes));
     }
 
     private void addTriggerWithInMappings(StartNode startNode, String triggerEventType) {
@@ -277,10 +281,29 @@ public class StartEventHandler extends AbstractNodeHandler {
     }
 
     // The results of this method are only used to check syntax
-    protected void readDataOutput(org.w3c.dom.Node xmlNode) {
+    protected void readDataOutput(org.w3c.dom.Node xmlNode, ExtensibleXmlParser parser) {
         String id = ((Element) xmlNode).getAttribute("id");
         String outputName = ((Element) xmlNode).getAttribute("name");
         dataOutputs.put(id, outputName);
+        populateDataOutputs(xmlNode, outputName, parser);
+    }
+
+    protected void populateDataOutputs(org.w3c.dom.Node xmlNode, String outputName, ExtensibleXmlParser parser) {
+        Map<String, ItemDefinition> itemDefinitions = (Map<String, ItemDefinition>) ((ProcessBuildData) parser.getData())
+                .getMetaData("ItemDefinitions");
+        String itemSubjectRef = ((Element) xmlNode).getAttribute("itemSubjectRef");
+
+        if (itemSubjectRef == null || itemSubjectRef.isEmpty()) {
+            String dataType = ((Element) xmlNode).getAttribute("dtype");
+            if (dataType == null || dataType.isEmpty()) {
+                dataType = "java.lang.String";
+            }
+            dataOutputTypes.put(outputName, dataType);
+        } else if (itemDefinitions.get(itemSubjectRef) != null) {
+            dataOutputTypes.put(outputName, itemDefinitions.get(itemSubjectRef).getStructureRef());
+        } else {
+            dataOutputTypes.put(outputName, "java.lang.Object");
+        }
     }
 
     @Override

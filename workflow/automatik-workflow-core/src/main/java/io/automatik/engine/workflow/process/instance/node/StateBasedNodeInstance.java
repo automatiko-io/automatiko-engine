@@ -9,9 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
 
-import org.mvel2.MVEL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,9 +36,7 @@ import io.automatik.engine.workflow.process.core.ProcessAction;
 import io.automatik.engine.workflow.process.core.impl.NodeImpl;
 import io.automatik.engine.workflow.process.core.node.StateBasedNode;
 import io.automatik.engine.workflow.process.instance.impl.ExtendedNodeInstanceImpl;
-import io.automatik.engine.workflow.process.instance.impl.NodeInstanceResolverFactory;
 import io.automatik.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
-import io.automatik.engine.workflow.util.PatternConstants;
 
 public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
         implements EventBasedNodeInstanceInterface, EventListener {
@@ -185,36 +181,11 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
         if (s == null) {
             return null;
         }
-        // cannot parse delay, trying to interpret it
-        Map<String, String> replacements = new HashMap<>();
-        Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(s);
-        while (matcher.find()) {
-            String paramName = matcher.group(1);
-            if (replacements.get(paramName) == null) {
-                VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
-                        VariableScope.VARIABLE_SCOPE, paramName);
-                if (variableScopeInstance != null) {
-                    Object variableValue = variableScopeInstance.getVariable(paramName);
-                    String variableValueString = variableValue == null ? "" : variableValue.toString();
-                    replacements.put(paramName, variableValueString);
-                } else {
-                    try {
-                        Object variableValue = MVEL.eval(paramName, new NodeInstanceResolverFactory(this));
-                        String variableValueString = variableValue == null ? "" : variableValue.toString();
-                        replacements.put(paramName, variableValueString);
-                    } catch (Throwable t) {
-                        logger.error("Could not find variable scope for variable {}", paramName);
-                        logger.error("when trying to replace variable in processId for sub process {}", getNodeName());
-                        logger.error("Continuing without setting process id.");
-                    }
-                }
-            }
-        }
-        for (Map.Entry<String, String> replacement : replacements.entrySet()) {
-            s = s.replace("#{" + replacement.getKey() + "}", replacement.getValue());
-        }
+        ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
+        context.setNodeInstance(this);
+        context.setProcessInstance(getProcessInstance());
+        return ((Node) getNode()).getVariableExpression().evaluate(s, context);
 
-        return s;
     }
 
     protected void handleSLAViolation() {

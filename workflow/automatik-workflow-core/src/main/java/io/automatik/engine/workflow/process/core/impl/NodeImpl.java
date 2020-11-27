@@ -14,6 +14,8 @@ import io.automatik.engine.api.definition.process.Connection;
 import io.automatik.engine.api.definition.process.NodeContainer;
 import io.automatik.engine.workflow.base.core.Context;
 import io.automatik.engine.workflow.base.core.ContextResolver;
+import io.automatik.engine.workflow.base.core.VariableExpression;
+import io.automatik.engine.workflow.base.core.impl.MvelNodeInstanceVariableExpression;
 import io.automatik.engine.workflow.process.core.Constraint;
 import io.automatik.engine.workflow.process.core.ExpressionCondition;
 import io.automatik.engine.workflow.process.core.Node;
@@ -45,6 +47,8 @@ public abstract class NodeImpl implements Node, ContextResolver {
     protected Map<ConnectionRef, Constraint> constraints = new HashMap<ConnectionRef, Constraint>();
 
     protected Predicate<io.automatik.engine.api.runtime.process.ProcessContext> conditionPredicate;
+
+    protected VariableExpression variableExpression = new MvelNodeInstanceVariableExpression();
 
     public NodeImpl() {
         this.id = -1;
@@ -386,4 +390,15 @@ public abstract class NodeImpl implements Node, ContextResolver {
     public boolean hasCondition() {
         return this.conditionPredicate != null;
     }
+
+    @Override
+    public VariableExpression getVariableExpression() {
+        return variableExpression;
+    }
+
+    @Override
+    public void setVariableExpression(VariableExpression variableExpression) {
+        this.variableExpression = variableExpression;
+    }
+
 }

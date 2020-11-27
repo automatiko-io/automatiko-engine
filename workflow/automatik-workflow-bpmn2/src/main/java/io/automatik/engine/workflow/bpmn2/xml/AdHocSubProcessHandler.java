@@ -20,77 +20,78 @@ import io.automatik.engine.workflow.process.core.node.DynamicNode;
 
 public class AdHocSubProcessHandler extends CompositeContextNodeHandler {
 
-	protected static final List<String> AUTOCOMPLETE_EXPRESSIONS = Arrays.asList(
-			"getActivityInstanceAttribute(\"numberOfActiveInstances\") == 0", AUTOCOMPLETE_COMPLETION_CONDITION);
+    protected static final List<String> AUTOCOMPLETE_EXPRESSIONS = Arrays.asList(
+            "getActivityInstanceAttribute(\"numberOfActiveInstances\") == 0", AUTOCOMPLETE_COMPLETION_CONDITION);
 
-	@Override
-	protected Node createNode(Attributes attrs) {
-		DynamicNode result = new DynamicNode();
-		VariableScope variableScope = new VariableScope();
-		result.addContext(variableScope);
-		result.setDefaultContext(variableScope);
-		return result;
-	}
+    @Override
+    protected Node createNode(Attributes attrs) {
+        DynamicNode result = new DynamicNode();
+        VariableScope variableScope = new VariableScope();
+        result.addContext(variableScope);
+        result.setDefaultContext(variableScope);
+        return result;
+    }
 
-	@Override
-	public Class<?> generateNodeFor() {
-		return DynamicNode.class;
-	}
+    @Override
+    public Class<?> generateNodeFor() {
+        return DynamicNode.class;
+    }
 
-	@SuppressWarnings("unchecked")
-	@Override
-	protected void handleNode(final Node node, final Element element, final String uri, final String localName,
-			final ExtensibleXmlParser parser) throws SAXException {
-		super.handleNode(node, element, uri, localName, parser);
-		DynamicNode dynamicNode = (DynamicNode) node;
-		String cancelRemainingInstances = element.getAttribute("cancelRemainingInstances");
-		if ("false".equals(cancelRemainingInstances)) {
-			dynamicNode.setCancelRemainingInstances(false);
-		}
-		// by default it should not autocomplete as it's adhoc
-		org.w3c.dom.Node xmlNode = element.getFirstChild();
-		dynamicNode.setActivationCondition((String) node.getMetaData().get(CUSTOM_ACTIVATION_CONDITION));
-		while (xmlNode != null) {
-			String nodeName = xmlNode.getNodeName();
-			if (COMPLETION_CONDITION.equals(nodeName)) {
-				String expression = xmlNode.getTextContent();
-				if (AUTOCOMPLETE_EXPRESSIONS.contains(expression)) {
-					dynamicNode.setAutoComplete(true);
-				} else {
-					dynamicNode.setCompletionCondition(expression);
-				}
-			}
-			xmlNode = xmlNode.getNextSibling();
-		}
-		List<SequenceFlow> connections = (List<SequenceFlow>) dynamicNode.getMetaData(ProcessHandler.CONNECTIONS);
-		ProcessHandler.linkConnections(dynamicNode, connections);
-		ProcessHandler.linkBoundaryEvents(dynamicNode);
+    @SuppressWarnings("unchecked")
+    @Override
+    protected void handleNode(final Node node, final Element element, final String uri, final String localName,
+            final ExtensibleXmlParser parser) throws SAXException {
+        super.handleNode(node, element, uri, localName, parser);
+        DynamicNode dynamicNode = (DynamicNode) node;
+        String cancelRemainingInstances = element.getAttribute("cancelRemainingInstances");
+        if ("false".equals(cancelRemainingInstances)) {
+            dynamicNode.setCancelRemainingInstances(false);
+        }
+        // by default it should not autocomplete as it's adhoc
+        org.w3c.dom.Node xmlNode = element.getFirstChild();
+        dynamicNode.setActivationCondition((String) node.getMetaData().get(CUSTOM_ACTIVATION_CONDITION));
+        while (xmlNode != null) {
+            String nodeName = xmlNode.getNodeName();
+            if (COMPLETION_CONDITION.equals(nodeName)) {
+                String expression = xmlNode.getTextContent();
+                if (AUTOCOMPLETE_EXPRESSIONS.contains(expression)) {
+                    dynamicNode.setAutoComplete(true);
+                } else {
+                    dynamicNode.setCompletionCondition(expression);
+                }
+            }
+            xmlNode = xmlNode.getNextSibling();
+        }
+        List<SequenceFlow> connections = (List<SequenceFlow>) dynamicNode.getMetaData(ProcessHandler.CONNECTIONS);
+        ProcessHandler processHandler = new ProcessHandler();
+        processHandler.linkConnections(dynamicNode, connections);
+        processHandler.linkBoundaryEvents(dynamicNode);
 
-		handleScript(dynamicNode, element, "onEntry");
-		handleScript(dynamicNode, element, "onExit");
-	}
+        handleScript(dynamicNode, element, "onEntry");
+        handleScript(dynamicNode, element, "onExit");
+    }
 
-	@Override
-	public void writeNode(Node node, StringBuilder xmlDump, int metaDataType) {
-		DynamicNode dynamicNode = (DynamicNode) node;
-		writeNode("adHocSubProcess", dynamicNode, xmlDump, metaDataType);
-		if (!dynamicNode.isCancelRemainingInstances()) {
-			xmlDump.append(" cancelRemainingInstances=\"false\"");
-		}
-		xmlDump.append(" ordering=\"Parallel\" >" + EOL);
-		writeExtensionElements(dynamicNode, xmlDump);
-		// nodes
-		List<Node> subNodes = getSubNodes(dynamicNode);
-		XmlBPMNProcessDumper.INSTANCE.visitNodes(subNodes, xmlDump, metaDataType);
+    @Override
+    public void writeNode(Node node, StringBuilder xmlDump, int metaDataType) {
+        DynamicNode dynamicNode = (DynamicNode) node;
+        writeNode("adHocSubProcess", dynamicNode, xmlDump, metaDataType);
+        if (!dynamicNode.isCancelRemainingInstances()) {
+            xmlDump.append(" cancelRemainingInstances=\"false\"");
+        }
+        xmlDump.append(" ordering=\"Parallel\" >" + EOL);
+        writeExtensionElements(dynamicNode, xmlDump);
+        // nodes
+        List<Node> subNodes = getSubNodes(dynamicNode);
+        XmlBPMNProcessDumper.INSTANCE.visitNodes(subNodes, xmlDump, metaDataType);
 
-		// connections
-		visitConnectionsAndAssociations(dynamicNode, xmlDump, metaDataType);
+        // connections
+        visitConnectionsAndAssociations(dynamicNode, xmlDump, metaDataType);
 
-		if (dynamicNode.isAutoComplete()) {
-			xmlDump.append("    <completionCondition xsi:type=\"tFormalExpression\">"
-					+ AUTOCOMPLETE_COMPLETION_CONDITION + "</completionCondition>" + EOL);
-		}
-		endNode("adHocSubProcess", xmlDump);
-	}
+        if (dynamicNode.isAutoComplete()) {
+            xmlDump.append("    <completionCondition xsi:type=\"tFormalExpression\">"
+                    + AUTOCOMPLETE_COMPLETION_CONDITION + "</completionCondition>" + EOL);
+        }
+        endNode("adHocSubProcess", xmlDump);
+    }
 
 }

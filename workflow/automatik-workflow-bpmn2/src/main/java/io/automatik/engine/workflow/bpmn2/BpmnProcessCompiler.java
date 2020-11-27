@@ -45,6 +45,7 @@ public class BpmnProcessCompiler {
         try {
             List<Process> processes = parse(config, resources);
             List<BpmnProcess> bpmnProcesses = processes.stream().map(p -> create(p, config))
+                    .filter(p -> p != null)
                     .collect(Collectors.toList());
 
             bpmnProcesses.forEach(p -> {

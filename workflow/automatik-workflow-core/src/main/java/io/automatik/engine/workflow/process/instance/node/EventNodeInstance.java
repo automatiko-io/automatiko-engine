@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 
@@ -319,9 +320,17 @@ public class EventNodeInstance extends ExtendedNodeInstanceImpl
     public Set<EventDescription<?>> getEventDescriptions() {
         NamedDataType dataType = null;
         if (getEventNode().getVariableName() != null) {
-            VariableScope variableScope = (VariableScope) getEventNode().getContext(VariableScope.VARIABLE_SCOPE);
-            Variable variable = variableScope.findVariable(getEventNode().getVariableName());
-            dataType = new NamedDataType(variable.getName(), variable.getType());
+            Map<String, Object> dataOutputs = (Map<String, Object>) getEventNode().getMetaData().get("DataOutputs");
+            if (dataOutputs != null) {
+                for (Entry<String, Object> dOut : dataOutputs.entrySet()) {
+                    dataType = new NamedDataType(dOut.getKey(), dOut.getValue());
+                }
+            } else {
+                VariableScope variableScope = (VariableScope) getEventNode().getContext(VariableScope.VARIABLE_SCOPE);
+                Variable variable = variableScope.findVariable(getEventNode().getVariableName());
+                dataType = new NamedDataType(variable.getName(), variable.getType());
+            }
+
         }
         return Collections.singleton(new BaseEventDescription(getEventType(), getNodeDefinitionId(), getNodeName(),
                 "signal", getId(), getProcessInstance().getId(), dataType));

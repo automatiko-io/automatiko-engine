@@ -127,6 +127,7 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
         String id = attrs.getValue("id");
         String name = attrs.getValue("name");
         String visibility = attrs.getValue("processType");
+        String executable = attrs.getValue("isExecutable");
         String packageName = attrs.getValue("https://automatik-platform.io", "packageName");
         String dynamic = attrs.getValue("https://automatik-platform.io", "adHoc");
         String version = attrs.getValue("https://automatik-platform.io", "version");
@@ -146,6 +147,9 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
         if ("true".equals(dynamic)) {
             process.setDynamic(true);
             process.setAutoComplete(false);
+        }
+        if (executable != null) {
+            process.setExecutable(Boolean.parseBoolean(executable));
         }
         if (version != null) {
             process.setVersion(version);
@@ -297,7 +301,7 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
         return ExecutableProcess.class;
     }
 
-    public static void linkConnections(NodeContainer nodeContainer, List<SequenceFlow> connections) {
+    public void linkConnections(NodeContainer nodeContainer, List<SequenceFlow> connections) {
         if (connections != null) {
             for (SequenceFlow connection : connections) {
                 String sourceRef = connection.getSourceRef();
@@ -346,7 +350,7 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
         }
     }
 
-    public static void linkBoundaryEvents(NodeContainer nodeContainer) {
+    public void linkBoundaryEvents(NodeContainer nodeContainer) {
         for (Node node : nodeContainer.getNodes()) {
             if (node instanceof EventNode) {
                 final String attachedTo = (String) node.getMetaData().get("AttachedTo");
@@ -383,7 +387,7 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
         }
     }
 
-    private static void linkBoundaryEscalationEvent(NodeContainer nodeContainer, Node node, String attachedTo,
+    protected void linkBoundaryEscalationEvent(NodeContainer nodeContainer, Node node, String attachedTo,
             Node attachedNode) {
         boolean cancelActivity = (Boolean) node.getMetaData().get("CancelActivity");
         String escalationCode = (String) node.getMetaData().get("EscalationEvent");
@@ -422,7 +426,7 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
         }
     }
 
-    private static void linkBoundaryErrorEvent(NodeContainer nodeContainer, Node node, String attachedTo,
+    protected void linkBoundaryErrorEvent(NodeContainer nodeContainer, Node node, String attachedTo,
             Node attachedNode) {
         ContextContainer compositeNode = (ContextContainer) attachedNode;
         ExceptionScope exceptionScope = (ExceptionScope) compositeNode
@@ -460,7 +464,7 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
         ((EventNode) node).setActions(EndNode.EVENT_NODE_EXIT, actions);
     }
 
-    private static void linkBoundaryTimerEvent(NodeContainer nodeContainer, Node node, String attachedTo,
+    protected void linkBoundaryTimerEvent(NodeContainer nodeContainer, Node node, String attachedTo,
             Node attachedNode) {
         boolean cancelActivity = (Boolean) node.getMetaData().get("CancelActivity");
         StateBasedNode compositeNode = (StateBasedNode) attachedNode;
@@ -515,7 +519,7 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
         }
     }
 
-    private static void linkBoundaryCompensationEvent(NodeContainer nodeContainer, Node node, String attachedTo,
+    protected void linkBoundaryCompensationEvent(NodeContainer nodeContainer, Node node, String attachedTo,
             Node attachedNode) {
         /**
          * BPMN2 Spec, p. 264: "For an Intermediate event attached to the boundary of an
@@ -535,7 +539,7 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
         // linkAssociations takes care of the rest
     }
 
-    private static void linkBoundarySignalEvent(NodeContainer nodeContainer, Node node, String attachedTo,
+    protected void linkBoundarySignalEvent(NodeContainer nodeContainer, Node node, String attachedTo,
             Node attachedNode) {
         boolean cancelActivity = (Boolean) node.getMetaData().get("CancelActivity");
         if (cancelActivity) {
@@ -549,7 +553,7 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
         }
     }
 
-    private static void linkBoundaryConditionEvent(NodeContainer nodeContainer, Node node, String attachedTo,
+    protected void linkBoundaryConditionEvent(NodeContainer nodeContainer, Node node, String attachedTo,
             Node attachedNode) {
         String processId = ((ExecutableProcess) nodeContainer).getId();
         String eventType = "RuleFlowStateEvent-" + processId + "-" + ((EventNode) node).getUniqueId() + "-"
