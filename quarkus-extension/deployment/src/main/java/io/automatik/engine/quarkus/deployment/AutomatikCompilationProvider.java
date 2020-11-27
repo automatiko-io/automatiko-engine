@@ -23,10 +23,19 @@ public abstract class AutomatikCompilationProvider extends JavaCompilationProvid
         return Collections.singleton("src" + File.separator + "main" + File.separator + "resources");
     }
 
+    protected Set<File> filterFilesToCompile(Set<File> filesToCompile) {
+        return filesToCompile;
+    }
+
     @Override
     public final void compile(Set<File> filesToCompile, Context context) {
 
-        Set<File> allFiles = AutomatikBuildData.get().getGenerationContext().collectConnectedFiles(filesToCompile);
+        Set<File> allFiles = AutomatikBuildData.get().getGenerationContext()
+                .collectConnectedFiles(filterFilesToCompile(filesToCompile));
+
+        if (allFiles.isEmpty()) {
+            return;
+        }
 
         File outputDirectory = context.getOutputDirectory();
         try {
