@@ -187,7 +187,17 @@ public class ServiceTaskDescriptor {
                     new Parameter(new ClassOrInterfaceType(null, "javax.ws.rs.WebApplicationException"), "wex"),
                     catchbody);
 
-            TryStmt trystmt = new TryStmt(executeWorkItemBody, NodeList.nodeList(catchClause), null);
+            BlockStmt unavailablecatchbody = new BlockStmt();
+            unavailablecatchbody.addStatement(new ThrowStmt(new ObjectCreationExpr(null,
+                    new ClassOrInterfaceType(null, "io.automatik.engine.api.workflow.workitem.WorkItemExecutionError"),
+                    NodeList.nodeList(
+                            new StringLiteralExpr("503"),
+                            new NameExpr("ex")))));
+            CatchClause unavailablecatchClause = new CatchClause(
+                    new Parameter(new ClassOrInterfaceType(null, "javax.ws.rs.ProcessingException"), "ex"),
+                    unavailablecatchbody);
+
+            TryStmt trystmt = new TryStmt(executeWorkItemBody, NodeList.nodeList(catchClause, unavailablecatchClause), null);
 
             executeWorkItemBody = new BlockStmt().addStatement(trystmt);
         }
