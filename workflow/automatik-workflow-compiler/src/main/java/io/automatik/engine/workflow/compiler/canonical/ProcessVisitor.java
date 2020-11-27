@@ -10,7 +10,6 @@ import static io.automatik.engine.workflow.process.executable.core.ExecutablePro
 import static io.automatik.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_VALIDATE;
 import static io.automatik.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_VERSION;
 import static io.automatik.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_VISIBILITY;
-import static io.automatik.engine.workflow.process.executable.core.Metadata.HIDDEN;
 import static io.automatik.engine.workflow.process.executable.core.Metadata.LINK_NODE_HIDDEN;
 import static io.automatik.engine.workflow.process.executable.core.Metadata.UNIQUE_ID;
 import static io.automatik.engine.workflow.process.executable.core.factory.NodeFactory.METHOD_DONE;
@@ -55,7 +54,6 @@ import io.automatik.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
 import io.automatik.engine.workflow.compiler.util.ClassUtils;
 import io.automatik.engine.workflow.process.core.Node;
 import io.automatik.engine.workflow.process.core.NodeContainer;
-import io.automatik.engine.workflow.process.core.impl.ConnectionImpl;
 import io.automatik.engine.workflow.process.core.node.ActionNode;
 import io.automatik.engine.workflow.process.core.node.BoundaryEventNode;
 import io.automatik.engine.workflow.process.core.node.CompositeContextNode;
@@ -309,15 +307,16 @@ public class ProcessVisitor extends AbstractVisitor {
         if (isConnectionRepresentingLinkEvent(connection)) {
             return;
         }
-        // if the connection is a hidden one (compensations), don't dump
-        Object hidden = ((ConnectionImpl) connection).getMetaData(HIDDEN);
-        if (hidden != null && ((Boolean) hidden)) {
-            return;
+        if (Boolean.TRUE.equals(connection.getMetaData().get("association"))) {
+            body.addStatement(getFactoryMethod(FACTORY_FIELD_NAME, METHOD_CONNECTION,
+                    new LongLiteralExpr(connection.getFrom().getId()), new LongLiteralExpr(connection.getTo().getId()),
+                    new StringLiteralExpr(getOrDefault((String) connection.getMetaData().get(UNIQUE_ID), "")),
+                    new BooleanLiteralExpr(true)));
+        } else {
+            body.addStatement(getFactoryMethod(FACTORY_FIELD_NAME, METHOD_CONNECTION,
+                    new LongLiteralExpr(connection.getFrom().getId()), new LongLiteralExpr(connection.getTo().getId()),
+                    new StringLiteralExpr(getOrDefault((String) connection.getMetaData().get(UNIQUE_ID), ""))));
         }
-
-        body.addStatement(getFactoryMethod(FACTORY_FIELD_NAME, METHOD_CONNECTION,
-                new LongLiteralExpr(connection.getFrom().getId()), new LongLiteralExpr(connection.getTo().getId()),
-                new StringLiteralExpr(getOrDefault((String) connection.getMetaData().get(UNIQUE_ID), ""))));
     }
 
     private boolean isConnectionRepresentingLinkEvent(Connection connection) {

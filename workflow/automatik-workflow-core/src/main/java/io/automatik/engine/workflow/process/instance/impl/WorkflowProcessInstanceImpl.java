@@ -601,66 +601,70 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
                         listener.signalEvent(type, event);
                     }
                 }
-                for (Node node : getWorkflowProcess().getNodes()) {
-                    if (node instanceof EventNodeInterface
-                            && ((EventNodeInterface) node).acceptsEvent(type, event, getResolver(node, currentView))) {
-                        if (node instanceof EventNode && ((EventNode) node).getFrom() == null) {
-                            EventNodeInstance eventNodeInstance = (EventNodeInstance) getNodeInstance(node);
-                            eventNodeInstance.signalEvent(type, event);
-                        } else {
-                            if (node instanceof EventSubProcessNode
-                                    && (resolveVariables(((EventSubProcessNode) node).getEvents()).contains(type))) {
-                                EventSubProcessNodeInstance eventNodeInstance = (EventSubProcessNodeInstance) getNodeInstance(
-                                        node);
+                if (!type.startsWith("Compensation")) { // exclude compensation events to avoid duplicated calls
+
+                    for (Node node : getWorkflowProcess().getNodes()) {
+
+                        if (node instanceof EventNodeInterface
+                                && ((EventNodeInterface) node).acceptsEvent(type, event, getResolver(node, currentView))) {
+                            if (node instanceof EventNode && ((EventNode) node).getFrom() == null) {
+                                EventNodeInstance eventNodeInstance = (EventNodeInstance) getNodeInstance(node);
                                 eventNodeInstance.signalEvent(type, event);
                             } else {
-                                List<NodeInstance> nodeInstances = getNodeInstances(node.getId(), currentView);
-                                if (nodeInstances != null && !nodeInstances.isEmpty()) {
-                                    for (NodeInstance nodeInstance : nodeInstances) {
-                                        ((EventNodeInstanceInterface) nodeInstance).signalEvent(type, event);
+                                if (node instanceof EventSubProcessNode
+                                        && (resolveVariables(((EventSubProcessNode) node).getEvents()).contains(type))) {
+                                    EventSubProcessNodeInstance eventNodeInstance = (EventSubProcessNodeInstance) getNodeInstance(
+                                            node);
+                                    eventNodeInstance.signalEvent(type, event);
+                                } else {
+                                    List<NodeInstance> nodeInstances = getNodeInstances(node.getId(), currentView);
+                                    if (nodeInstances != null && !nodeInstances.isEmpty()) {
+                                        for (NodeInstance nodeInstance : nodeInstances) {
+                                            ((EventNodeInstanceInterface) nodeInstance).signalEvent(type, event);
+                                        }
                                     }
                                 }
                             }
-                        }
-                    } else if (node instanceof StartNode && ((StartNode) node).getTriggers() != null) {
-                        boolean accepted = ((StartNode) node).getTriggers().stream()
-                                .filter(EventTrigger.class::isInstance).anyMatch(t -> ((EventTrigger) t)
-                                        .getEventFilters().stream().anyMatch(e -> e.acceptsEvent(type, event)));
+                        } else if (node instanceof StartNode && ((StartNode) node).getTriggers() != null) {
+                            boolean accepted = ((StartNode) node).getTriggers().stream()
+                                    .filter(EventTrigger.class::isInstance).anyMatch(t -> ((EventTrigger) t)
+                                            .getEventFilters().stream().anyMatch(e -> e.acceptsEvent(type, event)));
 
-                        if (accepted) {
-                            StartNodeInstance startNodeInstance = (StartNodeInstance) getNodeInstance(node);
-                            startNodeInstance.signalEvent(type, event);
-                        }
-                    }
-                }
-                if (((io.automatik.engine.workflow.process.core.WorkflowProcess) getWorkflowProcess()).isDynamic()) {
-                    for (Node node : getWorkflowProcess().getNodes()) {
-                        if (node.hasMatchingEventListner(type) && node.getIncomingConnections().isEmpty()) {
-                            NodeInstance nodeInstance = getNodeInstance(node);
-                            if (nodeInstance != null) {
-
-                                if (event != null) {
-                                    Map<String, Object> dynamicParams = new HashMap<>(getVariables());
-                                    if (event instanceof Map) {
-                                        dynamicParams.putAll((Map<String, Object>) event);
-                                    } else if (event instanceof WorkflowProcessInstance) {
-                                        // ignore variables of process instance type
-                                    } else {
-                                        dynamicParams.put("Data", event);
-                                    }
-                                    nodeInstance.setDynamicParameters(dynamicParams);
-                                }
-                                nodeInstance.trigger(null,
-                                        io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
+                            if (accepted) {
+                                StartNodeInstance startNodeInstance = (StartNodeInstance) getNodeInstance(node);
+                                startNodeInstance.signalEvent(type, event);
                             }
-                        } else if (this instanceof ExecutableProcessInstance && node instanceof CompositeNode) {
-
-                            Optional<NodeInstance> instance = this.nodeInstances.stream()
-                                    .filter(ni -> ni.getNodeId() == node.getId()).findFirst();
-                            instance.ifPresent(n -> ((CompositeNodeInstance) n).signalEvent(type, event));
                         }
                     }
+                    if (((io.automatik.engine.workflow.process.core.WorkflowProcess) getWorkflowProcess()).isDynamic()) {
+                        for (Node node : getWorkflowProcess().getNodes()) {
+                            if (node.hasMatchingEventListner(type) && node.getIncomingConnections().isEmpty()) {
+                                NodeInstance nodeInstance = getNodeInstance(node);
+                                if (nodeInstance != null) {
 
+                                    if (event != null) {
+                                        Map<String, Object> dynamicParams = new HashMap<>(getVariables());
+                                        if (event instanceof Map) {
+                                            dynamicParams.putAll((Map<String, Object>) event);
+                                        } else if (event instanceof WorkflowProcessInstance) {
+                                            // ignore variables of process instance type
+                                        } else {
+                                            dynamicParams.put("Data", event);
+                                        }
+                                        nodeInstance.setDynamicParameters(dynamicParams);
+                                    }
+                                    nodeInstance.trigger(null,
+                                            io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
+                                }
+                            } else if (this instanceof ExecutableProcessInstance && node instanceof CompositeNode) {
+
+                                Optional<NodeInstance> instance = this.nodeInstances.stream()
+                                        .filter(ni -> ni.getNodeId() == node.getId()).findFirst();
+                                instance.ifPresent(n -> ((CompositeNodeInstance) n).signalEvent(type, event));
+                            }
+                        }
+
+                    }
                 }
             } finally
 

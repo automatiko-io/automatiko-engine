@@ -1049,17 +1049,19 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
                 // specific compensation
                 compensationEvent = activityRef;
             }
-
+            throwEventNode.setMetaData("CompensationEvent", compensationEvent);
             ConsequenceAction compensationAction = new ConsequenceAction("java", "");
             compensationAction.setMetaData("Action", new ProcessInstanceCompensationAction(compensationEvent));
 
             if (throwEventNode instanceof ActionNode) {
                 ((ActionNode) throwEventNode).setAction(compensationAction);
+
             } else if (throwEventNode instanceof EndNode) {
                 List<ProcessAction> actions = new ArrayList<ProcessAction>();
                 actions.add(compensationAction);
                 ((EndNode) throwEventNode).setActions(EndNode.EVENT_NODE_ENTER, actions);
             }
+            throwEventNode.setMetaData("TriggerType", "Compensation");
         }
     }
 

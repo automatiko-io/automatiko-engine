@@ -30,6 +30,8 @@ import io.automatik.engine.workflow.base.core.FunctionTagDefinition;
 import io.automatik.engine.workflow.base.core.StaticTagDefinition;
 import io.automatik.engine.workflow.base.core.TagDefinition;
 import io.automatik.engine.workflow.base.core.context.exception.ActionExceptionHandler;
+import io.automatik.engine.workflow.base.core.context.exception.CompensationHandler;
+import io.automatik.engine.workflow.base.core.context.exception.CompensationScope;
 import io.automatik.engine.workflow.base.core.context.exception.ExceptionHandler;
 import io.automatik.engine.workflow.base.core.context.exception.ExceptionScope;
 import io.automatik.engine.workflow.base.core.context.swimlane.Swimlane;
@@ -239,6 +241,12 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
         return this;
     }
 
+    @Override
+    public ExecutableProcessFactory connection(long fromId, long toId, String uniqueId, boolean association) {
+        super.connection(fromId, toId, uniqueId, association);
+        return this;
+    }
+
     protected void linkBoundaryEvents(NodeContainer nodeContainer) {
         for (Node node : nodeContainer.getNodes()) {
             if (node instanceof CompositeNode) {
@@ -260,6 +268,8 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
                             linkBoundaryErrorEvent(nodeContainer, node, attachedTo, attachedNode);
                         } else if (type.startsWith("Condition-") || type.startsWith("RuleFlowStateEvent-")) {
                             linkBoundaryConditionEvent(nodeContainer, node, attachedTo, attachedNode);
+                        } else if (type.startsWith("Compensation")) {
+                            addCompensationScope(getExecutableProcess(), node, nodeContainer, attachedTo);
                         }
                     }
                 }
@@ -512,4 +522,40 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
         return variableScope.getVariables().stream().filter(v -> v.matchByIdOrName(variableName)).map(v -> v.getName())
                 .findFirst().orElse(variableName);
     }
+
+    protected void addCompensationScope(final ExecutableProcess process, final Node node,
+            final io.automatik.engine.api.definition.process.NodeContainer parentContainer,
+            final String compensationHandlerId) {
+        process.getMetaData().put("Compensation", true);
+
+        assert parentContainer instanceof ContextContainer : "Expected parent node to be a CompositeContextNode, not a "
+                + parentContainer.getClass().getSimpleName();
+
+        ContextContainer contextContainer = (ContextContainer) parentContainer;
+        CompensationScope scope = null;
+        boolean addScope = false;
+        if (contextContainer.getContexts(CompensationScope.COMPENSATION_SCOPE) == null) {
+            addScope = true;
+        } else {
+            scope = (CompensationScope) contextContainer.getContexts(CompensationScope.COMPENSATION_SCOPE).get(0);
+            if (scope == null) {
+                addScope = true;
+            }
+        }
+        if (addScope) {
+            scope = new CompensationScope();
+            contextContainer.addContext(scope);
+            contextContainer.setDefaultContext(scope);
+            scope.setContextContainer(contextContainer);
+        }
+
+        CompensationHandler handler = new CompensationHandler();
+        handler.setNode(node);
+        if (scope.getExceptionHandler(compensationHandlerId) != null) {
+            throw new IllegalArgumentException("More than one compensation handler per node (" + compensationHandlerId
+                    + ")" + " is not supported!");
+        }
+        scope.setExceptionHandler(compensationHandlerId, handler);
+    }
+
 }
