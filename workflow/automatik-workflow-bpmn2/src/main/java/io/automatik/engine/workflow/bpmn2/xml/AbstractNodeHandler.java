@@ -413,6 +413,8 @@ public abstract class AbstractNodeHandler extends BaseAbstractHandler implements
                 dataType = getDataType(itemSubjectRef, itemDefinitions, parser.getClassLoader());
 
                 if (variableName != null && variableName.trim().length() > 0) {
+                    forEachNode.setMetaData("MIInput", ((Element) subNode).getAttribute("id"));
+
                     forEachNode.setVariable(variableName, dataType);
                 }
             } else if ("outputDataItem".equals(nodeName)) {
@@ -424,6 +426,8 @@ public abstract class AbstractNodeHandler extends BaseAbstractHandler implements
                 dataType = getDataType(itemSubjectRef, itemDefinitions, parser.getClassLoader());
 
                 if (variableName != null && variableName.trim().length() > 0) {
+                    forEachNode.setMetaData("MIOutput", ((Element) subNode).getAttribute("id"));
+
                     forEachNode.setOutputVariable(variableName, dataType);
                 }
             } else if ("loopDataOutputRef".equals(nodeName)) {
