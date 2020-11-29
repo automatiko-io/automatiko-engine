@@ -328,6 +328,8 @@ public class SvgProcessImageGenerator {
         g2.drawImage(image, ix, iy, null);
 
         g2.setStroke(defaultStroke);
+
+        drawWarningPlaceholderIcon(node, g2, roundedRectangle.getBounds());
     }
 
     protected void buildHumanTaskNode(int x, int y, HumanTaskNode node, SVGGraphics2D g2)
@@ -345,6 +347,8 @@ public class SvgProcessImageGenerator {
         drawCenteredString(g2, node.getName(), roundedRectangle.getBounds(), g2.getFont(), 0);
 
         g2.drawImage(ImageIO.read(getClass().getResource("/icons/UserTask.png")), x + 2, y + 2, null);
+
+        drawWarningPlaceholderIcon(node, g2, roundedRectangle.getBounds());
     }
 
     protected void buildScriptTaskNode(int x, int y, ActionNode node, SVGGraphics2D g2)
@@ -384,6 +388,8 @@ public class SvgProcessImageGenerator {
             drawCenteredString(g2, node.getName(), roundedRectangle.getBounds(), g2.getFont(), 0);
 
             g2.drawImage(ImageIO.read(getClass().getResource("/icons/ScriptTask.png")), x + 2, y + 2, null);
+
+            drawWarningPlaceholderIcon(node, g2, roundedRectangle.getBounds());
         }
     }
 
@@ -401,6 +407,8 @@ public class SvgProcessImageGenerator {
         drawCenteredString(g2, node.getName(), roundedRectangle.getBounds(), g2.getFont(), 0);
 
         g2.drawImage(ImageIO.read(getClass().getResource("/icons/ServiceTask.png")), x + 2, y + 2, null);
+
+        drawWarningPlaceholderIcon(node, g2, roundedRectangle.getBounds());
     }
 
     protected void buildBusinessRuleTaskNode(int x, int y, RuleSetNode node, SVGGraphics2D g2)
@@ -417,6 +425,8 @@ public class SvgProcessImageGenerator {
         drawCenteredString(g2, node.getName(), roundedRectangle.getBounds(), g2.getFont(), 0);
 
         g2.drawImage(ImageIO.read(getClass().getResource("/icons/BusinessRuleTask.png")), x + 2, y + 2, null);
+
+        drawWarningPlaceholderIcon(node, g2, roundedRectangle.getBounds());
     }
 
     protected void buildGateway(int x, int y, Node node, SVGGraphics2D g2) throws IOException {
@@ -496,6 +506,8 @@ public class SvgProcessImageGenerator {
         setTextNodeId(node, g2);
         g2.drawString(node.getName(), x + 10, y + 10);
         g2.setStroke(defaultStroke);
+
+        drawWarningPlaceholderIcon(node, g2, roundedRectangle.getBounds());
     }
 
     @SuppressWarnings("unchecked")
@@ -616,12 +628,24 @@ public class SvgProcessImageGenerator {
         g2.drawImage(image, ix, iy, null);
     }
 
+    public void drawWarningPlaceholderIcon(Node node, SVGGraphics2D g2, Rectangle rect) throws IOException {
+        BufferedImage warnImage = ImageIO.read(getClass().getResource("/icons/empty.png"));
+        int wix = (int) (rect.getX() + rect.getWidth() - 23);
+        int wiy = (int) (rect.getY() + 3);
+        setWarningImageNodeId(node, g2);
+        g2.drawImage(warnImage, wix, wiy, 20, 20, null);
+    }
+
     protected void setTextNodeId(Node node, SVGGraphics2D g2) {
         g2.setRenderingHint(SVGHints.KEY_ELEMENT_ID, node.getMetaData().get("UniqueId") + "_text");
     }
 
     protected void setImageNodeId(Node node, SVGGraphics2D g2) {
         g2.setRenderingHint(SVGHints.KEY_ELEMENT_ID, node.getMetaData().get("UniqueId") + "_image");
+    }
+
+    protected void setWarningImageNodeId(Node node, SVGGraphics2D g2) {
+        g2.setRenderingHint(SVGHints.KEY_ELEMENT_ID, node.getMetaData().get("UniqueId") + "_warn_image");
     }
 
     protected void setNodeId(Node node, SVGGraphics2D g2) {

@@ -153,6 +153,6 @@ public class Variable implements ValueObject, Serializable, io.automatik.engine.
     }
 
     public boolean matchByIdOrName(String nameOrId) {
-        return (id.equals(nameOrId) || name.equals(nameOrId));
+        return ((id != null && id.equals(nameOrId)) || name.equals(nameOrId));
     }
 }

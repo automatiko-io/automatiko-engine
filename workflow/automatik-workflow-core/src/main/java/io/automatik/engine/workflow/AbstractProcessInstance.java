@@ -20,6 +20,7 @@ import io.automatik.engine.api.auth.AccessDeniedException;
 import io.automatik.engine.api.auth.IdentityProvider;
 import io.automatik.engine.api.definition.process.Node;
 import io.automatik.engine.api.runtime.process.EventListener;
+import io.automatik.engine.api.runtime.process.NodeInstanceState;
 import io.automatik.engine.api.runtime.process.ProcessRuntime;
 import io.automatik.engine.api.runtime.process.WorkItemNotFoundException;
 import io.automatik.engine.api.runtime.process.WorkflowProcessInstance;
@@ -601,6 +602,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         Collection<NodeInstance> activeInstances = ((WorkflowProcessInstanceImpl) processInstance()).getNodeInstances(true);
         if (!activeInstances.isEmpty()) {
             script.append("<script>");
+            script.append(
+                    "var warnIcon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAADjklEQVR4XpVUSWhTURR9om7c1QFBFFwoSl2obTUatY1NfmvTJnFKbUzT/tf//m9rdOGwcRcRKWhBEKcurBUcQHAAXYhgFVFsSyCtqB2NA9pNWxWKjRl+rvf9IaZapwuH+/jvvvPOHf4j5DcGANPM9UHFN1dRXHMze4Rk9v7JzAPhFmXmOjdt2+iuHZ+/WhgnK+xt/JsR9h+kttAM7lY5xYvNR/fB8BMJPj4KQGjvNiC59ot6jE2L+avZjEB/rbTBWSXDaIeUgChT4U29OvLQn8hdLYDgLtuQHfsnwzSM2m2iHfcu1QNE5ST0MYB+xJCcvNO8FUhOcceP+D+krih6fawuUQzubYD4c5aAAQY3zlO4fmoXJ4Rvz6oTvrItMNMqiDw2Pz/frOkvpjfijjJr9mZxOHxbBnjD1K8RBh4fhU2CC75GKMBrWe08jyoX2IfDLa5Z2WcnmalusUNsOnGkkacY52nGehjU11Pw+zwQi4gAgwpAuDoeEp1AVpY08TO/qPR6vdO5379fWpJXTtXoAwkPsjT0MviGhBKjUOl1Q6wbFfah8n4pPXQZVeY61D3VpUuyOXQzujWtiN68dqYB02IJ9SU2oW8qQgYqJ40EEm2HyoEsF25mc5BQSJ85t08UdgYU+NwlpXgjNMLslKsMwn4Z1Ff6ZZ9ubU9Zi0rBYi8RdM7sMSoUe9qvKtqYcLK0cQg7DeWVFCzFLlSrE6ZfSbrK7kDy/rEKIEsdPT+I0AoqaoOHDjRA8gWOSZ9B1msAVYZv1UHXDb8+i8b3tOGT93YkZC82qEAIamRnm3bnLLDTsed3ZV47VUvVPMSJ+3n6UqYEmctMlZGA2n0aVeYKY2cby3PIvGLx5OmmRt7VeEaVSWb4BqxhzW4PktZpZZiUARJD+8748SCSLnOcxAeAjkTb8aYhpqZe6MG86Bx8zVO7corCpeZKrXbaPlfM99CnemU+l+rQBReQPMcIyXPSL28f4i3vWIrPFwwgBvEx4OBrvAii6KMyrhEDjHtVg7ZW0ticVLQVFeYLX0iBUzzHn6gPjyUcGQZjnTgOXZPBv412iDD2E0Y7KXx6WgPvr22FkOLhhOdICz6YlgraanXT8W0+OuGpohPuKhozgf9xrKKyNmYpKo2tLXQgBMM7YmsKhYn1VvsEWekYxy63tihZv+DhYM0cJFu03c8WTgWLrWwK2BauKSlZFKyxzzF5vgOkLcnshRMZJwAAAABJRU5ErkJggg==';");
             script.append("function openInNewTab(url) {var win = window.open(url, '_blank');win.focus();}");
             for (NodeInstance nodeInstance : activeInstances) {
                 script.append("document.getElementById('").append(nodeInstance.getNodeDefinitionId())
@@ -618,6 +621,11 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
                     script.append("document.getElementById('").append(nodeInstance.getNodeDefinitionId())
                             .append("_image').onclick=function (e) {openInNewTab('" + url + "');};\n");
+                }
+
+                if (nodeInstance.getNodeInstanceState().equals(NodeInstanceState.Retrying)) {
+                    script.append("document.getElementById('").append(nodeInstance.getNodeDefinitionId())
+                            .append("_warn_image').setAttribute('xlink:href', warnIcon);\n");
                 }
             }
             script.append("</script></svg>");

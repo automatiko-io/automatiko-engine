@@ -4,6 +4,7 @@ package io.automatik.engine.workflow.base.instance.context.exception;
 import io.automatik.engine.api.jobs.DurationExpirationTime;
 import io.automatik.engine.api.jobs.JobsService;
 import io.automatik.engine.api.jobs.ProcessInstanceJobDescription;
+import io.automatik.engine.api.runtime.process.WorkItem;
 import io.automatik.engine.workflow.base.core.context.ProcessContext;
 import io.automatik.engine.workflow.base.core.context.exception.ActionExceptionHandler;
 import io.automatik.engine.workflow.base.core.context.exception.ExceptionHandler;
@@ -11,8 +12,10 @@ import io.automatik.engine.workflow.base.core.context.exception.ExceptionScope;
 import io.automatik.engine.workflow.base.instance.ContextInstanceContainer;
 import io.automatik.engine.workflow.base.instance.ProcessInstance;
 import io.automatik.engine.workflow.base.instance.impl.Action;
+import io.automatik.engine.workflow.base.instance.impl.workitem.WorkItemImpl;
 import io.automatik.engine.workflow.process.instance.NodeInstance;
 import io.automatik.engine.workflow.process.instance.impl.NodeInstanceImpl;
+import io.automatik.engine.workflow.process.instance.node.WorkItemNodeInstance;
 
 public class DefaultExceptionScopeInstance extends ExceptionScopeInstance {
 
@@ -50,6 +53,9 @@ public class DefaultExceptionScopeInstance extends ExceptionScopeInstance {
                     ((NodeInstanceImpl) nodeInstance).registerRetryEventListener();
                 } else {
                     ((NodeInstanceImpl) nodeInstance).internalSetRetryAttempts(retryAttempts + 1);
+                }
+                if (nodeInstance instanceof WorkItemNodeInstance) {
+                    ((WorkItemImpl) ((WorkItemNodeInstance) nodeInstance).getWorkItem()).setState(WorkItem.RETRYING);
                 }
             } else {
 

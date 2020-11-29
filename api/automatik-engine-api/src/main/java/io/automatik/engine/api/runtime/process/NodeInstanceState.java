@@ -11,7 +11,8 @@ public enum NodeInstanceState {
     Failed("fail"),
     Completed("complete"),
     Teminated("terminate"),
-    Occur("occur");
+    Occur("occur"),
+    Retrying("retrying");
 
     private String eventId;
 

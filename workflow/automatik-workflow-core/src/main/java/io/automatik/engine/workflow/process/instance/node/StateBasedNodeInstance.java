@@ -21,6 +21,7 @@ import io.automatik.engine.api.jobs.JobsService;
 import io.automatik.engine.api.jobs.ProcessInstanceJobDescription;
 import io.automatik.engine.api.runtime.process.EventListener;
 import io.automatik.engine.api.runtime.process.NodeInstance;
+import io.automatik.engine.api.runtime.process.NodeInstanceState;
 import io.automatik.engine.services.time.TimerInstance;
 import io.automatik.engine.workflow.base.core.ContextContainer;
 import io.automatik.engine.workflow.base.core.context.ProcessContext;
@@ -457,7 +458,9 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
     public void internalSetRetryJobId(String retryJobId) {
         if (retryJobId != null && !retryJobId.isEmpty()) {
             this.retryJobId = retryJobId;
-
+            if (!getNodeInstanceState().equals(NodeInstanceState.Retrying)) {
+                internalChangeState(NodeInstanceState.Retrying);
+            }
         }
     }
 
