@@ -57,85 +57,87 @@ public class StartNodeInstance extends NodeInstanceImpl {
             runtime.getProcessEventSupport().fireBeforeNodeTriggered(this, runtime);
         }
 
-        String variableName = (String) getStartNode().getMetaData("TriggerMapping");
-        if (!getStartNode().getOutAssociations().isEmpty()) {
-            for (DataAssociation association : getStartNode().getOutAssociations()) {
-                if (association.getTransformation() != null) {
-                    Transformation transformation = association.getTransformation();
-                    DataTransformer transformer = DataTransformerRegistry.get().find(transformation.getLanguage());
-                    if (transformer != null) {
-                        Object parameterValue = transformer.transform(transformation.getCompiledExpression(),
-                                Collections.singletonMap(association.getSources().get(0), event));
+        if (event != null) {
+            String variableName = (String) getStartNode().getMetaData("TriggerMapping");
+            if (!getStartNode().getOutAssociations().isEmpty()) {
+                for (DataAssociation association : getStartNode().getOutAssociations()) {
+                    if (association.getTransformation() != null) {
+                        Transformation transformation = association.getTransformation();
+                        DataTransformer transformer = DataTransformerRegistry.get().find(transformation.getLanguage());
+                        if (transformer != null) {
+                            Object parameterValue = transformer.transform(transformation.getCompiledExpression(),
+                                    Collections.singletonMap(association.getSources().get(0), event));
+                            VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+                                    VARIABLE_SCOPE, association.getTarget());
+                            if (variableScopeInstance != null && parameterValue != null) {
+
+                                variableScopeInstance.getVariableScope().validateVariable(
+                                        getProcessInstance().getProcessName(), association.getTarget(), parameterValue);
+
+                                variableScopeInstance.setVariable(this, association.getTarget(), parameterValue);
+                            } else {
+                                logger.warn("Could not find variable scope for variable {}", association.getTarget());
+                                logger.warn("when trying to complete start node {}", getStartNode().getName());
+                                logger.warn("Continuing without setting variable.");
+                            }
+                            if (parameterValue != null) {
+                                variableScopeInstance.setVariable(this, association.getTarget(), parameterValue);
+                            }
+                        }
+                    } else if (association.getAssignments() == null || association.getAssignments().isEmpty()) {
                         VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
                                 VARIABLE_SCOPE, association.getTarget());
-                        if (variableScopeInstance != null && parameterValue != null) {
-
-                            variableScopeInstance.getVariableScope().validateVariable(
-                                    getProcessInstance().getProcessName(), association.getTarget(), parameterValue);
-
-                            variableScopeInstance.setVariable(this, association.getTarget(), parameterValue);
+                        if (variableScopeInstance != null) {
+                            Variable varDef = variableScopeInstance.getVariableScope()
+                                    .findVariable(association.getTarget());
+                            DataType dataType = varDef.getType();
+                            // exclude java.lang.Object as it is considered unknown type
+                            if (!dataType.getStringType().endsWith("java.lang.Object")
+                                    && !dataType.getStringType().endsWith("Object") && event instanceof String) {
+                                event = dataType.readValue((String) event);
+                            } else {
+                                variableScopeInstance.getVariableScope().validateVariable(
+                                        getProcessInstance().getProcessName(), association.getTarget(), event);
+                            }
+                            variableScopeInstance.setVariable(this, association.getTarget(), event);
                         } else {
-                            logger.warn("Could not find variable scope for variable {}", association.getTarget());
-                            logger.warn("when trying to complete start node {}", getStartNode().getName());
-                            logger.warn("Continuing without setting variable.");
+                            String output = association.getSources().get(0);
+                            String target = association.getTarget();
+
+                            Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(target);
+                            if (matcher.find()) {
+                                String paramName = matcher.group(1);
+
+                                String expression = VariableUtil.transformDotNotation(paramName, output);
+                                NodeInstanceResolverFactory resolver = new NodeInstanceResolverFactory(this);
+                                resolver.addExtraParameters(
+                                        Collections.singletonMap(association.getSources().get(0), event));
+                                Serializable compiled = MVEL.compileExpression(expression);
+                                MVEL.executeExpression(compiled, resolver);
+                            } else {
+                                logger.warn("Could not find variable scope for variable {}", association.getTarget());
+                                logger.warn("when trying to complete start node {}", getStartNode().getName());
+                                logger.warn("Continuing without setting variable.");
+                            }
                         }
-                        if (parameterValue != null) {
-                            variableScopeInstance.setVariable(this, association.getTarget(), parameterValue);
-                        }
+
                     }
-                } else if (association.getAssignments() == null || association.getAssignments().isEmpty()) {
+                }
+            } else {
+                if (variableName != null) {
                     VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
-                            VARIABLE_SCOPE, association.getTarget());
-                    if (variableScopeInstance != null) {
-                        Variable varDef = variableScopeInstance.getVariableScope()
-                                .findVariable(association.getTarget());
-                        DataType dataType = varDef.getType();
-                        // exclude java.lang.Object as it is considered unknown type
-                        if (!dataType.getStringType().endsWith("java.lang.Object")
-                                && !dataType.getStringType().endsWith("Object") && event instanceof String) {
-                            event = dataType.readValue((String) event);
-                        } else {
-                            variableScopeInstance.getVariableScope().validateVariable(
-                                    getProcessInstance().getProcessName(), association.getTarget(), event);
-                        }
-                        variableScopeInstance.setVariable(this, association.getTarget(), event);
-                    } else {
-                        String output = association.getSources().get(0);
-                        String target = association.getTarget();
-
-                        Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(target);
-                        if (matcher.find()) {
-                            String paramName = matcher.group(1);
-
-                            String expression = VariableUtil.transformDotNotation(paramName, output);
-                            NodeInstanceResolverFactory resolver = new NodeInstanceResolverFactory(this);
-                            resolver.addExtraParameters(
-                                    Collections.singletonMap(association.getSources().get(0), event));
-                            Serializable compiled = MVEL.compileExpression(expression);
-                            MVEL.executeExpression(compiled, resolver);
-                        } else {
-                            logger.warn("Could not find variable scope for variable {}", association.getTarget());
-                            logger.warn("when trying to complete start node {}", getStartNode().getName());
-                            logger.warn("Continuing without setting variable.");
-                        }
+                            VariableScope.VARIABLE_SCOPE, variableName);
+                    if (variableScopeInstance == null) {
+                        throw new IllegalArgumentException("Could not find variable for start node: " + variableName);
                     }
 
-                }
-            }
-        } else {
-            if (variableName != null) {
-                VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
-                        VariableScope.VARIABLE_SCOPE, variableName);
-                if (variableScopeInstance == null) {
-                    throw new IllegalArgumentException("Could not find variable for start node: " + variableName);
-                }
+                    EventTransformer transformer = getStartNode().getEventTransformer();
+                    if (transformer != null) {
+                        event = transformer.transformEvent(event);
+                    }
 
-                EventTransformer transformer = getStartNode().getEventTransformer();
-                if (transformer != null) {
-                    event = transformer.transformEvent(event);
+                    variableScopeInstance.setVariable(this, variableName, event);
                 }
-
-                variableScopeInstance.setVariable(this, variableName, event);
             }
         }
         triggerCompleted();

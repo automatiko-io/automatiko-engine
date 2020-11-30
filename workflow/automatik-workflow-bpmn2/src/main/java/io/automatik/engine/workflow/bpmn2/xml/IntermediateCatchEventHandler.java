@@ -315,7 +315,8 @@ public class IntermediateCatchEventHandler extends AbstractNodeHandler {
             eventNode.setVariableName(to);
 
             subNode = subNode.getNextSibling();
-        } else if (subNode != null && "transformation".equals(subNode.getNodeName())) {
+        }
+        if (subNode != null && "transformation".equals(subNode.getNodeName())) {
             String lang = subNode.getAttributes().getNamedItem("language").getNodeValue();
             String expression = subNode.getTextContent();
             DataTransformer transformer = transformerRegistry.find(lang);

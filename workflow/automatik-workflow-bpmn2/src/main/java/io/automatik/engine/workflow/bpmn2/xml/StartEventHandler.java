@@ -44,7 +44,7 @@ public class StartEventHandler extends AbstractNodeHandler {
     private static final String TRIGGER_CORRELATION = "TriggerCorrelation";
     private static final String TRIGGER_CORRELATION_EXPR = "TriggerCorrelationExpr";
 
-    private DataTransformerRegistry transformerRegistry = DataTransformerRegistry.get();
+    protected DataTransformerRegistry transformerRegistry = DataTransformerRegistry.get();
 
     @Override
     protected Node createNode(Attributes attrs) {
@@ -244,8 +244,6 @@ public class StartEventHandler extends AbstractNodeHandler {
             target = subNode.getTextContent();
             if (target != null) {
                 startNode.setMetaData("TriggerMapping", target);
-
-                startNode.addOutMapping(dataOutputs.get(source), target);
             }
             // transformation
 
@@ -263,8 +261,9 @@ public class StartEventHandler extends AbstractNodeHandler {
 
             startNode.setEventTransformer(new EventTransformerImpl(transformation));
             subNode = subNode.getNextSibling();
-        }
-        if (subNode != null && "assignment".equals(subNode.getNodeName())) {
+
+            startNode.addOutMapping(target, dataOutputs.get(source));
+        } else if (subNode != null && "assignment".equals(subNode.getNodeName())) {
 
             // assignments
             while (subNode != null) {
@@ -275,6 +274,8 @@ public class StartEventHandler extends AbstractNodeHandler {
             }
             startNode.setMetaData("TriggerMapping", target);
 
+            startNode.addOutMapping(dataOutputs.get(source), target);
+        } else {
             startNode.addOutMapping(dataOutputs.get(source), target);
         }
 

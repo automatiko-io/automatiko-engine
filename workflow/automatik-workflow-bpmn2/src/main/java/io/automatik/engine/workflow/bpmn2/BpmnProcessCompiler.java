@@ -43,7 +43,15 @@ public class BpmnProcessCompiler {
 
     public List<BpmnProcess> from(ProcessConfig config, Resource... resources) {
         try {
-            List<Process> processes = parse(config, resources);
+            List<Process> processes = new ArrayList<>();
+            for (Resource resource : resources) {
+                XmlProcessReader xmlReader = new XmlProcessReader(
+                        getSemanticModules(),
+                        Thread.currentThread().getContextClassLoader());
+                configureProcessReader(xmlReader, config);
+
+                processes.addAll(xmlReader.read(resource.getReader()));
+            }
             List<BpmnProcess> bpmnProcesses = processes.stream().map(p -> create(p, config))
                     .filter(p -> p != null)
                     .collect(Collectors.toList());

@@ -306,8 +306,17 @@ public class SubProcessNodeInstance extends StateBasedNodeInstance implements Ev
                     Transformation transformation = mapping.getTransformation();
                     DataTransformer transformer = DataTransformerRegistry.get().find(transformation.getLanguage());
                     if (transformer != null) {
-                        Object parameterValue = transformer.transform(transformation.getCompiledExpression(),
-                                subProcessVariableScopeInstance.getVariables());
+                        Map<String, Object> dataSet = new HashMap<String, Object>();
+                        if (getNodeInstanceContainer() instanceof CompositeContextNodeInstance) {
+                            VariableScopeInstance variableScopeInstance = (VariableScopeInstance) ((CompositeContextNodeInstance) getNodeInstanceContainer())
+                                    .getContextInstance(VariableScope.VARIABLE_SCOPE);
+                            if (variableScopeInstance != null) {
+                                dataSet.putAll(variableScopeInstance.getVariables());
+                            }
+                        }
+                        dataSet.putAll(subProcessVariableScopeInstance.getVariables());
+                        Object parameterValue = transformer.transform(transformation.getCompiledExpression(), dataSet);
+
                         VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
                                 VariableScope.VARIABLE_SCOPE, mapping.getTarget());
                         if (variableScopeInstance != null && parameterValue != null) {

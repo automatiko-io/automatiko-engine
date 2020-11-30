@@ -302,6 +302,13 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
                     DataTransformer transformer = DataTransformerRegistry.get().find(transformation.getLanguage());
                     if (transformer != null) {
                         Map<String, Object> dataSet = new HashMap<String, Object>();
+                        if (getNodeInstanceContainer() instanceof CompositeContextNodeInstance) {
+                            VariableScopeInstance variableScopeInstance = (VariableScopeInstance) ((CompositeContextNodeInstance) getNodeInstanceContainer())
+                                    .getContextInstance(VariableScope.VARIABLE_SCOPE);
+                            if (variableScopeInstance != null) {
+                                dataSet.putAll(variableScopeInstance.getVariables());
+                            }
+                        }
                         dataSet.putAll(workItem.getParameters());
                         dataSet.putAll(workItem.getResults());
 

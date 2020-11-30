@@ -32,6 +32,7 @@ import io.automatik.engine.workflow.base.instance.impl.util.VariableUtil;
 import io.automatik.engine.workflow.base.instance.impl.workitem.WorkItemImpl;
 import io.automatik.engine.workflow.process.instance.NodeInstance;
 import io.automatik.engine.workflow.process.instance.impl.NodeInstanceResolverFactory;
+import io.automatik.engine.workflow.process.instance.node.CompositeContextNodeInstance;
 import io.automatik.engine.workflow.util.PatternConstants;
 
 /**
@@ -352,7 +353,18 @@ public class SubProcessNode extends StateBasedNode implements Mappable, ContextC
                         Transformation transformation = mapping.getTransformation();
                         DataTransformer transformer = DataTransformerRegistry.get().find(transformation.getLanguage());
                         if (transformer != null) {
-                            Object parameterValue = transformer.transform(transformation.getCompiledExpression(), result);
+                            Map<String, Object> dataSet = new HashMap<String, Object>();
+                            if (ctx.getNodeInstance().getNodeInstanceContainer() instanceof CompositeContextNodeInstance) {
+                                VariableScopeInstance variableScopeInstance = (VariableScopeInstance) ((CompositeContextNodeInstance) ctx
+                                        .getNodeInstance().getNodeInstanceContainer())
+                                                .getContextInstance(VariableScope.VARIABLE_SCOPE);
+                                if (variableScopeInstance != null) {
+                                    dataSet.putAll(variableScopeInstance.getVariables());
+                                }
+                            }
+                            dataSet.putAll(result);
+                            Object parameterValue = transformer.transform(transformation.getCompiledExpression(), dataSet);
+
                             VariableScopeInstance variableScopeInstance = (VariableScopeInstance) ((NodeInstance) ctx
                                     .getNodeInstance()).resolveContextInstance(VariableScope.VARIABLE_SCOPE,
                                             mapping.getTarget());
