@@ -1,6 +1,5 @@
 package io.automatik.engine.quarkus.config;
 
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,18 +60,27 @@ public class AutomatikConfigSource implements ConfigSource {
                 found = StreamSupport.stream(loader.spliterator(), false).collect(Collectors.toList());
 
                 found.add(new AutomatikConfigProperties() {
+                    private Map<String, String> values = new LinkedHashMap<>();
 
                     @Override
                     public String getProperty(String name) {
                         if ("mp.openapi.extensions.smallrye.operationIdStrategy".equals(name)) {
                             return "METHOD";
                         }
+                        if ("quarkus.log.category.\"org.hibernate\".level".equals(name)) {
+                            return "ERROR";
+                        }
                         return null;
                     }
 
                     @Override
                     public Map<String, String> getProperties() {
-                        return Collections.singletonMap("mp.openapi.extensions.smallrye.operationIdStrategy", "METHOD");
+                        if (values.isEmpty()) {
+                            values.put("mp.openapi.extensions.smallrye.operationIdStrategy", "METHOD");
+                            values.put("quarkus.log.category.\"org.openapitools\".level", "ERROR");
+                        }
+
+                        return values;
                     }
                 });
             } catch (Throwable e) {

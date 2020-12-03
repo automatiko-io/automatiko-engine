@@ -6,6 +6,9 @@ import static io.automatik.engine.codegen.CodeGenConstants.MP_RESTCLIENT_PROP_AU
 import static io.automatik.engine.codegen.CodeGenConstants.MP_RESTCLIENT_PROP_BASIC;
 import static io.automatik.engine.codegen.CodeGenConstants.MP_RESTCLIENT_PROP_CLIENT_ID;
 import static io.automatik.engine.codegen.CodeGenConstants.MP_RESTCLIENT_PROP_CLIENT_SECRET;
+import static io.automatik.engine.codegen.CodeGenConstants.MP_RESTCLIENT_PROP_CUSTOM_NAME;
+import static io.automatik.engine.codegen.CodeGenConstants.MP_RESTCLIENT_PROP_CUSTOM_VALUE;
+import static io.automatik.engine.codegen.CodeGenConstants.MP_RESTCLIENT_PROP_ON_BEHALF_NAME;
 import static io.automatik.engine.codegen.CodeGenConstants.MP_RESTCLIENT_PROP_PASSWORD;
 import static io.automatik.engine.codegen.CodeGenConstants.MP_RESTCLIENT_PROP_REFRESH_TOKEN;
 import static io.automatik.engine.codegen.CodeGenConstants.MP_RESTCLIENT_PROP_REFRESH_URL;
@@ -176,6 +179,19 @@ public class OpenAPIClientGenerator {
                     + MP_RESTCLIENT_PROP_REFRESH_TOKEN);
             context.addInstruction("    Set refresh url type via property '" + resourceClazzName.toLowerCase()
                     + MP_RESTCLIENT_PROP_REFRESH_URL);
+            context.addInstruction("For custom (header) auth:");
+            context.addInstruction("    Set auth type via property '" + resourceClazzName.toLowerCase()
+                    + MP_RESTCLIENT_PROP_AUTH_TYPE + "' to 'custom'");
+            context.addInstruction("    Set custom auth header name with property '"
+                    + resourceClazzName.toLowerCase() + MP_RESTCLIENT_PROP_CUSTOM_NAME + "'");
+            context.addInstruction("    Set custom auth header value with property '"
+                    + resourceClazzName.toLowerCase() + MP_RESTCLIENT_PROP_CUSTOM_VALUE + "'");
+            context.addInstruction("For on behalf (propagated) auth:");
+            context.addInstruction("    Set auth type via property '" + resourceClazzName.toLowerCase()
+                    + MP_RESTCLIENT_PROP_AUTH_TYPE + "' to 'on-behalf'");
+            context.addInstruction(
+                    "    Set on behalf header name to be propagated (defaults to 'Authorization') with property '"
+                            + resourceClazzName.toLowerCase() + MP_RESTCLIENT_PROP_ON_BEHALF_NAME + "'");
         }
 
         codegen.setOutputDir("");
@@ -222,7 +238,11 @@ public class OpenAPIClientGenerator {
                                 SingleMemberAnnotationExpr pathannotation = ((SingleMemberAnnotationExpr) p.get());
                                 final String path = pathannotation.getMemberValue().asStringLiteralExpr().getValue();
                                 template.findAll(MethodDeclaration.class).stream()
-                                        .filter(md -> !md.getNameAsString().equals("authorizationHeader"))
+                                        .filter(md -> !md.getNameAsString().equals("update") && md.getParentNode()
+                                                .filter(pn -> (pn instanceof ClassOrInterfaceDeclaration)
+                                                        && ((ClassOrInterfaceDeclaration) pn).getNameAsString()
+                                                                .equals("HeaderConfig"))
+                                                .isEmpty())
                                         .forEach(md -> {
 
                                             Optional<AnnotationExpr> pathAnotation = md.getAnnotationByName("Path");
@@ -254,7 +274,10 @@ public class OpenAPIClientGenerator {
                                 .getMemberValue().asStringLiteralExpr().getValue();
 
                         List<MethodDeclaration> declarations = newtemplate.findAll(MethodDeclaration.class,
-                                md -> !md.getNameAsString().equals("authorizationHeader"));
+                                md -> !md.getNameAsString().equals("update") && md.getParentNode()
+                                        .filter(p -> (p instanceof ClassOrInterfaceDeclaration)
+                                                && ((ClassOrInterfaceDeclaration) p).getNameAsString().equals("HeaderConfig"))
+                                        .isEmpty());
                         declarations.stream().forEach(md -> {
                             MethodDeclaration cloned = md.clone();
                             Optional<AnnotationExpr> pathAnotation = cloned.getAnnotationByName("Path");

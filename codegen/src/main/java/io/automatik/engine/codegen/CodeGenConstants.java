@@ -33,4 +33,7 @@ public class CodeGenConstants {
     public static final String MP_RESTCLIENT_PROP_REFRESH_URL = "/mp-rest/auth-refresh-url";
     public static final String MP_RESTCLIENT_PROP_CLIENT_ID = "/mp-rest/auth-client-id";
     public static final String MP_RESTCLIENT_PROP_CLIENT_SECRET = "/mp-rest/auth-client-secret";
+    public static final String MP_RESTCLIENT_PROP_CUSTOM_NAME = "/mp-rest/auth-custom-name";
+    public static final String MP_RESTCLIENT_PROP_CUSTOM_VALUE = "/mp-rest/auth-custom-value";
+    public static final String MP_RESTCLIENT_PROP_ON_BEHALF_NAME = "/mp-rest/auth-on-behalf-name";
 }
