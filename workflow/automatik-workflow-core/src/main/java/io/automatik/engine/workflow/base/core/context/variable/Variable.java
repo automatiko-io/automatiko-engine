@@ -29,6 +29,7 @@ public class Variable implements ValueObject, Serializable, io.automatik.engine.
     public static final String READONLY_TAG = "readonly";
     public static final String REQUIRED_TAG = "required";
     public static final String INTERNAL_TAG = "internal";
+    public static final String NOT_NULL_TAG = "notnull";
     public static final String INPUT_TAG = "input";
     public static final String OUTPUT_TAG = "output";
     public static final String BUSINESS_RELEVANT = "business-relevant";

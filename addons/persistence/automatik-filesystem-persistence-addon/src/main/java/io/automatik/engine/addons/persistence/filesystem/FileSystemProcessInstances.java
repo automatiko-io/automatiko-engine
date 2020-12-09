@@ -14,13 +14,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -114,7 +114,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     @SuppressWarnings("unchecked")
     @Override
     public Collection findByIdOrTag(ProcessInstanceReadMode mode, String... values) {
-        List collected = new ArrayList<>();
+        Set collected = new LinkedHashSet<>();
         for (String idOrTag : values) {
 
             findById(idOrTag, mode).ifPresent(pi -> collected.add(pi));

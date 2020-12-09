@@ -623,7 +623,7 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
                     // connect boundary event to compensation activity
                     ConnectionImpl connection = new ConnectionImpl(sourceNode, NodeImpl.CONNECTION_DEFAULT_TYPE,
                             targetNode, NodeImpl.CONNECTION_DEFAULT_TYPE);
-                    connection.setMetaData("UniqueId", null);
+                    connection.setMetaData("UniqueId", association.getId());
                     connection.setMetaData("hidden", true);
                     connection.setMetaData("association", true);
 

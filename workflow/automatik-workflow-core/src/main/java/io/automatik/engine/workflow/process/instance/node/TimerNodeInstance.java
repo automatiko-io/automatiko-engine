@@ -19,6 +19,7 @@ import io.automatik.engine.api.runtime.process.NodeInstanceState;
 import io.automatik.engine.api.workflow.BaseEventDescription;
 import io.automatik.engine.api.workflow.EventDescription;
 import io.automatik.engine.services.time.TimerInstance;
+import io.automatik.engine.workflow.base.instance.InternalProcessRuntime;
 import io.automatik.engine.workflow.process.core.node.TimerNode;
 import io.automatik.engine.workflow.process.instance.WorkflowProcessInstance;
 
@@ -75,12 +76,16 @@ public class TimerNodeInstance extends StateBasedNodeInstance implements EventLi
     }
 
     public void triggerCompleted(boolean remove) {
+        if (remove) {
+            removeEventListeners();
+        }
         internalChangeState(NodeInstanceState.Occur);
         triggerCompleted(io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE, remove);
     }
 
     @Override
     public void cancel() {
+        removeEventListeners();
         getProcessInstance().getProcessRuntime().getJobsService().cancelJob(timerId);
         super.cancel();
     }
@@ -104,6 +109,9 @@ public class TimerNodeInstance extends StateBasedNodeInstance implements EventLi
         properties.put("Delay", getTimerNode().getTimer().getDelay());
         properties.put("Period", getTimerNode().getTimer().getPeriod());
         properties.put("Date", getTimerNode().getTimer().getDate());
+        properties.put("NextFireTime", ((InternalProcessRuntime) getProcessInstance().getProcessRuntime())
+                .getJobsService().getScheduledTime(timerId).toString());
+
         return Collections.singleton(new BaseEventDescription(TIMER_TRIGGERED_EVENT, getNodeDefinitionId(), getNodeName(),
                 "timer", getId(), getProcessInstance().getId(), null, properties));
 

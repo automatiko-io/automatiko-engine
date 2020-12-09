@@ -139,6 +139,7 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
     }
 
     private void processOutputs(Map<String, Object> inputs, Map<String, Object> objects) {
+        logger.debug("Rules evaluation results {}", objects);
         RuleSetNode ruleSetNode = getRuleSetNode();
         if (ruleSetNode != null) {
             for (Iterator<DataAssociation> iterator = ruleSetNode.getOutAssociations().iterator(); iterator

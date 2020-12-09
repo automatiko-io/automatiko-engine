@@ -794,10 +794,13 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
         return new Tags() {
 
+            Collection<String> values = ((WorkflowProcessInstanceImpl) processInstance()).getTags().stream()
+                    .map(t -> t.getValue()).collect(Collectors.toList());
+
             @Override
             public Collection<String> values() {
-                WorkflowProcessInstanceImpl pi = (WorkflowProcessInstanceImpl) processInstance();
-                return pi.getTags().stream().map(t -> t.getValue()).collect(Collectors.toList());
+
+                return values;
             }
 
             @Override

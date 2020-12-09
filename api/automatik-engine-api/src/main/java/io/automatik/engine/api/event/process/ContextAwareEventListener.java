@@ -9,19 +9,30 @@ public class ContextAwareEventListener extends DefaultProcessEventListener {
 
     private final Consumer<ContextAwareEventListener> action;
 
+    private boolean active;
+
     private ContextAwareEventListener(String identifier, Consumer<ContextAwareEventListener> action) {
         this.identifier = identifier;
         this.action = action;
+        this.active = true;
     }
 
     @Override
     public void afterNodeLeft(ProcessNodeLeftEvent event) {
-        action.accept(this);
+        if (active) {
+            action.accept(this);
+        }
     }
 
     @Override
     public void afterVariableChanged(ProcessVariableChangedEvent event) {
-        action.accept(this);
+        if (active) {
+            action.accept(this);
+        }
+    }
+
+    public void deactivate() {
+        this.active = false;
     }
 
     public static ProcessEventListener using(String identifier, Consumer<ContextAwareEventListener> action) {

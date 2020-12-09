@@ -5,7 +5,8 @@
   <artifactId>\${artifactId}</artifactId>
   <version>\${version}</version>
 
-  <description>Automatik project \${artifactId}</description>
+  <name>Generated project \${artifactId}</name>
+  <description>Generated description for \${artifactId}</description>
 
   <properties>
     <quarkus.version>${version.io.quarkus}</quarkus.version>
@@ -35,22 +36,6 @@
     <dependency>
       <groupId>io.automatik.platform.quarkus</groupId>
       <artifactId>automatik-quarkus</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy-jackson</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-smallrye-openapi</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-arc</artifactId>
     </dependency>
 
     <dependency>

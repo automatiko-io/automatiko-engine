@@ -146,7 +146,7 @@ public class FileSystemBasedJobService implements JobsService {
     @Override
     public boolean cancelJob(String id) {
         LOGGER.debug("Cancel Job: {}", id);
-        if (scheduledJobs.containsKey(id)) {
+        if (id != null && scheduledJobs.containsKey(id)) {
             removeScheduledJob(id);
             return scheduledJobs.remove(id).cancel(true);
         }

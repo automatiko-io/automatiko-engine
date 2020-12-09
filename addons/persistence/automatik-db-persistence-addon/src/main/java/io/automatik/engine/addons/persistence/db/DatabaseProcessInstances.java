@@ -69,7 +69,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
                     }
                 })
                 .filter(pi -> pi != null)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
 
     }
 

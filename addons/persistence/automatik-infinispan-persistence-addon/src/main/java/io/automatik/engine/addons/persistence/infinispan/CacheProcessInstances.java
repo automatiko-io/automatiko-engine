@@ -3,11 +3,11 @@ package io.automatik.engine.addons.persistence.infinispan;
 
 import static io.automatik.engine.api.workflow.ProcessInstanceReadMode.MUTABLE;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -65,7 +65,7 @@ public class CacheProcessInstances implements MutableProcessInstances {
 
     @Override
     public Collection<? extends ProcessInstance> findByIdOrTag(ProcessInstanceReadMode mode, String... values) {
-        List<ProcessInstance> collected = new ArrayList<>();
+        Set<ProcessInstance> collected = new LinkedHashSet<>();
         for (String idOrTag : values) {
 
             cache.values().parallelStream()

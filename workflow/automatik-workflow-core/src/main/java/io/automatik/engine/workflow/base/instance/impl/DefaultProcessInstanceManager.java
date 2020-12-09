@@ -15,67 +15,67 @@ import io.automatik.engine.workflow.process.instance.impl.WorkflowProcessInstanc
 
 public class DefaultProcessInstanceManager implements ProcessInstanceManager {
 
-	private Map<String, ProcessInstance> processInstances = new ConcurrentHashMap<>();
-	private Map<CorrelationKey, ProcessInstance> processInstancesByCorrelationKey = new ConcurrentHashMap<>();
+    private Map<String, ProcessInstance> processInstances = new ConcurrentHashMap<>();
+    private Map<CorrelationKey, ProcessInstance> processInstancesByCorrelationKey = new ConcurrentHashMap<>();
 
-	public void addProcessInstance(ProcessInstance processInstance, CorrelationKey correlationKey) {
-		if (processInstance.getId() == null) {
-			String uuid;
-			if (correlationKey != null) {
-				uuid = UUID.nameUUIDFromBytes(correlationKey.toExternalForm().getBytes()).toString();
-				if (processInstancesByCorrelationKey.containsKey(correlationKey)) {
-					throw new RuntimeException(correlationKey + " already exists");
-				}
-				processInstancesByCorrelationKey.put(correlationKey, processInstance);
-				((WorkflowProcessInstanceImpl) processInstance).setCorrelationKey(correlationKey.toExternalForm());
-			} else {
-				uuid = UUID.randomUUID().toString();
-			}
+    public void addProcessInstance(ProcessInstance processInstance, CorrelationKey correlationKey) {
+        if (processInstance.getId() == null) {
+            String uuid;
+            if (correlationKey != null) {
+                uuid = UUID.nameUUIDFromBytes(correlationKey.toExternalForm().getBytes()).toString();
+                if (processInstancesByCorrelationKey.containsKey(correlationKey)) {
+                    throw new RuntimeException(correlationKey + " already exists");
+                }
+                processInstancesByCorrelationKey.put(correlationKey, processInstance);
+                ((WorkflowProcessInstanceImpl) processInstance).setCorrelationKey(correlationKey.toExternalForm());
+            } else {
+                uuid = UUID.randomUUID().toString();
+            }
 
-			((io.automatik.engine.workflow.base.instance.ProcessInstance) processInstance).setId(uuid);
-		}
-		internalAddProcessInstance(processInstance);
-	}
+            ((io.automatik.engine.workflow.base.instance.ProcessInstance) processInstance).setId(uuid);
+        }
+        internalAddProcessInstance(processInstance);
+    }
 
-	public void internalAddProcessInstance(ProcessInstance processInstance) {
-		processInstances.put(processInstance.getId(), processInstance);
-	}
+    public void internalAddProcessInstance(ProcessInstance processInstance) {
+        processInstances.put(processInstance.getId(), processInstance);
+    }
 
-	public Collection<ProcessInstance> getProcessInstances() {
-		return Collections.unmodifiableCollection(processInstances.values());
-	}
+    public Collection<ProcessInstance> getProcessInstances() {
+        return Collections.unmodifiableCollection(processInstances.values());
+    }
 
-	public ProcessInstance getProcessInstance(String id) {
-		return processInstances.get(id);
-	}
+    public ProcessInstance getProcessInstance(String id) {
+        return processInstances.get(id);
+    }
 
-	public ProcessInstance getProcessInstance(String id, boolean readOnly) {
-		return processInstances.get(id);
-	}
+    public ProcessInstance getProcessInstance(String id, boolean readOnly) {
+        return processInstances.get(id);
+    }
 
-	public void removeProcessInstance(ProcessInstance processInstance) {
-		internalRemoveProcessInstance(processInstance);
-	}
+    public void removeProcessInstance(ProcessInstance processInstance) {
+        //internalRemoveProcessInstance(processInstance);
+    }
 
-	public void internalRemoveProcessInstance(ProcessInstance processInstance) {
-		processInstances.remove(processInstance.getId());
-		for (Entry<CorrelationKey, ProcessInstance> entry : processInstancesByCorrelationKey.entrySet()) {
-			if (entry.getValue().getId().equals(processInstance.getId())) {
-				processInstancesByCorrelationKey.remove(entry.getKey());
-			}
-		}
-	}
+    public void internalRemoveProcessInstance(ProcessInstance processInstance) {
+        processInstances.remove(processInstance.getId());
+        for (Entry<CorrelationKey, ProcessInstance> entry : processInstancesByCorrelationKey.entrySet()) {
+            if (entry.getValue().getId().equals(processInstance.getId())) {
+                processInstancesByCorrelationKey.remove(entry.getKey());
+            }
+        }
+    }
 
-	public void clearProcessInstances() {
-		processInstances.clear();
-	}
+    public void clearProcessInstances() {
+        processInstances.clear();
+    }
 
-	public void clearProcessInstancesState() {
+    public void clearProcessInstancesState() {
 
-	}
+    }
 
-	@Override
-	public ProcessInstance getProcessInstance(CorrelationKey correlationKey) {
-		return processInstancesByCorrelationKey.get(correlationKey);
-	}
+    @Override
+    public ProcessInstance getProcessInstance(CorrelationKey correlationKey) {
+        return processInstancesByCorrelationKey.get(correlationKey);
+    }
 }

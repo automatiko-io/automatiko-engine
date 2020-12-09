@@ -747,7 +747,9 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
             }
             return newListenersList;
         });
-        listeners.add(listener);
+        if (!listeners.contains(listener)) {
+            listeners.add(listener);
+        }
     }
 
     @Override

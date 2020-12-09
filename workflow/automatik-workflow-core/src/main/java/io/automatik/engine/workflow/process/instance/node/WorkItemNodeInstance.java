@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 import org.mvel2.MVEL;
 import org.slf4j.Logger;
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import io.automatik.engine.api.definition.process.Node;
 import io.automatik.engine.api.runtime.process.DataTransformer;
 import io.automatik.engine.api.runtime.process.EventListener;
+import io.automatik.engine.api.runtime.process.HumanTaskWorkItem;
 import io.automatik.engine.api.runtime.process.NodeInstance;
 import io.automatik.engine.api.runtime.process.ProcessWorkItemHandlerException;
 import io.automatik.engine.api.runtime.process.WorkItem;
@@ -686,6 +688,7 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Set<EventDescription<?>> getEventDescriptions() {
         List<NamedDataType> inputs = new ArrayList<>();
@@ -705,9 +708,19 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         dataTypes.add("Input", inputs);
         dataTypes.add("Output", outputs);
 
+        Map<String, String> properties = new HashMap<>();
+
+        if (getWorkItem() instanceof HumanTaskWorkItem) {
+            properties.put("ActualOwner", ((HumanTaskWorkItem) getWorkItem()).getActualOwner());
+            properties.put("PotentialUsers",
+                    ((HumanTaskWorkItem) getWorkItem()).getPotentialUsers().stream().collect(Collectors.joining(",")));
+            properties.put("PotentialGroups",
+                    ((HumanTaskWorkItem) getWorkItem()).getPotentialGroups().stream().collect(Collectors.joining(",")));
+        }
+
         // return just the main completion type of an event
         return Collections.singleton(new IOEventDescription("workItemCompleted", getNodeDefinitionId(), getNodeName(),
-                "workItem", getWorkItemId(), getProcessInstance().getId(), dataTypes));
+                "workItem", getWorkItemId(), getProcessInstance().getId(), dataTypes, properties));
     }
 
     public String buildReferenceId() {

@@ -15,6 +15,7 @@ import org.eclipse.microprofile.reactive.messaging.Message;
 
 public class MessageProducer {
     
+    @io.smallrye.reactive.messaging.annotations.Broadcast(0)
     org.eclipse.microprofile.reactive.messaging.Emitter emitter;
     
     Optional<Boolean> useCloudEvents = Optional.of(true);

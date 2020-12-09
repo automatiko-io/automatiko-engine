@@ -1,0 +1,998 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- origin at X=0.0 Y=0.0 -->
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:automatik="https://automatik-platform.io" xmlns="https://automatik-platform.io" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:java="http://www.java.com/javaTypes" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatik-platform.io automatik.xsd" id="Definition" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="1.5.2.SNAPSHOT-v20200602-1600-B1" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="https://automatik-platform.io" typeLanguage="http://www.java.com/javaTypes">
+  <bpmn2:itemDefinition id="ItemDefinition_1" isCollection="false" structureRef="java.lang.Boolean"/>
+  <bpmn2:itemDefinition id="ItemDefinition_29" isCollection="false" structureRef="io.automatik.platform.examples.orders.Order"/>
+  <bpmn2:itemDefinition id="ItemDefinition_309" isCollection="false" structureRef="java.util.List&lt;io.automatik.platform.examples.orders.Item&gt;"/>
+  <bpmn2:itemDefinition id="ItemDefinition_355" isCollection="false" structureRef="io.automatik.platform.examples.orders.ChangeSet"/>
+  <bpmn2:itemDefinition id="ItemDefinition_2246" isCollection="false" structureRef="io.automatik.platform.examples.orders.Customer"/>
+  <bpmn2:itemDefinition id="ItemDefinition_2463" isCollection="false" structureRef="io.automatik.platform.examples.orders.Shippment"/>
+  <bpmn2:itemDefinition id="ItemDefinition_2546" isCollection="false" structureRef="io.automatik.platform.examples.orders.services.NotificationService"/>
+  <bpmn2:itemDefinition id="ItemDefinition_3970" isCollection="false" structureRef="io.automatik.platform.examples.orders.services.ShippmentService"/>
+  <bpmn2:itemDefinition id="ItemDefinition_761" isCollection="false" structureRef="io.automatik.platform.examples.orders.Item"/>
+  <bpmn2:itemDefinition id="ItemDefinition_930" isCollection="false" structureRef="java.lang.Double"/>
+  <bpmn2:message id="Message_1" itemRef="ItemDefinition_355" name="orders"/>
+  <bpmn2:message id="Message_2" itemRef="ItemDefinition_29" name="reclaims"/>
+  <bpmn2:message id="Message_3" itemRef="ItemDefinition_29" name="customers"/>
+  <bpmn2:message id="Message_4" itemRef="ItemDefinition_355" name="updatedorder">
+    <bpmn2:extensionElements>
+      <automatik:metaData name="topic">
+        <automatik:metaValue><![CDATA[updatedorders]]></automatik:metaValue>
+      </automatik:metaData>
+    </bpmn2:extensionElements>
+  </bpmn2:message>
+  <bpmn2:interface id="Interface_1" implementationRef="io.automatik.platform.examples.orders.services.ShippmentService" name="shipmentservice">
+    <bpmn2:operation id="Operation_4" name="requestShippment"/>
+    <bpmn2:operation id="Operation_5" name="cancelShippment"/>
+  </bpmn2:interface>
+  <bpmn2:interface id="Interface_2" implementationRef="io.automatik.platform.examples.orders.services.NotificationService" name="notificationservice">
+    <bpmn2:operation id="Operation_1" name="sendCancelationEmail"/>
+    <bpmn2:operation id="Operation_2" name="sendConfirmationEmail"/>
+    <bpmn2:operation id="Operation_3" name="sendShippmentEmail"/>
+  </bpmn2:interface>
+  <bpmn2:process id="orders" automatik:packageName="io.automatik.platform.examples.orders" name="Process orders" isExecutable="true" processType="Public">
+    <bpmn2:documentation id="Documentation_75"><![CDATA[Handling orders from the very beginning (order initiated/created) until it's shipped. It covers complete life cycle including adding and remving items on the order, changing shipping address based on customer address, order cancelation and timeout in case order was not placed in time.]]></bpmn2:documentation>
+    <bpmn2:extensionElements>
+      <automatik:import name="io.automatik.platform.examples.orders.Order"/>
+      <automatik:import name="java.util.List"/>
+      <automatik:import name="io.automatik.platform.examples.orders.ChangeSet"/>
+      <automatik:import name="io.automatik.platform.examples.orders.Customer"/>
+      <automatik:metaData name="tags">
+        <automatik:metaValue><![CDATA[#{order.getCustomer().getEmail()},#{order.getOrderNumber()}]]></automatik:metaValue>
+      </automatik:metaData>
+      <automatik:import name="io.automatik.platform.examples.orders.Shippment"/>
+      <automatik:import name="io.automatik.platform.examples.orders.NotificationService"/>
+      <automatik:import name="io.automatik.platform.examples.orders.services.ShippmentService"/>
+      <automatik:import name="io.automatik.platform.examples.orders.Item"/>
+    </bpmn2:extensionElements>
+    <bpmn2:startEvent id="StartEvent_1" name="order created">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[order created]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
+      <bpmn2:dataOutput id="DataOutput_2" itemSubjectRef="ItemDefinition_355" name="event"/>
+      <bpmn2:dataOutputAssociation id="DataOutputAssociation_1">
+        <bpmn2:sourceRef>DataOutput_2</bpmn2:sourceRef>
+        <bpmn2:targetRef>event</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:outputSet id="OutputSet_1" name="Output Set 1">
+        <bpmn2:dataOutputRefs>DataOutput_2</bpmn2:dataOutputRefs>
+      </bpmn2:outputSet>
+      <bpmn2:messageEventDefinition id="MessageEventDefinition_1" messageRef="Message_1"/>
+    </bpmn2:startEvent>
+    <bpmn2:dataObject id="order" name="order" itemSubjectRef="ItemDefinition_29">
+      <bpmn2:documentation id="Documentation_3"><![CDATA[Main order information including order number, status, total amount and tax. In addition it carries customer (who created the order).]]></bpmn2:documentation>
+      <bpmn2:extensionElements>
+        <automatik:metaData name="customTags">
+          <automatik:metaValue><![CDATA[notnull]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:dataObject>
+    <bpmn2:dataObject id="items" name="items" itemSubjectRef="ItemDefinition_309">
+      <bpmn2:documentation id="Documentation_4"><![CDATA[All items included in the order consiting of article information such as name and identifier, price and quantity]]></bpmn2:documentation>
+      <bpmn2:extensionElements>
+        <automatik:metaData name="customTags">
+          <automatik:metaValue><![CDATA[auto-initialized]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:dataObject>
+    <bpmn2:dataObject id="event" name="event" itemSubjectRef="ItemDefinition_355">
+      <bpmn2:documentation id="Documentation_9"><![CDATA[An incoming event representing change set of an order or an item]]></bpmn2:documentation>
+      <bpmn2:extensionElements>
+        <automatik:metaData name="customTags">
+          <automatik:metaValue><![CDATA[internal]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:dataObject>
+    <bpmn2:eventBasedGateway id="EventBasedGateway_1" name="Wait for order status change" gatewayDirection="Diverging">
+      <bpmn2:incoming>SequenceFlow_16</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+      <bpmn2:outgoing>SequenceFlow_3</bpmn2:outgoing>
+      <bpmn2:outgoing>SequenceFlow_4</bpmn2:outgoing>
+    </bpmn2:eventBasedGateway>
+    <bpmn2:sequenceFlow id="SequenceFlow_1" automatik:priority="1" sourceRef="StartEvent_1" targetRef="ScriptTask_1"/>
+    <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_1" name="Order cancelled">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Order cancelled]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_2</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_6</bpmn2:outgoing>
+      <bpmn2:conditionalEventDefinition id="ConditionalEventDefinition_1">
+        <bpmn2:condition xsi:type="bpmn2:tFormalExpression" id="FormalExpression_1" language="http://www.java.com/java">order.getStatus().equals(Order.OrderStatus.Cancelled)</bpmn2:condition>
+      </bpmn2:conditionalEventDefinition>
+    </bpmn2:intermediateCatchEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_2" automatik:priority="1" sourceRef="EventBasedGateway_1" targetRef="IntermediateCatchEvent_1"/>
+    <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_2" name="Order placed">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Order placed]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_3</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_11</bpmn2:outgoing>
+      <bpmn2:conditionalEventDefinition id="ConditionalEventDefinition_2">
+        <bpmn2:condition xsi:type="bpmn2:tFormalExpression" id="FormalExpression_2" language="http://www.java.com/java">order.getStatus().equals(Order.OrderStatus.Placed)</bpmn2:condition>
+      </bpmn2:conditionalEventDefinition>
+    </bpmn2:intermediateCatchEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_3" automatik:priority="1" sourceRef="EventBasedGateway_1" targetRef="IntermediateCatchEvent_2"/>
+    <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_3" name="Timed out">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Timed out]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_4</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_5</bpmn2:outgoing>
+      <bpmn2:timerEventDefinition id="TimerEventDefinition_1">
+        <bpmn2:timeDuration xsi:type="bpmn2:tFormalExpression" id="FormalExpression_3">PT10M</bpmn2:timeDuration>
+      </bpmn2:timerEventDefinition>
+    </bpmn2:intermediateCatchEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_4" automatik:priority="1" sourceRef="EventBasedGateway_1" targetRef="IntermediateCatchEvent_3"/>
+    <bpmn2:endEvent id="EndEvent_1" name="order closed on timeout">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[order closed on timeout]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_5</bpmn2:incoming>
+      <bpmn2:terminateEventDefinition id="TerminateEventDefinition_1"/>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_5" automatik:priority="1" sourceRef="IntermediateCatchEvent_3" targetRef="EndEvent_1"/>
+    <bpmn2:serviceTask id="ServiceTask_1" name="Send cancelation notice" implementation="Java" operationRef="Operation_1">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Send cancelation notice]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_6</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_8</bpmn2:outgoing>
+      <bpmn2:ioSpecification id="InputOutputSpecification_21">
+        <bpmn2:dataInput id="DataInput_11" itemSubjectRef="ItemDefinition_29" name="order"/>
+        <bpmn2:dataInput id="DataInput_12" itemSubjectRef="ItemDefinition_309" name="items"/>
+        <bpmn2:inputSet id="InputSet_19" name="Input Set 19">
+          <bpmn2:dataInputRefs>DataInput_11</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_12</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet id="OutputSet_24" name="Output Set 24"/>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_11">
+        <bpmn2:sourceRef>order</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_11</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_12">
+        <bpmn2:sourceRef>items</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_12</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+    </bpmn2:serviceTask>
+    <bpmn2:sequenceFlow id="SequenceFlow_6" automatik:priority="1" sourceRef="IntermediateCatchEvent_1" targetRef="ServiceTask_1"/>
+    <bpmn2:exclusiveGateway id="ExclusiveGateway_1" name="check status" gatewayDirection="Diverging">
+      <bpmn2:incoming>SequenceFlow_8</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_9</bpmn2:outgoing>
+      <bpmn2:outgoing>SequenceFlow_10</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+    <bpmn2:sequenceFlow id="SequenceFlow_8" automatik:priority="1" sourceRef="ServiceTask_1" targetRef="ExclusiveGateway_1"/>
+    <bpmn2:endEvent id="EndEvent_2" name="Cancel shippment">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Cancel shippment]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_9</bpmn2:incoming>
+      <bpmn2:compensateEventDefinition id="CompensateEventDefinition_2" activityRef="ServiceTask_3" waitForCompletion="true"/>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_9" automatik:priority="1" sourceRef="ExclusiveGateway_1" targetRef="EndEvent_2">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="FormalExpression_4" language="http://www.java.com/java">!order.getStatus().equals(Order.OrderStatus.Shipped)</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:endEvent id="EndEvent_3" name="Initiate reclaim of shipped items">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Initiate reclaim of shipped items]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_10</bpmn2:incoming>
+      <bpmn2:dataInput id="DataInput_1" itemSubjectRef="ItemDefinition_29" name="Message_2_Input"/>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_1">
+        <bpmn2:sourceRef>order</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_1</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:inputSet id="InputSet_3" name="Input Set 3">
+        <bpmn2:dataInputRefs>DataInput_1</bpmn2:dataInputRefs>
+      </bpmn2:inputSet>
+      <bpmn2:messageEventDefinition id="MessageEventDefinition_2" messageRef="Message_2"/>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_10" automatik:priority="1" sourceRef="ExclusiveGateway_1" targetRef="EndEvent_3">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="FormalExpression_5" language="http://www.java.com/java">order.getStatus().equals(Order.OrderStatus.Shipped)</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:serviceTask id="ServiceTask_2" name="Send confirmation notice" implementation="Java" operationRef="Operation_2">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Send confirmation notice]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_11</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_12</bpmn2:outgoing>
+      <bpmn2:ioSpecification id="InputOutputSpecification_26">
+        <bpmn2:dataInput id="DataInput_13" itemSubjectRef="ItemDefinition_29" name="order"/>
+        <bpmn2:dataInput id="DataInput_14" itemSubjectRef="ItemDefinition_309" name="items"/>
+        <bpmn2:inputSet id="InputSet_24" name="Input Set 24">
+          <bpmn2:dataInputRefs>DataInput_13</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_14</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet id="OutputSet_29" name="Output Set 29"/>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_13">
+        <bpmn2:sourceRef>order</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_13</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_14">
+        <bpmn2:sourceRef>items</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_14</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+    </bpmn2:serviceTask>
+    <bpmn2:sequenceFlow id="SequenceFlow_11" automatik:priority="1" sourceRef="IntermediateCatchEvent_2" targetRef="ServiceTask_2"/>
+    <bpmn2:serviceTask id="ServiceTask_3" name="Request shippment" implementation="Java" operationRef="Operation_4">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Request shippment]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_12</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_13</bpmn2:outgoing>
+      <bpmn2:ioSpecification id="InputOutputSpecification_34">
+        <bpmn2:dataInput id="DataInput_18" itemSubjectRef="ItemDefinition_29" name="order"/>
+        <bpmn2:dataOutput id="DataOutput_5" itemSubjectRef="ItemDefinition_2463" name="shippment"/>
+        <bpmn2:inputSet id="InputSet_32" name="Input Set 32">
+          <bpmn2:dataInputRefs>DataInput_18</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet id="OutputSet_37" name="Output Set 37">
+          <bpmn2:dataOutputRefs>DataOutput_5</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_18">
+        <bpmn2:sourceRef>order</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_18</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataOutputAssociation id="DataOutputAssociation_4">
+        <bpmn2:sourceRef>DataOutput_5</bpmn2:sourceRef>
+        <bpmn2:targetRef>shippment</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+    </bpmn2:serviceTask>
+    <bpmn2:sequenceFlow id="SequenceFlow_12" automatik:priority="1" sourceRef="ServiceTask_2" targetRef="ServiceTask_3"/>
+    <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_4" name="wait for shippment">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[wait for shippment]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_13</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_14</bpmn2:outgoing>
+      <bpmn2:conditionalEventDefinition id="ConditionalEventDefinition_3">
+        <bpmn2:condition xsi:type="bpmn2:tFormalExpression" id="FormalExpression_6" language="http://www.java.com/java">order.getStatus().equals(Order.OrderStatus.Shipped)</bpmn2:condition>
+      </bpmn2:conditionalEventDefinition>
+    </bpmn2:intermediateCatchEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_13" automatik:priority="1" sourceRef="ServiceTask_3" targetRef="IntermediateCatchEvent_4"/>
+    <bpmn2:serviceTask id="ServiceTask_4" name="Send shippment notice" implementation="Java" operationRef="Operation_3">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Send shippment notice]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_14</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_15</bpmn2:outgoing>
+      <bpmn2:ioSpecification id="InputOutputSpecification_30">
+        <bpmn2:dataInput id="DataInput_15" itemSubjectRef="ItemDefinition_29" name="order"/>
+        <bpmn2:dataInput id="DataInput_16" itemSubjectRef="ItemDefinition_309" name="items"/>
+        <bpmn2:dataInput id="DataInput_17" itemSubjectRef="ItemDefinition_2463" name="shippment"/>
+        <bpmn2:inputSet id="InputSet_28" name="Input Set 28">
+          <bpmn2:dataInputRefs>DataInput_15</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_16</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_17</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet id="OutputSet_33" name="Output Set 33"/>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_15">
+        <bpmn2:sourceRef>order</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_15</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_16">
+        <bpmn2:sourceRef>items</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_16</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_17">
+        <bpmn2:sourceRef>shippment</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_17</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+    </bpmn2:serviceTask>
+    <bpmn2:sequenceFlow id="SequenceFlow_14" automatik:priority="1" sourceRef="IntermediateCatchEvent_4" targetRef="ServiceTask_4"/>
+    <bpmn2:endEvent id="EndEvent_4" name="order completed">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[order completed]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_15</bpmn2:incoming>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_15" automatik:priority="1" sourceRef="ServiceTask_4" targetRef="EndEvent_4"/>
+    <bpmn2:boundaryEvent id="BoundaryEvent_1" name="" attachedToRef="ServiceTask_3">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:compensateEventDefinition id="CompensateEventDefinition_3" activityRef="ServiceTask_5" waitForCompletion="false"/>
+    </bpmn2:boundaryEvent>
+    <bpmn2:serviceTask id="ServiceTask_5" name="Cancel shippment" isForCompensation="true" implementation="Java" operationRef="Operation_5">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Cancel shippment]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:ioSpecification id="InputOutputSpecification_37">
+        <bpmn2:dataInput id="DataInput_19" itemSubjectRef="ItemDefinition_2463" name="shippment"/>
+        <bpmn2:inputSet id="InputSet_35" name="Input Set 35">
+          <bpmn2:dataInputRefs>DataInput_19</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet id="OutputSet_40" name="Output Set 40"/>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_19">
+        <bpmn2:sourceRef>shippment</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_19</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+    </bpmn2:serviceTask>
+    <bpmn2:subProcess id="SubProcess_1" name="Handle order updates" triggeredByEvent="true">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Handle order updates]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:startEvent id="StartEvent_2" name="on order or item change" isInterrupting="false">
+        <bpmn2:extensionElements>
+          <automatik:metaData name="elementname">
+            <automatik:metaValue><![CDATA[on order or item change]]></automatik:metaValue>
+          </automatik:metaData>
+        </bpmn2:extensionElements>
+        <bpmn2:outgoing>SequenceFlow_17</bpmn2:outgoing>
+        <bpmn2:dataOutput id="DataOutput_3" itemSubjectRef="ItemDefinition_355" name="Message_3_Output"/>
+        <bpmn2:dataOutputAssociation id="DataOutputAssociation_2">
+          <bpmn2:sourceRef>DataOutput_3</bpmn2:sourceRef>
+          <bpmn2:targetRef>event</bpmn2:targetRef>
+        </bpmn2:dataOutputAssociation>
+        <bpmn2:outputSet id="OutputSet_12" name="Output Set 12">
+          <bpmn2:dataOutputRefs>DataOutput_3</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
+        <bpmn2:messageEventDefinition id="MessageEventDefinition_3" messageRef="Message_4"/>
+      </bpmn2:startEvent>
+      <bpmn2:exclusiveGateway id="ExclusiveGateway_2" name="order or item?" gatewayDirection="Diverging">
+        <bpmn2:incoming>SequenceFlow_17</bpmn2:incoming>
+        <bpmn2:outgoing>SequenceFlow_20</bpmn2:outgoing>
+        <bpmn2:outgoing>SequenceFlow_7</bpmn2:outgoing>
+      </bpmn2:exclusiveGateway>
+      <bpmn2:sequenceFlow id="SequenceFlow_17" automatik:priority="1" sourceRef="StartEvent_2" targetRef="ExclusiveGateway_2"/>
+      <bpmn2:endEvent id="EndEvent_5" name="Order updated">
+        <bpmn2:extensionElements>
+          <automatik:metaData name="elementname">
+            <automatik:metaValue><![CDATA[Order updated]]></automatik:metaValue>
+          </automatik:metaData>
+        </bpmn2:extensionElements>
+        <bpmn2:incoming>SequenceFlow_7</bpmn2:incoming>
+      </bpmn2:endEvent>
+      <bpmn2:businessRuleTask id="BusinessRuleTask_1" name="Apply discounts" implementation="http://www.jboss.org/drools/dmn">
+        <bpmn2:extensionElements>
+          <automatik:metaData name="elementname">
+            <automatik:metaValue><![CDATA[Apply discounts]]></automatik:metaValue>
+          </automatik:metaData>
+        </bpmn2:extensionElements>
+        <bpmn2:incoming>SequenceFlow_20</bpmn2:incoming>
+        <bpmn2:outgoing>SequenceFlow_21</bpmn2:outgoing>
+        <bpmn2:ioSpecification id="InputOutputSpecification_13">
+          <bpmn2:dataInput id="DataInput_2" name="namespace"/>
+          <bpmn2:dataInput id="DataInput_3" name="model"/>
+          <bpmn2:dataInput id="DataInput_4" name="decision"/>
+          <bpmn2:dataInput id="item" itemSubjectRef="ItemDefinition_761" name="item"/>
+          <bpmn2:dataOutput id="DataOutput_1" itemSubjectRef="ItemDefinition_930" name="price"/>
+          <bpmn2:inputSet id="_InputSet_2">
+            <bpmn2:dataInputRefs>DataInput_2</bpmn2:dataInputRefs>
+            <bpmn2:dataInputRefs>DataInput_3</bpmn2:dataInputRefs>
+            <bpmn2:dataInputRefs>DataInput_4</bpmn2:dataInputRefs>
+            <bpmn2:dataInputRefs>item</bpmn2:dataInputRefs>
+          </bpmn2:inputSet>
+          <bpmn2:outputSet id="OutputSet_15" name="Output Set">
+            <bpmn2:dataOutputRefs>DataOutput_1</bpmn2:dataOutputRefs>
+          </bpmn2:outputSet>
+        </bpmn2:ioSpecification>
+        <bpmn2:dataInputAssociation id="DataInputAssociation_2">
+          <bpmn2:targetRef>DataInput_2</bpmn2:targetRef>
+          <bpmn2:assignment id="Assignment_3">
+            <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_15">https://kiegroup.org/dmn/_D68D0A24-E6B4-4DD1-898C-A0FEEB835787</bpmn2:from>
+            <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_13">DataInput_2</bpmn2:to>
+          </bpmn2:assignment>
+        </bpmn2:dataInputAssociation>
+        <bpmn2:dataInputAssociation id="DataInputAssociation_3">
+          <bpmn2:targetRef>DataInput_3</bpmn2:targetRef>
+          <bpmn2:assignment id="Assignment_4">
+            <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_18">apply-discount</bpmn2:from>
+            <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_16">DataInput_3</bpmn2:to>
+          </bpmn2:assignment>
+        </bpmn2:dataInputAssociation>
+        <bpmn2:dataInputAssociation id="DataInputAssociation_4">
+          <bpmn2:targetRef>DataInput_4</bpmn2:targetRef>
+        </bpmn2:dataInputAssociation>
+        <bpmn2:dataInputAssociation id="DataInputAssociation_8">
+          <bpmn2:targetRef>item</bpmn2:targetRef>
+          <bpmn2:assignment id="Assignment_5">
+            <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_23">#{event.getItem()}</bpmn2:from>
+            <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_21">DataInput_8</bpmn2:to>
+          </bpmn2:assignment>
+        </bpmn2:dataInputAssociation>
+        <bpmn2:dataOutputAssociation id="DataOutputAssociation_5">
+          <bpmn2:sourceRef>DataOutput_1</bpmn2:sourceRef>
+          <bpmn2:assignment id="Assignment_6">
+            <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_24">DataOutput_1</bpmn2:from>
+            <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_26">#{item.price}</bpmn2:to>
+          </bpmn2:assignment>
+        </bpmn2:dataOutputAssociation>
+      </bpmn2:businessRuleTask>
+      <bpmn2:sequenceFlow id="SequenceFlow_20" automatik:priority="1" sourceRef="ExclusiveGateway_2" targetRef="BusinessRuleTask_1">
+        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="FormalExpression_20" language="http://www.java.com/java">event.getItem() != null</bpmn2:conditionExpression>
+      </bpmn2:sequenceFlow>
+      <bpmn2:businessRuleTask id="BusinessRuleTask_2" name="Calculate order amount" implementation="http://www.jboss.org/drools/dmn">
+        <bpmn2:extensionElements>
+          <automatik:metaData name="elementname">
+            <automatik:metaValue><![CDATA[Calculate order amount]]></automatik:metaValue>
+          </automatik:metaData>
+        </bpmn2:extensionElements>
+        <bpmn2:incoming>SequenceFlow_21</bpmn2:incoming>
+        <bpmn2:outgoing>SequenceFlow_22</bpmn2:outgoing>
+        <bpmn2:ioSpecification id="InputOutputSpecification_14">
+          <bpmn2:dataInput id="DataInput_5" name="namespace"/>
+          <bpmn2:dataInput id="DataInput_6" name="model"/>
+          <bpmn2:dataInput id="DataInput_7" name="decision"/>
+          <bpmn2:dataInput id="DataInput_9" itemSubjectRef="ItemDefinition_309" name="item"/>
+          <bpmn2:dataOutput id="DataOutput_6" name="totalAmount"/>
+          <bpmn2:inputSet id="_InputSet_3">
+            <bpmn2:dataInputRefs>DataInput_5</bpmn2:dataInputRefs>
+            <bpmn2:dataInputRefs>DataInput_6</bpmn2:dataInputRefs>
+            <bpmn2:dataInputRefs>DataInput_7</bpmn2:dataInputRefs>
+            <bpmn2:dataInputRefs>DataInput_9</bpmn2:dataInputRefs>
+          </bpmn2:inputSet>
+          <bpmn2:outputSet id="OutputSet_16" name="Output Set">
+            <bpmn2:dataOutputRefs>DataOutput_6</bpmn2:dataOutputRefs>
+          </bpmn2:outputSet>
+        </bpmn2:ioSpecification>
+        <bpmn2:dataInputAssociation id="DataInputAssociation_5">
+          <bpmn2:targetRef>DataInput_5</bpmn2:targetRef>
+          <bpmn2:assignment id="Assignment_1">
+            <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_9">https://kiegroup.org/dmn/_D68D0A24-E6B4-4DD1-898C-A0FEEB835787</bpmn2:from>
+            <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_7">DataInput_5</bpmn2:to>
+          </bpmn2:assignment>
+        </bpmn2:dataInputAssociation>
+        <bpmn2:dataInputAssociation id="DataInputAssociation_6">
+          <bpmn2:targetRef>DataInput_6</bpmn2:targetRef>
+          <bpmn2:assignment id="Assignment_2">
+            <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_12">calculate-price</bpmn2:from>
+            <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_10">DataInput_6</bpmn2:to>
+          </bpmn2:assignment>
+        </bpmn2:dataInputAssociation>
+        <bpmn2:dataInputAssociation id="DataInputAssociation_7">
+          <bpmn2:targetRef>DataInput_7</bpmn2:targetRef>
+        </bpmn2:dataInputAssociation>
+        <bpmn2:dataInputAssociation id="DataInputAssociation_9">
+          <bpmn2:sourceRef>items</bpmn2:sourceRef>
+          <bpmn2:targetRef>DataInput_9</bpmn2:targetRef>
+        </bpmn2:dataInputAssociation>
+        <bpmn2:dataOutputAssociation id="DataOutputAssociation_6">
+          <bpmn2:sourceRef>DataOutput_6</bpmn2:sourceRef>
+          <bpmn2:assignment id="Assignment_8">
+            <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_30">DataOutput_6</bpmn2:from>
+            <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_32">#{order.totalAmount}</bpmn2:to>
+          </bpmn2:assignment>
+        </bpmn2:dataOutputAssociation>
+      </bpmn2:businessRuleTask>
+      <bpmn2:sequenceFlow id="SequenceFlow_21" automatik:priority="1" sourceRef="BusinessRuleTask_1" targetRef="BusinessRuleTask_2"/>
+      <bpmn2:endEvent id="EndEvent_6" name="Item processed">
+        <bpmn2:extensionElements>
+          <automatik:metaData name="elementname">
+            <automatik:metaValue><![CDATA[Item processed]]></automatik:metaValue>
+          </automatik:metaData>
+        </bpmn2:extensionElements>
+        <bpmn2:incoming>SequenceFlow_22</bpmn2:incoming>
+      </bpmn2:endEvent>
+      <bpmn2:sequenceFlow id="SequenceFlow_22" automatik:priority="1" sourceRef="BusinessRuleTask_2" targetRef="EndEvent_6"/>
+      <bpmn2:sequenceFlow id="SequenceFlow_7" automatik:priority="1" sourceRef="ExclusiveGateway_2" targetRef="EndEvent_5">
+        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="FormalExpression_8" language="http://www.java.com/java">event.getOrder() != null</bpmn2:conditionExpression>
+      </bpmn2:sequenceFlow>
+    </bpmn2:subProcess>
+    <bpmn2:subProcess id="SubProcess_2" name="Handle customer updates" triggeredByEvent="true">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Handle customer updates]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:startEvent id="StartEvent_3" name="on customer change" isInterrupting="false">
+        <bpmn2:extensionElements>
+          <automatik:metaData name="elementname">
+            <automatik:metaValue><![CDATA[on customer change]]></automatik:metaValue>
+          </automatik:metaData>
+        </bpmn2:extensionElements>
+        <bpmn2:outgoing>SequenceFlow_31</bpmn2:outgoing>
+        <bpmn2:dataOutput id="DataOutput_4" itemSubjectRef="ItemDefinition_29" name="Message_4_Output"/>
+        <bpmn2:dataOutputAssociation id="DataOutputAssociation_3">
+          <bpmn2:sourceRef>DataOutput_4</bpmn2:sourceRef>
+          <bpmn2:targetRef>order</bpmn2:targetRef>
+        </bpmn2:dataOutputAssociation>
+        <bpmn2:outputSet id="OutputSet_17" name="Output Set 17">
+          <bpmn2:dataOutputRefs>DataOutput_4</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
+        <bpmn2:messageEventDefinition id="MessageEventDefinition_4" messageRef="Message_3"/>
+      </bpmn2:startEvent>
+      <bpmn2:endEvent id="EndEvent_7" name="customer updated">
+        <bpmn2:extensionElements>
+          <automatik:metaData name="elementname">
+            <automatik:metaValue><![CDATA[customer updated]]></automatik:metaValue>
+          </automatik:metaData>
+        </bpmn2:extensionElements>
+        <bpmn2:incoming>SequenceFlow_31</bpmn2:incoming>
+      </bpmn2:endEvent>
+      <bpmn2:sequenceFlow id="SequenceFlow_31" automatik:priority="1" sourceRef="StartEvent_3" targetRef="EndEvent_7"/>
+    </bpmn2:subProcess>
+    <bpmn2:dataObject id="shippment" name="shippment" itemSubjectRef="ItemDefinition_2463">
+      <bpmn2:documentation id="Documentation_78"><![CDATA[Carries all relevant information about shippment of a given order]]></bpmn2:documentation>
+    </bpmn2:dataObject>
+    <bpmn2:scriptTask id="ScriptTask_1" name="Set order" scriptFormat="http://www.java.com/java">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Set order]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_16</bpmn2:outgoing>
+      <bpmn2:script>kcontext.setVariable(&quot;order&quot;, event.getOrder());</bpmn2:script>
+    </bpmn2:scriptTask>
+    <bpmn2:sequenceFlow id="SequenceFlow_16" automatik:priority="1" sourceRef="ScriptTask_1" targetRef="EventBasedGateway_1"/>
+    <bpmn2:association id="Association_1" associationDirection="One" sourceRef="BoundaryEvent_1" targetRef="ServiceTask_5"/>
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_Process_1" bpmnElement="orders">
+      <bpmndi:BPMNShape id="BPMNShape_SubProcess_1" bpmnElement="SubProcess_1" isExpanded="true">
+        <dc:Bounds height="306.0" width="771.0" x="40.0" y="445.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_1">
+          <dc:Bounds height="11.0" width="87.0" x="46.0" y="448.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_SubProcess_2" bpmnElement="SubProcess_2" isExpanded="true">
+        <dc:Bounds height="303.0" width="497.0" x="874.0" y="448.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_2">
+          <dc:Bounds height="11.0" width="103.0" x="880.0" y="451.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_StartEvent_1" bpmnElement="StartEvent_1">
+        <dc:Bounds height="36.0" width="36.0" x="164.0" y="265.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_3" labelStyle="BPMNLabelStyle_1">
+          <dc:Bounds height="11.0" width="54.0" x="155.0" y="301.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_1" bpmnElement="order">
+        <dc:Bounds height="50.0" width="36.0" x="190.0" y="60.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_4">
+          <dc:Bounds height="11.0" width="22.0" x="197.0" y="110.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_2" bpmnElement="items">
+        <dc:Bounds height="50.0" width="36.0" x="290.0" y="60.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_5">
+          <dc:Bounds height="11.0" width="22.0" x="297.0" y="110.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_3" bpmnElement="event">
+        <dc:Bounds height="50.0" width="36.0" x="90.0" y="300.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_6">
+          <dc:Bounds height="11.0" width="23.0" x="96.0" y="350.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EventBasedGateway_1" bpmnElement="EventBasedGateway_1" isMarkerVisible="true">
+        <dc:Bounds height="50.0" width="50.0" x="275.0" y="258.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_7">
+          <dc:Bounds height="22.0" width="62.0" x="269.0" y="308.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_IntermediateCatchEvent_1" bpmnElement="IntermediateCatchEvent_1">
+        <dc:Bounds height="36.0" width="36.0" x="394.0" y="171.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_8">
+          <dc:Bounds height="11.0" width="64.0" x="380.0" y="207.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_IntermediateCatchEvent_2" bpmnElement="IntermediateCatchEvent_2">
+        <dc:Bounds height="36.0" width="36.0" x="393.0" y="265.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_9">
+          <dc:Bounds height="11.0" width="53.0" x="385.0" y="301.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_IntermediateCatchEvent_3" bpmnElement="IntermediateCatchEvent_3">
+        <dc:Bounds height="36.0" width="36.0" x="393.0" y="365.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_10">
+          <dc:Bounds height="11.0" width="40.0" x="391.0" y="401.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_1" bpmnElement="EndEvent_1">
+        <dc:Bounds height="36.0" width="36.0" x="497.0" y="365.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_11" labelStyle="BPMNLabelStyle_1">
+          <dc:Bounds height="22.0" width="71.0" x="480.0" y="401.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ServiceTask_1" bpmnElement="ServiceTask_1" isExpanded="true">
+        <dc:Bounds height="50.0" width="110.0" x="535.0" y="164.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_12">
+          <dc:Bounds height="11.0" width="96.0" x="542.0" y="183.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ExclusiveGateway_1" bpmnElement="ExclusiveGateway_1" isMarkerVisible="true">
+        <dc:Bounds height="50.0" width="50.0" x="720.0" y="164.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_13">
+          <dc:Bounds height="11.0" width="51.0" x="720.0" y="214.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_2" bpmnElement="EndEvent_2">
+        <dc:Bounds height="36.0" width="36.0" x="830.0" y="171.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_14" labelStyle="BPMNLabelStyle_1">
+          <dc:Bounds height="11.0" width="73.0" x="812.0" y="207.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_3" bpmnElement="EndEvent_3">
+        <dc:Bounds height="36.0" width="36.0" x="830.0" y="75.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_15" labelStyle="BPMNLabelStyle_1">
+          <dc:Bounds height="22.0" width="77.0" x="810.0" y="111.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ServiceTask_2" bpmnElement="ServiceTask_2" isExpanded="true">
+        <dc:Bounds height="50.0" width="110.0" x="534.0" y="258.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_16">
+          <dc:Bounds height="11.0" width="100.0" x="539.0" y="277.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ServiceTask_3" bpmnElement="ServiceTask_3" isExpanded="true">
+        <dc:Bounds height="50.0" width="110.0" x="749.0" y="258.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_17">
+          <dc:Bounds height="11.0" width="78.0" x="765.0" y="277.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_IntermediateCatchEvent_4" bpmnElement="IntermediateCatchEvent_4">
+        <dc:Bounds height="36.0" width="36.0" x="927.0" y="265.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_18">
+          <dc:Bounds height="11.0" width="74.0" x="908.0" y="301.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ServiceTask_4" bpmnElement="ServiceTask_4" isExpanded="true">
+        <dc:Bounds height="50.0" width="110.0" x="1068.0" y="258.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_19">
+          <dc:Bounds height="11.0" width="92.0" x="1077.0" y="277.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_4" bpmnElement="EndEvent_4">
+        <dc:Bounds height="36.0" width="36.0" x="1246.0" y="265.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_20" labelStyle="BPMNLabelStyle_1">
+          <dc:Bounds height="11.0" width="66.0" x="1231.0" y="301.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_BoundaryEvent_1" bpmnElement="BoundaryEvent_1">
+        <dc:Bounds height="36.0" width="36.0" x="781.0" y="290.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_21"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ServiceTask_5" bpmnElement="ServiceTask_5" isExpanded="true">
+        <dc:Bounds height="50.0" width="110.0" x="858.0" y="365.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_22">
+          <dc:Bounds height="11.0" width="73.0" x="876.0" y="384.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_StartEvent_2" bpmnElement="StartEvent_2">
+        <dc:Bounds height="36.0" width="36.0" x="132.0" y="567.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_23" labelStyle="BPMNLabelStyle_1">
+          <dc:Bounds height="22.0" width="73.0" x="114.0" y="603.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ExclusiveGateway_2" bpmnElement="ExclusiveGateway_2" isMarkerVisible="true">
+        <dc:Bounds height="50.0" width="50.0" x="243.0" y="560.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_24">
+          <dc:Bounds height="11.0" width="57.0" x="240.0" y="610.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_5" bpmnElement="EndEvent_5">
+        <dc:Bounds height="36.0" width="36.0" x="538.0" y="487.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_26" labelStyle="BPMNLabelStyle_1">
+          <dc:Bounds height="11.0" width="59.0" x="527.0" y="523.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_BusinessRuleTask_1" bpmnElement="BusinessRuleTask_1" isExpanded="true">
+        <dc:Bounds height="50.0" width="110.0" x="360.0" y="660.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_27" labelStyle="BPMNLabelStyle_1">
+          <dc:Bounds height="11.0" width="64.0" x="383.0" y="679.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_BusinessRuleTask_2" bpmnElement="BusinessRuleTask_2" isExpanded="true">
+        <dc:Bounds height="50.0" width="110.0" x="575.0" y="660.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_28" labelStyle="BPMNLabelStyle_1">
+          <dc:Bounds height="11.0" width="94.0" x="583.0" y="679.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_6" bpmnElement="EndEvent_6">
+        <dc:Bounds height="36.0" width="36.0" x="753.0" y="667.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_29" labelStyle="BPMNLabelStyle_1">
+          <dc:Bounds height="11.0" width="62.0" x="740.0" y="703.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_StartEvent_3" bpmnElement="StartEvent_3">
+        <dc:Bounds height="36.0" width="36.0" x="926.0" y="570.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_30" labelStyle="BPMNLabelStyle_1">
+          <dc:Bounds height="22.0" width="57.0" x="916.0" y="606.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_7" bpmnElement="EndEvent_7">
+        <dc:Bounds height="36.0" width="36.0" x="1090.0" y="570.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_31" labelStyle="BPMNLabelStyle_1">
+          <dc:Bounds height="11.0" width="73.0" x="1072.0" y="606.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_4" bpmnElement="shippment">
+        <dc:Bounds height="50.0" width="36.0" x="380.0" y="60.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_32">
+          <dc:Bounds height="11.0" width="42.0" x="377.0" y="110.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ScriptTask_1" bpmnElement="ScriptTask_1" isExpanded="true">
+        <dc:Bounds height="50.0" width="110.0" x="175.0" y="195.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="38.0" x="211.0" y="214.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataOutputAssociation_1" bpmnElement="DataOutputAssociation_1" sourceElement="BPMNShape_StartEvent_1" targetElement="BPMNShape_DataObject_3">
+        <di:waypoint xsi:type="dc:Point" x="164.0" y="283.0"/>
+        <di:waypoint xsi:type="dc:Point" x="108.0" y="283.0"/>
+        <di:waypoint xsi:type="dc:Point" x="108.0" y="300.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_33"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_1" bpmnElement="SequenceFlow_1" sourceElement="BPMNShape_StartEvent_1" targetElement="BPMNShape_ScriptTask_1">
+        <di:waypoint xsi:type="dc:Point" x="200.0" y="283.0"/>
+        <di:waypoint xsi:type="dc:Point" x="230.0" y="283.0"/>
+        <di:waypoint xsi:type="dc:Point" x="230.0" y="245.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_34"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_2" bpmnElement="SequenceFlow_2" sourceElement="BPMNShape_EventBasedGateway_1" targetElement="BPMNShape_IntermediateCatchEvent_1">
+        <di:waypoint xsi:type="dc:Point" x="300.0" y="258.0"/>
+        <di:waypoint xsi:type="dc:Point" x="300.0" y="189.0"/>
+        <di:waypoint xsi:type="dc:Point" x="394.0" y="189.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_35"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_3" bpmnElement="SequenceFlow_3" sourceElement="BPMNShape_EventBasedGateway_1" targetElement="BPMNShape_IntermediateCatchEvent_2">
+        <di:waypoint xsi:type="dc:Point" x="325.0" y="283.0"/>
+        <di:waypoint xsi:type="dc:Point" x="359.0" y="283.0"/>
+        <di:waypoint xsi:type="dc:Point" x="393.0" y="283.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_36"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_4" bpmnElement="SequenceFlow_4" sourceElement="BPMNShape_EventBasedGateway_1" targetElement="BPMNShape_IntermediateCatchEvent_3">
+        <di:waypoint xsi:type="dc:Point" x="300.0" y="308.0"/>
+        <di:waypoint xsi:type="dc:Point" x="300.0" y="383.0"/>
+        <di:waypoint xsi:type="dc:Point" x="393.0" y="383.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_37"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_5" bpmnElement="SequenceFlow_5" sourceElement="BPMNShape_IntermediateCatchEvent_3" targetElement="BPMNShape_EndEvent_1">
+        <di:waypoint xsi:type="dc:Point" x="429.0" y="383.0"/>
+        <di:waypoint xsi:type="dc:Point" x="463.0" y="383.0"/>
+        <di:waypoint xsi:type="dc:Point" x="497.0" y="383.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_38"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_6" bpmnElement="SequenceFlow_6" sourceElement="BPMNShape_IntermediateCatchEvent_1" targetElement="BPMNShape_ServiceTask_1">
+        <di:waypoint xsi:type="dc:Point" x="430.0" y="189.0"/>
+        <di:waypoint xsi:type="dc:Point" x="482.0" y="189.0"/>
+        <di:waypoint xsi:type="dc:Point" x="535.0" y="189.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_39"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_8" bpmnElement="SequenceFlow_8" sourceElement="BPMNShape_ServiceTask_1" targetElement="BPMNShape_ExclusiveGateway_1">
+        <di:waypoint xsi:type="dc:Point" x="645.0" y="189.0"/>
+        <di:waypoint xsi:type="dc:Point" x="682.0" y="189.0"/>
+        <di:waypoint xsi:type="dc:Point" x="720.0" y="189.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_40"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_9" bpmnElement="SequenceFlow_9" sourceElement="BPMNShape_ExclusiveGateway_1" targetElement="BPMNShape_EndEvent_2">
+        <di:waypoint xsi:type="dc:Point" x="770.0" y="189.0"/>
+        <di:waypoint xsi:type="dc:Point" x="800.0" y="189.0"/>
+        <di:waypoint xsi:type="dc:Point" x="830.0" y="189.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_41"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_10" bpmnElement="SequenceFlow_10" sourceElement="BPMNShape_ExclusiveGateway_1" targetElement="BPMNShape_EndEvent_3">
+        <di:waypoint xsi:type="dc:Point" x="745.0" y="164.0"/>
+        <di:waypoint xsi:type="dc:Point" x="745.0" y="93.0"/>
+        <di:waypoint xsi:type="dc:Point" x="830.0" y="93.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_42"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_1" bpmnElement="DataInputAssociation_1" sourceElement="BPMNShape_DataObject_1" targetElement="BPMNShape_EndEvent_3">
+        <di:waypoint xsi:type="dc:Point" x="208.0" y="60.0"/>
+        <di:waypoint xsi:type="dc:Point" x="208.0" y="50.0"/>
+        <di:waypoint xsi:type="dc:Point" x="848.0" y="50.0"/>
+        <di:waypoint xsi:type="dc:Point" x="848.0" y="75.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_43"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_11" bpmnElement="SequenceFlow_11" sourceElement="BPMNShape_IntermediateCatchEvent_2" targetElement="BPMNShape_ServiceTask_2">
+        <di:waypoint xsi:type="dc:Point" x="429.0" y="283.0"/>
+        <di:waypoint xsi:type="dc:Point" x="481.0" y="283.0"/>
+        <di:waypoint xsi:type="dc:Point" x="534.0" y="283.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_44"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_12" bpmnElement="SequenceFlow_12" sourceElement="BPMNShape_ServiceTask_2" targetElement="BPMNShape_ServiceTask_3">
+        <di:waypoint xsi:type="dc:Point" x="644.0" y="283.0"/>
+        <di:waypoint xsi:type="dc:Point" x="696.0" y="283.0"/>
+        <di:waypoint xsi:type="dc:Point" x="749.0" y="283.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_45"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_13" bpmnElement="SequenceFlow_13" sourceElement="BPMNShape_ServiceTask_3" targetElement="BPMNShape_IntermediateCatchEvent_4">
+        <di:waypoint xsi:type="dc:Point" x="859.0" y="283.0"/>
+        <di:waypoint xsi:type="dc:Point" x="893.0" y="283.0"/>
+        <di:waypoint xsi:type="dc:Point" x="927.0" y="283.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_46"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_14" bpmnElement="SequenceFlow_14" sourceElement="BPMNShape_IntermediateCatchEvent_4" targetElement="BPMNShape_ServiceTask_4">
+        <di:waypoint xsi:type="dc:Point" x="963.0" y="283.0"/>
+        <di:waypoint xsi:type="dc:Point" x="1015.0" y="283.0"/>
+        <di:waypoint xsi:type="dc:Point" x="1068.0" y="283.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_47"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_15" bpmnElement="SequenceFlow_15" sourceElement="BPMNShape_ServiceTask_4" targetElement="BPMNShape_EndEvent_4">
+        <di:waypoint xsi:type="dc:Point" x="1178.0" y="283.0"/>
+        <di:waypoint xsi:type="dc:Point" x="1212.0" y="283.0"/>
+        <di:waypoint xsi:type="dc:Point" x="1246.0" y="283.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_48"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_Association_1" bpmnElement="Association_1" sourceElement="BPMNShape_BoundaryEvent_1" targetElement="BPMNShape_ServiceTask_5">
+        <di:waypoint xsi:type="dc:Point" x="799.0" y="326.0"/>
+        <di:waypoint xsi:type="dc:Point" x="799.0" y="390.0"/>
+        <di:waypoint xsi:type="dc:Point" x="858.0" y="390.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_49"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataOutputAssociation_2" bpmnElement="DataOutputAssociation_2" sourceElement="BPMNShape_StartEvent_2" targetElement="BPMNShape_DataObject_3">
+        <di:waypoint xsi:type="dc:Point" x="132.0" y="585.0"/>
+        <di:waypoint xsi:type="dc:Point" x="108.0" y="585.0"/>
+        <di:waypoint xsi:type="dc:Point" x="108.0" y="350.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_50"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_17" bpmnElement="SequenceFlow_17" sourceElement="BPMNShape_StartEvent_2" targetElement="BPMNShape_ExclusiveGateway_2">
+        <di:waypoint xsi:type="dc:Point" x="168.0" y="585.0"/>
+        <di:waypoint xsi:type="dc:Point" x="205.0" y="585.0"/>
+        <di:waypoint xsi:type="dc:Point" x="243.0" y="585.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_51"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_20" bpmnElement="SequenceFlow_20" sourceElement="BPMNShape_ExclusiveGateway_2" targetElement="BPMNShape_BusinessRuleTask_1">
+        <di:waypoint xsi:type="dc:Point" x="268.0" y="610.0"/>
+        <di:waypoint xsi:type="dc:Point" x="268.0" y="685.0"/>
+        <di:waypoint xsi:type="dc:Point" x="360.0" y="685.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_54"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_21" bpmnElement="SequenceFlow_21" sourceElement="BPMNShape_BusinessRuleTask_1" targetElement="BPMNShape_BusinessRuleTask_2">
+        <di:waypoint xsi:type="dc:Point" x="470.0" y="685.0"/>
+        <di:waypoint xsi:type="dc:Point" x="522.0" y="685.0"/>
+        <di:waypoint xsi:type="dc:Point" x="575.0" y="685.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_55"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_22" bpmnElement="SequenceFlow_22" sourceElement="BPMNShape_BusinessRuleTask_2" targetElement="BPMNShape_EndEvent_6">
+        <di:waypoint xsi:type="dc:Point" x="685.0" y="685.0"/>
+        <di:waypoint xsi:type="dc:Point" x="719.0" y="685.0"/>
+        <di:waypoint xsi:type="dc:Point" x="753.0" y="685.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_56"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataOutputAssociation_3" bpmnElement="DataOutputAssociation_3" sourceElement="BPMNShape_StartEvent_3" targetElement="BPMNShape_DataObject_1">
+        <di:waypoint xsi:type="dc:Point" x="944.0" y="570.0"/>
+        <di:waypoint xsi:type="dc:Point" x="944.0" y="425.0"/>
+        <di:waypoint xsi:type="dc:Point" x="271.0" y="425.0"/>
+        <di:waypoint xsi:type="dc:Point" x="271.0" y="85.0"/>
+        <di:waypoint xsi:type="dc:Point" x="226.0" y="85.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_57"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_2" bpmnElement="DataInputAssociation_11" sourceElement="BPMNShape_DataObject_1" targetElement="BPMNShape_ServiceTask_1">
+        <di:waypoint xsi:type="dc:Point" x="208.0" y="110.0"/>
+        <di:waypoint xsi:type="dc:Point" x="208.0" y="137.0"/>
+        <di:waypoint xsi:type="dc:Point" x="590.0" y="137.0"/>
+        <di:waypoint xsi:type="dc:Point" x="590.0" y="164.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_58"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_3" bpmnElement="DataInputAssociation_12" sourceElement="BPMNShape_DataObject_2" targetElement="BPMNShape_ServiceTask_1">
+        <di:waypoint xsi:type="dc:Point" x="326.0" y="85.0"/>
+        <di:waypoint xsi:type="dc:Point" x="370.0" y="85.0"/>
+        <di:waypoint xsi:type="dc:Point" x="370.0" y="124.0"/>
+        <di:waypoint xsi:type="dc:Point" x="608.0" y="124.0"/>
+        <di:waypoint xsi:type="dc:Point" x="608.0" y="164.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_59"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_4" bpmnElement="DataInputAssociation_13" sourceElement="BPMNShape_DataObject_1" targetElement="BPMNShape_ServiceTask_2">
+        <di:waypoint xsi:type="dc:Point" x="214.0" y="110.0"/>
+        <di:waypoint xsi:type="dc:Point" x="202.0" y="221.0"/>
+        <di:waypoint xsi:type="dc:Point" x="589.0" y="221.0"/>
+        <di:waypoint xsi:type="dc:Point" x="589.0" y="258.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_60"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_5" bpmnElement="DataInputAssociation_14" sourceElement="BPMNShape_DataObject_2" targetElement="BPMNShape_ServiceTask_2">
+        <di:waypoint xsi:type="dc:Point" x="308.0" y="110.0"/>
+        <di:waypoint xsi:type="dc:Point" x="308.0" y="221.0"/>
+        <di:waypoint xsi:type="dc:Point" x="607.0" y="221.0"/>
+        <di:waypoint xsi:type="dc:Point" x="607.0" y="258.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_61"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_6" bpmnElement="DataInputAssociation_15" sourceElement="BPMNShape_DataObject_1" targetElement="BPMNShape_ServiceTask_4">
+        <di:waypoint xsi:type="dc:Point" x="226.0" y="76.0"/>
+        <di:waypoint xsi:type="dc:Point" x="282.0" y="76.0"/>
+        <di:waypoint xsi:type="dc:Point" x="282.0" y="50.0"/>
+        <di:waypoint xsi:type="dc:Point" x="1123.0" y="50.0"/>
+        <di:waypoint xsi:type="dc:Point" x="1123.0" y="258.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_62"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_7" bpmnElement="DataInputAssociation_16" sourceElement="BPMNShape_DataObject_2" targetElement="BPMNShape_ServiceTask_4">
+        <di:waypoint xsi:type="dc:Point" x="308.0" y="60.0"/>
+        <di:waypoint xsi:type="dc:Point" x="308.0" y="50.0"/>
+        <di:waypoint xsi:type="dc:Point" x="1141.0" y="50.0"/>
+        <di:waypoint xsi:type="dc:Point" x="1141.0" y="258.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_63"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_8" bpmnElement="DataInputAssociation_17" sourceElement="BPMNShape_DataObject_4" targetElement="BPMNShape_ServiceTask_4">
+        <di:waypoint xsi:type="dc:Point" x="416.0" y="85.0"/>
+        <di:waypoint xsi:type="dc:Point" x="820.0" y="85.0"/>
+        <di:waypoint xsi:type="dc:Point" x="820.0" y="65.0"/>
+        <di:waypoint xsi:type="dc:Point" x="986.0" y="65.0"/>
+        <di:waypoint xsi:type="dc:Point" x="986.0" y="274.0"/>
+        <di:waypoint xsi:type="dc:Point" x="1068.0" y="274.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_64"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_9" bpmnElement="DataInputAssociation_18" sourceElement="BPMNShape_DataObject_1" targetElement="BPMNShape_ServiceTask_3">
+        <di:waypoint xsi:type="dc:Point" x="226.0" y="85.0"/>
+        <di:waypoint xsi:type="dc:Point" x="280.0" y="85.0"/>
+        <di:waypoint xsi:type="dc:Point" x="280.0" y="248.0"/>
+        <di:waypoint xsi:type="dc:Point" x="683.0" y="248.0"/>
+        <di:waypoint xsi:type="dc:Point" x="683.0" y="274.0"/>
+        <di:waypoint xsi:type="dc:Point" x="749.0" y="274.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_65"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataOutputAssociation_4" bpmnElement="DataOutputAssociation_4" sourceElement="BPMNShape_ServiceTask_3" targetElement="BPMNShape_DataObject_4">
+        <di:waypoint xsi:type="dc:Point" x="804.0" y="258.0"/>
+        <di:waypoint xsi:type="dc:Point" x="804.0" y="76.0"/>
+        <di:waypoint xsi:type="dc:Point" x="416.0" y="76.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_66"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_10" bpmnElement="DataInputAssociation_19" sourceElement="BPMNShape_DataObject_4" targetElement="BPMNShape_ServiceTask_5">
+        <di:waypoint xsi:type="dc:Point" x="416.0" y="97.0"/>
+        <di:waypoint xsi:type="dc:Point" x="820.0" y="97.0"/>
+        <di:waypoint xsi:type="dc:Point" x="820.0" y="231.0"/>
+        <di:waypoint xsi:type="dc:Point" x="913.0" y="231.0"/>
+        <di:waypoint xsi:type="dc:Point" x="913.0" y="365.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_67"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_31" bpmnElement="SequenceFlow_31" sourceElement="BPMNShape_StartEvent_3" targetElement="BPMNShape_EndEvent_7">
+        <di:waypoint xsi:type="dc:Point" x="962.0" y="588.0"/>
+        <di:waypoint xsi:type="dc:Point" x="1026.0" y="588.0"/>
+        <di:waypoint xsi:type="dc:Point" x="1090.0" y="588.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_68"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_11" bpmnElement="DataInputAssociation_9" sourceElement="BPMNShape_DataObject_2" targetElement="BPMNShape_BusinessRuleTask_2">
+        <di:waypoint xsi:type="dc:Point" x="314.0" y="110.0"/>
+        <di:waypoint xsi:type="dc:Point" x="302.0" y="251.0"/>
+        <di:waypoint xsi:type="dc:Point" x="487.0" y="251.0"/>
+        <di:waypoint xsi:type="dc:Point" x="487.0" y="676.0"/>
+        <di:waypoint xsi:type="dc:Point" x="575.0" y="676.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_25"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_7" bpmnElement="SequenceFlow_7" sourceElement="BPMNShape_ExclusiveGateway_2" targetElement="BPMNShape_EndEvent_5">
+        <di:waypoint xsi:type="dc:Point" x="268.0" y="560.0"/>
+        <di:waypoint xsi:type="dc:Point" x="268.0" y="505.0"/>
+        <di:waypoint xsi:type="dc:Point" x="538.0" y="505.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_52"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_16" bpmnElement="SequenceFlow_16" sourceElement="BPMNShape_ScriptTask_1" targetElement="BPMNShape_EventBasedGateway_1">
+        <di:waypoint xsi:type="dc:Point" x="248.0" y="245.0"/>
+        <di:waypoint xsi:type="dc:Point" x="248.0" y="283.0"/>
+        <di:waypoint xsi:type="dc:Point" x="275.0" y="283.0"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+    <bpmndi:BPMNLabelStyle id="BPMNLabelStyle_1">
+      <dc:Font name="arial" size="9.0"/>
+    </bpmndi:BPMNLabelStyle>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>

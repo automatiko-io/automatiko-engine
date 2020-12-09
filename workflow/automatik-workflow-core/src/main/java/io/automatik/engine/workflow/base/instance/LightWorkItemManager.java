@@ -59,8 +59,10 @@ public class LightWorkItemManager extends DefaultWorkItemManager {
         internalAddWorkItem(workItem);
         WorkItemHandler handler = this.workItemHandlers.get(workItem.getName());
         if (handler != null) {
-            ProcessInstance processInstance = processInstanceManager
-                    .getProcessInstance(workItem.getProcessInstanceId());
+            ProcessInstance processInstance = workItem.getProcessInstance();
+            if (processInstance == null) {
+                processInstance = processInstanceManager.getProcessInstance(workItem.getProcessInstanceId());
+            }
             Transition<?> transition = new TransitionToActive();
             eventSupport.fireBeforeWorkItemTransition(processInstance, workItem, transition, null);
 
@@ -83,8 +85,10 @@ public class LightWorkItemManager extends DefaultWorkItemManager {
             WorkItemHandler handler = this.workItemHandlers.get(workItem.getName());
             if (handler != null) {
 
-                ProcessInstance processInstance = processInstanceManager
-                        .getProcessInstance(workItem.getProcessInstanceId());
+                ProcessInstance processInstance = workItem.getProcessInstance();
+                if (processInstance == null) {
+                    processInstance = processInstanceManager.getProcessInstance(workItem.getProcessInstanceId());
+                }
                 Transition<?> transition = new TransitionToAbort(Collections.emptyList());
                 eventSupport.fireBeforeWorkItemTransition(processInstance, workItem, transition, null);
 
@@ -138,7 +142,10 @@ public class LightWorkItemManager extends DefaultWorkItemManager {
     }
 
     public void internalCompleteWorkItem(WorkItem workItem) {
-        ProcessInstance processInstance = processInstanceManager.getProcessInstance(workItem.getProcessInstanceId());
+        ProcessInstance processInstance = workItem.getProcessInstance();
+        if (processInstance == null) {
+            processInstance = processInstanceManager.getProcessInstance(workItem.getProcessInstanceId());
+        }
         ((WorkItemImpl) workItem).setState(COMPLETED);
         workItem.setCompleteDate(new Date());
 
@@ -159,8 +166,10 @@ public class LightWorkItemManager extends DefaultWorkItemManager {
 
             WorkItemHandler handler = this.workItemHandlers.get(workItem.getName());
             if (handler != null) {
-                ProcessInstance processInstance = processInstanceManager
-                        .getProcessInstance(workItem.getProcessInstanceId());
+                ProcessInstance processInstance = workItem.getProcessInstance();
+                if (processInstance == null) {
+                    processInstance = processInstanceManager.getProcessInstance(workItem.getProcessInstanceId());
+                }
                 eventSupport.fireBeforeWorkItemTransition(processInstance, workItem, transition, null);
 
                 try {

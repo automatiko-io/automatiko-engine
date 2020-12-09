@@ -64,8 +64,9 @@ public class StateNodeInstance extends CompositeContextNodeInstance implements E
     private void addCompletionEventListener() {
         getProcessInstance().getProcessRuntime().addEventListener(ContextAwareEventListener.using(getId(), listener -> {
             if (isCompleted()) {
-                triggerCompleted();
                 getProcessInstance().getProcessRuntime().removeEventListener(listener);
+                listener.deactivate();
+                triggerCompleted();
             }
         }));
     }
@@ -112,7 +113,10 @@ public class StateNodeInstance extends CompositeContextNodeInstance implements E
         super.removeEventListeners();
         getProcessInstance().removeEventListener("signal", this, false);
         if (getProcessInstance().getProcessRuntime() != null) {
-            getProcessInstance().getProcessRuntime().removeEventListener(ContextAwareEventListener.using(getId(), null));
+            ContextAwareEventListener listener = (ContextAwareEventListener) ContextAwareEventListener.using(getId(), null);
+            listener.deactivate();
+            getProcessInstance().getProcessRuntime().removeEventListener(listener);
+
         }
     }
 

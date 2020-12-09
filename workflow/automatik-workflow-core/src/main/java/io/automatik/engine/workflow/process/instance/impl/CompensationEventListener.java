@@ -184,4 +184,29 @@ class CompensationEventListener implements EventListener {
         return eventTypes;
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((instance == null) ? 0 : instance.getId().hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        CompensationEventListener other = (CompensationEventListener) obj;
+        if (instance == null) {
+            if (other.instance != null)
+                return false;
+        } else if (!instance.getId().equals(other.instance.getId()))
+            return false;
+        return true;
+    }
+
 }

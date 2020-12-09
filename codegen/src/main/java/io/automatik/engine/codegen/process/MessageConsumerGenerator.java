@@ -135,6 +135,8 @@ public class MessageConsumerGenerator {
                     "org.apache.kafka.common.serialization.StringDeserializer");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".group.id",
                     classPrefix + "-consumer");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".broadcast", "true");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".failure-strategy", "ignore");
             context.addInstruction(
                     "Properties for Apache Kafka based message event '" + trigger.getDescription() + "'");
             context.addInstruction(

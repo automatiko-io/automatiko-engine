@@ -3,6 +3,7 @@ package io.automatik.engine.services.jobs.impl;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -96,7 +97,8 @@ public class InMemoryJobService implements JobsService {
 
             long remainingTime = scheduled.getDelay(TimeUnit.MILLISECONDS);
             if (remainingTime > 0) {
-                return ZonedDateTime.from(Instant.ofEpochMilli(System.currentTimeMillis() + remainingTime));
+                return ZonedDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis() + remainingTime),
+                        ZoneId.systemDefault());
             }
         }
 

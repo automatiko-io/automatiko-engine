@@ -189,6 +189,8 @@ public class SvgProcessImageGenerator {
             drawCenteredIcon(g2, end.getBounds(), "ThrowErrorEventDefinition.png");
         } else if ("escalation".equals(node.getMetaData("EventType"))) {
             drawCenteredIcon(g2, end.getBounds(), "ThrowEscalationEventDefinition.png");
+        } else if ("Compensation".equals(node.getMetaData().get("TriggerType"))) {
+            drawCenteredIcon(g2, end.getBounds(), "CompensateEventDefinition.png");
         }
 
         setTextNodeId(node, g2);
@@ -237,6 +239,8 @@ public class SvgProcessImageGenerator {
             drawCenteredIcon(g2, end.getBounds(), "EscalationEventDefinition.png");
         } else if ("condition".equals(node.getMetaData().get("EventType")) || node instanceof StateNode) {
             drawCenteredIcon(g2, end.getBounds(), "ConditionalEventDefinition.png");
+        } else if ("compensation".equals(node.getMetaData().get("EventType")) || node instanceof StateNode) {
+            drawCenteredIcon(g2, end.getBounds(), "CompensateEventDefinition.png");
         }
 
         setTextNodeId(node, g2);
@@ -279,6 +283,8 @@ public class SvgProcessImageGenerator {
             drawCenteredIcon(g2, end.getBounds(), "EscalationEventDefinition.png");
         } else if ("condition".equals(node.getMetaData().get("EventType")) || node instanceof StateNode) {
             drawCenteredIcon(g2, end.getBounds(), "ConditionalEventDefinition.png");
+        } else if ("compensation".equals(node.getMetaData().get("EventType")) || node instanceof StateNode) {
+            drawCenteredIcon(g2, end.getBounds(), "CompensateEventDefinition.png");
         }
 
         setTextNodeId(node, g2);
@@ -520,13 +526,16 @@ public class SvgProcessImageGenerator {
 
             for (Connection connection : outgoing) {
 
-                int[] linestart = ((List<Integer>) connection.getMetaData().get("x")).stream().mapToInt(Integer::intValue)
-                        .toArray();
+                if (connection.getMetaData().get("x") != null && connection.getMetaData().get("y") != null) {
+                    int[] linestart = ((List<Integer>) connection.getMetaData().get("x")).stream().mapToInt(Integer::intValue)
+                            .toArray();
 
-                int[] lineend = ((List<Integer>) connection.getMetaData().get("y")).stream().mapToInt(Integer::intValue)
-                        .toArray();
-                g2.drawPolyline(linestart, lineend, linestart.length);
-                drawArrowLine(g2, linestart[0], lineend[0], linestart[linestart.length - 1], lineend[lineend.length - 1], 5, 5);
+                    int[] lineend = ((List<Integer>) connection.getMetaData().get("y")).stream().mapToInt(Integer::intValue)
+                            .toArray();
+                    g2.drawPolyline(linestart, lineend, linestart.length);
+                    drawArrowLine(g2, linestart[0], lineend[0], linestart[linestart.length - 1], lineend[lineend.length - 1], 5,
+                            5);
+                }
             }
         }
     }

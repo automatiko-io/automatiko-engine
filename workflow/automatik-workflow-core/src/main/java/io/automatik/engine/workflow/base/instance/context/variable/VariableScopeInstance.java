@@ -72,6 +72,10 @@ public class VariableScopeInstance extends AbstractContextInstance {
             throw new VariableViolationException(getProcessInstance().getId(), name,
                     "Variable '" + name + "' is already set and is marked as read only");
         }
+        // in case variable is marked as notnull (via tag) then null values should be ignored
+        if (value == null && getVariableScope().isNullable(name)) {
+            return;
+        }
         ProcessEventSupport processEventSupport = ((InternalProcessRuntime) getProcessInstance().getProcessRuntime())
                 .getProcessEventSupport();
         processEventSupport.fireBeforeVariableChanged((variableIdPrefix == null ? "" : variableIdPrefix + ":") + name,

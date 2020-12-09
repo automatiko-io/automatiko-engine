@@ -30,6 +30,12 @@ public class SvgProcessImageGeneratorTest {
     }
 
     @Test
+    public void testOrdersrocessImageGeneration() throws IOException {
+
+        testGeneration("Process orders.bpmn2");
+    }
+
+    @Test
     public void testEventBasedGatewayProcessImageGeneration() throws IOException {
 
         testGeneration("gateway/EventBasedSplit.bpmn2");

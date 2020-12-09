@@ -15,8 +15,11 @@ public class FunctionTagDefinition extends TagDefinition {
 
     @Override
     public String get(Map<String, Object> variables) {
-
-        return function.apply(expression, variables);
+        try {
+            return function.apply(expression, variables);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override
