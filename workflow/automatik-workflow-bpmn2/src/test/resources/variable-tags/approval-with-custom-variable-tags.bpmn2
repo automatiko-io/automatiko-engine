@@ -7,7 +7,7 @@
   <bpmn2:process id="approvals" tns:packageName="org.acme.travels" name="approvals" isExecutable="true" processType="Public">
     <bpmn2:property id="approver" itemSubjectRef="ItemDefinition_9" name="approver">
       <bpmn2:extensionElements>
-        <tns:metaData name="customTags">
+        <tns:metaData name="tags">
           <tns:metaValue><![CDATA[onlyAdmin]]></tns:metaValue>
         </tns:metaData>
       </bpmn2:extensionElements>

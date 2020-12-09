@@ -8,7 +8,7 @@
     </bpmn2:extensionElements>
     <bpmn2:property id="person" itemSubjectRef="ItemDefinition_1" name="person">
       <bpmn2:extensionElements>
-        <tns:metaData name="customTags">
+        <tns:metaData name="tags">
           <tns:metaValue><![CDATA[tracked]]></tns:metaValue>
         </tns:metaData>
       </bpmn2:extensionElements>

@@ -24,7 +24,7 @@ public class Variable implements ValueObject, Serializable, io.automatik.engine.
 
     private static final long serialVersionUID = 510l;
 
-    public static final String VARIABLE_TAGS = "customTags";
+    public static final String VARIABLE_TAGS = "tags";
 
     public static final String READONLY_TAG = "readonly";
     public static final String REQUIRED_TAG = "required";

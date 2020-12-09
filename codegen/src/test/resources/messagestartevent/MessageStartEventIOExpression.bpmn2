@@ -11,7 +11,7 @@
     <bpmn2:property id="customerId" itemSubjectRef="ItemDefinition_59" name="customerId"/>
     <bpmn2:property id="person" itemSubjectRef="ItemDefinition_128" name="person">
           <bpmn2:extensionElements>
-        <tns:metaData name="customTags">
+        <tns:metaData name="tags">
           <tns:metaValue><![CDATA[auto-initialized]]></tns:metaValue>
         </tns:metaData>
       </bpmn2:extensionElements>

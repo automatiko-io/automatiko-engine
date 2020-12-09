@@ -7,7 +7,7 @@
     <bpmn2:property id="x" itemSubjectRef="_xItem" name="x"/>
     <bpmn2:property id="y" itemSubjectRef="_yItem" name="y">
       <bpmn2:extensionElements>
-        <tns:metaData name="customTags">
+        <tns:metaData name="tags">
           <tns:metaValue><![CDATA[business-key]]></tns:metaValue>
         </tns:metaData>
       </bpmn2:extensionElements>

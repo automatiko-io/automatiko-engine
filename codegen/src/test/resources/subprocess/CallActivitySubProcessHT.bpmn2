@@ -9,7 +9,7 @@
   <bpmn2:process id="SubProcess" name="Sub Process" isExecutable="true" processType="Private">
     <bpmn2:property id="subX" itemSubjectRef="_subXItem" name="subX">
       <bpmn2:extensionElements>
-        <tns:metaData name="customTags">
+        <tns:metaData name="tags">
           <tns:metaValue><![CDATA[business-key]]></tns:metaValue>
         </tns:metaData>
       </bpmn2:extensionElements>

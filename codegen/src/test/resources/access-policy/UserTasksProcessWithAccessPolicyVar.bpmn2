@@ -197,7 +197,7 @@
     <bpmn2:sequenceFlow id="SequenceFlow_3" tns:priority="1" sourceRef="UserTask_2" targetRef="EndEvent_1"/>
     <bpmn2:dataObject id="name" name="name" itemSubjectRef="ItemDefinition_1">
       <bpmn2:extensionElements>
-        <tns:metaData name="customTags">
+        <tns:metaData name="tags">
           <tns:metaValue><![CDATA[initiator]]></tns:metaValue>
         </tns:metaData>
       </bpmn2:extensionElements>

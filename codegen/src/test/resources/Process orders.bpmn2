@@ -65,7 +65,7 @@
     <bpmn2:dataObject id="order" name="order" itemSubjectRef="ItemDefinition_29">
       <bpmn2:documentation id="Documentation_3"><![CDATA[Main order information including order number, status, total amount and tax. In addition it carries customer (who created the order).]]></bpmn2:documentation>
       <bpmn2:extensionElements>
-        <automatik:metaData name="customTags">
+        <automatik:metaData name="tags">
           <automatik:metaValue><![CDATA[notnull]]></automatik:metaValue>
         </automatik:metaData>
       </bpmn2:extensionElements>
@@ -73,7 +73,7 @@
     <bpmn2:dataObject id="items" name="items" itemSubjectRef="ItemDefinition_309">
       <bpmn2:documentation id="Documentation_4"><![CDATA[All items included in the order consiting of article information such as name and identifier, price and quantity]]></bpmn2:documentation>
       <bpmn2:extensionElements>
-        <automatik:metaData name="customTags">
+        <automatik:metaData name="tags">
           <automatik:metaValue><![CDATA[auto-initialized]]></automatik:metaValue>
         </automatik:metaData>
       </bpmn2:extensionElements>
@@ -81,7 +81,7 @@
     <bpmn2:dataObject id="event" name="event" itemSubjectRef="ItemDefinition_355">
       <bpmn2:documentation id="Documentation_9"><![CDATA[An incoming event representing change set of an order or an item]]></bpmn2:documentation>
       <bpmn2:extensionElements>
-        <automatik:metaData name="customTags">
+        <automatik:metaData name="tags">
           <automatik:metaValue><![CDATA[internal]]></automatik:metaValue>
         </automatik:metaData>
       </bpmn2:extensionElements>
