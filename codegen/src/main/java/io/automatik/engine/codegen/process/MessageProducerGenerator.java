@@ -79,8 +79,8 @@ public class MessageProducerGenerator {
 
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".topic",
                     (String) trigger.getContext("topic", trigger.getName()));
-            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".host", "localhost");
-            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".port", "1883");
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".host", "${mqtt.server:localhost}");
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".port", "${mqtt.port:1883}");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".client-id",
                     classPrefix + "-producer");
             context.setApplicationProperty("quarkus.automatik.messaging.as-cloudevents", "false");
@@ -107,7 +107,8 @@ public class MessageProducerGenerator {
                     + ".endpoint-uri' should be used to configure Apache Camel location");
         } else if (connector.equals(KAFKA_CONNECTOR)) {
 
-            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".bootstrap.servers", "localhost:9092");
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".bootstrap.servers",
+                    "${kafka.servers:localhost:9092}");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".topic",
                     (String) trigger.getContext("topic", trigger.getName()));
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".key.serializer",

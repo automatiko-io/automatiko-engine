@@ -53,6 +53,13 @@ public class DmnRuntimeProvider {
                         .getOrElseThrow(e -> new RuntimeException("Error initalizing DMNRuntime", e));
     }
 
+    public static DMNRuntime from(io.automatik.engine.services.io.ByteArrayResource... resources) {
+
+        return fromResources(Stream.of(resources).map(l -> new org.drools.core.io.impl.ByteArrayResource(l))
+                .collect(Collectors.toList()))
+                        .getOrElseThrow(e -> new RuntimeException("Error initalizing DMNRuntime", e));
+    }
+
     public static DMNRuntime from(List<Resource> resources) {
 
         return fromResources(resources.stream().map(l -> convert(l)).collect(Collectors.toList()))

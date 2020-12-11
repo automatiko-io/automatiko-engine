@@ -2,7 +2,7 @@
 
 public class DecisionModels implements io.automatik.engine.api.decision.DecisionModels {
 
-    private final static org.kie.dmn.api.core.DMNRuntime dmnRuntime = io.automatik.engine.decision.dmn.DmnRuntimeProvider.fromFiles();
+    private final static org.kie.dmn.api.core.DMNRuntime dmnRuntime = io.automatik.engine.decision.dmn.DmnRuntimeProvider.from();
     
 
     public void init(io.automatik.engine.api.Application app) {

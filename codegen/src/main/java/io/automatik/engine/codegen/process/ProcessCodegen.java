@@ -268,7 +268,7 @@ public class ProcessCodegen extends AbstractGenerator {
         List<ProcessExecutableModelGenerator> processExecutableModelGenerators = new ArrayList<>();
         List<AbstractResourceGenerator> rgs = new ArrayList<>(); // REST resources
         List<MessageDataEventGenerator> mdegs = new ArrayList<>(); // message data events
-        List<MessageConsumerGenerator> megs = new ArrayList<>(); // message endpoints/consumers
+        Set<MessageConsumerGenerator> megs = new LinkedHashSet<>(); // message endpoints/consumers
         List<MessageProducerGenerator> mpgs = new ArrayList<>(); // message producers
         Set<OpenAPIClientGenerator> opgs = new LinkedHashSet<>(); // OpenAPI clients
 

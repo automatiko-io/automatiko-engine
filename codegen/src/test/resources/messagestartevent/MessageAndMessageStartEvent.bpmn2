@@ -26,6 +26,9 @@
         <tns:metaData name="elementname">
           <tns:metaValue><![CDATA[StartProcess]]></tns:metaValue>
         </tns:metaData>
+        <tns:metaData name="acceptStartSignal">
+          <tns:metaValue><![CDATA[true]]></tns:metaValue>
+        </tns:metaData>
       </bpmn2:extensionElements>
       <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
       <bpmn2:dataOutput id="DataOutput_2" itemSubjectRef="ItemDefinition_59" name="event"/>
@@ -51,6 +54,9 @@
       <bpmn2:extensionElements>
         <tns:metaData name="elementname">
           <tns:metaValue><![CDATA[Start Event 2]]></tns:metaValue>
+        </tns:metaData>
+        <tns:metaData name="acceptStartSignal">
+          <tns:metaValue><![CDATA[true]]></tns:metaValue>
         </tns:metaData>
       </bpmn2:extensionElements>
       <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>

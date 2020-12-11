@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>\${groupId}</groupId>
   <artifactId>\${artifactId}</artifactId>
@@ -13,7 +15,7 @@
     <automatik.version>${project.version}</automatik.version>
     <surefire.version>${version.surefire.plugin}</surefire.version>
     <compiler.version>${version.compiler.plugin}</compiler.version>
-    
+
     <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.source>11</maven.compiler.source>
 
@@ -78,7 +80,7 @@
         <configuration>
           <systemProperties>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-            <maven.home>${maven.home}</maven.home>
+            <maven.home>\${maven.home}</maven.home>
           </systemProperties>
         </configuration>
       </plugin>
@@ -108,7 +110,7 @@
                   <systemPropertyVariables>
                     <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
                     <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                    <maven.home>${maven.home}</maven.home>
+                    <maven.home>\${maven.home}</maven.home>
                   </systemPropertyVariables>
                 </configuration>
               </execution>
@@ -119,6 +121,49 @@
       <properties>
         <quarkus.package.type>native</quarkus.package.type>
         <quarkus.native.additional-build-args>--report-unsupported-elements-at-runtime</quarkus.native.additional-build-args>
+      </properties>
+    </profile>
+    <profile>
+      <id>container</id>
+      <activation>
+        <property>
+          <name>container</name>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-container-image-jib</artifactId>
+        </dependency>
+      </dependencies>
+      <properties>
+        <quarkus.container-image.build>true</quarkus.container-image.build>
+      </properties>
+    </profile>
+    <profile>
+      <id>kubernetes</id>
+      <activation>
+        <property>
+          <name>kubernetes</name>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-kubernetes</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-container-image-jib</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-smallrye-health</artifactId>
+        </dependency>
+      </dependencies>
+      <properties>
+        <quarkus.container-image.build>true</quarkus.container-image.build>
+        <quarkus.kubernetes.image-pull-policy>IfNotPresent</quarkus.kubernetes.image-pull-policy>
       </properties>
     </profile>
   </profiles>

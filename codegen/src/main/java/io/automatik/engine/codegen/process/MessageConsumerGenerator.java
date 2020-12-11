@@ -96,8 +96,8 @@ public class MessageConsumerGenerator {
 
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".topic",
                     (String) trigger.getContext("topic", trigger.getName()));
-            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".host", "localhost");
-            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".port", "1883");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".host", "${mqtt.server:localhost}");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".port", "${mqtt.port:1883}");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".client-id",
                     classPrefix + "-consumer");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".failure-strategy", "ignore");
@@ -126,7 +126,8 @@ public class MessageConsumerGenerator {
                     + ".endpoint-uri' should be used to configure Apache Camel location");
         } else if (connector.equals(KAFKA_CONNECTOR)) {
 
-            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".bootstrap.servers", "localhost:9092");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".bootstrap.servers",
+                    "${kafka.servers:localhost:9092}");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".topic",
                     (String) trigger.getContext("topic", trigger.getName()));
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".key.deserializer",
@@ -300,5 +301,36 @@ public class MessageConsumerGenerator {
         String s = vv.getNameAsString();
         String interpolated = s.replace("$ModelRef$", StringUtils.capitalize(trigger.getModelRef()));
         vv.setName(interpolated);
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((processId == null) ? 0 : processId.hashCode());
+        result = prime * result + ((trigger == null && trigger.getName() != null) ? 0 : trigger.getName().hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        MessageConsumerGenerator other = (MessageConsumerGenerator) obj;
+        if (processId == null) {
+            if (other.processId != null)
+                return false;
+        } else if (!processId.equals(other.processId))
+            return false;
+        if (trigger == null) {
+            if (other.trigger != null)
+                return false;
+        } else if (!trigger.getName().equals(other.trigger.getName()))
+            return false;
+        return true;
     }
 }

@@ -38,6 +38,7 @@
         <include>**/*.md</include>
         <include>**/*.xml</include>
         <include>**/*.txt</include>
+        <include>**/*.js</include>
       </includes>
     </fileSet>
     <fileSet filtered="false" packaged="false" encoding="UTF-8">

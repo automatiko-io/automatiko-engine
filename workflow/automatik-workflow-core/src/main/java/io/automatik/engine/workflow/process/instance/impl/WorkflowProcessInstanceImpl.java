@@ -631,7 +631,7 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
                                     .filter(EventTrigger.class::isInstance).anyMatch(t -> ((EventTrigger) t)
                                             .getEventFilters().stream().anyMatch(e -> e.acceptsEvent(type, event)));
 
-                            if (accepted) {
+                            if (accepted && node.getMetaData().get("acceptStartSignal") != null) {
                                 StartNodeInstance startNodeInstance = (StartNodeInstance) getNodeInstance(node);
                                 startNodeInstance.signalEvent(type, event);
                             }
