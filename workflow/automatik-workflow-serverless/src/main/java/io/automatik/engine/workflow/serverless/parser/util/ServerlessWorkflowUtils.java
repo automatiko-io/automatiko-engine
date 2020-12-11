@@ -286,4 +286,19 @@ public class ServerlessWorkflowUtils {
         return String.format("%s_%s_%s_Handler", interfaceName, operationName, nodeName);
     }
 
+    public static String correlationExpressionFromSource(String source) {
+        if(source != null && source.contains("+")) {
+            int pos = -1;
+            String[] sourceParts = source.split("/");
+            for (String s: sourceParts) {
+                pos++;
+                if(s.equals("+")) {
+                    return "topic(message, " + pos + ")";
+                }
+            }
+        }
+
+        return null;
+    }
+
 }

@@ -1,0 +1,43 @@
+{
+  "id": "compensationworkflow",
+  "name": "CompensationTestWorkflow",
+  "version": "1.0",
+  "functions": [
+    {
+      "name": "FirstService",
+      "operation": "api/services.json#first"
+    },
+    {
+      "name": "SecondService",
+      "operation": "api/services.json#second"
+    }
+  ],
+  "states": [
+    {
+      "name": "ExecService",
+      "type": "operation",
+      "start": {"kind":"default"},
+      "actions": [
+        {
+          "functionRef": {
+            "refName": "FirstService"
+          }
+        }
+      ],
+      "compensatedBy": "SecondExecService",
+      "end": {"kind": "default"}
+    },
+    {
+      "name": "SecondExecService",
+      "usedForCompensation": true,
+      "type": "operation",
+      "actions": [
+        {
+          "functionRef": {
+            "refName": "SecondService"
+          }
+        }
+      ]
+    }
+  ]
+}

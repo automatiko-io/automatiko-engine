@@ -11,6 +11,7 @@ import io.automatik.engine.workflow.base.core.impl.WorkImpl;
 import io.automatik.engine.workflow.base.core.timer.DateTimeUtils;
 import io.automatik.engine.workflow.base.core.timer.Timer;
 import io.automatik.engine.workflow.base.core.validation.ProcessValidationError;
+import io.automatik.engine.workflow.base.instance.impl.actions.ProcessInstanceCompensationAction;
 import io.automatik.engine.workflow.process.core.NodeContainer;
 import io.automatik.engine.workflow.process.core.ProcessAction;
 import io.automatik.engine.workflow.process.core.impl.ConnectionImpl;
@@ -41,7 +42,6 @@ import static io.automatik.engine.workflow.process.executable.core.Metadata.ACTI
 public class ServerlessWorkflowFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerlessWorkflowFactory.class);
 
-    public static final String EOL = System.getProperty("line.separator");
     public static final String DEFAULT_WORKFLOW_ID = "serverless";
     public static final String DEFAULT_WORKFLOW_NAME = "workflow";
     public static final String DEFAULT_PACKAGE_NAME = "io.automatik.serverless";
@@ -99,6 +99,8 @@ public class ServerlessWorkflowFactory {
             process.setPackageName(DEFAULT_PACKAGE_NAME);
         }
 
+        // seems not needed
+        //process.setMetaData("Compensation", true);
         process.setAutoComplete(true);
         process.setVisibility(DEFAULT_VISIBILITY);
 
@@ -112,6 +114,7 @@ public class ServerlessWorkflowFactory {
         StartNode startNode = new StartNode();
         startNode.setId(id);
         startNode.setName(name);
+        startNode.setInterrupting(true);
 
         nodeContainer.addNode(startNode);
 
@@ -127,7 +130,11 @@ public class ServerlessWorkflowFactory {
 
         startNode.setMetaData(Metadata.TRIGGER_MAPPING, DEFAULT_WORKFLOW_VAR);
         startNode.setMetaData(Metadata.TRIGGER_TYPE, "ConsumeMessage");
-        //startNode.setMetaData(Metadata.TRIGGER_CORRELATION_EXPR, "");
+
+        if(ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()) != null) {
+            startNode.setMetaData(Metadata.TRIGGER_CORRELATION_EXPR, ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()));
+        }
+
         startNode.setMetaData(Metadata.TRIGGER_REF, eventDefinition.getSource());
         startNode.setMetaData(Metadata.MESSAGE_TYPE, JSON_NODE);
 
@@ -147,7 +154,18 @@ public class ServerlessWorkflowFactory {
         endNode.setTerminate(terminate);
 
         nodeContainer.addNode(endNode);
+        return endNode;
+    }
 
+    public EndNode compensateEndNode(long id, String name, NodeContainer nodeContainer) {
+        EndNode endNode = new EndNode();
+        endNode.setId(id);
+        endNode.setName(name);
+
+        endNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
+        endNode.setMetaData(Metadata.TRIGGER_TYPE, "Compensation");
+
+        nodeContainer.addNode(endNode);
         return endNode;
     }
 
@@ -164,12 +182,16 @@ public class ServerlessWorkflowFactory {
 
             endNode.setMetaData(Metadata.TRIGGER_REF, eventDef.getSource());
             endNode.setMetaData(Metadata.TRIGGER_TYPE, "ProduceMessage");
+
+            if(ServerlessWorkflowUtils.correlationExpressionFromSource(eventDef.getSource()) != null) {
+                endNode.setMetaData(Metadata.TRIGGER_CORRELATION_EXPR, ServerlessWorkflowUtils.correlationExpressionFromSource(eventDef.getSource()));
+            }
+
             endNode.setMetaData(Metadata.MESSAGE_TYPE, JSON_NODE);
             endNode.setMetaData(Metadata.MAPPING_VARIABLE, DEFAULT_WORKFLOW_VAR);
             addMessageEndNodeAction(endNode, DEFAULT_WORKFLOW_VAR, JSON_NODE);
 
             nodeContainer.addNode(endNode);
-
             return endNode;
         } else {
             LOGGER.error("Unable to find produce event definition for state end.");
@@ -268,9 +290,32 @@ public class ServerlessWorkflowFactory {
         sendEventNode.setMetaData(Metadata.TRIGGER_REF, eventDefinition.getSource());
         sendEventNode.setMetaData(Metadata.MESSAGE_TYPE, JSON_NODE);
 
+        if(ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()) != null) {
+            sendEventNode.setMetaData(Metadata.TRIGGER_CORRELATION_EXPR, ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()));
+        }
+
         nodeContainer.addNode(sendEventNode);
 
         return sendEventNode;
+    }
+
+    public ActionNode compensationEventNode(long id, String name, NodeContainer nodeContainer, ExecutableProcess process) {
+        ActionNode compensationEventNode = new ActionNode();
+        compensationEventNode.setId(id);
+        compensationEventNode.setName(name);
+
+        compensationEventNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
+        ProcessInstanceCompensationAction pic = new ProcessInstanceCompensationAction("implicit:" + process.getId());
+        ProcessAction processAction = new ProcessAction();
+        processAction.setMetaData(ACTION, pic);
+        compensationEventNode.setAction(processAction);
+
+        compensationEventNode.setMetaData(Metadata.TRIGGER_TYPE, "Compensation");
+        compensationEventNode.setMetaData("NodeType", "IntermediateThrowEvent-None");
+        compensationEventNode.setMetaData("CompensationEvent", "implicit:" + process.getId());
+
+        nodeContainer.addNode(compensationEventNode);
+        return compensationEventNode;
     }
 
     public EventNode consumeEventNode(long id, EventDefinition eventDefinition, NodeContainer nodeContainer) {
@@ -282,13 +327,17 @@ public class ServerlessWorkflowFactory {
         eventFilter.setType("Message-" + eventDefinition.getSource());
         eventNode.addEventFilter(eventFilter);
         eventNode.setVariableName(DEFAULT_WORKFLOW_VAR);
+        eventNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
         eventNode.setMetaData(Metadata.TRIGGER_TYPE, "ConsumeMessage");
-        eventNode.setMetaData(Metadata.EVENT_TYPE, "message");
         eventNode.setMetaData(Metadata.TRIGGER_REF, eventDefinition.getSource());
+        eventNode.setMetaData(Metadata.EVENT_TYPE, "message");
         eventNode.setMetaData(Metadata.MESSAGE_TYPE, JSON_NODE);
 
-        nodeContainer.addNode(eventNode);
+        if(ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()) != null) {
+            eventNode.setMetaData(Metadata.TRIGGER_CORRELATION_EXPR, ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()));
+        }
 
+        nodeContainer.addNode(eventNode);
         return eventNode;
     }
 
@@ -297,6 +346,7 @@ public class ServerlessWorkflowFactory {
         scriptNode.setId(id);
         scriptNode.setName(name);
 
+        scriptNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
         ProcessAction processAction = new ProcessAction();
         processAction.setMetaData(ACTION, script);
         scriptNode.setAction(processAction);
@@ -346,6 +396,7 @@ public class ServerlessWorkflowFactory {
         WorkItemNode workItemNode = new WorkItemNode();
         workItemNode.setId(id);
         workItemNode.setName(name);
+        workItemNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
         workItemNode.setMetaData("Type", SERVICE_TASK_TYPE);
         workItemNode.setMetaData("Implementation", "##WebService");
 
@@ -482,6 +533,25 @@ public class ServerlessWorkflowFactory {
         return ruleSetNode;
     }
 
+    public BoundaryEventNode compensationBoundaryEventNode(long id, String name, ExecutableProcess process, Node attachToNode) {
+        BoundaryEventNode boundaryEventNode = new BoundaryEventNode();
+        boundaryEventNode.setId(id);
+        boundaryEventNode.setName(name);
+
+        EventTypeFilter filter = new EventTypeFilter();
+        filter.setType("Compensation");
+        boundaryEventNode.addEventFilter(filter);
+
+        boundaryEventNode.setAttachedToNodeId(Long.toString(attachToNode.getId()));
+
+        boundaryEventNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
+        boundaryEventNode.setMetaData("EventType", "compensation");
+        boundaryEventNode.setMetaData("AttachedTo", Long.toString(attachToNode.getId()));
+
+        process.addNode(boundaryEventNode);
+        return boundaryEventNode;
+    }
+
    public BoundaryEventNode errorBoundaryEventNode(long id, Error error, ExecutableProcess process, CompositeContextNode embeddedSubProcess, Workflow workflow) {
        BoundaryEventNode boundaryEventNode = new BoundaryEventNode();
 
@@ -514,13 +584,16 @@ public class ServerlessWorkflowFactory {
    }
 
 
-    public void connect(long fromId, long toId, String uniqueId, NodeContainer nodeContainer) {
+    public void connect(long fromId, long toId, String uniqueId, NodeContainer nodeContainer, boolean association) {
         Node from = nodeContainer.getNode(fromId);
         Node to = nodeContainer.getNode(toId);
         ConnectionImpl connection = new ConnectionImpl(
                 from, io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE,
                 to, io.automatik.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
         connection.setMetaData(UNIQUE_ID_PARAM, uniqueId);
+        if(association) {
+            connection.setMetaData("association", true);
+        }
     }
 
     public void validate(ExecutableProcess process) {

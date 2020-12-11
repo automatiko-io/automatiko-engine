@@ -2,7 +2,9 @@ package io.automatik.engine.workflow.serverless;
 
 import io.automatik.engine.workflow.serverless.utils.WorkflowTestUtils;
 import io.serverlessworkflow.api.Workflow;
+import io.serverlessworkflow.api.states.EventState;
 import io.serverlessworkflow.api.states.OperationState;
+import io.serverlessworkflow.api.states.SwitchState;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -91,4 +93,52 @@ public class MarkupToWorkflowTest {
 
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"/features/compensation.json", "/features/compensation.yml"})
+    public void testCompensationWorkflow(String workflowLocation) {
+        Workflow workflow = Workflow.fromSource(WorkflowTestUtils.readWorkflowFile(workflowLocation));
+
+        assertNotNull(workflow);
+        assertNotNull(workflow.getId());
+        assertNotNull(workflow.getName());
+        assertNotNull(workflow.getStates());
+
+        assertEquals(2, workflow.getStates().size());
+
+        assertTrue(workflow.getStates().get(0) instanceof OperationState);
+        assertTrue(workflow.getStates().get(1) instanceof OperationState);
+
+        OperationState operationState = (OperationState) workflow.getStates().get(0);
+        assertNotNull(operationState.getCompensatedBy());
+        assertEquals("SecondExecService", operationState.getCompensatedBy());
+
+        OperationState operationState2 = (OperationState) workflow.getStates().get(1);
+        assertTrue(operationState2.isUsedForCompensation());
+
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"/features/patientonboarding.json", "/features/patientonboarding.yml"})
+    public void testPatientOnboardingWorkflow(String workflowLocation) {
+        Workflow workflow = Workflow.fromSource(WorkflowTestUtils.readWorkflowFile(workflowLocation));
+
+        assertNotNull(workflow);
+        assertNotNull(workflow.getId());
+        assertNotNull(workflow.getName());
+        assertNotNull(workflow.getStates());
+
+        assertEquals(3, workflow.getStates().size());
+
+        assertTrue(workflow.getStates().get(0) instanceof EventState);
+        assertTrue(workflow.getStates().get(1) instanceof SwitchState);
+        assertTrue(workflow.getStates().get(2) instanceof OperationState);
+
+        EventState eventState = (EventState) workflow.getStates().get(0);
+        assertNotNull(eventState.getCompensatedBy());
+        assertEquals("DoAbort", eventState.getCompensatedBy());
+
+        OperationState operationState = (OperationState) workflow.getStates().get(2);
+        assertTrue(operationState.isUsedForCompensation());
+
+    }
 }

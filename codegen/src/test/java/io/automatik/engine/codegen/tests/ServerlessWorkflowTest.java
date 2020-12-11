@@ -198,4 +198,40 @@ public class ServerlessWorkflowTest extends AbstractCodegenTest {
 		}
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = { "serverless/compensation.sw.json", "serverless/compensation.sw.yml"})
+	public void testCompensationWorkflow(String processLocation) throws Exception {
+
+		Application app = generateCodeProcessesOnly(processLocation);
+		assertThat(app).isNotNull();
+
+		Process<? extends Model> p = app.processes().processById("compensationworkflow");
+
+		Model m = p.createModel();
+		Map<String, Object> parameters = new HashMap<>();
+
+		String jsonParamStr = "{\"x\": \"0\"}";
+
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode jsonParamObj = mapper.readTree(jsonParamStr);
+
+		parameters.put("workflowdata", jsonParamObj);
+		m.fromMap(parameters);
+
+		ProcessInstance<?> processInstance = p.createInstance(m);
+		processInstance.start();
+
+		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+		Model result = (Model) processInstance.variables();
+		assertThat(result.toMap()).hasSize(1).containsKeys("workflowdata");
+
+		assertThat(result.toMap().get("workflowdata")).isInstanceOf(JsonNode.class);
+
+		JsonNode dataOut = (JsonNode) result.toMap().get("workflowdata");
+
+		System.out.println(dataOut.toPrettyString());
+
+		assertThat(dataOut.get("x").textValue()).isEqualTo("2");
+	}
+
 }

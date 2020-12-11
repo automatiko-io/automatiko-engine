@@ -1,0 +1,124 @@
+{
+  "id": "patientonboarding",
+  "name": "Patient Onboarding Workflow",
+  "states": [
+    {
+      "name": "Onboard",
+      "type": "event",
+      "start": {
+        "kind": "default"
+      },
+      "compensatedBy": "DoAbort",
+      "onEvents": [
+        {
+          "eventRefs": [
+            "NewPatientEvent"
+          ],
+          "actions": [
+            {
+              "functionRef": {
+                "refName": "StoreNewPatientInfo"
+              }
+            },
+            {
+              "functionRef": {
+                "refName": "AssignDoctorToPatient"
+              }
+            },
+            {
+              "functionRef": {
+                "refName": "ScheduleAppointment"
+              }
+            }
+          ]
+        }
+      ],
+      "onErrors": [
+        {
+          "error": "ServiceNotAvailable",
+          "code": "503",
+          "retryRef": "ServicesNotAvailableRetryStrategy",
+          "end": {
+            "kind":"default"
+          }
+        }
+      ],
+      "transition": {
+        "nextState": "MakeOnboardingDecision"
+      }
+    },
+    {
+      "name":"MakeOnboardingDecision",
+      "type":"switch",
+      "eventConditions": [
+        {
+          "eventRef": "OnboardingApprovedEvent",
+          "end": {
+            "kind": "default"
+          }
+        },
+        {
+          "eventRef": "OnboardingCancelledEvent",
+          "end": {
+            "compensate": true,
+            "kind": "default"
+          }
+        }
+      ]
+    },
+    {
+      "name": "DoAbort",
+      "type": "operation",
+      "usedForCompensation": true,
+      "actions": [
+        {
+          "functionRef": {
+            "refName": "AbortOnboarding"
+          }
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "NewPatientEvent",
+      "type": "new.patients.event",
+      "source": "newpatient/+"
+    },
+    {
+      "name": "OnboardingApprovedEvent",
+      "type": "onboarding.event",
+      "source": "onboarding/approved"
+    },
+    {
+      "name": "OnboardingCancelledEvent",
+      "type": "onboarding.event",
+      "source": "onboarding/cancelled"
+    }
+  ],
+  "functions": [
+    {
+      "name": "StoreNewPatientInfo",
+      "operation": "api/services.json#addPatient"
+    },
+    {
+      "name": "AssignDoctorToPatient",
+      "operation": "api/services.json#assignDoctor"
+    },
+    {
+      "name": "ScheduleAppointment",
+      "operation": "api/services.json#scheduleAppointment"
+    },
+    {
+      "name": "AbortOnboarding",
+      "operation": "api/services.json#removePatient"
+    }
+  ],
+  "retries": [
+    {
+      "name": "ServicesNotAvailableRetryStrategy",
+      "delay": "PT3S",
+      "maxAttempts": 50
+    }
+  ]
+}
