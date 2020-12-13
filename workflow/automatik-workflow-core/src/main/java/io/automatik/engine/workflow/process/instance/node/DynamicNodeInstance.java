@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 import io.automatik.engine.api.definition.process.Node;
-import io.automatik.engine.api.event.process.ContextAwareEventListener;
 import io.automatik.engine.api.runtime.process.NodeInstance;
 import io.automatik.engine.api.runtime.process.ProcessInstance;
 import io.automatik.engine.workflow.base.core.context.ProcessContext;
@@ -72,26 +71,16 @@ public class DynamicNodeInstance extends CompositeContextNodeInstance {
     }
 
     private void addActivationListener() {
-        getProcessInstance().getProcessRuntime().addEventListener(ContextAwareEventListener.using(getId(), listener -> {
-            if (canActivate() && getState() == ProcessInstance.STATE_PENDING) {
-                triggerActivated();
-                getProcessInstance().getProcessRuntime().removeEventListener(listener);
-            }
-        }));
+        getProcessInstance().addEventListener("variableChanged", this, false);
     }
 
     private void addCompletionListener() {
-        getProcessInstance().getProcessRuntime().addEventListener(ContextAwareEventListener.using(getId(), listener -> {
-            if (canComplete()) {
-                triggerCompleted(CONNECTION_DEFAULT_TYPE);
-            }
-        }));
+        getProcessInstance().addEventListener("variableChanged", this, false);
     }
 
     @Override
     public void removeEventListeners() {
         super.removeEventListeners();
-        getProcessInstance().getProcessRuntime().removeEventListener(ContextAwareEventListener.using(getId(), null));
     }
 
     @Override
@@ -129,7 +118,14 @@ public class DynamicNodeInstance extends CompositeContextNodeInstance {
     }
 
     public void signalEvent(String type, Object event) {
-
+        if ("variableChanged".equals(type)) {
+            if (canActivate() && getState() == ProcessInstance.STATE_PENDING) {
+                getProcessInstance().removeEventListener("variableChanged", this, false);
+                triggerActivated();
+            } else if (canComplete()) {
+                triggerCompleted(CONNECTION_DEFAULT_TYPE);
+            }
+        }
         List<String> exitEvents = (List<String>) getNode().getMetaData().get(NodeImpl.EXIT_EVENTS);
         if (exitEvents != null && exitEvents.contains(type)) {
             boolean hasCondition = exitOnCompletionCondition();

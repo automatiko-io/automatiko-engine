@@ -532,9 +532,13 @@ public class SvgProcessImageGenerator {
 
                     int[] lineend = ((List<Integer>) connection.getMetaData().get("y")).stream().mapToInt(Integer::intValue)
                             .toArray();
+                    if (connection.getMetaData().get("association") != null) {
+                        g2.setStroke(dashed);
+                    }
                     g2.drawPolyline(linestart, lineend, linestart.length);
                     drawArrowLine(g2, linestart[0], lineend[0], linestart[linestart.length - 1], lineend[lineend.length - 1], 5,
                             5);
+                    g2.setStroke(defaultStroke);
                 }
             }
         }

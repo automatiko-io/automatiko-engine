@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import io.automatik.engine.api.definition.process.NodeContainer;
-import io.automatik.engine.api.event.process.ContextAwareEventListener;
 import io.automatik.engine.api.runtime.process.NodeInstance;
 import io.automatik.engine.workflow.base.core.context.ProcessContext;
 import io.automatik.engine.workflow.base.instance.ProcessInstance;
@@ -36,6 +35,20 @@ public class EventSubProcessNodeInstance extends CompositeContextNodeInstance {
         if (triggerTime == null) {
             // started by signal
             triggerTime = new Date();
+        }
+
+        if ("variableChanged".equals(type)) {
+            ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
+            context.setProcessInstance(getProcessInstance());
+            context.setNodeInstance(this);
+            StartNode startNode = getCompositeNode().findStartNode();
+            if (startNode.hasCondition()) {
+                if (startNode.isMet(context)) {
+                    getProcessInstance().removeEventListener("variableChanged", this, false);
+                    signalEvent(getCompositeNode().getEvents().get(0), null);
+
+                }
+            }
         }
 
         if (getNodeInstanceContainer().getNodeInstances().contains(this) || type.startsWith("Error-")
@@ -94,22 +107,13 @@ public class EventSubProcessNodeInstance extends CompositeContextNodeInstance {
         super.addEventListeners();
         StartNode startNode = getCompositeNode().findStartNode();
         if (startNode.hasCondition()) {
-            getProcessInstance().getProcessRuntime().addEventListener(ContextAwareEventListener.using(getId(), listener -> {
-                ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
-                context.setProcessInstance(getProcessInstance());
-                context.setNodeInstance(this);
-                if (startNode.isMet(context)) {
-                    getProcessInstance().getProcessRuntime().removeEventListener(listener);
-                    signalEvent(getCompositeNode().getEvents().get(0), null);
-
-                }
-            }));
+            getProcessInstance().addEventListener("variableChanged", this, false);
         }
     }
 
     @Override
     public void removeEventListeners() {
-        getProcessInstance().getProcessRuntime().removeEventListener(ContextAwareEventListener.using(getId(), null));
+        getProcessInstance().removeEventListener("variableChanged", this, false);
         super.removeEventListeners();
     }
 }

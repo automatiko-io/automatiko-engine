@@ -13,7 +13,6 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.automatik.engine.api.event.process.ContextAwareEventListener;
 import io.automatik.engine.api.jobs.DurationExpirationTime;
 import io.automatik.engine.api.jobs.ExactExpirationTime;
 import io.automatik.engine.api.jobs.ExpirationTime;
@@ -78,17 +77,13 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
         ((WorkflowProcessInstanceImpl) getProcessInstance())
                 .addActivatingNodeId((String) getNode().getMetaData().get("UniqueId"));
         if (getExtendedNode().hasCondition()) {
-
-            getProcessInstance().getProcessRuntime().addEventListener(ContextAwareEventListener.using(getId(), listener -> {
-                ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
-                context.setProcessInstance(getProcessInstance());
-                context.setNodeInstance(this);
-                if (getExtendedNode().isMet(context)) {
-                    getProcessInstance().getProcessRuntime().removeEventListener(listener);
-                    getProcessInstance().signalEvent((String) getExtendedNode().getMetaData("ConditionEventType"), null);
-
-                }
-            }));
+            ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
+            context.setProcessInstance(getProcessInstance());
+            if (getExtendedNode().getMetaData("ConditionEventType") != null && getExtendedNode().isMet(context)) {
+                getProcessInstance().signalEvent((String) getExtendedNode().getMetaData("ConditionEventType"), null);
+            } else {
+                getProcessInstance().addEventListener("variableChanged", this, false);
+            }
         }
     }
 
@@ -215,6 +210,14 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
         } else if (("retry:" + getId()).equals(type)) {
 
             retry();
+        } else if ("variableChanged".equals(type)) {
+            ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
+            context.setProcessInstance(getProcessInstance());
+            if (getExtendedNode().getMetaData("ConditionEventType") != null && getExtendedNode().isMet(context)) {
+                getProcessInstance().removeEventListener("variableChanged", this, false);
+                getProcessInstance().signalEvent((String) getExtendedNode().getMetaData("ConditionEventType"), null);
+
+            }
         } else {
             List<String> exitEvents = (List<String>) getNode().getMetaData().get(NodeImpl.EXIT_EVENTS);
             if (exitEvents != null && exitEvents.contains(type)) {
@@ -283,15 +286,7 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
         }
         if (getExtendedNode().hasCondition()) {
 
-            getProcessInstance().getProcessRuntime().addEventListener(ContextAwareEventListener.using(getId(), listener -> {
-                ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
-                context.setProcessInstance(getProcessInstance());
-                if (getExtendedNode().isMet(context)) {
-                    getProcessInstance().getProcessRuntime().removeEventListener(listener);
-                    getProcessInstance().signalEvent((String) getExtendedNode().getMetaData("ConditionEventType"), null);
-
-                }
-            }));
+            getProcessInstance().addEventListener("variableChanged", this, false);
         }
         addCompletionListeners();
     }
@@ -307,9 +302,7 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
         getProcessInstance().removeEventListener("timerTriggered", this, false);
         getProcessInstance().removeEventListener("timer", this, true);
         getProcessInstance().removeEventListener("slaViolation:" + getId(), this, true);
-        if (getProcessInstance().getProcessRuntime() != null) {
-            getProcessInstance().getProcessRuntime().removeEventListener(ContextAwareEventListener.using(getId(), null));
-        }
+        getProcessInstance().removeEventListener("variableChanged", this, false);
         removeCompletionListeners();
     }
 

@@ -1,7 +1,6 @@
 
 package io.automatik.engine.workflow.process.instance.node;
 
-import io.automatik.engine.api.event.process.ContextAwareEventListener;
 import io.automatik.engine.api.runtime.process.NodeInstance;
 import io.automatik.engine.api.runtime.process.NodeInstanceState;
 import io.automatik.engine.workflow.base.core.context.ProcessContext;
@@ -57,6 +56,16 @@ public class MilestoneNodeInstance extends StateBasedNodeInstance {
 
     }
 
+    public void signalEvent(String type, Object event) {
+        if ("variableChanged".equals(type)) {
+            if (isCompleted()) {
+                triggerCompleted();
+            }
+        } else {
+            super.signalEvent(type, event);
+        }
+    }
+
     @Override
     public void addEventListeners() {
         super.addEventListeners();
@@ -64,21 +73,13 @@ public class MilestoneNodeInstance extends StateBasedNodeInstance {
     }
 
     private void addCompletionEventListener() {
-        getProcessInstance().getProcessRuntime().addEventListener(ContextAwareEventListener.using(getId(), listener -> {
-            if (isCompleted()) {
-                triggerCompleted();
-                getProcessInstance().getProcessRuntime().removeEventListener(listener);
-            }
-        }));
+        getProcessInstance().addEventListener("variableChanged", this, false);
     }
 
     @Override
     public void removeEventListeners() {
         super.removeEventListeners();
         getProcessInstance().removeEventListener(getActivationEventType(), this, true);
-        if (getProcessInstance().getProcessRuntime() != null) {
-            getProcessInstance().getProcessRuntime().removeEventListener(ContextAwareEventListener.using(getId(), null));
-        }
     }
 
     private String getActivationEventType() {

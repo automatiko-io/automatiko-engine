@@ -2,7 +2,6 @@
 package io.automatik.engine.workflow.process.instance.node;
 
 import io.automatik.engine.api.definition.process.Connection;
-import io.automatik.engine.api.event.process.ContextAwareEventListener;
 import io.automatik.engine.api.runtime.process.EventListener;
 import io.automatik.engine.api.runtime.process.NodeInstance;
 import io.automatik.engine.workflow.base.core.context.ProcessContext;
@@ -62,13 +61,7 @@ public class StateNodeInstance extends CompositeContextNodeInstance implements E
     }
 
     private void addCompletionEventListener() {
-        getProcessInstance().getProcessRuntime().addEventListener(ContextAwareEventListener.using(getId(), listener -> {
-            if (isCompleted()) {
-                getProcessInstance().getProcessRuntime().removeEventListener(listener);
-                listener.deactivate();
-                triggerCompleted();
-            }
-        }));
+        getProcessInstance().addEventListener("variableChanged", this, false);
     }
 
     public void signalEvent(String type, Object event) {
@@ -94,6 +87,10 @@ public class StateNodeInstance extends CompositeContextNodeInstance implements E
                     }
                 }
             }
+        } else if ("variableChanged".equals(type)) {
+            if (isCompleted()) {
+                triggerCompleted();
+            }
         } else {
             super.signalEvent(type, event);
         }
@@ -112,12 +109,7 @@ public class StateNodeInstance extends CompositeContextNodeInstance implements E
     public void removeEventListeners() {
         super.removeEventListeners();
         getProcessInstance().removeEventListener("signal", this, false);
-        if (getProcessInstance().getProcessRuntime() != null) {
-            ContextAwareEventListener listener = (ContextAwareEventListener) ContextAwareEventListener.using(getId(), null);
-            listener.deactivate();
-            getProcessInstance().getProcessRuntime().removeEventListener(listener);
-
-        }
+        getProcessInstance().removeEventListener("variableChanged", this, false);
     }
 
     public String[] getEventTypes() {

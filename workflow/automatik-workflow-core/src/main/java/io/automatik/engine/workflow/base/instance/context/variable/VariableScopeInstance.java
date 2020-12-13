@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.automatik.engine.api.runtime.process.NodeInstance;
+import io.automatik.engine.api.runtime.process.ProcessInstance;
 import io.automatik.engine.api.workflow.VariableViolationException;
 import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
@@ -76,17 +77,24 @@ public class VariableScopeInstance extends AbstractContextInstance {
         if (value == null && getVariableScope().isNullable(name)) {
             return;
         }
+
+        ProcessInstance processInstance = getProcessInstance();
+        if (nodeInstance != null) {
+            processInstance = nodeInstance.getProcessInstance();
+        }
         ProcessEventSupport processEventSupport = ((InternalProcessRuntime) getProcessInstance().getProcessRuntime())
                 .getProcessEventSupport();
         processEventSupport.fireBeforeVariableChanged((variableIdPrefix == null ? "" : variableIdPrefix + ":") + name,
                 (variableInstanceIdPrefix == null ? "" : variableInstanceIdPrefix + ":") + name, oldValue, value,
-                getVariableScope().tags(name), getProcessInstance(), nodeInstance,
+                getVariableScope().tags(name), processInstance, nodeInstance,
                 getProcessInstance().getProcessRuntime());
         internalSetVariable(name, value);
         processEventSupport.fireAfterVariableChanged((variableIdPrefix == null ? "" : variableIdPrefix + ":") + name,
                 (variableInstanceIdPrefix == null ? "" : variableInstanceIdPrefix + ":") + name, oldValue, value,
-                getVariableScope().tags(name), getProcessInstance(), nodeInstance,
+                getVariableScope().tags(name), processInstance, nodeInstance,
                 getProcessInstance().getProcessRuntime());
+
+        processInstance.signalEvent("variableChanged", value);
     }
 
     public void internalSetVariable(String name, Object value) {
