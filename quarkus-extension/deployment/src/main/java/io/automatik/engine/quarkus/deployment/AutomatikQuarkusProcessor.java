@@ -136,6 +136,9 @@ public class AutomatikQuarkusProcessor {
         if (usePersistence) {
             resource.produce(new NativeImageResourceBuildItem("automatik-types.proto"));
         }
+
+        resource.produce(new NativeImageResourceBuildItem("automatik-index.html"));
+        resource.produce(new NativeImageResourceBuildItem("/META-INF/resources/js/automatik-authorization.js"));
     }
 
     private Collection<GeneratedFile> getGeneratedPersistenceFiles(AutomatikBuildTimeConfig config, AppPaths appPaths,

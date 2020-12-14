@@ -1039,4 +1039,37 @@ public class UserTaskTest extends AbstractCodegenTest {
 
         assertThat(processInstance.tags().values()).hasSize(2).doesNotContain(delete.getValue());
     }
+
+    @Test
+    public void testBasicUserTaskProcessDataInputOutput() throws Exception {
+
+        Application app = generateCodeProcessesOnly("usertask/UserTasksProcessIO.bpmn2");
+        assertThat(app).isNotNull();
+        Process<? extends Model> p = app.processes().processById("UserTasksProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("name", "john");
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        List<WorkItem> workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("FirstTask", workItems.get(0).getName());
+
+        processInstance.completeWorkItem(workItems.get(0).getId(), null, securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("SecondTask", workItems.get(0).getName());
+
+        processInstance.completeWorkItem(workItems.get(0).getId(), null, securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+
+    }
 }

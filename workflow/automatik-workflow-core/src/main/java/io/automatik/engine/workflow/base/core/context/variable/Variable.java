@@ -125,7 +125,12 @@ public class Variable implements ValueObject, Serializable, io.automatik.engine.
         this.metaData.put(name, value);
 
         if (VARIABLE_TAGS.equals(name) && value != null) {
-            tags = Arrays.asList(value.toString().split(","));
+            tags = new ArrayList<>(Arrays.asList(value.toString().split(",")));
+            if (getMetaData("DataInput") != null) {
+                tags.add(INPUT_TAG);
+            } else if (getMetaData("DataOutput") != null) {
+                tags.add(OUTPUT_TAG);
+            }
         }
     }
 
@@ -143,7 +148,12 @@ public class Variable implements ValueObject, Serializable, io.automatik.engine.
 
     public List<String> getTags() {
         if (tags.isEmpty() && this.metaData.containsKey(VARIABLE_TAGS)) {
-            tags = Arrays.asList(metaData.get(VARIABLE_TAGS).toString().split(","));
+            tags = new ArrayList<>(Arrays.asList(metaData.get(VARIABLE_TAGS).toString().split(",")));
+            if (getMetaData("DataInput") != null) {
+                tags.add(INPUT_TAG);
+            } else if (getMetaData("DataOutput") != null) {
+                tags.add(OUTPUT_TAG);
+            }
 
         }
         return tags;

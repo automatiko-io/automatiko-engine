@@ -8,49 +8,50 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.automatik.engine.api.event.process.DefaultProcessEventListener;
+import io.automatik.engine.api.event.process.DelayedExecution;
 
-public class DefaultCountDownProcessEventListener extends DefaultProcessEventListener {
+public class DefaultCountDownProcessEventListener extends DefaultProcessEventListener implements DelayedExecution {
 
-	private static final Logger logger = LoggerFactory.getLogger(DefaultCountDownProcessEventListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(DefaultCountDownProcessEventListener.class);
 
-	protected CountDownLatch latch;
+    protected CountDownLatch latch;
 
-	public DefaultCountDownProcessEventListener() {
+    public DefaultCountDownProcessEventListener() {
 
-	}
+    }
 
-	public DefaultCountDownProcessEventListener(int threads) {
-		this.latch = new CountDownLatch(threads);
-	}
+    public DefaultCountDownProcessEventListener(int threads) {
+        this.latch = new CountDownLatch(threads);
+    }
 
-	public boolean waitTillCompleted() {
-		try {
-			latch.await();
-			return true;
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			logger.debug("Interrputed thread while waiting for all triggers");
-			return false;
-		}
-	}
+    public boolean waitTillCompleted() {
+        try {
+            latch.await();
+            return true;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.debug("Interrputed thread while waiting for all triggers");
+            return false;
+        }
+    }
 
-	public boolean waitTillCompleted(long timeOut) {
-		try {
-			return latch.await(timeOut, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			logger.debug("Interrputed thread while waiting for all triggers");
-			return false;
-		}
-	}
+    public boolean waitTillCompleted(long timeOut) {
+        try {
+            return latch.await(timeOut, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.debug("Interrputed thread while waiting for all triggers");
+            return false;
+        }
+    }
 
-	public void reset(int threads) {
-		this.latch = new CountDownLatch(threads);
-	}
+    public void reset(int threads) {
+        this.latch = new CountDownLatch(threads);
+    }
 
-	protected void countDown() {
+    protected void countDown() {
 
-		latch.countDown();
+        latch.countDown();
 
-	}
+    }
 }

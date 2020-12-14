@@ -53,6 +53,8 @@ public class BPMNSemanticModule extends DefaultSemanticModule {
         addHandler("intermediateCatchEvent", new IntermediateCatchEventHandler());
         addHandler("boundaryEvent", new BoundaryEventHandler());
         addHandler("dataObject", new DataObjectHandler());
+        addHandler("dataInput", new DataObjectHandler());
+        addHandler("dataOutput", new DataObjectHandler());
         addHandler("transaction", new TransactionHandler());
 
         addHandler("sequenceFlow", new SequenceFlowHandler());
