@@ -120,4 +120,6 @@ public interface WorkflowProcessInstance extends ProcessInstance, NodeInstanceCo
      */
     boolean removedTag(String id);
 
+    Object getMetaData(String name);
+
 }

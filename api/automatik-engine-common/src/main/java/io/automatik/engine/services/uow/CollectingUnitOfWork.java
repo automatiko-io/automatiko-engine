@@ -50,13 +50,16 @@ public class CollectingUnitOfWork implements UnitOfWork {
     @Override
     public void end() {
         checkStarted();
-        EventBatch batch = eventManager.newBatch();
+        Collection<WorkUnit<?>> units = sorted();
 
-        for (WorkUnit<?> work : sorted()) {
-            batch.append(work.data());
+        EventBatch batch = eventManager.newBatch();
+        batch.append(units);
+        eventManager.publish(batch);
+
+        for (WorkUnit<?> work : units) {
             work.perform();
         }
-        eventManager.publish(batch);
+
         done();
     }
 

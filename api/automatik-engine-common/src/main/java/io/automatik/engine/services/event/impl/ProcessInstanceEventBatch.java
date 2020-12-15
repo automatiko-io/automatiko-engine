@@ -25,6 +25,7 @@ import io.automatik.engine.api.runtime.process.NodeInstance;
 import io.automatik.engine.api.runtime.process.ProcessInstance;
 import io.automatik.engine.api.runtime.process.WorkItem;
 import io.automatik.engine.api.runtime.process.WorkflowProcessInstance;
+import io.automatik.engine.api.uow.WorkUnit;
 import io.automatik.engine.api.workflow.Tag;
 import io.automatik.engine.services.event.ProcessInstanceDataEvent;
 import io.automatik.engine.services.event.UserTaskInstanceDataEvent;
@@ -47,6 +48,12 @@ public class ProcessInstanceEventBatch implements EventBatch {
     public void append(Object rawEvent) {
         if (rawEvent instanceof ProcessEvent) {
             rawEvents.add((ProcessEvent) rawEvent);
+        } else if (rawEvent instanceof WorkUnit<?>) {
+            append(((WorkUnit<?>) rawEvent).data());
+        } else if (rawEvent instanceof Collection) {
+            for (Object event : ((Collection<?>) rawEvent)) {
+                append(event);
+            }
         }
     }
 
@@ -134,7 +141,8 @@ public class ProcessInstanceEventBatch implements EventBatch {
                 .potentialGroups(workItem.getPotentialGroups()).potentialUsers(workItem.getPotentialUsers())
                 .processInstanceId(pi.getId()).rootProcessInstanceId(pi.getRootProcessInstanceId())
                 .processId(pi.getProcessId()).rootProcessId(pi.getRootProcessId()).inputs(workItem.getParameters())
-                .outputs(workItem.getResults()).build();
+                .outputs(workItem.getResults())
+                .instance(workItem).build();
     }
 
     protected ProcessInstanceEventBody create(ProcessEvent event) {
@@ -160,6 +168,8 @@ public class ProcessInstanceEventBatch implements EventBatch {
         if (tags != null) {
             eventBuilder.tags(tags.stream().map(t -> t.getValue()).toArray(String[]::new));
         }
+
+        eventBuilder.instance((io.automatik.engine.api.workflow.ProcessInstance<?>) pi.getMetaData("AutomatikProcessInstance"));
 
         return eventBuilder.build();
     }

@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import io.automatik.engine.api.workflow.ProcessInstance;
+
 public class ProcessInstanceEventBody {
 
     public static final String ID_META_DATA = "kogito.processinstance.id";
@@ -43,6 +45,8 @@ public class ProcessInstanceEventBody {
     private List<String> tags;
 
     private Set<MilestoneEventBody> milestones = Collections.emptySet();
+
+    private transient ProcessInstance<?> instance;
 
     private ProcessInstanceEventBody() {
     }
@@ -109,6 +113,10 @@ public class ProcessInstanceEventBody {
 
     public Set<MilestoneEventBody> getMilestones() {
         return milestones;
+    }
+
+    public ProcessInstance<?> sourceInstance() {
+        return instance;
     }
 
     public Builder update() {
@@ -247,6 +255,11 @@ public class ProcessInstanceEventBody {
 
         public Builder milestones(Set<MilestoneEventBody> milestones) {
             instance.milestones = milestones;
+            return this;
+        }
+
+        public Builder instance(ProcessInstance<?> pinstance) {
+            instance.instance = pinstance;
             return this;
         }
 

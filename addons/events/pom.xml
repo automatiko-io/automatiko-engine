@@ -14,5 +14,6 @@
   <description>Events support for Automatik Platform Engine</description>
   <modules>
     <module>automatik-events-reactive-messaging-addon</module>
+    <module>automatik-events-websocket-addon</module>
   </modules>
 </project>

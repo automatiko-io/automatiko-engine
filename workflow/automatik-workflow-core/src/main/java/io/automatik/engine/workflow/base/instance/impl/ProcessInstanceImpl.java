@@ -245,6 +245,10 @@ public abstract class ProcessInstanceImpl implements ProcessInstance, Serializab
         this.metaData.put(name, data);
     }
 
+    public Object getMetaData(String name) {
+        return this.metaData.get(name);
+    }
+
     public void setOutcome(String outcome) {
         this.outcome = outcome;
     }
