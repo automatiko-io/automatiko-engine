@@ -152,7 +152,7 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
             case Timer.TIME_DURATION:
 
                 try {
-                    duration = DateTimeUtils.parseDuration(timer.getDelay());
+                    duration = DateTimeUtils.parseDuration(resolveVariable(timer.getDelay()));
                 } catch (RuntimeException e) {
                     // cannot parse delay, trying to interpret it
                     s = resolveVariable(timer.getDelay());
@@ -180,7 +180,9 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
         ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
         context.setNodeInstance(this);
         context.setProcessInstance(getProcessInstance());
-        return ((Node) getNode()).getVariableExpression().evaluate(s, context);
+        String v = ((Node) getNode()).getVariableExpression().evaluate(s, context);
+        logger.debug("Expression {} was evaluated to {}", s, v);
+        return v;
 
     }
 

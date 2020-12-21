@@ -268,6 +268,13 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
             Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher((String) s);
             while (matcher.find()) {
                 String paramName = matcher.group(1);
+                String defaultValue = null;
+                if (paramName.contains(":")) {
+
+                    String[] items = paramName.split(":");
+                    paramName = items[0];
+                    defaultValue = items[1];
+                }
 
                 VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
                         VariableScope.VARIABLE_SCOPE, paramName);
@@ -275,12 +282,16 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
                     Object variableValue = variableScopeInstance.getVariable(paramName);
                     if (variableValue != null) {
                         return variableValue;
+                    } else {
+                        return defaultValue;
                     }
                 } else {
                     try {
                         Object variableValue = MVEL.eval(paramName, new NodeInstanceResolverFactory(this));
                         if (variableValue != null) {
                             return variableValue;
+                        } else {
+                            return defaultValue;
                         }
                     } catch (Throwable t) {
                         logger.error("Could not find variable scope for variable {}", paramName);

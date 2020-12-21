@@ -7,6 +7,7 @@ import java.util.List;
 
 import io.automatik.engine.workflow.base.core.Context;
 import io.automatik.engine.workflow.base.core.context.AbstractContext;
+import io.automatik.engine.workflow.base.core.datatype.impl.type.StringDataType;
 
 public class VariableScope extends AbstractContext {
 
@@ -20,8 +21,19 @@ public class VariableScope extends AbstractContext {
 
     private List<Variable> variables;
 
+    private List<Variable> internalVariables;
+
     public VariableScope() {
         this.variables = new ArrayList<>();
+        this.internalVariables = new ArrayList<Variable>();
+        this.internalVariables.add(new Variable("internal-piid", "processInstanceId", new StringDataType()));
+        this.internalVariables.add(new Variable("internal-ppiid", "parentProcessInstanceId", new StringDataType()));
+        this.internalVariables.add(new Variable("internal-rpiid", "rootProcessInstanceId", new StringDataType()));
+        this.internalVariables.add(new Variable("internal-piname", "processInstanceName", new StringDataType()));
+        this.internalVariables.add(new Variable("internal-pid", "processId", new StringDataType()));
+        this.internalVariables.add(new Variable("internal-rpid", "rootProcessId", new StringDataType()));
+        this.internalVariables.add(new Variable("internal-bkey", "businessKey", new StringDataType()));
+        this.internalVariables.add(new Variable("internal-ckey", "correlationKey", new StringDataType()));
     }
 
     public String getType() {
@@ -44,12 +56,22 @@ public class VariableScope extends AbstractContext {
     }
 
     public Variable findVariable(String variableName) {
+        if (variableName.contains(":")) {
+            String[] items = variableName.split(":");
+            variableName = items[0];
+        }
+
         for (Variable variable : getVariables()) {
-            if (variable.getName().equals(variableName)) {
+            if (variable.getName().equals(variableName) || variable.getId().equals(variableName)) {
                 return variable;
             }
         }
-        return null;
+        for (Variable variable : internalVariables) {
+            if (variable.getName().equals(variableName) || variable.getId().equals(variableName)) {
+                return variable;
+            }
+        }
+        return systemOrEnvironmentVariable(variableName);
     }
 
     public Context resolveContext(Object param) {
@@ -125,5 +147,18 @@ public class VariableScope extends AbstractContext {
 
     public void addVariable(Variable variable) {
         this.variables.add(variable);
+    }
+
+    public Variable systemOrEnvironmentVariable(String name) {
+        String value = System.getProperty(name);
+
+        if (value == null) {
+            value = System.getenv(name.replaceAll("\\.", "_").toUpperCase());
+        }
+        if (value != null) {
+            return new Variable(name, name, new StringDataType());
+        }
+
+        return null;
     }
 }

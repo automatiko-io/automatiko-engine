@@ -143,7 +143,7 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
 
     public VariableFactory variable(String id, String name, DataType type) {
         VariableFactory variableFactory = new VariableFactory(this);
-        variableFactory.variable(name, type);
+        variableFactory.variable(id, name, type);
         return variableFactory;
     }
 
@@ -162,7 +162,7 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
     public ExecutableProcessFactory variable(String name, DataType type, Object value, String metaDataName,
             Object metaDataValue) {
         VariableFactory variableFactory = new VariableFactory(this);
-        variableFactory.variable(name, type, value, metaDataName, metaDataValue);
+        variableFactory.variable("", name, type, value, metaDataName, metaDataValue);
         return variableFactory.done();
     }
 

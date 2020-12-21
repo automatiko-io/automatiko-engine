@@ -12,7 +12,14 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import io.automatik.engine.api.definition.process.WorkflowProcess;
@@ -21,6 +28,8 @@ import io.automatik.engine.codegen.CodegenUtils;
 import io.automatik.engine.codegen.GeneratorContext;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatik.engine.services.utils.StringUtils;
+import io.automatik.engine.workflow.base.core.context.variable.Variable;
+import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.compiler.canonical.TriggerMetaData;
 
 public class MessageProducerGenerator {
@@ -34,6 +43,7 @@ public class MessageProducerGenerator {
     private WorkflowProcess process;
     private final String packageName;
     private final String resourceClazzName;
+    private final String modelClazzName;
     private String processId;
     private final String processName;
     private final String classPrefix;
@@ -54,6 +64,7 @@ public class MessageProducerGenerator {
         this.resourceClazzName = classPrefix + "MessageProducer_" + trigger.getOwnerId();
         this.relativePath = packageName.replace(".", "/") + "/" + resourceClazzName + ".java";
         this.messageDataEventClassName = messageDataEventClassName;
+        this.modelClazzName = modelfqcn;
     }
 
     public MessageProducerGenerator withDependencyInjection(DependencyInjectionAnnotator annotator) {
@@ -192,6 +203,48 @@ public class MessageProducerGenerator {
 
                 });
 
+        String topicExpression = (String) trigger.getContext("topicExpression");
+        if (topicExpression != null) {
+            template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("topic"))
+                    .forEach(md -> {
+                        BlockStmt body = new BlockStmt();
+
+                        ClassOrInterfaceType stringType = new ClassOrInterfaceType(null, String.class.getCanonicalName());
+
+                        if (topicExpression.contains("id")) {
+                            VariableDeclarationExpr idField = new VariableDeclarationExpr(stringType, "id");
+                            body.addStatement(new AssignExpr(idField,
+                                    new MethodCallExpr(new NameExpr("pi"), "getId"), AssignExpr.Operator.ASSIGN));
+                        }
+
+                        if (topicExpression.contains("businessKey")) {
+                            VariableDeclarationExpr businessKeyField = new VariableDeclarationExpr(stringType, "businessKey");
+                            body.addStatement(new AssignExpr(businessKeyField,
+                                    new MethodCallExpr(new NameExpr("pi"), "getCorrelationKey"), AssignExpr.Operator.ASSIGN));
+                        }
+                        VariableScope variableScope = (VariableScope) ((io.automatik.engine.workflow.process.core.WorkflowProcess) process)
+                                .getDefaultContext(VariableScope.VARIABLE_SCOPE);
+
+                        for (Variable var : variableScope.getVariables()) {
+
+                            if (topicExpression.contains(var.getSanitizedName())) {
+                                ClassOrInterfaceType varType = new ClassOrInterfaceType(null, var.getType().getStringType());
+                                VariableDeclarationExpr v = new VariableDeclarationExpr(
+                                        varType,
+                                        var.getSanitizedName());
+                                body.addStatement(new AssignExpr(v,
+                                        new CastExpr(varType,
+                                                new MethodCallExpr(new MethodCallExpr(new NameExpr("pi"), "getVariables"),
+                                                        "get")
+                                                                .addArgument(new StringLiteralExpr(var.getName()))),
+                                        AssignExpr.Operator.ASSIGN));
+                            }
+                        }
+                        body.addStatement(new ReturnStmt(new NameExpr(topicExpression)));
+                        md.setBody(body);
+                    });
+        }
+
         if (useInjection()) {
             annotator.withApplicationComponent(template);
 
@@ -200,18 +253,6 @@ public class MessageProducerGenerator {
             annotator.withInjection(emitterField);
             annotator.withOutgoingMessage(emitterField, sanitizedName);
             emitterField.getVariable(0).setType(annotator.emitterType("Message"));
-
-            //            MethodDeclaration produceMethod = template.findAll(MethodDeclaration.class).stream()
-            //                    .filter(md -> md.getNameAsString().equals("produce")).findFirst().orElseThrow(
-            //                            () -> new IllegalStateException("Cannot find produce methos in MessageProducerTemplate"));
-            //            BlockStmt body = new BlockStmt();
-            //            MethodCallExpr sendMethodCall = new MethodCallExpr(new NameExpr("emitter"), "send");
-            //            annotator.withMessageProducer(sendMethodCall, sanitizedName,
-            //                    new CastExpr(new ClassOrInterfaceType(null, "org.eclipse.microprofile.reactive.messaging.Message"),
-            //                            new MethodCallExpr(new ThisExpr(), "marshall")
-            //                                    .addArgument(new NameExpr("pi")).addArgument(new NameExpr(EVENT_DATA_VAR))));
-            //            body.addStatement(sendMethodCall);
-            //produceMethod.setBody(body);
 
             template.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("useCloudEvents"))
                     .forEach(fd -> annotator.withConfigInjection(fd, "quarkus.automatik.messaging.as-cloudevents"));

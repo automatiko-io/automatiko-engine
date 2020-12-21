@@ -33,103 +33,102 @@ import io.automatik.engine.services.uow.DefaultUnitOfWorkManager;
 @ExtendWith(MockitoExtension.class)
 public class FileSystemBasedJobServiceTest {
 
-	@Mock
-	Processes processes;
+    @Mock
+    Processes processes;
 
-	@Mock
-	Application application;
+    @Mock
+    Application application;
 
-	@Mock
-	Process process;
+    @Mock
+    Process process;
 
-	@Test
-	public void testScheduleJobsForProcessInstance() throws Exception {
-		CountDownLatch latch = new CountDownLatch(1);
-		when(application.unitOfWorkManager())
-				.thenReturn(new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory()));
-		when(processes.processById("processId_1")).then(i -> {
-			return process;
-		});
-		when(processes.processIds()).then(i -> {
-			return Collections.singletonList("processId_1");
-		});
-		when(process.instances()).then(i -> {
-			latch.countDown();
-			return Mockito.mock(ProcessInstances.class);
-		});
+    @Test
+    public void testScheduleJobsForProcessInstance() throws Exception {
+        CountDownLatch latch = new CountDownLatch(1);
+        when(application.unitOfWorkManager())
+                .thenReturn(new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory()));
+        when(processes.processById("processId_1")).then(i -> {
+            return process;
+        });
+        when(processes.processIds()).then(i -> {
+            return Collections.singletonList("processId_1");
+        });
+        when(process.instances()).then(i -> {
+            latch.countDown();
+            return Mockito.mock(ProcessInstances.class);
+        });
 
-		FileSystemBasedJobService jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application);
+        FileSystemBasedJobService jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application);
 
-		ProcessInstanceJobDescription processInstanceJobDescription = ProcessInstanceJobDescription.of(123,
-				DurationExpirationTime.after(500), "processInstanceId", "processId", "1");
+        ProcessInstanceJobDescription processInstanceJobDescription = ProcessInstanceJobDescription.of(123,
+                DurationExpirationTime.after(500), "processInstanceId", "processId", "1");
 
-		jobs.scheduleProcessInstanceJob(processInstanceJobDescription);
+        jobs.scheduleProcessInstanceJob(processInstanceJobDescription);
 
-		boolean achieved = latch.await(2, TimeUnit.SECONDS);
-		assertThat(achieved).isTrue();
-		verify(process, times(1)).instances();
-	}
+        boolean achieved = latch.await(2, TimeUnit.SECONDS);
+        assertThat(achieved).isTrue();
+        verify(process, times(1)).instances();
+    }
 
-	@Test
-	public void testScheduleJobsForProcessInstanceReload() throws Exception {
-		CountDownLatch latch = new CountDownLatch(1);
-		when(application.unitOfWorkManager())
-				.thenReturn(new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory()));
-		when(processes.processById("processId_1")).then(i -> {
-			return process;
-		});
-		when(processes.processIds()).then(i -> {
-			return Collections.singletonList("processId_1");
-		});
-		when(process.instances()).then(i -> {
-			latch.countDown();
-			return Mockito.mock(ProcessInstances.class);
-		});
+    @Test
+    public void testScheduleJobsForProcessInstanceReload() throws Exception {
+        CountDownLatch latch = new CountDownLatch(1);
+        when(application.unitOfWorkManager())
+                .thenReturn(new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory()));
+        when(processes.processById("processId_1")).then(i -> {
+            return process;
+        });
+        when(processes.processIds()).then(i -> {
+            return Collections.singletonList("processId_1");
+        });
+        when(process.instances()).then(i -> {
+            latch.countDown();
+            return Mockito.mock(ProcessInstances.class);
+        });
 
-		FileSystemBasedJobService jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application);
+        FileSystemBasedJobService jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application);
 
-		ProcessInstanceJobDescription processInstanceJobDescription = ProcessInstanceJobDescription.of(123,
-				DurationExpirationTime.after(100), "processInstanceId", "processId", "1");
+        ProcessInstanceJobDescription processInstanceJobDescription = ProcessInstanceJobDescription.of(123,
+                DurationExpirationTime.after(100), "processInstanceId", "processId", "1");
 
-		jobs.scheduleProcessInstanceJob(processInstanceJobDescription);
+        jobs.scheduleProcessInstanceJob(processInstanceJobDescription);
 
-		jobs.shutown(null);
+        jobs.shutown(null);
 
-		jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application);
-		jobs.scheduleOnLoad(null);
+        jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application);
+        jobs.scheduleOnLoad(null);
 
-		boolean achieved = latch.await(2, TimeUnit.SECONDS);
-		assertThat(achieved).isTrue();
-		verify(process, times(1)).instances();
-	}
+        boolean achieved = latch.await(2, TimeUnit.SECONDS);
+        assertThat(achieved).isTrue();
+    }
 
-	@Test
-	public void testScheduleJobsForProcessInstanceAndCance() throws Exception {
-		CountDownLatch latch = new CountDownLatch(1);
-		when(application.unitOfWorkManager())
-				.thenReturn(new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory()));
-		lenient().when(processes.processById("processId_1")).then(i -> {
-			return process;
-		});
-		lenient().when(processes.processIds()).then(i -> {
-			return Collections.singletonList("processId_1");
-		});
-		lenient().when(process.instances()).then(i -> {
-			latch.countDown();
-			return Mockito.mock(ProcessInstances.class);
-		});
+    @Test
+    public void testScheduleJobsForProcessInstanceAndCance() throws Exception {
+        CountDownLatch latch = new CountDownLatch(1);
+        when(application.unitOfWorkManager())
+                .thenReturn(new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory()));
+        lenient().when(processes.processById("processId_1")).then(i -> {
+            return process;
+        });
+        lenient().when(processes.processIds()).then(i -> {
+            return Collections.singletonList("processId_1");
+        });
+        lenient().when(process.instances()).then(i -> {
+            latch.countDown();
+            return Mockito.mock(ProcessInstances.class);
+        });
 
-		FileSystemBasedJobService jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application);
+        FileSystemBasedJobService jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application);
 
-		ProcessInstanceJobDescription processInstanceJobDescription = ProcessInstanceJobDescription.of(123,
-				DurationExpirationTime.after(500), "processInstanceId", "processId", "1");
+        ProcessInstanceJobDescription processInstanceJobDescription = ProcessInstanceJobDescription.of(123,
+                DurationExpirationTime.after(500), "processInstanceId", "processId", "1");
 
-		jobs.scheduleProcessInstanceJob(processInstanceJobDescription);
+        jobs.scheduleProcessInstanceJob(processInstanceJobDescription);
 
-		jobs.cancelJob(processInstanceJobDescription.id());
+        jobs.cancelJob(processInstanceJobDescription.id());
 
-		boolean achieved = latch.await(1, TimeUnit.SECONDS);
-		assertThat(achieved).isFalse();
-		verify(processes, times(0)).processById(eq("processId"));
-	}
+        boolean achieved = latch.await(1, TimeUnit.SECONDS);
+        assertThat(achieved).isFalse();
+        verify(processes, times(0)).processById(eq("processId"));
+    }
 }

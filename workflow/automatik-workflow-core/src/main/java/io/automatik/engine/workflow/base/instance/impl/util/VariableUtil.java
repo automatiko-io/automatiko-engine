@@ -24,19 +24,28 @@ public class VariableUtil {
         Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(s);
         while (matcher.find()) {
             String paramName = matcher.group(1);
+            String replacementKey = paramName;
+            String defaultValue = "";
+            if (paramName.contains(":")) {
+
+                String[] items = paramName.split(":");
+                paramName = items[0];
+                defaultValue = items[1];
+            }
+
             if (replacements.get(paramName) == null) {
                 VariableScopeInstance variableScopeInstance = (VariableScopeInstance) ((io.automatik.engine.workflow.process.instance.NodeInstance) nodeInstance)
                         .resolveContextInstance(VariableScope.VARIABLE_SCOPE, paramName);
                 if (variableScopeInstance != null) {
                     Object variableValue = variableScopeInstance.getVariable(paramName);
-                    String variableValueString = variableValue == null ? "" : variableValue.toString();
-                    replacements.put(paramName, variableValueString);
+                    String variableValueString = variableValue == null ? defaultValue : variableValue.toString();
+                    replacements.put(replacementKey, variableValueString);
                 } else {
                     try {
                         Object variableValue = MVEL.eval(paramName, new NodeInstanceResolverFactory(
                                 (io.automatik.engine.workflow.process.instance.NodeInstance) nodeInstance));
-                        String variableValueString = variableValue == null ? "" : variableValue.toString();
-                        replacements.put(paramName, variableValueString);
+                        String variableValueString = variableValue == null ? defaultValue : variableValue.toString();
+                        replacements.put(replacementKey, variableValueString);
                     } catch (Throwable t) {
 
                     }
@@ -103,4 +112,5 @@ public class VariableUtil {
         }
         return expression.toString();
     }
+
 }

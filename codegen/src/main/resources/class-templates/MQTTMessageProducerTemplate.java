@@ -29,7 +29,7 @@ public class MessageProducer {
     }
     
 	public void produce(ProcessInstance pi, $Type$ eventData) {
-	    emitter.send(io.smallrye.reactive.messaging.mqtt.MqttMessage.of(null, this.marshall(pi, eventData), io.netty.handler.codec.mqtt.MqttQoS.AT_LEAST_ONCE, true));
+	    emitter.send(io.smallrye.reactive.messaging.mqtt.MqttMessage.of(topic(pi), this.marshall(pi, eventData), io.netty.handler.codec.mqtt.MqttQoS.AT_LEAST_ONCE, true));
     }
 	    
 	private byte[] marshall(ProcessInstance pi, $Type$ eventData) {
@@ -62,5 +62,9 @@ public class MessageProducer {
 	    } catch (Exception e) {
 	        throw new RuntimeException(e);
 	    }
+	}
+	
+	protected String topic(ProcessInstance pi) {
+	    return null;
 	}
 }

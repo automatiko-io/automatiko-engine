@@ -715,16 +715,24 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
         Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(s);
         while (matcher.find()) {
             String paramName = matcher.group(1);
+            String replacementKey = paramName;
+            String defaultValue = null;
+            if (paramName.contains(":")) {
+
+                String[] items = paramName.split(":");
+                paramName = items[0];
+                defaultValue = items[1];
+            }
             if (replacements.get(paramName) == null) {
 
                 Object variableValue = getVariable(paramName);
                 if (variableValue != null) {
-                    replacements.put(paramName, variableValue.toString());
+                    replacements.put(replacementKey, variableValue.toString());
                 } else {
                     try {
                         variableValue = MVEL.eval(paramName, factory);
-                        String variableValueString = variableValue == null ? "" : variableValue.toString();
-                        replacements.put(paramName, variableValueString);
+                        String variableValueString = variableValue == null ? defaultValue : variableValue.toString();
+                        replacements.put(replacementKey, variableValueString);
                     } catch (Throwable t) {
                         logger.error("Could not find variable scope for variable {}", paramName);
                     }

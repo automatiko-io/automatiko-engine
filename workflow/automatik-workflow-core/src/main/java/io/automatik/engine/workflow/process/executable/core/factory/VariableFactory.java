@@ -15,20 +15,32 @@ public class VariableFactory {
     }
 
     public VariableFactory variable(String name, DataType type) {
-        return variable(name, type, null);
+        return variable("", name, type, null);
     }
 
     public VariableFactory variable(String name, DataType type, Object value) {
-        return variable(name, type, value, null, null);
+        return variable("", name, type, value, null, null);
     }
 
     public VariableFactory variable(String name, DataType type, String metaDataName, Object metaDataValue) {
-        return variable(name, type, null, metaDataName, metaDataValue);
+        return variable("", name, type, null, metaDataName, metaDataValue);
     }
 
-    public VariableFactory variable(String name, DataType type, Object value, String metaDataName,
-            Object metaDataValue) {
+    public VariableFactory variable(String id, String name, DataType type) {
+        return variable(id, name, type, null);
+    }
 
+    public VariableFactory variable(String id, String name, DataType type, Object value) {
+        return variable(id, name, type, value, null, null);
+    }
+
+    public VariableFactory variable(String id, String name, DataType type, String metaDataName, Object metaDataValue) {
+        return variable(id, name, type, null, metaDataName, metaDataValue);
+    }
+
+    public VariableFactory variable(String id, String name, DataType type, Object value, String metaDataName,
+            Object metaDataValue) {
+        variable.setId(id);
         variable.setName(name);
         variable.setType(type);
         variable.setValue(value);

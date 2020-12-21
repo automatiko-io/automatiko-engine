@@ -27,6 +27,7 @@ import io.automatik.engine.workflow.base.core.context.exception.CompensationHand
 import io.automatik.engine.workflow.base.core.context.exception.CompensationScope;
 import io.automatik.engine.workflow.base.core.context.exception.ExceptionScope;
 import io.automatik.engine.workflow.base.core.context.swimlane.Swimlane;
+import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.base.core.event.EventFilter;
 import io.automatik.engine.workflow.base.core.event.EventTypeFilter;
@@ -66,6 +67,7 @@ import io.automatik.engine.workflow.process.core.node.BoundaryEventNode;
 import io.automatik.engine.workflow.process.core.node.CompositeContextNode;
 import io.automatik.engine.workflow.process.core.node.CompositeNode;
 import io.automatik.engine.workflow.process.core.node.ConstraintTrigger;
+import io.automatik.engine.workflow.process.core.node.DataAssociation;
 import io.automatik.engine.workflow.process.core.node.EndNode;
 import io.automatik.engine.workflow.process.core.node.EventNode;
 import io.automatik.engine.workflow.process.core.node.EventSubProcessNode;
@@ -777,7 +779,19 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
         List<String> eventSubProcessHandlers = new ArrayList<String>();
         for (Node node : container.getNodes()) {
 
-            if (node instanceof StateNode) {
+            if (node instanceof StartNode) {
+                List<DataAssociation> associations = ((StartNode) node).getOutAssociations();
+                if (associations != null) {
+
+                    for (DataAssociation da : associations) {
+                        VariableScope scope = (VariableScope) process.getDefaultContext(VariableScope.VARIABLE_SCOPE);
+                        Variable variable = scope.findVariable(da.getTarget());
+                        if (variable != null) {
+                            da.setTarget(variable.getName());
+                        }
+                    }
+                }
+            } else if (node instanceof StateNode) {
                 StateNode stateNode = (StateNode) node;
                 String condition = (String) stateNode.getMetaData("Condition");
                 stateNode.setCondition(context -> {

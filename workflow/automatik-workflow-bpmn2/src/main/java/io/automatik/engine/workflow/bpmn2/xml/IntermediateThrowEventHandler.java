@@ -236,6 +236,7 @@ public class IntermediateThrowEventHandler extends AbstractNodeHandler {
                 actionNode.setMetaData("MessageType", message.getType());
                 actionNode.setMetaData("TriggerType", "ProduceMessage");
                 actionNode.setMetaData("TriggerRef", message.getName());
+                actionNode.setMetaData("topicExpression", message.getMetaData().get("topicExpression"));
                 actionNode.setMetaData("connector",
                         message.getMetaData().getOrDefault("connector", actionNode.getMetaData("connector")));
                 actionNode.setMetaData("topic", message.getMetaData().getOrDefault("topic", actionNode.getMetaData("topic")));

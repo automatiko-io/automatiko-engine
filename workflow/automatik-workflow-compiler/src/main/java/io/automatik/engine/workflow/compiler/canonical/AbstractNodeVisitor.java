@@ -40,6 +40,7 @@ import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatik.engine.workflow.process.core.impl.ConnectionImpl;
 import io.automatik.engine.workflow.process.core.node.BoundaryEventNode;
+import io.automatik.engine.workflow.process.core.node.EventSubProcessNode;
 import io.automatik.engine.workflow.process.core.node.HumanTaskNode;
 import io.automatik.engine.workflow.process.core.node.StartNode;
 
@@ -50,7 +51,8 @@ public abstract class AbstractNodeVisitor<T extends Node> extends AbstractVisito
     public void visitNode(WorkflowProcess process, T node, BlockStmt body, VariableScope variableScope,
             ProcessMetaData metadata) {
         visitNode(process, FACTORY_FIELD_NAME, node, body, variableScope, metadata);
-        if (isAdHocNode(node) && !(node instanceof HumanTaskNode) && !(node instanceof BoundaryEventNode)) {
+        if (isAdHocNode(node) && !(node instanceof HumanTaskNode) && !(node instanceof BoundaryEventNode)
+                && !(node instanceof EventSubProcessNode)) {
             metadata.addSignal(node.getName(), null);
         }
     }

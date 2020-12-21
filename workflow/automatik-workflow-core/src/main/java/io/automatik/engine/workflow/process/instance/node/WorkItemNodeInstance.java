@@ -241,18 +241,26 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
                 Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(s);
                 while (matcher.find()) {
                     String paramName = matcher.group(1);
-                    if (replacements.get(paramName) == null) {
+                    String replacementKey = paramName;
+                    String defaultValue = "";
+                    if (paramName.contains(":")) {
+
+                        String[] items = paramName.split(":");
+                        paramName = items[0];
+                        defaultValue = items[1];
+                    }
+                    if (replacements.get(replacementKey) == null) {
                         VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
                                 VARIABLE_SCOPE, paramName);
                         if (variableScopeInstance != null) {
                             Object variableValue = variableScopeInstance.getVariable(paramName);
-                            String variableValueString = variableValue == null ? "" : variableValue.toString();
-                            replacements.put(paramName, variableValueString);
+                            String variableValueString = variableValue == null ? defaultValue : variableValue.toString();
+                            replacements.put(replacementKey, variableValueString);
                         } else {
                             try {
                                 Object variableValue = MVEL.eval(paramName, new NodeInstanceResolverFactory(this));
-                                String variableValueString = variableValue == null ? "" : variableValue.toString();
-                                replacements.put(paramName, variableValueString);
+                                String variableValueString = variableValue == null ? defaultValue : variableValue.toString();
+                                replacements.put(replacementKey, variableValueString);
                             } catch (Throwable t) {
                                 logger.error("Could not find variable scope for variable {}", paramName);
                                 logger.error("when trying to replace variable in string for Work Item {}",

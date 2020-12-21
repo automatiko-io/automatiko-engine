@@ -44,11 +44,19 @@ public class WorkflowProcessImpl extends ProcessImpl
         Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(evaluatedValue);
         while (matcher.find()) {
             String paramName = matcher.group(1);
+            String replacementKey = paramName;
+            String defaultValue = null;
+            if (paramName.contains(":")) {
+
+                String[] items = paramName.split(":");
+                paramName = items[0];
+                defaultValue = items[1];
+            }
             if (replacements.get(paramName) == null) {
                 try {
                     String value = (String) MVEL.eval(paramName,
                             new ProcessInstanceResolverFactory(((WorkflowProcessInstance) p)));
-                    replacements.put(paramName, value);
+                    replacements.put(replacementKey, value == null ? defaultValue : value);
                 } catch (Throwable t) {
                     logger.error("Could not resolve, parameter {} while evaluating expression {}", paramName,
                             expression, t);

@@ -176,6 +176,7 @@ public class EndEventHandler extends AbstractNodeHandler {
                 endNode.setMetaData("MessageType", message.getType());
                 endNode.setMetaData("TriggerType", "ProduceMessage");
                 endNode.setMetaData("TriggerRef", message.getName());
+                endNode.setMetaData("topicExpression", message.getMetaData().get("topicExpression"));
                 endNode.setMetaData("connector",
                         message.getMetaData().getOrDefault("connector", endNode.getMetaData("connector")));
                 endNode.setMetaData("topic", message.getMetaData().getOrDefault("topic", endNode.getMetaData("topic")));

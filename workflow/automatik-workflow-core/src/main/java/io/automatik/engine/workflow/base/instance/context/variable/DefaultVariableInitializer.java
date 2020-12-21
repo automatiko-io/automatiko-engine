@@ -49,8 +49,17 @@ public class DefaultVariableInitializer implements VariableInitializer {
 
         if (matcher.find()) {
             String paramName = matcher.group(1);
+            String defaultValue = null;
+            if (paramName.contains(":")) {
 
-            return MVEL.eval(paramName, data);
+                String[] items = paramName.split(":");
+                paramName = items[0];
+                defaultValue = items[1];
+            }
+
+            Object result = MVEL.eval(paramName, data);
+
+            return result == null ? defaultValue : result;
 
         } else {
             return definition.getType().readValue(valueExpression);

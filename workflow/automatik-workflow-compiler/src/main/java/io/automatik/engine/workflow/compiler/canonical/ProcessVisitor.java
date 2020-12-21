@@ -209,7 +209,7 @@ public class ProcessVisitor extends AbstractVisitor {
 
                 body.addStatement(getAssignedFactoryMethod(FACTORY_FIELD_NAME, VariableFactory.class,
                         "$var_" + variable.getSanitizedName(), "variable",
-                        new Expression[] { new StringLiteralExpr(""), new StringLiteralExpr(variable.getName()),
+                        new Expression[] { new StringLiteralExpr(variable.getId()), new StringLiteralExpr(variable.getName()),
                                 variableValue }));
 
                 visitMetaData(variable.getMetaData(), body, "$var_" + variable.getSanitizedName());

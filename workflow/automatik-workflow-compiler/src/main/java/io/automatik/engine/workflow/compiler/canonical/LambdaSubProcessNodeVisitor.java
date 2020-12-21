@@ -16,11 +16,14 @@ import java.util.regex.Matcher;
 
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
+import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
@@ -196,6 +199,13 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
     }
 
     protected Expression dotNotationToSetExpression(String dotNotation, String value) {
+        String defaultValue = null;
+        if (dotNotation.contains(":")) {
+
+            String[] items = dotNotation.split(":");
+            dotNotation = items[0];
+            defaultValue = items[1];
+        }
         String[] elements = dotNotation.split("\\.");
         Expression scope = new NameExpr(elements[0]);
         if (elements.length == 1) {
@@ -204,12 +214,28 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
         for (int i = 1; i < elements.length - 1; i++) {
             scope = new MethodCallExpr().setScope(scope).setName("get" + StringUtils.capitalize(elements[i]));
         }
-
+        Expression argument;
+        if (defaultValue != null) {
+            argument = new ConditionalExpr(
+                    new BinaryExpr(new NameExpr(value), new NullLiteralExpr(), BinaryExpr.Operator.NOT_EQUALS),
+                    new NameExpr(value),
+                    new StringLiteralExpr(defaultValue));
+        } else {
+            argument = new NameExpr(value);
+        }
         return new MethodCallExpr().setScope(scope)
-                .setName("set" + StringUtils.capitalize(elements[elements.length - 1])).addArgument(value);
+                .setName("set" + StringUtils.capitalize(elements[elements.length - 1])).addArgument(argument);
     }
 
     protected Expression dotNotationToGetExpression(String dotNotation) {
+        String defaultValue = null;
+        if (dotNotation.contains(":")) {
+
+            String[] items = dotNotation.split(":");
+            dotNotation = items[0];
+            defaultValue = items[1];
+        }
+
         String[] elements = dotNotation.split("\\.");
         Expression scope = new NameExpr(elements[0]);
 
@@ -220,7 +246,11 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
         for (int i = 1; i < elements.length; i++) {
             scope = new MethodCallExpr().setScope(scope).setName("get" + StringUtils.capitalize(elements[i]));
         }
-
+        if (defaultValue != null) {
+            return new MethodCallExpr(
+                    new MethodCallExpr(new NameExpr(Optional.class.getCanonicalName()), "ofNullable").addArgument(scope),
+                    "orElse").addArgument(new StringLiteralExpr(defaultValue));
+        }
         return scope;
     }
 }

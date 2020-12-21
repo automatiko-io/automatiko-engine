@@ -290,13 +290,21 @@ public class EventNodeInstance extends ExtendedNodeInstanceImpl
         Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(s);
         while (matcher.find()) {
             String paramName = matcher.group(1);
-            if (replacements.get(paramName) == null) {
+            String replacementKey = paramName;
+            String defaultValue = "";
+            if (paramName.contains(":")) {
+
+                String[] items = paramName.split(":");
+                paramName = items[0];
+                defaultValue = items[1];
+            }
+            if (replacements.get(replacementKey) == null) {
                 VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
                         VariableScope.VARIABLE_SCOPE, paramName);
                 if (variableScopeInstance != null) {
                     Object variableValue = variableScopeInstance.getVariable(paramName);
-                    String variableValueString = variableValue == null ? "" : variableValue.toString();
-                    replacements.put(paramName, variableValueString);
+                    String variableValueString = variableValue == null ? defaultValue : variableValue.toString();
+                    replacements.put(replacementKey, variableValueString);
                 }
             }
         }

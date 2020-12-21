@@ -14,6 +14,7 @@ import io.automatik.engine.workflow.base.core.event.ProcessEventSupport;
 import io.automatik.engine.workflow.base.instance.ContextInstanceContainer;
 import io.automatik.engine.workflow.base.instance.InternalProcessRuntime;
 import io.automatik.engine.workflow.base.instance.context.AbstractContextInstance;
+import io.automatik.engine.workflow.base.instance.impl.ProcessInstanceImpl;
 import io.automatik.engine.workflow.process.core.Node;
 import io.automatik.engine.workflow.process.instance.node.CompositeContextNodeInstance;
 
@@ -33,7 +34,13 @@ public class VariableScopeInstance extends AbstractContextInstance {
     }
 
     public Object getVariable(String name) {
+        String defaultValue = null;
+        if (name.contains(":")) {
 
+            String[] items = name.split(":");
+            name = items[0];
+            defaultValue = items[1];
+        }
         Object value = internalGetVariable(name);
         if (value != null) {
             return value;
@@ -44,9 +51,21 @@ public class VariableScopeInstance extends AbstractContextInstance {
             return getProcessInstance().getId();
         } else if ("parentProcessInstanceId".equals(name) && getProcessInstance() != null) {
             return getProcessInstance().getParentProcessInstanceId();
+        } else if (("correlationKey".equals(name) || "businessKey".equals(name)) && getProcessInstance() != null) {
+            return getProcessInstance().getCorrelationKey();
+        } else if ("rootProcessInstanceId".equals(name) && getProcessInstance() != null) {
+            return getProcessInstance().getRootProcessInstanceId();
+        } else if ("rootProcessId".equals(name) && getProcessInstance() != null) {
+            return getProcessInstance().getRootProcessId();
+        } else if ("processId".equals(name) && getProcessInstance() != null) {
+            return getProcessInstance().getProcessId();
+        } else if ("processName".equals(name) && getProcessInstance() != null) {
+            return getProcessInstance().getProcessName();
+        } else if ("processInstanceName".equals(name) && getProcessInstance() != null) {
+            return ((ProcessInstanceImpl) getProcessInstance()).getDescription();
         }
 
-        return null;
+        return systemOrEnvironmentVariable(name, defaultValue);
     }
 
     public Map<String, Object> getVariables() {
@@ -60,6 +79,10 @@ public class VariableScopeInstance extends AbstractContextInstance {
     public void setVariable(NodeInstance nodeInstance, String name, Object value) {
         if (name == null) {
             throw new IllegalArgumentException("The name of a variable may not be null!");
+        }
+        Variable var = getVariableScope().findVariable(name);
+        if (var != null) {
+            name = var.getName();
         }
         Object oldValue = getVariable(name);
         if (oldValue == null) {
@@ -102,6 +125,11 @@ public class VariableScopeInstance extends AbstractContextInstance {
     }
 
     public Object internalGetVariable(String name) {
+
+        Variable var = getVariableScope().findVariable(name);
+        if (var != null) {
+            return this.variables.get(var.getName());
+        }
         return this.variables.get(name);
     }
 
@@ -131,5 +159,18 @@ public class VariableScopeInstance extends AbstractContextInstance {
                         "Variable '" + variable.getName() + "' is required but not set");
             }
         }
+    }
+
+    public Object systemOrEnvironmentVariable(String name, Object defaultValue) {
+        String value = System.getProperty(name);
+
+        if (value == null) {
+            value = System.getenv(name.replaceAll("\\.", "_").toUpperCase());
+        }
+        if (value != null) {
+            return value;
+        }
+
+        return defaultValue;
     }
 }

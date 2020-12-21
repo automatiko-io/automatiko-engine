@@ -43,6 +43,7 @@ public class StartEventHandler extends AbstractNodeHandler {
     private static final String TRIGGER_TYPE = "TriggerType";
     private static final String TRIGGER_CORRELATION = "TriggerCorrelation";
     private static final String TRIGGER_CORRELATION_EXPR = "TriggerCorrelationExpr";
+    private static final String TRIGGER_TOPIC_EXPR = "TriggerTopicExpr";
 
     protected DataTransformerRegistry transformerRegistry = DataTransformerRegistry.get();
 

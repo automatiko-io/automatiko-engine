@@ -100,6 +100,8 @@ public class MessageConsumerGenerator {
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".port", "${mqtt.port:1883}");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".client-id",
                     classPrefix + "-consumer");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".auto-keep-alive", "true");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".keep-alive-seconds", "600");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".failure-strategy", "ignore");
             context.setApplicationProperty("quarkus.automatik.messaging.as-cloudevents", "false");
 

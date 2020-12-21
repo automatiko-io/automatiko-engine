@@ -53,6 +53,13 @@ public class Variable implements ValueObject, Serializable, io.automatik.engine.
         this.type = UndefinedDataType.getInstance();
     }
 
+    public Variable(String id, String name, DataType type) {
+        this.id = id;
+        this.name = name;
+        this.sanitizedName = sanitizeIdentifier(name);
+        this.type = type;
+    }
+
     public String getName() {
         return this.name;
     }
@@ -86,7 +93,7 @@ public class Variable implements ValueObject, Serializable, io.automatik.engine.
     }
 
     public String getId() {
-        return id;
+        return id == null ? "" : id;
     }
 
     public void setId(String id) {

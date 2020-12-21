@@ -56,7 +56,7 @@ public class UserTaskModelMetaData {
     private static final String TASK_NAME = "TaskName";
 
     protected static final List<String> INTERNAL_FIELDS = Arrays.asList(TASK_NAME, "NodeName", "ActorId", "GroupId",
-            "Priority", "Comment", "Skippable", "Content", "Locale");
+            "Priority", "Comment", "Skippable", "Content", "Locale", "Groups", "ExcludedUsers");
 
     private final String packageName;
 
@@ -194,12 +194,6 @@ public class UserTaskModelMetaData {
         staticFromMap.addStatement(new AssignExpr(itemField,
                 new ObjectCreationExpr(null, modelType, NodeList.nodeList()), AssignExpr.Operator.ASSIGN));
         NameExpr item = new NameExpr("item");
-        FieldAccessExpr idField = new FieldAccessExpr(item, "_id");
-        staticFromMap.addStatement(new AssignExpr(idField, new NameExpr("id"), AssignExpr.Operator.ASSIGN));
-
-        FieldAccessExpr nameField = new FieldAccessExpr(item, "_name");
-        staticFromMap.addStatement(new AssignExpr(nameField, new NameExpr("name"), AssignExpr.Operator.ASSIGN));
-
         for (Entry<String, String> entry : humanTaskNode.getInMappings().entrySet()) {
 
             Variable variable = Optional.ofNullable(variableScope.findVariable(entry.getValue()))
