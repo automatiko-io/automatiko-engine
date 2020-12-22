@@ -107,6 +107,13 @@ public class GeneratorContext {
 
         BlockStmt constructorBody = new BlockStmt();
 
+        // hide automatik api (e.g. process management api) from OpenAPI definition
+        String includeAutomatikApi = applicationProperties.getProperty("quarkus.automatik.include-automatik-api");
+        if (!"true".equalsIgnoreCase(includeAutomatikApi)) {
+            modifiedApplicationProperties.put("mp.openapi.scan.exclude.classes",
+                    "io.automatik.engine.addons.process.management.ProcessInstanceManagementResource");
+        }
+
         for (Entry<String, String> entry : modifiedApplicationProperties.entrySet()) {
             if (!applicationProperties.containsKey(entry.getKey())) { // avoid overriding of defined properties
 

@@ -200,7 +200,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             details.setDescription(pi.description());
             details.setFailed(pi.error().isPresent());
             details.setImage(
-                    uriInfo.getBaseUri().toString() + "/management/processes/" + processId + "/instances/" + instanceId
+                    uriInfo.getBaseUri().toString() + "management/processes/" + processId + "/instances/" + instanceId
                             + "/image");
             details.setTags(pi.tags().values());
             details.setVariables(pi.variables());

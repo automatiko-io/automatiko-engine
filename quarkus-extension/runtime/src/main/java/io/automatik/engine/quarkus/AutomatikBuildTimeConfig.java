@@ -28,6 +28,12 @@ public class AutomatikBuildTimeConfig extends AutomatikConfig {
     public Optional<String> packageName;
 
     /**
+     * Determines if the Automatik API should be included in OpenAPI definitions, defaults to false
+     */
+    @ConfigItem
+    public Optional<Boolean> includeAutomatikApi;
+
+    /**
      * Configures metrics
      */
     @ConfigItem
@@ -65,6 +71,11 @@ public class AutomatikBuildTimeConfig extends AutomatikConfig {
     @Override
     public Optional<String> packageName() {
         return packageName;
+    }
+
+    @Override
+    public Optional<Boolean> includeAutomatikApi() {
+        return includeAutomatikApi;
     }
 
     @Override

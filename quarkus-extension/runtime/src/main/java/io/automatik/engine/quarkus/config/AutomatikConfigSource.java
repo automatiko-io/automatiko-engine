@@ -67,9 +67,6 @@ public class AutomatikConfigSource implements ConfigSource {
                         if ("mp.openapi.extensions.smallrye.operationIdStrategy".equals(name)) {
                             return "METHOD";
                         }
-                        if ("quarkus.log.category.\"org.hibernate\".level".equals(name)) {
-                            return "ERROR";
-                        }
                         return null;
                     }
 
@@ -77,7 +74,6 @@ public class AutomatikConfigSource implements ConfigSource {
                     public Map<String, String> getProperties() {
                         if (values.isEmpty()) {
                             values.put("mp.openapi.extensions.smallrye.operationIdStrategy", "METHOD");
-                            values.put("quarkus.log.category.\"org.openapitools\".level", "ERROR");
                         }
 
                         return values;

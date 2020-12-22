@@ -12,6 +12,10 @@ public class AutomatikConfig {
         return Optional.empty();
     };
 
+    public Optional<Boolean> includeAutomatikApi() {
+        return Optional.empty();
+    };
+
     public MetricsConfig metrics() {
         return new MetricsConfig();
     }
