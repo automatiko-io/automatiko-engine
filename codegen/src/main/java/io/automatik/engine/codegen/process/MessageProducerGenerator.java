@@ -9,6 +9,7 @@ import static io.automatik.engine.codegen.CodeGenConstants.OUTGOING_PROP_PREFIX;
 import static io.automatik.engine.codegen.CodegenUtils.interpolateTypes;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -22,11 +23,13 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
+import io.automatik.engine.api.Functions;
 import io.automatik.engine.api.definition.process.WorkflowProcess;
 import io.automatik.engine.codegen.BodyDeclarationComparator;
 import io.automatik.engine.codegen.CodegenUtils;
 import io.automatik.engine.codegen.GeneratorContext;
 import io.automatik.engine.codegen.di.DependencyInjectionAnnotator;
+import io.automatik.engine.services.execution.BaseFunctions;
 import io.automatik.engine.services.utils.StringUtils;
 import io.automatik.engine.workflow.base.core.context.variable.Variable;
 import io.automatik.engine.workflow.base.core.context.variable.VariableScope;
@@ -174,6 +177,11 @@ public class MessageProducerGenerator {
         CompilationUnit clazz = parse(
                 this.getClass().getResourceAsStream(producerTemplate(connector)));
         clazz.setPackageDeclaration(process.getPackageName());
+
+        // add functions so they can be easily accessed in message producer classes
+        clazz.addImport(new ImportDeclaration(BaseFunctions.class.getCanonicalName(), true, true));
+        context.getBuildContext().classThatImplement(Functions.class.getCanonicalName())
+                .forEach(c -> clazz.addImport(new ImportDeclaration(c, true, true)));
 
         ClassOrInterfaceDeclaration template = clazz.findFirst(ClassOrInterfaceDeclaration.class).get();
         template.setName(resourceClazzName);
