@@ -1,5 +1,5 @@
 ---
-name: "Automatik"
+name: "Automatiko"
 metadata:
   keywords:
   - "automatic"
@@ -8,7 +8,6 @@ metadata:
   - "decisions"
   - "IoT"
   - "automation"
-  guide: "https://quarkus.io/guides/automatik"
   categories:
   - "business-automation"
   status: "preview"

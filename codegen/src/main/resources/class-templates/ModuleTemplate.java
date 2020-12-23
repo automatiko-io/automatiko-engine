@@ -1,12 +1,12 @@
 package $Package$;
 
-import io.automatik.engine.api.Config;
+import io.automatiko.engine.api.Config;
 
 public class Module {
 
     private static final Config config =
-            new io.automatik.engine.api.StaticConfig(
-                    new io.automatik.engine.workflow.StaticProcessConfig(
+            new io.automatiko.engine.api.StaticConfig(
+                    new io.automatiko.engine.workflow.StaticProcessConfig(
                             new $WorkItemHandlerConfig$(),
                             new $ProcessEventListenerConfig$()));
 

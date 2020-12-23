@@ -26,17 +26,17 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
-import io.automatik.engine.api.runtime.process.WorkItemNotFoundException;
-import io.automatik.engine.api.Application;
-import io.automatik.engine.api.auth.IdentityProvider;
-import io.automatik.engine.api.auth.SecurityPolicy;
-import io.automatik.engine.api.workflow.Process;
-import io.automatik.engine.api.workflow.ProcessImageNotFoundException;
-import io.automatik.engine.api.workflow.ProcessInstance;
-import io.automatik.engine.api.workflow.ProcessInstanceExecutionException;
-import io.automatik.engine.api.workflow.WorkItem;
-import io.automatik.engine.api.workflow.workitem.Policy;
-import io.automatik.engine.workflow.Sig;
+import io.automatiko.engine.api.runtime.process.WorkItemNotFoundException;
+import io.automatiko.engine.api.Application;
+import io.automatiko.engine.api.auth.IdentityProvider;
+import io.automatiko.engine.api.auth.SecurityPolicy;
+import io.automatiko.engine.api.workflow.Process;
+import io.automatiko.engine.api.workflow.ProcessImageNotFoundException;
+import io.automatiko.engine.api.workflow.ProcessInstance;
+import io.automatiko.engine.api.workflow.ProcessInstanceExecutionException;
+import io.automatiko.engine.api.workflow.WorkItem;
+import io.automatiko.engine.api.workflow.workitem.Policy;
+import io.automatiko.engine.workflow.Sig;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -224,7 +224,7 @@ public class $Type$Resource {
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         identitySupplier.buildIdentityProvider(user, groups);
-        return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = subprocess_$name$.instances()
                     .findById($parentprocessid$ + ":" + id_$name$)
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
@@ -260,7 +260,7 @@ public class $Type$Resource {
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
             $Type$ resource) {
         identitySupplier.buildIdentityProvider(user, groups);
-        return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = subprocess_$name$.instances()
                     .findById($parentprocessid$ + ":" + id_$name$)
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
@@ -294,9 +294,9 @@ public class $Type$Resource {
     public java.util.List<WorkItem.Descriptor> getTasks_$name$(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$, @QueryParam("user") final String user, @QueryParam("group") final List<String> groups) {
         
         identitySupplier.buildIdentityProvider(user, groups);
-        return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             return subprocess_$name$.instances()
-                .findById($parentprocessid$ + ":" + id_$name$, io.automatik.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
+                .findById($parentprocessid$ + ":" + id_$name$, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
                 .map(pi -> pi.workItems(policies(user, groups)))
                 .map(l -> l.stream().map(WorkItem::toMap).collect(Collectors.toList()))
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));

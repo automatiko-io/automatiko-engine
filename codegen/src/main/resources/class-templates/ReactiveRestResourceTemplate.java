@@ -20,13 +20,13 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
 
-import io.automatik.engine.api.Application;
-import io.automatik.engine.api.auth.SecurityPolicy;
-import io.automatik.engine.api.workflow.Process;
-import io.automatik.engine.api.workflow.ProcessInstance;
-import io.automatik.engine.api.workflow.ProcessInstanceExecutionException;
-import io.automatik.engine.api.workflow.WorkItem;
-import io.automatik.engine.api.workflow.workitem.Policy;
+import io.automatiko.engine.api.Application;
+import io.automatiko.engine.api.auth.SecurityPolicy;
+import io.automatiko.engine.api.workflow.Process;
+import io.automatiko.engine.api.workflow.ProcessInstance;
+import io.automatiko.engine.api.workflow.ProcessInstanceExecutionException;
+import io.automatiko.engine.api.workflow.WorkItem;
+import io.automatiko.engine.api.workflow.workitem.Policy;
 
 @Path("/$name$")
 public class $Type$ReactiveResource {
@@ -47,7 +47,7 @@ public class $Type$ReactiveResource {
         }
         final $Type$Input value = resource;
         return CompletableFuture.supplyAsync(() -> {
-            return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 ProcessInstance<$Type$> pi = process.createInstance(businessKey, mapInput(value, new $Type$()));
                 String startFromNode = httpHeaders.getHeaderString("X-AUTOMATIK-StartFromNode");
                 
@@ -91,7 +91,7 @@ public class $Type$ReactiveResource {
     @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of aborted instances of $name$", description="Rate of aborted instances of $name$")       
     public CompletionStage<$Type$Output> delete_$name$(@PathParam("id") final String id) {
         return CompletableFuture.supplyAsync(() -> {
-            return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 ProcessInstance<$Type$> pi = process.instances()
                         .findById(id)
                         .orElse(null);
@@ -111,7 +111,7 @@ public class $Type$ReactiveResource {
     @Produces(MediaType.APPLICATION_JSON)
     public CompletionStage<$Type$Output> updateModel_$name$(@PathParam("id") String id, $Type$ resource) {
         return CompletableFuture.supplyAsync(() -> {
-            return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 ProcessInstance<$Type$> pi = process.instances()
                         .findById(id)
                         .orElse(null);
@@ -150,9 +150,9 @@ public class $Type$ReactiveResource {
         if (user == null) {
             return new Policy[0];
         } 
-        io.automatik.engine.api.auth.IdentityProvider identity = null;
+        io.automatiko.engine.api.auth.IdentityProvider identity = null;
         if (user != null) {
-            identity = new io.automatik.engine.services.identity.StaticIdentityProvider(user, groups);
+            identity = new io.automatiko.engine.services.identity.StaticIdentityProvider(user, groups);
         }
         return new Policy[] {SecurityPolicy.of(identity)};
     }

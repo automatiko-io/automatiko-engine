@@ -8,7 +8,7 @@
   xmlns:bpsim="http://www.bpsim.org/schemas/1.0"
   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-  xmlns:automatik="https://automatik-platform.io">
+  xmlns:automatik="https://automatiko.io">
   <bpmn2:itemDefinition id="_nameItem"
     structureRef="String" />
   <bpmn2:itemDefinition id="_ageItem"
@@ -33,8 +33,8 @@
     itemRef="_750337AF-3A39-4B58-9CA6-947FCE6E61DB_OutMessageType" />
   <bpmn2:interface
     id="_750337AF-3A39-4B58-9CA6-947FCE6E61DB_ServiceInterface"
-    name="io.automatik.engine.codegen.data.HelloService"
-    implementationRef="io.automatik.engine.codegen.data.HelloService">
+    name="io.automatiko.engine.codegen.data.HelloService"
+    implementationRef="io.automatiko.engine.codegen.data.HelloService">
     <bpmn2:operation
       id="_750337AF-3A39-4B58-9CA6-947FCE6E61DB_ServiceOperation"
       name="helloNoOutput" implementationRef="helloNoOutput">

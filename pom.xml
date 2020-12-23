@@ -5,19 +5,19 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.automatik.platform</groupId>
-  <artifactId>automatik-platform-engine</artifactId>
+  <groupId>io.automatiko</groupId>
+  <artifactId>automatiko-engine</artifactId>
   <version>0.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Automatik Platform Engine</name>
-  <description>Automatik Platform :: Engine</description>
+  <name>Automatiko Engine</name>
+  <description>Automatiko :: Engine</description>
 
-  <url>https://automatik-platform.io</url>
+  <url>https://automatiko.io</url>
   <inceptionYear>2020</inceptionYear>
   <organization>
     <name>OpenEnterprise</name>
-    <url>https://automatik-platform.io</url>
+    <url>https://automatiko.io</url>
   </organization>
   <licenses>
     <license>
@@ -143,9 +143,9 @@
   </properties>
 
   <scm>
-    <connection>scm:git:https://github.com/automatik-platform/automatik-platform-engine.git</connection>
-    <developerConnection>scm:git:git@github.com:automatik-platform/automatik-platform-engine.git</developerConnection>
-    <url>https://github.com/automatik-platform/automatik-platform-engine</url>
+    <connection>scm:git:https://github.com/automatiko-platform/automatiko-engine.git</connection>
+    <developerConnection>scm:git:git@github.com:automatiko-platform/automatiko-engine.git</developerConnection>
+    <url>https://github.com/automatiko-platform/automatiko-engine</url>
   </scm>
 
   <developers>

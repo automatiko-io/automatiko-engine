@@ -1,25 +1,25 @@
 syntax = "proto2";
-package io.automatik.engine.examples;
+package io.automatiko.engine.examples;
 import "automatik-types.proto";
 
 message Address {
-	option java_package = "io.automatik.engine.examples.onboarding";
+	option java_package = "io.automatiko.engine.examples.onboarding";
 	optional string city = 1;
 	optional string country = 2;
 	optional string street = 3;
 	optional string zipCode = 4;
 }
 message Employee {
-	option java_package = "io.automatik.engine.examples.onboarding";
+	option java_package = "io.automatiko.engine.examples.onboarding";
 	optional Address address = 1;
-	optional io.automatik.Date birthDate = 2;
+	optional io.automatiko.Date birthDate = 2;
 	optional string firstName = 3;
 	optional string lastName = 4;
 	optional string personalId = 5;
 }
 message Payroll {
-	option java_package = "io.automatik.engine.examples.onboarding";
-	optional io.automatik.Date paymentDate = 1;
+	option java_package = "io.automatiko.engine.examples.onboarding";
+	optional io.automatiko.Date paymentDate = 1;
 	optional double taxRate = 2;
 	optional int32 vacationDays = 3;
 }

@@ -1,10 +1,10 @@
 package $Package$;
 
 
-import io.automatik.engine.api.Config;
-import io.automatik.engine.api.uow.UnitOfWorkManager;
+import io.automatiko.engine.api.Config;
+import io.automatiko.engine.api.uow.UnitOfWorkManager;
 
-public class Application implements io.automatik.engine.api.Application {
+public class Application implements io.automatiko.engine.api.Application {
 
    
     public Config config() {

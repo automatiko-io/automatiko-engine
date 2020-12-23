@@ -1,0 +1,40 @@
+
+package io.automatiko.engine.codegen.tests;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.junit.jupiter.api.Test;
+
+import io.automatiko.engine.api.Application;
+import io.automatiko.engine.api.Model;
+import io.automatiko.engine.api.workflow.Process;
+import io.automatiko.engine.api.workflow.ProcessInstance;
+import io.automatiko.engine.codegen.AbstractCodegenTest;
+
+public class VariableTest extends AbstractCodegenTest {
+
+	@Test
+	public void testVariablesWithReservedNameOnServiceTask() throws Exception {
+		Application app = generateCodeProcessesOnly("servicetask/ServiceTaskWithReservedNameVariable.bpmn2");
+		assertThat(app).isNotNull();
+
+		Process<? extends Model> p = app.processes().processById("test_1_0");
+
+		Model m = p.createModel();
+		Map<String, Object> parameters = new HashMap<>();
+		parameters.put("package", "john");
+		m.fromMap(parameters);
+
+		ProcessInstance<?> processInstance = p.createInstance(m);
+		processInstance.start();
+
+		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+		Model result = (Model) processInstance.variables();
+		assertThat(result.toMap()).hasSize(2).containsKeys("result");
+		assertThat(result.toMap()).hasSize(2).containsKeys("package");
+		assertThat(result.toMap().get("result")).isNotNull().isEqualTo("Hello Hello john!!");
+	}
+}

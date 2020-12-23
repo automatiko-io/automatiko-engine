@@ -5,14 +5,14 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.Optional;
 
-import io.automatik.engine.api.Application;
-import io.automatik.engine.api.auth.IdentityProvider;
-import io.automatik.engine.api.auth.TrustedIdentityProvider;
-import io.automatik.engine.api.event.DataEvent;
-import io.automatik.engine.api.workflow.Process;
-import io.automatik.engine.api.workflow.ProcessInstance;
-import io.automatik.engine.api.workflow.ProcessInstanceDuplicatedException;
-import io.automatik.engine.workflow.Sig;
+import io.automatiko.engine.api.Application;
+import io.automatiko.engine.api.auth.IdentityProvider;
+import io.automatiko.engine.api.auth.TrustedIdentityProvider;
+import io.automatiko.engine.api.event.DataEvent;
+import io.automatiko.engine.api.workflow.Process;
+import io.automatiko.engine.api.workflow.ProcessInstance;
+import io.automatiko.engine.api.workflow.ProcessInstanceDuplicatedException;
+import io.automatiko.engine.workflow.Sig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +49,7 @@ public class $Type$MessageConsumer {
             if (useCloudEvents.orElse(true)) {
                 final $DataEventType$ eventData = json.readValue(msg.getPayload(), $DataEventType$.class);
                 final $Type$ model = new $Type$();   
-                io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                     
                     if (eventData.getAutomatikReferenceId() != null) {
                         LOGGER.debug("Received message with reference id '{}' going to use it to send signal '{}'", eventData.getAutomatikReferenceId(), trigger);
@@ -89,7 +89,7 @@ public class $Type$MessageConsumer {
             } else {
                 final $DataType$ eventData = json.readValue(msg.getPayload(), $DataType$.class);
                 final $Type$ model = new $Type$();                
-                io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 	String correlation = correlationPayload(eventData, msg);
                 	if (correlation != null) {
                 		LOGGER.debug("Correlation ({}) is set, attempting to find if there is matching instance already active", correlation);

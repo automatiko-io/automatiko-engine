@@ -5,16 +5,16 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.automatik.platform</groupId>
-    <artifactId>automatik-platform-engine</artifactId>
+    <groupId>io.automatiko</groupId>
+    <artifactId>automatiko-engine</artifactId>
     <version>0.0.0-SNAPSHOT</version>
   </parent>
 
-  <groupId>io.automatik.platform.build</groupId>
-  <artifactId>automatik-engine-codegen</artifactId>
+  <groupId>io.automatiko.build</groupId>
+  <artifactId>automatiko-engine-codegen</artifactId>
 
-  <name>Automatik Platform Engine :: CodeGen</name>
-  <description>The Code generation for Automatik Platform Engine</description>
+  <name>Automatiko Engine :: CodeGen</name>
+  <description>The Code generation for Automatiko Engine</description>
 
   <properties>
     <version.org.infinispan.protostream>4.3.0.Alpha8</version.org.infinispan.protostream>
@@ -23,8 +23,8 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>io.automatik.platform</groupId>
-        <artifactId>automatik-platform-engine-bom</artifactId>
+        <groupId>io.automatiko</groupId>
+        <artifactId>automatiko-engine-bom</artifactId>
         <version>${project.version}</version>
         <type>pom</type>
         <scope>import</scope>
@@ -34,25 +34,25 @@
 
   <dependencies>
     <dependency>
-      <groupId>io.automatik.platform.workflow</groupId>
-      <artifactId>automatik-workflow-core</artifactId>
+      <groupId>io.automatiko.workflow</groupId>
+      <artifactId>automatiko-workflow-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.automatik.platform.workflow</groupId>
-      <artifactId>automatik-workflow-compiler</artifactId>
+      <groupId>io.automatiko.workflow</groupId>
+      <artifactId>automatiko-workflow-compiler</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.automatik.platform.workflow</groupId>
-      <artifactId>automatik-workflow-bpmn2</artifactId>
+      <groupId>io.automatiko.workflow</groupId>
+      <artifactId>automatiko-workflow-bpmn2</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.automatik.platform.workflow</groupId>
-      <artifactId>automatik-workflow-serverless</artifactId>
+      <groupId>io.automatiko.workflow</groupId>
+      <artifactId>automatiko-workflow-serverless</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>io.automatik.platform.decision</groupId>
-      <artifactId>automatik-decision-dmn</artifactId>
+      <groupId>io.automatiko.decision</groupId>
+      <artifactId>automatiko-decision-dmn</artifactId>
     </dependency>
     <!-- Json schema generator -->
     <dependency>

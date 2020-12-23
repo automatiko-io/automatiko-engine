@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" id="_Kd7psU8cEDijEJ-Gu4czCw" exporter="jBPM Process Modeler" exporterVersion="2.0" targetNamespace="http://www.omg.org/bpmn20">
   <bpmn2:itemDefinition id="_singleStringItem" structureRef="String"/>
-  <bpmn2:itemDefinition id="_singlePersonItem" structureRef="io.automatik.engine.codegen.data.Person"/>
+  <bpmn2:itemDefinition id="_singlePersonItem" structureRef="io.automatiko.engine.codegen.data.Person"/>
   <bpmn2:itemDefinition id="__5E0A1111-5D38-4B9F-AFDE-F55CC99B9952_namespaceInputXItem" structureRef="java.lang.String"/>
   <bpmn2:itemDefinition id="__5E0A1111-5D38-4B9F-AFDE-F55CC99B9952_modelInputXItem" structureRef="java.lang.String"/>
   <bpmn2:itemDefinition id="__5E0A1111-5D38-4B9F-AFDE-F55CC99B9952_decisionInputXItem" structureRef="java.lang.String"/>
@@ -9,7 +9,7 @@
   <bpmn2:itemDefinition id="__5293F325-A06A-469B-8C31-1E79EE36A3E2_namespaceInputXItem" structureRef="java.lang.String"/>
   <bpmn2:itemDefinition id="__5293F325-A06A-469B-8C31-1E79EE36A3E2_modelInputXItem" structureRef="java.lang.String"/>
   <bpmn2:itemDefinition id="__5293F325-A06A-469B-8C31-1E79EE36A3E2_decisionInputXItem" structureRef="java.lang.String"/>
-  <bpmn2:process id="ruletask.ExampleGenerated" automatik:packageName="ruletask" xmlns:automatik="https://automatik-platform.io" automatik:version="1.0" automatik:adHoc="false" name="ExampleGenerated" isExecutable="true" processType="Public">
+  <bpmn2:process id="ruletask.ExampleGenerated" automatik:packageName="ruletask" xmlns:automatik="https://automatiko.io" automatik:version="1.0" automatik:adHoc="false" name="ExampleGenerated" isExecutable="true" processType="Public">
     <bpmn2:property id="singleString" itemSubjectRef="_singleStringItem" name="singleString"/>
     <bpmn2:property id="singlePerson" itemSubjectRef="_singlePersonItem" name="singlePerson"/>
     <bpmn2:sequenceFlow id="_D8A8D35C-3BBE-461E-8C67-682A3CEE6ACD" sourceRef="_5293F325-A06A-469B-8C31-1E79EE36A3E2" targetRef="_B89C98A9-F577-4B07-BB72-52283EE38A77">
@@ -45,7 +45,7 @@
     <bpmn2:endEvent id="_B89C98A9-F577-4B07-BB72-52283EE38A77">
       <bpmn2:incoming>_D8A8D35C-3BBE-461E-8C67-682A3CEE6ACD</bpmn2:incoming>
     </bpmn2:endEvent>
-    <bpmn2:businessRuleTask id="_5293F325-A06A-469B-8C31-1E79EE36A3E2" automatik:ruleFlowGroup="unit:ruletask.Generated" name="Rule2" implementation="https://automatik-platform.io/rule">
+    <bpmn2:businessRuleTask id="_5293F325-A06A-469B-8C31-1E79EE36A3E2" automatik:ruleFlowGroup="unit:ruletask.Generated" name="Rule2" implementation="https://automatiko.io/rule">
       <bpmn2:extensionElements>
         <automatik:metaData name="elementname">
           <automatik:metaValue>Rule2</automatik:metaValue>
@@ -55,7 +55,7 @@
       <bpmn2:outgoing>_D8A8D35C-3BBE-461E-8C67-682A3CEE6ACD</bpmn2:outgoing>
       <bpmn2:ioSpecification id="_KeNWgE8cEDijEJ-Gu4czCw"/>
     </bpmn2:businessRuleTask>
-    <bpmn2:businessRuleTask id="_5E0A1111-5D38-4B9F-AFDE-F55CC99B9952" automatik:ruleFlowGroup="unit:ruletask.Generated" name="Rule1" implementation="https://automatik-platform.io/rule">
+    <bpmn2:businessRuleTask id="_5E0A1111-5D38-4B9F-AFDE-F55CC99B9952" automatik:ruleFlowGroup="unit:ruletask.Generated" name="Rule1" implementation="https://automatiko.io/rule">
       <bpmn2:extensionElements>
         <automatik:metaData name="elementname">
           <automatik:metaValue>Rule1</automatik:metaValue>

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- origin at X=0.0 Y=0.0 -->
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:automatik="https://automatik-platform.io" xmlns="https://automatik-platform.io" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:java="http://www.java.com/javaTypes" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatik-platform.io automatik.xsd" id="Definition" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="1.5.2.SNAPSHOT-v20200602-1600-B1" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="https://automatik-platform.io" typeLanguage="http://www.java.com/javaTypes">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:automatik="https://automatiko.io" xmlns="https://automatiko.io" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:java="http://www.java.com/javaTypes" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatiko.io automatiko.xsd" id="Definition" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="1.5.2.SNAPSHOT-v20200602-1600-B1" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="https://automatiko.io" typeLanguage="http://www.java.com/javaTypes">
   <bpmn2:itemDefinition id="ItemDefinition_1" isCollection="false" structureRef="java.lang.Boolean"/>
-  <bpmn2:itemDefinition id="ItemDefinition_29" isCollection="false" structureRef="io.automatik.platform.examples.orders.Order"/>
-  <bpmn2:itemDefinition id="ItemDefinition_309" isCollection="false" structureRef="java.util.List&lt;io.automatik.platform.examples.orders.Item&gt;"/>
-  <bpmn2:itemDefinition id="ItemDefinition_355" isCollection="false" structureRef="io.automatik.platform.examples.orders.ChangeSet"/>
-  <bpmn2:itemDefinition id="ItemDefinition_2246" isCollection="false" structureRef="io.automatik.platform.examples.orders.Customer"/>
-  <bpmn2:itemDefinition id="ItemDefinition_2463" isCollection="false" structureRef="io.automatik.platform.examples.orders.Shippment"/>
-  <bpmn2:itemDefinition id="ItemDefinition_2546" isCollection="false" structureRef="io.automatik.platform.examples.orders.services.NotificationService"/>
-  <bpmn2:itemDefinition id="ItemDefinition_3970" isCollection="false" structureRef="io.automatik.platform.examples.orders.services.ShippmentService"/>
-  <bpmn2:itemDefinition id="ItemDefinition_761" isCollection="false" structureRef="io.automatik.platform.examples.orders.Item"/>
+  <bpmn2:itemDefinition id="ItemDefinition_29" isCollection="false" structureRef="io.automatiko.platform.examples.orders.Order"/>
+  <bpmn2:itemDefinition id="ItemDefinition_309" isCollection="false" structureRef="java.util.List&lt;io.automatiko.platform.examples.orders.Item&gt;"/>
+  <bpmn2:itemDefinition id="ItemDefinition_355" isCollection="false" structureRef="io.automatiko.platform.examples.orders.ChangeSet"/>
+  <bpmn2:itemDefinition id="ItemDefinition_2246" isCollection="false" structureRef="io.automatiko.platform.examples.orders.Customer"/>
+  <bpmn2:itemDefinition id="ItemDefinition_2463" isCollection="false" structureRef="io.automatiko.platform.examples.orders.Shippment"/>
+  <bpmn2:itemDefinition id="ItemDefinition_2546" isCollection="false" structureRef="io.automatiko.platform.examples.orders.services.NotificationService"/>
+  <bpmn2:itemDefinition id="ItemDefinition_3970" isCollection="false" structureRef="io.automatiko.platform.examples.orders.services.ShippmentService"/>
+  <bpmn2:itemDefinition id="ItemDefinition_761" isCollection="false" structureRef="io.automatiko.platform.examples.orders.Item"/>
   <bpmn2:itemDefinition id="ItemDefinition_930" isCollection="false" structureRef="java.lang.Double"/>
   <bpmn2:message id="Message_1" itemRef="ItemDefinition_355" name="orders"/>
   <bpmn2:message id="Message_2" itemRef="ItemDefinition_29" name="reclaims"/>
@@ -21,29 +21,29 @@
       </automatik:metaData>
     </bpmn2:extensionElements>
   </bpmn2:message>
-  <bpmn2:interface id="Interface_1" implementationRef="io.automatik.platform.examples.orders.services.ShippmentService" name="shipmentservice">
+  <bpmn2:interface id="Interface_1" implementationRef="io.automatiko.platform.examples.orders.services.ShippmentService" name="shipmentservice">
     <bpmn2:operation id="Operation_4" name="requestShippment"/>
     <bpmn2:operation id="Operation_5" name="cancelShippment"/>
   </bpmn2:interface>
-  <bpmn2:interface id="Interface_2" implementationRef="io.automatik.platform.examples.orders.services.NotificationService" name="notificationservice">
+  <bpmn2:interface id="Interface_2" implementationRef="io.automatiko.platform.examples.orders.services.NotificationService" name="notificationservice">
     <bpmn2:operation id="Operation_1" name="sendCancelationEmail"/>
     <bpmn2:operation id="Operation_2" name="sendConfirmationEmail"/>
     <bpmn2:operation id="Operation_3" name="sendShippmentEmail"/>
   </bpmn2:interface>
-  <bpmn2:process id="orders" automatik:packageName="io.automatik.platform.examples.orders" name="Process orders" isExecutable="true" processType="Public">
+  <bpmn2:process id="orders" automatik:packageName="io.automatiko.platform.examples.orders" name="Process orders" isExecutable="true" processType="Public">
     <bpmn2:documentation id="Documentation_75"><![CDATA[Handling orders from the very beginning (order initiated/created) until it's shipped. It covers complete life cycle including adding and remving items on the order, changing shipping address based on customer address, order cancelation and timeout in case order was not placed in time.]]></bpmn2:documentation>
     <bpmn2:extensionElements>
-      <automatik:import name="io.automatik.platform.examples.orders.Order"/>
+      <automatik:import name="io.automatiko.platform.examples.orders.Order"/>
       <automatik:import name="java.util.List"/>
-      <automatik:import name="io.automatik.platform.examples.orders.ChangeSet"/>
-      <automatik:import name="io.automatik.platform.examples.orders.Customer"/>
+      <automatik:import name="io.automatiko.platform.examples.orders.ChangeSet"/>
+      <automatik:import name="io.automatiko.platform.examples.orders.Customer"/>
       <automatik:metaData name="tags">
         <automatik:metaValue><![CDATA[#{order.getCustomer().getEmail()},#{order.getOrderNumber()}]]></automatik:metaValue>
       </automatik:metaData>
-      <automatik:import name="io.automatik.platform.examples.orders.Shippment"/>
-      <automatik:import name="io.automatik.platform.examples.orders.NotificationService"/>
-      <automatik:import name="io.automatik.platform.examples.orders.services.ShippmentService"/>
-      <automatik:import name="io.automatik.platform.examples.orders.Item"/>
+      <automatik:import name="io.automatiko.platform.examples.orders.Shippment"/>
+      <automatik:import name="io.automatiko.platform.examples.orders.NotificationService"/>
+      <automatik:import name="io.automatiko.platform.examples.orders.services.ShippmentService"/>
+      <automatik:import name="io.automatiko.platform.examples.orders.Item"/>
     </bpmn2:extensionElements>
     <bpmn2:startEvent id="StartEvent_1" name="order created">
       <bpmn2:extensionElements>

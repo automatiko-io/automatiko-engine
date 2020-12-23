@@ -70,7 +70,7 @@ public {{#interfaceOnly}}interface{{/interfaceOnly}}{{^interfaceOnly}}class{{/in
         		String scope = config.getOptionalValue("{{#lowercase}}{{classname}}{{/lowercase}}/mp-rest/auth-scope", String.class).orElse(null);
         		String url = config.getOptionalValue("{{#lowercase}}{{classname}}{{/lowercase}}/mp-rest/url", String.class).orElse(null);
 
-        		accessToken = io.automatik.engine.workflow.http.HttpAuthorization.get().token(url,
+        		accessToken = io.automatiko.engine.workflow.http.HttpAuthorization.get().token(url,
         		clientId,
         		clientSecret,
         		refreshToken,

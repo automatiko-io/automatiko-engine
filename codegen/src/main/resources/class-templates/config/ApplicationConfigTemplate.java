@@ -4,11 +4,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import io.automatik.engine.api.decision.DecisionConfig;
-import io.automatik.engine.api.workflow.ProcessConfig;
+import io.automatiko.engine.api.decision.DecisionConfig;
+import io.automatiko.engine.api.workflow.ProcessConfig;
 
 
-public class ApplicationConfig implements io.automatik.engine.api.Config {
+public class ApplicationConfig implements io.automatiko.engine.api.Config {
 
     protected ProcessConfig processConfig;
     protected DecisionConfig decisionConfig;

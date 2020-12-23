@@ -26,21 +26,21 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.WebApplicationException;
 
-import io.automatik.engine.api.Application;
-import io.automatik.engine.api.auth.IdentityProvider;
-import io.automatik.engine.api.auth.IdentitySupplier;
-import io.automatik.engine.api.auth.SecurityPolicy;
-import io.automatik.engine.workflow.Sig;
-import io.automatik.engine.api.workflow.Process;
-import io.automatik.engine.api.workflow.ProcessInstance;
-import io.automatik.engine.api.workflow.ProcessInstanceExecutionException;
-import io.automatik.engine.api.workflow.ProcessInstanceNotFoundException;
-import io.automatik.engine.api.runtime.process.WorkItemNotFoundException;
-import io.automatik.engine.api.workflow.Tag;
-import io.automatik.engine.api.workflow.ProcessImageNotFoundException;
-import io.automatik.engine.api.workflow.WorkItem;
-import io.automatik.engine.api.workflow.workitem.Policy;
-import io.automatik.engine.workflow.base.instance.TagInstance;
+import io.automatiko.engine.api.Application;
+import io.automatiko.engine.api.auth.IdentityProvider;
+import io.automatiko.engine.api.auth.IdentitySupplier;
+import io.automatiko.engine.api.auth.SecurityPolicy;
+import io.automatiko.engine.workflow.Sig;
+import io.automatiko.engine.api.workflow.Process;
+import io.automatiko.engine.api.workflow.ProcessInstance;
+import io.automatiko.engine.api.workflow.ProcessInstanceExecutionException;
+import io.automatiko.engine.api.workflow.ProcessInstanceNotFoundException;
+import io.automatiko.engine.api.runtime.process.WorkItemNotFoundException;
+import io.automatiko.engine.api.workflow.Tag;
+import io.automatiko.engine.api.workflow.ProcessImageNotFoundException;
+import io.automatiko.engine.api.workflow.WorkItem;
+import io.automatiko.engine.api.workflow.workitem.Policy;
+import io.automatiko.engine.workflow.base.instance.TagInstance;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -100,7 +100,7 @@ public class $Type$Resource {
         }
         final $Type$Input value = resource;
         identitySupplier.buildIdentityProvider(user, groups);
-        return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.createInstance(businessKey, mapInput(value, new $Type$()));
             String startFromNode = httpHeaders.getHeaderString("X-AUTOMATIK-StartFromNode");
             
@@ -293,7 +293,7 @@ public class $Type$Resource {
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         identitySupplier.buildIdentityProvider(user, groups);
-        return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));            
@@ -333,7 +333,7 @@ public class $Type$Resource {
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
             @Parameter(description = "Updates to the data model for $name$ instance", required = true) $Type$ resource) {
         identitySupplier.buildIdentityProvider(user, groups);
-        return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
@@ -372,9 +372,9 @@ public class $Type$Resource {
             @Parameter(description = "Groups that the tasks should be fetched for", required = false) @QueryParam("group") final List<String> groups) {
         
             identitySupplier.buildIdentityProvider(user, groups);
-            return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 return process.instances()
-                    .findById(id, io.automatik.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
+                    .findById(id, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
                     .map(pi -> pi.workItems(policies(user, groups)))
                     .map(l -> l.stream().map(WorkItem::toMap).collect(Collectors.toList()))
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
@@ -410,9 +410,9 @@ public class $Type$Resource {
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         
             identitySupplier.buildIdentityProvider(user, groups);
-            return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 return process.instances()
-                    .findById(id, io.automatik.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
+                    .findById(id, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
                     .map(pi -> pi.tags().get())
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             });
@@ -448,7 +448,7 @@ public class $Type$Resource {
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
             @Parameter(description = "TagInstance content that should be associated with the $name$ instance", required = true) TagInstance resource) {
         identitySupplier.buildIdentityProvider(user, groups);
-        return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
@@ -487,7 +487,7 @@ public class $Type$Resource {
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         identitySupplier.buildIdentityProvider(user, groups);
-        return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
@@ -506,7 +506,7 @@ public class $Type$Resource {
     }
     
     protected Policy[] policies(String user, List<String> groups) {         
-        return new Policy[] {SecurityPolicy.of(io.automatik.engine.api.auth.IdentityProvider.get())};
+        return new Policy[] {SecurityPolicy.of(io.automatiko.engine.api.auth.IdentityProvider.get())};
     }
     
     protected $Type$ mapInput($Type$Input input, $Type$ resource) {

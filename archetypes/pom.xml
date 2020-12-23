@@ -1,16 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.automatik.platform</groupId>
-    <artifactId>automatik-platform-engine</artifactId>
+    <groupId>io.automatiko</groupId>
+    <artifactId>automatiko-engine</artifactId>
     <version>0.0.0-SNAPSHOT</version>
   </parent>
 
- <groupId>io.automatik.platform.archetypes</groupId>
+ <groupId>io.automatiko.archetypes</groupId>
   <artifactId>archetypes</artifactId>
   <packaging>pom</packaging>
-  <name>Automatik Platform Engine :: Maven Archetypes</name>
-  <description>Various Automatik Platform Engine Maven archetypes for project generation</description>
+  <name>Automatiko Engine :: Maven Archetypes</name>
+  <description>Various Automatiko Engine Maven archetypes for project generation</description>
 
   <properties>
     <maven.compiler.release>11</maven.compiler.release>
@@ -19,8 +19,8 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>io.automatik.platform</groupId>
-        <artifactId>automatik-platform-engine-bom</artifactId>
+        <groupId>io.automatiko</groupId>
+        <artifactId>automatiko-engine-bom</artifactId>
         <version>${project.version}</version>
         <type>pom</type>
         <scope>import</scope>
@@ -29,6 +29,6 @@
   </dependencyManagement>
 
   <modules>
-    <module>automatik-quarkus-archetype</module>
+    <module>automatiko-quarkus-archetype</module>
   </modules>
 </project>

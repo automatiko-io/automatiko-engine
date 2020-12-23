@@ -9,13 +9,13 @@
              xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
              xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
              xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-             xmlns:tns="https://automatik-platform.io">
+             xmlns:tns="https://automatiko.io">
 
   <itemDefinition id="_sItem" structureRef="String" />
 
   <itemDefinition id="_2_InMessageType" structureRef="java.lang.String"/>
   <message id="_2_InMessage" itemRef="_2_InMessageType" />
-  <interface id="_2_ServiceInterface" implementationRef="io.automatik.engine.codegen.data.HelloService" name="HelloService">
+  <interface id="_2_ServiceInterface" implementationRef="io.automatiko.engine.codegen.data.HelloService" name="HelloService">
     <operation id="_2_ServiceOperation" name="hello">
       <inMessageRef>_2_InMessage</inMessageRef>
     </operation>

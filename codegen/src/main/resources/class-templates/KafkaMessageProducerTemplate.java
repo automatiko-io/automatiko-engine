@@ -4,9 +4,9 @@ package com.myspace.demo;
 import java.util.Optional;
 import java.util.TimeZone;
 
-import io.automatik.engine.api.runtime.process.ProcessInstance;
-import io.automatik.engine.workflow.process.instance.WorkflowProcessInstance;
-import io.automatik.engine.api.event.DataEvent;
+import io.automatiko.engine.api.runtime.process.ProcessInstance;
+import io.automatiko.engine.workflow.process.instance.WorkflowProcessInstance;
+import io.automatiko.engine.api.event.DataEvent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
@@ -20,7 +20,7 @@ public class MessageProducer {
     
     Optional<Boolean> useCloudEvents = Optional.of(true);
     
-    javax.enterprise.inject.Instance<io.automatik.engine.api.io.OutputConverter<$Type$, Object>> converter;    
+    javax.enterprise.inject.Instance<io.automatiko.engine.api.io.OutputConverter<$Type$, Object>> converter;    
     
     @javax.inject.Inject
     ObjectMapper json;

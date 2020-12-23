@@ -4,9 +4,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.automatik.engine.api.Model;
-import io.automatik.engine.api.workflow.Process;
-import io.automatik.engine.api.workflow.Processes;
+import io.automatiko.engine.api.Model;
+import io.automatiko.engine.api.workflow.Process;
+import io.automatiko.engine.api.workflow.Processes;
 
 public class ApplicationProcesses implements Processes {
 

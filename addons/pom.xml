@@ -3,15 +3,15 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.automatik.platform</groupId>
-    <artifactId>automatik-platform-engine</artifactId>
+    <groupId>io.automatiko</groupId>
+    <artifactId>automatiko-engine</artifactId>
     <version>0.0.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>addons</artifactId>
   <packaging>pom</packaging>
 
-  <name>Automatik Platform Engine :: Add-Ons</name>
+  <name>Automatiko Engine :: Add-Ons</name>
   <description>Various Add-Ons to the engine (administration, monitoring, etc)</description>
 
   <modules>
@@ -25,8 +25,8 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>io.automatik.platform</groupId>
-        <artifactId>automatik-platform-engine-bom</artifactId>
+        <groupId>io.automatiko</groupId>
+        <artifactId>automatiko-engine-bom</artifactId>
         <version>${project.version}</version>
         <type>pom</type>
         <scope>import</scope>

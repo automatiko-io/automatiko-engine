@@ -9,7 +9,7 @@
              xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
              xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
              xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-             xmlns:tns="https://automatik-platform.io">
+             xmlns:tns="https://automatiko.io">
 
   <itemDefinition id="_sItem" structureRef="String" />
   <itemDefinition id="_caseFile_CaseIdItem" structureRef="String"/>

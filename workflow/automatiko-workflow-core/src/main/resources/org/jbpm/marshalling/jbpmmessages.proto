@@ -1,0 +1,361 @@
+syntax = "proto2";
+
+package io.automatiko.engine.workflow.marshalling;
+
+option java_package = "io.automatiko.engine.workflow.marshalling.impl";
+option java_outer_classname = "AutomatikMessages";
+
+
+// WARNING: Before changing this file, make sure you know what you
+// are doing by reading the protobuf documentation at
+//
+// http://code.google.com/apis/protocolbuffers/
+//
+// in special, please node that to keep backward compatibility
+// you need to comply to a set of practices that are listed on the
+// documentation and quoted here:
+//
+// * you must not change the tag numbers of any existing fields.
+// * you must not add or delete any required fields. At this moment,
+//   as a best practice we are not using required fields at all.
+// * you may delete optional or repeated fields. The best practice
+//   though is to rename the field by prepending it with the prefix
+//   OBSOLETE_
+// * you may add new optional or repeated fields but you must use
+//   fresh tag numbers (i.e. tag numbers that were never used in
+//   this protocol buffer, not even by deleted fields).
+
+
+message Header {
+    extensions 100 to 199;
+
+    // version for which this message was created
+    optional Version version = 1;
+
+    // Signature to prevent security concerns
+    optional Signature signature = 4;
+
+    // The list of strategy classes used for this serialization
+    repeated StrategyIndex strategy = 9;
+
+    // byte blobs
+    optional bytes payload = 10;
+
+    message StrategyIndex {
+        optional int32 id = 1;
+        optional string name = 2;
+        optional bytes data = 3;
+    }
+}
+
+message Version {
+    optional int32 version_major = 1;
+    optional int32 version_minor = 2;
+    optional int32 version_revision = 3;
+}
+
+message Signature {
+    optional string key_alias = 1;
+    optional bytes signature = 2;
+}
+
+message Trigger {
+    optional TriggerType type = 1;
+
+    optional CronTrigger cron = 2;
+    optional IntervalTrigger interval = 3;
+    optional PointInTimeTrigger pit = 4;
+    optional CompositeMaxDurationTrigger cmdt = 5;
+
+    enum TriggerType {
+        CRON = 0;
+        INTERVAL = 1;
+        POINT_IN_TIME = 2;
+        COMPOSITE_MAX_DURATION = 3;
+    }
+
+    message CronTrigger {
+        optional int64 start_time = 1;
+        optional int64 end_time = 2;
+        optional int32 repeat_limit = 3;
+        optional int32 repeat_count = 4;
+        optional string cron_expression = 5;
+        optional int64 next_fire_time = 6;
+        repeated string calendar_name = 7;
+    }
+    message IntervalTrigger {
+        optional int64 start_time = 1;
+        optional int64 end_time = 2;
+        optional int32 repeat_limit = 3;
+        optional int32 repeat_count = 4;
+        optional int64 next_fire_time = 6;
+        optional int64 period = 7;
+        repeated string calendar_name = 8;
+    }
+    message PointInTimeTrigger {
+        optional int64 next_fire_time = 1;
+    }
+    message CompositeMaxDurationTrigger {
+        optional int64 maxDurationTimestamp = 1;
+        optional int64 timerCurrentDate = 2;
+        optional Trigger timerTrigger = 3;
+    }
+}
+
+message ProcessData {
+    extensions 10 to 199;
+}
+
+
+extend ProcessData {
+    repeated ProcessInstance process_instance = 10;
+    repeated WorkItem work_item = 11;
+    optional int64 timer_id = 13;
+    repeated ProcessTimer process_timer = 12;
+}
+
+message ProcessInstance {
+    optional string process_type = 1;
+
+    optional string id = 2;
+    optional string process_id = 3;
+    optional int32 state = 4;
+    optional int64 node_instance_counter = 5;
+    optional string process_xml = 11;
+    optional string parent_process_instance_id = 12;
+    optional string description = 15;
+    optional bool signal_completion = 16 [default = true];
+    optional string deploymentId = 17;
+    optional string correlation_key = 18;
+    optional string sla_timer_id = 19;
+    optional int64 sla_due_date = 20;
+    optional int32 sla_compliance = 21;
+    optional string root_process_instance_id = 22;
+    optional int64 start_date = 23;
+    optional string root_process_id = 24;
+    optional string error_node_id = 25;
+    optional string error_message = 26;
+    optional string reference_id = 27;
+    optional string initiator = 30;
+
+    repeated SwimlaneContextInstance swimlane_context = 6;
+    repeated NodeInstance node_instance = 7;
+    repeated Variable variable = 8;
+    repeated ExclusiveGroupInstance exclusive_group = 10;
+    repeated string completedNodeIds = 13;
+    repeated IterationLevel iterationLevels = 14;
+    
+    repeated ProcessInstanchChildren children = 28;
+    
+    repeated Tag tags = 29;
+        
+	message ProcessInstanchChildren {
+	    optional string process_id = 1;
+	    repeated string ids = 2;
+	}	
+	
+	message Tag {
+	    optional string id = 1;
+	    optional string value = 2;
+	}
+
+    message SwimlaneContextInstance {
+        optional string swimlane = 1;
+        optional string actor_id = 2;
+    }
+
+    message NodeInstance {
+        optional string id = 1;
+        optional int64 node_id = 2;
+        optional NodeInstanceContent content = 4;
+        optional int32 level = 5;
+        optional string sla_timer_id = 6;
+        optional int64 sla_due_date = 7;
+        optional int32 sla_compliance = 8;
+        optional int64 trigger_date = 9;
+        optional string retry_job_id = 10;
+        optional int32 retry_attempts = 11;
+    }
+
+    message ExclusiveGroupInstance {
+        repeated string group_node_instance_id = 1;
+    }
+
+    message NodeInstanceContent {
+        optional NodeInstanceType type = 1;
+
+        optional RuleSetNode rule_set = 2;
+        optional HumanTaskNode human_task = 3;
+        optional WorkItemNode work_item = 4;
+        optional SubProcessNode sub_process = 5;
+        optional MilestoneNode milestone = 6;
+        optional EventNode event = 7;
+        optional TimerNode timer = 8;
+        optional JoinNode join = 9;
+        optional StateNode state = 10;
+        optional CompositeContextNode composite = 11;
+        optional ForEachNode for_each = 12;
+        optional AsyncEventNode async_event = 13;
+
+        message RuleSetNode {
+            repeated string timer_instance_id = 1;
+            repeated TextMapEntry mapEntry = 2;
+            optional string rule_flow_group = 3;
+            message TextMapEntry {
+                optional string name = 1;
+                optional string value = 2;
+            }
+        }
+        message HumanTaskNode {
+            optional string work_item_id = 1;
+            repeated string timer_instance_id = 2;
+            optional string error_handling_process_instance_id = 3;
+            optional HumanTaskWorkItem workitem = 4;
+        }
+        message WorkItemNode {
+            optional string work_item_id = 1;
+            repeated string timer_instance_id = 2;
+            optional string error_handling_process_instance_id = 3;
+            optional WorkItem workitem = 4;
+        }
+        message SubProcessNode {
+            optional string process_instance_id = 1;
+            repeated string timer_instance_id = 2;
+            optional string process_instance_name = 3;
+        }
+        message MilestoneNode { repeated string timer_instance_id = 1; }
+        message EventNode {}
+        message TimerNode { optional string timer_id = 1; }
+        message JoinNode {
+            repeated JoinTrigger trigger = 1;
+            message JoinTrigger {
+                optional int64 node_id = 1;
+                optional int32 counter = 2;
+            }
+        }
+        message StateNode { repeated string timer_instance_id = 1; }
+        message CompositeContextNode {
+            repeated string timer_instance_id = 2;
+            repeated Variable variable = 3;
+            repeated NodeInstance node_instance = 4;
+            repeated ExclusiveGroupInstance exclusive_group = 5;
+            repeated IterationLevel iterationLevels = 6;
+        }
+        message ForEachNode {
+            repeated NodeInstance node_instance = 1;
+            repeated Variable variable = 2;
+            repeated IterationLevel iterationLevels = 3;
+            optional int32 sequential_counter = 4;
+        }
+        message AsyncEventNode {
+            optional string event_type = 1;
+        }
+    }
+
+    enum NodeInstanceType {
+        RULE_SET_NODE = 0;
+        HUMAN_TASK_NODE = 1;
+        WORK_ITEM_NODE = 2;
+        SUBPROCESS_NODE = 3;
+        MILESTONE_NODE = 4;
+        EVENT_NODE = 5;
+        TIMER_NODE = 6;
+        JOIN_NODE = 7;
+        STATE_NODE = 8;
+        COMPOSITE_CONTEXT_NODE = 9;
+        FOR_EACH_NODE = 10;
+        DYNAMIC_NODE = 11;
+        EVENT_SUBPROCESS_NODE = 12;
+        ASYNC_EVENT_NODE = 13;
+        SUB_PROCESS_NODE = 14;
+    }
+}
+
+message Variable {
+    optional string name = 1;
+    // the actual object reference
+    optional int32 strategy_index = 2;
+    optional bytes value = 3;
+    optional string data_type = 4;
+}
+
+
+message WorkItem {
+    optional string id = 1;
+    optional string process_instances_id = 2;
+    optional string name = 3;
+    optional int32 state = 4;
+
+    repeated Variable variable = 5;
+
+    optional string deployment_id = 6;
+    optional string node_instance_id = 7;
+    optional int64 node_id = 8;
+    
+    optional string phase_id = 9;
+    optional string phase_status = 10;
+    
+    optional int64 start_date = 11;
+    optional int64 complete_date = 12;
+        
+}
+
+message HumanTaskWorkItem {
+	optional string id = 1;
+    optional string process_instances_id = 2;
+    optional string name = 3;
+    optional int32 state = 4;
+
+    repeated Variable variable = 5;
+
+    optional string deployment_id = 6;
+    optional string node_instance_id = 7;
+    optional int64 node_id = 8;
+    
+    optional string phase_id = 9;
+    optional string phase_status = 10;
+    
+    optional int64 start_date = 11;
+    optional int64 complete_date = 12;
+    
+    optional string task_name = 13;
+    optional string task_description = 14;
+    optional string task_priority = 15;
+    optional string actual_owner = 16;
+    repeated string pot_users = 17;
+    repeated string pot_groups = 18;
+    repeated string excluded_users = 19;
+    repeated string admin_users = 20;
+    repeated string admin_groups = 21;
+    
+    optional string task_reference_name = 22;
+    
+}
+
+message ProcessTimer {
+    optional TimerInstance timer = 1;
+    optional Trigger trigger = 2;
+
+    message TimerInstance {
+        optional int64 id = 1;
+        optional string timer_id = 2;
+        optional int64 delay = 3;
+        optional int64 period = 4;
+        optional string process_instance_id = 5;
+        optional int64 activated_time = 6;
+        optional int64 last_triggered = 7;
+        optional int32 DEPRECATED_sessionId = 8;
+        optional int64 sessionId = 9;
+        optional int32 repeatLimit = 10;
+    }
+}
+
+message IterationLevel {
+    optional string id = 1;
+    optional int32 level = 2;
+}
+
+message VariableContainer {
+    repeated Variable variable = 1;
+}
+

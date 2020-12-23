@@ -9,7 +9,7 @@
              xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
              xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
              xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-             xmlns:tns="https://automatik-platform.io">
+             xmlns:tns="https://automatiko.io">
 
   <process processType="Public" isExecutable="true" id="tests" name="ScriptTask Process" tns:packageName="com.company" >
 

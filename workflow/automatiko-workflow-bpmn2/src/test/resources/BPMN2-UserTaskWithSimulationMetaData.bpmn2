@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" 
+ xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
+ xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
+ xmlns:di="http://www.omg.org/spec/DD/20100524/DI" 
+ xmlns:automatik="https://automatiko.io" id="_TEnqoPeBEeGKWqHRrzBUaw" 
+ xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd
+ https://automatiko.io automatiko.xsd" 
+ expressionLanguage="http://www.mvel.org/2.0" 
+ targetNamespace="http://www.omg.org/bpmn20" 
+ typeLanguage="http://www.java.com/javaTypes">
+  <bpmn2:process id="UserTask" automatik:packageName="defaultPackage" name="User Task" isExecutable="true">
+    <bpmn2:startEvent id="_69FD4992-429F-4AD0-B126-85435C2D1A45" automatik:bgcolor="#f5deb3" automatik:selectable="true" name="StartProcess">
+      <bpmn2:outgoing>_D9988BD7-9459-49E4-9C20-7201B47127B9</bpmn2:outgoing>
+    </bpmn2:startEvent>
+    <bpmn2:userTask id="_2B5B707D-3458-475C-943D-74F20B13AF20" automatik:selectable="true" automatik:scriptFormat="http://www.java.com/java" name="Hello">
+      <bpmn2:incoming>_D9988BD7-9459-49E4-9C20-7201B47127B9</bpmn2:incoming>
+      <bpmn2:outgoing>_E97DF689-7C76-4DDE-8D08-DBE4C33553C2</bpmn2:outgoing>
+      <bpmn2:potentialOwner id="_TEnqofeBEeGKWqHRrzBUaw">
+        <bpmn2:resourceAssignmentExpression id="_TEnqoveBEeGKWqHRrzBUaw">
+          <bpmn2:formalExpression id="_TEoRsPeBEeGKWqHRrzBUaw">john</bpmn2:formalExpression>
+        </bpmn2:resourceAssignmentExpression>
+      </bpmn2:potentialOwner>
+    </bpmn2:userTask>
+    <bpmn2:endEvent id="_84B9E4C8-FC83-4130-8BD4-9038CBADCBAE" automatik:bgcolor="#f5deb3" automatik:selectable="true" name="EndProcess">
+      <bpmn2:incoming>_E97DF689-7C76-4DDE-8D08-DBE4C33553C2</bpmn2:incoming>
+      <bpmn2:terminateEventDefinition id="_TEoRsfeBEeGKWqHRrzBUaw"/>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="_D9988BD7-9459-49E4-9C20-7201B47127B9" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_69FD4992-429F-4AD0-B126-85435C2D1A45" targetRef="_2B5B707D-3458-475C-943D-74F20B13AF20"/>
+    <bpmn2:sequenceFlow id="_E97DF689-7C76-4DDE-8D08-DBE4C33553C2" automatik:bgcolor="#000000" automatik:selectable="true" sourceRef="_2B5B707D-3458-475C-943D-74F20B13AF20" targetRef="_84B9E4C8-FC83-4130-8BD4-9038CBADCBAE"/>
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="_TEoRsveBEeGKWqHRrzBUaw">
+    <bpmndi:BPMNPlane id="_TEoRs_eBEeGKWqHRrzBUaw" bpmnElement="UserTask">
+      <bpmndi:BPMNShape id="_TEoRtPeBEeGKWqHRrzBUaw" bpmnElement="_69FD4992-429F-4AD0-B126-85435C2D1A45">
+        <dc:Bounds height="30.0" width="30.0" x="375.0" y="234.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_TEoRtfeBEeGKWqHRrzBUaw" bpmnElement="_2B5B707D-3458-475C-943D-74F20B13AF20">
+        <dc:Bounds height="48.0" width="100.0" x="435.0" y="225.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_TEoRtveBEeGKWqHRrzBUaw" bpmnElement="_84B9E4C8-FC83-4130-8BD4-9038CBADCBAE">
+        <dc:Bounds height="28.0" width="28.0" x="587.0" y="234.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="_TEoRt_eBEeGKWqHRrzBUaw" bpmnElement="_D9988BD7-9459-49E4-9C20-7201B47127B9">
+        <di:waypoint xsi:type="dc:Point" x="390.0" y="249.0"/>
+        <di:waypoint xsi:type="dc:Point" x="485.0" y="249.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="_TEoRuPeBEeGKWqHRrzBUaw" bpmnElement="_E97DF689-7C76-4DDE-8D08-DBE4C33553C2">
+        <di:waypoint xsi:type="dc:Point" x="485.0" y="249.0"/>
+        <di:waypoint xsi:type="dc:Point" x="561.0" y="249.0"/>
+        <di:waypoint xsi:type="dc:Point" x="561.0" y="248.0"/>
+        <di:waypoint xsi:type="dc:Point" x="601.0" y="248.0"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  <bpmn2:relationship id="_TEoRufeBEeGKWqHRrzBUaw" type="">
+    <bpmn2:extensionElements>
+      <automatik:ProcessAnalysisData>
+        <automatik:Scenario xsi:type="automatik:Scenario" id="default" name="Simulationscenario">
+          <automatik:ScenarioParameters xsi:type="automatik:ScenarioParameters" baseCurrencyUnit="USD" baseTimeUnit="min"/>
+          <automatik:ElementParameters xsi:type="automatik:ElementParameters" elementId="_D9988BD7-9459-49E4-9C20-7201B47127B9" id="_TEoRuveBEeGKWqHRrzBUaw">
+            <automatik:ControlParameters xsi:type="automatik:ControlParameters">
+              <automatik:Probability xsi:type="automatik:Parameter">
+                <automatik:FloatingParameter value="100.0"/>
+              </automatik:Probability>
+            </automatik:ControlParameters>
+          </automatik:ElementParameters>
+          <automatik:ElementParameters xsi:type="automatik:ElementParameters" elementId="_2B5B707D-3458-475C-943D-74F20B13AF20" id="_TEoRu_eBEeGKWqHRrzBUaw">
+            <automatik:TimeParameters xsi:type="automatik:TimeParameters">
+              <automatik:ProcessingTime xsi:type="automatik:Parameter">
+                <automatik:NormalDistribution mean="21.0" standardDeviation="12.0"/>
+              </automatik:ProcessingTime>
+              <automatik:TimeUnit>min</automatik:TimeUnit>
+            </automatik:TimeParameters>
+            <automatik:ResourceParameters xsi:type="automatik:ResourceParameters">
+              <automatik:Quantity xsi:type="automatik:Parameter">
+                <automatik:FloatingParameter value="3.0"/>
+              </automatik:Quantity>
+              <automatik:Workinghours xsi:type="automatik:Parameter">
+                <automatik:FloatingParameter value="1.0"/>
+              </automatik:Workinghours>
+            </automatik:ResourceParameters>
+            <automatik:CostParameters xsi:type="automatik:CostParameters">
+              <automatik:UnitCost xsi:type="automatik:Parameter">
+                <automatik:DecimalParameter value="45"/>
+              </automatik:UnitCost>
+              <automatik:CurrencyUnit>USD</automatik:CurrencyUnit>
+            </automatik:CostParameters>
+          </automatik:ElementParameters>
+          <automatik:ElementParameters xsi:type="automatik:ElementParameters" elementId="_E97DF689-7C76-4DDE-8D08-DBE4C33553C2" id="_TEoRvPeBEeGKWqHRrzBUaw">
+            <automatik:ControlParameters xsi:type="automatik:ControlParameters">
+              <automatik:Probability xsi:type="automatik:Parameter">
+                <automatik:FloatingParameter value="100.0"/>
+              </automatik:Probability>
+            </automatik:ControlParameters>
+          </automatik:ElementParameters>
+        </automatik:Scenario>
+      </automatik:ProcessAnalysisData>
+    </bpmn2:extensionElements>
+    <bpmn2:source>_TEnqoPeBEeGKWqHRrzBUaw</bpmn2:source>
+    <bpmn2:target>_TEnqoPeBEeGKWqHRrzBUaw</bpmn2:target>
+  </bpmn2:relationship>
+</bpmn2:definitions>

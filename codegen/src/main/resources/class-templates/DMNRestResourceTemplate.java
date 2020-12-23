@@ -13,7 +13,7 @@ import org.drools.core.beliefsystem.simple.SimpleMode;
 import org.kie.dmn.api.core.DMNContext;
 import org.kie.dmn.core.impl.DMNContextImpl;
 import org.kie.dmn.feel.lang.types.impl.ComparablePeriod;
-import io.automatik.engine.api.Application;
+import io.automatiko.engine.api.Application;
 import org.kie.kogito.dmn.rest.DMNEvaluationErrorException;
 import org.kie.kogito.dmn.rest.DMNResult;
 
@@ -31,7 +31,7 @@ public class DMNRestResourceTemplate {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Object dmn($inputType$ variables) {
-    	io.automatik.engine.api.decision.DecisionModel decision = application.decisionModels().getDecisionModel("$modelNamespace$", "$modelName$");
+    	io.automatiko.engine.api.decision.DecisionModel decision = application.decisionModels().getDecisionModel("$modelNamespace$", "$modelName$");
         org.kie.kogito.dmn.rest.DMNResult result = new org.kie.kogito.dmn.rest.DMNResult("$modelNamespace$", "$modelName$", decision.evaluateAll(decision.newContext(variables)));
         return extractContextIfSucceded(result);
     }

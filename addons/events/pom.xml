@@ -1,19 +1,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.automatik.platform</groupId>
+    <groupId>io.automatiko</groupId>
     <artifactId>addons</artifactId>
     <version>0.0.0-SNAPSHOT</version>
   </parent>
 
-  <groupId>io.automatik.platform.addons</groupId>
+  <groupId>io.automatiko.addons</groupId>
   <artifactId>events</artifactId>
   <packaging>pom</packaging>
-  <name>Automatik Platform Engine :: Add-Ons :: Events</name>
+  <name>Automatiko Engine :: Add-Ons :: Events</name>
 
-  <description>Events support for Automatik Platform Engine</description>
+  <description>Events support for Automatiko Engine</description>
   <modules>
-    <module>automatik-events-reactive-messaging-addon</module>
-    <module>automatik-events-websocket-addon</module>
+    <module>automatiko-events-reactive-messaging-addon</module>
+    <module>automatiko-events-websocket-addon</module>
   </modules>
 </project>

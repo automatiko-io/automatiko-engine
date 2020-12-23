@@ -5,23 +5,23 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.automatik.platform.quarkus</groupId>
-    <artifactId>automatik-quarkus-parent</artifactId>
+    <groupId>io.automatiko.quarkus</groupId>
+    <artifactId>automatiko-quarkus-parent</artifactId>
     <version>0.0.0-SNAPSHOT</version>
   </parent>
 
-  <groupId>io.automatik.platform.quarkus</groupId>
-  <artifactId>automatik-quarkus-bom</artifactId>
+  <groupId>io.automatiko.quarkus</groupId>
+  <artifactId>automatiko-quarkus-bom</artifactId>
   <packaging>pom</packaging>
 
-  <name>Automatik Platform Engine :: Quarkus Extension :: BOM</name>
-  <description>BOM for Quarkus Extension for Automatik Platform Engine</description>
+  <name>Automatiko Engine :: Quarkus Extension :: BOM</name>
+  <description>BOM for Quarkus Extension for Automatiko Engine</description>
 
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>io.automatik.platform</groupId>
-        <artifactId>automatik-platform-engine-bom</artifactId>
+        <groupId>io.automatiko</groupId>
+        <artifactId>automatiko-engine-bom</artifactId>
         <version>${project.version}</version>
         <type>pom</type>
         <scope>import</scope>

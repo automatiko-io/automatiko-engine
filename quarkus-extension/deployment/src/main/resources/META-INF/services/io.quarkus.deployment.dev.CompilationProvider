@@ -1,2 +1,2 @@
-io.automatik.engine.quarkus.deployment.ProcessCompilationProvider
-io.automatik.engine.quarkus.deployment.DMNCompilationProvider
+io.automatiko.engine.quarkus.deployment.ProcessCompilationProvider
+io.automatiko.engine.quarkus.deployment.DMNCompilationProvider

@@ -5,15 +5,15 @@
 
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io.automatik.platform.quarkus</groupId>
-    <artifactId>automatik-quarkus-parent</artifactId>
+    <groupId>io.automatiko.quarkus</groupId>
+    <artifactId>automatiko-quarkus-parent</artifactId>
     <version>0.0.0-SNAPSHOT</version>
   </parent>
 
-  <groupId>io.automatik.platform.quarkus</groupId>
-  <artifactId>automatik-quarkus-deployment</artifactId>
-  <name>Automatik Platform Engine :: Quarkus Extension :: Deployment</name>
-  <description>Deployment module for Quarkus Extension for Automatik Platform Engine</description>
+  <groupId>io.automatiko.quarkus</groupId>
+  <artifactId>automatiko-quarkus-deployment</artifactId>
+  <name>Automatiko Engine :: Quarkus Extension :: Deployment</name>
+  <description>Deployment module for Quarkus Extension for Automatiko Engine</description>
 
   <dependencies>
     <!-- quarkus -->
@@ -50,12 +50,12 @@
 
     <!-- automatik -->
     <dependency>
-      <groupId>io.automatik.platform.quarkus</groupId>
-      <artifactId>automatik-quarkus</artifactId>
+      <groupId>io.automatiko.quarkus</groupId>
+      <artifactId>automatiko-quarkus</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.automatik.platform.build</groupId>
-      <artifactId>automatik-engine-codegen</artifactId>
+      <groupId>io.automatiko.build</groupId>
+      <artifactId>automatiko-engine-codegen</artifactId>
       <exclusions>
         <exclusion>
           <groupId>javax.validation</groupId>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.automatik.engine.quarkus.ittests;
+package io.automatiko.engine.quarkus.ittests;
 
 import java.util.HashMap;
 import java.util.List;

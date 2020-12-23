@@ -1,7 +1,7 @@
 package $Package$;
 
 
-import io.automatik.engine.services.event.AbstractProcessDataEvent;
+import io.automatiko.engine.services.event.AbstractProcessDataEvent;
 
 public class $TypeName$ extends AbstractProcessDataEvent<$Type$> {
     

@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatik-platform.io" id="_aSjpYIEmEemgIL72M4lYRQ" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatik-platform.io automatik.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" exporter="jBPM Designer" exporterVersion="1.0" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/bpmn20" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:automatik="https://automatiko.io" id="_aSjpYIEmEemgIL72M4lYRQ" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatiko.io automatiko.xsd http://www.bpsim.org/schemas/1.0 bpsim.xsd" exporter="jBPM Designer" exporterVersion="1.0" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="http://www.omg.org/bpmn20" typeLanguage="http://www.java.com/javaTypes">
   <bpmn2:itemDefinition id="_sItem" structureRef="String"/>
   <bpmn2:itemDefinition id="_38E04E27-3CCA-47F9-927B-E37DC4B8CE25_InMessageType" structureRef="java.lang.String"/>
   <bpmn2:itemDefinition id="_A1EE8114-BF7B-4DAF-ABD7-62EEDCFAEFD4_InMessageType" structureRef="java.lang.String"/>
   <bpmn2:message id="_38E04E27-3CCA-47F9-927B-E37DC4B8CE25_InMessage" itemRef="_38E04E27-3CCA-47F9-927B-E37DC4B8CE25_InMessageType"/>
   <bpmn2:message id="_A1EE8114-BF7B-4DAF-ABD7-62EEDCFAEFD4_InMessage" itemRef="_A1EE8114-BF7B-4DAF-ABD7-62EEDCFAEFD4_InMessageType"/>
-  <bpmn2:interface id="_38E04E27-3CCA-47F9-927B-E37DC4B8CE25_ServiceInterface" name="HelloService" implementationRef="io.automatik.engine.codegen.data.HelloService">
+  <bpmn2:interface id="_38E04E27-3CCA-47F9-927B-E37DC4B8CE25_ServiceInterface" name="HelloService" implementationRef="io.automatiko.engine.codegen.data.HelloService">
     <bpmn2:operation id="_38E04E27-3CCA-47F9-927B-E37DC4B8CE25_ServiceOperation" name="hello" implementationRef="hello">
       <bpmn2:inMessageRef>_38E04E27-3CCA-47F9-927B-E37DC4B8CE25_InMessage</bpmn2:inMessageRef>
     </bpmn2:operation>
   </bpmn2:interface>
-  <bpmn2:interface id="_A1EE8114-BF7B-4DAF-ABD7-62EEDCFAEFD4_ServiceInterface" name="HelloService" implementationRef="io.automatik.engine.codegen.data.HelloService">
+  <bpmn2:interface id="_A1EE8114-BF7B-4DAF-ABD7-62EEDCFAEFD4_ServiceInterface" name="HelloService" implementationRef="io.automatiko.engine.codegen.data.HelloService">
     <bpmn2:operation id="_A1EE8114-BF7B-4DAF-ABD7-62EEDCFAEFD4_ServiceOperation" name="goodbye" implementationRef="goodbye">
       <bpmn2:inMessageRef>_A1EE8114-BF7B-4DAF-ABD7-62EEDCFAEFD4_InMessage</bpmn2:inMessageRef>
     </bpmn2:operation>
@@ -29,7 +29,7 @@
       </bpmn2:extensionElements>
       <bpmn2:outgoing>_2D052977-41FD-43AD-9CDE-A96F40EDDEAC</bpmn2:outgoing>
     </bpmn2:startEvent>
-    <bpmn2:serviceTask id="_38E04E27-3CCA-47F9-927B-E37DC4B8CE25" automatik:selectable="true" automatik:serviceimplementation="Other" automatik:serviceoperation="hello" automatik:serviceinterface="io.automatik.engine.codegen.data.HelloService" color:background-color="#fafad2" color:border-color="#000000" color:color="#000000" name="Hello" implementation="Other" operationRef="_38E04E27-3CCA-47F9-927B-E37DC4B8CE25_ServiceOperation">
+    <bpmn2:serviceTask id="_38E04E27-3CCA-47F9-927B-E37DC4B8CE25" automatik:selectable="true" automatik:serviceimplementation="Other" automatik:serviceoperation="hello" automatik:serviceinterface="io.automatiko.engine.codegen.data.HelloService" color:background-color="#fafad2" color:border-color="#000000" color:color="#000000" name="Hello" implementation="Other" operationRef="_38E04E27-3CCA-47F9-927B-E37DC4B8CE25_ServiceOperation">
       <bpmn2:extensionElements>
         <automatik:metaData name="elementname">
           <automatik:metaValue><![CDATA[Hello]]></automatik:metaValue>
@@ -67,7 +67,7 @@
     </bpmn2:endEvent>
     <bpmn2:sequenceFlow id="_2D052977-41FD-43AD-9CDE-A96F40EDDEAC" automatik:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_1747DF71-D65B-409B-A5B4-D265AE64E41A" targetRef="_38E04E27-3CCA-47F9-927B-E37DC4B8CE25"/>
     <bpmn2:sequenceFlow id="_F39893C8-F27C-4BFA-946B-D92EB085FD30" automatik:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_38E04E27-3CCA-47F9-927B-E37DC4B8CE25" targetRef="_A1EE8114-BF7B-4DAF-ABD7-62EEDCFAEFD4"/>
-    <bpmn2:serviceTask id="_A1EE8114-BF7B-4DAF-ABD7-62EEDCFAEFD4" automatik:selectable="true" automatik:serviceimplementation="Other" automatik:serviceoperation="goodbye" automatik:serviceinterface="io.automatik.engine.codegen.data.HelloService" color:background-color="#fafad2" color:border-color="#000000" color:color="#000000" name="Goodbye" implementation="Other" operationRef="_A1EE8114-BF7B-4DAF-ABD7-62EEDCFAEFD4_ServiceOperation">
+    <bpmn2:serviceTask id="_A1EE8114-BF7B-4DAF-ABD7-62EEDCFAEFD4" automatik:selectable="true" automatik:serviceimplementation="Other" automatik:serviceoperation="goodbye" automatik:serviceinterface="io.automatiko.engine.codegen.data.HelloService" color:background-color="#fafad2" color:border-color="#000000" color:color="#000000" name="Goodbye" implementation="Other" operationRef="_A1EE8114-BF7B-4DAF-ABD7-62EEDCFAEFD4_ServiceOperation">
       <bpmn2:extensionElements>
         <automatik:metaData name="elementname">
           <automatik:metaValue><![CDATA[Goodbye]]></automatik:metaValue>

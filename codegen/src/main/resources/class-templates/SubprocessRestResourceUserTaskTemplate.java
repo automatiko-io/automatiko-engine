@@ -2,12 +2,12 @@ package com.myspace.demo;
 
 import java.util.List;
 
-import io.automatik.engine.api.auth.IdentityProvider;
-import io.automatik.engine.api.runtime.process.WorkItemNotFoundException;
-import io.automatik.engine.api.workflow.ProcessInstance;
-import io.automatik.engine.api.workflow.ProcessInstanceReadMode;
-import io.automatik.engine.api.workflow.WorkItem;
-import io.automatik.engine.workflow.Sig;
+import io.automatiko.engine.api.auth.IdentityProvider;
+import io.automatiko.engine.api.runtime.process.WorkItemNotFoundException;
+import io.automatiko.engine.api.workflow.ProcessInstance;
+import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
+import io.automatiko.engine.api.workflow.WorkItem;
+import io.automatiko.engine.workflow.Sig;
 
 
 public class $Type$Resource {
@@ -40,7 +40,7 @@ public class $Type$Resource {
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         identitySupplier.buildIdentityProvider(user, groups);
-        return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
 
             pi.send(Sig.of("$taskNodeName$", java.util.Collections.emptyMap()));
@@ -81,10 +81,10 @@ public class $Type$Resource {
     public $Type$Output completeTask(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$, @PathParam("workItemId") final String workItemId, @QueryParam("phase") @DefaultValue("complete") final String phase, @QueryParam("user") final String user, @QueryParam("group") final List<String> groups, final $TaskOutput$ model) {
         try {
             identitySupplier.buildIdentityProvider(user, groups);
-            return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
 
-                io.automatik.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatik.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, model.toMap(), io.automatik.engine.api.auth.IdentityProvider.get());
+                io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, model.toMap(), io.automatiko.engine.api.auth.IdentityProvider.get());
                 pi.transitionWorkItem(workItemId, transition);
 
                 return getSubModel_$name$(pi);
@@ -119,7 +119,7 @@ public class $Type$Resource {
     public $TaskInput$ getTask(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$, @PathParam("workItemId") String workItemId, @QueryParam("user") final String user, @QueryParam("group") final List<String> groups) {
         try {
             identitySupplier.buildIdentityProvider(user, groups);
-            ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$, io.automatik.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+            ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
 
             WorkItem workItem = pi.workItem(workItemId, policies(user, groups));
             if (workItem == null) {
@@ -160,10 +160,10 @@ public class $Type$Resource {
         
         try {
             identitySupplier.buildIdentityProvider(user, groups);
-            return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
 
-                io.automatik.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatik.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, null, io.automatik.engine.api.auth.IdentityProvider.get());
+                io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, null, io.automatiko.engine.api.auth.IdentityProvider.get());
                 pi.transitionWorkItem(workItemId, transition);
 
                 return getSubModel_$name$(pi);

@@ -15,7 +15,7 @@
 
 package ruletask
 
-import io.automatik.engine.codegen.data.Person;
+import io.automatiko.engine.codegen.data.Person;
 
 rule "Is Adult" ruleflow-group "person-rules"
     when

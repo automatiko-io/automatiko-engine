@@ -8,10 +8,10 @@ import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 
-import io.automatik.engine.api.runtime.process.WorkItemNotFoundException;
-import io.automatik.engine.api.workflow.Process;
-import io.automatik.engine.api.workflow.ProcessInstance;
-import io.automatik.engine.workflow.Sig;
+import io.automatiko.engine.api.runtime.process.WorkItemNotFoundException;
+import io.automatiko.engine.api.workflow.Process;
+import io.automatiko.engine.api.workflow.ProcessInstance;
+import io.automatiko.engine.workflow.Sig;
 
 public class $Type$Resource {
 
@@ -50,7 +50,7 @@ public class $Type$Resource {
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
             final $signalType$ data) {
         identitySupplier.buildIdentityProvider(user, groups);
-        return io.automatik.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             pi.send(Sig.of("$signalName$", data));
             return getModel(pi);

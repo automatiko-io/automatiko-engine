@@ -1,7 +1,7 @@
-![Java CI with Maven](https://github.com/automatik-platform/automatik-platform-engine/workflows/Java%20CI%20with%20Maven/badge.svg)
+![Java CI with Maven](https://github.com/automatiko/automatiko-engine/workflows/Java%20CI%20with%20Maven/badge.svg)
 
 <p align="center">
-<img src="img/automatik-platform-engine.png" width="800px" alt="Automatik Platform Engine"/>
+<img src="img/automatiko-engine.png" width="800px" alt="Automatik Platform Engine"/>
 </p>
 
 <p align="center">
