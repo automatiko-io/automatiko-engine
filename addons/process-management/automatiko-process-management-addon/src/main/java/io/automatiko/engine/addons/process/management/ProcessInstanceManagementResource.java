@@ -99,7 +99,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @Path("/ui")
     @Produces(MediaType.TEXT_HTML)
     public Response ui() {
-        ResponseBuilder builder = Response.ok().entity(getClass().getResourceAsStream("/automatik-index.html"));
+        ResponseBuilder builder = Response.ok().entity(getClass().getResourceAsStream("/automatiko-index.html"));
         return builder.header("Content-Type", "text/html").build();
     }
 
