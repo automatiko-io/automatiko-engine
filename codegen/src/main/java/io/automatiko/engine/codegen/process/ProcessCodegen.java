@@ -46,8 +46,8 @@ import io.automatiko.engine.codegen.ApplicationSection;
 import io.automatiko.engine.codegen.ConfigGenerator;
 import io.automatiko.engine.codegen.DefaultResourceGeneratorFactory;
 import io.automatiko.engine.codegen.GeneratedFile;
-import io.automatiko.engine.codegen.ResourceGeneratorFactory;
 import io.automatiko.engine.codegen.GeneratedFile.Type;
+import io.automatiko.engine.codegen.ResourceGeneratorFactory;
 import io.automatiko.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatiko.engine.codegen.process.config.ProcessConfigGenerator;
 import io.automatiko.engine.services.io.ByteArrayResource;
@@ -526,8 +526,9 @@ public class ProcessCodegen extends AbstractGenerator {
                         execModelGen.className(), applicationCanonicalName))
                         .map(r -> r.withDependencyInjection(annotator).withParentProcess(parentProcess)
                                 .withUserTasks(processIdToUserTaskModel.get(execModelGen.getProcessId()))
-                                .withSignals(metaData.getSignals())
-                                .withTriggers(metaData.isStartable(), metaData.isDynamic())
+                                .withSignals(processIdToMetadata.get(execModelGen.getProcessId()).getSignals())
+                                .withTriggers(processIdToMetadata.get(execModelGen.getProcessId()).isStartable(),
+                                        processIdToMetadata.get(execModelGen.getProcessId()).isDynamic())
                                 .withSubProcesses(populateSubprocesses(workFlowProcess,
                                         processIdToMetadata.get(execModelGen.getProcessId()), processIdToMetadata,
                                         processIdToModelGenerator, processExecutableModelGenerators,

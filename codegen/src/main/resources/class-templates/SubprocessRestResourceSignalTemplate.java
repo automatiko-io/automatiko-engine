@@ -43,7 +43,7 @@ public class $Type$Resource {
         return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             pi.send(Sig.of("$signalName$", data));
-            return getModel(pi);
+            return getSubModel_$name$(pi);
         });
     }
 

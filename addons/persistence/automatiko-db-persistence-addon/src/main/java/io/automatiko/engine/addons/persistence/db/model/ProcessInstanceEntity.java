@@ -20,7 +20,7 @@ public abstract class ProcessInstanceEntity extends PanacheEntityBase implements
 
     @Id
     @Column(name = "ATK_ID")
-    public String id;
+    public String entityId;
 
     @Column(name = "ATK_NAME")
     @JsonIgnore
@@ -60,14 +60,14 @@ public abstract class ProcessInstanceEntity extends PanacheEntityBase implements
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + " [id=" + id + ", (" + businessKey + ")]";
+        return this.getClass().getSimpleName() + " [entityId=" + entityId + ", (" + businessKey + ")]";
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        result = prime * result + ((entityId == null) ? 0 : entityId.hashCode());
         return result;
     }
 
@@ -80,10 +80,10 @@ public abstract class ProcessInstanceEntity extends PanacheEntityBase implements
         if (getClass() != obj.getClass())
             return false;
         ProcessInstanceEntity other = (ProcessInstanceEntity) obj;
-        if (id == null) {
-            if (other.id != null)
+        if (entityId == null) {
+            if (other.entityId != null)
                 return false;
-        } else if (!id.equals(other.id))
+        } else if (!entityId.equals(other.entityId))
             return false;
         return true;
     }

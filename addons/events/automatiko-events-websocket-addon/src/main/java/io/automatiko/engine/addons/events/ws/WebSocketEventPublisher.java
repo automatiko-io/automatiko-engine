@@ -45,6 +45,12 @@ public class WebSocketEventPublisher implements EventPublisher {
             text = json.writeValueAsString(event);
 
             for (Session session : sessions.values()) {
+
+                String filter = (String) session.getUserProperties().get("atk_filter");
+                if (filter != null && !filter.matches(event.getType())) {
+                    continue;
+                }
+
                 boolean allowed = true;
                 IdentityProvider identityProvider = (IdentityProvider) session.getUserProperties().get("atk_identity");
                 if (event instanceof ProcessInstanceDataEvent) {

@@ -1,5 +1,6 @@
 package io.automatiko.engine.quarkus.auth;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +33,8 @@ public class SecuredIdentitySupplier implements IdentitySupplier {
         if (IdentityProvider.isSet()) {
             return IdentityProvider.get();
         }
-        if (securityInstance.isUnsatisfied() || securityInstance.get().getPrincipal() == null) {
+        Principal principal = retrievePrincipal();
+        if (securityInstance.isUnsatisfied() || principal == null) {
 
             StaticIdentityProvider current = new StaticIdentityProvider(adminRoleName.orElse("admin"), user, roles);
 
@@ -40,11 +42,11 @@ public class SecuredIdentitySupplier implements IdentitySupplier {
             return current;
         }
 
-        String principal = securityInstance.get().getPrincipal().getName();
+        String principalName = principal.getName();
         if (!authroizedOnly.orElse(true) && user != null) {
-            principal = user;
+            principalName = user;
         }
-        StaticIdentityProvider current = new StaticIdentityProvider(adminRoleName.orElse("admin"), principal,
+        StaticIdentityProvider current = new StaticIdentityProvider(adminRoleName.orElse("admin"), principalName,
                 mergeRoles(securityInstance.get(), roles));
 
         IdentityProvider.set(current);
@@ -61,5 +63,16 @@ public class SecuredIdentitySupplier implements IdentitySupplier {
         }
 
         return new ArrayList<String>(securityIdentity.getRoles());
+    }
+
+    protected Principal retrievePrincipal() {
+        if (securityInstance.isUnsatisfied()) {
+            return null;
+        }
+        try {
+            return securityInstance.get().getPrincipal();
+        } catch (IllegalStateException e) {
+            return null;
+        }
     }
 }

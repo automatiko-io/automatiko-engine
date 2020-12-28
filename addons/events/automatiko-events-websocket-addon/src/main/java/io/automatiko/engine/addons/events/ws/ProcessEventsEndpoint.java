@@ -35,6 +35,7 @@ public class ProcessEventsEndpoint {
         IdentityProvider identityProvider = identitySupplier.buildIdentityProvider(
                 params.getOrDefault("user", Collections.singletonList(null)).get(0), params.get("groups"));
         session.getUserProperties().put("atk_identity", identityProvider);
+        session.getUserProperties().put("atk_filter", params.getOrDefault("filter", Collections.singletonList(null)).get(0));
         publisher.add(session.getId(), session);
     }
 

@@ -171,9 +171,9 @@ public class ModelMetaData {
                     NodeList.nodeList(new MemberValuePair("name",
                             new StringLiteralExpr(camelToSnake(processId.toUpperCase() + version(version).toUpperCase()))))));
 
-            modelClass.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("id")).forEach(fd -> {
-                fd.removeForced();
-            });
+            //            modelClass.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("id")).forEach(fd -> {
+            //                fd.removeForced();
+            //            });
         }
 
         modelClass.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.media.Schema"),
@@ -317,6 +317,8 @@ public class ModelMetaData {
                                 new MemberValuePair("cascade",
                                         new ArrayInitializerExpr(cascade)),
                                 new MemberValuePair("fetch", new NameExpr("javax.persistence.FetchType.EAGER")))));
+                fd.addAnnotation(new NormalAnnotationExpr(new Name("javax.persistence.JoinColumn"),
+                        NodeList.nodeList()));
             } else {
                 fd.addAnnotation(new NormalAnnotationExpr(new Name("javax.persistence.Column"),
                         NodeList.nodeList(new MemberValuePair("name",

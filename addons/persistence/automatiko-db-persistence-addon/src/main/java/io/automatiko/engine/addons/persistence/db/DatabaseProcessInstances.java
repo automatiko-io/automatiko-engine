@@ -127,7 +127,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
             byte[] data = marshaller.marhsallProcessInstance(instance);
 
             entity.content = data;
-            entity.id = resolvedId;
+            entity.entityId = resolvedId;
             entity.name = instance.description();
             entity.businessKey = instance.businessKey();
             entity.processId = instance.process().id();

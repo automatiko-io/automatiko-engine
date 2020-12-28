@@ -164,6 +164,7 @@ public class LightProcessRuntime implements InternalProcessRuntime {
                 correlationKey);
 
         pi.setProcessRuntime(this);
+        runtimeContext.setupParameters(pi, parameters, variableInitializer);
         String uuid;
         if (correlationKey != null) {
             uuid = UUID.nameUUIDFromBytes(correlationKey.toExternalForm().getBytes(StandardCharsets.UTF_8)).toString();
@@ -174,7 +175,7 @@ public class LightProcessRuntime implements InternalProcessRuntime {
                     .getDefaultContext(VariableScope.VARIABLE_SCOPE);
 
             Optional<Object> businessKeyVar = variableScope.getVariables().stream()
-                    .filter(var -> var.hasTag(Variable.BUSINESS_KEY)).map(v -> parameters.get(v.getName()))
+                    .filter(var -> var.hasTag(Variable.BUSINESS_KEY)).map(v -> pi.getVariables().get(v.getName()))
                     .filter(var -> var != null)
                     .findAny();
 
@@ -189,7 +190,6 @@ public class LightProcessRuntime implements InternalProcessRuntime {
         }
 
         pi.setId(uuid);
-        runtimeContext.setupParameters(pi, parameters, variableInitializer);
         return pi;
     }
 

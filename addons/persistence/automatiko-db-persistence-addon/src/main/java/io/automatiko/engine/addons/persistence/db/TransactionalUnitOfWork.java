@@ -1,5 +1,6 @@
 package io.automatiko.engine.addons.persistence.db;
 
+import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import io.automatiko.engine.api.event.EventManager;
@@ -31,6 +32,11 @@ public class TransactionalUnitOfWork extends CollectingUnitOfWork {
 
             transaction.commit();
         } catch (Exception e) {
+            try {
+                transaction.rollback();
+            } catch (IllegalStateException | SecurityException | SystemException e1) {
+                e1.printStackTrace();
+            }
             throw new IllegalStateException(e);
         }
     }

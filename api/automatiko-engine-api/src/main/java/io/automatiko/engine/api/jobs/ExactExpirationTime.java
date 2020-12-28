@@ -1,5 +1,7 @@
 package io.automatiko.engine.api.jobs;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -37,7 +39,17 @@ public class ExactExpirationTime implements ExpirationTime {
         try {
             return new ExactExpirationTime(ZonedDateTime.parse(date));
         } catch (DateTimeParseException e) {
-            return new ExactExpirationTime(LocalDateTime.parse(date).atZone(ZoneId.systemDefault()));
+            try {
+                return new ExactExpirationTime(LocalDateTime.parse(date).atZone(ZoneId.systemDefault()));
+            } catch (DateTimeParseException ex) {
+                try {
+                    return new ExactExpirationTime(ZonedDateTime.ofInstant(
+                            new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy").parse(date).toInstant(),
+                            ZoneId.systemDefault()));
+                } catch (ParseException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
         }
 
     }

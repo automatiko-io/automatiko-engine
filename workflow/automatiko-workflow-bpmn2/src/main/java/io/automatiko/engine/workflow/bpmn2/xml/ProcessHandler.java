@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
 
 import org.mvel2.MVEL;
 import org.slf4j.Logger;
@@ -1120,7 +1121,21 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
                 if (isExpression) {
                     tagDefinitions
                             .add(new FunctionTagDefinition(String.valueOf(++counter), tag,
-                                    (exp, vars) -> (String) MVEL.executeExpression(exp, vars)));
+                                    (exp, vars) -> {
+                                        Map<String, Object> replacements = new HashMap<>();
+                                        Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(exp);
+                                        while (matcher.find()) {
+                                            String paramName = matcher.group(1);
+                                            Object value = MVEL.executeExpression(exp, vars);
+                                            replacements.put(paramName, value);
+                                        }
+                                        for (Map.Entry<String, Object> replacement : replacements.entrySet()) {
+                                            exp = exp.replace("#{" + replacement.getKey() + "}",
+                                                    replacement.getValue().toString());
+                                        }
+
+                                        return exp;
+                                    }));
                 } else {
                     tagDefinitions.add(new StaticTagDefinition(String.valueOf(++counter), tag));
                 }

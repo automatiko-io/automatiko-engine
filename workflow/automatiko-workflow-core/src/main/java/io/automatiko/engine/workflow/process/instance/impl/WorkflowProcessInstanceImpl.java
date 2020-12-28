@@ -39,6 +39,8 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.automatiko.engine.api.auth.IdentityProvider;
+import io.automatiko.engine.api.auth.TrustedIdentityProvider;
 import io.automatiko.engine.api.definition.process.Node;
 import io.automatiko.engine.api.definition.process.NodeContainer;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
@@ -401,15 +403,22 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
             processRuntime.getProcessEventSupport().fireAfterProcessCompleted(this, processRuntime);
 
             if (isSignalCompletion()) {
-
-                List<EventListener> listeners = eventListeners.get("processInstanceCompleted:" + getId());
-                if (listeners != null) {
-                    for (EventListener listener : listeners) {
-                        listener.signalEvent("processInstanceCompleted:" + getId(), this);
+                IdentityProvider identity = IdentityProvider.get();
+                try {
+                    // make sure that identity is switched to trusted one as whoever executed this instance 
+                    // might not have access to parent process instance 
+                    IdentityProvider.set(new TrustedIdentityProvider("system"));
+                    List<EventListener> listeners = eventListeners.get("processInstanceCompleted:" + getId());
+                    if (listeners != null) {
+                        for (EventListener listener : listeners) {
+                            listener.signalEvent("processInstanceCompleted:" + getId(), this);
+                        }
                     }
-                }
 
-                processRuntime.getSignalManager().signalEvent("processInstanceCompleted:" + getId(), this);
+                    processRuntime.getSignalManager().signalEvent("processInstanceCompleted:" + getId(), this);
+                } finally {
+                    IdentityProvider.set(identity);
+                }
             }
         } else {
             super.setState(state, outcome);

@@ -226,12 +226,6 @@ public abstract class AbstractResourceGenerator {
             });
         });
 
-        // security must be applied before user tasks are added to make sure that user
-        // task
-        // endpoints are not security annotated as they should restrict access based on
-        // user assignments
-        securityAnnotated(template);
-
         if (userTasks != null) {
 
             CompilationUnit userTaskClazz = parse(this.getClass().getResourceAsStream(getUserTaskResourceTemplate()));
@@ -350,6 +344,7 @@ public abstract class AbstractResourceGenerator {
 
         enableValidation(template);
         removeMetricsIfNotEnabled(template);
+        securityAnnotated(template);
 
         template.getMembers().sort(new BodyDeclarationComparator());
 

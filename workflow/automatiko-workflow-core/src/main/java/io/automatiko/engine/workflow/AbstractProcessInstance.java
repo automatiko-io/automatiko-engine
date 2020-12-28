@@ -624,7 +624,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                 }
 
                 if (nodeInstance instanceof EventSubProcessNodeInstance) {
-                    if (!((EventSubProcessNodeInstance) nodeInstance).getTimerInstances().isEmpty()) {
+                    if (((EventSubProcessNodeInstance) nodeInstance).getTimerInstances() != null
+                            && !((EventSubProcessNodeInstance) nodeInstance).getTimerInstances().isEmpty()) {
                         String nodeDefId = (String) ((EventSubProcessNode) ((EventSubProcessNodeInstance) nodeInstance)
                                 .getEventBasedNode())
                                         .findStartNode().getMetaData("UniqueId");
