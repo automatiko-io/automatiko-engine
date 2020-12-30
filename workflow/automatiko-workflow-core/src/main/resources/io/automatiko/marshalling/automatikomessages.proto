@@ -3,7 +3,7 @@ syntax = "proto2";
 package io.automatiko.engine.workflow.marshalling;
 
 option java_package = "io.automatiko.engine.workflow.marshalling.impl";
-option java_outer_classname = "AutomatikMessages";
+option java_outer_classname = "AutomatikoMessages";
 
 
 // WARNING: Before changing this file, make sure you know what you

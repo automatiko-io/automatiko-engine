@@ -18,9 +18,9 @@ import io.automatiko.engine.api.runtime.process.WorkItem;
 import io.automatiko.engine.workflow.base.instance.InternalProcessRuntime;
 import io.automatiko.engine.workflow.base.instance.impl.workitem.DefaultWorkItemManager;
 import io.automatiko.engine.workflow.base.instance.impl.workitem.WorkItemImpl;
-import io.automatiko.engine.workflow.marshalling.impl.AutomatikMessages.Header;
-import io.automatiko.engine.workflow.marshalling.impl.AutomatikMessages.Variable;
-import io.automatiko.engine.workflow.marshalling.impl.AutomatikMessages.VariableContainer;
+import io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.Header;
+import io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.Variable;
+import io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.VariableContainer;
 import io.automatiko.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
 
 public class ProtobufProcessMarshaller implements ProcessMarshaller {
@@ -34,7 +34,7 @@ public class ProtobufProcessMarshaller implements ProcessMarshaller {
     }
 
     public void writeProcessInstances(MarshallerWriteContext context) throws IOException {
-        AutomatikMessages.ProcessData.Builder _pdata = (AutomatikMessages.ProcessData.Builder) context.parameterObject;
+        AutomatikoMessages.ProcessData.Builder _pdata = (AutomatikoMessages.ProcessData.Builder) context.parameterObject;
 
         List<io.automatiko.engine.api.runtime.process.ProcessInstance> processInstances = new ArrayList<io.automatiko.engine.api.runtime.process.ProcessInstance>(
                 context.getProcessRuntime().getProcessInstances());
@@ -47,14 +47,14 @@ public class ProtobufProcessMarshaller implements ProcessMarshaller {
 
         for (io.automatiko.engine.api.runtime.process.ProcessInstance processInstance : processInstances) {
             String processType = processInstance.getProcess().getType();
-            AutomatikMessages.ProcessInstance _instance = (AutomatikMessages.ProcessInstance) ProcessMarshallerRegistry.INSTANCE
+            AutomatikoMessages.ProcessInstance _instance = (AutomatikoMessages.ProcessInstance) ProcessMarshallerRegistry.INSTANCE
                     .getMarshaller(processType).writeProcessInstance(context, processInstance);
-            _pdata.addExtension(AutomatikMessages.processInstance, _instance);
+            _pdata.addExtension(AutomatikoMessages.processInstance, _instance);
         }
     }
 
     public void writeWorkItems(MarshallerWriteContext context) throws IOException {
-        AutomatikMessages.ProcessData.Builder _pdata = (AutomatikMessages.ProcessData.Builder) context.parameterObject;
+        AutomatikoMessages.ProcessData.Builder _pdata = (AutomatikoMessages.ProcessData.Builder) context.parameterObject;
 
         List<WorkItem> workItems = new ArrayList<WorkItem>(
                 ((DefaultWorkItemManager) context.getProcessRuntime().getWorkItemManager()).getWorkItems());
@@ -64,19 +64,19 @@ public class ProtobufProcessMarshaller implements ProcessMarshaller {
             }
         });
         for (WorkItem workItem : workItems) {
-            _pdata.addExtension(AutomatikMessages.workItem, writeWorkItemInstance(context, workItem));
+            _pdata.addExtension(AutomatikoMessages.workItem, writeWorkItemInstance(context, workItem));
         }
     }
 
-    public static AutomatikMessages.WorkItem writeWorkItemInstance(MarshallerWriteContext context, WorkItem workItem)
+    public static AutomatikoMessages.WorkItem writeWorkItemInstance(MarshallerWriteContext context, WorkItem workItem)
             throws IOException {
         return writeWorkItem(context, workItem, true);
     }
 
     public List<ProcessInstance> readProcessInstances(MarshallerReaderContext context) throws IOException {
-        AutomatikMessages.ProcessData _pdata = (AutomatikMessages.ProcessData) context.parameterObject;
+        AutomatikoMessages.ProcessData _pdata = (AutomatikoMessages.ProcessData) context.parameterObject;
         List<ProcessInstance> processInstanceList = new ArrayList<ProcessInstance>();
-        for (AutomatikMessages.ProcessInstance _instance : _pdata.getExtension(AutomatikMessages.processInstance)) {
+        for (AutomatikoMessages.ProcessInstance _instance : _pdata.getExtension(AutomatikoMessages.processInstance)) {
             context.parameterObject = _instance;
             ProcessInstance processInstance = ProcessMarshallerRegistry.INSTANCE
                     .getMarshaller(_instance.getProcessType()).readProcessInstance(context);
@@ -87,17 +87,17 @@ public class ProtobufProcessMarshaller implements ProcessMarshaller {
     }
 
     public void readWorkItems(MarshallerReaderContext context) throws IOException {
-        AutomatikMessages.ProcessData _pdata = (AutomatikMessages.ProcessData) context.parameterObject;
+        AutomatikoMessages.ProcessData _pdata = (AutomatikoMessages.ProcessData) context.parameterObject;
         InternalProcessRuntime wm = context.getProcessRuntime();
-        for (AutomatikMessages.WorkItem _workItem : _pdata.getExtension(AutomatikMessages.workItem)) {
+        for (AutomatikoMessages.WorkItem _workItem : _pdata.getExtension(AutomatikoMessages.workItem)) {
             WorkItem workItem = readWorkItem(context, _workItem);
             ((DefaultWorkItemManager) wm.getWorkItemManager()).internalAddWorkItem((WorkItem) workItem);
         }
     }
 
-    public static AutomatikMessages.WorkItem writeWorkItem(MarshallerWriteContext context, WorkItem workItem,
+    public static AutomatikoMessages.WorkItem writeWorkItem(MarshallerWriteContext context, WorkItem workItem,
             boolean includeVariables) throws IOException {
-        AutomatikMessages.WorkItem.Builder _workItem = AutomatikMessages.WorkItem.newBuilder().setId(workItem.getId())
+        AutomatikoMessages.WorkItem.Builder _workItem = AutomatikoMessages.WorkItem.newBuilder().setId(workItem.getId())
                 .setProcessInstancesId(workItem.getProcessInstanceId()).setName(workItem.getName())
                 .setState(workItem.getState());
 
@@ -116,12 +116,12 @@ public class ProtobufProcessMarshaller implements ProcessMarshaller {
         return _workItem.build();
     }
 
-    public static WorkItem readWorkItem(MarshallerReaderContext context, AutomatikMessages.WorkItem _workItem)
+    public static WorkItem readWorkItem(MarshallerReaderContext context, AutomatikoMessages.WorkItem _workItem)
             throws IOException {
         return readWorkItem(context, _workItem, true);
     }
 
-    public static WorkItem readWorkItem(MarshallerReaderContext context, AutomatikMessages.WorkItem _workItem,
+    public static WorkItem readWorkItem(MarshallerReaderContext context, AutomatikoMessages.WorkItem _workItem,
             boolean includeVariables) throws IOException {
         WorkItemImpl workItem = new WorkItemImpl();
         workItem.setId(_workItem.getId());
@@ -132,7 +132,7 @@ public class ProtobufProcessMarshaller implements ProcessMarshaller {
         workItem.setNodeInstanceId(_workItem.getNodeInstanceId());
 
         if (includeVariables) {
-            for (AutomatikMessages.Variable _variable : _workItem.getVariableList()) {
+            for (AutomatikoMessages.Variable _variable : _workItem.getVariableList()) {
                 try {
                     Object value = unmarshallVariableValue(context, _variable);
                     workItem.setParameter(_variable.getName(), value);
@@ -148,7 +148,7 @@ public class ProtobufProcessMarshaller implements ProcessMarshaller {
 
     public static Variable marshallVariable(MarshallerWriteContext context, String name, Object value)
             throws IOException {
-        AutomatikMessages.Variable.Builder builder = AutomatikMessages.Variable.newBuilder().setName(name);
+        AutomatikoMessages.Variable.Builder builder = AutomatikoMessages.Variable.newBuilder().setName(name);
         if (value != null) {
             ObjectMarshallingStrategy strategy = context.objectMarshallingStrategyStore.getStrategyObject(value);
             Integer index = context.getStrategyIndex(strategy);
@@ -162,7 +162,7 @@ public class ProtobufProcessMarshaller implements ProcessMarshaller {
             throws IOException {
         Map<String, Variable> marshalledVariables = new HashMap<String, Variable>();
         for (String key : variables.keySet()) {
-            AutomatikMessages.Variable.Builder builder = AutomatikMessages.Variable.newBuilder().setName(key);
+            AutomatikoMessages.Variable.Builder builder = AutomatikoMessages.Variable.newBuilder().setName(key);
             Object variable = variables.get(key);
             if (variable != null) {
                 ObjectMarshallingStrategy strategy = context.objectMarshallingStrategyStore.getStrategyObject(variable);
@@ -180,9 +180,9 @@ public class ProtobufProcessMarshaller implements ProcessMarshaller {
 
     public static VariableContainer marshallVariablesContainer(MarshallerWriteContext context,
             Map<String, Object> variables) throws IOException {
-        AutomatikMessages.VariableContainer.Builder vcbuilder = AutomatikMessages.VariableContainer.newBuilder();
+        AutomatikoMessages.VariableContainer.Builder vcbuilder = AutomatikoMessages.VariableContainer.newBuilder();
         for (String key : variables.keySet()) {
-            AutomatikMessages.Variable.Builder builder = AutomatikMessages.Variable.newBuilder().setName(key);
+            AutomatikoMessages.Variable.Builder builder = AutomatikoMessages.Variable.newBuilder().setName(key);
             if (variables.get(key) != null) {
                 ObjectMarshallingStrategy strategy = context.objectMarshallingStrategyStore
                         .getStrategyObject(variables.get(key));
@@ -198,7 +198,7 @@ public class ProtobufProcessMarshaller implements ProcessMarshaller {
         return vcbuilder.build();
     }
 
-    public static Object unmarshallVariableValue(MarshallerReaderContext context, AutomatikMessages.Variable _variable)
+    public static Object unmarshallVariableValue(MarshallerReaderContext context, AutomatikoMessages.Variable _variable)
             throws IOException, ClassNotFoundException {
         if (_variable.getValue() == null || _variable.getValue().isEmpty()) {
             return null;
@@ -210,7 +210,7 @@ public class ProtobufProcessMarshaller implements ProcessMarshaller {
     }
 
     public static Map<String, Object> unmarshallVariableContainerValue(MarshallerReaderContext context,
-            AutomatikMessages.VariableContainer _variableContiner) throws IOException, ClassNotFoundException {
+            AutomatikoMessages.VariableContainer _variableContiner) throws IOException, ClassNotFoundException {
         Map<String, Object> variables = new HashMap<String, Object>();
         if (_variableContiner.getVariableCount() == 0) {
             return variables;
@@ -228,16 +228,16 @@ public class ProtobufProcessMarshaller implements ProcessMarshaller {
 
     public void init(MarshallerReaderContext context) {
         ExtensionRegistry registry = (ExtensionRegistry) context.parameterObject;
-        registry.add(AutomatikMessages.processInstance);
-        registry.add(AutomatikMessages.processTimer);
-        registry.add(AutomatikMessages.workItem);
-        registry.add(AutomatikMessages.timerId);
+        registry.add(AutomatikoMessages.processInstance);
+        registry.add(AutomatikoMessages.processTimer);
+        registry.add(AutomatikoMessages.workItem);
+        registry.add(AutomatikoMessages.timerId);
     }
 
     @Override
     public void writeWorkItem(MarshallerWriteContext context, WorkItem workItem) {
         try {
-            AutomatikMessages.WorkItem _workItem = writeWorkItem(context, workItem, persistWorkItemVars);
+            AutomatikoMessages.WorkItem _workItem = writeWorkItem(context, workItem, persistWorkItemVars);
             PersisterHelper.writeToStreamWithHeader(context, _workItem);
         } catch (IOException e) {
             throw new IllegalArgumentException(
@@ -250,7 +250,7 @@ public class ProtobufProcessMarshaller implements ProcessMarshaller {
         try {
             ExtensionRegistry registry = PersisterHelper.buildRegistry(context, null);
             Header _header = PersisterHelper.readFromStreamWithHeaderPreloaded(context, registry);
-            AutomatikMessages.WorkItem _workItem = AutomatikMessages.WorkItem.parseFrom(_header.getPayload(), registry);
+            AutomatikoMessages.WorkItem _workItem = AutomatikoMessages.WorkItem.parseFrom(_header.getPayload(), registry);
             return (WorkItemImpl) readWorkItem(context, _workItem, persistWorkItemVars);
         } catch (IOException e) {
             throw new IllegalArgumentException("IOException while fetching work item instance : " + e.getMessage(), e);

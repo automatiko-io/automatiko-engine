@@ -32,9 +32,9 @@ import io.automatiko.engine.workflow.base.instance.context.swimlane.SwimlaneCont
 import io.automatiko.engine.workflow.base.instance.context.variable.VariableScopeInstance;
 import io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskWorkItemImpl;
 import io.automatiko.engine.workflow.base.instance.impl.workitem.WorkItemImpl;
-import io.automatiko.engine.workflow.marshalling.impl.AutomatikMessages.Header;
-import io.automatiko.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.NodeInstanceContent;
-import io.automatiko.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance.NodeInstanceType;
+import io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.Header;
+import io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.NodeInstanceContent;
+import io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.NodeInstanceType;
 import io.automatiko.engine.workflow.process.instance.impl.NodeInstanceImpl;
 import io.automatiko.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
 import io.automatiko.engine.workflow.process.instance.node.CompositeContextNodeInstance;
@@ -59,11 +59,11 @@ import io.automatiko.engine.workflow.process.instance.node.WorkItemNodeInstance;
 public abstract class AbstractProtobufProcessInstanceMarshaller implements ProcessInstanceMarshaller {
 
     // Output methods
-    public AutomatikMessages.ProcessInstance writeProcessInstance(MarshallerWriteContext context,
+    public AutomatikoMessages.ProcessInstance writeProcessInstance(MarshallerWriteContext context,
             ProcessInstance processInstance) throws IOException {
         WorkflowProcessInstanceImpl workFlow = (WorkflowProcessInstanceImpl) processInstance;
 
-        AutomatikMessages.ProcessInstance.Builder _instance = AutomatikMessages.ProcessInstance.newBuilder()
+        AutomatikoMessages.ProcessInstance.Builder _instance = AutomatikoMessages.ProcessInstance.newBuilder()
                 .setId(workFlow.getId()).setProcessId(workFlow.getProcessId()).setState(workFlow.getState())
                 .setProcessType(workFlow.getProcess().getType()).setSignalCompletion(workFlow.isSignalCompletion())
                 .setSlaCompliance(workFlow.getSlaCompliance()).setStartDate(workFlow.getStartDate().getTime());
@@ -108,7 +108,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         Map<String, List<String>> children = workFlow.getChildren();
         if (children != null) {
             for (Entry<String, List<String>> entry : children.entrySet()) {
-                _instance.addChildren(AutomatikMessages.ProcessInstance.ProcessInstanchChildren.newBuilder()
+                _instance.addChildren(AutomatikoMessages.ProcessInstance.ProcessInstanchChildren.newBuilder()
                         .setProcessId(entry.getKey()).addAllIds(entry.getValue()).build());
 
             }
@@ -118,7 +118,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         if (tags != null) {
             for (Tag tag : tags) {
                 _instance.addTags(
-                        AutomatikMessages.ProcessInstance.Tag.newBuilder().setId(tag.getId()).setValue(tag.getValue()));
+                        AutomatikoMessages.ProcessInstance.Tag.newBuilder().setId(tag.getId()).setValue(tag.getValue()));
             }
         }
 
@@ -127,7 +127,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         if (swimlaneContextInstance != null) {
             Map<String, String> swimlaneActors = swimlaneContextInstance.getSwimlaneActors();
             for (Map.Entry<String, String> entry : swimlaneActors.entrySet()) {
-                _instance.addSwimlaneContext(AutomatikMessages.ProcessInstance.SwimlaneContextInstance.newBuilder()
+                _instance.addSwimlaneContext(AutomatikoMessages.ProcessInstance.SwimlaneContextInstance.newBuilder()
                         .setSwimlane(entry.getKey()).setActorId(entry.getValue()).build());
             }
         }
@@ -146,7 +146,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         List<ContextInstance> exclusiveGroupInstances = workFlow.getContextInstances(ExclusiveGroup.EXCLUSIVE_GROUP);
         if (exclusiveGroupInstances != null) {
             for (ContextInstance contextInstance : exclusiveGroupInstances) {
-                AutomatikMessages.ProcessInstance.ExclusiveGroupInstance.Builder _exclusive = AutomatikMessages.ProcessInstance.ExclusiveGroupInstance
+                AutomatikoMessages.ProcessInstance.ExclusiveGroupInstance.Builder _exclusive = AutomatikoMessages.ProcessInstance.ExclusiveGroupInstance
                         .newBuilder();
                 ExclusiveGroupInstance exclusiveGroupInstance = (ExclusiveGroupInstance) contextInstance;
                 Collection<NodeInstance> groupNodeInstances = exclusiveGroupInstance.getNodeInstances();
@@ -170,16 +170,16 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         for (Map.Entry<String, Integer> level : iterationlevels) {
             if (level.getValue() != null) {
                 _instance.addIterationLevels(
-                        AutomatikMessages.IterationLevel.newBuilder().setId(level.getKey()).setLevel(level.getValue()));
+                        AutomatikoMessages.IterationLevel.newBuilder().setId(level.getKey()).setLevel(level.getValue()));
             }
         }
 
         return _instance.build();
     }
 
-    public AutomatikMessages.ProcessInstance.NodeInstance writeNodeInstance(MarshallerWriteContext context,
+    public AutomatikoMessages.ProcessInstance.NodeInstance writeNodeInstance(MarshallerWriteContext context,
             NodeInstance nodeInstance) throws IOException {
-        AutomatikMessages.ProcessInstance.NodeInstance.Builder _node = AutomatikMessages.ProcessInstance.NodeInstance
+        AutomatikoMessages.ProcessInstance.NodeInstance.Builder _node = AutomatikoMessages.ProcessInstance.NodeInstance
                 .newBuilder().setId(nodeInstance.getId()).setNodeId(nodeInstance.getNodeId())
                 .setLevel(((io.automatiko.engine.workflow.process.instance.NodeInstance) nodeInstance).getLevel())
                 .setSlaCompliance(
@@ -206,15 +206,15 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         return _node.build();
     }
 
-    protected AutomatikMessages.ProcessInstance.NodeInstanceContent writeNodeInstanceContent(
-            AutomatikMessages.ProcessInstance.NodeInstance.Builder _node, NodeInstance nodeInstance,
+    protected AutomatikoMessages.ProcessInstance.NodeInstanceContent writeNodeInstanceContent(
+            AutomatikoMessages.ProcessInstance.NodeInstance.Builder _node, NodeInstance nodeInstance,
             MarshallerWriteContext context) throws IOException {
-        AutomatikMessages.ProcessInstance.NodeInstanceContent.Builder _content = null;
+        AutomatikoMessages.ProcessInstance.NodeInstanceContent.Builder _content = null;
         if (nodeInstance instanceof RuleSetNodeInstance) {
-            _content = AutomatikMessages.ProcessInstance.NodeInstanceContent.newBuilder()
+            _content = AutomatikoMessages.ProcessInstance.NodeInstanceContent.newBuilder()
                     .setType(NodeInstanceType.RULE_SET_NODE);
             List<String> timerInstances = ((RuleSetNodeInstance) nodeInstance).getTimerInstances();
-            AutomatikMessages.ProcessInstance.NodeInstanceContent.RuleSetNode.Builder _ruleSet = AutomatikMessages.ProcessInstance.NodeInstanceContent.RuleSetNode
+            AutomatikoMessages.ProcessInstance.NodeInstanceContent.RuleSetNode.Builder _ruleSet = AutomatikoMessages.ProcessInstance.NodeInstanceContent.RuleSetNode
                     .newBuilder();
             if (timerInstances != null) {
 
@@ -226,7 +226,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
             _content.setRuleSet(_ruleSet.build());
 
         } else if (nodeInstance instanceof HumanTaskNodeInstance) {
-            AutomatikMessages.ProcessInstance.NodeInstanceContent.HumanTaskNode.Builder _task = AutomatikMessages.ProcessInstance.NodeInstanceContent.HumanTaskNode
+            AutomatikoMessages.ProcessInstance.NodeInstanceContent.HumanTaskNode.Builder _task = AutomatikoMessages.ProcessInstance.NodeInstanceContent.HumanTaskNode
                     .newBuilder().setWorkItemId(((HumanTaskNodeInstance) nodeInstance).getWorkItemId())
                     .setWorkitem(writeHumanTaskWorkItem(context,
                             (HumanTaskWorkItem) ((HumanTaskNodeInstance) nodeInstance).getWorkItem()));
@@ -240,10 +240,10 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                 _task.setErrorHandlingProcessInstanceId(
                         ((HumanTaskNodeInstance) nodeInstance).getExceptionHandlingProcessInstanceId());
             }
-            _content = AutomatikMessages.ProcessInstance.NodeInstanceContent.newBuilder()
+            _content = AutomatikoMessages.ProcessInstance.NodeInstanceContent.newBuilder()
                     .setType(NodeInstanceType.HUMAN_TASK_NODE).setHumanTask(_task.build());
         } else if (nodeInstance instanceof WorkItemNodeInstance) {
-            AutomatikMessages.ProcessInstance.NodeInstanceContent.WorkItemNode.Builder _wi = AutomatikMessages.ProcessInstance.NodeInstanceContent.WorkItemNode
+            AutomatikoMessages.ProcessInstance.NodeInstanceContent.WorkItemNode.Builder _wi = AutomatikoMessages.ProcessInstance.NodeInstanceContent.WorkItemNode
                     .newBuilder().setWorkItemId(((WorkItemNodeInstance) nodeInstance).getWorkItemId())
                     .setWorkitem(writeWorkItem(context, ((WorkItemNodeInstance) nodeInstance).getWorkItem()));
 
@@ -257,10 +257,10 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                 _wi.setErrorHandlingProcessInstanceId(
                         ((WorkItemNodeInstance) nodeInstance).getExceptionHandlingProcessInstanceId());
             }
-            _content = AutomatikMessages.ProcessInstance.NodeInstanceContent.newBuilder()
+            _content = AutomatikoMessages.ProcessInstance.NodeInstanceContent.newBuilder()
                     .setType(NodeInstanceType.WORK_ITEM_NODE).setWorkItem(_wi.build());
         } else if (nodeInstance instanceof LambdaSubProcessNodeInstance) {
-            AutomatikMessages.ProcessInstance.NodeInstanceContent.SubProcessNode.Builder _sp = AutomatikMessages.ProcessInstance.NodeInstanceContent.SubProcessNode
+            AutomatikoMessages.ProcessInstance.NodeInstanceContent.SubProcessNode.Builder _sp = AutomatikoMessages.ProcessInstance.NodeInstanceContent.SubProcessNode
                     .newBuilder()
                     .setProcessInstanceId(((LambdaSubProcessNodeInstance) nodeInstance).getProcessInstanceId())
                     .setProcessInstanceName(((LambdaSubProcessNodeInstance) nodeInstance).getProcessInstanceName());
@@ -270,10 +270,10 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                     _sp.addTimerInstanceId(id);
                 }
             }
-            _content = AutomatikMessages.ProcessInstance.NodeInstanceContent.newBuilder()
+            _content = AutomatikoMessages.ProcessInstance.NodeInstanceContent.newBuilder()
                     .setType(NodeInstanceType.SUB_PROCESS_NODE).setSubProcess(_sp.build());
         } else if (nodeInstance instanceof SubProcessNodeInstance) {
-            AutomatikMessages.ProcessInstance.NodeInstanceContent.SubProcessNode.Builder _sp = AutomatikMessages.ProcessInstance.NodeInstanceContent.SubProcessNode
+            AutomatikoMessages.ProcessInstance.NodeInstanceContent.SubProcessNode.Builder _sp = AutomatikoMessages.ProcessInstance.NodeInstanceContent.SubProcessNode
                     .newBuilder().setProcessInstanceId(((SubProcessNodeInstance) nodeInstance).getProcessInstanceId());
             List<String> timerInstances = ((SubProcessNodeInstance) nodeInstance).getTimerInstances();
             if (timerInstances != null) {
@@ -281,10 +281,10 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                     _sp.addTimerInstanceId(id);
                 }
             }
-            _content = AutomatikMessages.ProcessInstance.NodeInstanceContent.newBuilder()
+            _content = AutomatikoMessages.ProcessInstance.NodeInstanceContent.newBuilder()
                     .setType(NodeInstanceType.SUBPROCESS_NODE).setSubProcess(_sp.build());
         } else if (nodeInstance instanceof MilestoneNodeInstance) {
-            AutomatikMessages.ProcessInstance.NodeInstanceContent.MilestoneNode.Builder _ms = AutomatikMessages.ProcessInstance.NodeInstanceContent.MilestoneNode
+            AutomatikoMessages.ProcessInstance.NodeInstanceContent.MilestoneNode.Builder _ms = AutomatikoMessages.ProcessInstance.NodeInstanceContent.MilestoneNode
                     .newBuilder();
             List<String> timerInstances = ((MilestoneNodeInstance) nodeInstance).getTimerInstances();
             if (timerInstances != null) {
@@ -292,18 +292,18 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                     _ms.addTimerInstanceId(id);
                 }
             }
-            _content = AutomatikMessages.ProcessInstance.NodeInstanceContent.newBuilder()
+            _content = AutomatikoMessages.ProcessInstance.NodeInstanceContent.newBuilder()
                     .setType(NodeInstanceType.MILESTONE_NODE).setMilestone(_ms.build());
         } else if (nodeInstance instanceof EventNodeInstance) {
-            _content = AutomatikMessages.ProcessInstance.NodeInstanceContent.newBuilder()
+            _content = AutomatikoMessages.ProcessInstance.NodeInstanceContent.newBuilder()
                     .setType(NodeInstanceType.EVENT_NODE);
         } else if (nodeInstance instanceof TimerNodeInstance) {
-            _content = AutomatikMessages.ProcessInstance.NodeInstanceContent.newBuilder()
+            _content = AutomatikoMessages.ProcessInstance.NodeInstanceContent.newBuilder()
                     .setType(NodeInstanceType.TIMER_NODE)
-                    .setTimer(AutomatikMessages.ProcessInstance.NodeInstanceContent.TimerNode.newBuilder()
+                    .setTimer(AutomatikoMessages.ProcessInstance.NodeInstanceContent.TimerNode.newBuilder()
                             .setTimerId(((TimerNodeInstance) nodeInstance).getTimerId()).build());
         } else if (nodeInstance instanceof JoinInstance) {
-            AutomatikMessages.ProcessInstance.NodeInstanceContent.JoinNode.Builder _join = AutomatikMessages.ProcessInstance.NodeInstanceContent.JoinNode
+            AutomatikoMessages.ProcessInstance.NodeInstanceContent.JoinNode.Builder _join = AutomatikoMessages.ProcessInstance.NodeInstanceContent.JoinNode
                     .newBuilder();
             Map<Long, Integer> triggers = ((JoinInstance) nodeInstance).getTriggers();
             List<Long> keys = new ArrayList<Long>(triggers.keySet());
@@ -313,13 +313,13 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                 }
             });
             for (Long key : keys) {
-                _join.addTrigger(AutomatikMessages.ProcessInstance.NodeInstanceContent.JoinNode.JoinTrigger.newBuilder()
+                _join.addTrigger(AutomatikoMessages.ProcessInstance.NodeInstanceContent.JoinNode.JoinTrigger.newBuilder()
                         .setNodeId(key).setCounter(triggers.get(key)).build());
             }
-            _content = AutomatikMessages.ProcessInstance.NodeInstanceContent.newBuilder()
+            _content = AutomatikoMessages.ProcessInstance.NodeInstanceContent.newBuilder()
                     .setType(NodeInstanceType.JOIN_NODE).setJoin(_join.build());
         } else if (nodeInstance instanceof StateNodeInstance) {
-            AutomatikMessages.ProcessInstance.NodeInstanceContent.StateNode.Builder _state = AutomatikMessages.ProcessInstance.NodeInstanceContent.StateNode
+            AutomatikoMessages.ProcessInstance.NodeInstanceContent.StateNode.Builder _state = AutomatikoMessages.ProcessInstance.NodeInstanceContent.StateNode
                     .newBuilder();
             List<String> timerInstances = ((StateNodeInstance) nodeInstance).getTimerInstances();
             if (timerInstances != null) {
@@ -327,10 +327,10 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                     _state.addTimerInstanceId(id);
                 }
             }
-            _content = AutomatikMessages.ProcessInstance.NodeInstanceContent.newBuilder()
+            _content = AutomatikoMessages.ProcessInstance.NodeInstanceContent.newBuilder()
                     .setType(NodeInstanceType.STATE_NODE).setState(_state.build());
         } else if (nodeInstance instanceof ForEachNodeInstance) {
-            AutomatikMessages.ProcessInstance.NodeInstanceContent.ForEachNode.Builder _foreach = AutomatikMessages.ProcessInstance.NodeInstanceContent.ForEachNode
+            AutomatikoMessages.ProcessInstance.NodeInstanceContent.ForEachNode.Builder _foreach = AutomatikoMessages.ProcessInstance.NodeInstanceContent.ForEachNode
                     .newBuilder();
             ForEachNodeInstance forEachNodeInstance = (ForEachNodeInstance) nodeInstance;
             List<NodeInstance> nodeInstances = new ArrayList<NodeInstance>(forEachNodeInstance.getNodeInstances());
@@ -372,23 +372,23 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
 
             for (Map.Entry<String, Integer> level : iterationlevels) {
                 if (level.getKey() != null && level.getValue() != null) {
-                    _foreach.addIterationLevels(AutomatikMessages.IterationLevel.newBuilder().setId(level.getKey())
+                    _foreach.addIterationLevels(AutomatikoMessages.IterationLevel.newBuilder().setId(level.getKey())
                             .setLevel(level.getValue()));
                 }
             }
             _foreach.setSequentialCounter(forEachNodeInstance.getSequentialCounter());
-            _content = AutomatikMessages.ProcessInstance.NodeInstanceContent.newBuilder()
+            _content = AutomatikoMessages.ProcessInstance.NodeInstanceContent.newBuilder()
                     .setType(NodeInstanceType.FOR_EACH_NODE).setForEach(_foreach.build());
         } else if (nodeInstance instanceof CompositeContextNodeInstance) {
-            AutomatikMessages.ProcessInstance.NodeInstanceContent.CompositeContextNode.Builder _composite = AutomatikMessages.ProcessInstance.NodeInstanceContent.CompositeContextNode
+            AutomatikoMessages.ProcessInstance.NodeInstanceContent.CompositeContextNode.Builder _composite = AutomatikoMessages.ProcessInstance.NodeInstanceContent.CompositeContextNode
                     .newBuilder();
-            AutomatikMessages.ProcessInstance.NodeInstanceType _type = null;
+            AutomatikoMessages.ProcessInstance.NodeInstanceType _type = null;
             if (nodeInstance instanceof DynamicNodeInstance) {
-                _type = AutomatikMessages.ProcessInstance.NodeInstanceType.DYNAMIC_NODE;
+                _type = AutomatikoMessages.ProcessInstance.NodeInstanceType.DYNAMIC_NODE;
             } else if (nodeInstance instanceof EventSubProcessNodeInstance) {
-                _type = AutomatikMessages.ProcessInstance.NodeInstanceType.EVENT_SUBPROCESS_NODE;
+                _type = AutomatikoMessages.ProcessInstance.NodeInstanceType.EVENT_SUBPROCESS_NODE;
             } else {
-                _type = AutomatikMessages.ProcessInstance.NodeInstanceType.COMPOSITE_CONTEXT_NODE;
+                _type = AutomatikoMessages.ProcessInstance.NodeInstanceType.COMPOSITE_CONTEXT_NODE;
             }
 
             CompositeContextNodeInstance compositeNodeInstance = (CompositeContextNodeInstance) nodeInstance;
@@ -425,7 +425,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
 
             for (Map.Entry<String, Integer> level : iterationlevels) {
                 if (level.getKey() != null && level.getValue() != null) {
-                    _composite.addIterationLevels(AutomatikMessages.IterationLevel.newBuilder().setId(level.getKey())
+                    _composite.addIterationLevels(AutomatikoMessages.IterationLevel.newBuilder().setId(level.getKey())
                             .setLevel(level.getValue()));
                 }
             }
@@ -443,7 +443,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                     .getContextInstances(ExclusiveGroup.EXCLUSIVE_GROUP);
             if (exclusiveGroupInstances != null) {
                 for (ContextInstance contextInstance : exclusiveGroupInstances) {
-                    AutomatikMessages.ProcessInstance.ExclusiveGroupInstance.Builder _excl = AutomatikMessages.ProcessInstance.ExclusiveGroupInstance
+                    AutomatikoMessages.ProcessInstance.ExclusiveGroupInstance.Builder _excl = AutomatikoMessages.ProcessInstance.ExclusiveGroupInstance
                             .newBuilder();
                     ExclusiveGroupInstance exclusiveGroupInstance = (ExclusiveGroupInstance) contextInstance;
                     Collection<NodeInstance> groupNodeInstances = exclusiveGroupInstance.getNodeInstances();
@@ -453,7 +453,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                     _composite.addExclusiveGroup(_excl.build());
                 }
             }
-            _content = AutomatikMessages.ProcessInstance.NodeInstanceContent.newBuilder().setType(_type)
+            _content = AutomatikoMessages.ProcessInstance.NodeInstanceContent.newBuilder().setType(_type)
                     .setComposite(_composite.build());
         } else {
             throw new IllegalArgumentException("Unknown node instance type: " + nodeInstance);
@@ -461,9 +461,9 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         return _content.build();
     }
 
-    public static AutomatikMessages.WorkItem writeWorkItem(MarshallerWriteContext context, WorkItem workItem)
+    public static AutomatikoMessages.WorkItem writeWorkItem(MarshallerWriteContext context, WorkItem workItem)
             throws IOException {
-        AutomatikMessages.WorkItem.Builder _workItem = AutomatikMessages.WorkItem.newBuilder().setId(workItem.getId())
+        AutomatikoMessages.WorkItem.Builder _workItem = AutomatikoMessages.WorkItem.newBuilder().setId(workItem.getId())
                 .setProcessInstancesId(workItem.getProcessInstanceId()).setName(workItem.getName())
                 .setState(workItem.getState());
 
@@ -495,7 +495,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         return _workItem.build();
     }
 
-    public static WorkItem readWorkItem(MarshallerReaderContext context, AutomatikMessages.WorkItem _workItem)
+    public static WorkItem readWorkItem(MarshallerReaderContext context, AutomatikoMessages.WorkItem _workItem)
             throws IOException {
         WorkItemImpl workItem = new WorkItemImpl();
         workItem.setId(_workItem.getId());
@@ -512,7 +512,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
             workItem.setCompleteDate(new Date(_workItem.getCompleteDate()));
         }
 
-        for (AutomatikMessages.Variable _variable : _workItem.getVariableList()) {
+        for (AutomatikoMessages.Variable _variable : _workItem.getVariableList()) {
             try {
                 Object value = ProtobufProcessMarshaller.unmarshallVariableValue(context, _variable);
                 workItem.setParameter(_variable.getName(), value);
@@ -524,9 +524,9 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         return workItem;
     }
 
-    public static AutomatikMessages.HumanTaskWorkItem writeHumanTaskWorkItem(MarshallerWriteContext context,
+    public static AutomatikoMessages.HumanTaskWorkItem writeHumanTaskWorkItem(MarshallerWriteContext context,
             HumanTaskWorkItem workItem) throws IOException {
-        AutomatikMessages.HumanTaskWorkItem.Builder _workItem = AutomatikMessages.HumanTaskWorkItem.newBuilder()
+        AutomatikoMessages.HumanTaskWorkItem.Builder _workItem = AutomatikoMessages.HumanTaskWorkItem.newBuilder()
                 .setId(workItem.getId()).setProcessInstancesId(workItem.getProcessInstanceId())
                 .setName(workItem.getName()).setState(workItem.getState());
 
@@ -577,7 +577,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
     }
 
     public static HumanTaskWorkItem readHumanTaskWorkItem(MarshallerReaderContext context,
-            AutomatikMessages.HumanTaskWorkItem _workItem) throws IOException {
+            AutomatikoMessages.HumanTaskWorkItem _workItem) throws IOException {
         HumanTaskWorkItemImpl workItem = new HumanTaskWorkItemImpl();
         workItem.setId(_workItem.getId());
         workItem.setProcessInstanceId(_workItem.getProcessInstancesId());
@@ -624,7 +624,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
             workItem.getExcludedUsers().add(item);
         }
 
-        for (AutomatikMessages.Variable _variable : _workItem.getVariableList()) {
+        for (AutomatikoMessages.Variable _variable : _workItem.getVariableList()) {
             try {
                 Object value = ProtobufProcessMarshaller.unmarshallVariableValue(context, _variable);
                 workItem.setParameter(_variable.getName(), value);
@@ -639,7 +639,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
     // Input methods
     public ProcessInstance readProcessInstance(MarshallerReaderContext context) throws IOException {
 
-        AutomatikMessages.ProcessInstance _instance = (io.automatiko.engine.workflow.marshalling.impl.AutomatikMessages.ProcessInstance) context.parameterObject;
+        AutomatikoMessages.ProcessInstance _instance = (io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance) context.parameterObject;
         if (_instance == null) {
             // try to parse from the stream
             ExtensionRegistry registry = PersisterHelper.buildRegistry(context, null);
@@ -653,7 +653,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                 ioe.initCause(e);
                 throw ioe;
             }
-            _instance = AutomatikMessages.ProcessInstance.parseFrom(_header.getPayload(), registry);
+            _instance = AutomatikoMessages.ProcessInstance.parseFrom(_header.getPayload(), registry);
         }
 
         WorkflowProcessInstanceImpl processInstance = createProcessInstance();
@@ -714,18 +714,18 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                     .getDefaultContext(SwimlaneContext.SWIMLANE_SCOPE);
             SwimlaneContextInstance swimlaneContextInstance = (SwimlaneContextInstance) processInstance
                     .getContextInstance(swimlaneContext);
-            for (AutomatikMessages.ProcessInstance.SwimlaneContextInstance _swimlane : _instance
+            for (AutomatikoMessages.ProcessInstance.SwimlaneContextInstance _swimlane : _instance
                     .getSwimlaneContextList()) {
                 swimlaneContextInstance.setActorId(_swimlane.getSwimlane(), _swimlane.getActorId());
             }
         }
 
-        for (AutomatikMessages.ProcessInstance.NodeInstance _node : _instance.getNodeInstanceList()) {
+        for (AutomatikoMessages.ProcessInstance.NodeInstance _node : _instance.getNodeInstanceList()) {
             context.parameterObject = _node;
             readNodeInstance(context, processInstance, processInstance);
         }
 
-        for (AutomatikMessages.ProcessInstance.ExclusiveGroupInstance _excl : _instance.getExclusiveGroupList()) {
+        for (AutomatikoMessages.ProcessInstance.ExclusiveGroupInstance _excl : _instance.getExclusiveGroupList()) {
             ExclusiveGroupInstance exclusiveGroupInstance = new ExclusiveGroupInstance();
             processInstance.addContextInstance(ExclusiveGroup.EXCLUSIVE_GROUP, exclusiveGroupInstance);
             for (String nodeInstanceId : _excl.getGroupNodeInstanceIdList()) {
@@ -743,7 +743,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
 
         if (_instance.getIterationLevelsCount() > 0) {
 
-            for (AutomatikMessages.IterationLevel _level : _instance.getIterationLevelsList()) {
+            for (AutomatikoMessages.IterationLevel _level : _instance.getIterationLevelsList()) {
                 processInstance.getIterationLevels().put(_level.getId(), _level.getLevel());
             }
         }
@@ -751,14 +751,14 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
     }
 
     protected void readVariableScope(MarshallerReaderContext context, Process process,
-            WorkflowProcessInstanceImpl processInstance, AutomatikMessages.ProcessInstance _instance) throws IOException {
+            WorkflowProcessInstanceImpl processInstance, AutomatikoMessages.ProcessInstance _instance) throws IOException {
 
         if (_instance.getVariableCount() > 0) {
             Context variableScope = ((io.automatiko.engine.workflow.base.core.Process) process)
                     .getDefaultContext(VariableScope.VARIABLE_SCOPE);
             VariableScopeInstance variableScopeInstance = (VariableScopeInstance) processInstance
                     .getContextInstance(variableScope);
-            for (AutomatikMessages.Variable _variable : _instance.getVariableList()) {
+            for (AutomatikoMessages.Variable _variable : _instance.getVariableList()) {
                 try {
                     Object _value = ProtobufProcessMarshaller.unmarshallVariableValue(context, _variable);
                     variableScopeInstance.internalSetVariable(_variable.getName(), _value);
@@ -774,7 +774,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
 
     public NodeInstance readNodeInstance(MarshallerReaderContext context, NodeInstanceContainer nodeInstanceContainer,
             WorkflowProcessInstance processInstance) throws IOException {
-        AutomatikMessages.ProcessInstance.NodeInstance _node = (AutomatikMessages.ProcessInstance.NodeInstance) context.parameterObject;
+        AutomatikoMessages.ProcessInstance.NodeInstance _node = (AutomatikoMessages.ProcessInstance.NodeInstance) context.parameterObject;
 
         NodeInstanceImpl nodeInstance = readNodeInstanceContent(_node, context, processInstance);
 
@@ -803,7 +803,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                             .getProcess()).getDefaultContext(VariableScope.VARIABLE_SCOPE);
                     VariableScopeInstance variableScopeInstance = (VariableScopeInstance) ((CompositeContextNodeInstance) nodeInstance)
                             .getContextInstance(variableScope);
-                    for (AutomatikMessages.Variable _variable : _node.getContent().getComposite().getVariableList()) {
+                    for (AutomatikoMessages.Variable _variable : _node.getContent().getComposite().getVariableList()) {
                         try {
                             Object _value = ProtobufProcessMarshaller.unmarshallVariableValue(context, _variable);
                             variableScopeInstance.internalSetVariable(_variable.getName(), _value);
@@ -814,19 +814,19 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                 }
                 if (_node.getContent().getComposite().getIterationLevelsCount() > 0) {
 
-                    for (AutomatikMessages.IterationLevel _level : _node.getContent().getComposite()
+                    for (AutomatikoMessages.IterationLevel _level : _node.getContent().getComposite()
                             .getIterationLevelsList()) {
                         ((CompositeContextNodeInstance) nodeInstance).getIterationLevels().put(_level.getId(),
                                 _level.getLevel());
                     }
                 }
-                for (AutomatikMessages.ProcessInstance.NodeInstance _instance : _node.getContent().getComposite()
+                for (AutomatikoMessages.ProcessInstance.NodeInstance _instance : _node.getContent().getComposite()
                         .getNodeInstanceList()) {
                     context.parameterObject = _instance;
                     readNodeInstance(context, (CompositeContextNodeInstance) nodeInstance, processInstance);
                 }
 
-                for (AutomatikMessages.ProcessInstance.ExclusiveGroupInstance _excl : _node.getContent().getComposite()
+                for (AutomatikoMessages.ProcessInstance.ExclusiveGroupInstance _excl : _node.getContent().getComposite()
                         .getExclusiveGroupList()) {
                     ExclusiveGroupInstance exclusiveGroupInstance = new ExclusiveGroupInstance();
                     ((CompositeContextNodeInstance) nodeInstance).addContextInstance(ExclusiveGroup.EXCLUSIVE_GROUP,
@@ -844,13 +844,13 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                 }
                 break;
             case FOR_EACH_NODE:
-                for (AutomatikMessages.ProcessInstance.NodeInstance _instance : _node.getContent().getForEach()
+                for (AutomatikoMessages.ProcessInstance.NodeInstance _instance : _node.getContent().getForEach()
                         .getNodeInstanceList()) {
                     context.parameterObject = _instance;
                     readNodeInstance(context, (ForEachNodeInstance) nodeInstance, processInstance);
                     VariableScopeInstance variableScopeInstance = (VariableScopeInstance) ((ForEachNodeInstance) nodeInstance)
                             .getContextInstance(VariableScope.VARIABLE_SCOPE);
-                    for (AutomatikMessages.Variable _variable : _node.getContent().getForEach().getVariableList()) {
+                    for (AutomatikoMessages.Variable _variable : _node.getContent().getForEach().getVariableList()) {
                         try {
                             Object _value = ProtobufProcessMarshaller.unmarshallVariableValue(context, _variable);
                             variableScopeInstance.internalSetVariable(_variable.getName(), _value);
@@ -860,7 +860,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                     }
                     if (_node.getContent().getForEach().getIterationLevelsCount() > 0) {
 
-                        for (AutomatikMessages.IterationLevel _level : _node.getContent().getForEach()
+                        for (AutomatikoMessages.IterationLevel _level : _node.getContent().getForEach()
                                 .getIterationLevelsList()) {
                             ((ForEachNodeInstance) nodeInstance).getIterationLevels().put(_level.getId(),
                                     _level.getLevel());
@@ -869,13 +869,13 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                 }
                 break;
             case EVENT_SUBPROCESS_NODE:
-                for (AutomatikMessages.ProcessInstance.NodeInstance _instance : _node.getContent().getComposite()
+                for (AutomatikoMessages.ProcessInstance.NodeInstance _instance : _node.getContent().getComposite()
                         .getNodeInstanceList()) {
                     context.parameterObject = _instance;
                     readNodeInstance(context, (EventSubProcessNodeInstance) nodeInstance, processInstance);
                     VariableScopeInstance variableScopeInstance = (VariableScopeInstance) ((EventSubProcessNodeInstance) nodeInstance)
                             .getContextInstance(VariableScope.VARIABLE_SCOPE);
-                    for (AutomatikMessages.Variable _variable : _node.getContent().getComposite().getVariableList()) {
+                    for (AutomatikoMessages.Variable _variable : _node.getContent().getComposite().getVariableList()) {
                         try {
                             Object _value = ProtobufProcessMarshaller.unmarshallVariableValue(context, _variable);
                             variableScopeInstance.internalSetVariable(_variable.getName(), _value);
@@ -892,7 +892,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         return nodeInstance;
     }
 
-    protected NodeInstanceImpl readNodeInstanceContent(AutomatikMessages.ProcessInstance.NodeInstance _node,
+    protected NodeInstanceImpl readNodeInstanceContent(AutomatikoMessages.ProcessInstance.NodeInstance _node,
             MarshallerReaderContext context, WorkflowProcessInstance processInstance) throws IOException {
         NodeInstanceImpl nodeInstance = null;
         NodeInstanceContent _content = _node.getContent();
@@ -986,7 +986,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                 nodeInstance = new JoinInstance();
                 if (_content.getJoin().getTriggerCount() > 0) {
                     Map<Long, Integer> triggers = new HashMap<Long, Integer>();
-                    for (AutomatikMessages.ProcessInstance.NodeInstanceContent.JoinNode.JoinTrigger _join : _content
+                    for (AutomatikoMessages.ProcessInstance.NodeInstanceContent.JoinNode.JoinTrigger _join : _content
                             .getJoin().getTriggerList()) {
                         triggers.put(_join.getNodeId(), _join.getCounter());
                     }
@@ -1047,7 +1047,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
     }
 
     protected void writeVariableScope(MarshallerWriteContext context, WorkflowProcessInstanceImpl workFlow,
-            AutomatikMessages.ProcessInstance.Builder _instance) throws IOException {
+            AutomatikoMessages.ProcessInstance.Builder _instance) throws IOException {
         VariableScopeInstance variableScopeInstance = (VariableScopeInstance) workFlow
                 .getContextInstance(VariableScope.VARIABLE_SCOPE);
         List<Map.Entry<String, Object>> variables = new ArrayList<Map.Entry<String, Object>>(

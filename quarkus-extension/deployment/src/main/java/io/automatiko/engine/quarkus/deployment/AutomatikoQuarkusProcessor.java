@@ -54,6 +54,7 @@ import io.automatiko.engine.codegen.process.ProcessCodegen;
 import io.automatiko.engine.codegen.process.persistence.PersistenceGenerator;
 import io.automatiko.engine.quarkus.AutomatikoBuildTimeConfig;
 import io.automatiko.engine.services.utils.IoUtils;
+import io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
 import io.quarkus.bootstrap.BootstrapDependencyProcessingException;
 import io.quarkus.bootstrap.classloading.ClassPathElement;
@@ -76,6 +77,7 @@ import io.quarkus.deployment.builditem.LiveReloadBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyIgnoreWarningBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
 import io.quarkus.deployment.index.IndexingUtil;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
@@ -182,7 +184,13 @@ public class AutomatikoQuarkusProcessor {
         return result;
     }
 
-    @BuildStep(loadsApplicationClasses = true)
+    @BuildStep
+    public RuntimeInitializedClassBuildItem runtimeInitialization() {
+
+        return new RuntimeInitializedClassBuildItem(AutomatikoMessages.class.getCanonicalName());
+    }
+
+    @BuildStep
     public void generateModel(AutomatikoBuildTimeConfig config,
             ArchiveRootBuildItem root,
             ApplicationArchivesBuildItem archives,
@@ -270,7 +278,7 @@ public class AutomatikoQuarkusProcessor {
             reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, ArrayList.class.getCanonicalName()));
 
             providerProducer.produce(new ServiceProviderBuildItem(AutomatikoConfigProperties.class.getCanonicalName(),
-                    "io.automatiko.application.app.GeneratedAutomatikConfigProperties"));
+                    "io.automatiko.application.app.GeneratedAutomatikoConfigProperties"));
         }
     }
 
