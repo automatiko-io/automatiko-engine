@@ -42,6 +42,7 @@ public class $Type$Resource {
         identitySupplier.buildIdentityProvider(user, groups);
         return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+            tracing(pi);
             pi.send(Sig.of("$signalName$", data));
             return getSubModel_$name$(pi);
         });

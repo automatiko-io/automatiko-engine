@@ -5,7 +5,7 @@
   <bpmn2:itemDefinition id="_2_InMessageType" isCollection="false" structureRef="java.lang.String"/>
   <bpmn2:error id="Error_1" errorCode="404" name="NotFound"/>
   <bpmn2:message id="_2_InMessage" itemRef="_2_InMessageType"/>
-  <bpmn2:interface id="_2_ServiceInterface" implementationRef="https://petstore.swagger.io/v2/swagger.json" name="HelloService">
+  <bpmn2:interface id="_2_ServiceInterface" implementationRef="pet-store-swagger.json" name="HelloService">
     <bpmn2:operation id="_2_ServiceOperation" name="getUserByName">
       <bpmn2:inMessageRef>_2_InMessage</bpmn2:inMessageRef>
     </bpmn2:operation>

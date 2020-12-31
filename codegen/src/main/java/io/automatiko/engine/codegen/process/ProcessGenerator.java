@@ -243,6 +243,34 @@ public class ProcessGenerator {
                 ClassOrInterfaceDeclaration clazz = handler.findFirst(ClassOrInterfaceDeclaration.class).get();
                 if (useInjection()) {
 
+                    boolean tracingAvailable = context.getBuildContext()
+                            .hasClassAvailable("org.eclipse.microprofile.opentracing.Traced");
+
+                    if (tracingAvailable) {
+
+                        FieldDeclaration tracerField = new FieldDeclaration().addVariable(new VariableDeclarator(
+                                new ClassOrInterfaceType(null, "io.automatiko.engine.quarkus.tracing.TracingAdds"), "tracer"));
+                        annotator.withInjection(tracerField);
+                        clazz.addMember(tracerField);
+                        clazz.findAll(MethodDeclaration.class).stream()
+                                .filter(md -> md.getNameAsString().equals("executeWorkItem"))
+                                .forEach(md -> {
+                                    // add Traced nnotation on method level
+                                    md.addAnnotation("org.eclipse.microprofile.opentracing.Traced");
+                                    // next update method body to include extra tags
+                                    BlockStmt mbody = md.getBody().get();
+                                    MethodCallExpr tracer = new MethodCallExpr(new NameExpr("tracer"), "addTags")
+                                            .addArgument(new MethodCallExpr(new NameExpr("workItem"), "getProcessInstance"));
+
+                                    BlockStmt updatedBody = new BlockStmt();
+                                    updatedBody.addStatement(tracer);
+
+                                    mbody.getStatements().forEach(s -> updatedBody.addStatement(s));
+                                    md.setBody(updatedBody);
+
+                                });
+
+                    }
                     annotator.withApplicationComponent(clazz);
                     BlockStmt actionBody = new BlockStmt();
                     LambdaExpr forachBody = new LambdaExpr(new Parameter(new UnknownType(), "h"), actionBody);
@@ -272,24 +300,25 @@ public class ProcessGenerator {
                     body.addStatement(registerHandler);
                 }
                 // annotate for injection or add constructor for initialization
-                handler.findAll(FieldDeclaration.class).forEach(fd -> {
-                    if (useInjection()) {
-                        annotator.withInjection(fd);
-                    }
-                    if (descriptor.implementation().equalsIgnoreCase("##webservice") && annotator != null) {
-                        annotator.withRestClientInjection(fd);
+                handler.findAll(FieldDeclaration.class, fd -> !fd.getVariable(0).getNameAsString().equals("tracer"))
+                        .forEach(fd -> {
+                            if (useInjection()) {
+                                annotator.withInjection(fd);
+                            }
+                            if (descriptor.implementation().equalsIgnoreCase("##webservice") && annotator != null) {
+                                annotator.withRestClientInjection(fd);
 
-                    } else if (!descriptor.implementation().equalsIgnoreCase("##webservice")) {
-                        BlockStmt constructorBody = new BlockStmt();
-                        AssignExpr assignExpr = new AssignExpr(
-                                new FieldAccessExpr(new ThisExpr(), fd.getVariable(0).getNameAsString()),
-                                new ObjectCreationExpr().setType(fd.getVariable(0).getType().toString()),
-                                AssignExpr.Operator.ASSIGN);
+                            } else if (!descriptor.implementation().equalsIgnoreCase("##webservice")) {
+                                BlockStmt constructorBody = new BlockStmt();
+                                AssignExpr assignExpr = new AssignExpr(
+                                        new FieldAccessExpr(new ThisExpr(), fd.getVariable(0).getNameAsString()),
+                                        new ObjectCreationExpr().setType(fd.getVariable(0).getType().toString()),
+                                        AssignExpr.Operator.ASSIGN);
 
-                        constructorBody.addStatement(assignExpr);
-                        clazz.addConstructor(Keyword.PUBLIC).setBody(constructorBody);
-                    }
-                });
+                                constructorBody.addStatement(assignExpr);
+                                clazz.addConstructor(Keyword.PUBLIC).setBody(constructorBody);
+                            }
+                        });
 
                 additionalClasses.add(handler);
             });

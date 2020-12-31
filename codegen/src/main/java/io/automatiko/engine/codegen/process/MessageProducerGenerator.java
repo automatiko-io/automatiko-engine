@@ -188,8 +188,15 @@ public class MessageProducerGenerator {
 
         template.findAll(ClassOrInterfaceType.class).forEach(cls -> interpolateTypes(cls, trigger.getDataType()));
         template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("produce"))
-                .forEach(md -> md.getParameters().stream().filter(p -> p.getNameAsString().equals(EVENT_DATA_VAR))
-                        .forEach(p -> p.setType(trigger.getDataType())));
+                .forEach(md -> {
+
+                    md.getParameters().stream().filter(p -> p.getNameAsString().equals(EVENT_DATA_VAR))
+                            .forEach(p -> p.setType(trigger.getDataType()));
+
+                    if (context.getBuildContext().hasClassAvailable("org.eclipse.microprofile.opentracing.Traced")) {
+                        md.addAnnotation("org.eclipse.microprofile.opentracing.Traced");
+                    }
+                });
         template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("configure"))
                 .forEach(md -> md.addAnnotation("javax.annotation.PostConstruct"));
         template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("marshall"))

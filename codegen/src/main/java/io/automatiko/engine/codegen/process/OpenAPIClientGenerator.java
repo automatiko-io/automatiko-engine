@@ -251,7 +251,8 @@ public class OpenAPIClientGenerator {
                                                 String mpath = ((SingleMemberAnnotationExpr) pathAnotation.get())
                                                         .getMemberValue().asStringLiteralExpr().getValue();
                                                 ((SingleMemberAnnotationExpr) pathAnotation.get())
-                                                        .setMemberValue(new StringLiteralExpr(path + mpath));
+                                                        .setMemberValue(
+                                                                new StringLiteralExpr((path + mpath).replaceAll("//", "/")));
                                             } else {
                                                 md.addAnnotation(new SingleMemberAnnotationExpr(new Name("Path"),
                                                         new StringLiteralExpr(path)));
@@ -286,7 +287,7 @@ public class OpenAPIClientGenerator {
                                 String mpath = ((SingleMemberAnnotationExpr) pathAnotation.get())
                                         .getMemberValue().asStringLiteralExpr().getValue();
                                 ((SingleMemberAnnotationExpr) pathAnotation.get())
-                                        .setMemberValue(new StringLiteralExpr(path + mpath));
+                                        .setMemberValue(new StringLiteralExpr((path + mpath).replaceAll("//", "/")));
                             } else {
                                 cloned.addAnnotation(new SingleMemberAnnotationExpr(new Name("Path"),
                                         new StringLiteralExpr(path)));

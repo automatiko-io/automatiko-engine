@@ -23,6 +23,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.Name;
@@ -273,6 +274,24 @@ public abstract class AbstractResourceGenerator {
                     .forEach(fd -> annotator.withInjection(fd));
             template.findAll(FieldDeclaration.class, CodegenUtils::isIdentitySupplierField)
                     .forEach(fd -> annotator.withInjection(fd));
+
+            boolean tracingAvailable = context.getBuildContext()
+                    .hasClassAvailable("org.eclipse.microprofile.opentracing.Traced");
+
+            if (tracingAvailable) {
+
+                FieldDeclaration tracerField = new FieldDeclaration().addVariable(new VariableDeclarator(
+                        new ClassOrInterfaceType(null, "io.automatiko.engine.quarkus.tracing.TracingAdds"), "tracer"));
+                annotator.withInjection(tracerField);
+                template.addMember(tracerField);
+
+                template.findAll(MethodDeclaration.class, md -> md.getNameAsString().equals("tracing")).forEach(md -> {
+                    BlockStmt body = new BlockStmt();
+                    body.addStatement(
+                            new MethodCallExpr(new NameExpr("tracer"), "addTags").addArgument(new NameExpr("intance")));
+                    md.setBody(body);
+                });
+            }
         } else {
             template.findAll(FieldDeclaration.class, CodegenUtils::isProcessField)
                     .forEach(this::initializeProcessField);

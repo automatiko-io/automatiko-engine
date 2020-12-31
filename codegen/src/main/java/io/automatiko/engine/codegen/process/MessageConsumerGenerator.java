@@ -246,7 +246,14 @@ public class MessageConsumerGenerator {
                     .forEach(fd -> annotator.withConfigInjection(fd, "quarkus.automatiko.messaging.as-cloudevents"));
 
             template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("consume"))
-                    .forEach(md -> annotator.withIncomingMessage(md, sanitizedName));
+                    .forEach(md -> {
+
+                        annotator.withIncomingMessage(md, sanitizedName);
+
+                        if (context.getBuildContext().hasClassAvailable("org.eclipse.microprofile.opentracing.Traced")) {
+                            md.addAnnotation("org.eclipse.microprofile.opentracing.Traced");
+                        }
+                    });
         } else {
             template.findAll(FieldDeclaration.class, fd -> isProcessField(fd))
                     .forEach(fd -> initializeProcessField(fd, template));

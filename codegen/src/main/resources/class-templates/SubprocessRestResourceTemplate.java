@@ -228,6 +228,7 @@ public class $Type$Resource {
             ProcessInstance<$Type$> pi = subprocess_$name$.instances()
                     .findById($parentprocessid$ + ":" + id_$name$)
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+            tracing(pi);
             pi.abort();
             return getSubModel_$name$(pi);
             
@@ -264,7 +265,7 @@ public class $Type$Resource {
             ProcessInstance<$Type$> pi = subprocess_$name$.instances()
                     .findById($parentprocessid$ + ":" + id_$name$)
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
-
+            tracing(pi);
             pi.updateVariables(resource);
             return mapOutput(new $Type$Output(), pi.variables(), pi.businessKey());
 

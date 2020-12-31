@@ -110,6 +110,7 @@ public class $Type$Resource {
             
                 pi.start();
             }
+            tracing(pi);
             return getModel(pi);
         });
     }
@@ -297,7 +298,8 @@ public class $Type$Resource {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));            
-            pi.abort();
+            tracing(pi);
+            pi.abort();            
             return getModel(pi);
             
         });
@@ -337,7 +339,7 @@ public class $Type$Resource {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
-        
+            tracing(pi);
             pi.updateVariables(resource);
             return mapOutput(new $Type$Output(), pi.variables(), pi.businessKey());
         });
@@ -452,7 +454,7 @@ public class $Type$Resource {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
-        
+            tracing(pi);
             pi.tags().add(resource.getValue());
             return pi.tags().get();
         });
@@ -491,7 +493,7 @@ public class $Type$Resource {
             ProcessInstance<$Type$> pi = process.instances()
                     .findById(id)
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
-        
+            tracing(pi);
             pi.tags().remove(tagId);
             return pi.tags().get();
         });
@@ -538,5 +540,9 @@ public class $Type$Resource {
             
             output.write(image.getBytes(StandardCharsets.UTF_8));                
         }
+    }
+    
+    protected void tracing(ProcessInstance<?> intance) {
+        
     }
 }
