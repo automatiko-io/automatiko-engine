@@ -4,7 +4,13 @@ package io.automatiko.engine.workflow.base.instance;
 import java.util.Date;
 import java.util.Map;
 
+import io.automatiko.engine.api.definition.process.Node;
 import io.automatiko.engine.api.definition.process.Process;
+import io.automatiko.engine.workflow.process.core.node.ActionNode;
+import io.automatiko.engine.workflow.process.core.node.EventNode;
+import io.automatiko.engine.workflow.process.core.node.RuleSetNode;
+import io.automatiko.engine.workflow.process.core.node.SubProcessNode;
+import io.automatiko.engine.workflow.process.core.node.WorkItemNode;
 import io.automatiko.engine.workflow.process.instance.NodeInstance;
 
 /**
@@ -67,5 +73,18 @@ public interface ProcessInstance
     String getInitiator();
 
     void setInitiator(String initiator);
+
+    default boolean isFunctionFlow() {
+        return getProcess().getType().equals(Process.FUNCTION_FLOW_TYPE);
+    }
+
+    default boolean isExecutionNode(Node node) {
+        if (node instanceof WorkItemNode || node instanceof ActionNode || node instanceof RuleSetNode
+                || node instanceof SubProcessNode || node instanceof EventNode) {
+
+            return true;
+        }
+        return false;
+    }
 
 }

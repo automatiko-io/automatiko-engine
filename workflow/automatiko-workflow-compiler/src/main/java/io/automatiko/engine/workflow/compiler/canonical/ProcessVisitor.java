@@ -105,7 +105,8 @@ public class ProcessVisitor extends AbstractVisitor {
         this.nodesVisitors.put(StateNode.class, new StateNodeVisitor(nodesVisitors));
     }
 
-    public void visitProcess(WorkflowProcess process, MethodDeclaration processMethod, ProcessMetaData metadata) {
+    public void visitProcess(WorkflowProcess process, MethodDeclaration processMethod, ProcessMetaData metadata,
+            String workflowType) {
         BlockStmt body = new BlockStmt();
 
         ClassOrInterfaceType processFactoryType = new ClassOrInterfaceType(null,
@@ -115,7 +116,8 @@ public class ProcessVisitor extends AbstractVisitor {
         VariableDeclarationExpr factoryField = new VariableDeclarationExpr(processFactoryType, FACTORY_FIELD_NAME);
         MethodCallExpr assignFactoryMethod = new MethodCallExpr(new NameExpr(processFactoryType.getName().asString()),
                 "createProcess");
-        assignFactoryMethod.addArgument(new StringLiteralExpr(process.getId()));
+        assignFactoryMethod.addArgument(new StringLiteralExpr(process.getId()))
+                .addArgument(new StringLiteralExpr(workflowType));
         body.addStatement(new AssignExpr(factoryField, assignFactoryMethod, AssignExpr.Operator.ASSIGN));
 
         // item definitions

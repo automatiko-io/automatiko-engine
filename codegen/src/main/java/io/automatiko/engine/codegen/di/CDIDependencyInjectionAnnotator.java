@@ -160,4 +160,17 @@ public class CDIDependencyInjectionAnnotator implements DependencyInjectionAnnot
         node.addAnnotation("org.eclipse.microprofile.rest.client.inject.RestClient");
         return node;
     }
+
+    @Override
+    public <T extends NodeWithAnnotations<?>> T withFunction(T node) {
+        node.addAnnotation("io.quarkus.funqy.Funq");
+        return node;
+    }
+
+    @Override
+    public <T extends NodeWithAnnotations<?>> T withCloudEventMapping(T node, String trigger) {
+        node.addAnnotation(new NormalAnnotationExpr(new Name("io.quarkus.funqy.knative.events.CloudEventMapping"),
+                NodeList.nodeList(new MemberValuePair("trigger", new StringLiteralExpr(trigger)))));
+        return node;
+    }
 }

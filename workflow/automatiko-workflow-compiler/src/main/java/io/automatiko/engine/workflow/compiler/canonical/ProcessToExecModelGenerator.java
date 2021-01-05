@@ -14,6 +14,7 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.nodeTypes.NodeWithName;
 
 import io.automatiko.engine.api.definition.process.Node;
+import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.base.core.ContextContainer;
@@ -24,16 +25,18 @@ import io.automatiko.engine.workflow.process.core.node.HumanTaskNode;
 public class ProcessToExecModelGenerator {
 
     public static final ProcessToExecModelGenerator INSTANCE = new ProcessToExecModelGenerator(
-            ProcessToExecModelGenerator.class.getClassLoader());
+            ProcessToExecModelGenerator.class.getClassLoader(), Process.WORKFLOW_TYPE);
 
     private static final String PROCESS_CLASS_SUFFIX = "Process";
     private static final String MODEL_CLASS_SUFFIX = "Model";
     private static final String PROCESS_TEMPLATE_FILE = "/class-templates/ProcessTemplate.java";
 
     private final ProcessVisitor processVisitor;
+    private String workflowType;
 
-    public ProcessToExecModelGenerator(ClassLoader contextClassLoader) {
+    public ProcessToExecModelGenerator(ClassLoader contextClassLoader, String workflowType) {
         this.processVisitor = new ProcessVisitor(contextClassLoader);
+        this.workflowType = workflowType;
     }
 
     public ProcessMetaData generate(WorkflowProcess process) {
@@ -57,7 +60,7 @@ public class ProcessToExecModelGenerator {
         Optional<MethodDeclaration> processMethod = parsedClazzFile.findFirst(MethodDeclaration.class,
                 sl -> sl.getName().asString().equals("buildProcess"));
 
-        processVisitor.visitProcess(process, processMethod.get(), metadata);
+        processVisitor.visitProcess(process, processMethod.get(), metadata, workflowType);
 
         metadata.setGeneratedClassModel(parsedClazzFile);
         return metadata;
@@ -75,7 +78,7 @@ public class ProcessToExecModelGenerator {
                 ModelMetaData.version(process.getVersion()), packageName, "process", extractSourcePath(process));
 
         MethodDeclaration processMethod = new MethodDeclaration();
-        processVisitor.visitProcess(process, processMethod, metadata);
+        processVisitor.visitProcess(process, processMethod, metadata, workflowType);
 
         return processMethod;
     }

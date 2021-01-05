@@ -1,0 +1,13 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: @@name@@
+spec:
+  template:
+    metadata:
+      name: @@name@@-v1
+      annotations:
+        autoscaling.knative.dev/target: "1"
+    spec:
+      containers:
+        - image: @@user@@/@@name@@:@@version@@

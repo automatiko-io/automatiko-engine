@@ -1,0 +1,75 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.automatiko.quarkus</groupId>
+    <artifactId>automatiko-quarkus-parent</artifactId>
+    <version>0.0.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>automatiko-service-deployment</artifactId>
+  <name>Automatiko Engine :: Quarkus Extension :: Service Deployment</name>
+  <description>Service Deployment module for Quarkus Extension for Automatiko Engine</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.automatiko.quarkus</groupId>
+      <artifactId>automatiko-common-deployment</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.automatiko.quarkus</groupId>
+      <artifactId>automatiko-service</artifactId>
+    </dependency>
+    <!-- required for automatiko as service -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-resteasy-deployment</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-resteasy-jackson-deployment</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-openapi-deployment</artifactId>
+    </dependency>
+
+    <!-- metrics -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-metrics-spi</artifactId>
+      <version>${version.io.quarkus}</version>
+    </dependency>
+    
+        <!-- test -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit5-internal</artifactId>
+      <version>${version.io.quarkus}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <parameters>true</parameters>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>io.quarkus</groupId>
+              <artifactId>quarkus-extension-processor</artifactId>
+              <version>${version.io.quarkus}</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

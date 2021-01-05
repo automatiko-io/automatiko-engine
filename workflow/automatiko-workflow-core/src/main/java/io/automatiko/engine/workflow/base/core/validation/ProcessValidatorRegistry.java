@@ -12,37 +12,39 @@ import io.automatiko.engine.workflow.process.executable.core.validation.Executab
 
 public class ProcessValidatorRegistry {
 
-	private static ProcessValidatorRegistry instance;
+    private static ProcessValidatorRegistry instance;
 
-	private Map<String, ProcessValidator> defaultValidators = new ConcurrentHashMap<String, ProcessValidator>();
-	private Set<ProcessValidator> additionalValidators = new CopyOnWriteArraySet<ProcessValidator>();
+    private Map<String, ProcessValidator> defaultValidators = new ConcurrentHashMap<String, ProcessValidator>();
+    private Set<ProcessValidator> additionalValidators = new CopyOnWriteArraySet<ProcessValidator>();
 
-	private ProcessValidatorRegistry() {
-		defaultValidators.put(ExecutableProcess.RULEFLOW_TYPE, ExecutableProcessValidator.getInstance());
-	}
+    private ProcessValidatorRegistry() {
+        defaultValidators.put(ExecutableProcess.WORKFLOW_TYPE, ExecutableProcessValidator.getInstance());
+        defaultValidators.put(ExecutableProcess.FUNCTION_TYPE, ExecutableProcessValidator.getInstance());
+        defaultValidators.put(ExecutableProcess.FUNCTION_FLOW_TYPE, ExecutableProcessValidator.getInstance());
+    }
 
-	public static ProcessValidatorRegistry getInstance() {
-		if (instance == null) {
-			instance = new ProcessValidatorRegistry();
-		}
+    public static ProcessValidatorRegistry getInstance() {
+        if (instance == null) {
+            instance = new ProcessValidatorRegistry();
+        }
 
-		return instance;
-	}
+        return instance;
+    }
 
-	public void registerAdditonalValidator(ProcessValidator validator) {
-		this.additionalValidators.add(validator);
-	}
+    public void registerAdditonalValidator(ProcessValidator validator) {
+        this.additionalValidators.add(validator);
+    }
 
-	public ProcessValidator getValidator(Process process, Resource resource) {
-		if (!additionalValidators.isEmpty()) {
-			for (ProcessValidator validator : additionalValidators) {
-				boolean accepted = validator.accept(process, resource);
-				if (accepted) {
-					return validator;
-				}
-			}
-		}
+    public ProcessValidator getValidator(Process process, Resource resource) {
+        if (!additionalValidators.isEmpty()) {
+            for (ProcessValidator validator : additionalValidators) {
+                boolean accepted = validator.accept(process, resource);
+                if (accepted) {
+                    return validator;
+                }
+            }
+        }
 
-		return defaultValidators.get(process.getType());
-	}
+        return defaultValidators.get(process.getType());
+    }
 }

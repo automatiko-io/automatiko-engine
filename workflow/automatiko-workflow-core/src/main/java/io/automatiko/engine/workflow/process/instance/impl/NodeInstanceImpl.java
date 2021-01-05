@@ -190,6 +190,22 @@ public abstract class NodeInstanceImpl
     public final void trigger(NodeInstance from, String type) {
         io.automatiko.engine.workflow.process.core.Node currentNode = (io.automatiko.engine.workflow.process.core.Node) getNode();
 
+        // function flow check
+        if (getProcessInstance().isFunctionFlow() && getProcessInstance().isExecutionNode(currentNode)) {
+            Integer functionFlowCounter = (Integer) getProcessInstance().getMetaData("ATK_FUNC_FLOW_COUNTER");
+            if (functionFlowCounter == null) {
+                functionFlowCounter = 1;
+                getProcessInstance().getMetaData().put("ATK_FUNC_FLOW_COUNTER", functionFlowCounter);
+            } else {
+                // function flow already called function
+                getProcessInstance().getMetaData().remove("ATK_FUNC_FLOW_COUNTER");
+                getProcessInstance().getMetaData().put("ATK_FUNC_FLOW_NEXT", getNodeName());
+                nodeInstanceContainer.removeNodeInstance(this);
+                return;
+            }
+
+        }
+
         // check activation condition if this can be invoked
         if (currentNode.getActivationCheck().isPresent()) {
 

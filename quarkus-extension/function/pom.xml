@@ -1,0 +1,103 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.automatiko.quarkus</groupId>
+    <artifactId>automatiko-quarkus-parent</artifactId>
+    <version>0.0.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>automatiko-function</artifactId>
+  <name>Automatiko Engine :: Quarkus Extension :: Function</name>
+  <description>Add business automation capabilities as function - processes and decision with Automatiko Engine</description>
+
+  <dependencies>
+
+    <!-- quarkus -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-funqy-http</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-arc</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.quarkus.arc</groupId>
+      <artifactId>arc-processor</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+    </dependency>
+
+    <!-- automatik -->
+    <dependency>
+      <groupId>io.automatiko.quarkus</groupId>
+      <artifactId>automatiko-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.automatiko.engine</groupId>
+      <artifactId>automatiko-engine-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.automatiko.workflow</groupId>
+      <artifactId>automatiko-workflow-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.automatiko.decision</groupId>
+      <artifactId>automatiko-decision-dmn</artifactId>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jboss.jandex</groupId>
+        <artifactId>jandex-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>make-index</id>
+            <goals>
+              <goal>jandex</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-bootstrap-maven-plugin</artifactId>
+        <configuration>
+          <parameters>true</parameters>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>io.quarkus</groupId>
+              <artifactId>quarkus-extension-processor</artifactId>
+              <version>${version.io.quarkus}</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>extension-descriptor</goal>
+            </goals>
+            <phase>compile</phase>
+            <configuration>
+              <deployment>${project.groupId}:${project.artifactId}-deployment:${project.version}</deployment>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

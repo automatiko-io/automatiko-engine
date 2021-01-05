@@ -37,7 +37,7 @@
   <dependencies>
     <dependency>
       <groupId>io.automatiko.quarkus</groupId>
-      <artifactId>automatiko-quarkus</artifactId>
+      <artifactId>automatiko-service</artifactId>
     </dependency>
 
     <dependency>

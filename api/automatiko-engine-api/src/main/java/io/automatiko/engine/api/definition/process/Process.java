@@ -12,49 +12,53 @@ import io.automatiko.engine.api.io.Resource;
  */
 public interface Process {
 
-	/**
-	 * The unique id of the Process.
-	 *
-	 * @return the id
-	 */
-	String getId();
+    public static final String WORKFLOW_TYPE = "Workflow";
+    public static final String FUNCTION_TYPE = "Function";
+    public static final String FUNCTION_FLOW_TYPE = "FunctionFlow";
 
-	/**
-	 * The name of the Process.
-	 *
-	 * @return the name
-	 */
-	String getName();
+    /**
+     * The unique id of the Process.
+     *
+     * @return the id
+     */
+    String getId();
 
-	/**
-	 * The version of the Process. You may use your own versioning format (as the
-	 * version is not interpreted by the engine).
-	 *
-	 * @return the version
-	 */
-	String getVersion();
+    /**
+     * The name of the Process.
+     *
+     * @return the name
+     */
+    String getName();
 
-	/**
-	 * The package name of this process.
-	 *
-	 * @return the package name
-	 */
-	String getPackageName();
+    /**
+     * The version of the Process. You may use your own versioning format (as the
+     * version is not interpreted by the engine).
+     *
+     * @return the version
+     */
+    String getVersion();
 
-	/**
-	 * The type of process. Different types of processes may exist. This defaults to
-	 * "RuleFlow".
-	 *
-	 * @return the type
-	 */
-	String getType();
+    /**
+     * The package name of this process.
+     *
+     * @return the package name
+     */
+    String getPackageName();
 
-	/**
-	 * Meta data associated with this Node.
-	 */
-	Map<String, Object> getMetaData();
+    /**
+     * The type of process. Different types of processes may exist. This defaults to
+     * "RuleFlow".
+     *
+     * @return the type
+     */
+    String getType();
 
-	Resource getResource();
+    /**
+     * Meta data associated with this Node.
+     */
+    Map<String, Object> getMetaData();
 
-	void setResource(Resource res);
+    Resource getResource();
+
+    void setResource(Resource res);
 }

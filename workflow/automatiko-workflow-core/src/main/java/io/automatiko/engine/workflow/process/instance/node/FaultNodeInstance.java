@@ -37,6 +37,9 @@ public class FaultNodeInstance extends NodeInstanceImpl {
             throw new IllegalArgumentException("A FaultNode only accepts default incoming connections!");
         }
         triggerTime = new Date();
+        if (getProcessInstance().isFunctionFlow()) {
+            getProcessInstance().getMetaData().put("ATK_FUNC_FLOW_NEXT", getNodeName());
+        }
         String faultName = getFaultName();
         ExceptionScopeInstance exceptionScopeInstance = getExceptionScopeInstance(faultName);
         NodeInstanceContainer nodeInstanceContainer = (NodeInstanceContainer) getNodeInstanceContainer();

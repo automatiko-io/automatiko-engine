@@ -70,6 +70,8 @@ public class ModelMetaData {
     private boolean asEntity;
     private boolean removeAtCompletion;
 
+    private boolean supportsOpenApi;
+
     private String name;
     private String description;
 
@@ -170,16 +172,14 @@ public class ModelMetaData {
             modelClass.addAnnotation(new NormalAnnotationExpr(new Name("javax.persistence.Entity"),
                     NodeList.nodeList(new MemberValuePair("name",
                             new StringLiteralExpr(camelToSnake(processId.toUpperCase() + version(version).toUpperCase()))))));
-
-            //            modelClass.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("id")).forEach(fd -> {
-            //                fd.removeForced();
-            //            });
         }
 
-        modelClass.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.media.Schema"),
-                NodeList.nodeList(new MemberValuePair("name", new StringLiteralExpr(name)),
-                        new MemberValuePair("description", new StringLiteralExpr(description)))));
-
+        if (supportsOpenApi) {
+            modelClass.addAnnotation(
+                    new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.media.Schema"),
+                            NodeList.nodeList(new MemberValuePair("name", new StringLiteralExpr(name)),
+                                    new MemberValuePair("description", new StringLiteralExpr(description)))));
+        }
         if (!WorkflowProcess.PRIVATE_VISIBILITY.equals(visibility)) {
             modelClass.addAnnotation(new NormalAnnotationExpr(new Name(Generated.class.getCanonicalName()),
                     NodeList.nodeList(new MemberValuePair("value", new StringLiteralExpr("automatik-codegen")),
@@ -226,13 +226,15 @@ public class ModelMetaData {
             fd.addAnnotation(new NormalAnnotationExpr(new Name(JsonProperty.class.getCanonicalName()),
                     NodeList.nodeList(new MemberValuePair("value", new StringLiteralExpr(varName)))));
 
-            fd.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.media.Schema"),
-                    NodeList.nodeList(new MemberValuePair("name",
-                            new StringLiteralExpr(sanitizedName)),
-                            new MemberValuePair("description",
-                                    new StringLiteralExpr(
-                                            getOrDefault((String) variable.getValue().getMetaData("Documentation"), ""))))));
-
+            if (supportsOpenApi) {
+                fd.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.media.Schema"),
+                        NodeList.nodeList(new MemberValuePair("name",
+                                new StringLiteralExpr(sanitizedName)),
+                                new MemberValuePair("description",
+                                        new StringLiteralExpr(
+                                                getOrDefault((String) variable.getValue().getMetaData("Documentation"),
+                                                        ""))))));
+            }
             applyValidation(fd, tags);
             applyPersistence(variable.getValue().getType(), fd, tags);
 
@@ -350,6 +352,14 @@ public class ModelMetaData {
 
     public void setSupportsValidation(boolean supportsValidation) {
         this.supportsValidation = supportsValidation;
+    }
+
+    public boolean isSupportsOpenApi() {
+        return supportsOpenApi;
+    }
+
+    public void setSupportsOpenApi(boolean supportsOpenApi) {
+        this.supportsOpenApi = supportsOpenApi;
     }
 
     public boolean isAsEntity() {

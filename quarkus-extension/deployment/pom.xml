@@ -11,47 +11,31 @@
   </parent>
 
   <groupId>io.automatiko.quarkus</groupId>
-  <artifactId>automatiko-quarkus-deployment</artifactId>
-  <name>Automatiko Engine :: Quarkus Extension :: Deployment</name>
-  <description>Deployment module for Quarkus Extension for Automatiko Engine</description>
+  <artifactId>automatiko-common-deployment</artifactId>
+  <name>Automatiko Engine :: Quarkus Extension :: Common Deployment</name>
+  <description>Common Deployment module for Quarkus Extension for Automatiko Engine</description>
 
   <dependencies>
     <!-- quarkus -->
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-development-mode-spi</artifactId>
-      <version>${version.io.quarkus}</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-core-deployment</artifactId>
-      <version>${version.io.quarkus}</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-arc-deployment</artifactId>
-      <version>${version.io.quarkus}</version>
     </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy-deployment</artifactId>
-      <version>${version.io.quarkus}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy-jackson-deployment</artifactId>
-      <version>${version.io.quarkus}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-smallrye-openapi-deployment</artifactId>
-      <version>${version.io.quarkus}</version>
-    </dependency>
+
+
 
     <!-- automatik -->
     <dependency>
       <groupId>io.automatiko.quarkus</groupId>
-      <artifactId>automatiko-quarkus</artifactId>
+      <artifactId>automatiko-common</artifactId>
     </dependency>
     <dependency>
       <groupId>io.automatiko.build</groupId>
@@ -64,12 +48,6 @@
       </exclusions>
     </dependency>
 
-    <!-- metrics -->
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-smallrye-metrics-spi</artifactId>
-      <version>${version.io.quarkus}</version>
-    </dependency>
 
     <!-- test -->
     <dependency>

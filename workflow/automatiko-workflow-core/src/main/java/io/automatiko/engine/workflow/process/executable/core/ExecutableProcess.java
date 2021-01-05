@@ -25,12 +25,10 @@ import io.automatiko.engine.workflow.process.core.node.Trigger;
 
 public class ExecutableProcess extends WorkflowProcessImpl {
 
-    public static final String RULEFLOW_TYPE = "RuleFlow";
-
     private static final long serialVersionUID = 510l;
 
     public ExecutableProcess() {
-        setType(RULEFLOW_TYPE);
+        setType(WORKFLOW_TYPE);
         VariableScope variableScope = new VariableScope();
         addContext(variableScope);
         setDefaultContext(variableScope);

@@ -37,12 +37,16 @@ import io.automatiko.engine.workflow.process.core.node.ActionNode;
 import io.automatiko.engine.workflow.process.core.node.BoundaryEventNode;
 import io.automatiko.engine.workflow.process.core.node.CatchLinkNode;
 import io.automatiko.engine.workflow.process.core.node.CompositeNode;
+import io.automatiko.engine.workflow.process.core.node.CompositeNode.CompositeNodeEnd;
+import io.automatiko.engine.workflow.process.core.node.CompositeNode.NodeAndType;
 import io.automatiko.engine.workflow.process.core.node.DynamicNode;
 import io.automatiko.engine.workflow.process.core.node.EndNode;
 import io.automatiko.engine.workflow.process.core.node.EventNode;
 import io.automatiko.engine.workflow.process.core.node.EventSubProcessNode;
 import io.automatiko.engine.workflow.process.core.node.FaultNode;
 import io.automatiko.engine.workflow.process.core.node.ForEachNode;
+import io.automatiko.engine.workflow.process.core.node.ForEachNode.ForEachJoinNode;
+import io.automatiko.engine.workflow.process.core.node.ForEachNode.ForEachSplitNode;
 import io.automatiko.engine.workflow.process.core.node.Join;
 import io.automatiko.engine.workflow.process.core.node.MilestoneNode;
 import io.automatiko.engine.workflow.process.core.node.RuleSetNode;
@@ -53,10 +57,6 @@ import io.automatiko.engine.workflow.process.core.node.SubProcessNode;
 import io.automatiko.engine.workflow.process.core.node.ThrowLinkNode;
 import io.automatiko.engine.workflow.process.core.node.TimerNode;
 import io.automatiko.engine.workflow.process.core.node.WorkItemNode;
-import io.automatiko.engine.workflow.process.core.node.CompositeNode.CompositeNodeEnd;
-import io.automatiko.engine.workflow.process.core.node.CompositeNode.NodeAndType;
-import io.automatiko.engine.workflow.process.core.node.ForEachNode.ForEachJoinNode;
-import io.automatiko.engine.workflow.process.core.node.ForEachNode.ForEachSplitNode;
 import io.automatiko.engine.workflow.process.executable.core.ExecutableProcess;
 
 /**
@@ -671,7 +671,9 @@ public class ExecutableProcessValidator implements ProcessValidator {
 
     @Override
     public boolean accept(Process process, Resource resource) {
-        return ExecutableProcess.RULEFLOW_TYPE.equals(process.getType());
+        return ExecutableProcess.WORKFLOW_TYPE.equals(process.getType())
+                || ExecutableProcess.FUNCTION_TYPE.equals(process.getType())
+                || ExecutableProcess.FUNCTION_FLOW_TYPE.equals(process.getType());
     }
 
     protected void validateCompensationIntermediateOrEndEvent(Node node, ExecutableProcess process,

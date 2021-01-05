@@ -1,0 +1,16 @@
+---
+name: "AutomatikoFunction"
+metadata:
+  keywords:
+  - "FaaS"
+  - "knative"  
+  - "workflow"
+  - "processes"
+  - "decisions"
+  - "IoT"
+  - "automation"
+  - "funqy"
+  - "function"
+  categories:
+  - "business-automation"
+  status: "preview"

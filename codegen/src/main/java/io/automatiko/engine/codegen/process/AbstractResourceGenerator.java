@@ -281,7 +281,7 @@ public abstract class AbstractResourceGenerator {
             if (tracingAvailable) {
 
                 FieldDeclaration tracerField = new FieldDeclaration().addVariable(new VariableDeclarator(
-                        new ClassOrInterfaceType(null, "io.automatiko.engine.quarkus.tracing.TracingAdds"), "tracer"));
+                        new ClassOrInterfaceType(null, "io.automatiko.engine.service.tracing.TracingAdds"), "tracer"));
                 annotator.withInjection(tracerField);
                 template.addMember(tracerField);
 

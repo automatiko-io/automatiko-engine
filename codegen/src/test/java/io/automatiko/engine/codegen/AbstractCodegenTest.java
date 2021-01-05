@@ -47,6 +47,24 @@ public class AbstractCodegenTest {
 
     protected AutomatikoConfig config = new AutomatikoConfig();
 
+    private boolean testService;
+
+    private boolean testFunction;
+
+    private boolean testFunctionFlow;
+
+    public AbstractCodegenTest() {
+        this.testService = true;
+        this.testFunction = false;
+        this.testFunctionFlow = false;
+    }
+
+    public AbstractCodegenTest(boolean testService, boolean testFunction, boolean testFunctionFlow) {
+        this.testService = testService;
+        this.testFunction = testFunction;
+        this.testFunctionFlow = testFunctionFlow;
+    }
+
     @AfterEach
     public void cleanup() throws IOException {
         if (compilationOutcome != null) {
@@ -76,7 +94,8 @@ public class AbstractCodegenTest {
 
         // Testing based on Quarkus as Default
         context.withBuildContext(
-                new QuarkusApplicationBuildContext(config, (className -> false), c -> Collections.emptyList()));
+                new QuarkusApplicationBuildContext(config, (className -> hasClassAvailable(className)),
+                        c -> Collections.emptyList()));
 
         ApplicationGenerator appGen = new ApplicationGenerator(this.getClass().getPackage().getName(),
                 new File("target/codegen-tests")).withGeneratorContext(context).withRuleUnits(hasRuleUnit)
@@ -143,6 +162,19 @@ public class AbstractCodegenTest {
 
             throw new RuntimeException("Compilation failed");
         }
+    }
+
+    private boolean hasClassAvailable(String className) {
+        if (className.equals("javax.ws.rs.Path") && testService) {
+            return true;
+        }
+        if (className.equals("io.quarkus.funqy.Funq") && testFunction) {
+            return true;
+        }
+        if (className.equals("io.quarkus.funqy.knative.events.CloudEvent") && testFunctionFlow) {
+            return true;
+        }
+        return false;
     }
 
     protected ClassLoader testClassLoader() {

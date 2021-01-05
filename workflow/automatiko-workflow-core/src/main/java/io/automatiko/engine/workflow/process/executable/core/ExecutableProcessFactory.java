@@ -74,13 +74,18 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
     private static final Logger logger = LoggerFactory.getLogger(ExecutableProcessFactory.class);
 
     public static ExecutableProcessFactory createProcess(String id) {
-        return new ExecutableProcessFactory(id);
+        return new ExecutableProcessFactory(id, ExecutableProcess.WORKFLOW_TYPE);
     }
 
-    protected ExecutableProcessFactory(String id) {
+    public static ExecutableProcessFactory createProcess(String id, String type) {
+        return new ExecutableProcessFactory(id, type);
+    }
+
+    protected ExecutableProcessFactory(String id, String type) {
         ExecutableProcess process = new ExecutableProcess();
         process.setId(id);
         process.setAutoComplete(true);
+        process.setType(type);
         setNodeContainer(process);
     }
 

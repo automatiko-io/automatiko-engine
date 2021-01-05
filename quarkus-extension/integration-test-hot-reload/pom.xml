@@ -12,18 +12,18 @@
 
     <groupId>io.automatiko.quarkus</groupId>
     <artifactId>automatiko-quarkus-integration-test-hot-reload</artifactId>
-    <name>Automatiko Engine  :: Quarkus Extension :: Integration Tests (Hot Reload)</name>
+    <name>Automatiko Engine :: Quarkus Extension :: Integration Tests (Hot Reload)</name>
 
     <dependencies>
         <dependency>
             <groupId>io.automatiko.quarkus</groupId>
-            <artifactId>automatiko-quarkus</artifactId>
+            <artifactId>automatiko-service</artifactId>
         </dependency>
 
         <!-- this is used implicitly by hot reload tests so let's make Maven aware of it -->
         <dependency>
             <groupId>io.automatiko.quarkus</groupId>
-            <artifactId>automatiko-quarkus-deployment</artifactId>
+            <artifactId>automatiko-service-deployment</artifactId>
             <version>${project.version}</version>
         </dependency>
 

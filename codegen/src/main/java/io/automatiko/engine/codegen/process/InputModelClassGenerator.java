@@ -43,6 +43,7 @@ public class InputModelClassGenerator {
                 "Input data model for " + workFlowProcess.getName(),
                 "Describes input data model expected by " + workFlowProcess.getName());
         modelMetaData.setSupportsValidation(context.getBuildContext().isValidationSupported());
+        modelMetaData.setSupportsOpenApi(context.getBuildContext().isOpenApiSupported());
 
         modelFileName = modelMetaData.getModelClassName().replace('.', '/') + ".java";
         return modelMetaData;

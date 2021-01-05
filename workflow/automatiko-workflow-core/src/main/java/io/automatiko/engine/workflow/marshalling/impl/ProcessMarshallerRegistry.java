@@ -11,21 +11,24 @@ import io.automatiko.engine.workflow.process.executable.core.ExecutableProcess;
  */
 public class ProcessMarshallerRegistry {
 
-	public static ProcessMarshallerRegistry INSTANCE = new ProcessMarshallerRegistry();
+    public static ProcessMarshallerRegistry INSTANCE = new ProcessMarshallerRegistry();
 
-	private Map<String, ProcessInstanceMarshaller> registry;
+    private Map<String, ProcessInstanceMarshaller> registry;
 
-	private ProcessMarshallerRegistry() {
-		this.registry = new HashMap<String, ProcessInstanceMarshaller>();
-		register(ExecutableProcess.RULEFLOW_TYPE, ProtobufRuleFlowProcessInstanceMarshaller.INSTANCE);
-	}
+    private ProcessMarshallerRegistry() {
+        this.registry = new HashMap<String, ProcessInstanceMarshaller>();
+        register("RuleFlow", ProtobufRuleFlowProcessInstanceMarshaller.INSTANCE);
+        register(ExecutableProcess.WORKFLOW_TYPE, ProtobufRuleFlowProcessInstanceMarshaller.INSTANCE);
+        register(ExecutableProcess.FUNCTION_TYPE, ProtobufRuleFlowProcessInstanceMarshaller.INSTANCE);
+        register(ExecutableProcess.FUNCTION_FLOW_TYPE, ProtobufRuleFlowProcessInstanceMarshaller.INSTANCE);
+    }
 
-	public void register(String type, ProcessInstanceMarshaller marchaller) {
-		this.registry.put(type, marchaller);
-	}
+    public void register(String type, ProcessInstanceMarshaller marchaller) {
+        this.registry.put(type, marchaller);
+    }
 
-	public ProcessInstanceMarshaller getMarshaller(String type) {
-		return this.registry.get(type);
-	}
+    public ProcessInstanceMarshaller getMarshaller(String type) {
+        return this.registry.get(type);
+    }
 
 }

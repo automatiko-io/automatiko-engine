@@ -267,6 +267,8 @@ public class ProcessCodegen extends AbstractGenerator {
         List<ProcessInstanceGenerator> pis = new ArrayList<>();
         List<ProcessExecutableModelGenerator> processExecutableModelGenerators = new ArrayList<>();
         List<AbstractResourceGenerator> rgs = new ArrayList<>(); // REST resources
+        List<FunctionGenerator> fgs = new ArrayList<>(); // Function resources
+        List<FunctionFlowGenerator> ffgs = new ArrayList<>(); // Function flow resources
         List<MessageDataEventGenerator> mdegs = new ArrayList<>(); // message data events
         Set<MessageConsumerGenerator> megs = new LinkedHashSet<>(); // message endpoints/consumers
         List<MessageProducerGenerator> mpgs = new ArrayList<>(); // message producers
@@ -301,10 +303,16 @@ public class ProcessCodegen extends AbstractGenerator {
             UserTasksModelClassGenerator utcg = new UserTasksModelClassGenerator(entry.getValue());
             processIdToUserTaskModel.put(entry.getKey(), utcg.generate());
         }
+        String workflowType = Process.WORKFLOW_TYPE;
+        if (isFunctionFlowProject()) {
+            workflowType = Process.FUNCTION_FLOW_TYPE;
+        } else if (isFunctionProject()) {
+            workflowType = Process.FUNCTION_TYPE;
+        }
 
         // then we can instantiate the exec model generator
         // with the data classes that we have already resolved
-        ProcessToExecModelGenerator execModelGenerator = new ProcessToExecModelGenerator(contextClassLoader);
+        ProcessToExecModelGenerator execModelGenerator = new ProcessToExecModelGenerator(contextClassLoader, workflowType);
 
         // collect all process descriptors (exec model)
         for (Entry<String, WorkflowProcess> entry : processes.entrySet()) {
@@ -338,47 +346,56 @@ public class ProcessCodegen extends AbstractGenerator {
                     classPrefix, modelClassGenerator.generate());
 
             ProcessMetaData metaData = processIdToMetadata.get(execModelGen.getProcessId());
+            if (isFunctionFlowProject()) {
+                ffgs.add(new FunctionFlowGenerator(context(), workFlowProcess, modelClassGenerator.className(),
+                        execModelGen.className(),
+                        applicationCanonicalName).withDependencyInjection(annotator));
+            } else if (isFunctionProject()) {
+                fgs.add(new FunctionGenerator(context(), workFlowProcess, modelClassGenerator.className(),
+                        execModelGen.className(),
+                        applicationCanonicalName).withDependencyInjection(annotator));
+            } else if (isServiceProject()) {
+                if (isPublic(workFlowProcess)) {
 
-            if (isPublic(workFlowProcess)) {
+                    // Creating and adding the ResourceGenerator
+                    resourceGeneratorFactory
+                            .create(context(), workFlowProcess, modelClassGenerator.className(), execModelGen.className(),
+                                    applicationCanonicalName)
+                            .map(r -> r.withDependencyInjection(annotator).withParentProcess(null)
+                                    .withUserTasks(processIdToUserTaskModel.get(execModelGen.getProcessId()))
+                                    .withPathPrefix("{id}").withSignals(metaData.getSignals())
+                                    .withTriggers(metaData.isStartable(), metaData.isDynamic())
+                                    .withSubProcesses(populateSubprocesses(workFlowProcess,
+                                            processIdToMetadata.get(execModelGen.getProcessId()), processIdToMetadata,
+                                            processIdToModelGenerator, processExecutableModelGenerators,
+                                            processIdToUserTaskModel)))
+                            .ifPresent(rgs::add);
+                }
+                if (metaData.getTriggers() != null) {
 
-                // Creating and adding the ResourceGenerator
-                resourceGeneratorFactory
-                        .create(context(), workFlowProcess, modelClassGenerator.className(), execModelGen.className(),
-                                applicationCanonicalName)
-                        .map(r -> r.withDependencyInjection(annotator).withParentProcess(null)
-                                .withUserTasks(processIdToUserTaskModel.get(execModelGen.getProcessId()))
-                                .withPathPrefix("{id}").withSignals(metaData.getSignals())
-                                .withTriggers(metaData.isStartable(), metaData.isDynamic())
-                                .withSubProcesses(populateSubprocesses(workFlowProcess,
-                                        processIdToMetadata.get(execModelGen.getProcessId()), processIdToMetadata,
-                                        processIdToModelGenerator, processExecutableModelGenerators,
-                                        processIdToUserTaskModel)))
-                        .ifPresent(rgs::add);
-            }
-            if (metaData.getTriggers() != null) {
+                    for (TriggerMetaData trigger : metaData.getTriggers()) {
 
-                for (TriggerMetaData trigger : metaData.getTriggers()) {
+                        // generate message consumers for processes with message start events
+                        if (isPublic(workFlowProcess)
+                                && trigger.getType().equals(TriggerMetaData.TriggerType.ConsumeMessage)) {
 
-                    // generate message consumers for processes with message start events
-                    if (isPublic(workFlowProcess)
-                            && trigger.getType().equals(TriggerMetaData.TriggerType.ConsumeMessage)) {
+                            MessageDataEventGenerator msgDataEventGenerator = new MessageDataEventGenerator(workFlowProcess,
+                                    trigger).withDependencyInjection(annotator);
+                            mdegs.add(msgDataEventGenerator);
 
-                        MessageDataEventGenerator msgDataEventGenerator = new MessageDataEventGenerator(workFlowProcess,
-                                trigger).withDependencyInjection(annotator);
-                        mdegs.add(msgDataEventGenerator);
+                            megs.add(new MessageConsumerGenerator(context(), workFlowProcess,
+                                    modelClassGenerator.className(), execModelGen.className(), applicationCanonicalName,
+                                    msgDataEventGenerator.className(), trigger).withDependencyInjection(annotator));
+                        } else if (trigger.getType().equals(TriggerMetaData.TriggerType.ProduceMessage)) {
 
-                        megs.add(new MessageConsumerGenerator(context(), workFlowProcess,
-                                modelClassGenerator.className(), execModelGen.className(), applicationCanonicalName,
-                                msgDataEventGenerator.className(), trigger).withDependencyInjection(annotator));
-                    } else if (trigger.getType().equals(TriggerMetaData.TriggerType.ProduceMessage)) {
+                            MessageDataEventGenerator msgDataEventGenerator = new MessageDataEventGenerator(workFlowProcess,
+                                    trigger).withDependencyInjection(annotator);
+                            mdegs.add(msgDataEventGenerator);
 
-                        MessageDataEventGenerator msgDataEventGenerator = new MessageDataEventGenerator(workFlowProcess,
-                                trigger).withDependencyInjection(annotator);
-                        mdegs.add(msgDataEventGenerator);
-
-                        mpgs.add(new MessageProducerGenerator(context(), workFlowProcess,
-                                modelClassGenerator.className(), execModelGen.className(),
-                                msgDataEventGenerator.className(), trigger).withDependencyInjection(annotator));
+                            mpgs.add(new MessageProducerGenerator(context(), workFlowProcess,
+                                    modelClassGenerator.className(), execModelGen.className(),
+                                    msgDataEventGenerator.className(), trigger).withDependencyInjection(annotator));
+                        }
                     }
                 }
             }
@@ -398,9 +415,7 @@ public class ProcessCodegen extends AbstractGenerator {
             pis.add(pi);
         }
 
-        for (
-
-        ModelClassGenerator modelClassGenerator : processIdToModelGenerator.values()) {
+        for (ModelClassGenerator modelClassGenerator : processIdToModelGenerator.values()) {
             ModelMetaData mmd = modelClassGenerator.generate();
             storeFile(Type.MODEL, modelClassGenerator.generatedFilePath(), mmd.generate());
         }
@@ -428,6 +443,14 @@ public class ProcessCodegen extends AbstractGenerator {
 
         for (AbstractResourceGenerator resourceGenerator : rgs) {
             storeFile(Type.REST, resourceGenerator.generatedFilePath(), resourceGenerator.generate());
+        }
+
+        for (FunctionGenerator functionGenerator : fgs) {
+            storeFile(Type.FUNCTION, functionGenerator.generatedFilePath(), functionGenerator.generate());
+        }
+
+        for (FunctionFlowGenerator functionFlowGenerator : ffgs) {
+            storeFile(Type.FUNCTION_FLOW, functionFlowGenerator.generatedFilePath(), functionFlowGenerator.generate());
         }
 
         for (MessageDataEventGenerator messageDataEventGenerator : mdegs) {

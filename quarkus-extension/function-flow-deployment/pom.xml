@@ -1,0 +1,52 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.automatiko.quarkus</groupId>
+    <artifactId>automatiko-quarkus-parent</artifactId>
+    <version>0.0.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>automatiko-function-flow-deployment</artifactId>
+
+  <name>Automatiko Engine :: Quarkus Extension :: Function Flow Deployment</name>
+  <description>Function Flow Deployment module for Quarkus Extension for Automatiko Engine</description>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>io.automatiko.quarkus</groupId>
+      <artifactId>automatiko-common-deployment</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.automatiko.quarkus</groupId>
+      <artifactId>automatiko-function-flow</artifactId>
+    </dependency>
+    <!-- required for automatiko as function flow -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-funqy-server-common-deployment</artifactId>
+    </dependency>    
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-funqy-knative-events-deployment</artifactId>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <parameters>true</parameters>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>io.quarkus</groupId>
+              <artifactId>quarkus-extension-processor</artifactId>
+              <version>${version.io.quarkus}</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

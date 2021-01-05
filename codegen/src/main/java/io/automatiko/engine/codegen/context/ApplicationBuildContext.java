@@ -21,4 +21,8 @@ public interface ApplicationBuildContext {
     default boolean isEntitiesSupported() {
         return hasClassAvailable(CodeGenConstants.ENTITY_CLASS);
     }
+
+    default boolean isOpenApiSupported() {
+        return hasClassAvailable(CodeGenConstants.JAXRS_PATH);
+    }
 }

@@ -32,6 +32,7 @@ public class ModelClassGenerator {
         modelFileName = modelMetaData.getModelClassName().replace('.', '/') + ".java";
 
         modelMetaData.setSupportsValidation(context.getBuildContext().isValidationSupported());
+        modelMetaData.setSupportsOpenApi(context.getBuildContext().isOpenApiSupported());
 
         modelMetaData.setAsEntity(context.getBuildContext().isEntitiesSupported(),
                 context.getBuildContext().config().persistence().database().removeAtCompletion().orElse(false));

@@ -25,7 +25,7 @@ import javax.validation.Valid;{{/useBeanValidation}}
 
 @org.eclipse.microprofile.rest.client.inject.RegisterRestClient(configKey="{{#lowercase}}{{classname}}{{/lowercase}}")
 @org.eclipse.microprofile.rest.client.annotation.RegisterClientHeaders(value = {{classname}}.HeaderConfig.class)
-@org.eclipse.microprofile.rest.client.annotation.RegisterProvider(value = io.automatiko.engine.quarkus.rest.LoggingRestClientFilter.class)
+@org.eclipse.microprofile.rest.client.annotation.RegisterProvider(value = io.automatiko.engine.service.rest.LoggingRestClientFilter.class)
 @Path("/{{{baseName}}}"){{#useSwaggerAnnotations}}
 @Api(description = "the {{{baseName}}} API"){{/useSwaggerAnnotations}}{{#hasConsumes}}
 @Consumes({ {{#consumes}}"{{{mediaType}}}"{{#hasMore}}, {{/hasMore}}{{/consumes}} }){{/hasConsumes}}{{#hasProduces}}

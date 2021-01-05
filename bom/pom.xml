@@ -260,12 +260,56 @@
       <!-- Quarkus extension -->
       <dependency>
         <groupId>io.automatiko.quarkus</groupId>
-        <artifactId>automatiko-quarkus</artifactId>
+        <artifactId>automatiko-common-deployment</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>io.automatiko.quarkus</groupId>
-        <artifactId>automatiko-quarkus</artifactId>
+        <artifactId>automatiko-common-deployment</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency> 
+      <dependency>
+        <groupId>io.automatiko.quarkus</groupId>
+        <artifactId>automatiko-common</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.quarkus</groupId>
+        <artifactId>automatiko-common</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>      
+      <dependency>
+        <groupId>io.automatiko.quarkus</groupId>
+        <artifactId>automatiko-service</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.quarkus</groupId>
+        <artifactId>automatiko-service</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.quarkus</groupId>
+        <artifactId>automatiko-function</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.quarkus</groupId>
+        <artifactId>automatiko-function</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.quarkus</groupId>
+        <artifactId>automatiko-function-flow</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.quarkus</groupId>
+        <artifactId>automatiko-function-flow</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>

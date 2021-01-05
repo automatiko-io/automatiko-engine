@@ -249,7 +249,7 @@ public class ProcessGenerator {
                     if (tracingAvailable) {
 
                         FieldDeclaration tracerField = new FieldDeclaration().addVariable(new VariableDeclarator(
-                                new ClassOrInterfaceType(null, "io.automatiko.engine.quarkus.tracing.TracingAdds"), "tracer"));
+                                new ClassOrInterfaceType(null, "io.automatiko.engine.service.tracing.TracingAdds"), "tracer"));
                         annotator.withInjection(tracerField);
                         clazz.addMember(tracerField);
                         clazz.findAll(MethodDeclaration.class).stream()
