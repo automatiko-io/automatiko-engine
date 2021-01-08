@@ -18,11 +18,19 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-core</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-security</artifactId>
+    </dependency>
 
     <!-- automatik -->
     <dependency>
       <groupId>io.automatiko.engine</groupId>
       <artifactId>automatiko-engine-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.automatiko.engine</groupId>
+      <artifactId>automatiko-engine-common</artifactId>
     </dependency>
   </dependencies>
 </project>

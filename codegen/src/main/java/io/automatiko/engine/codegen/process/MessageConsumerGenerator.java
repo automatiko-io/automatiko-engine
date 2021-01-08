@@ -58,6 +58,8 @@ public class MessageConsumerGenerator {
 
     private TriggerMetaData trigger;
 
+    private boolean persistence;
+
     public MessageConsumerGenerator(GeneratorContext context, WorkflowProcess process, String modelfqcn,
             String processfqcn, String appCanonicalName, String messageDataEventClassName, TriggerMetaData trigger) {
         this.context = context;
@@ -78,6 +80,11 @@ public class MessageConsumerGenerator {
 
     public MessageConsumerGenerator withDependencyInjection(DependencyInjectionAnnotator annotator) {
         this.annotator = annotator;
+        return this;
+    }
+
+    public MessageConsumerGenerator withPersistence(boolean persistence) {
+        this.persistence = persistence;
         return this;
     }
 

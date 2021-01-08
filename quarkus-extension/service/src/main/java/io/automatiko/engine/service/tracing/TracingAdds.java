@@ -21,14 +21,16 @@ public class TracingAdds {
     public void addTags(ProcessInstance<?> instance) {
         if (tracer.isResolvable()) {
             Tracer tracerInstance = tracer.get();
-            tracerInstance.activeSpan().setTag("atk.instance.id", instance.id());
+            tracerInstance.activeSpan().setTag("workflow.instance.id", instance.id());
+            tracerInstance.activeSpan().setTag("workflow.root.instance.id",
+                    instance.rootProcessInstanceId() == null ? instance.id() : instance.rootProcessInstanceId());
             if (instance.businessKey() != null) {
-                tracerInstance.activeSpan().setTag("atk.business.key", instance.businessKey());
+                tracerInstance.activeSpan().setTag("workflow.business.key", instance.businessKey());
             }
 
             Collection<String> tags = instance.tags().values();
             if (!tags.isEmpty()) {
-                tracerInstance.activeSpan().setTag("atk.instance.tags",
+                tracerInstance.activeSpan().setTag("workflow.instance.tags",
                         tags.stream().collect(Collectors.joining(",")));
             }
         }
@@ -37,13 +39,15 @@ public class TracingAdds {
     public void addTags(io.automatiko.engine.api.runtime.process.ProcessInstance instance) {
         if (tracer.isResolvable()) {
             Tracer tracerInstance = tracer.get();
-            tracerInstance.activeSpan().setTag("atk.instance.id", instance.getId());
+            tracerInstance.activeSpan().setTag("workflow.instance.id", instance.getId());
+            tracerInstance.activeSpan().setTag("workflow.root.instance.id",
+                    instance.getRootProcessInstanceId() == null ? instance.getId() : instance.getRootProcessInstanceId());
             if (instance.getCorrelationKey() != null) {
-                tracerInstance.activeSpan().setTag("atk.business.key", instance.getCorrelationKey());
+                tracerInstance.activeSpan().setTag("workflow.business.key", instance.getCorrelationKey());
             }
             Collection<Tag> tags = ((WorkflowProcessInstance) instance).getTags();
             if (!tags.isEmpty()) {
-                tracerInstance.activeSpan().setTag("atk.instance.tags",
+                tracerInstance.activeSpan().setTag("workflow.instance.tags",
                         tags.stream().map(t -> t.getValue())
                                 .collect(Collectors.joining(",")));
             }

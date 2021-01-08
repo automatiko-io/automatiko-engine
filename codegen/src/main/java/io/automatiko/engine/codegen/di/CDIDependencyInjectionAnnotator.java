@@ -173,4 +173,16 @@ public class CDIDependencyInjectionAnnotator implements DependencyInjectionAnnot
                 NodeList.nodeList(new MemberValuePair("trigger", new StringLiteralExpr(trigger)))));
         return node;
     }
+
+    @Override
+    public <T extends NodeWithAnnotations<?>> T withBlocking(T node) {
+        node.addAnnotation("io.smallrye.common.annotation.Blocking");
+        return node;
+    }
+
+    @Override
+    public <T extends NodeWithAnnotations<?>> T withBlockingMessaging(T node) {
+        node.addAnnotation("io.smallrye.reactive.messaging.annotations.Blocking");
+        return node;
+    }
 }

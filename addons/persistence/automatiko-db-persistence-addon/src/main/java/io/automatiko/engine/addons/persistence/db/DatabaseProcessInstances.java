@@ -47,7 +47,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
     public Optional<ProcessInstance<ProcessInstanceEntity>> findById(String id, ProcessInstanceReadMode mode) {
         String resolvedId = resolveId(id);
 
-        Optional<ProcessInstanceEntity> found = (Optional<ProcessInstanceEntity>) JpaOperations.findByIdOptional(type,
+        Optional<ProcessInstanceEntity> found = (Optional<ProcessInstanceEntity>) JpaOperations.INSTANCE.findByIdOptional(type,
                 resolvedId);
 
         if (found.isEmpty()) {
@@ -60,7 +60,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
     @Override
     public Collection<? extends ProcessInstance<ProcessInstanceEntity>> findByIdOrTag(ProcessInstanceReadMode mode,
             String... values) {
-        return JpaOperations.stream(type, "id in (?1) or (?1) in elements(tags) ", Arrays.asList(values))
+        return JpaOperations.INSTANCE.stream(type, "id in (?1) or (?1) in elements(tags) ", Arrays.asList(values))
                 .map(e -> {
                     try {
                         return unmarshallInstance(mode, ((ProcessInstanceEntity) e));
@@ -75,7 +75,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
 
     @Override
     public Collection<ProcessInstance<ProcessInstanceEntity>> values(ProcessInstanceReadMode mode, int page, int size) {
-        return JpaOperations.findAll(type).page(calculatePage(page, size), size).stream()
+        return JpaOperations.INSTANCE.findAll(type).page(calculatePage(page, size), size).stream()
                 .map(e -> {
                     try {
                         return unmarshallInstance(mode, ((ProcessInstanceEntity) e));
@@ -89,14 +89,14 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
 
     @Override
     public Integer size() {
-        return (int) JpaOperations.count(type);
+        return (int) JpaOperations.INSTANCE.count(type);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public boolean exists(String id) {
         String resolvedId = resolveId(id);
-        Optional<ProcessInstanceEntity> found = (Optional<ProcessInstanceEntity>) JpaOperations.findByIdOptional(type,
+        Optional<ProcessInstanceEntity> found = (Optional<ProcessInstanceEntity>) JpaOperations.INSTANCE.findByIdOptional(type,
                 resolvedId);
         return found.isPresent();
     }
@@ -115,9 +115,9 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
     public void remove(String id, ProcessInstance<ProcessInstanceEntity> instance) {
         ProcessInstanceEntity entity = instance.variables();
         // run persist to make sure entities of the root are stored
-        JpaOperations.persist(entity);
+        JpaOperations.INSTANCE.persist(entity);
         // then delete the root one
-        JpaOperations.deleteById(type, resolveId(id, instance));
+        JpaOperations.INSTANCE.deleteById(type, resolveId(id, instance));
     }
 
     protected void store(String id, ProcessInstance<ProcessInstanceEntity> instance) {
@@ -138,7 +138,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
 
             entity.tags = new HashSet<>(instance.tags().values());
 
-            JpaOperations.persist(entity);
+            JpaOperations.INSTANCE.persist(entity);
             disconnect(instance);
         }
     }
@@ -147,7 +147,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
         ((AbstractProcessInstance<?>) instance).internalRemoveProcessInstance(() -> {
 
             try {
-                ProcessInstanceEntity entity = (ProcessInstanceEntity) JpaOperations.findById(type,
+                ProcessInstanceEntity entity = (ProcessInstanceEntity) JpaOperations.INSTANCE.findById(type,
                         resolveId(instance.id(), instance));
                 byte[] reloaded = entity.content;
 

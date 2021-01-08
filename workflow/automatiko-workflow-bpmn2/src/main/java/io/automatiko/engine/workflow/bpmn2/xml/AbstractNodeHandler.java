@@ -98,6 +98,11 @@ public abstract class AbstractNodeHandler extends BaseAbstractHandler implements
 
     public Object start(final String uri, final String localName, final Attributes attrs,
             final ExtensibleXmlParser parser) throws SAXException {
+        dataInputs = new HashMap<String, String>();
+        dataOutputs = new HashMap<String, String>();
+        dataInputTypes = new HashMap<String, String>();
+        dataOutputTypes = new HashMap<String, String>();
+
         parser.startElementBuilder(localName, attrs);
         final Node node = createNode(attrs);
         String id = attrs.getValue("id");
@@ -106,28 +111,10 @@ public abstract class AbstractNodeHandler extends BaseAbstractHandler implements
         node.setName(name);
         node.setMetaData(INPUT_TYPES, dataInputTypes);
         node.setMetaData(OUTPUT_TYPES, dataOutputTypes);
-        if ("true".equalsIgnoreCase(System.getProperty("jbpm.v5.id.strategy"))) {
-            try {
-                // remove starting _
-                id = id.substring(1);
-                // remove ids of parent nodes
-                id = id.substring(id.lastIndexOf("-") + 1);
-                node.setId(Integer.parseInt(id));
-            } catch (NumberFormatException e) {
-                // id is not in the expected format, generating a new one
-                long newId = 0;
-                NodeContainer nodeContainer = (NodeContainer) parser.getParent();
-                for (io.automatiko.engine.api.definition.process.Node n : nodeContainer.getNodes()) {
-                    if (n.getId() > newId) {
-                        newId = n.getId();
-                    }
-                }
-                ((io.automatiko.engine.workflow.process.core.Node) node).setId(++newId);
-            }
-        } else {
-            AtomicInteger idGen = (AtomicInteger) parser.getMetaData().get("idGen");
-            node.setId(idGen.getAndIncrement());
-        }
+
+        AtomicInteger idGen = (AtomicInteger) parser.getMetaData().get("idGen");
+        node.setId(idGen.getAndIncrement());
+
         return node;
     }
 

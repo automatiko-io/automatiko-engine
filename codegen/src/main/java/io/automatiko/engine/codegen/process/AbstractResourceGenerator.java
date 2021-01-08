@@ -80,6 +80,8 @@ public abstract class AbstractResourceGenerator {
     private Map<String, String> signals;
     private List<AbstractResourceGenerator> subprocesses;
 
+    private boolean persistence;
+
     public AbstractResourceGenerator(GeneratorContext context, WorkflowProcess process, String modelfqcn,
             String processfqcn, String appCanonicalName) {
         this.context = context;
@@ -107,6 +109,11 @@ public abstract class AbstractResourceGenerator {
             this.parentProcessName = "subprocess_" + processInfo;
             this.parentProcessId = "id_" + processInfo;
         }
+        return this;
+    }
+
+    public AbstractResourceGenerator withPersistence(boolean persistence) {
+        this.persistence = persistence;
         return this;
     }
 
@@ -267,6 +274,7 @@ public abstract class AbstractResourceGenerator {
         template.findAll(MethodCallExpr.class).forEach(this::interpolateMethodCall);
 
         if (useInjection()) {
+
             template.findAll(FieldDeclaration.class, CodegenUtils::isProcessField)
                     .forEach(fd -> annotator.withNamedInjection(fd, processId + version));
 

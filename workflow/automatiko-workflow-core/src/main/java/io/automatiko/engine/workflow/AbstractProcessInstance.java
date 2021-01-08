@@ -157,8 +157,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         ((WorkflowProcessInstanceImpl) processInstance).setMetaData("AutomatikProcessInstance", this);
         addCompletionEventListener();
 
-        for (io.automatiko.engine.api.runtime.process.NodeInstance nodeInstance : ((WorkflowProcessInstance) processInstance)
-                .getNodeInstances()) {
+        for (io.automatiko.engine.api.runtime.process.NodeInstance nodeInstance : ((WorkflowProcessInstanceImpl) processInstance)
+                .getNodeInstances(true)) {
             if (nodeInstance instanceof WorkItemNodeInstance) {
                 ((WorkItemNodeInstance) nodeInstance).internalRegisterWorkItem();
             }

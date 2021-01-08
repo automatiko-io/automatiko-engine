@@ -11,19 +11,16 @@ import java.util.regex.Matcher;
 
 import org.mvel2.MVEL;
 
-import io.automatiko.engine.api.runtime.process.DataTransformer;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.api.workflow.datatype.DataType;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.core.event.EventTransformer;
-import io.automatiko.engine.workflow.base.core.impl.DataTransformerRegistry;
 import io.automatiko.engine.workflow.base.instance.InternalProcessRuntime;
 import io.automatiko.engine.workflow.base.instance.context.variable.VariableScopeInstance;
 import io.automatiko.engine.workflow.base.instance.impl.util.VariableUtil;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
 import io.automatiko.engine.workflow.process.core.node.StartNode;
-import io.automatiko.engine.workflow.process.core.node.Transformation;
 import io.automatiko.engine.workflow.process.instance.impl.NodeInstanceImpl;
 import io.automatiko.engine.workflow.process.instance.impl.NodeInstanceResolverFactory;
 import io.automatiko.engine.workflow.util.PatternConstants;
@@ -61,30 +58,32 @@ public class StartNodeInstance extends NodeInstanceImpl {
             String variableName = (String) getStartNode().getMetaData("TriggerMapping");
             if (!getStartNode().getOutAssociations().isEmpty()) {
                 for (DataAssociation association : getStartNode().getOutAssociations()) {
-                    if (association.getTransformation() != null) {
-                        Transformation transformation = association.getTransformation();
-                        DataTransformer transformer = DataTransformerRegistry.get().find(transformation.getLanguage());
-                        if (transformer != null) {
-                            Object parameterValue = transformer.transform(transformation.getCompiledExpression(),
-                                    Collections.singletonMap(association.getSources().get(0), event));
-                            VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
-                                    VARIABLE_SCOPE, association.getTarget());
-                            if (variableScopeInstance != null && parameterValue != null) {
-
-                                variableScopeInstance.getVariableScope().validateVariable(
-                                        getProcessInstance().getProcessName(), association.getTarget(), parameterValue);
-
-                                variableScopeInstance.setVariable(this, association.getTarget(), parameterValue);
-                            } else {
-                                logger.warn("Could not find variable scope for variable {}", association.getTarget());
-                                logger.warn("when trying to complete start node {}", getStartNode().getName());
-                                logger.warn("Continuing without setting variable.");
-                            }
-                            if (parameterValue != null) {
-                                variableScopeInstance.setVariable(this, association.getTarget(), parameterValue);
-                            }
-                        }
-                    } else if (association.getAssignments() == null || association.getAssignments().isEmpty()) {
+                    //                    Transformation currently not supported
+                    //                    if (association.getTransformation() != null) {
+                    //                        Transformation transformation = association.getTransformation();
+                    //                        DataTransformer transformer = DataTransformerRegistry.get().find(transformation.getLanguage());
+                    //                        if (transformer != null) {
+                    //                            Object parameterValue = transformer.transform(transformation.getCompiledExpression(),
+                    //                                    Collections.singletonMap(association.getSources().get(0), event));
+                    //                            VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+                    //                                    VARIABLE_SCOPE, association.getTarget());
+                    //                            if (variableScopeInstance != null && parameterValue != null) {
+                    //
+                    //                                variableScopeInstance.getVariableScope().validateVariable(
+                    //                                        getProcessInstance().getProcessName(), association.getTarget(), parameterValue);
+                    //
+                    //                                variableScopeInstance.setVariable(this, association.getTarget(), parameterValue);
+                    //                            } else {
+                    //                                logger.warn("Could not find variable scope for variable {}", association.getTarget());
+                    //                                logger.warn("when trying to complete start node {}", getStartNode().getName());
+                    //                                logger.warn("Continuing without setting variable.");
+                    //                            }
+                    //                            if (parameterValue != null) {
+                    //                                variableScopeInstance.setVariable(this, association.getTarget(), parameterValue);
+                    //                            }
+                    //                        }
+                    //                    } else 
+                    if (association.getAssignments() == null || association.getAssignments().isEmpty()) {
                         VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
                                 VARIABLE_SCOPE, association.getTarget());
                         if (variableScopeInstance != null) {

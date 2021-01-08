@@ -226,7 +226,7 @@ public class GeneratorContext {
 
     public void logInstructions() {
         if (!instructions.isEmpty()) {
-            LOGGER.info("****************** Automatik Instructions *********************");
+            LOGGER.info("****************** Automatiko Instructions *********************");
             LOGGER.info("Following are set of information that can be useful down the line...");
 
             instructions.forEach(instruction -> LOGGER.info(instruction));

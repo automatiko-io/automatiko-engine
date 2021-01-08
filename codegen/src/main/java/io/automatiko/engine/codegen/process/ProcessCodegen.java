@@ -361,7 +361,7 @@ public class ProcessCodegen extends AbstractGenerator {
                     resourceGeneratorFactory
                             .create(context(), workFlowProcess, modelClassGenerator.className(), execModelGen.className(),
                                     applicationCanonicalName)
-                            .map(r -> r.withDependencyInjection(annotator).withParentProcess(null)
+                            .map(r -> r.withDependencyInjection(annotator).withParentProcess(null).withPersistence(persistence)
                                     .withUserTasks(processIdToUserTaskModel.get(execModelGen.getProcessId()))
                                     .withPathPrefix("{id}").withSignals(metaData.getSignals())
                                     .withTriggers(metaData.isStartable(), metaData.isDynamic())
@@ -385,7 +385,8 @@ public class ProcessCodegen extends AbstractGenerator {
 
                             megs.add(new MessageConsumerGenerator(context(), workFlowProcess,
                                     modelClassGenerator.className(), execModelGen.className(), applicationCanonicalName,
-                                    msgDataEventGenerator.className(), trigger).withDependencyInjection(annotator));
+                                    msgDataEventGenerator.className(), trigger).withDependencyInjection(annotator)
+                                            .withPersistence(persistence));
                         } else if (trigger.getType().equals(TriggerMetaData.TriggerType.ProduceMessage)) {
 
                             MessageDataEventGenerator msgDataEventGenerator = new MessageDataEventGenerator(workFlowProcess,
@@ -417,17 +418,24 @@ public class ProcessCodegen extends AbstractGenerator {
 
         for (ModelClassGenerator modelClassGenerator : processIdToModelGenerator.values()) {
             ModelMetaData mmd = modelClassGenerator.generate();
-            storeFile(Type.MODEL, modelClassGenerator.generatedFilePath(), mmd.generate());
+
+            storeFile(Type.MODEL, modelClassGenerator.generatedFilePath(), mmd.generate(
+                    annotator != null ? new String[] { "io.quarkus.runtime.annotations.RegisterForReflection" }
+                            : new String[0]));
         }
 
         for (InputModelClassGenerator modelClassGenerator : processIdToInputModelGenerator.values()) {
             ModelMetaData mmd = modelClassGenerator.generate();
-            storeFile(Type.MODEL, modelClassGenerator.generatedFilePath(), mmd.generate());
+            storeFile(Type.MODEL, modelClassGenerator.generatedFilePath(), mmd.generate(
+                    annotator != null ? new String[] { "io.quarkus.runtime.annotations.RegisterForReflection" }
+                            : new String[0]));
         }
 
         for (OutputModelClassGenerator modelClassGenerator : processIdToOutputModelGenerator.values()) {
             ModelMetaData mmd = modelClassGenerator.generate();
-            storeFile(Type.MODEL, modelClassGenerator.generatedFilePath(), mmd.generate());
+            storeFile(Type.MODEL, modelClassGenerator.generatedFilePath(), mmd.generate(
+                    annotator != null ? new String[] { "io.quarkus.runtime.annotations.RegisterForReflection" }
+                            : new String[0]));
         }
 
         for (List<UserTaskModelMetaData> utmd : processIdToUserTaskModel.values()) {

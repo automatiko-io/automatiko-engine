@@ -97,8 +97,8 @@ public class ModelMetaData {
         this.description = description;
     }
 
-    public String generate() {
-        CompilationUnit modelClass = compilationUnit();
+    public String generate(String... annotations) {
+        CompilationUnit modelClass = compilationUnit(annotations);
         return modelClass.toString();
     }
 
@@ -157,7 +157,7 @@ public class ModelMetaData {
         return new MethodCallExpr(new NameExpr(targetVar), getter);
     }
 
-    private CompilationUnit compilationUnit() {
+    private CompilationUnit compilationUnit(String... annotations) {
         CompilationUnit compilationUnit = parse(this.getClass().getResourceAsStream(templateName));
         compilationUnit.setPackageDeclaration(packageName);
         Optional<ClassOrInterfaceDeclaration> processMethod = compilationUnit
@@ -167,6 +167,11 @@ public class ModelMetaData {
             throw new NoSuchElementException("Cannot find class declaration in the template");
         }
         ClassOrInterfaceDeclaration modelClass = processMethod.get();
+
+        for (String annotation : annotations) {
+            modelClass.addAnnotation(annotation);
+        }
+
         if (asEntity) {
             modelClass.addExtendedType("io.automatiko.engine.addons.persistence.db.model.ProcessInstanceEntity");
             modelClass.addAnnotation(new NormalAnnotationExpr(new Name("javax.persistence.Entity"),

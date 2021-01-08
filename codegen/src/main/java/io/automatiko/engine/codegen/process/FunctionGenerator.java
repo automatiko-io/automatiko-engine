@@ -93,6 +93,9 @@ public class FunctionGenerator {
             template.findAll(FieldDeclaration.class, CodegenUtils::isApplicationField)
                     .forEach(fd -> annotator.withInjection(fd));
 
+            template.findAll(FieldDeclaration.class, CodegenUtils::isIdentitySupplierField)
+                    .forEach(fd -> annotator.withInjection(fd));
+
             template.findFirst(MethodDeclaration.class, md -> md.isPublic()).ifPresent(md -> {
                 annotator.withFunction(md);
                 md.setName(processId);
