@@ -71,7 +71,7 @@ public class $Type$Resource {
         try {
             identitySupplier.buildIdentityProvider(user, groups);
         	ProcessInstance parent = $parentprocess$.instances()
-                    .findById($parentparentprocessid$$parentprocessid$)
+                    .findById($parentparentprocessid$$parentprocessid$, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
                     .orElse(null);
             if (parent != null) {
         	
@@ -143,7 +143,7 @@ public class $Type$Resource {
         try {
             identitySupplier.buildIdentityProvider(user, groups);
             return subprocess_$name$.instances()
-                .findById($parentprocessid$ + ":" + id_$name$)
+                .findById($parentprocessid$ + ":" + id_$name$, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
                 .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
         } finally {
@@ -178,7 +178,7 @@ public class $Type$Resource {
         try {
             identitySupplier.buildIdentityProvider(user, groups);
             ProcessInstance<$Type$> instance =  subprocess_$name$.instances()
-                .findById($parentprocessid$ + ":" + id_$name$)
+                .findById($parentprocessid$ + ":" + id_$name$, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             
             String image = instance.image(extractImageBaseUri(uri.getRequestUri().toString()));

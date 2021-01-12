@@ -176,7 +176,7 @@ public class $Type$Resource {
             identitySupplier.buildIdentityProvider(user, groups);
             
             return process.instances()
-                .findById(id)
+                .findById(id, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
                 .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
         } finally {
@@ -215,7 +215,7 @@ public class $Type$Resource {
             identitySupplier.buildIdentityProvider(user, groups);
             
             ProcessInstance<$Type$> instance = process.instances()
-                .findById(id)
+                .findById(id, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             String image = instance.image(extractImageBaseUri(uri.getRequestUri().toString()));
             
@@ -491,7 +491,7 @@ public class $Type$Resource {
         identitySupplier.buildIdentityProvider(user, groups);
         return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
-                    .findById(id)
+                    .findById(id, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             tracing(pi);
             pi.tags().remove(tagId);

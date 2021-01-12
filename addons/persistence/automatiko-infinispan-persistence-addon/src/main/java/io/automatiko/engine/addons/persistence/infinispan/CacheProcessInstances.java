@@ -142,24 +142,25 @@ public class CacheProcessInstances implements MutableProcessInstances {
         if (isActive(instance)) {
 
             byte[] data = marshaller.marhsallProcessInstance(instance);
-
-            if (checkDuplicates) {
-                byte[] existing = cache.putIfAbsent(resolvedId, data);
-                if (existing != null) {
-                    throw new ProcessInstanceDuplicatedException(id);
+            if (data != null) {
+                if (checkDuplicates) {
+                    byte[] existing = cache.putIfAbsent(resolvedId, data);
+                    if (existing != null) {
+                        throw new ProcessInstanceDuplicatedException(id);
+                    }
+                } else if (cache.containsKey(resolvedId)) {
+                    cache.put(resolvedId, data);
                 }
-            } else if (cache.containsKey(resolvedId)) {
-                cache.put(resolvedId, data);
+
+                ((AbstractProcessInstance<?>) instance).internalRemoveProcessInstance(() -> {
+                    byte[] reloaded = cache.get(resolvedId);
+                    if (reloaded != null) {
+                        return marshaller.unmarshallWorkflowProcessInstance(reloaded, process);
+                    }
+
+                    return null;
+                });
             }
-
-            ((AbstractProcessInstance<?>) instance).internalRemoveProcessInstance(() -> {
-                byte[] reloaded = cache.get(resolvedId);
-                if (reloaded != null) {
-                    return marshaller.unmarshallWorkflowProcessInstance(reloaded, process);
-                }
-
-                return null;
-            });
             cachedInstances.remove(resolvedId);
             cachedInstances.remove(id);
         } else if (isPending(instance)) {

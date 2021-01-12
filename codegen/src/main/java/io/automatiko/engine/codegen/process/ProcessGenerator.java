@@ -434,15 +434,17 @@ public class ProcessGenerator {
                 .addMember(internalConfigure(processMetaData)).addMember(internalRegisterListeners(processMetaData))
                 .addMember(process(processMetaData));
 
-        SvgProcessImageGenerator imageGenerator = new SvgProcessImageGenerator(process);
-        String svg = imageGenerator.generate();
+        if (isServiceProject()) {
+            SvgProcessImageGenerator imageGenerator = new SvgProcessImageGenerator(process);
+            String svg = imageGenerator.generate();
 
-        if (svg != null && !svg.isEmpty()) {
-            MethodDeclaration processImageMethod = new MethodDeclaration().setName("image").setModifiers(Keyword.PUBLIC)
-                    .setType(String.class)
-                    .setBody(new BlockStmt().addStatement(new ReturnStmt(new StringLiteralExpr().setString(svg))));
+            if (svg != null && !svg.isEmpty()) {
+                MethodDeclaration processImageMethod = new MethodDeclaration().setName("image").setModifiers(Keyword.PUBLIC)
+                        .setType(String.class)
+                        .setBody(new BlockStmt().addStatement(new ReturnStmt(new StringLiteralExpr().setString(svg))));
 
-            cls.addMember(processImageMethod);
+                cls.addMember(processImageMethod);
+            }
         }
 
         if (persistence) {
@@ -573,5 +575,18 @@ public class ProcessGenerator {
 
     protected boolean useInjection() {
         return this.annotator != null;
+    }
+
+    public boolean isServiceProject() {
+        return context.getBuildContext().hasClassAvailable("javax.ws.rs.Path") || onClasspath("javax.ws.rs.Path");
+    }
+
+    protected boolean onClasspath(String clazz) {
+        try {
+            Class.forName(clazz, false, Thread.currentThread().getContextClassLoader());
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 }

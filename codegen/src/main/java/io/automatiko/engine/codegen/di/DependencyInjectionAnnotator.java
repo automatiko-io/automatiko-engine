@@ -258,12 +258,4 @@ public interface DependencyInjectionAnnotator {
      */
     <T extends NodeWithAnnotations<?>> T withBlocking(T template);
 
-    /**
-     * Annotates given node with blocking annotation for reactive messaging
-     * 
-     * @param <T>
-     * @param node node to be annotated
-     * @return returns annotated node
-     */
-    <T extends NodeWithAnnotations<?>> T withBlockingMessaging(T node);
 }

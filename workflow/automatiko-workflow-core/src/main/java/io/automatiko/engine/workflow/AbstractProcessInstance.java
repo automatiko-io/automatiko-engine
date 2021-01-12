@@ -11,9 +11,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.AccessDeniedException;
@@ -59,12 +63,14 @@ import io.automatiko.engine.workflow.process.instance.node.WorkItemNodeInstance;
 
 public abstract class AbstractProcessInstance<T extends Model> implements ProcessInstance<T> {
 
+    protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractProcessInstance.class);
+
     protected final T variables;
     protected final AbstractProcess<T> process;
     protected final ProcessRuntime rt;
     protected io.automatiko.engine.api.runtime.process.ProcessInstance processInstance;
 
-    protected Integer status;
+    protected Integer status = 0;
     protected String id;
     protected CorrelationKey correlationKey;
     protected String description;
@@ -82,6 +88,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     protected CompletionEventListener completionEventListener;
 
+    protected ReentrantLock lock;
+
     public AbstractProcessInstance(AbstractProcess<T> process, T variables, ProcessRuntime rt) {
         this(process, variables, null, rt);
     }
@@ -90,11 +98,12 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         this.process = process;
         this.rt = rt;
         this.variables = variables;
+        configureLock(businessKey);
+        lock();
 
         if (!this.process.accessPolicy().canCreateInstance(IdentityProvider.get())) {
             throw new AccessDeniedException("Access is denied to create new instance of process " + process.name());
         }
-
         setCorrelationKey(businessKey);
         Map<String, Object> map = bind(variables);
         String processId = process.process().getId();
@@ -138,6 +147,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         this.process = process;
         this.rt = rt;
         this.variables = variables;
+        configureLock(wpi.getCorrelationKey());
+        lock();
 
         syncProcessInstance((WorkflowProcessInstance) wpi);
         unbind(variables, processInstance.getVariables());
@@ -236,31 +247,37 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     }
 
     public void start(String trigger, String referenceId, Object data) {
-        synchronized (this) {
-            if (this.status != ProcessInstance.STATE_PENDING) {
-                throw new IllegalStateException("Impossible to start process instance that already was started");
-            }
-            this.status = ProcessInstance.STATE_ACTIVE;
 
-            if (referenceId != null) {
-                ((WorkflowProcessInstanceImpl) processInstance).setReferenceId(referenceId);
-            }
-
-            ((InternalProcessRuntime) getProcessRuntime()).getProcessInstanceManager()
-                    .addProcessInstance(this.processInstance, this.correlationKey);
-            this.id = processInstance.getId();
-
-            ((WorkflowProcessInstanceImpl) processInstance).setMetaData("AutomatikProcessInstance", this);
-            addCompletionEventListener();
-            io.automatiko.engine.api.runtime.process.ProcessInstance processInstance = this.getProcessRuntime()
-                    .startProcessInstance(this.id, trigger, data);
-            syncProcessInstance((WorkflowProcessInstance) processInstance);
-            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).create(pi.id(), pi));
-            unbind(variables, processInstance.getVariables());
-            if (this.processInstance != null) {
-                this.status = this.processInstance.getState();
-            }
+        if (this.status != ProcessInstance.STATE_PENDING) {
+            throw new IllegalStateException("Impossible to start process instance that already was started");
         }
+        this.status = ProcessInstance.STATE_ACTIVE;
+
+        if (referenceId != null) {
+            ((WorkflowProcessInstanceImpl) processInstance).setReferenceId(referenceId);
+        }
+
+        ((InternalProcessRuntime) getProcessRuntime()).getProcessInstanceManager()
+                .addProcessInstance(this.processInstance, this.correlationKey);
+        this.id = processInstance.getId();
+        ((WorkflowProcessInstanceImpl) processInstance).setMetaData("AutomatikProcessInstance", this);
+        addCompletionEventListener();
+        io.automatiko.engine.api.runtime.process.ProcessInstance processInstance = this.getProcessRuntime()
+                .startProcessInstance(this.id, trigger, data);
+        syncProcessInstance((WorkflowProcessInstance) processInstance);
+        addToUnitOfWork(pi -> {
+            try {
+                ((MutableProcessInstances<T>) process.instances()).create(pi.id(), pi);
+            } finally {
+                unlock();
+            }
+
+        });
+        unbind(variables, processInstance.getVariables());
+        if (this.processInstance != null) {
+            this.status = this.processInstance.getState();
+        }
+
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -273,13 +290,20 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         if (!this.process.accessPolicy().canDeleteInstance(IdentityProvider.get(), this)) {
             throw new AccessDeniedException("Access is denied to delete instance " + this.id);
         }
-        synchronized (this) {
-            String pid = processInstance().getId();
-            unbind(variables, processInstance().getVariables());
-            this.getProcessRuntime().abortProcessInstance(pid);
-            this.status = processInstance.getState();
-            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi));
-        }
+        String pid = processInstance().getId();
+        unbind(variables, processInstance().getVariables());
+        this.getProcessRuntime().abortProcessInstance(pid);
+        this.status = processInstance.getState();
+        addToUnitOfWork(pi -> {
+
+            try {
+                ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi);
+            } finally {
+                unlock();
+                process.locks().remove(id);
+            }
+        });
+
     }
 
     @Override
@@ -287,13 +311,13 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         if (!this.process.accessPolicy().canSignalInstance(IdentityProvider.get(), this)) {
             throw new AccessDeniedException("Access is denied to signal instance " + this.id);
         }
-        synchronized (this) {
-            if (signal.referenceId() != null) {
-                ((WorkflowProcessInstanceImpl) processInstance()).setReferenceId(signal.referenceId());
-            }
-            processInstance().signalEvent(signal.channel(), signal.payload());
-            removeOnFinish();
+
+        if (signal.referenceId() != null) {
+            ((WorkflowProcessInstanceImpl) processInstance()).setReferenceId(signal.referenceId());
         }
+        processInstance().signalEvent(signal.channel(), signal.payload());
+        removeOnFinish();
+
     }
 
     @Override
@@ -364,18 +388,21 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         if (!this.process.accessPolicy().canUpdateInstance(IdentityProvider.get(), this)) {
             throw new AccessDeniedException("Access is denied to update instance " + this.id);
         }
-        synchronized (this) {
-            processInstance();
-            Map<String, Object> map = bind(updates);
+        processInstance();
+        Map<String, Object> map = bind(updates);
 
-            for (Entry<String, Object> entry : map.entrySet()) {
-                ((WorkflowProcessInstance) processInstance()).setVariable(entry.getKey(), entry.getValue());
-            }
-            syncProcessInstance(((WorkflowProcessInstance) processInstance()));
-            unbind(this.variables, processInstance().getVariables());
-            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
-            removeOnFinish();
+        for (Entry<String, Object> entry : map.entrySet()) {
+            ((WorkflowProcessInstance) processInstance()).setVariable(entry.getKey(), entry.getValue());
         }
+        syncProcessInstance(((WorkflowProcessInstance) processInstance()));
+        unbind(this.variables, processInstance().getVariables());
+        addToUnitOfWork(pi -> {
+            synchronized (this) {
+                ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi);
+            }
+        });
+        removeOnFinish();
+
     }
 
     @Override
@@ -400,68 +427,74 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     @Override
     public void startFrom(String nodeId, String referenceId) {
-        synchronized (this) {
-            ((WorkflowProcessInstanceImpl) processInstance).setStartDate(new Date());
-            ((WorkflowProcessInstanceImpl) processInstance).setState(STATE_ACTIVE);
-            ((InternalProcessRuntime) getProcessRuntime()).getProcessInstanceManager()
-                    .addProcessInstance(this.processInstance, this.correlationKey);
-            this.id = processInstance.getId();
-            addCompletionEventListener();
-            if (referenceId != null) {
-                ((WorkflowProcessInstanceImpl) processInstance).setReferenceId(referenceId);
-            }
-            ((WorkflowProcessInstanceImpl) processInstance).setMetaData("AutomatikProcessInstance", this);
-            triggerNode(nodeId);
-            syncProcessInstance((WorkflowProcessInstance) processInstance);
-            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
-            unbind(variables, processInstance.getVariables());
-            if (processInstance != null) {
-                this.status = processInstance.getState();
-            }
+
+        ((WorkflowProcessInstanceImpl) processInstance).setStartDate(new Date());
+        ((WorkflowProcessInstanceImpl) processInstance).setState(STATE_ACTIVE);
+        ((InternalProcessRuntime) getProcessRuntime()).getProcessInstanceManager()
+                .addProcessInstance(this.processInstance, this.correlationKey);
+        this.id = processInstance.getId();
+        addCompletionEventListener();
+        if (referenceId != null) {
+            ((WorkflowProcessInstanceImpl) processInstance).setReferenceId(referenceId);
         }
+        ((WorkflowProcessInstanceImpl) processInstance).setMetaData("AutomatikProcessInstance", this);
+        triggerNode(nodeId);
+        syncProcessInstance((WorkflowProcessInstance) processInstance);
+        addToUnitOfWork(pi -> {
+            try {
+                ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi);
+            } finally {
+                unlock();
+            }
+        });
+        unbind(variables, processInstance.getVariables());
+        if (processInstance != null) {
+            this.status = processInstance.getState();
+        }
+
     }
 
     @Override
     public void triggerNode(String nodeId) {
-        synchronized (this) {
-            WorkflowProcessInstanceImpl wfpi = ((WorkflowProcessInstanceImpl) processInstance());
-            ExecutableProcess rfp = ((ExecutableProcess) wfpi.getProcess());
 
-            Node node = rfp.getNodesRecursively().stream().filter(ni -> nodeId.equals(ni.getMetaData().get("UniqueId")))
-                    .findFirst().orElseThrow(() -> new NodeNotFoundException(this.id, nodeId));
+        WorkflowProcessInstanceImpl wfpi = ((WorkflowProcessInstanceImpl) processInstance());
+        ExecutableProcess rfp = ((ExecutableProcess) wfpi.getProcess());
 
-            Node parentNode = rfp.getParentNode(node.getId());
+        Node node = rfp.getNodesRecursively().stream().filter(ni -> nodeId.equals(ni.getMetaData().get("UniqueId")))
+                .findFirst().orElseThrow(() -> new NodeNotFoundException(this.id, nodeId));
 
-            NodeInstanceContainer nodeInstanceContainerNode = parentNode == null ? wfpi
-                    : ((NodeInstanceContainer) wfpi.getNodeInstance(parentNode));
+        Node parentNode = rfp.getParentNode(node.getId());
 
-            nodeInstanceContainerNode.getNodeInstance(node).trigger(null,
-                    io.automatiko.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
-        }
+        NodeInstanceContainer nodeInstanceContainerNode = parentNode == null ? wfpi
+                : ((NodeInstanceContainer) wfpi.getNodeInstance(parentNode));
+
+        nodeInstanceContainerNode.getNodeInstance(node).trigger(null,
+                io.automatiko.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
+
     }
 
     @Override
     public void cancelNodeInstance(String nodeInstanceId) {
-        synchronized (this) {
-            NodeInstance nodeInstance = ((WorkflowProcessInstanceImpl) processInstance()).getNodeInstances(true)
-                    .stream().filter(ni -> ni.getId().equals(nodeInstanceId)).findFirst()
-                    .orElseThrow(() -> new NodeInstanceNotFoundException(this.id, nodeInstanceId));
 
-            nodeInstance.cancel();
-            removeOnFinish();
-        }
+        NodeInstance nodeInstance = ((WorkflowProcessInstanceImpl) processInstance()).getNodeInstances(true)
+                .stream().filter(ni -> ni.getId().equals(nodeInstanceId)).findFirst()
+                .orElseThrow(() -> new NodeInstanceNotFoundException(this.id, nodeInstanceId));
+
+        nodeInstance.cancel();
+        removeOnFinish();
+
     }
 
     @Override
     public void retriggerNodeInstance(String nodeInstanceId) {
-        synchronized (this) {
-            NodeInstance nodeInstance = ((WorkflowProcessInstanceImpl) processInstance()).getNodeInstances(true)
-                    .stream().filter(ni -> ni.getId().equals(nodeInstanceId)).findFirst()
-                    .orElseThrow(() -> new NodeInstanceNotFoundException(this.id, nodeInstanceId));
 
-            ((NodeInstanceImpl) nodeInstance).retrigger(true);
-            removeOnFinish();
-        }
+        NodeInstance nodeInstance = ((WorkflowProcessInstanceImpl) processInstance()).getNodeInstances(true)
+                .stream().filter(ni -> ni.getId().equals(nodeInstanceId)).findFirst()
+                .orElseThrow(() -> new NodeInstanceNotFoundException(this.id, nodeInstanceId));
+
+        ((NodeInstanceImpl) nodeInstance).retrigger(true);
+        removeOnFinish();
+
     }
 
     public io.automatiko.engine.api.runtime.process.ProcessInstance processInstance() {
@@ -523,59 +556,59 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     @Override
     public void completeWorkItem(String id, Map<String, Object> variables, Policy<?>... policies) {
-        synchronized (this) {
-            processInstance();
-            String[] fragments = id.split("/");
 
-            if (fragments.length > 1) {
-                // comes from subprocess
-                subprocesses().stream()
-                        .filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
-                        .findFirst().ifPresent(pi -> pi.completeWorkItem(fragments[3], variables, policies));
-            } else {
+        processInstance();
+        String[] fragments = id.split("/");
 
-                this.getProcessRuntime().getWorkItemManager().completeWorkItem(id, variables, policies);
-                removeOnFinish();
-            }
+        if (fragments.length > 1) {
+            // comes from subprocess
+            subprocesses().stream()
+                    .filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
+                    .findFirst().ifPresent(pi -> pi.completeWorkItem(fragments[3], variables, policies));
+        } else {
+
+            this.getProcessRuntime().getWorkItemManager().completeWorkItem(id, variables, policies);
+            removeOnFinish();
         }
+
     }
 
     @Override
     public void abortWorkItem(String id, Policy<?>... policies) {
-        synchronized (this) {
-            processInstance();
-            String[] fragments = id.split("/");
 
-            if (fragments.length > 1) {
-                // comes from subprocess
-                subprocesses().stream()
-                        .filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
-                        .findFirst().ifPresent(pi -> pi.abortWorkItem(fragments[3], policies));
-            } else {
+        processInstance();
+        String[] fragments = id.split("/");
 
-                this.getProcessRuntime().getWorkItemManager().abortWorkItem(id, policies);
-                removeOnFinish();
-            }
+        if (fragments.length > 1) {
+            // comes from subprocess
+            subprocesses().stream()
+                    .filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
+                    .findFirst().ifPresent(pi -> pi.abortWorkItem(fragments[3], policies));
+        } else {
+
+            this.getProcessRuntime().getWorkItemManager().abortWorkItem(id, policies);
+            removeOnFinish();
         }
+
     }
 
     @Override
     public void transitionWorkItem(String id, Transition<?> transition) {
-        synchronized (this) {
-            processInstance();
-            String[] fragments = id.split("/");
 
-            if (fragments.length > 1) {
-                // comes from subprocess
-                subprocesses().stream()
-                        .filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
-                        .findFirst().ifPresent(pi -> pi.transitionWorkItem(fragments[3], transition));
-            } else {
+        processInstance();
+        String[] fragments = id.split("/");
 
-                this.getProcessRuntime().getWorkItemManager().transitionWorkItem(id, transition);
-                removeOnFinish();
-            }
+        if (fragments.length > 1) {
+            // comes from subprocess
+            subprocesses().stream()
+                    .filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
+                    .findFirst().ifPresent(pi -> pi.transitionWorkItem(fragments[3], transition));
+        } else {
+
+            this.getProcessRuntime().getWorkItemManager().transitionWorkItem(id, transition);
+            removeOnFinish();
         }
+
     }
 
     @Override
@@ -661,13 +694,26 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
             removeCompletionListener();
             syncProcessInstance((WorkflowProcessInstance) processInstance);
             unbind(this.variables, processInstance().getVariables());
-            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi));
+            addToUnitOfWork(pi -> {
+                try {
+                    ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi);
+                } finally {
+                    unlock();
+                    process.locks().remove(id);
+                }
+            });
 
         } else {
             ((WorkflowProcessInstance) processInstance).evaluateTags();
             syncProcessInstance((WorkflowProcessInstance) processInstance);
             unbind(this.variables, processInstance().getVariables());
-            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
+            addToUnitOfWork(pi -> {
+                try {
+                    ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi);
+                } finally {
+                    unlock();
+                }
+            });
         }
 
     }
@@ -847,6 +893,33 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                 return pi.getTags();
             }
         };
+    }
+
+    protected void configureLock(String businessKey) {
+        this.lock = businessKey == null ? new ReentrantLock() : process.locks().lock(businessKey);
+    }
+
+    protected void lock() {
+        if (lock == null) {
+            return;
+        }
+        LOGGER.debug("Locking instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
+        lock.lock();
+        LOGGER.debug("Locked instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
+    }
+
+    protected void unlock() {
+        if (lock == null) {
+            return;
+        }
+        if (lock.isHeldByCurrentThread()) {
+            LOGGER.debug("Unlocking instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
+            // make sure it's completely unlocked as it only happens when instance execution is done
+            while (lock.getHoldCount() > 0) {
+                lock.unlock();
+            }
+            LOGGER.debug("Unlocked instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
+        }
     }
 
     private class CompletionEventListener implements EventListener {

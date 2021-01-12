@@ -179,10 +179,4 @@ public class CDIDependencyInjectionAnnotator implements DependencyInjectionAnnot
         node.addAnnotation("io.smallrye.common.annotation.Blocking");
         return node;
     }
-
-    @Override
-    public <T extends NodeWithAnnotations<?>> T withBlockingMessaging(T node) {
-        node.addAnnotation("io.smallrye.reactive.messaging.annotations.Blocking");
-        return node;
-    }
 }

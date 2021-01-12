@@ -51,6 +51,10 @@ public class ProcessInstanceMarshaller {
         io.automatiko.engine.api.runtime.process.ProcessInstance pi = ((AbstractProcessInstance<?>) processInstance)
                 .internalGetProcessInstance();
 
+        if (pi == null) {
+            return null;
+        }
+
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
             ProcessMarshallerWriteContext context = new ProcessMarshallerWriteContext(baos,

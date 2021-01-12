@@ -26,6 +26,7 @@ public class UnitOfWorkExecutor {
 
             throw e;
         } catch (Exception e) {
+            e.printStackTrace();
             uow.abort();
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;

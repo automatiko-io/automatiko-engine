@@ -67,6 +67,11 @@ public class BpmnProcessInstance extends AbstractProcessInstance<BpmnVariables> 
     }
 
     @Override
+    protected void configureLock(String businessKey) {
+        // do nothing on raw bpmn process instance - meaning it disables locking on process instance level
+    }
+
+    @Override
     public Collection<ProcessInstance<? extends Model>> subprocesses() {
         Collection<ProcessInstance<? extends Model>> subprocesses = ((WorkflowProcessInstanceImpl) processInstance())
                 .getNodeInstances(true)

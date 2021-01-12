@@ -14,7 +14,7 @@ import io.automatiko.engine.services.event.impl.BaseEventManager;
  */
 public class DefaultUnitOfWorkManager implements UnitOfWorkManager {
     // uses thread local to associate unit of works to execution context/thread
-    protected ThreadLocal<UnitOfWork> currentUnitOfWork = new ThreadLocal<>();
+    private static ThreadLocal<UnitOfWork> currentUnitOfWork = new ThreadLocal<>();
     // uses pass through unit of work as fallback if no unit of work has been
     // started
     protected UnitOfWork fallbackUnitOfWork = new PassThroughUnitOfWork();
@@ -61,5 +61,13 @@ public class DefaultUnitOfWorkManager implements UnitOfWorkManager {
     @Override
     public EventManager eventManager() {
         return eventManager;
+    }
+
+    public static UnitOfWork getUnitOfWork() {
+        return currentUnitOfWork.get();
+    }
+
+    public static void setUnitOfWork(UnitOfWork unitOfWork) {
+        currentUnitOfWork.set(unitOfWork);
     }
 }

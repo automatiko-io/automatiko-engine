@@ -254,7 +254,9 @@ public class MessageConsumerGenerator {
 
             template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("consume"))
                     .forEach(md -> {
-
+                        if (persistence) {
+                            annotator.withBlocking(md);
+                        }
                         annotator.withIncomingMessage(md, sanitizedName);
 
                         if (context.getBuildContext().hasClassAvailable("org.eclipse.microprofile.opentracing.Traced")) {

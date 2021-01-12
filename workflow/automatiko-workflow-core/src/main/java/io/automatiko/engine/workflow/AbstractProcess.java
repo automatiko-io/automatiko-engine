@@ -31,6 +31,7 @@ import io.automatiko.engine.workflow.base.instance.LightProcessRuntime;
 import io.automatiko.engine.workflow.base.instance.LightProcessRuntimeContext;
 import io.automatiko.engine.workflow.base.instance.LightProcessRuntimeServiceProvider;
 import io.automatiko.engine.workflow.base.instance.ProcessRuntimeServiceProvider;
+import io.automatiko.engine.workflow.lock.LockManager;
 import io.automatiko.engine.workflow.process.core.impl.WorkflowProcessImpl;
 import io.automatiko.engine.workflow.process.core.node.StartNode;
 
@@ -49,6 +50,8 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
     protected AccessPolicy<ProcessInstance<T>> accessPolicy = new AllowAllAccessPolicy<T>();
 
     protected io.automatiko.engine.api.definition.process.Process process;
+
+    protected LockManager locks = new LockManager();
 
     protected AbstractProcess() {
         this(new LightProcessRuntimeServiceProvider());
@@ -230,6 +233,10 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
 
     public EventListener eventListener() {
         return completionEventListener;
+    }
+
+    public LockManager locks() {
+        return locks;
     }
 
     protected class CompletionEventListener implements EventListener {

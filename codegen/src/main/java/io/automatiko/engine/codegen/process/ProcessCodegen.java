@@ -342,7 +342,8 @@ public class ProcessCodegen extends AbstractGenerator {
                     modelClassGenerator.className(), applicationCanonicalName).withDependencyInjection(annotator)
                             .withPersistence(persistence);
 
-            ProcessInstanceGenerator pi = new ProcessInstanceGenerator(execModelGen, workFlowProcess.getPackageName(),
+            ProcessInstanceGenerator pi = new ProcessInstanceGenerator(context(), execModelGen,
+                    workFlowProcess.getPackageName(),
                     classPrefix, modelClassGenerator.generate());
 
             ProcessMetaData metaData = processIdToMetadata.get(execModelGen.getProcessId());

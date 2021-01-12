@@ -34,6 +34,12 @@ public class AutomatikoBuildTimeConfig extends AutomatikoConfig {
     public Optional<Boolean> includeAutomatikoApi;
 
     /**
+     * Determines if instance locking should be used, defaults to true
+     */
+    @ConfigItem
+    public Optional<Boolean> instanceLocking;
+
+    /**
      * Configures metrics
      */
     @ConfigItem
@@ -76,6 +82,11 @@ public class AutomatikoBuildTimeConfig extends AutomatikoConfig {
     @Override
     public Optional<Boolean> includeAutomatikoApi() {
         return includeAutomatikoApi;
+    }
+
+    @Override
+    public Optional<Boolean> instanceLocking() {
+        return instanceLocking;
     }
 
     @Override
