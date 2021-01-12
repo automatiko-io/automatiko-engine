@@ -59,7 +59,6 @@ public class CollectingUnitOfWork implements UnitOfWork {
 
         EventBatch batch = eventManager.newBatch();
         batch.append(units);
-        eventManager.publish(batch);
 
         for (WorkUnit<?> work : units) {
             LOGGER.debug("Performing work unit {}", work);
@@ -69,7 +68,7 @@ public class CollectingUnitOfWork implements UnitOfWork {
                 LOGGER.error("Error during performing work unit {} error message {}", work, e.getMessage());
             }
         }
-
+        eventManager.publish(batch);
         done();
     }
 
