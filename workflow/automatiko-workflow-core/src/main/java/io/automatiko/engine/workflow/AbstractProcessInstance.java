@@ -50,6 +50,7 @@ import io.automatiko.engine.services.correlation.CorrelationKey;
 import io.automatiko.engine.services.correlation.StringCorrelationKey;
 import io.automatiko.engine.services.uow.ProcessInstanceWorkUnit;
 import io.automatiko.engine.workflow.base.instance.InternalProcessRuntime;
+import io.automatiko.engine.workflow.lock.UnlockWorkUnit;
 import io.automatiko.engine.workflow.process.core.node.EventSubProcessNode;
 import io.automatiko.engine.workflow.process.core.node.SubProcessNode;
 import io.automatiko.engine.workflow.process.executable.core.ExecutableProcess;
@@ -265,14 +266,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         io.automatiko.engine.api.runtime.process.ProcessInstance processInstance = this.getProcessRuntime()
                 .startProcessInstance(this.id, trigger, data);
         syncProcessInstance((WorkflowProcessInstance) processInstance);
-        addToUnitOfWork(pi -> {
-            try {
-                ((MutableProcessInstances<T>) process.instances()).create(pi.id(), pi);
-            } finally {
-                unlock();
-            }
-
-        });
+        addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).create(pi.id(), pi));
+        unlock(false);
         unbind(variables, processInstance.getVariables());
         if (this.processInstance != null) {
             this.status = this.processInstance.getState();
@@ -294,15 +289,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         unbind(variables, processInstance().getVariables());
         this.getProcessRuntime().abortProcessInstance(pid);
         this.status = processInstance.getState();
-        addToUnitOfWork(pi -> {
-
-            try {
-                ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi);
-            } finally {
-                unlock();
-                process.locks().remove(id);
-            }
-        });
+        addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi));
+        unlock(true);
 
     }
 
@@ -440,13 +428,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         ((WorkflowProcessInstanceImpl) processInstance).setMetaData("AutomatikProcessInstance", this);
         triggerNode(nodeId);
         syncProcessInstance((WorkflowProcessInstance) processInstance);
-        addToUnitOfWork(pi -> {
-            try {
-                ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi);
-            } finally {
-                unlock();
-            }
-        });
+        addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
+        unlock(false);
         unbind(variables, processInstance.getVariables());
         if (processInstance != null) {
             this.status = processInstance.getState();
@@ -694,26 +677,15 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
             removeCompletionListener();
             syncProcessInstance((WorkflowProcessInstance) processInstance);
             unbind(this.variables, processInstance().getVariables());
-            addToUnitOfWork(pi -> {
-                try {
-                    ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi);
-                } finally {
-                    unlock();
-                    process.locks().remove(id);
-                }
-            });
+            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi));
+            unlock(true);
 
         } else {
             ((WorkflowProcessInstance) processInstance).evaluateTags();
             syncProcessInstance((WorkflowProcessInstance) processInstance);
             unbind(this.variables, processInstance().getVariables());
-            addToUnitOfWork(pi -> {
-                try {
-                    ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi);
-                } finally {
-                    unlock();
-                }
-            });
+            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
+            unlock(false);
         }
 
     }
@@ -908,18 +880,13 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         LOGGER.debug("Locked instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
     }
 
-    protected void unlock() {
+    protected void unlock(boolean remove) {
         if (lock == null) {
             return;
         }
-        if (lock.isHeldByCurrentThread()) {
-            LOGGER.debug("Unlocking instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
-            // make sure it's completely unlocked as it only happens when instance execution is done
-            while (lock.getHoldCount() > 0) {
-                lock.unlock();
-            }
-            LOGGER.debug("Unlocked instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
-        }
+
+        ((InternalProcessRuntime) getProcessRuntime()).getUnitOfWorkManager().currentUnitOfWork()
+                .intercept(new UnlockWorkUnit(this, lock, remove));
     }
 
     private class CompletionEventListener implements EventListener {

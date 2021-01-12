@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.automatiko.engine.api.event.EventBatch;
 import io.automatiko.engine.api.event.EventManager;
 import io.automatiko.engine.api.uow.UnitOfWork;
@@ -27,6 +30,8 @@ import io.automatiko.engine.api.workflow.ProcessInstances;
  *
  */
 public class CollectingUnitOfWork implements UnitOfWork {
+
+    protected static final Logger LOGGER = LoggerFactory.getLogger(CollectingUnitOfWork.class);
 
     private Set<WorkUnit<?>> collectedWork;
     private boolean done;
@@ -57,7 +62,12 @@ public class CollectingUnitOfWork implements UnitOfWork {
         eventManager.publish(batch);
 
         for (WorkUnit<?> work : units) {
-            work.perform();
+            LOGGER.debug("Performing work unit {}", work);
+            try {
+                work.perform();
+            } catch (Exception e) {
+                LOGGER.error("Error during performing work unit {} error message {}", work, e.getMessage());
+            }
         }
 
         done();
@@ -67,7 +77,12 @@ public class CollectingUnitOfWork implements UnitOfWork {
     public void abort() {
         checkStarted();
         for (WorkUnit<?> work : sorted()) {
-            work.abort();
+            LOGGER.debug("Aborting work unit {}", work);
+            try {
+                work.abort();
+            } catch (Exception e) {
+                LOGGER.error("Error during aborting work unit {} error message {}", work, e.getMessage());
+            }
         }
         done();
     }
