@@ -903,9 +903,9 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         if (lock == null) {
             return;
         }
-        LOGGER.debug("Locking instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
+        LOGGER.info("Locking instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
         lock.lock();
-        LOGGER.debug("Locked instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
+        LOGGER.info("Locked instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
     }
 
     protected void unlock() {
@@ -913,12 +913,12 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
             return;
         }
         if (lock.isHeldByCurrentThread()) {
-            LOGGER.debug("Unlocking instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
+            LOGGER.info("Unlocking instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
             // make sure it's completely unlocked as it only happens when instance execution is done
             while (lock.getHoldCount() > 0) {
                 lock.unlock();
             }
-            LOGGER.debug("Unlocked instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
+            LOGGER.info("Unlocked instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
         }
     }
 
