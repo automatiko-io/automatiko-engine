@@ -197,11 +197,17 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     public void disconnect() {
         if (processInstance == null) {
+            LOGGER.debug("Already disconnected instance {} ({}) on thread {} lock {}", id(), businessKey(),
+                    Thread.currentThread().getName(), lock);
             return;
         }
-
+        lock();
+        LOGGER.debug("Disconnecting instance {} ({}) on thread {} lock {}", id(), businessKey(),
+                Thread.currentThread().getName(), lock);
         ((WorkflowProcessInstanceImpl) processInstance).disconnect();
         ((WorkflowProcessInstanceImpl) processInstance).setMetaData("AutomatikProcessInstance", null);
+        LOGGER.debug("Disconnected instance {} ({}) on thread {} lock {}", id(), businessKey(),
+                Thread.currentThread().getName(), lock);
     }
 
     private void syncProcessInstance(WorkflowProcessInstance wpi) {
@@ -248,7 +254,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     }
 
     public void start(String trigger, String referenceId, Object data) {
-
+        lock();
         if (this.status != ProcessInstance.STATE_PENDING) {
             throw new IllegalStateException("Impossible to start process instance that already was started");
         }
@@ -267,12 +273,12 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                 .startProcessInstance(this.id, trigger, data);
         syncProcessInstance((WorkflowProcessInstance) processInstance);
         addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).create(pi.id(), pi));
-        unlock(false);
+
         unbind(variables, processInstance.getVariables());
         if (this.processInstance != null) {
             this.status = this.processInstance.getState();
         }
-
+        unlock(false);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -282,6 +288,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     }
 
     public void abort() {
+        lock();
         if (!this.process.accessPolicy().canDeleteInstance(IdentityProvider.get(), this)) {
             throw new AccessDeniedException("Access is denied to delete instance " + this.id);
         }
@@ -296,6 +303,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     @Override
     public <S> void send(Signal<S> signal) {
+        lock();
         if (!this.process.accessPolicy().canSignalInstance(IdentityProvider.get(), this)) {
             throw new AccessDeniedException("Access is denied to signal instance " + this.id);
         }
@@ -373,6 +381,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     @Override
     public void updateVariables(T updates) {
+        lock();
         if (!this.process.accessPolicy().canUpdateInstance(IdentityProvider.get(), this)) {
             throw new AccessDeniedException("Access is denied to update instance " + this.id);
         }
@@ -389,6 +398,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                 ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi);
             }
         });
+        unlock(false);
         removeOnFinish();
 
     }
@@ -415,7 +425,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     @Override
     public void startFrom(String nodeId, String referenceId) {
-
+        lock();
         ((WorkflowProcessInstanceImpl) processInstance).setStartDate(new Date());
         ((WorkflowProcessInstanceImpl) processInstance).setState(STATE_ACTIVE);
         ((InternalProcessRuntime) getProcessRuntime()).getProcessInstanceManager()
@@ -439,7 +449,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     @Override
     public void triggerNode(String nodeId) {
-
+        lock();
         WorkflowProcessInstanceImpl wfpi = ((WorkflowProcessInstanceImpl) processInstance());
         ExecutableProcess rfp = ((ExecutableProcess) wfpi.getProcess());
 
@@ -458,7 +468,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     @Override
     public void cancelNodeInstance(String nodeInstanceId) {
-
+        lock();
         NodeInstance nodeInstance = ((WorkflowProcessInstanceImpl) processInstance()).getNodeInstances(true)
                 .stream().filter(ni -> ni.getId().equals(nodeInstanceId)).findFirst()
                 .orElseThrow(() -> new NodeInstanceNotFoundException(this.id, nodeInstanceId));
@@ -470,7 +480,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     @Override
     public void retriggerNodeInstance(String nodeInstanceId) {
-
+        lock();
         NodeInstance nodeInstance = ((WorkflowProcessInstanceImpl) processInstance()).getNodeInstances(true)
                 .stream().filter(ni -> ni.getId().equals(nodeInstanceId)).findFirst()
                 .orElseThrow(() -> new NodeInstanceNotFoundException(this.id, nodeInstanceId));
@@ -539,7 +549,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     @Override
     public void completeWorkItem(String id, Map<String, Object> variables, Policy<?>... policies) {
-
+        lock();
         processInstance();
         String[] fragments = id.split("/");
 
@@ -558,7 +568,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     @Override
     public void abortWorkItem(String id, Policy<?>... policies) {
-
+        lock();
         processInstance();
         String[] fragments = id.split("/");
 
@@ -577,7 +587,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     @Override
     public void transitionWorkItem(String id, Transition<?> transition) {
-
+        lock();
         processInstance();
         String[] fragments = id.split("/");
 
@@ -875,9 +885,11 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         if (lock == null) {
             return;
         }
-        LOGGER.debug("Locking instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
+        LOGGER.debug("Locking instance {}  ({}) on thread {} lock {}", id, businessKey(), Thread.currentThread().getName(),
+                lock);
         lock.lock();
-        LOGGER.debug("Locked instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
+        LOGGER.debug("Locked instance {} ({}) on thread {} lock {}", id(), businessKey(), Thread.currentThread().getName(),
+                lock);
     }
 
     protected void unlock(boolean remove) {

@@ -51,17 +51,45 @@ public class UnlockWorkUnit implements WorkUnit<ReentrantLock> {
 
     protected void unlock() {
         if (lock.isHeldByCurrentThread()) {
-            LOGGER.debug("Unlocking instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
+            LOGGER.debug("Unlocking instance {} ({}) on thread {} lock {}", instance.id(), instance.businessKey(),
+                    Thread.currentThread().getName(), lock);
             // make sure it's completely unlocked as it only happens when instance execution is done
             while (lock.getHoldCount() > 0) {
                 lock.unlock();
             }
-            LOGGER.debug("Unlocked instance {} on thread {} lock {}", this, Thread.currentThread().getName(), lock);
+            LOGGER.debug("Unlocked instance {} ({}) on thread {} lock {}", instance.id(), instance.businessKey(),
+                    Thread.currentThread().getName(), lock);
         }
 
         if (removeLock) {
             ((AbstractProcess<?>) instance.process()).locks().remove(instance.businessKey());
-            LOGGER.debug("Instance {} completed on thread {} removing lock {}", this, Thread.currentThread().getName(), lock);
+            LOGGER.debug("Instance {} ({}) completed on thread {} removing lock {}", instance.id(), instance.businessKey(),
+                    Thread.currentThread().getName(), lock);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((instance.id() == null) ? 0 : instance.id().hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        UnlockWorkUnit other = (UnlockWorkUnit) obj;
+        if (instance.id() == null) {
+            if (other.instance.id() != null)
+                return false;
+        } else if (!instance.id().equals(other.instance.id()))
+            return false;
+        return true;
     }
 }

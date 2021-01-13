@@ -65,7 +65,7 @@ public class CollectingUnitOfWork implements UnitOfWork {
             try {
                 work.perform();
             } catch (Exception e) {
-                LOGGER.error("Error during performing work unit {} error message {}", work, e.getMessage());
+                LOGGER.error("Error during performing work unit {} error message {}", work, e.getMessage(), e);
             }
         }
         eventManager.publish(batch);
@@ -80,7 +80,7 @@ public class CollectingUnitOfWork implements UnitOfWork {
             try {
                 work.abort();
             } catch (Exception e) {
-                LOGGER.error("Error during aborting work unit {} error message {}", work, e.getMessage());
+                LOGGER.error("Error during aborting work unit {} error message {}", work, e.getMessage(), e);
             }
         }
         done();
