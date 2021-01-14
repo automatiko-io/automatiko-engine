@@ -30,6 +30,7 @@ jobs:
     - name: Publish to Apache Maven Central
       run: mvn deploy -P release
       env:
+        GPG_TTY: $(tty)
         MAVEN_USERNAME: ${{ secrets.MAVEN_CENTRAL_USER }}
         MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
         MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
