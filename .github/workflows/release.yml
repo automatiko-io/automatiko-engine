@@ -1,4 +1,4 @@
-name: Publish Automatiko to the Maven Central Repository
+name: Release Automatiko to the Maven Central Repository
 on:
   release:
     types: [released]
@@ -16,11 +16,6 @@ jobs:
 
     - name: Build with Maven
       run: mvn -B clean package -P release --file pom.xml
-
-    - name: Publish to GitHub Packages Apache Maven
-      run: mvn deploy
-      env:
-        GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
 
     - name: Set up Apache Maven Central
       uses: actions/setup-java@v1
