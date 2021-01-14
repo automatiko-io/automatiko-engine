@@ -143,17 +143,28 @@
   </properties>
 
   <scm>
-    <connection>scm:git:https://github.com/automatiko-platform/automatiko-engine.git</connection>
-    <developerConnection>scm:git:git@github.com:automatiko-platform/automatiko-engine.git</developerConnection>
-    <url>https://github.com/automatiko-platform/automatiko-engine</url>
+    <connection>scm:git:git://github.com/automatiko-io/automatiko-engine.git</connection>
+    <developerConnection>scm:git:ssh://github.com:automatiko-io/automatiko-engine.git</developerConnection>
+    <url>https://github.com/automatiko-io/automatiko-engine</url>
   </scm>
 
   <developers>
     <developer>
       <name>All developers are listed on the team website</name>
-      <url>http://kogito.kie.org/community/team.html</url>
+      <url>https://automatiko.io/community/team.html</url>
     </developer>
   </developers>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
 
   <modules>
     <module>bom</module>
@@ -583,7 +594,7 @@
       </dependency>
       <dependency>
         <groupId>jakarta.enterprise</groupId>
-	     <artifactId>jakarta.enterprise.cdi-api</artifactId>
+        <artifactId>jakarta.enterprise.cdi-api</artifactId>
         <version>${version.jakarta.enterprise.cdi}</version>
       </dependency>
 
@@ -957,22 +968,6 @@
           </configuration>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-javadoc-plugin</artifactId>
-          <version>${version.javadoc.plugin}</version>
-          <configuration>
-            <links>
-              <link>http://docs.oracle.com/javase/8/docs/api</link>
-            </links>
-            <minmemory>128m</minmemory>
-            <maxmemory>512m</maxmemory>
-            <author>false</author>
-            <breakiterator>true</breakiterator>
-            <quiet>true</quiet>
-            <additionalparam>${javadoc.additional.params}</additionalparam>
-          </configuration>
-        </plugin>
-        <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
           <version>${version.findbugs.plugin}</version>
@@ -1036,6 +1031,42 @@
         <artifactId>maven-enforcer-plugin</artifactId>
       </plugin>
     </plugins>
-  </build>
 
+  </build>
+  <profiles>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.5</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${version.javadoc.plugin}</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
