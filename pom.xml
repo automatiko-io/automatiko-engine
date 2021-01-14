@@ -1062,6 +1062,19 @@
                 <goals>
                   <goal>jar</goal>
                 </goals>
+                <configuration>
+                  <links>
+                    <link>http://docs.oracle.com/javase/8/docs/api</link>
+                  </links>
+                  <minmemory>128m</minmemory>
+                  <maxmemory>512m</maxmemory>
+                  <author>false</author>
+                  <breakiterator>true</breakiterator>
+                  <quiet>true</quiet>
+                  <additionalparam>${javadoc.additional.params}</additionalparam>
+                  <failOnError>false</failOnError>
+                  <doclint>none</doclint>
+                </configuration>
               </execution>
             </executions>
           </plugin>
