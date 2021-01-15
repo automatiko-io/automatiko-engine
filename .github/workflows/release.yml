@@ -15,7 +15,7 @@ jobs:
         java-version: 11
 
     - name: Build with Maven
-      run: mvn -B clean package -DskipTests -P release --file pom.xml
+      run: mvn -B clean package -P release --file pom.xml
 
     - name: Set up Apache Maven Central
       uses: actions/setup-java@v1
@@ -28,7 +28,7 @@ jobs:
         gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
 
     - name: Publish to Apache Maven Central
-      run: mvn deploy -P release
+      run: mvn deploy -DskipTests -P release
       env:
         GPG_TTY: $(tty)
         MAVEN_USERNAME: ${{ secrets.MAVEN_CENTRAL_USER }}
