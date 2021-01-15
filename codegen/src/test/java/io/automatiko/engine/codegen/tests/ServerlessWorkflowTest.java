@@ -234,4 +234,30 @@ public class ServerlessWorkflowTest extends AbstractCodegenTest {
 		assertThat(dataOut.get("x").textValue()).isEqualTo("2");
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = { "serverless/operation-no-actions.sw.json", "serverless/operation-no-actions.sw.yml" })
+	public void testNoActionsOperationWorkflow(String processLocation) throws Exception {
+
+		Application app = generateCodeProcessesOnly(processLocation);
+		assertThat(app).isNotNull();
+
+		Process<? extends Model> p = app.processes().processById("noactions_1_0");
+
+		Model m = p.createModel();
+		Map<String, Object> parameters = new HashMap<>();
+
+		String jsonParamStr = "{}";
+
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode jsonParamObj = mapper.readTree(jsonParamStr);
+
+		parameters.put("workflowdata", jsonParamObj);
+		m.fromMap(parameters);
+
+		ProcessInstance<?> processInstance = p.createInstance(m);
+		processInstance.start();
+
+		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+	}
+
 }

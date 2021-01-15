@@ -687,6 +687,11 @@ public class ServerlessWorkflowParser {
             if (state.getOnErrors() != null && state.getOnErrors().size() > 0) {
                 addErrorHandlingAndRetries(state.getOnErrors(), process, workflow, embeddedSubProcess, boundaryIdToError);
             }
+        } else {
+            // no actions: start->end
+            StartNode embeddedStartNode = factory.startNode(idCounter.getAndIncrement(), "EmbeddedStart", embeddedSubProcess);
+            EndNode embeddedEndNode = factory.endNode(idCounter.getAndIncrement(), "EmbeddedEnd", false, embeddedSubProcess);
+            factory.connect(embeddedStartNode.getId(), embeddedEndNode.getId(), embeddedStartNode.getId() + "_" + embeddedEndNode.getId(), embeddedSubProcess, false);
         }
     }
 
