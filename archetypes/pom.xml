@@ -29,6 +29,13 @@
   </dependencyManagement>
 
   <modules>
-    <module>automatiko-quarkus-archetype</module>
+    <module>automatiko-archetype</module>
+    <module>automatiko-batch-archetype</module>
+    <module>automatiko-db-archetype</module>
+    <module>automatiko-event-stream-archetype</module>
+    <module>automatiko-function-archetype</module>
+    <module>automatiko-function-flow-archetype</module>
+    <module>automatiko-iot-archetype</module>
+    <module>automatiko-orchestration-archetype</module>
   </modules>
 </project>
