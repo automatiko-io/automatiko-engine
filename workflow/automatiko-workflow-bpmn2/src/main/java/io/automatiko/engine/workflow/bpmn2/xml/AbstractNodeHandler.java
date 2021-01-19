@@ -392,7 +392,10 @@ public abstract class AbstractNodeHandler extends BaseAbstractHandler implements
         while (subNode != null) {
             String nodeName = subNode.getNodeName();
             if ("inputDataItem".equals(nodeName)) {
-                String variableName = ((Element) subNode).getAttribute("id");
+                String variableName = ((Element) subNode).getAttribute("name");
+                if (variableName == null || variableName.isEmpty()) {
+                    variableName = ((Element) subNode).getAttribute("id");
+                }
                 String itemSubjectRef = ((Element) subNode).getAttribute("itemSubjectRef");
                 DataType dataType = null;
                 Map<String, ItemDefinition> itemDefinitions = (Map<String, ItemDefinition>) ((ProcessBuildData) parser
@@ -405,7 +408,10 @@ public abstract class AbstractNodeHandler extends BaseAbstractHandler implements
                     forEachNode.setVariable(variableName, dataType);
                 }
             } else if ("outputDataItem".equals(nodeName)) {
-                String variableName = ((Element) subNode).getAttribute("id");
+                String variableName = ((Element) subNode).getAttribute("name");
+                if (variableName == null || variableName.isEmpty()) {
+                    variableName = ((Element) subNode).getAttribute("id");
+                }
                 String itemSubjectRef = ((Element) subNode).getAttribute("itemSubjectRef");
                 DataType dataType = null;
                 Map<String, ItemDefinition> itemDefinitions = (Map<String, ItemDefinition>) ((ProcessBuildData) parser

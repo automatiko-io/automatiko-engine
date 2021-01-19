@@ -15,6 +15,7 @@ import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.process.core.ExpressionCondition;
 import io.automatiko.engine.workflow.process.core.impl.ConnectionImpl;
 import io.automatiko.engine.workflow.process.core.impl.ExtendedNodeImpl;
+import io.automatiko.engine.workflow.process.core.impl.NodeImpl;
 
 /**
  * A for each node.
@@ -346,6 +347,14 @@ public class ForEachNode extends CompositeContextNode {
 
     public List<DataAssociation> getOutAssociations() {
         return Collections.unmodifiableList(outMapping);
+    }
+
+    @Override
+    public void setMetaData(String name, Object value) {
+        super.setMetaData(name, value);
+        for (Node node : getCompositeNode().getNodes()) {
+            ((NodeImpl) node).setMetaData(name, value);
+        }
     }
 
 }

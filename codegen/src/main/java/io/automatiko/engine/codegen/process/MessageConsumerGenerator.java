@@ -132,6 +132,7 @@ public class MessageConsumerGenerator {
         } else if (connector.equals(CAMEL_CONNECTOR)) {
 
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".endpoint-uri", "");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".failure-strategy", "ignore");
             context.addInstruction(
                     "Properties for Apache Camel based message event '" + trigger.getDescription() + "'");
             context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName

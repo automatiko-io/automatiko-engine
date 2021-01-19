@@ -35,6 +35,7 @@ import io.automatiko.engine.workflow.process.core.node.EndNode;
 import io.automatiko.engine.workflow.process.core.node.EventNode;
 import io.automatiko.engine.workflow.process.core.node.EventSubProcessNode;
 import io.automatiko.engine.workflow.process.core.node.FaultNode;
+import io.automatiko.engine.workflow.process.core.node.ForEachNode;
 import io.automatiko.engine.workflow.process.core.node.HumanTaskNode;
 import io.automatiko.engine.workflow.process.core.node.Join;
 import io.automatiko.engine.workflow.process.core.node.RuleSetNode;
@@ -90,6 +91,7 @@ public class SvgProcessImageGenerator {
             return writer.toString();
         } catch (Exception e) {
             LOGGER.warn("Unable to generate process image due to " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
@@ -120,6 +122,9 @@ public class SvgProcessImageGenerator {
                     buildServiceTaskNode(x, y, (WorkItemNode) node, g2);
                 } else if (node instanceof Split || node instanceof Join) {
                     buildGateway(x, y, node, g2);
+                } else if (node instanceof ForEachNode) {
+
+                    buildNodeContainer(x, y, ((ForEachNode) node).getCompositeNode(), g2);
                 } else if (node instanceof CompositeNode) {
                     buildSubprocessNode(x, y, (CompositeNode) node, g2);
                     int sx = x(node);

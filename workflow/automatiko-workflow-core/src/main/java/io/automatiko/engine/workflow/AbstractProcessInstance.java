@@ -37,6 +37,7 @@ import io.automatiko.engine.api.workflow.ProcessError;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceDuplicatedException;
 import io.automatiko.engine.api.workflow.ProcessInstanceNotFoundException;
+import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.api.workflow.Signal;
 import io.automatiko.engine.api.workflow.Tag;
 import io.automatiko.engine.api.workflow.Tags;
@@ -743,7 +744,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         if (children != null && !children.isEmpty()) {
 
             for (String id : children) {
-                process.instances().findById(id)
+                process.instances().findById(id, ProcessInstanceReadMode.READ_ONLY)
                         .ifPresent(pi -> collection.add((ProcessInstance<? extends Model>) pi));
 
             }

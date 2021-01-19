@@ -30,9 +30,15 @@ public class SvgProcessImageGeneratorTest {
     }
 
     @Test
-    public void testOrdersrocessImageGeneration() throws IOException {
+    public void testOrdersProcessImageGeneration() throws IOException {
 
         testGeneration("Process orders.bpmn2");
+    }
+
+    @Test
+    public void testZipMIProcessImageGeneration() throws IOException {
+
+        testGeneration("zip file processor.bpmn2");
     }
 
     @Test
