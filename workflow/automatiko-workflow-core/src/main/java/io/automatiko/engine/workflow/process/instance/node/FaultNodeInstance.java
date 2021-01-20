@@ -1,8 +1,10 @@
 
 package io.automatiko.engine.workflow.process.instance.node;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +40,15 @@ public class FaultNodeInstance extends NodeInstanceImpl {
         }
         triggerTime = new Date();
         if (getProcessInstance().isFunctionFlow()) {
-            getProcessInstance().getMetaData().put("ATK_FUNC_FLOW_NEXT", getNodeName());
+            getProcessInstance().getMetaData().compute("ATK_FUNC_FLOW_NEXT", (k, v) -> {
+
+                if (v == null) {
+                    v = new ArrayList<String>();
+                }
+                ((List<String>) v).add(getNodeName());
+
+                return v;
+            });
         }
         String faultName = getFaultName();
         ExceptionScopeInstance exceptionScopeInstance = getExceptionScopeInstance(faultName);

@@ -145,6 +145,9 @@ public class FunctionFlowGenerator {
             template.findAll(FieldDeclaration.class, CodegenUtils::isIdentitySupplierField)
                     .forEach(fd -> annotator.withInjection(fd));
 
+            template.findAll(FieldDeclaration.class, CodegenUtils::isEventSourceField)
+                    .forEach(fd -> annotator.withInjection(fd));
+
             template.findAll(MethodDeclaration.class, md -> md.isPublic()).forEach(md -> annotator.withFunction(md));
         }
 

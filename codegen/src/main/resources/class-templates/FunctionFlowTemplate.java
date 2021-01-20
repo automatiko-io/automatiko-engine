@@ -7,6 +7,8 @@ import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceExecutionException;
 import io.automatiko.engine.api.workflow.workitem.Policy;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
+import io.automatiko.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
+import io.automatiko.engine.api.event.EventSource;
 
 import java.util.Collections;
 import java.util.List;
@@ -14,9 +16,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.quarkus.funqy.knative.events.CloudEventOutputBuilder;
-import io.quarkus.funqy.knative.events.CloudEventOutputBuilder.CloudEventOutput;
 
 
 public class WorkflowFunction {
@@ -28,39 +27,47 @@ public class WorkflowFunction {
     Application application;
     
     IdentitySupplier identitySupplier;
+    
+    EventSource eventSource;
 
     
-    public CloudEventOutput<$Type$> startTemplate($Type$Input resource) {
+    public void startTemplate($Type$Input resource) {
         if (resource == null) {
             resource = new $Type$Input();
         }
+        String typePrefix = "$TypePrefix$";
         final $Type$Input value = resource;
         identitySupplier.buildIdentityProvider(null, Collections.emptyList());
-        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-            String typePrefix = "$TypePrefix$";
+        FunctionContext ctx = io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+            
             ProcessInstance<$Type$> pi = process.createInstance(null, mapInput(value, new $Type$()));
 
             pi.start();
-            
-            String nextNode = (String)((WorkflowProcessInstance)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData("ATK_FUNC_FLOW_NEXT");
-            LOGGER.debug("Next function to trigger {}", typePrefix + sanitizeIdentifier(nextNode));
-            
-            return new CloudEventOutputBuilder().type(typePrefix + "." + sanitizeIdentifier(nextNode)).source(typePrefix)
-                    .build(getModel(pi));             
+            ((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_COUNTER");
+            return new FunctionContext((List<String>)((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_NEXT"), getModel(pi));
         });
+        if (ctx.nextNodes != null && eventSource != null) {
+            
+            for (String nextNode : ctx.nextNodes) {
+        
+                LOGGER.debug("Next function to trigger {}", typePrefix + sanitizeIdentifier(nextNode));
+                eventSource.produce(typePrefix + "." + sanitizeIdentifier(nextNode), typePrefix, ctx.model);
+            }
+        }
     }
     
-    public CloudEventOutput<$Type$> callTemplate($Type$ resource) {        
+    public void callTemplate($Type$ resource) {        
         AtomicBoolean hasData = new AtomicBoolean(true);
         if (resource == null) {
             resource = new $Type$();
             hasData.set(false);
         }
+        String typePrefix = "$TypePrefix$";
         final $Type$ value = resource;
         identitySupplier.buildIdentityProvider(null, Collections.emptyList());
-        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+        FunctionContext ctx = io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             String startFromNode = "$StartFromNode$";
-            String typePrefix = "$TypePrefix$";
+           
             ProcessInstance<$Type$> pi = value.getId() == null ? null : process.instances().findById(value.getId()).orElse(null); 
             if (pi != null) {
                 if (hasData.get()) {
@@ -71,12 +78,17 @@ public class WorkflowFunction {
                 pi = process.createInstance(value.getId(), value);                
                 pi.startFrom(startFromNode);
             }
-            String nextNode = (String)((WorkflowProcessInstance)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData("ATK_FUNC_FLOW_NEXT");
-            LOGGER.debug("Next function to trigger {}", typePrefix + sanitizeIdentifier(nextNode));
-            
-            return new CloudEventOutputBuilder().type(typePrefix + sanitizeIdentifier(nextNode)).source(typePrefix + sanitizeIdentifier("$ThisNode$"))
-            .build(getModel(pi));         
+            ((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_COUNTER");
+            return new FunctionContext((List<String>)((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_NEXT"), getModel(pi));
         });
+        if (ctx.nextNodes != null && eventSource != null) {
+            
+            for (String nextNode : ctx.nextNodes) {
+        
+                LOGGER.debug("Next function to trigger {}", typePrefix + sanitizeIdentifier(nextNode));
+                eventSource.produce(typePrefix + sanitizeIdentifier(nextNode), typePrefix + sanitizeIdentifier("$ThisNode$"), ctx.model);
+            }
+        }  
     }
     
     protected $Type$ getModel(ProcessInstance<$Type$> pi) {
@@ -95,6 +107,17 @@ public class WorkflowFunction {
     
     private String sanitizeIdentifier(String name) {
         return name.replaceAll("\\s", "").toLowerCase();
+    }
+    
+    private class FunctionContext {
+        
+        List<String> nextNodes;
+        $Type$ model;
+        
+        public FunctionContext(List<String> nextNodes, $Type$ model) {
+            this.nextNodes = nextNodes;
+            this.model = model;
+        }
     }
 
 }

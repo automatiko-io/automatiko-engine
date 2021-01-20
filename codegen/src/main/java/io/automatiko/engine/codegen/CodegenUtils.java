@@ -115,6 +115,10 @@ public class CodegenUtils {
         return fd.getElementType().asClassOrInterfaceType().getNameAsString().equals("IdentitySupplier");
     }
 
+    public static boolean isEventSourceField(FieldDeclaration fd) {
+        return fd.getElementType().asClassOrInterfaceType().getNameAsString().equals("EventSource");
+    }
+
     public static MethodDeclaration extractOptionalInjection(String type, String fieldName, String defaultMethod,
             DependencyInjectionAnnotator annotator) {
         BlockStmt body = new BlockStmt();

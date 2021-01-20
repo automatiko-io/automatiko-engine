@@ -41,6 +41,15 @@ public class AutomatikoFunctionFlowProcessor {
         Files.write(Paths.get(directory.toString(), "service-deployment.yaml"),
                 serviceDescriptor.getBytes(StandardCharsets.UTF_8));
 
+        // create function sink binding descriptor
+        String sinkBindingTemplate = StringUtils.readFileAsString(
+                new InputStreamReader(this.getClass().getResourceAsStream("/function-sink-template.yaml")));
+        String ssinkBindingDescriptor = sinkBindingTemplate
+                .replaceAll("@@name@@", cob.getEffectiveModel().getAppArtifact().getArtifactId());
+
+        Files.write(Paths.get(directory.toString(), "service-sink-biding.yaml"),
+                ssinkBindingDescriptor.getBytes(StandardCharsets.UTF_8));
+
         Collection<AnnotationInstance> functions = index.getIndex().getAnnotations(createDotName("io.quarkus.funqy.Funq"));
         DotName mapping = createDotName("io.quarkus.funqy.knative.events.CloudEventMapping");
         for (AnnotationInstance f : functions) {

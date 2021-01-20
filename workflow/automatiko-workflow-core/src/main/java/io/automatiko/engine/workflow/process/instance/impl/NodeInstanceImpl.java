@@ -197,9 +197,16 @@ public abstract class NodeInstanceImpl
                 functionFlowCounter = 1;
                 getProcessInstance().getMetaData().put("ATK_FUNC_FLOW_COUNTER", functionFlowCounter);
             } else {
-                // function flow already called function
-                getProcessInstance().getMetaData().remove("ATK_FUNC_FLOW_COUNTER");
-                getProcessInstance().getMetaData().put("ATK_FUNC_FLOW_NEXT", getNodeName());
+                // function flow already called function                
+                getProcessInstance().getMetaData().compute("ATK_FUNC_FLOW_NEXT", (k, v) -> {
+
+                    if (v == null) {
+                        v = new ArrayList<String>();
+                    }
+                    ((List<String>) v).add(getNodeName());
+
+                    return v;
+                });
                 nodeInstanceContainer.removeNodeInstance(this);
                 return;
             }

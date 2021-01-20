@@ -432,6 +432,8 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
 
     @Override
     public void disconnect() {
+        getMetaData().remove("ATK_FUNC_FLOW_COUNTER");
+        getMetaData().remove("ATK_FUNC_FLOW_NEXT");
         removeEventListeners();
         unregisterExternalEventNodeListeners();
 

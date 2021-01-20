@@ -64,6 +64,7 @@ public class FunctionFlowTest extends AbstractCodegenTest {
         Model result = (Model) processInstance.variables();
         assertThat(result.toMap()).hasSize(1).containsKeys("s");
         assertThat(result.toMap().get("s")).isNotNull().isEqualTo("Hello john!");
+        processInstance.disconnect();
 
         processInstance.triggerNode("_A1EE8114-BF7B-4DAF-ABD7-62EEDCFAEFD4");
 

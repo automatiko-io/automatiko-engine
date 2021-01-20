@@ -5,7 +5,9 @@ import static io.automatiko.engine.api.runtime.process.ProcessInstance.STATE_COM
 import static io.automatiko.engine.workflow.process.core.node.EndNode.PROCESS_SCOPE;
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.HIDDEN;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.workflow.base.instance.InternalProcessRuntime;
@@ -36,7 +38,15 @@ public class EndNodeInstance extends ExtendedNodeInstanceImpl {
         }
 
         if (getProcessInstance().isFunctionFlow()) {
-            getProcessInstance().getMetaData().put("ATK_FUNC_FLOW_NEXT", getNodeName());
+            getProcessInstance().getMetaData().compute("ATK_FUNC_FLOW_NEXT", (k, v) -> {
+
+                if (v == null) {
+                    v = new ArrayList<String>();
+                }
+                ((List<String>) v).add(getNodeName());
+
+                return v;
+            });
         }
 
         InternalProcessRuntime runtime = getProcessInstance().getProcessRuntime();
