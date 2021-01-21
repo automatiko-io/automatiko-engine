@@ -1,0 +1,173 @@
+{
+	"openapi": "3.0.3",
+	"info": {
+		"title": "Generated API",
+		"version": "1.0"
+	},
+	"paths": {
+		"/patients": {
+			"get": {
+				"operationId": "list",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SetPatient"
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"operationId": "add",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Patient"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SetPatient"
+								}
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "delete",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Patient"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SetPatient"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/schedule": {
+			"get": {
+				"operationId": "list",
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SetDoctor"
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"operationId": "assign",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Patient"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Patient"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"Doctor": {
+				"type": "object",
+				"properties": {
+					"conditions": {
+						"$ref": "#/components/schemas/ListString"
+					},
+					"img": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"type": {
+						"type": "string"
+					}
+				}
+			},
+			"ListString": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				}
+			},
+			"Patient": {
+				"type": "object",
+				"properties": {
+					"condition": {
+						"type": "string"
+					},
+					"doctor": {
+						"$ref": "#/components/schemas/Doctor"
+					},
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					}
+				}
+			},
+			"SetDoctor": {
+				"uniqueItems": true,
+				"type": "array",
+				"items": {
+					"$ref": "#/components/schemas/Doctor"
+				}
+			},
+			"SetPatient": {
+				"uniqueItems": true,
+				"type": "array",
+				"items": {
+					"$ref": "#/components/schemas/Patient"
+				}
+			}
+		}
+	}
+}

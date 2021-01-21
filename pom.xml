@@ -30,7 +30,9 @@
   <properties>
     <version.jdk>11</version.jdk>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
+    
+    <automatiko.version>${project.version}</automatiko.version>
+    
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
 
@@ -175,6 +177,7 @@
     <module>quarkus-extension</module>
     <module>archetypes</module>
     <module>decision</module>
+    <module>integration-tests</module>
   </modules>
 
   <dependencyManagement>

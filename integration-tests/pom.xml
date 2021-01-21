@@ -1,0 +1,48 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.automatiko</groupId>
+    <artifactId>automatiko-engine</artifactId>
+    <version>0.0.0-SNAPSHOT</version>
+  </parent>
+  <groupId>io.automatiko.tests</groupId>
+  <artifactId>integration-tests</artifactId>
+  <packaging>pom</packaging>
+
+  <name>Automatiko :: Tests Suite</name>
+  <description>Automatiko engine test suite</description>
+
+  <properties>
+    <wiremock.version>2.27.2</wiremock.version>
+  </properties>
+
+  <modules>
+    <module>automatiko-scripts</module>
+    <module>automatiko-mqtt</module>
+    <module>automatiko-kafka</module>
+    <module>automatiko-decision</module>
+    <module>automatiko-rest</module>
+    <module>automatiko-sw-rest</module>
+    <module>automatiko-subprocess</module>
+    <module>automatiko-timer</module>
+    <module>automatiko-db</module>
+    <module>automatiko-email</module>
+    <module>automatiko-condition</module>
+    <module>automatiko-funq</module>
+    <module>automatiko-funq-flow</module>
+  </modules>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

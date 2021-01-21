@@ -1,0 +1,62 @@
+{
+  "id": "newpatient",
+  "name": "Onboard a new patient",
+  "description": "Adds a new Patient and assigns a doctor",
+  "functions": [
+    {
+      "name": "storeNewPatient",
+      "operation": "api/swagger.json#add"
+    },
+    {
+      "name": "assignDoctor",
+      "operation": "api/swagger.json#assign"
+    }
+  ],
+  "retries": [
+    {
+      "name": "NotFoundStrategy",
+      "delay": "PT1S",
+      "maxAttempts": 3
+    }
+  ],
+  "states":[
+    {
+      "name":"OnboardNewPatient",
+      "type":"operation",
+      "start": {"kind":  "default"},
+      "actions":[
+        {
+          "functionRef": {
+            "refName": "storeNewPatient"
+          }
+        },
+        {
+          "functionRef": {
+            "refName": "assignDoctor"
+          }
+        }
+      ],
+      "onErrors": [
+        {
+          "error": "NotFound",
+          "code": "404",
+          "retryRef": "NotFoundStrategy",
+          "transition": {
+            "nextState": "AddNotFoundInfo"
+          }
+        }
+      ],
+      "end": {
+        "kind": "default"
+      }
+    },
+    {
+      "name": "AddNotFoundInfo",
+      "type": "inject",
+      "data": {
+        "errormessage": "Invalid Patient Data"
+      },
+      "end": {"kind":"default"}
+    }
+  ]
+}
