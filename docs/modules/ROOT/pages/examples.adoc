@@ -1,0 +1,41 @@
+= Examples
+
+Automatiko examples are meant to showcase capabilities that implements
+use cases described. Each example is fully featured service that can be
+easily tried as container to avoid any up front configuration on the environment.
+
+== Order management
+
+Order management is implementing `Event Stream` use case backed by Apache Kafka.
+
+Complete example description and instructions can be
+found link:examples/orders.html[Orders example].
+
+
+== Water leak detection
+
+Water leak detection is implementing `Internet of Things` use case backed by MQTT.
+
+Complete example description and instructions can be
+found link:examples/leaks.html[Water leak detection example].
+
+== Vacation requests
+
+Vacation requests is implementing `Human Centric` use case backed by database.
+
+Complete example description and instructions can be
+found link:examples/vacations.html[Vacation request example].
+
+== Weather conditions
+
+Weather conditions is implementing `Service Orchestration` use case.
+
+Complete example description and instructions can be
+found link:examples/weather.html[Weather conditions example].
+
+== Document processor
+
+Document processor is implementing `Batch processing` use case.
+
+Complete example description and instructions can be
+found link:examples/batch.html[Document processor example].

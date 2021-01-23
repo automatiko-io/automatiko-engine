@@ -1,0 +1,73 @@
+:imagesdir: ../../images
+= Process management
+
+Process management addon allows to add extra capabilities on top of the
+domain specific service (the one that is build from workflow definition).
+
+Process management comes with two parts
+
+- REST api
+- Basic UI to visualize current state of the service
+
+== Configure
+
+To enable process management addon add following dependency to your service
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-process-management-addon</artifactId>
+</dependency>
+----
+
+This will include both the REST api and UI
+
+== REST api
+
+REST api of the process management addon provides following capabilities
+
+- List of available workflows (definitions)
+- List of available workflow instances of the given workflow
+- Workflow instance details
+- Error of given workflow instance
+- List of active nodes in given workflow instance
+- Retrigger given workflow instance that is in error state
+- Skip node that caused error in given workflow instance and continue with next node
+- Trigger given node in given workflow instance
+- Retrigger active node in given workflow instance
+- Cancels active node in given workflow instance
+- Cancel entire workflow instance
+
+NOTE: REST api of process management addon is not included in the *OpenAPI*
+definition of the service by default. This is to avoid exposing non domain
+specific endpoints in the service. It can be enabled by setting
+`quarkus.automatiko.include-automatiko-api` property to `true` in `application.properties`
+
+== User interface
+
+IMPORTANT: Currently UI of process management is read only but over time
+it will be enhanced with majority of the REST api operations
+
+Process management comes with very basic UI to help visualize the state
+of the service. It can be accessed via
+link:http://localhost:8080/management/processes/ui[]
+
+This will show entry point that displays available workflow definitions
+in the service
+
+image::management-ui-entry.png[]
+
+For each of the listed wokflows you can list active instances by clicking on
+the `Instances` button. This will expand a table with all active instances
+of that workflow.
+
+image::management-instances.png[]
+
+Further you can look at instance details that will include
+
+- workflow instance visualization with active nodes and retrying nodes annotated
+- list subworkflow instances if any
+- display complete data model of given workflow instance
+
+image::weather-retry-mgmt.png[]

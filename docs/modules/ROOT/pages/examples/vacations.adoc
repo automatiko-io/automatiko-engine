@@ -1,0 +1,556 @@
+:imagesdir: ../../images
+
+= Vacation requests
+
+Vacation requests example illustrates the human centric use case combined with
+data base records use case. Vacation requests are placed by individual employees
+and are automatically tracked as complete set of requests.
+This enables clear visibility from employee point of view to see all his/her
+requests regardless of their status. It also keeps track of how many days are used
+and still eligible for further use.
+
+At he same time, vacation requests require approval by manager and thus
+a tasks are assigned to employee's manager on each newly submitted vacation request.
+
+Employee has an option to cancel request as long as the date when the vacation
+should start has not been reached yet.
+
+image:examples-vacation.png[]
+
+This service also allows to onboard new employees by assigning eligible vacation
+days and a manager based on department employee is in.
+
+As part of onboarding
+following will take place directly:
+
+- calculate eligible vacation days
+- assign manager
+
+Above data is derived from decision tables that look as follows
+
+.Assign manager
+|===
+|Manager |Department
+
+|john@email.com
+|finance
+
+|mary@email.com
+|it
+
+|joe@email.com
+|hr
+
+|===
+
+.Vacation days eligibility
+|===
+|Year of start |Number of days
+
+|< 2000
+|25
+
+|< 2010
+|20
+
+|< 2015
+|18
+
+|< 2015
+|10
+
+|===
+
+WARNING: Note that this example is currently not equipped with user facing UI
+
+== Run it
+
+This example is self container for simplicity meaning it uses H2 data base
+so there is no need for additional components to run this example.
+
+`docker run -p 8080:8080 automatiko/vacation-requests`
+
+once this is done you can see the fully described service at
+ link:http://localhost:8080/swagger-ui/#/[]
+
+TIP: You can open your browser link:http://localhost:8080/management/processes/ui[]
+to visualize your running service
+
+There are multiple paths that can be taken during given order
+
+First top level (public) workflow defines the onboarding and overall tracking
+for every employee - every instance is identified as employee's email
+
+image::vacations-workflow.png[]
+
+Second workflow is responsible for managing individual requests for a given
+employee, from the submission to either cancelation or its start date.
+
+image::vacation-request-workflow.png[]
+
+=== Authorization
+
+This service is fully secured and requires authentication to be able to interact
+with it. Below table represents available users in the service
+
+.Users available
+|===
+|User name |Password |Roles
+
+|john@email.com
+|john
+|employee
+
+|mary@email.com
+|mary
+|employee
+
+|mark@email.com
+|mark
+|employee
+
+|joe@email.com
+|joe
+|employee
+
+|admin@email.com
+|admin
+|admin
+
+|===
+
+NOTE: There is also instance level security that is based on `participants` access
+policy. This means that given instance will be visible to the owner of it
+(the employee) and the assignees of currently active user tasks - for example
+manager who has at least one approval task awaiting.
+
+TIP: Note that there is simple UI for manager to see incoming approval tasks.
+Just open browser at link:http://localhost:8080[] and connect using `john@email.com`
+
+
+=== The happy path
+
+Happy path consists of steps that will onboard the employee and submit single
+vacation request that is approved and is not cancelled by the employee.
+
+==== Try it
+
+Follow steps in the `Details` section to see the happy path in action.
+
+[%collapsible]
+====
+Here are the steps to try out with happy path
+
+* Onboard employee
+
+- Http Method: `POST`
+- Endpoint: `http://localhost:8080/vacations`
+- Payload
+[json]
+----
+{
+  "employee": {
+    "email": "mary@email.com",
+    "firstName": "Mary",
+    "lastName": "Jane",
+    "startedAt": "2000-12-01",
+    "department": "finance"
+  }
+}
+----
+
+complete curl command for this request is as follows
+
+[source,plain]
+----
+curl -u mary@email.com:mary -X POST "http://localhost:8080/vacations" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"employee\":{\"email\":\"mary@email.com\",\"firstName\":\"Mary\",\"lastName\":\"Jane\",\"startedAt\":\"2020-12-26\",\"department\":\"finance\"}}"
+----
+
+This will create new instance identified as `mary@email.com`.
+
+* Submit a vacation request
+
+- Http Method: `POST`
+- Endpoint: `http://localhost:8080/vacations/mary@email.com/submit`
+- Payload
+[json]
+----
+{
+  "from": "2020-10-01",
+  "length": 15,
+  "to": "2020-10-15",
+  "key": "vacation"
+}
+----
+
+complete curl command for this request is as follows
+
+[source,plain]
+----
+curl -u mary@email.com:mary -X POST "http://localhost:8080/vacations/mary%40email.com/submit" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"from\":\"2020-10-01\",\"length\":15,\"to\":\"2020-10-15\",\"key\":\"vacation\"}"
+----
+
+* Fetch approval tasks as manager
+
+- Http Method: `GET`
+- Endpoint: `http://localhost:8080/vacations/mary@email.com/request/vacation/tasks`
+
+
+complete curl command for this request is as follows
+
+[source,plain]
+----
+curl -u john@email.com:john -X GET "http://localhost:8080/vacations/mary%40email.com/requests/vacation/tasks" -H  "accept: application/json"
+----
+
+NOTE: Make note of the id returned from the above request as it will be used to complete
+the approval task
+
+
+* Approve vacation request
+
+- Http Method: `POST`
+- Endpoint: `http://localhost:8080/vacations/mary@email.com/requests/vacation/approval/ID`
+- Payload
+[json]
+----
+{
+  "approved": true
+}
+----
+
+IMPORTANT: Replace the `\{ID}` at the end of endpoint with ID from the previous call.
+Same is required in the below curl command.
+
+complete curl command for this request is as follows
+
+[source,plain]
+----
+curl -u john@email.com:john -X POST "http://localhost:8080/vacations/mary@email.com/requests/vacation/approval/ID" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"approved\":true}"
+----
+
+Now the workflow instance will wait until the first day of vacation request or
+until it is cancelled by the employee.
+
+* Verify access policy restricting access to instances
+
+Each employee has his/her instance completely secured. That means only that
+employee can see it or manager - when it has approval task assigned. To verify
+this working try to access mary's instance by joe.
+
+
+- Http Method: `GET`
+- Endpoint: `http://localhost:8080/vacations/mary@email.com`
+
+
+complete curl command for this request is as follows
+
+[source,plain]
+----
+curl -u joe@email.com:joe -X GET "http://localhost:8080/vacations/mary%40email.com" -H  "accept: application/json"
+----
+
+
+* Clean the state
+
+This is completely for test purpose to allow to use same data for other paths
+
+- Http Method: `DELETE`
+- Endpoint: `http://localhost:8080/vacations/mary@email.com`
+
+
+complete curl command for this request is as follows
+
+[source,plain]
+----
+curl -u mary@email.com:mary -X DELETE "http://localhost:8080/vacations/mary%40email.com" -H  "accept: application/json"
+----
+
+====
+
+=== The rejection path
+
+Rejection path consists of steps that will onboard the employee and submit single
+vacation request that is rejected by manager.
+
+==== Try it
+
+
+Follow steps in the `Details` section to see the rejection path in action.
+
+[%collapsible]
+====
+Here are the steps to try out with happy path
+
+* Onboard employee
+
+- Http Method: `POST`
+- Endpoint: `http://localhost:8080/vacations`
+- Payload
+[json]
+----
+{
+  "employee": {
+    "email": "mary@email.com",
+    "firstName": "Mary",
+    "lastName": "Jane",
+    "startedAt": "2000-12-01",
+    "department": "finance"
+  }
+}
+----
+
+complete curl command for this request is as follows
+
+[source,plain]
+----
+curl -u mary@email.com:mary -X POST "http://localhost:8080/vacations" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"employee\":{\"email\":\"mary@email.com\",\"firstName\":\"Mary\",\"lastName\":\"Jane\",\"startedAt\":\"2020-12-26\",\"department\":\"finance\"}}"
+----
+
+This will create new instance identified as `mary@email.com`.
+
+* Submit a vacation request
+
+- Http Method: `POST`
+- Endpoint: `http://localhost:8080/vacations/mary@email.com/submit`
+- Payload
+[json]
+----
+{
+  "from": "2020-10-01",
+  "length": 15,
+  "to": "2020-10-15",
+  "key": "vacation"
+}
+----
+
+complete curl command for this request is as follows
+
+[source,plain]
+----
+curl -u mary@email.com:mary -X POST "http://localhost:8080/vacations/mary%40email.com/submit" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"from\":\"2020-10-01\",\"length\":15,\"to\":\"2020-10-15\",\"key\":\"vacation\"}"
+----
+
+* Fetch approval tasks as manager
+
+- Http Method: `GET`
+- Endpoint: `http://localhost:8080/vacations/mary@email.com/request/vacation/tasks`
+
+
+complete curl command for this request is as follows
+
+[source,plain]
+----
+curl -u john@email.com:john -X GET "http://localhost:8080/vacations/mary%40email.com/requests/vacation/tasks" -H  "accept: application/json"
+----
+
+NOTE: Make note of the id returned from the above request as it will be used to complete
+the approval task
+
+
+* Approve vacation request
+
+- Http Method: `POST`
+- Endpoint: `http://localhost:8080/vacations/mary@email.com/requests/vacation/approval/ID`
+- Payload
+[json]
+----
+{
+  "approved": false
+}
+----
+
+IMPORTANT: Replace the `\{ID}` at the end of endpoint with ID from the previous call.
+Same is required in the below curl command.
+
+complete curl command for this request is as follows
+
+[source,plain]
+----
+curl -u john@email.com:john -X POST "http://localhost:8080/vacations/mary@email.com/requests/vacation/approval/ID" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"approved\":false}"
+----
+
+At this point this request is completed and no longer available for any modification
+
+* Clean the state
+
+This is completely for test purpose to allow to use same data for other paths
+
+- Http Method: `DELETE`
+- Endpoint: `http://localhost:8080/vacations/mary@email.com`
+
+
+complete curl command for this request is as follows
+
+[source,plain]
+----
+curl -u mary@email.com:mary -X DELETE "http://localhost:8080/vacations/mary%40email.com" -H  "accept: application/json"
+----
+
+====
+
+=== The cancelled request path
+
+Cancelled request path consists of steps that will onboard the employee and submit single
+vacation request that is approved by manager but later cancelled by employee.
+
+==== Try it
+
+
+Follow steps in the `Details` section to see the cancelled request path in action.
+
+[%collapsible]
+====
+Here are the steps to try out with happy path
+
+* Onboard employee
+
+- Http Method: `POST`
+- Endpoint: `http://localhost:8080/vacations`
+- Payload
+[json]
+----
+{
+  "employee": {
+    "email": "mary@email.com",
+    "firstName": "Mary",
+    "lastName": "Jane",
+    "startedAt": "2000-12-01",
+    "department": "finance"
+  }
+}
+----
+
+complete curl command for this request is as follows
+
+[source,plain]
+----
+curl -u mary@email.com:mary -X POST "http://localhost:8080/vacations" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"employee\":{\"email\":\"mary@email.com\",\"firstName\":\"Mary\",\"lastName\":\"Jane\",\"startedAt\":\"2020-12-26\",\"department\":\"finance\"}}"
+----
+
+This will create new instance identified as `mary@email.com`.
+
+* Submit a vacation request
+
+- Http Method: `POST`
+- Endpoint: `http://localhost:8080/vacations/mary@email.com/submit`
+- Payload
+[json]
+----
+{
+  "from": "2020-10-01",
+  "length": 15,
+  "to": "2020-10-15",
+  "key": "vacation"
+}
+----
+
+complete curl command for this request is as follows
+
+[source,plain]
+----
+curl -u mary@email.com:mary -X POST "http://localhost:8080/vacations/mary%40email.com/submit" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"from\":\"2020-10-01\",\"length\":15,\"to\":\"2020-10-15\",\"key\":\"vacation\"}"
+----
+
+* Fetch approval tasks as manager
+
+- Http Method: `GET`
+- Endpoint: `http://localhost:8080/vacations/mary@email.com/request/vacation/tasks`
+
+
+complete curl command for this request is as follows
+
+[source,plain]
+----
+curl -u john@email.com:john -X GET "http://localhost:8080/vacations/mary%40email.com/requests/vacation/tasks" -H  "accept: application/json"
+----
+
+NOTE: Make note of the id returned from the above request as it will be used to complete
+the approval task
+
+
+* Approve vacation request
+
+- Http Method: `POST`
+- Endpoint: `http://localhost:8080/vacations/mary@email.com/requests/vacation/approval/ID`
+- Payload
+[json]
+----
+{
+  "approved": true
+}
+----
+
+IMPORTANT: Replace the `\{ID}` at the end of endpoint with ID from the previous call.
+Same is required in the below curl command.
+
+complete curl command for this request is as follows
+
+[source,plain]
+----
+curl -u john@email.com:john -X POST "http://localhost:8080/vacations/mary@email.com/requests/vacation/approval/ID" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"approved\":false}"
+----
+
+At this point this request is approved and waiting for the start of vacation.
+
+* Fetch approval tasks as manager
+
+- Http Method: `GET`
+- Endpoint: `http://localhost:8080/vacations/mary@email.com/request/vacation/tasks`
+
+
+complete curl command for this request is as follows
+
+[source,plain]
+----
+curl -u mary@email.com:mary -X GET "http://localhost:8080/vacations/mary%40email.com/requests/vacation/tasks" -H  "accept: application/json"
+----
+
+NOTE: Make note of the id returned from the above request as it will be used to complete
+the cancel task
+
+
+* Cancel vacation request
+
+- Http Method: `POST`
+- Endpoint: `http://localhost:8080/vacations/mary@email.com/requests/vacation/cancel/ID`
+- Payload
+[json]
+----
+{}
+----
+
+IMPORTANT: Replace the `\{ID}` at the end of endpoint with ID from the previous call.
+Same is required in the below curl command.
+
+complete curl command for this request is as follows
+
+[source,plain]
+----
+curl -u mary@email.com:mary -X POST "http://localhost:8080/vacations/mary@email.com/requests/vacation/cancel/ID" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{}"
+----
+
+NOTE: After vacation request has been cancelled the used days are deducted with request's length
+
+* Clean the state
+
+This is completely for test purpose to allow to use same data for other paths
+
+- Http Method: `DELETE`
+- Endpoint: `http://localhost:8080/vacations/mary@email.com`
+
+
+complete curl command for this request is as follows
+
+[source,plain]
+----
+curl -u mary@email.com:mary -X DELETE "http://localhost:8080/vacations/mary%40email.com" -H  "accept: application/json"
+----
+
+====
+
+
+== Source code
+
+Complete source code of this example can be found
+link:https://github.com/automatiko-io/automatiko-examples/tree/main/vacation-requests[in GitHub]

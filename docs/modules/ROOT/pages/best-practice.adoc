@@ -1,0 +1,180 @@
+= Best Practice
+
+This section includes some good practices to follow when building solutions with Automatiko.
+
+They are not meant to be one-size-fits-all solutions but a set of guidelines to take
+into consideration.
+
+== Use a short, descriptive workflow id
+
+Workflows must be identified with a descriptive id which is then used as a service
+endpoint. Keeping it as short (usually one or two words) and as descriptive as possible
+ is one of the most important practices. For example if a workflow deals with
+ managing orders, setting the workflow id to `orders` would be a good practice.
+
+On the other hand, the workflow name can be more descriptive and does not have to be
+that short.
+
+== Define visibility of workflows
+
+Workflows by default are public. That means they will represent a service
+endpoint. There are situations where not all workflows should be instantiated
+from the outside. In such cases you should set the workflow `processType` to a `private`
+in order to make sure it won't be exposed as service endpoint through which new
+process instances can be created.
+
+A common use case for this is when workflows are used as sub-workflows (Call activities
+in BPMN). The top level workflow is marked as `public` while all
+sub-workflows are marked as `private` and thus can be only instantiated from within
+the service and not from outside requests.
+
+== Use versioning wisely
+
+Automatiko supports workflow versioning which in turn will creates a versioned
+service API.
+
+For a workflow which has its version set to `1.0` and its id to `orders` will create a
+service api with following endpoints
+
+* `/v1_0/orders`
+* `/v1_0/orders/{id}`
+* ....
+
+An important good practice when using versions is to change the version only when
+introducing backward incompatible changes to the associated workflow.
+This will make the maintenance of your services much easier.
+
+== Document workflows
+
+Even tho BPMN allows you to document pretty much any workflow element, good
+documentation is does not necessarily mean documenting every single one.
+Make sure to documenting the most important elements of the workflow, especially those
+that help describe the service API. These include:
+
+* documentation of top-level workflow elements
+* documentation of data objects
+
+Having these two always documented will make your service API much more descriptive.
+
+== Use business keys if possible
+
+A business keys is an alternative identifier of the workflow instance.
+Instead of depending on a generated id, you can use a business key to provide
+a more meaningful identification.
+
+It's recommended to use a business key whenever possible as it:
+
+* is more domain specific, for example can be order number or employee id
+* is unique, same as generated id
+* can be used directly in the service API
+
+NOTE: A business keys can also be used for sub-workflows however its value
+ must be obtained from workflow data
+
+== Define workflow tags
+
+Workflow tags allow you to define custom values (or expressions) that will be attached
+to every instance of the workflow. Tags are used not only to improved visibility
+but also for correlation. Workflow instances can be correlated by id or one of the
+tags.
+
+Defining tags are a good practice to enable advanced use cases such as matching
+instances by multiple values.
+
+A common use case for workflow tags is to
+add extra correlations information, on top of business keys described above.
+
+== Describe intention of workflow data
+
+Similar to workflow tags, workflow data can also have tags. They are ised to
+express the intention for given data object. There are number of predefined tags
+that are described link:concepts.html#_process_data[here].
+
+One of the most comm use-cases for this is to mark a given data object as input or output
+which will be expressed in the service API.
+
+Other useful tags are:
+
+* *business-key*
+* *initiator* - so called owner of the instance used for security checks
+* *auto-initialized*
+
+== Secure access to workflows
+
+Security is an important aspect of workflows that should be taken into account
+from the start. Automatiko comes with two levels of security:
+
+* service level security
+* instance level security
+
+=== Service level security
+
+Service level security deals with enforcing role based access to the service API.
+That means that anyone who has a particular role will be able to access
+service endpoints. This is sort of a standard web layer security.
+
+=== Instance level security
+
+On the other hand, instance level security includes additional checks that
+not only verify the roles but are also based a `access policy`. This verifies
+if a given user has access to perform a particular operation. Instance level security
+is pluggable and comes with three access policies out of the box:
+
+* permit all - default policy if no other policy has been set
+* participants - policy that allows to perform any operation for the initiator (owner)
+and any user that currently has user tasks assigned to him/her.
+* initiator - similar to `participants` but updating instance data or deleting instance
+is available for the initiator (owner) only
+
+With that said, it's recommended that security is applied on the service level
+or both service and instance levels.
+
+== Use process composition
+
+Process composition is a fancy name for breaking up your workflows into smaller
+sets. It allows you to have a well-defined entry point (public workflow)
+and a set of private workflows that specialize in daeling with certain parts
+of the whole business problem solution.
+
+== Use "Functions" for custom logic
+
+Automatiko comes with a `Functions` interface that is meant to simplify
+custom logic used as part of workflow execution as well as enhance reusability.
+The most common use case for using the `Functions` interface are conditions.
+Conditions may be expressed as simple expressions, for example just `a.equals(b)`,
+however they can become very complex in real live projects.
+
+Instead of having the condition logic embedded in the workflow definition it's
+recommended to create a functions class that conforms to the `Functions` interface
+and just reference it inside the workflow definitions.
+
+Here is an example of a simple functions implementation.
+
+[source,java]
+----
+import io.automatiko.engine.api.Functions;
+
+public class VacationFunctions implements Functions {
+
+    public static boolean isNotEligible(Request request, Vacation vacation) {
+        if (vacation.eligible.intValue() <= request.length + vacation.used) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static String vacationUsed(Vacation vacation) {
+        return "Used days " + vacation.used;
+    }
+}
+----
+
+Once defined, you can reference each defined function by its name, namely
+"isNotEligible" and "vacationUsed" in the above example in your workflow.
+
+== Test your workflows
+
+Automatiko comes with rather good test support so there is no excuse not to
+ test your workflows. Regardless if the workflow is simple or complex,
+having good test coverage is certainly a good practice.

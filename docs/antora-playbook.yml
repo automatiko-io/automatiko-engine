@@ -1,0 +1,22 @@
+site:
+  title: Automatiko
+  # the 404 page and sitemap files only get generated when the url property is set
+  url: https://docs.automatiko.io
+  start_page: main::about.adoc
+  keys:
+    google_analytics: 'G-R2G3H6TJRK'
+content:
+  sources:
+  - url: ./
+    branches: HEAD
+    edit_url: false
+asciidoc:
+  attributes:
+    url-project: https://docs.automatiko.io
+    collapsible: ''
+  extensions:
+  - ./lib/collapsible-block-tree-processor.js
+ui:
+  bundle:
+    url: ./antora-ui-default/build/ui-bundle.zip
+    snapshot: true

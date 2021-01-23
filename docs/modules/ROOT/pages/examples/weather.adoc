@@ -1,0 +1,217 @@
+:imagesdir: ../../images
+
+= Weather conditions
+
+Weather condition example illustrates `service orchestration` use case that invokes
+various services
+
+- REST call to IPStack to collect location information based on IP address given
+- REST call to OpenWeather Map to fetch weather information for given location
+- Java services that show that exactly the same workflow constructs are used regardless of the type
+of the service
+
+image:examples-weather.png[]
+
+WARNING: Note that this example is currently not equipped with user facing UI
+
+REST calls are done based on *OpenAPI* definitions of the services to be invoked.
+There is no need to manually configure any of the REST parts like http method, params etc.
+All is taken from the OpenApi and prepared for invocation, including security.
+
+All service calls (this also include the service that is generated from the workflow)
+are traced and pushed to Jaeger server for further inspection. In addition, Automatiko
+adds extra tags to services being invoked from within the workflow (regardless if
+  they are REST calls or Java services)
+
+- `workflow.instance.id` - unique id of the workflow instance
+- `workflow.root.instance.id` - unique id of the root workflow instance (the top level instance in case of sub workflows)
+- `workflow.business.key` - unique business key of the workflow instance - only if present
+- `workflow.business.tags` - tags of the workflow instance (as comma separated list) - only if present
+
+image::weather-tracing.png[]
+
+== Run it
+
+There are few prerequisites to run this example
+
+- Get an API key for IPStack to be able to resolve IP address to location
+- Get an API key for Open Weather to be able to fetch weather information for given location
+- Optionally have an instance of JAEGER running to have tracing data captured
+
+NOTE: API keys for link:https://ipstack.com/[IPSTACK] and link:https://openweathermap.org/[Open Weather] API can be freely obtained from the websites.
+
+`docker run -e QUARKUS_JAEGER_ENDPOINT=http://HOST:14268/api/traces -e IPSTACK_API_KEY=YOUR_IPSTACK_KEY -e OPEN_WEATHER_API_KEY=YOUR_OPEN_WEATHER_KEY -p 8080:8080 automatiko/weather-conditions`
+
+NOTE: To get quickly a running instance of Jaeger to run the tests
+get the docker instance `all in one`
+
+`docker run -p 5775:5775/udp -p 6831:6831/udp -p 6832:6832/udp -p 5778:5778 -p 16686:16686 -p 14268:14268 jaegertracing/all-in-one:latest`
+
+once this is done you can see the fully described service at
+ link:http://localhost:8080/swagger-ui/#/[]
+
+TIP: You can open your browser link:http://localhost:8080/management/processes/ui[]
+to visualize your running service
+
+There are multiple paths that can be taken during given order
+
+image::weather-workflow.png[]
+
+=== The happy path
+
+Happy path consists of steps that will lead to successful resolving
+of location based on IP address and fetching its weather info.
+
+NOTE: Depending on the actual weather information different paths can be taken
+
+==== Try it
+
+Follow steps in the `Details` section to see the happy path in action.
+
+[%collapsible]
+====
+Here are the steps to try out with happy path
+
+* Create new order
+
+- Http Method: `POST`
+- Endpoint: `http://localhost:8080/weatherConditions`
+- Payload
+[json]
+----
+{
+  "ip": "134.201.250.155"
+}
+----
+
+Above IP should evaluate to _Los Angeles_ and the output should be similar
+(except the weather itself :)) to following
+
+[json]
+----
+{
+  "id": "testing",
+  "location": {
+    "ip": "134.201.250.155",
+    "type": "ipv4",
+    "continent_code": "NA",
+    "continent_name": "North America",
+    "country_code": "US",
+    "country_name": "United States",
+    "region_code": "CA",
+    "region_name": "California",
+    "city": "Los Angeles",
+    "zip": "90012",
+    "latitude": 34.06555,
+    "longitude": -118.24054,
+    "location": {
+      "geoname_id": 5368361,
+      "capital": "Washington D.C.",
+      "languages": [
+        {
+          "code": "en",
+          "name": "English",
+          "native": "English"
+        }
+      ]
+    },
+    "time_zone": null,
+    "currency": null,
+    "connection": null
+  },
+  "forecast": {
+    "coord": {
+      "lon": -118.24,
+      "lat": 34.05
+    },
+    "weather": [
+      {
+        "id": 800,
+        "main": "Clear",
+        "description": "clear sky",
+        "icon": "01n"
+      }
+    ],
+    "base": "stations",
+    "main": {
+      "temp": 279.6,
+      "pressure": 1016,
+      "humidity": 70,
+      "temp_min": 279.15,
+      "temp_max": 280.15,
+      "sea_level": null,
+      "grnd_level": null
+    },
+    "visibility": 10000,
+    "wind": {
+      "speed": 2.57,
+      "deg": 22
+    },
+    "clouds": {
+      "all": 1
+    },
+    "rain": null,
+    "snow": null,
+    "dt": 1609423602,
+    "sys": {
+      "type": 1,
+      "id": 3694,
+      "message": null,
+      "country": "US",
+      "sunrise": 1609426703,
+      "sunset": 1609462430
+    },
+    "id": 5368361,
+    "name": "Los Angeles",
+    "cod": 200
+  }
+}
+----
+====
+
+=== The retry path
+
+Retry path consists of steps that will lead to successful resolving
+of location based on IP address and fetching its weather info but the
+`Forward forecast` task will fail and will be retried after 10 seconds.
+
+IMPORTANT: The failure in `Forward forecast` task happens every third request
+so depending how many times it was already used you might have already
+experience this failure. Though it is seamlessly handled in 10 seconds.
+
+==== Try it
+
+Follow steps in the `Details` section to see the happy path in action.
+
+[%collapsible]
+====
+Here are the steps to try out with happy path
+
+* Create new order
+
+- Http Method: `POST`
+- Endpoint: `http://localhost:8080/weatherConditions`
+- Payload
+[json]
+----
+{
+  "ip": "134.201.250.155"
+}
+----
+
+You can open process management view to see the failed instance and its
+task that is about to be retried is marked with `warning icon`
+
+image::weather-retry-mgmt.png[]
+
+On top of that tracing also includes failure indication that allows to
+easily spot issues.
+
+image::weather-tracing-error.png[]
+
+====
+
+== Source code
+
+Complete source code of this example can be found
+link:https://github.com/automatiko-io/automatiko-examples/tree/main/weather-conditions[in GitHub]

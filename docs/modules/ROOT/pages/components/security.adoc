@@ -1,0 +1,91 @@
+= Security
+
+Automatiko comes with two levels of security
+
+- service level
+- instance level
+
+== Service level security
+
+security on service level is based on RBAC (Roles Baesd Access Control) which is applied on every service api endpoint. 
+Service level security is taken directly from the workflow definion's custom attributes. Attribute name
+used for defining service level security is called `securityRoles` and accepts comma separated
+list of roles. 
+
+This in turn will annotate every endpoint of the service for that workflow
+(and its sub workflows) with `@RolesAllowed("managers", "admin")`.
+
+With that to be enforced requires one of possible configurations of service authentication.
+
+- link:https://quarkus.io/guides/security-properties[property based]
+- link:https://quarkus.io/guides/security-jpa[jpa based]
+- link:https://quarkus.io/guides/security-jdbc[jdbc based]
+- link:https://quarkus.io/guides/security-ldap[ldap based]
+- link:https://quarkus.io/guides/security-openid-connect[openid connect based]
+- link:https://quarkus.io/guides/security-keycloak-authorization[keycloak based]
+- and more...
+
+An example that uses property based security is link:../examples/vacations.html[Vacation requests]
+
+That configuration will secure the service api and will allow access to it for authenticated users that are members 
+of defined roles.
+
+IMPORTANT: This level of security is considered the as base and should be enabled for most (if not all) services that 
+run in production.
+
+In addition to securing the service api, enabling service level security will also automatically set so called _initiator_ 
+of the instance. That means user who issued request that resulted in creating new instance will be associated with it as 
+initiator/owner. This is prerequisite for the next level of security - instance level security.
+
+== Instance level security
+
+Security on the instance level allows to authorize access based on context of the instance. A common access policy is
+based on initiator to give either exclusive rights on given instance to the initiator or some kind of special rights.
+
+An example of such access policy is that only initiator/owner can abort running instance.
+
+Instance level security is implemented by link:https://github.com/automatiko-io/automatiko-engine/blob/master/api/automatiko-engine-api/src/main/java/io/automatiko/engine/api/auth/AccessPolicy.java[Access Policy]
+
+As can be noticed on the above interface, access policy restrict access on various operation types
+that can be executed on given instance
+
+- create instance check - who can create new instances
+- read instance check - who can see the instance
+- update instance check - who can update data of the instance
+- delete instance check - who can delete (abort) the instance
+- signal instance check - who can signal the instance
+
+This allows fine grained access restrictions that can take into account entire context of the instance.
+This also includes actual data of the instance at a given point in time.
+
+Instance level security is taken directly from the workflow definion's custom attributes. Attribute name
+used for defining service level security is called `accessPolicy` and accepts single policy identifier listed below.
+
+Automatiko comes with few out of the box access policies
+
+- allow all
+- participants
+- initiator
+
+
+=== Allow all access policy
+
+`allow all` access policy is the default access policy if none is defined. It essentially does not make any checks.
+
+=== Participants access policy
+
+`participants` access policy is one of the most common as it restrict access for every check to either
+
+- the initaiator
+- users that have currently assigned user tasks
+
+=== Initiator access policy
+
+`initiator` access policy is an extension to `participants` access policy that will restrict access to delete operation to initator
+only. That means that users who have currently assigned user tasks can still access the instance and work on tasks but won't be able
+to delete such instance.
+
+TIP: Initiator is assigned based on authenticated user but it can also be assigned based on data object that is tagged with
+`initiator` tag. This allows to create instances on behalf of someone or in case user info is not directly available e.g. messaging.
+
+An example that uses instance level security is link:../examples/vacations.html[Vacation requests]

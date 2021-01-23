@@ -1,0 +1,247 @@
+:imagesdir: ../images
+
+= Use Cases
+
+== Event streams
+
+Event streams are very popular for representing data changes. They allow individual
+modifications to be represented as atomic operations that:
+
+- are associated with a timestamp
+- are uniquely identifiable
+- carry all relevant information to the objects they reference
+
+Workflows are a perfect fit for processing event streams as they can
+logically express data changes in terms of business logic
+specific to the target domain.
+
+image::use-case-events.png[Automatiko order processing use case]
+
+The above diagram illustrates a simple order processing use case that is backed
+by an event stream. In this particular example link:https://kafka.apache.org/[Apache Kafka]
+is used as the event log broker, however any other solution could replace it.
+Automatiko seamlessly integrates
+with Apache Kafka among other event streaming platforms.
+
+Events in this use case are represented as key-value records where key is
+the unique order identifier (e.g. order number), and its values are appended for each
+change of the particular order.
+
+From the workflow point of view, a new workflow instance is started as soon
+as the first event is published with given order number. The order number is
+considered as business key - an unique identifier of the workflow instance.
+
+TIP: Automatiko allows to use business key as alternative id of the workflow
+instance and by that can be used to reference a given workflow instance via API.
+
+Once the workflow instance is started, every new event published to the event stream
+that has the same key will be correlated to an already active instance. This new
+event is used to progress instance execution according to the workflow business
+logic and the event data.
+
+It's mportant to mention that business keys are not the only correlation that
+Automatiko supports. Workflow tags can also be used as correlation.
+This opens up additional possibilities, such as receiving events associated
+by the customer who placed the order. For example, when a customer has updated his/her
+shipping address, all outgoing orders the customer made should be notified about this change
+to make sure the order is shipped to this updated location.
+This particular use case is depicted in the Automatiko link:examples.html#_order_management[Order] example.
+
+
+== Internet of Things (IoT)
+
+Workflows provide a very natural fit to solving problems in the IoT domain.
+Workflow business logic can provide significant additional value to data produced by different sensors (data which
+might have little value on its own).
+
+Automatiko can be used to cover these use cases in a number of ways:
+
+- minimal - build automation directly onto IoT devices such as
+mini computers (Raspberry PI) or IoT gateways.
+- private network deployments - automation for IoT devices remains in the same
+network as the devices and sensors itself for maximum security and cost efficiency.
+- cloud deployments - automation is placed in the cloud, making it easily accessible from any place and any device.
+- a custom mix of all of the above
+
+The backbone for IoT use case with Automatiko is the link:https://mqtt.org/[MQTT] broker that acts as
+a hub, allowing different components to exchange information in the most efficient
+way possible.
+
+image::use-case-iot.png[]
+
+The above diagram presents a simple use case for collecting sensor data typically found
+in home automation solutions. In this example different types of sensors publish their data into dedicated
+MQTT topics, namely:
+
+- home/roomxyz/temperature
+- home/roomxyz/humidity
+- home/roomxyz/window
+
+where `roomxyz` is the identifier of a room of the house such as living room,
+bedroom, bathroom, etc.
+
+Automatiko allows you to define a workflow that can collect sensor data and associate
+it with the room it was published for. In this use case the room identifier becomes
+the correlation so each room publishing its data will be kept in a single workflow
+instance that allows to build logic around data buckets (in this case, rooms).
+
+In addition, Automatiko comes with notion of a time windows during which data will be collected.
+Data windows can be used to control the workflow instance live span. For example we can
+define business logic for collecting sensor data for exactly one hour, and after
+one hour all collected data can be evaluated for that particular time window.
+All consequent sensor data for the same room will be collected by a new workflow instance
+and a new time window.
+
+To see this use case in action, have a look at
+the link:examples.html#_water_leak_detection[Water leaks detection] example
+
+== Human-centric workflows
+
+Human-centric workflows is one of the most common use cases for workflows. Ability to
+involve human interaction during workflow execution was
+often promoted by traditional Business Process Management (BPM) solutions and
+indeed, it is still a valid use case as human interactions are present/needed in literally every
+business solution. Things like vacation approvals, loan and insurance applications are just
+few examples of business solutions that need human interactions.
+
+Human-centric workflows essentially provide the ability to involve humans during their execution.
+This includes ability to assign the most appropriate individuals to perform some work, as well
+as make sure they finish the assigned work in a timely manner when this is necessary.
+
+image::use-case-human.png[Human centric workflow dealing with incident reports]
+
+The above use case handles support cases, namely incidents reported by end users. There can
+be many channels through which incident can be reported:
+
+- via email
+- via a web form
+- via a phone call
+- others
+
+Regardless of how the incident data is provided, the handling of the case will be similar
+or even exactly the same. The case first needs to investigated, then classified and assigned to
+support engineer, and finally be resolved.
+
+Automatiko provides support for handling all these stages and efficiently manages
+user communication such as:
+
+- assignment of users via individual or groups assignments
+- notification over email or other channels to make sure assigned actors are aware
+of awaiting tasks
+
+In addition, having clear visibility into the current state of cases is critical.
+Having options to build dashboard-like entries can significantly improve visibility
+and awareness for business stakeholders. In the end it is all about improving
+how human actors work with their daily routines and automate whatever is possible.
+
+To see this use case in action, have a look at
+the link:examples.html#_vacation_requests[Vacation request] example
+
+== Service orchestration
+
+Service orchestration is another traditional use case coming from SOA
+(Service Oriented Architecture) times. Although it's somewhat dated, it is
+certainly still relevant. It might be even more relevant now with
+the rise of microservices and event driven architectures.
+
+These architectures focus on communication between services, despite
+what communication protocol is used (REST/HTTP, messaging, other). There is
+always a need to coordinate this communication.
+
+For exactly that reason workflows come quite handy for defining
+interactions between services in a declarative way. In addition to that
+workflows comes with built in features to ensure such communication is done easily
+and efficiently. Some of these features include:
+
+* easy integration with various communication protocols
+** REST backed by OpenAPI
+** messaging with out of the box support for Kafka, MQTT
+** integration with various systems via components backed by Apache Camel
+* declarative security
+* error handling
+* retry for failed invocations
+
+image::use-case-services.png[Simple service orchestration example]
+
+Above example shows a simple service orchestration, a.k.a coordination, of services
+that defines a rescue personnel information service based on weather forecasts.
+
+It bundles various features of workflows to provide fully featured coordination
+between independent services:
+
+- wokflow instances are automatically created based on time intervals - every hour
+- various services are invoked during execution to fetch data (from weather services)
+or delegate to other services (alert service, information service, notification service)
+- at times services may not be accessible or returns unexpected responses,
+so workflow is equipped with error handling and retry mechanism to improve fault tolerance
+
+Service orchestration is not just about calling services or consuming/producing
+events, it is also about control logic. What to do based on various conditions
+is one of the most powerful assets of workflows in this use case. One example of
+such control logic is how to handle cases that require undoing already performed
+operations.
+
+Workflows come with a built in feature called compensation. Compensation
+allows to define additional logic that should be invoked when a decision about compensating
+some already done work is made. This is all defined within the workflow model and by that made explicit
+to all involved parties.
+
+To see this use case in action, have a look at
+the link:examples.html#_weather_conditions[Weather conditions] example
+
+== Database record processing
+
+As we know most of the data systems deal with is stored in databases.
+Regardless of their type, this data is always a subject of modification.
+Systems have to create, read, update and delete data stored in databases.
+In most cases this logic is custom but has a well defined life cycle.
+This life cycle is defined by business context it resides in. All this is is actually
+a defined process that governs how and by whom data can be modified.
+
+For that reason, workflows make a good fit for this use case as well. It is not to replace
+custom code, but is to enhance and/or simplify it.
+
+image::use-case-database.png[Vacation request process]
+
+The above example, which handles vacation requests submitted by employees, illustrates
+how database records can be used inside workflows that can manage their lifecycle.
+
+The use case itself is more about how data is being managed from a storage point of view
+however still being part of a workflow. Each data type (in our example person and vacation
+request records) is stored securely in a database, however most of modifications to this data
+is controlled by our workflow. In this example the benefits of workflows in terms of isolation and
+security are clearly visible, namely each workflow instance is responsible for a given set of
+database records.
+
+Even tho data modifications are controlled by our workflow, each data record is being kept
+in the database and accesible by tooling to build reports, dashboards, backups, etc.
+
+To see this use case in action, have a look at
+the link:examples.html#_vacation_requests[Vacation request] example
+
+== Batch processing
+
+Batch processing is usually expressed as set of steps that need to happen
+to process a given item. This makes a perfect fit for expressing it as
+a workflow.
+
+Batch processing can have different trigger mechanisms:
+
+- time based e.g. every Friday night, or every day etc
+- trigger based e.g. file has been put into a folder
+- manual e.g. user action triggers batch processing in background
+
+Regardless of how batch processing may be triggered, it will go over a defined
+set of "steps". Some of these steps can receive huge sets of data as input,
+others can split it into chunks or event individual items before triggering
+processing logic. Workflows can be an excellent approach to model these steps.
+
+image::use-case-batch.png[Batch processing process]
+
+The above example shows how files dropped into a directory can be processed
+by different workflows depending on the file type (based on its extension).
+There is a different workflow that deals with text files and another that
+deals with pdf files.
+
+To see this use case in action, have a look at
+the link:examples.html#_file-processor[File processor] example

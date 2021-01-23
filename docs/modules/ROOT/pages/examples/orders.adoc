@@ -1,0 +1,557 @@
+:imagesdir: ../../images
+
+= Orders
+
+Orders example service demonstrates simple order management solution
+that is based on events. All actions taken by a customer are represented
+as individual events.
+
+Customer starts with `creating an empty order`, that is like an intent of
+placing an order. Orders are uniquely identified e.g. `ORDER-1`.
+
+Based on further searches in the online store, items can be added, removed
+or updated in the order.
+
+Finally order is placed and then shipped.
+
+image:examples-order.png[]
+
+WARNING: Note that this example is currently not equipped with user facing UI
+
+== Run it
+
+The only thing that is needed is Apache Kafka running that will be accessible.
+It needs to be given as part of run command via environment variable `KAFKA_SERVERS`
+
+`docker run -e KAFKA_SERVERS=KAFKA_HOST:9092 -p 8080:8080 automatiko/event-streams-orders`
+
+NOTE: To get quickly a running instance of Apache Kafka to run the tests
+a spotify kafka container image can be handy, visit
+link:https://hub.docker.com/r/spotify/kafka/[Docker Hub] for details
+
+once this is done you can see the fully described service at
+ link:http://localhost:8080/swagger-ui/#/[]
+
+TIP: You can open your browser link:http://localhost:8080/management/processes/ui[]
+to visualize your running service
+
+There are multiple paths that can be taken during given order
+
+image::orders-workflow.png[]
+
+=== The happy path
+
+Happy path consists of steps that will lead to successful shipment of gods ordered.
+
+Customer actions are
+
+- creating the order with providing details about him/herself
+- adding items
+- optionally items can be changed (like change of quantity) or removed completely
+- order is placed when the items are selected
+- order will calculated, in case of discounts the price will be adjusted
+- shipment is created with unique number
+- gods are shipped to customer
+
+==== Try it
+
+Follow steps in the `Details` section to see the happy path in action.
+
+[%collapsible]
+====
+Here are the steps to try out with happy path
+
+* Create new order
+
+- Topic `orders`
+- Set record key to `ORDER-1`
+- Set the record value to
+[json]
+----
+{
+  "order": {
+    "customer": {
+      "address": {
+        "city": "New York",
+        "country": "US",
+        "street": "Main Street 1",
+        "zipCode": "10000"
+      },
+      "email": "john@doe.org",
+      "firstName": "John",
+      "lastName": "Doe",
+      "phone": "123456"
+    },
+    "orderDate": "2020-12-07",
+    "orderNumber": "ORDER-1",
+    "status": "Created"
+  }
+}
+----
+
+* Add item to the order
+
+- Topic `orders`
+- Set record key to `ORDER-1`
+- Set the record value to
+[json]
+----
+{
+  "item" : {
+    "articleId" : "1234",
+    "name" : "pen",
+    "price" : 10,
+    "quantity" : 4
+  }
+}
+----
+
+* Update item to add/remove
+
+NOTE: Use positive number for quantity to add more items, use negative
+to deduct items or set it to 0 to remove given item completely
+
+- Topic `orders`
+- Set record key to `ORDER-1`
+- Set the record value to
+[json]
+----
+{
+  "item" : {
+    "articleId" : "1234",
+    "name" : "pen",
+    "price" : 10,
+    "quantity" : 4
+  }
+}
+----
+
+* Place the order
+
+- Topic `orders`
+- Set record key to `ORDER-1`
+- Set the record value to
+[json]
+----
+{
+  "order": {
+    "customer": {
+      "address": {
+        "city": "New York",
+        "country": "US",
+        "street": "Main Street 1",
+        "zipCode": "10000"
+      },
+      "email": "john@doe.org",
+      "firstName": "John",
+      "lastName": "Doe",
+      "phone": "123456"
+    },
+    "orderDate": "2020-12-07",
+    "orderNumber": "ORDER-1",
+    "status": "Placed"
+  }
+}
+----
+
+* Ship the order
+
+- Topic `orders`
+- Set record key to `ORDER-1`
+- Set the record value to
+[json]
+----
+{
+  "order": {
+    "customer": {
+      "address": {
+        "city": "New York",
+        "country": "US",
+        "street": "Main Street 1",
+        "zipCode": "10000"
+      },
+      "email": "john@doe.org",
+      "firstName": "John",
+      "lastName": "Doe",
+      "phone": "123456"
+    },
+    "orderDate": "2020-12-07",
+    "orderNumber": "ORDER-1",
+    "status": "Shipped"
+  }
+}
+----
+====
+
+=== The abandoned path
+
+Abandoned path is taken when customer creates order add items to it but never placed the order.
+The service tracks time of every order until it's placed. In this simple scenario
+this timeout is set to 10 minutes. That means that customer has 10 minutes to place
+the order from the time it was created.
+
+==== Try it
+
+Follow steps in the `Details` section to see the abandoned path in action.
+
+[%collapsible]
+====
+Here are the steps to try out with happy path
+
+* Create new order
+
+- Topic `orders`
+- Set record key to `ORDER-1`
+- Set the record value to
+[json]
+----
+{
+  "order": {
+    "customer": {
+      "address": {
+        "city": "New York",
+        "country": "US",
+        "street": "Main Street 1",
+        "zipCode": "10000"
+      },
+      "email": "john@doe.org",
+      "firstName": "John",
+      "lastName": "Doe",
+      "phone": "123456"
+    },
+    "orderDate": "2020-12-07",
+    "orderNumber": "ORDER-1",
+    "status": "Created"
+  }
+}
+----
+
+* Add item to the order
+
+- Topic `orders`
+- Set record key to `ORDER-1`
+- Set the record value to
+[json]
+----
+{
+  "item" : {
+    "articleId" : "1234",
+    "name" : "pen",
+    "price" : 10,
+    "quantity" : 4
+  }
+}
+----
+
+* Update item to add/remove
+
+NOTE: Use positive number for quantity to add more items, use negative
+to deduct items or set it to 0 to remove given item completely
+
+- Topic `orders`
+- Set record key to `ORDER-1`
+- Set the record value to
+[json]
+----
+{
+  "item" : {
+    "articleId" : "1234",
+    "name" : "pen",
+    "price" : 10,
+    "quantity" : 4
+  }
+}
+----
+
+* Wait for the timeout to happen
+
+After 10 minutes from the creation time, the order will be automatically closed.
+====
+
+=== The cancelled path
+
+Cancelled path covers a case when customer creates order, add items to it
+but then decides to not finalize it and explicitly cancels the order.
+
+Cancellation can be at any time even when the order was placed. In such a case
+shipment has already been requested and thus requires to be aborted.
+An abort of already requested shipment is done via compensation that is
+done automatically based on the state or the order.
+
+==== Try it
+
+Follow steps in the `Details` section to see the cancelled path in action.
+
+[%collapsible]
+====
+Here are the steps to try out with cancelled path
+
+* Create new order
+
+- Topic `orders`
+- Set record key to `ORDER-1`
+- Set the record value to
+[json]
+----
+{
+  "order": {
+    "customer": {
+      "address": {
+        "city": "New York",
+        "country": "US",
+        "street": "Main Street 1",
+        "zipCode": "10000"
+      },
+      "email": "john@doe.org",
+      "firstName": "John",
+      "lastName": "Doe",
+      "phone": "123456"
+    },
+    "orderDate": "2020-12-07",
+    "orderNumber": "ORDER-1",
+    "status": "Created"
+  }
+}
+----
+
+* Add item to the order
+
+- Topic `orders`
+- Set record key to `ORDER-1`
+- Set the record value to
+[json]
+----
+{
+  "item" : {
+    "articleId" : "1234",
+    "name" : "pen",
+    "price" : 10,
+    "quantity" : 4
+  }
+}
+----
+
+* Update item to add/remove
+
+NOTE: Use positive number for quantity to add more items, use negative
+to deduct items or set it to 0 to remove given item completely
+
+- Topic `orders`
+- Set record key to `ORDER-1`
+- Set the record value to
+[json]
+----
+{
+  "item" : {
+    "articleId" : "1234",
+    "name" : "pen",
+    "price" : 10,
+    "quantity" : 4
+  }
+}
+----
+
+* Place the order
+
+- Topic `orders`
+- Set record key to `ORDER-1`
+- Set the record value to
+[json]
+----
+{
+  "order": {
+    "customer": {
+      "address": {
+        "city": "New York",
+        "country": "US",
+        "street": "Main Street 1",
+        "zipCode": "10000"
+      },
+      "email": "john@doe.org",
+      "firstName": "John",
+      "lastName": "Doe",
+      "phone": "123456"
+    },
+    "orderDate": "2020-12-07",
+    "orderNumber": "ORDER-1",
+    "status": "Placed"
+  }
+}
+----
+
+* Cancel the order which will compensate requested shipment
+
+- Topic `orders`
+- Set record key to `ORDER-1`
+- Set the record value to
+[json]
+----
+{
+  "order": {
+    "customer": {
+      "address": {
+        "city": "New York",
+        "country": "US",
+        "street": "Main Street 1",
+        "zipCode": "10000"
+      },
+      "email": "john@doe.org",
+      "firstName": "John",
+      "lastName": "Doe",
+      "phone": "123456"
+    },
+    "orderDate": "2020-12-07",
+    "orderNumber": "ORDER-1",
+    "status": "Cancelled"
+  }
+}
+----
+====
+
+=== The change address path
+
+Since orders can take a bit before they are shipped, customer can change the address
+and thus the order should be made aware of such change.
+
+This operation is done through different topic where all events for a given customer are
+being published. Similar to orders, each customer is uniquely identified
+by his or her email address.
+
+Orders service will track all active orders for given customer and
+whenever customer record is published it will consume it and verify if the change
+is relevant to the process. In this example verification is done based
+on address of the customer. It will only update the order when address is
+different than the one in the order.
+
+NOTE: Regardless how many orders are active for given customer all of them
+will be automatically updated
+
+==== Try it
+
+Follow steps in the `Details` section to see the change address path in action.
+
+[%collapsible]
+====
+Here are the steps to try out with change address path
+
+* Create new order
+
+- Topic `orders`
+- Set record key to `ORDER-1`
+- Set the record value to
+[json]
+----
+{
+  "order": {
+    "customer": {
+      "address": {
+        "city": "New York",
+        "country": "US",
+        "street": "Main Street 1",
+        "zipCode": "10000"
+      },
+      "email": "john@doe.org",
+      "firstName": "John",
+      "lastName": "Doe",
+      "phone": "123456"
+    },
+    "orderDate": "2020-12-07",
+    "orderNumber": "ORDER-1",
+    "status": "Created"
+  }
+}
+----
+
+* Add item to the order
+
+- Topic `orders`
+- Set record key to `ORDER-1`
+- Set the record value to
+[json]
+----
+{
+  "item" : {
+    "articleId" : "1234",
+    "name" : "pen",
+    "price" : 10,
+    "quantity" : 4
+  }
+}
+----
+
+* Update item to add/remove
+
+NOTE: Use positive number for quantity to add more items, use negative
+to deduct items or set it to 0 to remove given item completely
+
+- Topic `orders`
+- Set record key to `ORDER-1`
+- Set the record value to
+[json]
+----
+{
+  "item" : {
+    "articleId" : "1234",
+    "name" : "pen",
+    "price" : 10,
+    "quantity" : 4
+  }
+}
+----
+
+* Place the order
+
+- Topic `orders`
+- Set record key to `ORDER-1`
+- Set the record value to
+[json]
+----
+{
+  "order": {
+    "customer": {
+      "address": {
+        "city": "New York",
+        "country": "US",
+        "street": "Main Street 1",
+        "zipCode": "10000"
+      },
+      "email": "john@doe.org",
+      "firstName": "John",
+      "lastName": "Doe",
+      "phone": "123456"
+    },
+    "orderDate": "2020-12-07",
+    "orderNumber": "ORDER-1",
+    "status": "Placed"
+  }
+}
+----
+
+* Update customer's address
+
+- Topic `customers`
+- Set record key to `john@doe.org`
+- Set the record value to
+[json]
+----
+{
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@doe.org",
+    "phone": "123456",
+    "address": {
+        "street": "Second avenue 4",
+        "city": "Boston",
+        "zipCode": "00022",
+        "country": "US"
+    }
+}
+----
+
+Display the order again to see the address change for the customer.
+====
+
+== Source code
+
+Complete source code of this example can be found
+link:https://github.com/automatiko-io/automatiko-examples/tree/main/event-streams-orders[in GitHub]

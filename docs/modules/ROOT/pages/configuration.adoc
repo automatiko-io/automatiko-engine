@@ -1,0 +1,221 @@
+= Configuration reference
+
+configuration options defined by Automatiko can be provided in multiple ways:
+
+- inside 'application.properties' file that is located in 'src/main/resources'
+- as system property (-Dname=value) when starting the service
+- as environment variable
+
+== Configuration parameters
+
+Following are set of configuration parameters that can be used to configure Automatiko service:
+
+.Base configuration parameters
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.automatiko.service-url|QUARKUS_AUTOMATIKO_SERVICE_URL|Defines service URL that will be attached to events produced by Automatiko|No||No
+|quarkus.automatiko.package-name|QUARKUS_AUTOMATIKO_PACKAGE_NAME|Defines what package name should be used for generated classes|No|'io.automatiko.app'|No
+|quarkus.automatiko.include-automatiko-api|QUARKUS_AUTOMATIKO_INCLUDE_AUTOMATIKO_API|Determines if Automatiko attached Apis should be included in OpenAPI definitions|No|false|No
+|quarkus.automatiko.instance-locking||Determines if instance level locking should be used or not|No|true|Yes
+
+|====
+
+
+.Metrics configuration parameters
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.automatiko.metrics.enabled|QUARKUS_AUTOMATIKO_METRICS_ENABLED|Enables metrics for Automatiko|No|false|No
+
+|====
+
+
+.Persistence configuration parameters
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.automatiko.persistence.type||Specify what persistence should be used|No||Yes
+||||||
+|quarkus.automatiko.persistence.filesystem.path|QUARKUS_AUTOMATIKO_PERSISTENCE_FILESYSTEM_PATH|Location on file system that will be used to store persistent state|Yes||No
+||||||
+|quarkus.automatiko.persistence.db.remove-at-completion||Specifies if entities created during instance execution should be removed when instance completes|No|false|Yes
+
+|====
+
+.Jobs configuration parameters
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.automatiko.jobs.type||Specifies type of jobs implementation to be used|No||Yes
+||||||
+|quarkus.automatiko.jobs.filesystem.path|QUARKUS_AUTOMATIKO_JOBS_FILESYSTEM_PATH|Location on file system where jobs persistent state will be stored|Yes||No
+|quarkus.automatiko.jobs.filesystem.threads|QUARKUS_AUTOMATIKO_JOBS_FILESYSTEM_THREADS|Specifies how many threads should be used for jobs execution|No|1|No
+||||||
+|quarkus.automatiko.jobs.db.interval|QUARKUS_AUTOMATIKO_JOBS_DB_INTERVAL|Specifies interval (in minutes) how often look for another chunk of jobs to execute|No|60|No
+|quarkus.automatiko.jobs.db.threads|QUARKUS_AUTOMATIKO_JOBS_DB_THREADS|Specifies how many threads should be used for job execution|No|1|No
+
+|====
+
+.Security configuration parameters
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.automatiko.security.authorized-only|QUARKUS_AUTOMATIKO_SECURITY_AUTHORIZED_ONLY|Specifies if usr/group information given as query params are ignored or not|No|true|No
+|quarkus.automatiko.security.admin-role-name|QUARKUS_AUTOMATIKO_SECURITY_ADMIN_ROLE_NAME|What role/group name should be considered as admin|No|admin|No
+
+|====
+
+== Instructions during build
+
+NOTE: Automatiko also predefines several configuration to simplify use. These configuration options are logged as part of the build process
+
+Instructions provided as part of the build process for IoT (MQTT)
+
+[source]
+----
+59) ****************** Automatiko Instructions *********************
+602
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) Following are set of information that can be useful down the line...
+603
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) Properties for MQTT based message event 'Water measurement'
+604
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) 	'mp.messaging.incoming.water.topic' should be used to configure MQTT topic defaults to 'building/+/+/water'
+605
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) 	'mp.messaging.incoming.water.host' should be used to configure MQTT host that defaults to localhost
+606
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) 	'mp.messaging.incoming.water.port' should be used to configure MQTT port that defaults to 1883
+607
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) 	'mp.messaging.incoming.water.client-id' should be used to configure MQTT client id that defaults to 'Waterleaks-consumer'
+608
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) Properties for MQTT based message event 'Humidity measurement'
+609
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) 	'mp.messaging.incoming.humidity.topic' should be used to configure MQTT topic defaults to 'building/+/+/humidity'
+610
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) 	'mp.messaging.incoming.humidity.host' should be used to configure MQTT host that defaults to localhost
+611
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) 	'mp.messaging.incoming.humidity.port' should be used to configure MQTT port that defaults to 1883
+612
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) 	'mp.messaging.incoming.humidity.client-id' should be used to configure MQTT client id that defaults to 'Waterleaks-consumer'
+613
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) Properties for MQTT based message event 'Report received'
+614
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) 	'mp.messaging.incoming.buildingreports.topic' should be used to configure MQTT topic defaults to 'reports/+/+/hourly'
+615
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) 	'mp.messaging.incoming.buildingreports.host' should be used to configure MQTT host that defaults to localhost
+616
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) 	'mp.messaging.incoming.buildingreports.port' should be used to configure MQTT port that defaults to 1883
+617
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) 	'mp.messaging.incoming.buildingreports.client-id' should be used to configure MQTT client id that defaults to 'Reports-consumer'
+618
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) Properties for MQTT based message event 'Publish hourly measurement'
+619
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) 	'mp.messaging.outgoing.reports.topic' should be used to configure MQTT topic defaults to 'reports'
+620
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) 	'mp.messaging.outgoing.reports.host' should be used to configure MQTT host that defaults to localhost
+621
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) 	'mp.messaging.outgoing.reports.port' should be used to configure MQTT port that defaults to 1883
+622
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) 	'mp.messaging.outgoing.reports.client-id' should be used to configure MQTT client id that defaults to 'Waterleaks-producer'
+623
+2020-12-31 19:18:15,246 INFO  [io.aut.eng.cod.GeneratorContext] (build-59) ***************************************************************
+----
+
+Another example of instructions that are for service invocation (Rest) looks as follows
+
+[source]
+----
+****************** Automatiko Instructions *********************
+1131
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30) Following are set of information that can be useful down the line...
+1132
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30) Set 'ipstackapi/mp-rest/url' property to change defaut location (http://api.ipstack.com/) of the service
+1133
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30) In case authorization is required use following:
+1134
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30) For basic auth:
+1135
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set auth type via property 'ipstackapi/mp-rest/auth-type'  to 'basic'
+1136
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Then one of the following:
+1137
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set user name and password with properties 'ipstackapi/mp-rest/auth-user', 'ipstackapi/mp-rest/auth-password'
+1138
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set base64 encoded username and password with property 'ipstackapi/mp-rest/auth-basic'
+1139
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30) For OAuth2 auth:
+1140
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set auth type via property 'ipstackapi/mp-rest/auth-type'  to 'oauth'
+1141
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Then depending on your OAuth configuration:
+1142
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set access token type via property 'ipstackapi/mp-rest/auth-access-token
+1143
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set client id type via property 'ipstackapi/mp-rest/auth-client-id
+1144
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set client secret type via property 'ipstackapi/mp-rest/auth-client-secret
+1145
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set refresh token type via property 'ipstackapi/mp-rest/auth-refresh-token
+1146
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set refresh url type via property 'ipstackapi/mp-rest/auth-refresh-url
+1147
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30) For custom (header) auth:
+1148
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set auth type via property 'ipstackapi/mp-rest/auth-type' to 'custom'
+1149
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set custom auth header name with property 'ipstackapi/mp-rest/auth-custom-name'
+1150
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set custom auth header value with property 'ipstackapi/mp-rest/auth-custom-value'
+1151
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30) For on behalf (propagated) auth:
+1152
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set auth type via property 'ipstackapi/mp-rest/auth-type' to 'on-behalf'
+1153
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set on behalf header name to be propagated (defaults to 'Authorization') with property 'ipstackapi/mp-rest/auth-on-behalf-name'
+1154
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30) Set 'openweathermapapi/mp-rest/url' property to change defaut location (http://api.openweathermap.org/data/2.5/) of the service
+1155
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30) In case authorization is required use following:
+1156
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30) For basic auth:
+1157
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set auth type via property 'openweathermapapi/mp-rest/auth-type'  to 'basic'
+1158
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Then one of the following:
+1159
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set user name and password with properties 'openweathermapapi/mp-rest/auth-user', 'openweathermapapi/mp-rest/auth-password'
+1160
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set base64 encoded username and password with property 'openweathermapapi/mp-rest/auth-basic'
+1161
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30) For OAuth2 auth:
+1162
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set auth type via property 'openweathermapapi/mp-rest/auth-type'  to 'oauth'
+1163
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Then depending on your OAuth configuration:
+1164
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set access token type via property 'openweathermapapi/mp-rest/auth-access-token
+1165
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set client id type via property 'openweathermapapi/mp-rest/auth-client-id
+1166
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set client secret type via property 'openweathermapapi/mp-rest/auth-client-secret
+1167
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set refresh token type via property 'openweathermapapi/mp-rest/auth-refresh-token
+1168
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set refresh url type via property 'openweathermapapi/mp-rest/auth-refresh-url
+1169
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30) For custom (header) auth:
+1170
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set auth type via property 'openweathermapapi/mp-rest/auth-type' to 'custom'
+1171
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set custom auth header name with property 'openweathermapapi/mp-rest/auth-custom-name'
+1172
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set custom auth header value with property 'openweathermapapi/mp-rest/auth-custom-value'
+1173
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30) For on behalf (propagated) auth:
+1174
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set auth type via property 'openweathermapapi/mp-rest/auth-type' to 'on-behalf'
+1175
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30)     Set on behalf header name to be propagated (defaults to 'Authorization') with property 'openweathermapapi/mp-rest/auth-on-behalf-name'
+1176
+2020-12-31 19:19:13,796 INFO  [io.aut.eng.cod.GeneratorContext] (build-30) ***************************************************************
+----

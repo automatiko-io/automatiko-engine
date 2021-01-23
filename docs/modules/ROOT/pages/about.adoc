@@ -1,0 +1,139 @@
+:imagesdir: ../images
+
+= What is Automatiko?
+
+image::automatiko.png[Automatiko Overview]
+
+== Overview
+Automatiko is a toolkit that takes advantage of well established and known languages
+to build (but not limited to) self contained services. As the name might suggest its
+main goal is to enable users to automate their daily tasks, such as processing of emails,
+perform schedules actions, collect and transform data and many more.
+
+By "well established and known languages" Automatiko means:
+
+- link:https://www.omg.org/spec/BPMN/[BPMN2] (Business Process Modeling and Notation)
+- link:https://www.omg.org/dmn/[DMN] (Decision Modeling and Notation)
+
+In addition to these already known in the market, a relatively new player is also supported
+in Automatiko:
+
+- link:https://serverlessworkflow.io/[Serverless Workflow] (a Cloud Native Computing Foundation project)
+
+Automatiko promotes the above mentioned languages as programming languages that can
+be used to build production ready services. It takes advantage of various constructs of
+ these languages to provide services that are:
+
+- self described
+- API contract enabled
+- secured
+- easy to manage
+- integrated with other services
+
+== Why should you use Automatiko?
+
+Before answering this fundamental question, we must take a look at its prerequisite:
+
+=== Why should you use workflows?
+
+Workflows in general are meant to capture business logic in a structured way. That is
+done either graphically (e.g. like BPMN and DMN do with forms of flow charts) or declaratively as
+it is done in Serverless Workflow. This gives us first benefit of using workflows:
+
+====
+TIP: *Visibility*
+
+Visibility of business logic that can be applied in both design (development time)
+to make sure the business logic is expressed the way business demands it, as well as runtime to
+illustrate the current state of individual (or aggregated) instances.
+====
+
+Another important aspect of workflows is that they define data objects that are
+required for execution. This applies to workflows as well as individual
+workflow activities such as service tasks, operations and user interactions,
+and defines our second main benefit of using workflows:
+
+====
+TIP: *Domain data contract*
+
+Domain data contract allows us to clearly define what is an input and what is an output
+of a given workflow and/or its individual activities. With this at hand your domain business logic is
+equipped with one of the most powerful tools - self description.
+====
+
+Next item on the list deals with isolation and security of your domain data.
+As workflows define the domain data model (as stated above), they are also
+responsible for data access security. Security not just from authorization
+point of view but also, and in many case equally important, isolation.
+
+====
+TIP: *Isolation*
+
+Isolation is ensured on individual levels without any extra effort. Workflows are built
+around definitions and instances. A definition is a single artefact that is then initialized
+for each individual set of data which forms an instance. Each instance is kept isolated
+ from others while still providing access to other instances at any point in time.
+====
+
+Another benefit is the availability of proven workflow tools. These tools
+help us get up and running quicker instead of attempting to build everything from scratch
+(which is certainly possible but in many cases not worth the effort).
+These tools include:
+
+- service invocation (orchestrating services via REST)
+- message exchange (Apache Kafka, MQTT, JMS and many more)
+- user interaction (assigned task to groups and individual, notification about pending work)
+- distributed time tracking (when workflow need to work for a given amount of time)
+- data driven actions (reacting to data changes to trigger actions)
+- and many more
+
+====
+TIP: *Workflow toolbox*
+
+Out of the box tools that come with workflows and are directly available for use
+regardless of what domain they are used in.
+====
+
+The above list includes just a few of many benefits of using workflows.
+As always the choice is yours. In life everything is a process, so why
+not make use of real life approaches to model your business logic as well?
+
+==== So why to use Automatiko?
+
+Automatiko was designed and built with above principles in mind to provide developers
+with easy and powerful ways for defining their business logic. It was tailored to
+provide excellent support for a number of use cases, including:
+
+- event streams
+- Internet of Things (IoT)
+- human centric workflows
+- service orchestration
+- database record processing
+
+You can examine these use cases in the link:use-cases.html[Use Cases] chapter and see them in action.
+
+Automatiko is completely open source under link:https://www.apache.org/licenses/LICENSE-2.0[Apache License, version 2.0].
+Automatiko is written in Java and takes advantage of all the modern frameworks and
+libraries which allow it to run on many environments including:
+
+* local environments on any of the popular OS - Windows, Linux, Mac
+* IoT devices such as Raspberry PI
+* Cloud deployments
+  ** Kubernetes
+  ** K3S (and K3D)
+  ** OpenShift
+  ** AWS
+
+Automatiko allows you to use BPMN, Serverless Workflow, and DMN as programming languages for
+building services that automate your business logic, regardless of its domain.
+
+Automatiko is not intended to replace other programming languages, but helps us embrace out of the box and proven
+workflow features that provide significant value with little not no effort on your side.
+
+====
+TIP: *Give Automatiko a try and share your feedback*
+
+_So enough talking, take Automatiko for a spin by checking out the many examples ready for you to run and modify.
+Just head to the link:getting-started.html[Getting started] chapter and try it! Don't forget to share your feedback
+as this will allow us to make it even better._
+====
