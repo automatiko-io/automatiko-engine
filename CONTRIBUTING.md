@@ -3,7 +3,7 @@ First of all thanks for taking the time to read this and for your interest in co
 
 # How to contribute
 
-There are many ways you can contribute to the project. It certainly does not mean you must contribute code (though it's more than welcome :)).
+There are many ways you can contribute to the project. It certainly does not mean you must contribute code (though it's more than welcome:)).
 
 Let's have a look at various options...
 
