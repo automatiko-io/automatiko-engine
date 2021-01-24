@@ -40,6 +40,10 @@ Following are set of configuration parameters that can be used to configure Auto
 |quarkus.automatiko.persistence.filesystem.path|QUARKUS_AUTOMATIKO_PERSISTENCE_FILESYSTEM_PATH|Location on file system that will be used to store persistent state|Yes||No
 ||||||
 |quarkus.automatiko.persistence.db.remove-at-completion||Specifies if entities created during instance execution should be removed when instance completes|No|false|Yes
+||||||
+|quarkus.automatiko.persistence.dynamodb.create-tables|QUARKUS_AUTOMATIKO_PERSISTENCE_DYNAMODB_CREATE_TABLES|Specifies if DynamoDB tables should be automatically created|No|true|No
+|quarkus.automatiko.persistence.dynamodb.read-capacity|QUARKUS_AUTOMATIKO_PERSISTENCE_DYNAMODB_READ_CAPACITY|Specifies read capacity to be applied to created DynamoDB tables|No|10|No
+|quarkus.automatiko.persistence.dynamodb.write-capacity|QUARKUS_AUTOMATIKO_PERSISTENCE_DYNAMODB_WRITE_CAPACITY|Specifies write capacity to be applied to created DynamoDB tables|No|10|No
 
 |====
 
@@ -54,6 +58,12 @@ Following are set of configuration parameters that can be used to configure Auto
 ||||||
 |quarkus.automatiko.jobs.db.interval|QUARKUS_AUTOMATIKO_JOBS_DB_INTERVAL|Specifies interval (in minutes) how often look for another chunk of jobs to execute|No|60|No
 |quarkus.automatiko.jobs.db.threads|QUARKUS_AUTOMATIKO_JOBS_DB_THREADS|Specifies how many threads should be used for job execution|No|1|No
+||||||
+|quarkus.automatiko.jobs.dynamodb.create-tables|QUARKUS_AUTOMATIKO_JOBS_DYNAMODB_CREATE_TABLES|Specifies if DynamoDB tables should be automatically created|No|true|No
+|quarkus.automatiko.jobs.dynamodb.read-capacity|QUARKUS_AUTOMATIKO_JOBS_DYNAMODB_READ_CAPACITY|Specifies read capacity to be applied to created DynamoDB tables|No|10|No
+|quarkus.automatiko.jobs.dynamodb.write-capacity|QUARKUS_AUTOMATIKO_JOBS_DYNAMODB_WRITE_CAPACITY|Specifies write capacity to be applied to created DynamoDB tables|No|10|No
+|quarkus.automatiko.jobs.dynamodb.interval|QUARKUS_AUTOMATIKO_JOBS_DYNAMODB_INTERVAL|Specifies interval (in minutes) how often look for another chunk of jobs to execute|No|60|No
+|quarkus.automatiko.jobs.dynamodb.threads|QUARKUS_AUTOMATIKO_JOBS_DYNAMODB_THREADS|Specifies how many threads should be used for job execution|No|1|No
 
 |====
 

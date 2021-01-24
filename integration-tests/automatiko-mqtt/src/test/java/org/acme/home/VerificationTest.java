@@ -23,7 +23,7 @@ import io.smallrye.reactive.messaging.connectors.InMemorySource;
 import io.smallrye.reactive.messaging.mqtt.MqttMessage;
 
 @QuarkusTest
-public class VerificationTests {
+public class VerificationTest {
  // @formatter:off
     
     @Inject 

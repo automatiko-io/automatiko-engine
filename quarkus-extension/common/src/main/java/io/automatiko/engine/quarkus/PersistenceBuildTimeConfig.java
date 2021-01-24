@@ -3,6 +3,7 @@ package io.automatiko.engine.quarkus;
 import java.util.Optional;
 
 import io.automatiko.engine.api.config.DatabasePersistenceConfig;
+import io.automatiko.engine.api.config.DynamoDBPersistenceConfig;
 import io.automatiko.engine.api.config.FileSystemPersistenceConfig;
 import io.automatiko.engine.api.config.InfinispanPersistenceConfig;
 import io.automatiko.engine.api.config.PersistenceConfig;
@@ -36,6 +37,12 @@ public class PersistenceBuildTimeConfig extends PersistenceConfig {
     @ConfigItem
     public DatabasePersistenceBuildTimeConfig database;
 
+    /**
+     * Configures dynamodb based persistence
+     */
+    @ConfigItem
+    public DynamoDBPersistenceBuildTimeConfig dynamodb;
+
     @Override
     public Optional<String> type() {
         return type;
@@ -55,5 +62,10 @@ public class PersistenceBuildTimeConfig extends PersistenceConfig {
     @Override
     public DatabasePersistenceConfig database() {
         return database;
+    }
+
+    @Override
+    public DynamoDBPersistenceConfig dynamodb() {
+        return dynamodb;
     }
 }

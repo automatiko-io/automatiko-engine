@@ -51,6 +51,7 @@ public class PersistenceGenerator extends AbstractGenerator {
     private static final String FILESYSTEM_PERSISTENCE_TYPE = "filesystem";
     private static final String INFINISPAN_PERSISTENCE_TYPE = "infinispan";
     private static final String DB_PERSISTENCE_TYPE = "db";
+    private static final String DYNAMO_DB_PERSISTENCE_TYPE = "dynamodb";
     private static final String DEFAULT_PERSISTENCE_TYPE = FILESYSTEM_PERSISTENCE_TYPE;
 
     private static final String TEMPLATE_NAME = "templateName";
@@ -113,6 +114,8 @@ public class PersistenceGenerator extends AbstractGenerator {
                 fileSystemBasedPersistence(generatedFiles);
             } else if (persistenceType.equals(DB_PERSISTENCE_TYPE)) {
                 dbBasedPersistence(generatedFiles);
+            } else if (persistenceType.equals(DYNAMO_DB_PERSISTENCE_TYPE)) {
+                dynamoDBBasedPersistence(generatedFiles);
             }
 
         }
@@ -347,6 +350,42 @@ public class PersistenceGenerator extends AbstractGenerator {
 
         if (useInjection()) {
             annotator.withApplicationComponent(persistenceProviderClazz);
+        }
+
+        String packageName = compilationUnit.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
+        String clazzName = packageName + "." + persistenceProviderClazz.findFirst(ClassOrInterfaceDeclaration.class)
+                .map(c -> c.getName().toString()).get();
+
+        generatedFiles.add(new GeneratedFile(GeneratedFile.Type.CLASS, clazzName.replace('.', '/') + ".java",
+                compilationUnit.toString().getBytes(StandardCharsets.UTF_8)));
+
+        persistenceProviderClazz.getMembers().sort(new BodyDeclarationComparator());
+    }
+
+    protected void dynamoDBBasedPersistence(List<GeneratedFile> generatedFiles) {
+        ClassOrInterfaceDeclaration persistenceProviderClazz = new ClassOrInterfaceDeclaration()
+                .setName("ProcessInstancesFactoryImpl").setModifiers(Modifier.Keyword.PUBLIC)
+                .addExtendedType("io.automatiko.engine.addons.persistence.AbstractProcessInstancesFactory");
+
+        CompilationUnit compilationUnit = new CompilationUnit("io.automatiko.engine.addons.persistence");
+        compilationUnit.getTypes().add(persistenceProviderClazz);
+
+        persistenceProviderClazz.addConstructor(Keyword.PUBLIC);
+
+        ConstructorDeclaration constructor = persistenceProviderClazz.addConstructor(Keyword.PUBLIC)
+                .addParameter("software.amazon.awssdk.services.dynamodb.DynamoDbClient", "dynamodb")
+                .addParameter("io.automatiko.engine.api.config.DynamoDBPersistenceConfig", "config");
+
+        BlockStmt body = new BlockStmt();
+        ExplicitConstructorInvocationStmt superExp = new ExplicitConstructorInvocationStmt(false, null,
+                NodeList.nodeList(new NameExpr("dynamodb"), new NameExpr("config")));
+        body.addStatement(superExp);
+
+        constructor.setBody(body);
+
+        if (useInjection()) {
+            annotator.withApplicationComponent(persistenceProviderClazz);
+            annotator.withInjection(constructor);
         }
 
         String packageName = compilationUnit.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");

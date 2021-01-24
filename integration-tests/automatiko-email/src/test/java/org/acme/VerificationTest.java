@@ -27,7 +27,7 @@ import io.smallrye.reactive.messaging.connectors.InMemoryConnector;
 import io.smallrye.reactive.messaging.connectors.InMemorySource;
 
 @QuarkusTest
-public class VerificationTests {
+public class VerificationTest {
  // @formatter:off
     
     @Inject 

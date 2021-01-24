@@ -31,4 +31,11 @@ public class PersistenceConfig {
     public DatabasePersistenceConfig database() {
         return new DatabasePersistenceConfig();
     }
+
+    /**
+     * Configures dynamodb based persistence
+     */
+    public DynamoDBPersistenceConfig dynamodb() {
+        return new DynamoDBPersistenceConfig();
+    }
 }

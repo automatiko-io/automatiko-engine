@@ -27,7 +27,7 @@ import io.smallrye.reactive.messaging.connectors.InMemorySource;
 import io.smallrye.reactive.messaging.kafka.KafkaRecord;
 
 @QuarkusTest
-public class VerificationTests {
+public class VerificationTest {
  // @formatter:off
     
     @Inject 

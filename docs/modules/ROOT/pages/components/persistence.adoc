@@ -40,8 +40,8 @@ To use file system based perssitence your service must have following dependency
 </dependency>
 ----
 
-NOTE: That each persistence addon comes with job service implementation as well
-to provide persistency of timers defined in workflows
+NOTE: Note that each persistence addon comes with job service implementation as well
+to provide persistence of timers defined in workflows
 
 Additional configuration should be placed in `application.properties`
 
@@ -108,7 +108,7 @@ NOTE: By default data is not removed at the completion of workflow instance
 
 === Configuration
 
-To use file system based persistence your service must have following dependency
+To use database based persistence your service must have following dependency
 
 [source,xml]
 ----
@@ -118,8 +118,8 @@ To use file system based persistence your service must have following dependency
 </dependency>
 ----
 
-NOTE: That each persistence addon comes with job service implementation as well
-to provide persistency of timers defined in workflows
+NOTE: Note that each persistence addon comes with job service implementation as well
+to provide persistence of timers defined in workflows
 
 Additional configuration should be placed in `application.properties`
 
@@ -131,5 +131,62 @@ Additional configuration should be placed in `application.properties`
 ||||||
 |quarkus.automatiko.jobs.db.interval|QUARKUS_AUTOMATIKO_JOBS_DB_INTERVAL|Specifies interval (in minutes) how often look for another chunk of jobs to execute|No|60|No
 |quarkus.automatiko.jobs.db.threads|QUARKUS_AUTOMATIKO_JOBS_DB_THREADS|Specifies how many threads should be used for job execution|No|1|No
+
+|====
+
+== DynamoDB based storage
+
+DynamoDB based storage allows to rely on Amazon managed DynamoDB. It allows to offload most of the storage
+heavy lifting (such as replication, scalability etc) to managed persistence service.
+
+Automatiko takes advantages of highly scalable nature of DynamoDB that nicely fits into workflow data model - being
+key value based. 
+
+Every workflow definition will be stored in dedicated table that is constructed
+based on workflow identifier and version. That will result in each workflow definition to have 
+dedicated storage location. Automatiko by default creates all required tables so there is no need
+to dive into the details but if such need arise automatic table creation can be disabled.
+
+The table structure will have following attributes
+
+- *InstanceId* - (of type string) this is the unique id of each workflow instance
+- *Content* - (of type binary) this is the actual workflow instance serialized
+- *Tags* - (of type list) this is the workflow instance tags - it also includes `instance id` and `business key`
+
+NOTE: In addition when table is created it assigns default values for read and write capacity set to 10, it can be
+changed via configuration properties
+
+=== Configuration
+
+To use DynamoDB based persistence your service must have following dependency
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-dynamodb-persistence-addon</artifactId>
+</dependency>
+----
+
+NOTE: Note that each persistence addon comes with job service implementation as well
+to provide persistence of timers defined in workflows
+
+Additional configuration should be placed in `application.properties`
+
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.automatiko.persistence.type||Specify what persistence should be used|No||Yes
+|quarkus.automatiko.persistence.dynamodb.create-tables|QUARKUS_AUTOMATIKO_PERSISTENCE_DYNAMODB_CREATE_TABLES|Specifies if DynamoDB tables should be automatically created|No|true|No
+|quarkus.automatiko.persistence.dynamodb.read-capacity|QUARKUS_AUTOMATIKO_PERSISTENCE_DYNAMODB_READ_CAPACITY|Specifies read capacity to be applied to created DynamoDB tables|No|10|No
+|quarkus.automatiko.persistence.dynamodb.write-capacity|QUARKUS_AUTOMATIKO_PERSISTENCE_DYNAMODB_WRITE_CAPACITY|Specifies write capacity to be applied to created DynamoDB tables|No|10|No
+
+||||||
+|quarkus.automatiko.jobs.dynamodb.create-tables|QUARKUS_AUTOMATIKO_JOBS_DYNAMODB_CREATE_TABLES|Specifies if DynamoDB tables should be automatically created|No|true|No
+|quarkus.automatiko.jobs.dynamodb.read-capacity|QUARKUS_AUTOMATIKO_JOBS_DYNAMODB_READ_CAPACITY|Specifies read capacity to be applied to created DynamoDB tables|No|10|No
+|quarkus.automatiko.jobs.dynamodb.write-capacity|QUARKUS_AUTOMATIKO_JOBS_DYNAMODB_WRITE_CAPACITY|Specifies write capacity to be applied to created DynamoDB tables|No|10|No
+|quarkus.automatiko.jobs.dynamodb.interval|QUARKUS_AUTOMATIKO_JOBS_DYNAMODB_INTERVAL|Specifies interval (in minutes) how often look for another chunk of jobs to execute|No|60|No
+|quarkus.automatiko.jobs.dynamodb.threads|QUARKUS_AUTOMATIKO_JOBS_DYNAMODB_THREADS|Specifies how many threads should be used for job execution|No|1|No
+
 
 |====
