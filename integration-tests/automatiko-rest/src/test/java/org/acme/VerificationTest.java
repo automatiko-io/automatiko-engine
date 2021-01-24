@@ -17,7 +17,7 @@ import io.restassured.http.ContentType;
 
 @QuarkusTest
 @QuarkusTestResource(WiremockPetstore.class)
-public class VerificationTests {
+public class VerificationTest {
  // @formatter:off
     
     @Test

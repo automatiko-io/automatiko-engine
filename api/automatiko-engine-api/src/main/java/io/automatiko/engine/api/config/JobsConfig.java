@@ -31,4 +31,11 @@ public class JobsConfig {
     public DatabaseJobsConfig db() {
         return new DatabaseJobsConfig();
     }
+
+    /**
+     * Configures dynamodb based jobs service
+     */
+    public DynamoDBJobsConfig dynamodb() {
+        return new DynamoDBJobsConfig();
+    }
 }

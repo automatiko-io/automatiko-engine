@@ -131,15 +131,23 @@ public class $Type$Resource {
     @GET()
     @Produces(MediaType.APPLICATION_JSON)
     public List<$Type$Output> getAll_$name$(
+            @Parameter(description = "Tags to filter when loading instances", required = false) @QueryParam("tags") final List<String> tags,
             @Parameter(description = "Pagination - page to start on", required = false) @QueryParam(value = "page") @DefaultValue("1") int page,
             @Parameter(description = "Pagination - number of items to return", required = false) @QueryParam(value = "size") @DefaultValue("10") int size,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         try {
             identitySupplier.buildIdentityProvider(user, groups);
-            return process.instances().values(page, size).stream()
+            
+            if (tags != null && !tags.isEmpty()) {
+                return process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, tags.toArray(String[]::new)).stream()
+                        .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
+                        .collect(Collectors.toList());
+            } else {
+                return process.instances().values(page, size).stream()
                     .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
                     .collect(Collectors.toList());
+            }
         } finally {
             IdentityProvider.set(null);
         }

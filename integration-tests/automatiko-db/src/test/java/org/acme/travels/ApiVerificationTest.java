@@ -17,7 +17,7 @@ import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
-public class ApiVerificationTests {
+public class ApiVerificationTest {
  // @formatter:off
     
     @Inject

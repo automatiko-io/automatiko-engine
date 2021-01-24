@@ -32,6 +32,7 @@
     <module>automatiko-condition</module>
     <module>automatiko-funq</module>
     <module>automatiko-funq-flow</module>
+    <module>automatiko-dynamo</module>
   </modules>
 
   <build>

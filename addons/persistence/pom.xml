@@ -17,5 +17,6 @@
     <module>automatiko-infinispan-persistence-addon</module>
     <module>automatiko-filesystem-persistence-addon</module>
     <module>automatiko-db-persistence-addon</module>
+    <module>automatiko-dynamodb-persistence-addon</module>
   </modules>
 </project>

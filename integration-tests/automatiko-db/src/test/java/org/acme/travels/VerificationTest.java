@@ -16,7 +16,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 
 @QuarkusTest
-public class VerificationTests {
+public class VerificationTest {
  // @formatter:off
     
     @SuppressWarnings("unchecked")
