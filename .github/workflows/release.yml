@@ -15,7 +15,7 @@ jobs:
         java-version: 11
 
     - name: Build with Maven
-      run: mvn -B clean package -P release --file pom.xml
+      run: mvn -B clean install -P release --file pom.xml
 
     - name: Set up Apache Maven Central
       uses: actions/setup-java@v1
