@@ -10,16 +10,19 @@
   <bpmn2:itemDefinition id="ItemDefinition_6" isCollection="false" structureRef="Object"/>
   <bpmn2:itemDefinition id="ItemDefinition_7" isCollection="false" structureRef="Object"/>
   <bpmn2:itemDefinition id="ItemDefinition_8" isCollection="false" structureRef="Object"/>
+  <bpmn2:itemDefinition id="ItemDefinition_73" isCollection="false" structureRef="org.automatiko.funq.Address"/>
   <bpmn2:process id="greetings" tns:packageName="org.acme.travels" name="Grettings" isExecutable="true" processType="Public">
     <bpmn2:documentation id="Documentation_1"><![CDATA[Basic version of hello world type of processing]]></bpmn2:documentation>
     <bpmn2:extensionElements>
       <tns:metaData name="accessPolicy">
         <tns:metaValue><![CDATA[participants]]></tns:metaValue>
       </tns:metaData>
+      <tns:import name="org.automatiko.funq.Address"/>
     </bpmn2:extensionElements>
     <bpmn2:property id="name" itemSubjectRef="ItemDefinition_9" name="name"/>
     <bpmn2:property id="lastName" itemSubjectRef="ItemDefinition_9" name="lastName"/>
     <bpmn2:property id="message" itemSubjectRef="ItemDefinition_9" name="message"/>
+    <bpmn2:property id="address" itemSubjectRef="ItemDefinition_73" name="address"/>
     <bpmn2:startEvent id="StartEvent_1" name="StartProcess">
       <bpmn2:extensionElements>
         <tns:metaData name="elementname">
@@ -128,7 +131,7 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_ScriptTask_5" bpmnElement="ScriptTask_5" isExpanded="true">
         <dc:Bounds height="50.0" width="110.0" x="401.0" y="146.0"/>
-        <bpmndi:BPMNLabel>
+        <bpmndi:BPMNLabel id="BPMNLabel_6">
           <dc:Bounds height="11.0" width="58.0" x="427.0" y="165.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
@@ -160,13 +163,13 @@
         <di:waypoint xsi:type="dc:Point" x="344.0" y="89.0"/>
         <di:waypoint xsi:type="dc:Point" x="344.0" y="171.0"/>
         <di:waypoint xsi:type="dc:Point" x="401.0" y="171.0"/>
-        <bpmndi:BPMNLabel/>
+        <bpmndi:BPMNLabel id="BPMNLabel_9"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_8" bpmnElement="SequenceFlow_8" sourceElement="BPMNShape_ScriptTask_5" targetElement="BPMNShape_EndEvent_2">
         <di:waypoint xsi:type="dc:Point" x="511.0" y="171.0"/>
         <di:waypoint xsi:type="dc:Point" x="545.0" y="171.0"/>
         <di:waypoint xsi:type="dc:Point" x="579.0" y="171.0"/>
-        <bpmndi:BPMNLabel/>
+        <bpmndi:BPMNLabel id="BPMNLabel_10"/>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
     <bpmndi:BPMNLabelStyle id="BPMNLabelStyle_1">
