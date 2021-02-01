@@ -31,6 +31,11 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-funqy-knative-events-deployment</artifactId>
     </dependency>
+    
+    <dependency>
+      <groupId>io.smallrye</groupId>
+      <artifactId>smallrye-open-api-core</artifactId>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

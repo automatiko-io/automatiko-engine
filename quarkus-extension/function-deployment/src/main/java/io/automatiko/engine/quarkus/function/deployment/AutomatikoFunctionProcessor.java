@@ -1,13 +1,10 @@
-package io.automatiko.engine.quarkus.functionflow.deployment;
+package io.automatiko.engine.quarkus.function.deployment;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -23,7 +20,8 @@ import org.jboss.jandex.MethodInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.automatiko.engine.services.utils.StringUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
@@ -34,45 +32,24 @@ import io.smallrye.openapi.api.models.OpenAPIImpl;
 import io.smallrye.openapi.runtime.io.schema.SchemaFactory;
 import io.smallrye.openapi.runtime.scanner.SchemaRegistry;
 
-public class AutomatikoFunctionFlowProcessor {
+public class AutomatikoFunctionProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AutomatikoFunctionFlowProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AutomatikoFunctionProcessor.class);
 
-    private static final String FEATURE = "automatiko-function-flow";
+    private static final String FEATURE = "automatiko-function";
 
     @BuildStep
     FeatureBuildItem generateFunctionFlowDeploymentFiles(BuildSystemTargetBuildItem bts, CombinedIndexBuildItem index,
             CurateOutcomeBuildItem cob) throws IOException {
-        Path outputdir = bts.getOutputDirectory();
-        Path directory = Paths.get(outputdir.toString(), "functions");
-        Files.createDirectories(directory);
 
+        ObjectMapper mapper = new ObjectMapper();
         ExampleGenerator generator = new ExampleGenerator();
         OpenAPI openapi = openApi(index.getIndex());
 
-        StringBuilder descriptorFileContent = new StringBuilder();
-
-        // create function sink binding descriptor
-        String sinkBindingTemplate = StringUtils.readFileAsString(
-                new InputStreamReader(this.getClass().getResourceAsStream("/function-sink-template.yaml")));
-        descriptorFileContent.append(sinkBindingTemplate
-                .replaceAll("@@name@@", cob.getEffectiveModel().getAppArtifact().getArtifactId()));
-
-        descriptorFileContent.append("\n").append("---").append("\n");
-
-        // create function service descriptor
-        String serviceTemplate = StringUtils.readFileAsString(
-                new InputStreamReader(this.getClass().getResourceAsStream("/function-service-template.yaml")));
-        descriptorFileContent.append(serviceTemplate
-                .replaceAll("@@name@@", cob.getEffectiveModel().getAppArtifact().getArtifactId())
-                .replaceAll("@@user@@", System.getProperty("user.name"))
-                .replaceAll("@@version@@", cob.getEffectiveModel().getAppArtifact().getVersion()));
-
         Collection<AnnotationInstance> functions = index.getIndex().getAnnotations(createDotName("io.quarkus.funqy.Funq"));
-        DotName mapping = createDotName("io.quarkus.funqy.knative.events.CloudEventMapping");
 
         LOGGER.info("************************************************************");
-        LOGGER.info("***********Automatiko Function Flow Instructions************");
+        LOGGER.info("*************Automatiko Function Instructions***************");
         LOGGER.info("************************************************************");
 
         // for each found function generate sample payload and print out as instructions
@@ -80,35 +57,23 @@ public class AutomatikoFunctionFlowProcessor {
             if (f.target().kind().equals(Kind.METHOD)) {
                 MethodInfo mi = f.target().asMethod();
                 // create function trigger descriptor for every found function
-                String triggerTemplate = StringUtils.readFileAsString(
-                        new InputStreamReader(this.getClass().getResourceAsStream("/function-trigger-template.yaml")));
-                descriptorFileContent.append("\n").append("---").append("\n");
-                descriptorFileContent.append(triggerTemplate
-                        .replaceAll("@@name@@", mi.name())
-                        .replaceAll("@@trigger@@", mi.annotation(mapping).value("trigger").asString())
-                        .replaceAll("@@servicename@@", cob.getEffectiveModel().getAppArtifact().getArtifactId()));
 
                 SchemaFactory.typeToSchema(index.getIndex(), Thread.currentThread().getContextClassLoader(),
                         mi.parameters().get(0), Collections.emptyList());
                 Schema fSchema = openapi.getComponents().getSchemas().get(mi.parameters().get(0).name().local());
+
+                Map<String, Object> example = generator.generate(fSchema, openapi);
+
                 LOGGER.info(
-                        "Function \"{}\" will accept POST requests on / endpoint with following payload ",
-                        mi.name());
-                Stream.of(generator.generate(fSchema, openapi).split("\\r?\\n")).forEach(LOGGER::info);
-                LOGGER.info("(as either binary or structured cloud event of type \"{}\") ",
-                        mi.annotation(mapping).value("trigger").asString());
+                        "Function \"{}\" will accept POST requests on /{} endpoint with following payload ",
+                        mi.name(), mi.name());
+                Stream.of(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(example).split("\\r?\\n"))
+                        .forEach(LOGGER::info);
+                LOGGER.info("Alternativelly function accepts GET requests on /{} with following query parameters", mi.name());
+                flatMap(null, example).entrySet().forEach(e -> LOGGER.info(e.getKey() + "=" + e.getValue()));
                 LOGGER.info("*****************************************");
             }
         }
-
-        Path filePath = Paths.get(directory.toString(),
-                cob.getEffectiveModel().getAppArtifact().getArtifactId() + "-"
-                        + cob.getEffectiveModel().getAppArtifact().getVersion() + ".yaml");
-        Files.write(
-                filePath,
-                descriptorFileContent.toString().getBytes(StandardCharsets.UTF_8));
-
-        LOGGER.info("Complete deployment file is located at {}", filePath.toAbsolutePath());
         LOGGER.info("************************************************************");
 
         SchemaRegistry.remove();
@@ -173,5 +138,20 @@ public class AutomatikoFunctionFlowProcessor {
         }), openapi, index);
 
         return openapi;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, String> flatMap(String parentKey, Map<String, Object> nestedMap) {
+        Map<String, String> flatMap = new HashMap<>();
+        String prefixKey = parentKey != null ? parentKey + "." : "";
+        for (Map.Entry<String, Object> entry : nestedMap.entrySet()) {
+            if (entry.getValue() instanceof String) {
+                flatMap.put(prefixKey + entry.getKey(), (String) entry.getValue());
+            }
+            if (entry.getValue() instanceof Map) {
+                flatMap.putAll(flatMap(prefixKey + entry.getKey(), (Map<String, Object>) entry.getValue()));
+            }
+        }
+        return flatMap;
     }
 }
