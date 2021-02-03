@@ -38,4 +38,11 @@ public class PersistenceConfig {
     public DynamoDBPersistenceConfig dynamodb() {
         return new DynamoDBPersistenceConfig();
     }
+
+    /**
+     * Configures cassandra based persistence
+     */
+    public CassandraPersistenceConfig cassandra() {
+        return new CassandraPersistenceConfig();
+    }
 }

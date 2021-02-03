@@ -106,6 +106,17 @@
       </dependency>
       <dependency>
         <groupId>io.automatiko.addons</groupId>
+        <artifactId>automatiko-cassandra-persistence-addon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.addons</groupId>
+        <artifactId>automatiko-cassandra-persistence-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.addons</groupId>
         <artifactId>automatiko-events-reactive-messaging-addon</artifactId>
         <version>${project.version}</version>
       </dependency>
