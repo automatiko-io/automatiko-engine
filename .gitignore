@@ -17,5 +17,6 @@ target/
 .DS_Store
 
 docs/build/
+build/
 docs/antora-ui-default/node_modules
 docs/antora-ui-default/public
