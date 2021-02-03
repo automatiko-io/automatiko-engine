@@ -38,4 +38,11 @@ public class JobsConfig {
     public DynamoDBJobsConfig dynamodb() {
         return new DynamoDBJobsConfig();
     }
+
+    /**
+     * Configures cassandra based jobs service
+     */
+    public CassandraJobsConfig cassandra() {
+        return new CassandraJobsConfig();
+    }
 }

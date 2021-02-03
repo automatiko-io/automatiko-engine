@@ -2,6 +2,7 @@ package io.automatiko.engine.quarkus;
 
 import java.util.Optional;
 
+import io.automatiko.engine.api.config.CassandraPersistenceConfig;
 import io.automatiko.engine.api.config.DatabasePersistenceConfig;
 import io.automatiko.engine.api.config.DynamoDBPersistenceConfig;
 import io.automatiko.engine.api.config.FileSystemPersistenceConfig;
@@ -43,6 +44,12 @@ public class PersistenceBuildTimeConfig extends PersistenceConfig {
     @ConfigItem
     public DynamoDBPersistenceBuildTimeConfig dynamodb;
 
+    /**
+     * Configures cassandra based persistence
+     */
+    @ConfigItem
+    public CassandraPersistenceBuildTimeConfig cassandra;
+
     @Override
     public Optional<String> type() {
         return type;
@@ -67,5 +74,10 @@ public class PersistenceBuildTimeConfig extends PersistenceConfig {
     @Override
     public DynamoDBPersistenceConfig dynamodb() {
         return dynamodb;
+    }
+
+    @Override
+    public CassandraPersistenceConfig cassandra() {
+        return cassandra;
     }
 }

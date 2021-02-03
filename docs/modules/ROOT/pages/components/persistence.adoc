@@ -9,6 +9,8 @@ Automatiko comes with several options to chose from
 
 - *File system* based storage
 - *Database* based storage
+- *Amazon DynamoDB* based storage
+- *Apache Cassandra* based storage
 
 NOTE: More is on their way and as soon as they will be implemented they will
 be listed here.
@@ -177,16 +179,76 @@ Additional configuration should be placed in `application.properties`
 |Property name|Environment variable|Description|Required|Default value|BuildTime only
 
 |quarkus.automatiko.persistence.type||Specify what persistence should be used|No||Yes
-|quarkus.automatiko.persistence.dynamodb.create-tables|QUARKUS_AUTOMATIKO_PERSISTENCE_DYNAMODB_CREATE_TABLES|Specifies if DynamoDB tables should be automatically created|No|true|No
+|quarkus.automatiko.persistence.dynamodb.create-tables|QUARKUS_AUTOMATIKO_PERSISTENCE_DYNAMODB_CREATE_TABLES|Specifies if tables should be automatically created|No|true|No
 |quarkus.automatiko.persistence.dynamodb.read-capacity|QUARKUS_AUTOMATIKO_PERSISTENCE_DYNAMODB_READ_CAPACITY|Specifies read capacity to be applied to created DynamoDB tables|No|10|No
 |quarkus.automatiko.persistence.dynamodb.write-capacity|QUARKUS_AUTOMATIKO_PERSISTENCE_DYNAMODB_WRITE_CAPACITY|Specifies write capacity to be applied to created DynamoDB tables|No|10|No
 
 ||||||
-|quarkus.automatiko.jobs.dynamodb.create-tables|QUARKUS_AUTOMATIKO_JOBS_DYNAMODB_CREATE_TABLES|Specifies if DynamoDB tables should be automatically created|No|true|No
+|quarkus.automatiko.jobs.dynamodb.create-tables|QUARKUS_AUTOMATIKO_JOBS_DYNAMODB_CREATE_TABLES|Specifies if tables should be automatically created|No|true|No
 |quarkus.automatiko.jobs.dynamodb.read-capacity|QUARKUS_AUTOMATIKO_JOBS_DYNAMODB_READ_CAPACITY|Specifies read capacity to be applied to created DynamoDB tables|No|10|No
 |quarkus.automatiko.jobs.dynamodb.write-capacity|QUARKUS_AUTOMATIKO_JOBS_DYNAMODB_WRITE_CAPACITY|Specifies write capacity to be applied to created DynamoDB tables|No|10|No
 |quarkus.automatiko.jobs.dynamodb.interval|QUARKUS_AUTOMATIKO_JOBS_DYNAMODB_INTERVAL|Specifies interval (in minutes) how often look for another chunk of jobs to execute|No|60|No
 |quarkus.automatiko.jobs.dynamodb.threads|QUARKUS_AUTOMATIKO_JOBS_DYNAMODB_THREADS|Specifies how many threads should be used for job execution|No|1|No
+
+
+|====
+
+== Apache Cassandra based storage
+
+Apache Casandra based storage allows to rely on advanced distributed data store for highly available use cases.
+It enables use of multiple data centers to replicate workflow instance data securely to make it available in
+all available locations. 
+
+Every workflow definition will be stored in dedicated table that is constructed
+based on workflow identifier and version. That will result in each workflow definition to have 
+dedicated storage location. Automatiko by default creates all required tables so there is no need
+to dive into the details but if such need arise automatic table creation can be disabled.
+
+The table structure will have following attributes
+
+- *InstanceId* - (of type text) this is the unique id of each workflow instance
+- *Content* - (of type blob) this is the actual workflow instance serialized
+- *Tags* - (of type set) this is the workflow instance tags - it also includes `instance id` and `business key`
+
+
+In addition to tables, Automatiko will create key space as well with configured name. If name is not given then it 
+defaults to `automatiko`.
+
+NOTE: Automatic keyspace creation is most basic setup as it uses `simple replication strategy` with replication
+factor set to 1. For more advanced (production like) use cases key space should be created manually and its name
+should be given via configuration.
+
+Next to tables, each workflow definition will get an index to be able to query more efficiently.
+
+=== Configuration
+
+To use Apache Cassandra based persistence your service must have following dependency
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-cassandra-persistence-addon</artifactId>
+</dependency>
+----
+
+NOTE: Note that each persistence addon comes with job service implementation as well
+to provide persistence of timers defined in workflows
+
+Additional configuration should be placed in `application.properties`
+
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.automatiko.persistence.type||Specify what persistence should be used|No||Yes
+|quarkus.automatiko.persistence.cassandra.create-tables|QUARKUS_AUTOMATIKO_PERSISTENCE_CASSANDRA_CREATE_TABLES|Specifies if tables should be automatically created|No|true|No
+|quarkus.automatiko.persistence.cassandra.keyspace|QUARKUS_AUTOMATIKO_PERSISTENCE_CASSANDRA_KEYSPACE|Specifies key space name to be used for tables|No|10|No
+
+||||||
+|quarkus.automatiko.jobs.cassandra.create-tables|QUARKUS_AUTOMATIKO_JOBS_CASSANDRA_CREATE_TABLES|Specifies if tables should be automatically created|No|true|No
+|quarkus.automatiko.jobs.cassandra.keyspace|QUARKUS_AUTOMATIKO_JOBS_CASSANDRA_KEYSPACE|Specifies key space name to be used for tables|No|10|No
+|quarkus.automatiko.jobs.cassandra.interval|QUARKUS_AUTOMATIKO_JOBS_CASSANDRA_INTERVAL|Specifies interval (in minutes) how often look for another chunk of jobs to execute|No|60|No
+|quarkus.automatiko.jobs.cassandra.threads|QUARKUS_AUTOMATIKO_JOBS_CASSANDRA_THREADS|Specifies how many threads should be used for job execution|No|1|No
 
 
 |====
