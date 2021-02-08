@@ -42,6 +42,8 @@ public class ProcessInstanceEventBody {
 
     private List<String> roles;
 
+    private List<String> visibleTo;
+
     private List<String> tags;
 
     private Set<MilestoneEventBody> milestones = Collections.emptySet();
@@ -105,6 +107,10 @@ public class ProcessInstanceEventBody {
 
     public List<String> getRoles() {
         return roles;
+    }
+
+    public List<String> getVisibleTo() {
+        return visibleTo;
     }
 
     public List<String> getTags() {
@@ -245,6 +251,11 @@ public class ProcessInstanceEventBody {
 
         public Builder roles(String... roles) {
             instance.roles = Arrays.asList(roles);
+            return this;
+        }
+
+        public Builder visibleTo(String... visibleTo) {
+            instance.visibleTo = Arrays.asList(visibleTo);
             return this;
         }
 

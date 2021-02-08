@@ -10,18 +10,32 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+
+import org.apache.http.util.EntityUtils;
+import org.elasticsearch.client.Request;
+import org.elasticsearch.client.Response;
+import org.elasticsearch.client.RestClient;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 @QuarkusTest
+@QuarkusTestResource(ElasticContainer.class)
 public class VerificationTest {
+
+    @Inject
+    RestClient elasticClient;
+
  // @formatter:off
     
     @SuppressWarnings("unchecked")
     @Test
-    public void testProcessExecution() {
+    public void testProcessExecution() throws Exception {
         String key = "john";
         String addPayload = "{\"name\" : \"john\"}";
         
@@ -42,6 +56,34 @@ public class VerificationTest {
             .get("/v1/omboarding")
         .then().statusCode(200)
             .body("$.size()", is(1));
+        
+        Request request = new Request(
+                "GET",
+                "/omboarding_1/_search");
+        // since elastic calls are done async from automatiko publisher give it a bit of time to be completed
+        Thread.sleep(1000);
+        Response response = elasticClient.performRequest(request);
+        String responseBody = EntityUtils.toString(response.getEntity());
+        JsonObject json = new JsonObject(responseBody);
+        JsonArray hits = json.getJsonObject("hits").getJsonArray("hits");
+    
+        assertEquals(1, hits.size());
+        JsonObject item = hits.getJsonObject(0).getJsonObject("_source");
+        assertEquals("john", item.getString("name"));
+        
+        // check if tasks are loaded to elastic
+        request = new Request(
+                "GET",
+                "/tasks/_search");
+        response = elasticClient.performRequest(request);
+        responseBody = EntityUtils.toString(response.getEntity());
+        json = new JsonObject(responseBody);
+        hits = json.getJsonObject("hits").getJsonArray("hits");
+    
+        assertEquals(1, hits.size());
+        item = hits.getJsonObject(0).getJsonObject("_source");
+        assertEquals("Fill in person details", item.getString("name"));
+        assertEquals("personInfo", item.getJsonObject("_metadata").getString("referenceName"));
         
         List<Map<String, String>> taskInfo = given()
                         .accept(ContentType.JSON)

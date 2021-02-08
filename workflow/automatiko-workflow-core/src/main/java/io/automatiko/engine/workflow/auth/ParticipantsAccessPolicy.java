@@ -1,5 +1,8 @@
 package io.automatiko.engine.workflow.auth;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import io.automatiko.engine.api.auth.AccessPolicy;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.SecurityPolicy;
@@ -58,6 +61,37 @@ public class ParticipantsAccessPolicy<T> implements AccessPolicy<ProcessInstance
                     return workitem.enforce(SecurityPolicy.of(identityProvider));
                 });
 
+    }
+
+    @Override
+    public Set<String> visibleTo(ProcessInstance<?> instance) {
+
+        Set<String> visibleTo = new LinkedHashSet<String>();
+        WorkflowProcessInstance pi = (WorkflowProcessInstance) ((AbstractProcessInstance<?>) instance).processInstance();
+        if (pi.getInitiator() != null && !pi.getInitiator().isEmpty()) {
+            visibleTo.add(pi.getInitiator());
+        }
+        ((WorkflowProcessInstanceImpl) pi).getNodeInstances(true).stream()
+                .filter(ni -> ni instanceof HumanTaskNodeInstance).forEach(ni -> {
+                    if (((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getPotentialUsers() != null) {
+                        visibleTo.addAll(((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getPotentialUsers());
+                    }
+                    if (((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getPotentialGroups() != null) {
+                        visibleTo.addAll(((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getPotentialGroups());
+                    }
+                    if (((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getAdminUsers() != null) {
+                        visibleTo.addAll(((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getAdminUsers());
+                    }
+                    if (((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getAdminGroups() != null) {
+                        visibleTo.addAll(((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getAdminUsers());
+                    }
+                    // remove any defined excluded owners
+                    if (((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getExcludedUsers() != null) {
+                        visibleTo
+                                .removeAll(((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getExcludedUsers());
+                    }
+                });
+        return visibleTo;
     }
 
 }

@@ -1,6 +1,7 @@
 package io.automatiko.engine.addons.events.ws;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,7 +19,6 @@ import io.automatiko.engine.api.auth.SecurityPolicy;
 import io.automatiko.engine.api.event.DataEvent;
 import io.automatiko.engine.api.event.EventPublisher;
 import io.automatiko.engine.api.runtime.process.HumanTaskWorkItem;
-import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.services.event.ProcessInstanceDataEvent;
 import io.automatiko.engine.services.event.UserTaskInstanceDataEvent;
 
@@ -36,7 +36,6 @@ public class WebSocketEventPublisher implements EventPublisher {
         this.json = json;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void publish(DataEvent<?> event) {
 
@@ -55,8 +54,9 @@ public class WebSocketEventPublisher implements EventPublisher {
                 IdentityProvider identityProvider = (IdentityProvider) session.getUserProperties().get("atk_identity");
                 if (event instanceof ProcessInstanceDataEvent) {
 
-                    ProcessInstance pinstance = ((ProcessInstanceDataEvent) event).getData().sourceInstance();
-                    allowed = pinstance.process().accessPolicy().canReadInstance(identityProvider, pinstance);
+                    List<String> visibleTo = ((ProcessInstanceDataEvent) event).getData().getVisibleTo();
+                    allowed = visibleTo.contains(identityProvider.getName())
+                            || visibleTo.stream().anyMatch(item -> identityProvider.getRoles().contains(item));
 
                 } else if (event instanceof UserTaskInstanceDataEvent) {
 

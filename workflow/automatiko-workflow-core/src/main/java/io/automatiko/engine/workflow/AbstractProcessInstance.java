@@ -206,7 +206,6 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         LOGGER.debug("Disconnecting instance {} ({}) on thread {} lock {}", id(), businessKey(),
                 Thread.currentThread().getName(), lock);
         ((WorkflowProcessInstanceImpl) processInstance).disconnect();
-        ((WorkflowProcessInstanceImpl) processInstance).setMetaData("AutomatikProcessInstance", null);
         LOGGER.debug("Disconnected instance {} ({}) on thread {} lock {}", id(), businessKey(),
                 Thread.currentThread().getName(), lock);
     }

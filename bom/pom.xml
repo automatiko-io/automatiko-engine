@@ -139,6 +139,17 @@
       </dependency>
       <dependency>
         <groupId>io.automatiko.addons</groupId>
+        <artifactId>automatiko-events-elastic-addon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.addons</groupId>
+        <artifactId>automatiko-events-elastic-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.addons</groupId>
         <artifactId>automatiko-process-management-addon</artifactId>
         <version>${project.version}</version>
       </dependency>
