@@ -15,5 +15,6 @@
   <modules>
     <module>automatiko-events-reactive-messaging-addon</module>
     <module>automatiko-events-websocket-addon</module>
+    <module>automatiko-events-elastic-addon</module>
   </modules>
 </project>

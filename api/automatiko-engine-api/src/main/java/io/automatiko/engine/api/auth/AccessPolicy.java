@@ -1,5 +1,9 @@
 package io.automatiko.engine.api.auth;
 
+import java.util.Set;
+
+import io.automatiko.engine.api.workflow.ProcessInstance;
+
 /**
  * Access policy that drives the access to individual instances based on identity.
  * Enforces if given identity (that is usually representing a user) can access given
@@ -52,5 +56,14 @@ public interface AccessPolicy<T> {
      * @param instance actual instance to apply access policy to
      * @return true if given identity is allowed to signal given instance
      */
-    boolean canSignalInstance(IdentityProvider identityProvider, T instances);
+    boolean canSignalInstance(IdentityProvider identityProvider, T instance);
+
+    /**
+     * Returns currently available users and groups that have read access to the given instance.
+     * In case there are no restrictions then this method return null.
+     * 
+     * @param instance actual instance to apply access policy to
+     * @return set of users and groups that can access the given instance
+     */
+    Set<String> visibleTo(ProcessInstance<?> instance);
 }

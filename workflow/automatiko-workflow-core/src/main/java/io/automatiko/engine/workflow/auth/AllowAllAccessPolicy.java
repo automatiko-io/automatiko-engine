@@ -1,5 +1,7 @@
 package io.automatiko.engine.workflow.auth;
 
+import java.util.Set;
+
 import io.automatiko.engine.api.auth.AccessPolicy;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.workflow.ProcessInstance;
@@ -30,8 +32,13 @@ public class AllowAllAccessPolicy<T> implements AccessPolicy<ProcessInstance<T>>
     }
 
     @Override
-    public boolean canSignalInstance(IdentityProvider identityProvider, ProcessInstance<T> instances) {
+    public boolean canSignalInstance(IdentityProvider identityProvider, ProcessInstance<T> instance) {
         return true;
+    }
+
+    @Override
+    public Set<String> visibleTo(ProcessInstance<?> instance) {
+        return null;
     }
 
 }

@@ -168,8 +168,15 @@ public class ProcessInstanceEventBatch implements EventBatch {
         if (tags != null) {
             eventBuilder.tags(tags.stream().map(t -> t.getValue()).toArray(String[]::new));
         }
-
-        eventBuilder.instance((io.automatiko.engine.api.workflow.ProcessInstance<?>) pi.getMetaData("AutomatikProcessInstance"));
+        io.automatiko.engine.api.workflow.ProcessInstance<?> instance = (io.automatiko.engine.api.workflow.ProcessInstance<?>) pi
+                .getMetaData("AutomatikProcessInstance");
+        if (instance != null) {
+            Set<String> visibleTo = instance.process().accessPolicy().visibleTo(instance);
+            if (visibleTo != null) {
+                eventBuilder.visibleTo(visibleTo.toArray(String[]::new));
+            }
+            eventBuilder.instance(instance);
+        }
 
         return eventBuilder.build();
     }
