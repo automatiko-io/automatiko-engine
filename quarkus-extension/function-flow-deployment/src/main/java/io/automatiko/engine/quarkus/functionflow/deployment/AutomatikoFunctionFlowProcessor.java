@@ -115,7 +115,7 @@ public class AutomatikoFunctionFlowProcessor {
         return new FeatureBuildItem(FEATURE);
     }
 
-    private DotName createDotName(String name) {
+    public static DotName createDotName(String name) {
         int lastDot = name.indexOf('.');
         if (lastDot < 0) {
             return DotName.createComponentized(null, name);
@@ -147,7 +147,7 @@ public class AutomatikoFunctionFlowProcessor {
         return DotName.createComponentized(lastDollarName, name, true);
     }
 
-    private OpenAPI openApi(IndexView index) {
+    public static OpenAPI openApi(IndexView index) {
         OpenAPI openapi = new OpenAPIImpl();
         SchemaRegistry.newInstance(new OpenApiConfigImpl(new Config() {
 

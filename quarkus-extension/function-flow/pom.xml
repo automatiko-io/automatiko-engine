@@ -9,7 +9,7 @@
   </parent>
   <artifactId>automatiko-function-flow</artifactId>
   <name>Automatiko Engine :: Quarkus Extension :: FunctionFlow</name>
-  <description>Add business automation capabilities as function flow - processes and decision with Automatiko Engine</description>
+  <description>Workflow as a Function Flow - processes and decision with Automatiko Engine</description>
 
 
   <dependencies>

@@ -1,0 +1,47 @@
+{#include main}
+{#style}
+.annotation {
+color: gray;
+}
+code {
+  font-family: Consolas,"courier new";
+  color: black;
+  padding: 2px;
+  font-size: 105%;
+}
+{/style}
+{#title}Functions{/title}
+{#body}
+<table class="table table-striped">
+    <thead class="thead-dark">
+    <tr class="d-flex">
+        <th scope="col" class="col-2">Name</th>
+        <th scope="col" class="col-2">Endpoint</th>
+        <th scope="col" class="col-4">Cloud event - Binary</th>
+        <th scope="col" class="col-4">Cloud event - Structured</th>
+    </tr>
+    </thead>
+    <tbody>
+    {#for workflowInfo in info:workflowFunctionFlowInfos}
+    <tr class="d-flex">
+        <td class="col-2">
+            {workflowInfo.name}
+        </td>
+        <td class="col-2">
+            {workflowInfo.endpoint}
+        </td>
+        <td class="col-4">
+        	<div style="overflow: scroll;"> 
+            <pre>{workflowInfo.binaryInstructions}</pre>
+            </div>
+        </td>
+        <td class="col-4">
+        	<div style="overflow: scroll;">
+        	<pre>{workflowInfo.structuredInstructions}</pre>
+            </div>
+        </td>
+    {/for}
+    </tbody>
+</table>
+{/body}
+{/include}
