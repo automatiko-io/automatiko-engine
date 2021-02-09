@@ -13,7 +13,7 @@
   <groupId>io.automatiko.quarkus</groupId>
   <artifactId>automatiko-service</artifactId>
   <name>Automatiko Engine :: Quarkus Extension :: Service</name>
-  <description>Add business automation capabilities as service - processes and decision with Automatiko Engine</description>
+  <description>Workflow as a Service - processes and decisions with Automatiko Engine</description>
   <dependencies>
 
     <!-- quarkus -->

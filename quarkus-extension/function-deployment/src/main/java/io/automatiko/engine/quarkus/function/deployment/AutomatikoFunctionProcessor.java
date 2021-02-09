@@ -80,7 +80,7 @@ public class AutomatikoFunctionProcessor {
         return new FeatureBuildItem(FEATURE);
     }
 
-    private DotName createDotName(String name) {
+    public static DotName createDotName(String name) {
         int lastDot = name.indexOf('.');
         if (lastDot < 0) {
             return DotName.createComponentized(null, name);
@@ -112,7 +112,7 @@ public class AutomatikoFunctionProcessor {
         return DotName.createComponentized(lastDollarName, name, true);
     }
 
-    private OpenAPI openApi(IndexView index) {
+    public static OpenAPI openApi(IndexView index) {
         OpenAPI openapi = new OpenAPIImpl();
         SchemaRegistry.newInstance(new OpenApiConfigImpl(new Config() {
 
@@ -141,7 +141,7 @@ public class AutomatikoFunctionProcessor {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, String> flatMap(String parentKey, Map<String, Object> nestedMap) {
+    public static Map<String, String> flatMap(String parentKey, Map<String, Object> nestedMap) {
         Map<String, String> flatMap = new HashMap<>();
         String prefixKey = parentKey != null ? parentKey + "." : "";
         for (Map.Entry<String, Object> entry : nestedMap.entrySet()) {

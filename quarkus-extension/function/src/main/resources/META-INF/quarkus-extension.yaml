@@ -1,5 +1,5 @@
 ---
-name: "AutomatikoFunction"
+name: "Automatiko Function"
 metadata:
   keywords:
   - "FaaS"
@@ -10,6 +10,7 @@ metadata:
   - "automation"
   - "funqy"
   - "function"
+  guide: "https://docs.automatiko.io"  
   categories:
-  - "business-automation"
+  - "workflow-automation"
   status: "preview"
