@@ -124,7 +124,7 @@ public class SvgProcessImageGenerator {
                     buildGateway(x, y, node, g2);
                 } else if (node instanceof ForEachNode) {
 
-                    buildNodeContainer(x, y, ((ForEachNode) node).getCompositeNode(), g2);
+                    buildNodeContainer(x(node), y(node), ((ForEachNode) node).getCompositeNode(), g2);
                 } else if (node instanceof CompositeNode) {
                     buildSubprocessNode(x, y, (CompositeNode) node, g2);
                     int sx = x(node);
