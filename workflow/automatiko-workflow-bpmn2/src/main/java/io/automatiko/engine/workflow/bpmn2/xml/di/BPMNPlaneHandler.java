@@ -100,9 +100,6 @@ public class BPMNPlaneHandler extends BaseAbstractHandler implements Handler {
 
     private void postProcessNodeOffset(Node[] nodes, int xOffset, int yOffset) {
         for (Node node : nodes) {
-            if (!"true".equalsIgnoreCase((String) node.getMetaData().get("hidden"))) {
-                continue;
-            }
             Integer x = (Integer) node.getMetaData().get("x");
             if (x != null) {
                 ((io.automatiko.engine.workflow.process.core.Node) node).setMetaData("x", x - xOffset);

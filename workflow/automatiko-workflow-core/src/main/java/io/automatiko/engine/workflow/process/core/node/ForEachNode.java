@@ -352,8 +352,10 @@ public class ForEachNode extends CompositeContextNode {
     @Override
     public void setMetaData(String name, Object value) {
         super.setMetaData(name, value);
-        for (Node node : getCompositeNode().getNodes()) {
-            ((NodeImpl) node).setMetaData(name, value);
+        if (name.equals("x") || name.equals("y") || name.equals("width") || name.equals("height")) {
+            for (Node node : getCompositeNode().getNodes()) {
+                ((NodeImpl) node).setMetaData(name, value);
+            }
         }
     }
 
