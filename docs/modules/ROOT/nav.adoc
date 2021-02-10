@@ -10,5 +10,6 @@
 ** xref:components/persistence.adoc[Persistence]
 ** xref:components/errors.adoc[Error handling]
 ** xref:components/management.adoc[Process management]
+** xref:components/event-publishers.adoc[Event publishers]
 * xref:configuration.adoc[Configuration reference]
 * xref:faq.adoc[FAQ]

@@ -8,7 +8,8 @@ site:
 content:
   sources:
   - url: ./
-    branches: HEAD
+    branches: [main]
+    tags: v*
     start_path: docs
     edit_url: false
 asciidoc:
