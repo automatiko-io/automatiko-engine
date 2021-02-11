@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget.Kind;
@@ -22,6 +21,8 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.devconsole.spi.DevConsoleTemplateInfoBuildItem;
 import io.smallrye.openapi.runtime.io.schema.SchemaFactory;
+import io.smallrye.openapi.runtime.scanner.SchemaRegistry;
+import io.smallrye.openapi.runtime.scanner.spi.AnnotationScannerContext;
 
 public class DevConsoleProcessor {
 
@@ -32,18 +33,19 @@ public class DevConsoleProcessor {
                 .getAnnotations(AutomatikoFunctionProcessor.createDotName("io.quarkus.funqy.Funq"));
         ObjectMapper mapper = new ObjectMapper();
         ExampleGenerator generator = new ExampleGenerator();
-        OpenAPI openapi = AutomatikoFunctionProcessor.openApi(index.getIndex());
+        AnnotationScannerContext ctx = AutomatikoFunctionProcessor.buildAnnotationScannerContext(index.getIndex());
+        SchemaRegistry.newInstance(ctx);
 
         for (AnnotationInstance f : functions) {
             if (f.target().kind().equals(Kind.METHOD)) {
                 MethodInfo mi = f.target().asMethod();
                 // create function trigger descriptor for every found function
 
-                SchemaFactory.typeToSchema(index.getIndex(), Thread.currentThread().getContextClassLoader(),
+                SchemaFactory.typeToSchema(ctx,
                         mi.parameters().get(0), Collections.emptyList());
-                Schema fSchema = openapi.getComponents().getSchemas().get(mi.parameters().get(0).name().local());
+                Schema fSchema = ctx.getOpenApi().getComponents().getSchemas().get(mi.parameters().get(0).name().local());
 
-                Map<String, Object> example = generator.generate(fSchema, openapi);
+                Map<String, Object> example = generator.generate(fSchema, ctx.getOpenApi());
 
                 String putInstructions = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(example);
 
@@ -55,6 +57,7 @@ public class DevConsoleProcessor {
                         putInstructions));
             }
         }
+        SchemaRegistry.remove();
 
         return new DevConsoleTemplateInfoBuildItem("workflowFunctionInfos", infos);
     }

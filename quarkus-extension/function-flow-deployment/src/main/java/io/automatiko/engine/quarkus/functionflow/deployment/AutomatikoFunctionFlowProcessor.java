@@ -13,7 +13,6 @@ import java.util.stream.Stream;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget.Kind;
@@ -29,10 +28,11 @@ import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.pkg.builditem.BuildSystemTargetBuildItem;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
+import io.smallrye.openapi.api.OpenApiConfig;
 import io.smallrye.openapi.api.OpenApiConfigImpl;
-import io.smallrye.openapi.api.models.OpenAPIImpl;
 import io.smallrye.openapi.runtime.io.schema.SchemaFactory;
 import io.smallrye.openapi.runtime.scanner.SchemaRegistry;
+import io.smallrye.openapi.runtime.scanner.spi.AnnotationScannerContext;
 
 public class AutomatikoFunctionFlowProcessor {
 
@@ -48,7 +48,8 @@ public class AutomatikoFunctionFlowProcessor {
         Files.createDirectories(directory);
 
         ExampleGenerator generator = new ExampleGenerator();
-        OpenAPI openapi = openApi(index.getIndex());
+        AnnotationScannerContext ctx = buildAnnotationScannerContext(index.getIndex());
+        SchemaRegistry.newInstance(ctx);
 
         StringBuilder descriptorFileContent = new StringBuilder();
 
@@ -88,13 +89,13 @@ public class AutomatikoFunctionFlowProcessor {
                         .replaceAll("@@trigger@@", mi.annotation(mapping).value("trigger").asString())
                         .replaceAll("@@servicename@@", cob.getEffectiveModel().getAppArtifact().getArtifactId()));
 
-                SchemaFactory.typeToSchema(index.getIndex(), Thread.currentThread().getContextClassLoader(),
+                SchemaFactory.typeToSchema(ctx,
                         mi.parameters().get(0), Collections.emptyList());
-                Schema fSchema = openapi.getComponents().getSchemas().get(mi.parameters().get(0).name().local());
+                Schema fSchema = ctx.getOpenApi().getComponents().getSchemas().get(mi.parameters().get(0).name().local());
                 LOGGER.info(
                         "Function \"{}\" will accept POST requests on / endpoint with following payload ",
                         mi.name());
-                Stream.of(generator.generate(fSchema, openapi).split("\\r?\\n")).forEach(LOGGER::info);
+                Stream.of(generator.generate(fSchema, ctx.getOpenApi()).split("\\r?\\n")).forEach(LOGGER::info);
                 LOGGER.info("(as either binary or structured cloud event of type \"{}\") ",
                         mi.annotation(mapping).value("trigger").asString());
                 LOGGER.info("*****************************************");
@@ -147,9 +148,8 @@ public class AutomatikoFunctionFlowProcessor {
         return DotName.createComponentized(lastDollarName, name, true);
     }
 
-    public static OpenAPI openApi(IndexView index) {
-        OpenAPI openapi = new OpenAPIImpl();
-        SchemaRegistry.newInstance(new OpenApiConfigImpl(new Config() {
+    public static AnnotationScannerContext buildAnnotationScannerContext(IndexView index) {
+        OpenApiConfig config = new OpenApiConfigImpl(new Config() {
 
             @Override
             public <T> T getValue(String propertyName, Class<T> propertyType) {
@@ -170,8 +170,10 @@ public class AutomatikoFunctionFlowProcessor {
             public Iterable<ConfigSource> getConfigSources() {
                 return Collections.emptyList();
             }
-        }), openapi, index);
+        });
+        AnnotationScannerContext ctx = new AnnotationScannerContext(index,
+                Thread.currentThread().getContextClassLoader(), config);
 
-        return openapi;
+        return ctx;
     }
 }

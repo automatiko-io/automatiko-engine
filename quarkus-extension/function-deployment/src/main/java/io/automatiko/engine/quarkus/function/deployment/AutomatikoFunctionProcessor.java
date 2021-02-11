@@ -10,7 +10,6 @@ import java.util.stream.Stream;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget.Kind;
@@ -27,10 +26,11 @@ import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.pkg.builditem.BuildSystemTargetBuildItem;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
+import io.smallrye.openapi.api.OpenApiConfig;
 import io.smallrye.openapi.api.OpenApiConfigImpl;
-import io.smallrye.openapi.api.models.OpenAPIImpl;
 import io.smallrye.openapi.runtime.io.schema.SchemaFactory;
 import io.smallrye.openapi.runtime.scanner.SchemaRegistry;
+import io.smallrye.openapi.runtime.scanner.spi.AnnotationScannerContext;
 
 public class AutomatikoFunctionProcessor {
 
@@ -44,8 +44,9 @@ public class AutomatikoFunctionProcessor {
 
         ObjectMapper mapper = new ObjectMapper();
         ExampleGenerator generator = new ExampleGenerator();
-        OpenAPI openapi = openApi(index.getIndex());
 
+        AnnotationScannerContext ctx = buildAnnotationScannerContext(index.getIndex());
+        SchemaRegistry.newInstance(ctx);
         Collection<AnnotationInstance> functions = index.getIndex().getAnnotations(createDotName("io.quarkus.funqy.Funq"));
 
         LOGGER.info("************************************************************");
@@ -58,11 +59,11 @@ public class AutomatikoFunctionProcessor {
                 MethodInfo mi = f.target().asMethod();
                 // create function trigger descriptor for every found function
 
-                SchemaFactory.typeToSchema(index.getIndex(), Thread.currentThread().getContextClassLoader(),
+                SchemaFactory.typeToSchema(ctx,
                         mi.parameters().get(0), Collections.emptyList());
-                Schema fSchema = openapi.getComponents().getSchemas().get(mi.parameters().get(0).name().local());
+                Schema fSchema = ctx.getOpenApi().getComponents().getSchemas().get(mi.parameters().get(0).name().local());
 
-                Map<String, Object> example = generator.generate(fSchema, openapi);
+                Map<String, Object> example = generator.generate(fSchema, ctx.getOpenApi());
 
                 LOGGER.info(
                         "Function \"{}\" will accept POST requests on /{} endpoint with following payload ",
@@ -112,9 +113,8 @@ public class AutomatikoFunctionProcessor {
         return DotName.createComponentized(lastDollarName, name, true);
     }
 
-    public static OpenAPI openApi(IndexView index) {
-        OpenAPI openapi = new OpenAPIImpl();
-        SchemaRegistry.newInstance(new OpenApiConfigImpl(new Config() {
+    public static AnnotationScannerContext buildAnnotationScannerContext(IndexView index) {
+        OpenApiConfig config = new OpenApiConfigImpl(new Config() {
 
             @Override
             public <T> T getValue(String propertyName, Class<T> propertyType) {
@@ -135,9 +135,11 @@ public class AutomatikoFunctionProcessor {
             public Iterable<ConfigSource> getConfigSources() {
                 return Collections.emptyList();
             }
-        }), openapi, index);
+        });
+        AnnotationScannerContext ctx = new AnnotationScannerContext(index,
+                Thread.currentThread().getContextClassLoader(), config);
 
-        return openapi;
+        return ctx;
     }
 
     @SuppressWarnings("unchecked")
