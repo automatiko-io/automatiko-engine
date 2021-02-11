@@ -15,7 +15,7 @@ import org.eclipse.microprofile.reactive.messaging.Message;
 
 public class MessageProducer {
     
-    org.eclipse.microprofile.reactive.messaging.Emitter emitter;
+    org.eclipse.microprofile.reactive.messaging.Emitter<CamelOutMessage> emitter;
     
     Optional<Boolean> useCloudEvents = Optional.of(true);
     
@@ -29,7 +29,7 @@ public class MessageProducer {
     }
     
 	public void produce(ProcessInstance pi, $Type$ eventData) {
-	    emitter.send(Message.of(this.marshall(pi, eventData))
+	    emitter.send(CamelOutMessage.of(this.marshall(pi, eventData))
 	            .addMetadata(new io.smallrye.reactive.messaging.camel.OutgoingExchangeMetadata().putProperty("atkInstanceId", 
 	                    ((WorkflowProcessInstance) pi).getCorrelationKey() != null ? ((WorkflowProcessInstance) pi).getCorrelationKey() : ((WorkflowProcessInstance) pi).getId())));
     }
@@ -65,4 +65,18 @@ public class MessageProducer {
 	        throw new RuntimeException(e);
 	    }
 	}
+	
+	public interface CamelOutMessage extends Message {
+
+        static Message of(Object marshall) {
+
+            return new Message() {
+                @Override
+                public Object getPayload() {
+                    return marshall;
+                }
+
+            };
+        }
+    }
 }

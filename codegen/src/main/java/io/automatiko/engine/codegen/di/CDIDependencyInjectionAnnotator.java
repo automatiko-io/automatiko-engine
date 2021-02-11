@@ -131,7 +131,7 @@ public class CDIDependencyInjectionAnnotator implements DependencyInjectionAnnot
 
     @Override
     public String emitterType(String dataType) {
-        return "org.eclipse.microprofile.reactive.messaging.Emitter";
+        return "org.eclipse.microprofile.reactive.messaging.Emitter<" + dataType + ">";
     }
 
     @Override

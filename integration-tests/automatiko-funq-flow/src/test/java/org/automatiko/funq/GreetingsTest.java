@@ -29,6 +29,7 @@ public class GreetingsTest {
             .header("ce-id", UUID.randomUUID().toString())
             .header("ce-type", "org.acme.travels.greetings")
             .header("ce-source", "test")
+            .header("ce-specversion", "1.0")
             .body("{\"name\" : \"john\"}")
         .when()
             .post("/")
@@ -52,6 +53,7 @@ public class GreetingsTest {
             .header("ce-id", UUID.randomUUID().toString())
             .header("ce-type", "org.acme.travels.greetings.updatemessage")
             .header("ce-source", "test")
+            .header("ce-specversion", "1.0")
             .body("{\"name\" : \"john\"}")
         .when()
             .post("/")
@@ -74,6 +76,7 @@ public class GreetingsTest {
             .header("ce-id", UUID.randomUUID().toString())
             .header("ce-type", "org.acme.travels.greetings")
             .header("ce-source", "test")
+            .header("ce-specversion", "1.0")
             .body("{\"name\" : \"mary\"}")
         .when()
             .post("/")
@@ -96,6 +99,7 @@ public class GreetingsTest {
             .header("ce-id", UUID.randomUUID().toString())
             .header("ce-type", "org.acme.travels.greetings.spanishname")
             .header("ce-source", "test")
+            .header("ce-specversion", "1.0")
             .body("{\"name\" : \"mary\"}")
         .when()
             .post("/")
@@ -118,6 +122,7 @@ public class GreetingsTest {
                     + "  \"id\" : \"" + UUID.randomUUID().toString() + "\",\n"
                     + "  \"type\" : \"org.acme.travels.greetings\",\n"
                     + "  \"source\": \"test\",\n"
+                    + "  \"specversion\": \"1.0\",\n"
                     + "  \"datacontenttype\": \"application/json\",\n"
                     + "  \"data\": {\n"
                     + "    \"name\" : \"mary\"\n"
@@ -145,6 +150,7 @@ public class GreetingsTest {
                     + "  \"id\" : \"" + UUID.randomUUID().toString() + "\",\n"
                     + "  \"type\" : \"org.acme.travels.greetings.spanishname\",\n"
                     + "  \"source\": \"test\",\n"
+                    + "  \"specversion\": \"1.0\",\n"
                     + "  \"datacontenttype\": \"application/json\",\n"
                     + "  \"data\": {\n"
                     + "    \"name\" : \"mary\"\n"

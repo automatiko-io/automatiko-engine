@@ -16,7 +16,7 @@ import org.eclipse.microprofile.reactive.messaging.Message;
 public class MessageProducer {
     
     @io.smallrye.reactive.messaging.annotations.Broadcast(0)
-    org.eclipse.microprofile.reactive.messaging.Emitter emitter;
+    org.eclipse.microprofile.reactive.messaging.Emitter<io.smallrye.reactive.messaging.kafka.KafkaRecord> emitter;
     
     Optional<Boolean> useCloudEvents = Optional.of(true);
     
@@ -65,4 +65,5 @@ public class MessageProducer {
 	        throw new RuntimeException(e);
 	    }
 	}
+	
 }

@@ -267,7 +267,6 @@ public class MessageProducerGenerator {
                     .filter(fd -> fd.getVariable(0).getNameAsString().equals("emitter")).get();
             annotator.withInjection(emitterField);
             annotator.withOutgoingMessage(emitterField, sanitizedName);
-            emitterField.getVariable(0).setType(annotator.emitterType("Message"));
 
             template.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("useCloudEvents"))
                     .forEach(fd -> annotator.withConfigInjection(fd, "quarkus.automatiko.messaging.as-cloudevents"));

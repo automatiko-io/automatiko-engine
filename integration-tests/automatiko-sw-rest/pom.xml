@@ -14,10 +14,6 @@
   <name>Automatiko :: Tests Suite :: automatiko-sw-rest</name>
   <description>Automatiko SW REST invocation</description>
 
-  <properties>
-    <version.io.quarkus>1.10.0.CR1</version.io.quarkus>
-  </properties>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
