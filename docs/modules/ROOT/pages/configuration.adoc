@@ -71,8 +71,19 @@ Following are set of configuration parameters that can be used to configure Auto
 |====
 |Property name|Environment variable|Description|Required|Default value|BuildTime only
 
-|quarkus.automatiko.security.authorized-only|QUARKUS_AUTOMATIKO_SECURITY_AUTHORIZED_ONLY|Specifies if usr/group information given as query params are ignored or not|No|true|No
+|quarkus.automatiko.security.authorized-only|QUARKUS_AUTOMATIKO_SECURITY_AUTHORIZED_ONLY|Specifies if user/group information given as query params are ignored or not|No|true|No
 |quarkus.automatiko.security.admin-role-name|QUARKUS_AUTOMATIKO_SECURITY_ADMIN_ROLE_NAME|What role/group name should be considered as admin|No|admin|No
+
+|====
+
+.Event publishers configuration parameters
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.automatiko.events.elastic.instance|QUARKUS_AUTOMATIKO_EVENTS_ELASTIC_INSTANCE|Specifies if workflow instances events should be published to elastic cluster|No|true|No
+|quarkus.automatiko.events.elastic.tasks|QUARKUS_AUTOMATIKO_EVENTS_ELASTIC_TASKS|Specifies if user task events should be published to elastic cluster|No|true|No
+|quarkus.automatiko.events.elastic.audit|QUARKUS_AUTOMATIKO_EVENTS_ELASTIC_AUDIT|Specifies if audit (node instances) events should be published to elastic cluster|No|false|No
+|quarkus.automatiko.events.elastic.audit-index|QUARKUS_AUTOMATIKO_EVENTS_ELASTIC_AUDIT_INDEX|Specifies name of the index in elastic cluster for audit events|No|atk_audit|No
 
 |====
 
