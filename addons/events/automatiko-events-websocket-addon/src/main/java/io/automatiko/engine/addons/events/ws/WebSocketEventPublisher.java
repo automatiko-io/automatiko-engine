@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.SecurityPolicy;
+import io.automatiko.engine.api.config.WebsocketEventsConfig;
 import io.automatiko.engine.api.event.DataEvent;
 import io.automatiko.engine.api.event.EventPublisher;
 import io.automatiko.engine.api.runtime.process.HumanTaskWorkItem;
@@ -31,13 +32,24 @@ public class WebSocketEventPublisher implements EventPublisher {
 
     private ObjectMapper json;
 
+    private WebsocketEventsConfig config;
+
     @Inject
-    public WebSocketEventPublisher(ObjectMapper json) {
+    public WebSocketEventPublisher(ObjectMapper json, WebsocketEventsConfig config) {
         this.json = json;
+        this.config = config;
     }
 
     @Override
     public void publish(DataEvent<?> event) {
+
+        if (event instanceof ProcessInstanceDataEvent && !config.instance().orElse(true)) {
+            LOGGER.debug("Skipping process instance event as the publisher should not deal with instances");
+            return;
+        } else if (event instanceof UserTaskInstanceDataEvent && !config.tasks().orElse(true)) {
+            LOGGER.debug("Skipping user task event as the publisher should not deal with tasks");
+            return;
+        }
 
         String text;
         try {
@@ -55,7 +67,7 @@ public class WebSocketEventPublisher implements EventPublisher {
                 if (event instanceof ProcessInstanceDataEvent) {
 
                     List<String> visibleTo = ((ProcessInstanceDataEvent) event).getData().getVisibleTo();
-                    allowed = visibleTo.contains(identityProvider.getName())
+                    allowed = visibleTo.isEmpty() || visibleTo.contains(identityProvider.getName())
                             || visibleTo.stream().anyMatch(item -> identityProvider.getRoles().contains(item));
 
                 } else if (event instanceof UserTaskInstanceDataEvent) {

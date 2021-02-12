@@ -19,21 +19,30 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.automatiko.engine.api.config.ElasticEventsConfig;
 import io.automatiko.engine.api.event.DataEvent;
 import io.automatiko.engine.api.event.EventPublisher;
 import io.automatiko.engine.services.event.ProcessInstanceDataEvent;
 import io.automatiko.engine.services.event.UserTaskInstanceDataEvent;
+import io.automatiko.engine.services.event.impl.NodeInstanceEventBody;
 
 @ApplicationScoped
 public class ElasticEventPublisher implements EventPublisher {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticEventPublisher.class);
 
-    @Inject
     RestClient restClient;
 
-    @Inject
     ObjectMapper mapper;
+
+    ElasticEventsConfig config;
+
+    @Inject
+    public ElasticEventPublisher(RestClient restClient, ObjectMapper mapper, ElasticEventsConfig config) {
+        this.restClient = restClient;
+        this.mapper = mapper;
+        this.config = config;
+    }
 
     @Override
     public void publish(DataEvent<?> event) {
@@ -43,34 +52,70 @@ public class ElasticEventPublisher implements EventPublisher {
             if (event instanceof ProcessInstanceDataEvent) {
 
                 ProcessInstanceDataEvent pevent = (ProcessInstanceDataEvent) event;
+                if (config.instance().orElse(true)) {
+                    Map<String, Object> metadata = new LinkedHashMap<>();
+                    metadata.put("instanceId", pevent.getData().getId());
+                    metadata.put("processId", pevent.getData().getProcessId());
+                    metadata.put("rootInstanceId", pevent.getData().getRootInstanceId());
+                    metadata.put("rootProcessId", pevent.getData().getRootProcessId());
+                    metadata.put("parentInstanceId", pevent.getData().getParentInstanceId());
+                    metadata.put("businessKey", pevent.getData().getBusinessKey());
+                    metadata.put("state", pevent.getData().getState());
+                    metadata.put("tags", pevent.getData().getTags());
+                    if (pevent.getData().getRoles() != null) {
+                        metadata.put("roles", pevent.getData().getRoles());
+                    }
+                    if (pevent.getData().getVisibleTo() != null) {
+                        metadata.put("visibleTo", pevent.getData().getVisibleTo());
+                    }
+                    metadata.put("startDate", pevent.getData().getStartDate());
+                    metadata.put("endDate", pevent.getData().getEndDate());
 
-                Map<String, Object> metadata = new LinkedHashMap<>();
-                metadata.put("instanceId", pevent.getData().getId());
-                metadata.put("processId", pevent.getData().getProcessId());
-                metadata.put("rootInstanceId", pevent.getData().getRootInstanceId());
-                metadata.put("rootProcessId", pevent.getData().getRootProcessId());
-                metadata.put("parentInstanceId", pevent.getData().getParentInstanceId());
-                metadata.put("businessKey", pevent.getData().getBusinessKey());
-                metadata.put("state", pevent.getData().getState());
-                metadata.put("tags", pevent.getData().getTags());
-                if (pevent.getData().getRoles() != null) {
-                    metadata.put("roles", pevent.getData().getRoles());
+                    payload = new LinkedHashMap<>(pevent.getData().getVariables());
+
+                    payload.put("_metadata", metadata);
+
+                    request = new Request(
+                            "PUT",
+                            "/" + pevent.getData().sourceInstance().process().id() + "/_doc/" + pevent.getData().getId());
+                    request.setJsonEntity(mapper.writeValueAsString(payload));
+
+                    sendRequest(request, event);
                 }
-                if (pevent.getData().getVisibleTo() != null) {
-                    metadata.put("visibleTo", pevent.getData().getVisibleTo());
+                if (config.audit().orElse(false)) {
+                    String index = config.auditIndex().orElse("atk_audit");
+
+                    StringBuilder bulkRequestBody = new StringBuilder();
+                    for (NodeInstanceEventBody nevent : pevent.getData().getNodeInstances()) {
+                        String actionMetaData = String.format("{ \"index\" : { \"_index\" : \"%s\", \"_id\" : \"%s\" } }%n",
+                                index, nevent.getId());
+                        Map<String, Object> audit = new LinkedHashMap<>();
+                        audit.put("instanceId", pevent.getData().getId());
+                        audit.put("processId", pevent.getData().getProcessId());
+                        audit.put("rootInstanceId", pevent.getData().getRootInstanceId());
+                        audit.put("rootProcessId", pevent.getData().getRootProcessId());
+                        audit.put("parentInstanceId", pevent.getData().getParentInstanceId());
+                        audit.put("businessKey", pevent.getData().getBusinessKey());
+                        audit.put("nodeDefinitionId", nevent.getNodeDefinitionId());
+                        audit.put("nodeId", nevent.getNodeId());
+                        audit.put("nodeName", nevent.getNodeName());
+                        audit.put("nodeType", nevent.getNodeType());
+                        audit.put("triggerTime", nevent.getTriggerTime());
+                        audit.put("leaveTime", nevent.getLeaveTime());
+                        bulkRequestBody.append(actionMetaData);
+                        bulkRequestBody.append(mapper.writeValueAsString(audit));
+                        bulkRequestBody.append("\n");
+
+                    }
+                    request = new Request(
+                            "POST",
+                            "/" + index + "/_bulk");
+                    request.setJsonEntity(bulkRequestBody.toString());
+                    sendRequest(request, event);
+
                 }
-                metadata.put("startDate", pevent.getData().getStartDate());
-                metadata.put("endDate", pevent.getData().getEndDate());
 
-                payload = new LinkedHashMap<>(pevent.getData().getVariables());
-
-                payload.put("_metadata", metadata);
-
-                request = new Request(
-                        "PUT",
-                        "/" + pevent.getData().sourceInstance().process().id() + "/_doc/" + pevent.getData().getId());
-
-            } else if (event instanceof UserTaskInstanceDataEvent) {
+            } else if (event instanceof UserTaskInstanceDataEvent && config.tasks().orElse(true)) {
 
                 UserTaskInstanceDataEvent uevent = (UserTaskInstanceDataEvent) event;
                 Set<String> potentialOwners = new LinkedHashSet<String>();
@@ -116,24 +161,13 @@ public class ElasticEventPublisher implements EventPublisher {
                 request = new Request(
                         "PUT",
                         "/tasks/_doc/" + uevent.getData().getId());
+                request.setJsonEntity(mapper.writeValueAsString(payload));
+
+                sendRequest(request, event);
             } else {
                 return;
             }
 
-            request.setJsonEntity(mapper.writeValueAsString(payload));
-            restClient.performRequestAsync(request, new ResponseListener() {
-
-                @Override
-                public void onSuccess(Response response) {
-                    LOGGER.debug("Event {} successfully published to elastic", event);
-                }
-
-                @Override
-                public void onFailure(Exception exception) {
-                    LOGGER.error("Event {} failed to be published to elastic", event, exception);
-
-                }
-            });
         } catch (IOException e) {
             LOGGER.error("Error when publishing event to elastic", e);
         }
@@ -147,4 +181,20 @@ public class ElasticEventPublisher implements EventPublisher {
         }
     }
 
+    protected void sendRequest(Request request, DataEvent<?> event) {
+
+        restClient.performRequestAsync(request, new ResponseListener() {
+
+            @Override
+            public void onSuccess(Response response) {
+                LOGGER.debug("Event {} successfully published to elastic", event);
+            }
+
+            @Override
+            public void onFailure(Exception exception) {
+                LOGGER.error("Event {} failed to be published to elastic", event, exception);
+
+            }
+        });
+    }
 }

@@ -1,0 +1,124 @@
+= Event publishers
+
+Event publishers allows to capture internal events generated during workflow execution to be pushed out
+to external systems. There are different types of events being published
+
+- workflow instance
+- user task
+
+*Workflow instance* provides information about given context of the instance that includes its:
+
+- instance data (data objects)
+- metadata information such as instane id, parent and root instance ids, state, business key and so on
+- node instances (activities) executed in the given request
+
+*User task* provides information about tasks assigned to human actors. This is mainly to allow advanced searches
+across assigned tasks to be able to efficiently find and work on assigned tasks. User tasks consists of
+
+- input data
+- optional output data
+- potential owners
+- task metadata such as id, name, description, status etc
+
+NOTE: Event publishers can do any transformation or filtering of the received events.
+
+There are several event publishers available out of the box.
+
+== ElasticSearch event publisher
+
+Elastic search event publisher allows to push events to ElasticSearch cluster. It publishes three types of events
+
+- workflow instances events
+- user task events
+- audit events
+
+=== Workflow instance events
+
+Workflow instance events are being pushed to dedicated index in elastic cluster that is named based on
+workflow definition id. Every instance that belongs to that definition will be placed into the same index. 
+That means there will be one index for each workflow definition in the service.
+
+NOTE: The workflow definition id used for index name will also include version if it was defined in the workflow.
+
+The primary context of the workflow instance event is the data. So the top level of the document in elastic
+will have all data object of given instance. In addition to that there will be `_metadata` attribute that
+contains workflow instance specific information such as id of root or parent instance, business key, state, etc.
+
+=== User task events
+
+User task events are build from every user task executed in the workflow instance. User tasks are meant to
+delegate work to human actors for gathering information. In many cases it will be required to build up 
+an efficient list of tasks for individuals or groups. By that elastic event publisher will index all user
+tasks regardless of the workflow definition or instance they belong to in single index named `tasks`.
+
+This will allow to build the index across all tasks that human actors can interact with like searching by
+inputs, metadata and potential owners.
+
+=== Audit events
+
+Audit events are build from the workflow instance events content by extracting node instances executed.
+This will provide a complete audit trial of what has been executed in given workflow instance.
+
+All audit log information are stored in the same index in elastic cluster named `atk_audit`.
+
+NOTE: Name od audit index name is configurable so can be changed to provide more domain specific name
+
+=== Configuration
+
+To use elastic event publisher your service must have following dependency
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-events-elastic-addon</artifactId>
+</dependency>
+---- 
+
+Additional configuration should be placed in `application.properties`
+
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.automatiko.events.elastic.instance|QUARKUS_AUTOMATIKO_EVENTS_ELASTIC_INSTANCE|Specifies if workflow instances events should be published to elastic cluster|No|true|No
+|quarkus.automatiko.events.elastic.tasks|QUARKUS_AUTOMATIKO_EVENTS_ELASTIC_TASKS|Specifies if user task events should be published to elastic cluster|No|true|No
+|quarkus.automatiko.events.elastic.audit|QUARKUS_AUTOMATIKO_EVENTS_ELASTIC_AUDIT|Specifies if audit (node instances) events should be published to elastic cluster|No|false|No
+|quarkus.automatiko.events.elastic.audit-index|QUARKUS_AUTOMATIKO_EVENTS_ELASTIC_AUDIT_INDEX|Specifies name of the index in elastic cluster for audit events|No|atk_audit|No
+
+|====
+
+== Websocket event publisher 
+
+Websocket event publisher allows to have websocket sessions connected to the service to receive events real time.
+It publishes three types of events
+
+- workflow instances events
+- user task events
+
+IMPORTANT: Websocket event publisher will enforce security restriction on events to make sure it will push the events
+to authorized sessions.
+
+This event publisher does not make any transformation to the event thus they will be pushed to websocket session clients
+in cloud event format.  
+
+=== Configuration
+
+To use elastic event publisher your service must have following dependency
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-events-websocket-addon</artifactId>
+</dependency>
+---- 
+
+Additional configuration should be placed in `application.properties`
+
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.automatiko.events.websocket.instance|QUARKUS_AUTOMATIKO_EVENTS_WEBSOCKET_INSTANCE|Specifies if workflow instances events should be published to websocket session|No|true|No
+|quarkus.automatiko.events.websocket.tasks|QUARKUS_AUTOMATIKO_EVENTS_WEBSOCKET_TASKS|Specifies if user task events should be published to websocket session|No|true|No
+
+|====
