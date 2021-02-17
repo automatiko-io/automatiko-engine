@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.definition.process.Connection;
 import io.automatiko.engine.api.definition.process.Node;
+import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.api.runtime.process.NodeInstanceContainer;
 import io.automatiko.engine.api.runtime.process.NodeInstanceState;
@@ -203,7 +204,11 @@ public abstract class NodeInstanceImpl
                     if (v == null) {
                         v = new ArrayList<String>();
                     }
-                    ((List<String>) v).add(getNodeName());
+
+                    Process process = getProcessInstance().getProcess();
+                    String defaultNextNode = process.getPackageName() + "." + process.getId() + "." + getNodeName();
+
+                    ((List<String>) v).add((String) getNode().getMetaData().getOrDefault("functionType", defaultNextNode));
 
                     return v;
                 });

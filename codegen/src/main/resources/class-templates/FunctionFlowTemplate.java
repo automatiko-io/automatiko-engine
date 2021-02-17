@@ -50,8 +50,8 @@ public class WorkflowFunction {
             
             for (String nextNode : ctx.nextNodes) {
         
-                LOGGER.debug("Next function to trigger {}", typePrefix + sanitizeIdentifier(nextNode));
-                eventSource.produce(typePrefix + "." + sanitizeIdentifier(nextNode), typePrefix, ctx.model);
+                LOGGER.debug("Next function to trigger {}", sanitizeIdentifier(nextNode));
+                eventSource.produce(sanitizeIdentifier(nextNode), typePrefix, ctx.model);
             }
         }
     }
@@ -85,8 +85,8 @@ public class WorkflowFunction {
             
             for (String nextNode : ctx.nextNodes) {
         
-                LOGGER.debug("Next function to trigger {}", typePrefix + sanitizeIdentifier(nextNode));
-                eventSource.produce(typePrefix + sanitizeIdentifier(nextNode), typePrefix + sanitizeIdentifier("$ThisNode$"), ctx.model);
+                LOGGER.debug("Next function to trigger {}", sanitizeIdentifier(nextNode));
+                eventSource.produce(sanitizeIdentifier(nextNode), typePrefix + sanitizeIdentifier("$ThisNode$"), ctx.model);
             }
         }  
     }

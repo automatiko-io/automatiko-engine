@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.workflow.base.instance.InternalProcessRuntime;
 import io.automatiko.engine.workflow.process.core.node.EndNode;
@@ -43,7 +44,10 @@ public class EndNodeInstance extends ExtendedNodeInstanceImpl {
                 if (v == null) {
                     v = new ArrayList<String>();
                 }
-                ((List<String>) v).add(getNodeName());
+                Process process = getProcessInstance().getProcess();
+                String defaultNextNode = process.getPackageName() + "." + process.getId() + "." + getNodeName();
+
+                ((List<String>) v).add((String) getNode().getMetaData().getOrDefault("functionType", defaultNextNode));
 
                 return v;
             });

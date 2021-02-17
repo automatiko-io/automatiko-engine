@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.workflow.base.core.Context;
@@ -34,7 +35,7 @@ public abstract class ProcessInstanceImpl implements ProcessInstance, Serializab
     private Map<String, ContextInstance> contextInstances = new HashMap<String, ContextInstance>();
     private Map<String, List<ContextInstance>> subContextInstances = new HashMap<String, List<ContextInstance>>();
     private transient InternalProcessRuntime runtime;
-    private Map<String, Object> metaData = new HashMap<String, Object>();
+    private Map<String, Object> metaData = new ConcurrentHashMap<String, Object>();
     private String outcome;
     private String parentProcessInstanceId;
     private String rootProcessInstanceId;
