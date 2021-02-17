@@ -97,7 +97,9 @@ public class FunctionFlowGenerator {
                     .ifPresent(s -> s.setValue(process.getPackageName() + "." + processId));
 
             if (useInjection()) {
-                annotator.withCloudEventMapping(md, process.getPackageName() + "." + processId);
+                String trigger = (String) process.getMetaData().getOrDefault("functionType",
+                        process.getPackageName() + "." + processId);
+                annotator.withCloudEventMapping(md, trigger);
             }
         });
 
@@ -111,8 +113,11 @@ public class FunctionFlowGenerator {
                 MethodDeclaration flowStepFunction = callTemplate.clone();
 
                 if (useInjection()) {
-                    annotator.withCloudEventMapping(flowStepFunction, process.getPackageName() + "." + processId + "."
-                            + sanitizeIdentifier(node.getName()).toLowerCase());
+                    String trigger = (String) node.getMetaData().getOrDefault("functionType",
+                            process.getPackageName() + "." + processId + "."
+                                    + sanitizeIdentifier(node.getName()).toLowerCase());
+
+                    annotator.withCloudEventMapping(flowStepFunction, trigger);
                 }
 
                 flowStepFunction.getBody().get().findFirst(StringLiteralExpr.class, s -> s.getValue().equals("$StartFromNode$"))

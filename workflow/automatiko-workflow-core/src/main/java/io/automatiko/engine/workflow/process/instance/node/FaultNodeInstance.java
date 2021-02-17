@@ -9,6 +9,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatiko.engine.workflow.base.core.context.exception.ExceptionScope;
@@ -45,7 +46,10 @@ public class FaultNodeInstance extends NodeInstanceImpl {
                 if (v == null) {
                     v = new ArrayList<String>();
                 }
-                ((List<String>) v).add(getNodeName());
+                Process process = getProcessInstance().getProcess();
+                String defaultNextNode = process.getPackageName() + "." + process.getId() + "." + getNodeName();
+
+                ((List<String>) v).add((String) getNode().getMetaData().getOrDefault("functionType", defaultNextNode));
 
                 return v;
             });

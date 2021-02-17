@@ -27,7 +27,7 @@ public class GreetingsTest {
             .contentType(ContentType.JSON)
             .accept(ContentType.JSON)
             .header("ce-id", UUID.randomUUID().toString())
-            .header("ce-type", "org.acme.travels.greetings")
+            .header("ce-type", "com.acme.sayhello")
             .header("ce-source", "test")
             .header("ce-specversion", "1.0")
             .body("{\"name\" : \"john\"}")
@@ -45,7 +45,7 @@ public class GreetingsTest {
         
         data = events.get(1);
         assertEquals("org.acme.travels.greetings", data.source);
-        assertEquals("org.acme.travels.greetings.greeting", data.type);
+        assertEquals("custom", data.type);
         
         given()
             .contentType(ContentType.JSON)
@@ -74,7 +74,7 @@ public class GreetingsTest {
             .contentType(ContentType.JSON)
             .accept(ContentType.JSON)
             .header("ce-id", UUID.randomUUID().toString())
-            .header("ce-type", "org.acme.travels.greetings")
+            .header("ce-type", "com.acme.sayhello")
             .header("ce-source", "test")
             .header("ce-specversion", "1.0")
             .body("{\"name\" : \"mary\"}")
@@ -91,7 +91,7 @@ public class GreetingsTest {
         
         data = events.get(1);
         assertEquals("org.acme.travels.greetings", data.source);
-        assertEquals("org.acme.travels.greetings.greeting", data.type);
+        assertEquals("custom", data.type);
         
         given()
             .contentType(ContentType.JSON)
@@ -120,7 +120,7 @@ public class GreetingsTest {
             .accept("application/cloudevents+json")
             .body("{\n"
                     + "  \"id\" : \"" + UUID.randomUUID().toString() + "\",\n"
-                    + "  \"type\" : \"org.acme.travels.greetings\",\n"
+                    + "  \"type\" : \"com.acme.sayhello\",\n"
                     + "  \"source\": \"test\",\n"
                     + "  \"specversion\": \"1.0\",\n"
                     + "  \"datacontenttype\": \"application/json\",\n"
@@ -141,7 +141,7 @@ public class GreetingsTest {
         
         data = events.get(1);
         assertEquals("org.acme.travels.greetings", data.source);
-        assertEquals("org.acme.travels.greetings.greeting", data.type);
+        assertEquals("custom", data.type);
           
         given()
             .contentType("application/cloudevents+json")
