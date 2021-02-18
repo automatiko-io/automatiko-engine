@@ -125,6 +125,7 @@ to provide persistence of timers defined in workflows
 
 Additional configuration should be placed in `application.properties`
 
+.Automatiko specific configuration properties
 |====
 |Property name|Environment variable|Description|Required|Default value|BuildTime only
 
@@ -135,6 +136,19 @@ Additional configuration should be placed in `application.properties`
 |quarkus.automatiko.jobs.db.threads|QUARKUS_AUTOMATIKO_JOBS_DB_THREADS|Specifies how many threads should be used for job execution|No|1|No
 
 |====
+
+.Datasource specific configuration properties
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.datasource.db-kind||Specify what kind of data base should be used|Yes||Yes
+|quarkus.datasource.username|QUARKUS_DATASOURCE_USERNAME|Specify user name to be used to connect to data base|Yes||No
+|quarkus.datasource.password|QUARKUS_DATASOURCE_PASSWORD|Specify password to be used to connect to data base|Yes||No
+|quarkus.datasource.jdbc.url|QUARKUS_DATASOURCE_JDBC_URL|Specify url to be used to connect to data base|Yes||No
+
+|====
+
+Full configuration reference for data source can be found link:https://quarkus.io/guides/datasource#jdbc-configuration[here]
 
 == DynamoDB based storage
 
@@ -175,6 +189,7 @@ to provide persistence of timers defined in workflows
 
 Additional configuration should be placed in `application.properties`
 
+.Automatiko specific configuration properties
 |====
 |Property name|Environment variable|Description|Required|Default value|BuildTime only
 
@@ -190,8 +205,19 @@ Additional configuration should be placed in `application.properties`
 |quarkus.automatiko.jobs.dynamodb.interval|QUARKUS_AUTOMATIKO_JOBS_DYNAMODB_INTERVAL|Specifies interval (in minutes) how often look for another chunk of jobs to execute|No|60|No
 |quarkus.automatiko.jobs.dynamodb.threads|QUARKUS_AUTOMATIKO_JOBS_DYNAMODB_THREADS|Specifies how many threads should be used for job execution|No|1|No
 
+|====
+
+.Dynamodb specific configuration properties
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.dynamodb.endpoint-override|QUARKUS_DYNAMODB_ENDPOINT_OVERRIDE|The endpoint URI with which the SDK should communicate|Yes||No
+|quarkus.dynamodb.aws.region|QUARKUS_DYNAMODB_AWS_REGION|An Amazon Web Services region that hosts the given service|Yes||No
+|quarkus.dynamodb.aws.credentials.type|QUARKUS_DYNAMODB_AWS_CREDENTIALS_TYPE|Configure the credentials provider that should be used to authenticate with AWS|Yes||No
 
 |====
+
+Full configuration reference for dynamodb can be found link:https://quarkus.io/guides/amazon-dynamodb#configuration-reference[here]
 
 == Apache Cassandra based storage
 
@@ -237,6 +263,7 @@ to provide persistence of timers defined in workflows
 
 Additional configuration should be placed in `application.properties`
 
+.Automatiko specific configuration properties
 |====
 |Property name|Environment variable|Description|Required|Default value|BuildTime only
 
@@ -250,5 +277,16 @@ Additional configuration should be placed in `application.properties`
 |quarkus.automatiko.jobs.cassandra.interval|QUARKUS_AUTOMATIKO_JOBS_CASSANDRA_INTERVAL|Specifies interval (in minutes) how often look for another chunk of jobs to execute|No|60|No
 |quarkus.automatiko.jobs.cassandra.threads|QUARKUS_AUTOMATIKO_JOBS_CASSANDRA_THREADS|Specifies how many threads should be used for job execution|No|1|No
 
+|====
+
+.Datasource specific configuration properties
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.cassandra.contact-points|QUARKUS_CASSANDRA_CONTACT_POINTS|Specify url to the cassandra data base|Yes||No
+|quarkus.cassandra.local-datacenter|QUARKUS_CASSANDRA_LOCAL_DATACENTER|Specify data senter to be used on cassandra|Yes||No
 
 |====
+
+Full configuration reference for Apache Cassandra can be found link:https://quarkus.io/guides/cassandra#advanced-driver-configuration[here]
+
