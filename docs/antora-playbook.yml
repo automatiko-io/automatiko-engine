@@ -9,6 +9,7 @@ content:
   sources:
   - url: ./
     branches: HEAD
+    tags: [v*]
     start_path: docs
     edit_url: false
 asciidoc:

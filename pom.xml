@@ -7,7 +7,7 @@
 
   <groupId>io.automatiko</groupId>
   <artifactId>automatiko-engine</artifactId>
-  <version>0.0.0-SNAPSHOT</version>
+  <version>0.2.0</version>
   <packaging>pom</packaging>
 
   <name>Automatiko Engine</name>
@@ -1072,7 +1072,6 @@
                 </goals>
                 <configuration>
                   <gpgArguments>
-                    <arg>--batch</arg>
                     <arg>--pinentry-mode</arg>
                     <arg>loopback</arg>
                   </gpgArguments>
