@@ -9,6 +9,8 @@ import static io.automatiko.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR_CLASS;
 import static io.automatiko.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.MQTT_CONNECTOR_CLASS;
+import static io.automatiko.engine.codegen.CodeGenConstants.OPERATOR_CONNECTOR;
+import static io.automatiko.engine.codegen.CodeGenConstants.OPERATOR_CONNECTOR_CLASS;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -150,6 +152,8 @@ public class CodegenUtils {
             return AMQP_CONNECTOR;
         } else if (context.getBuildContext().hasClassAvailable(CAMEL_CONNECTOR_CLASS)) {
             return CAMEL_CONNECTOR;
+        } else if (context.getBuildContext().hasClassAvailable(OPERATOR_CONNECTOR_CLASS)) {
+            return OPERATOR_CONNECTOR;
         }
 
         return "unknown";

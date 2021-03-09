@@ -17,6 +17,10 @@
 
 
   <packaging>pom</packaging>
+  
+  <properties>
+    <version.io.javaoperatorsdk>1.7.2</version.io.javaoperatorsdk>
+  </properties>
 
   <dependencyManagement>
     <dependencies>
@@ -38,17 +42,19 @@
   </dependencyManagement>
 
   <modules>
-    <module>bom</module>    
+    <module>bom</module>
     <module>common</module>
     <module>service</module>
     <module>function</module>
     <module>function-flow</module>
+    <module>operator</module>
     <module>deployment</module>
     <module>service-deployment</module>
     <module>function-deployment</module>
     <module>function-flow-deployment</module>
+    <module>operator-deployment</module>
     <module>integration-test</module>
-    <module>integration-test-hot-reload</module>    
+    <module>integration-test-hot-reload</module>
   </modules>
 
   <build>

@@ -37,122 +37,124 @@ import io.automatiko.engine.services.io.InternalResource;
 
 public class DecisionCodegen extends AbstractGenerator {
 
-	public static DecisionCodegen ofJar(Path... jarPaths) throws IOException {
-		List<DMNResource> dmnResources = new ArrayList<>();
+    public static DecisionCodegen ofJar(Path... jarPaths) throws IOException {
+        List<DMNResource> dmnResources = new ArrayList<>();
 
-		for (Path jarPath : jarPaths) {
-			List<Resource> resources = new ArrayList<>();
-			try (ZipFile zipFile = new ZipFile(jarPath.toFile())) {
-				Enumeration<? extends ZipEntry> entries = zipFile.entries();
-				while (entries.hasMoreElements()) {
-					ZipEntry entry = entries.nextElement();
+        for (Path jarPath : jarPaths) {
+            List<Resource> resources = new ArrayList<>();
+            try (ZipFile zipFile = new ZipFile(jarPath.toFile())) {
+                Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry entry = entries.nextElement();
 
-					if (entry.getName().endsWith(".dmn")) {
-						InternalResource resource = new ByteArrayResource(
-								readBytesFromInputStream(zipFile.getInputStream(entry)));
-						resource.setSourcePath(entry.getName());
-						resources.add(resource);
-					}
-				}
-			}
-			dmnResources.addAll(parseDecisions(jarPath, resources));
-		}
+                    if (entry.getName().endsWith(".dmn")) {
+                        InternalResource resource = new ByteArrayResource(
+                                readBytesFromInputStream(zipFile.getInputStream(entry)));
+                        resource.setSourcePath(entry.getName());
+                        resources.add(resource);
+                    }
+                }
+            }
+            dmnResources.addAll(parseDecisions(jarPath, resources));
+        }
 
-		return ofDecisions(dmnResources);
-	}
+        return ofDecisions(dmnResources);
+    }
 
-	public static DecisionCodegen ofPath(Path... paths) throws IOException {
-		List<DMNResource> resources = new ArrayList<>();
-		for (Path path : paths) {
-			Path srcPath = Paths.get(path.toString());
-			try (Stream<Path> filesStream = Files.walk(srcPath)) {
-				List<File> files = filesStream.filter(p -> p.toString().endsWith(".dmn")).map(Path::toFile)
-						.collect(Collectors.toList());
-				resources.addAll(parseFiles(srcPath, files));
-			}
-		}
+    public static DecisionCodegen ofPath(Path... paths) throws IOException {
+        List<DMNResource> resources = new ArrayList<>();
+        for (Path path : paths) {
+            Path srcPath = Paths.get(path.toString());
+            if (Files.exists(srcPath)) {
+                try (Stream<Path> filesStream = Files.walk(srcPath)) {
+                    List<File> files = filesStream.filter(p -> p.toString().endsWith(".dmn")).map(Path::toFile)
+                            .collect(Collectors.toList());
+                    resources.addAll(parseFiles(srcPath, files));
+                }
+            }
+        }
 
-		return ofDecisions(resources);
-	}
+        return ofDecisions(resources);
+    }
 
-	public static DecisionCodegen ofFiles(Path basePath, List<File> files) throws IOException {
-		return ofDecisions(parseFiles(basePath, files));
-	}
+    public static DecisionCodegen ofFiles(Path basePath, List<File> files) throws IOException {
+        return ofDecisions(parseFiles(basePath, files));
+    }
 
-	private static DecisionCodegen ofDecisions(List<DMNResource> resources) {
-		return new DecisionCodegen(resources);
-	}
+    private static DecisionCodegen ofDecisions(List<DMNResource> resources) {
+        return new DecisionCodegen(resources);
+    }
 
-	private static List<DMNResource> parseFiles(Path path, List<File> files) throws IOException {
-		return parseDecisions(path, files.stream().map(FileSystemResource::new).collect(toList()));
-	}
+    private static List<DMNResource> parseFiles(Path path, List<File> files) throws IOException {
+        return parseDecisions(path, files.stream().map(FileSystemResource::new).collect(toList()));
+    }
 
-	private static List<DMNResource> parseDecisions(Path path, List<Resource> resources) throws IOException {
-		DMNRuntime dmnRuntime = DmnRuntimeProvider.from(resources);
-		return dmnRuntime.getModels().stream().map(model -> new DMNResource(model, path)).collect(toList());
-	}
+    private static List<DMNResource> parseDecisions(Path path, List<Resource> resources) throws IOException {
+        DMNRuntime dmnRuntime = DmnRuntimeProvider.from(resources);
+        return dmnRuntime.getModels().stream().map(model -> new DMNResource(model, path)).collect(toList());
+    }
 
-	private String packageName;
-	private String applicationCanonicalName;
-	private DependencyInjectionAnnotator annotator;
+    private String packageName;
+    private String applicationCanonicalName;
+    private DependencyInjectionAnnotator annotator;
 
-	private DecisionContainerGenerator moduleGenerator;
+    private DecisionContainerGenerator moduleGenerator;
 
-	private final List<DMNResource> resources;
-	private final List<GeneratedFile> generatedFiles = new ArrayList<>();
-	private boolean useMonitoring = false;
+    private final List<DMNResource> resources;
+    private final List<GeneratedFile> generatedFiles = new ArrayList<>();
+    private boolean useMonitoring = false;
 
-	public DecisionCodegen(List<DMNResource> resources) {
-		this.resources = resources;
+    public DecisionCodegen(List<DMNResource> resources) {
+        this.resources = resources;
 
-		// set default package name
-		setPackageName(ApplicationGenerator.DEFAULT_PACKAGE_NAME);
-		this.moduleGenerator = new DecisionContainerGenerator(applicationCanonicalName, resources);
-	}
+        // set default package name
+        setPackageName(ApplicationGenerator.DEFAULT_PACKAGE_NAME);
+        this.moduleGenerator = new DecisionContainerGenerator(applicationCanonicalName, resources);
+    }
 
-	public void setPackageName(String packageName) {
-		this.packageName = packageName;
-		this.applicationCanonicalName = packageName + ".Application";
-	}
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
+        this.applicationCanonicalName = packageName + ".Application";
+    }
 
-	public void setDependencyInjection(DependencyInjectionAnnotator annotator) {
-		this.annotator = annotator;
-	}
+    public void setDependencyInjection(DependencyInjectionAnnotator annotator) {
+        this.annotator = annotator;
+    }
 
-	public DecisionContainerGenerator moduleGenerator() {
-		return moduleGenerator;
-	}
+    public DecisionContainerGenerator moduleGenerator() {
+        return moduleGenerator;
+    }
 
-	public List<GeneratedFile> generate() {
-		if (resources.isEmpty()) {
-			return Collections.emptyList();
-		}
+    public List<GeneratedFile> generate() {
+        if (resources.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-		return generatedFiles;
-	}
+        return generatedFiles;
+    }
 
-	@Override
-	public void updateConfig(ConfigGenerator cfg) {
-		if (!resources.isEmpty()) {
-			cfg.withDecisionConfig(new DecisionConfigGenerator());
-		}
-	}
+    @Override
+    public void updateConfig(ConfigGenerator cfg) {
+        if (!resources.isEmpty()) {
+            cfg.withDecisionConfig(new DecisionConfigGenerator());
+        }
+    }
 
-	private void storeFile(GeneratedFile.Type type, String path, String source) {
-		generatedFiles.add(new GeneratedFile(type, path, log(source).getBytes(StandardCharsets.UTF_8)));
-	}
+    private void storeFile(GeneratedFile.Type type, String path, String source) {
+        generatedFiles.add(new GeneratedFile(type, path, log(source).getBytes(StandardCharsets.UTF_8)));
+    }
 
-	public List<GeneratedFile> getGeneratedFiles() {
-		return generatedFiles;
-	}
+    public List<GeneratedFile> getGeneratedFiles() {
+        return generatedFiles;
+    }
 
-	@Override
-	public ApplicationSection section() {
-		return moduleGenerator;
-	}
+    @Override
+    public ApplicationSection section() {
+        return moduleGenerator;
+    }
 
-	public DecisionCodegen withMonitoring(boolean useMonitoring) {
-		this.useMonitoring = useMonitoring;
-		return this;
-	}
+    public DecisionCodegen withMonitoring(boolean useMonitoring) {
+        this.useMonitoring = useMonitoring;
+        return this;
+    }
 }

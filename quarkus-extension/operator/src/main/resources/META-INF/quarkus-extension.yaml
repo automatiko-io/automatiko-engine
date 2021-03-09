@@ -1,0 +1,14 @@
+---
+name: "Automatiko Operator"
+metadata:
+  keywords:
+  - "operator"
+  - "workflow"
+  - "processes"
+  - "decisions"
+  - "kubernetes"
+  - "automation"
+  guide: "https://docs.automatiko.io"
+  categories:
+  - "workflow-automation"
+  status: "preview"

@@ -84,7 +84,7 @@ public class InMemoryJobService implements JobsService {
     public boolean cancelJob(String id) {
         LOGGER.debug("Cancel Job: {}", id);
         if (scheduledJobs.containsKey(id)) {
-            return scheduledJobs.remove(id).cancel(true);
+            return scheduledJobs.remove(id).cancel(false);
         }
 
         return false;

@@ -301,6 +301,17 @@
         <artifactId>automatiko-common-deployment</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.quarkus</groupId>
+        <artifactId>automatiko-service-deployment</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.quarkus</groupId>
+        <artifactId>automatiko-service-deployment</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
       </dependency> 
       <dependency>
         <groupId>io.automatiko.quarkus</groupId>
@@ -343,6 +354,17 @@
       <dependency>
         <groupId>io.automatiko.quarkus</groupId>
         <artifactId>automatiko-function-flow</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.quarkus</groupId>
+        <artifactId>automatiko-operator</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.quarkus</groupId>
+        <artifactId>automatiko-operator</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
