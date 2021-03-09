@@ -45,24 +45,28 @@ public class DefaultVariableInitializer implements VariableInitializer {
     }
 
     protected Object defaultValue(String valueExpression, Variable definition, Map<String, Object> data) {
-        Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(valueExpression);
+        try {
+            Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(valueExpression);
 
-        if (matcher.find()) {
-            String paramName = matcher.group(1);
-            String defaultValue = null;
-            if (paramName.contains(":")) {
+            if (matcher.find()) {
+                String paramName = matcher.group(1);
+                String defaultValue = null;
+                if (paramName.contains(":")) {
 
-                String[] items = paramName.split(":");
-                paramName = items[0];
-                defaultValue = items[1];
+                    String[] items = paramName.split(":");
+                    paramName = items[0];
+                    defaultValue = items[1];
+                }
+
+                Object result = MVEL.eval(paramName, data);
+
+                return result == null ? defaultValue : result;
+
+            } else {
+                return definition.getType().readValue(valueExpression);
             }
-
-            Object result = MVEL.eval(paramName, data);
-
-            return result == null ? defaultValue : result;
-
-        } else {
-            return definition.getType().readValue(valueExpression);
+        } catch (Throwable e) {
+            return null;
         }
     }
 

@@ -89,9 +89,8 @@ public class SvgProcessImageGenerator {
                     + "\n");
 
             return writer.toString();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LOGGER.warn("Unable to generate process image due to " + e.getMessage());
-            e.printStackTrace();
             return null;
         }
     }

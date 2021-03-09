@@ -447,4 +447,9 @@ public class LightProcessRuntime implements InternalProcessRuntime {
         return null;
     }
 
+    @Override
+    public VariableInitializer getVariableInitializer() {
+        return variableInitializer;
+    }
+
 }

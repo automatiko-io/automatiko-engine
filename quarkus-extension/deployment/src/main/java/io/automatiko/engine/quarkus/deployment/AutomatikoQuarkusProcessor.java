@@ -30,6 +30,7 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.CompositeIndex;
 import org.jboss.jandex.DotName;
@@ -218,7 +219,8 @@ public class AutomatikoQuarkusProcessor {
 
         ApplicationGenerator appGen = createApplicationGenerator(config, appPaths, archivesIndex);
 
-        if (liveReload.isLiveReload()) {
+        if (liveReload.isLiveReload() || ConfigProvider.getConfig()
+                .getOptionalValue("quarkus.live-reload.url", String.class).isPresent()) {
             return;
         }
 

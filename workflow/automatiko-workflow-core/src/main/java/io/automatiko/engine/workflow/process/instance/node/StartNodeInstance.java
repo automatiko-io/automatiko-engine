@@ -13,6 +13,7 @@ import org.mvel2.MVEL;
 
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.api.workflow.datatype.DataType;
+import io.automatiko.engine.workflow.base.core.ContextContainer;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.core.event.EventTransformer;
@@ -139,6 +140,21 @@ public class StartNodeInstance extends NodeInstanceImpl {
                 }
             }
         }
+
+        VariableScope variableScope = (VariableScope) ((ContextContainer) getProcessInstance().getProcess())
+                .getDefaultContext(VariableScope.VARIABLE_SCOPE);
+        VariableScopeInstance variableScopeInstance = (VariableScopeInstance) getProcessInstance()
+                .getContextInstance(VariableScope.VARIABLE_SCOPE);
+
+        for (Variable var : variableScope.getVariables()) {
+            if (var.getMetaData(Variable.DEFAULT_VALUE) != null && variableScopeInstance.getVariable(var.getName()) == null) {
+                Object value = runtime.getVariableInitializer().initialize(var, variableScopeInstance.getVariables());
+
+                variableScope.validateVariable(getProcessInstance().getProcess().getName(), var.getName(), value);
+                variableScopeInstance.setVariable(var.getName(), value);
+            }
+        }
+
         triggerCompleted();
         if (!hidden) {
             runtime.getProcessEventSupport().fireAfterNodeTriggered(this, runtime);

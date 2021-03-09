@@ -148,7 +148,7 @@ public class FileSystemBasedJobService implements JobsService {
         LOGGER.debug("Cancel Job: {}", id);
         if (id != null && scheduledJobs.containsKey(id)) {
             removeScheduledJob(id);
-            return scheduledJobs.remove(id).cancel(true);
+            return scheduledJobs.remove(id).cancel(false);
         }
 
         return false;

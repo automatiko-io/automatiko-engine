@@ -6,9 +6,13 @@ import static io.automatiko.engine.codegen.CodeGenConstants.CAMEL_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.INCOMING_PROP_PREFIX;
 import static io.automatiko.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
+import static io.automatiko.engine.codegen.CodeGenConstants.OPERATOR_CONNECTOR;
 import static io.automatiko.engine.codegen.CodegenUtils.interpolateTypes;
 import static io.automatiko.engine.codegen.CodegenUtils.isApplicationField;
 import static io.automatiko.engine.codegen.CodegenUtils.isProcessField;
+
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
@@ -48,6 +52,7 @@ public class MessageConsumerGenerator {
     private final String resourceClazzName;
     private final String processClazzName;
     private String processId;
+    private String version = "";
     private String dataClazzName;
     private String classPrefix;
     private String modelfqcn;
@@ -60,6 +65,8 @@ public class MessageConsumerGenerator {
 
     private boolean persistence;
 
+    private String namespaces;
+
     public MessageConsumerGenerator(GeneratorContext context, WorkflowProcess process, String modelfqcn,
             String processfqcn, String appCanonicalName, String messageDataEventClassName, TriggerMetaData trigger) {
         this.context = context;
@@ -68,6 +75,9 @@ public class MessageConsumerGenerator {
         this.packageName = process.getPackageName();
         this.processId = process.getId();
         this.processName = processId.substring(processId.lastIndexOf('.') + 1);
+        if (process.getVersion() != null && !process.getVersion().trim().isEmpty()) {
+            this.version = CodegenUtils.version(process.getVersion());
+        }
         this.classPrefix = StringUtils.capitalize(processName) + CodegenUtils.version(process.getVersion());
         this.resourceClazzName = classPrefix + "MessageConsumer_" + trigger.getOwnerId();
         this.relativePath = packageName.replace(".", "/") + "/" + resourceClazzName + ".java";
@@ -76,6 +86,9 @@ public class MessageConsumerGenerator {
         this.processClazzName = processfqcn;
         this.appCanonicalName = appCanonicalName;
         this.messageDataEventClassName = messageDataEventClassName;
+
+        this.namespaces = (String) trigger.getContext("namespaces",
+                (String) process.getMetaData().getOrDefault("namespaces", ""));
     }
 
     public MessageConsumerGenerator withDependencyInjection(DependencyInjectionAnnotator annotator) {
@@ -176,6 +189,8 @@ public class MessageConsumerGenerator {
             return "/class-templates/CamelMessageConsumerTemplate.java";
         } else if (connector.equals(KAFKA_CONNECTOR)) {
             return "/class-templates/KafkaMessageConsumerTemplate.java";
+        } else if (connector.equals(OPERATOR_CONNECTOR)) {
+            return "/class-templates/OperatorMessageConsumerTemplate.java";
         } else {
             return "/class-templates/MessageConsumerTemplate.java";
         }
@@ -185,11 +200,18 @@ public class MessageConsumerGenerator {
         String sanitizedName = CodegenUtils.triggerSanitizedName(trigger, process.getVersion());
         String connector = CodegenUtils.getConnector(INCOMING_PROP_PREFIX + sanitizedName + ".connector", context,
                 (String) trigger.getContext("connector"));
-        if (connector != null) {
+
+        if (connector != null && !OPERATOR_CONNECTOR.equals(connector)) {
 
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".connector", connector);
             appendConnectorSpecificProperties(connector);
         }
+
+        // operator consumer only supports starting message endpoints
+        if (OPERATOR_CONNECTOR.equals(connector) && !trigger.isStart()) {
+            return null;
+        }
+
         CompilationUnit clazz = parse(this.getClass().getResourceAsStream(consumerTemplate(connector)));
         clazz.setPackageDeclaration(process.getPackageName());
         clazz.addImport(modelfqcn);
@@ -205,7 +227,9 @@ public class MessageConsumerGenerator {
         template.findAll(ClassOrInterfaceType.class).forEach(cls -> interpolateTypes(cls, dataClazzName));
         template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("configure"))
                 .forEach(md -> md.addAnnotation("javax.annotation.PostConstruct"));
-        template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("consume"))
+        template.findAll(MethodDeclaration.class).stream()
+                .filter(md -> md.getNameAsString().equals("consume") || md.getNameAsString().equals("deleteResource")
+                        || md.getNameAsString().equals("createOrUpdateResource"))
                 .forEach(md -> {
                     md.findAll(StringLiteralExpr.class)
                             .forEach(str -> str.setString(str.asString().replace("$Trigger$", trigger.getName())));
@@ -240,7 +264,7 @@ public class MessageConsumerGenerator {
             annotator.withApplicationComponent(template);
 
             template.findAll(FieldDeclaration.class, fd -> isProcessField(fd))
-                    .forEach(fd -> annotator.withNamedInjection(fd, processId));
+                    .forEach(fd -> annotator.withNamedInjection(fd, processId + version));
             template.findAll(FieldDeclaration.class, fd -> isApplicationField(fd))
                     .forEach(fd -> annotator.withInjection(fd));
             template.findAll(FieldDeclaration.class, fd -> fd.getVariables().get(0).getNameAsString().equals("converter"))
@@ -313,7 +337,11 @@ public class MessageConsumerGenerator {
                         .setBody(new BlockStmt().addStatement(new ReturnStmt(new BooleanLiteralExpr(trigger.isStart())))));
 
         template.getMembers().sort(new BodyDeclarationComparator());
-        return clazz.toString();
+        return clazz.toString().replaceAll("\\$DataType\\$", trigger.getDataType())
+                .replaceAll("\\$ControllerParam\\$",
+                        "{" + Stream.of(namespaces.split(","))
+                                .filter(s -> !s.trim().isEmpty()).map(s -> "\"" + s.trim() + "\"")
+                                .collect(Collectors.joining(",")) + "}");
     }
 
     private void initializeProcessField(FieldDeclaration fd, ClassOrInterfaceDeclaration template) {
