@@ -11,6 +11,10 @@
 
   <name>Automatiko Engine :: Quarkus Extension :: Function Flow Deployment</name>
   <description>Function Flow Deployment module for Quarkus Extension for Automatiko Engine</description>
+  
+  <properties>
+    <java.module.name>io.automatiko.quarkus.function.flow.deployment</java.module.name>
+  </properties>
 
   <dependencies>
 

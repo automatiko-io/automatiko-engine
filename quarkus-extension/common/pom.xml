@@ -10,6 +10,10 @@
   <artifactId>automatiko-common</artifactId>
   <name>Automatiko Engine :: Quarkus Extension :: Common</name>
   <description>Common module shared across all Automatiko extensions</description>
+  
+  <properties>
+    <java.module.name>io.automatiko.quarkus.common</java.module.name>
+  </properties>
 
   <dependencies>
 

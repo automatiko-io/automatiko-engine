@@ -14,6 +14,11 @@
   <artifactId>automatiko-service</artifactId>
   <name>Automatiko Engine :: Quarkus Extension :: Service</name>
   <description>Workflow as a Service - processes and decisions with Automatiko Engine</description>
+  
+  <properties>
+    <java.module.name>io.automatiko.quarkus.service</java.module.name>
+  </properties>
+  
   <dependencies>
 
     <!-- quarkus -->

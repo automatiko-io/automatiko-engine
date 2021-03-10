@@ -12,6 +12,10 @@
   <artifactId>automatiko-predictions-smile-addon</artifactId>
   <name>Automatiko Engine :: Add-Ons :: Predictions :: SMILE</name>
   <description>Prediction based on SMILE addon for Automatiko Engine</description>
+  
+  <properties>
+    <java.module.name>io.automatiko.addons.predictions.smile</java.module.name>
+  </properties>
 
   <dependencies>
     <dependency>

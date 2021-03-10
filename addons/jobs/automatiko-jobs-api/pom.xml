@@ -12,6 +12,10 @@
   <artifactId>automatiko-jobs-api</artifactId>
   <name>Automatiko Engine :: Add-Ons :: Jobs :: API</name>
   <description>Jobs API used by both service and client for Automatiko Engine</description>
+  
+  <properties>
+     <java.module.name>io.automatiko.addons.jobs.api</java.module.name>
+   </properties>
 
   <dependencies>
     <dependency>

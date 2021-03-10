@@ -12,6 +12,10 @@
   <artifactId>automatiko-events-reactive-messaging-addon</artifactId>
   <name>Automatiko Engine :: Add-Ons :: Events :: Reactive Messaging</name>
   <description>Events based on Reactive Messaging AddOn for Automatiko Engine</description>
+  
+  <properties>
+     <java.module.name>io.automatiko.addons.events.reactivemessaging</java.module.name>
+   </properties>
 
   <dependencies>
     <dependency>

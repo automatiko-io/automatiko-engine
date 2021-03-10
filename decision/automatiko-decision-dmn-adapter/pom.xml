@@ -14,7 +14,7 @@
   <description>DMN Decision (Adapter) for Automatiko Engine</description>
 
   <properties>
-    <java.module.name>io.automatiko.decision.dmn.adapter</java.module.name>
+    <java.module.name>io.automatiko.engine.decision.dmn.adapter</java.module.name>
   </properties>
 
   <dependencies>

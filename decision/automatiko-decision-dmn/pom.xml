@@ -13,7 +13,7 @@
   <description>DMN Decision support for Automatiko Engine</description>
 
   <properties>
-    <java.module.name>io.automatiko.decision.dmn</java.module.name>
+    <java.module.name>io.automatiko.engine.decision.dmn</java.module.name>
   </properties>
 
   <dependencies>

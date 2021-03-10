@@ -13,6 +13,9 @@
   <name>Automatiko Engine :: Add-Ons :: Persistence :: Database (RDBMS)</name>
   <description>Database based persistence for Automatiko Engine</description>
 
+  <properties>
+    <java.module.name>io.automatiko.addons.persistence.db</java.module.name>
+  </properties>
 
   <dependencies>
     <dependency>
