@@ -18,7 +18,7 @@
   <description> Workflow compiler for Automatiko Engine</description>
 
   <properties>
-    <java.module.name>io.automatiko.workflow.compiler</java.module.name>
+    <java.module.name>io.automatiko.engine.workflow.compiler</java.module.name>
   </properties>
 
   <dependencies>

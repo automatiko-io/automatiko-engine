@@ -12,6 +12,10 @@
   <artifactId>automatiko-process-management-addon</artifactId>
   <name>Automatiko Engine :: Add-Ons :: Process Management</name>
   <description>Management of process instances for Automatiko Engine</description>
+  
+  <properties>
+    <java.module.name>io.automatiko.addons.management.process</java.module.name>
+  </properties>
 
   <dependencies>
     <dependency>

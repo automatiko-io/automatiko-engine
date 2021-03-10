@@ -14,6 +14,10 @@
   <artifactId>automatiko-common-deployment</artifactId>
   <name>Automatiko Engine :: Quarkus Extension :: Common Deployment</name>
   <description>Common Deployment module for Quarkus Extension for Automatiko Engine</description>
+  
+  <properties>
+    <java.module.name>io.automatiko.quarkus.common.deployment</java.module.name>
+  </properties>
 
   <dependencies>
     <!-- quarkus -->

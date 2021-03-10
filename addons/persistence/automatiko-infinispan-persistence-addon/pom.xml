@@ -12,6 +12,10 @@
   <artifactId>automatiko-infinispan-persistence-addon</artifactId>
   <name>Automatiko Engine :: Add-Ons :: Persistence :: Infinispan</name>
   <description>Infinispan based persistence for Automatiko Engine</description>
+  
+  <properties>
+    <java.module.name>io.automatiko.addons.persistence.infinispan</java.module.name>
+  </properties>
 
   <dependencies>
     <dependency>

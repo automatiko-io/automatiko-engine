@@ -14,6 +14,11 @@
   <artifactId>automatiko-operator</artifactId>
   <name>Automatiko Engine :: Quarkus Extension :: Operator</name>
   <description>Workflow as a Operator - processes and decisions with Automatiko Engine</description>
+  
+  <properties>
+    <java.module.name>io.automatiko.quarkus.operator</java.module.name>
+  </properties>
+  
   <dependencies>
 
     <!-- quarkus -->

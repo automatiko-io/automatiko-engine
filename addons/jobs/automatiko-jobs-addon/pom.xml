@@ -13,6 +13,10 @@
   <name>Automatiko Engine :: Add-Ons :: Jobs :: Addon</name>
 
   <description>Jobs Addon to provide Jobs Service capabilities</description>
+  
+  <properties>
+     <java.module.name>io.automatiko.addons.jobs</java.module.name>
+   </properties>
 
   <dependencies>
     <dependency>

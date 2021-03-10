@@ -10,6 +10,10 @@
   <artifactId>automatiko-function-deployment</artifactId>
   <name>Automatiko Engine :: Quarkus Extension :: Function Deployment</name>
   <description>Function Deployment module for Quarkus Extension for Automatiko Engine</description>
+  
+  <properties>
+    <java.module.name>io.automatiko.quarkus.function.deployment</java.module.name>
+  </properties>
 
   <dependencies>
 

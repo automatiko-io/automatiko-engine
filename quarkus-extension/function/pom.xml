@@ -10,6 +10,10 @@
   <artifactId>automatiko-function</artifactId>
   <name>Automatiko Engine :: Quarkus Extension :: Function</name>
   <description>Workflow as a Function - processes and decision with Automatiko Engine</description>
+  
+  <properties>
+    <java.module.name>io.automatiko.quarkus.function</java.module.name>
+  </properties>
 
   <dependencies>
 

@@ -11,6 +11,10 @@
 
   <name>Automatiko Engine :: Add-Ons :: Persistence :: DynamoDB</name>
   <description>DynamoDB based persistence for Automatiko Engine</description>
+  
+  <properties>
+    <java.module.name>io.automatiko.addons.persistence.dynamodb</java.module.name>
+  </properties>
 
   <dependencies>
     <dependency>

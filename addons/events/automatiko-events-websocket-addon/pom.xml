@@ -12,6 +12,10 @@
   <artifactId>automatiko-events-websocket-addon</artifactId>
   <name>Automatiko Engine :: Add-Ons :: Events :: Websocket</name>
   <description>Events based on Websocket AddOn for Automatiko Engine</description>
+  
+  <properties>
+     <java.module.name>io.automatiko.addons.events.websocket</java.module.name>
+   </properties>
 
   <dependencies>
     <dependency>

@@ -18,7 +18,7 @@
   <description> Workflow core for Automatiko Engine</description>
 
   <properties>
-    <java.module.name>io.automatiko.workflow.core</java.module.name>
+    <java.module.name>io.automatiko.engine.workflow.core</java.module.name>
   </properties>
 
   <dependencies>

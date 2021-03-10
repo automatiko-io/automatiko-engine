@@ -11,6 +11,10 @@
   <name>Automatiko Engine :: Add-Ons :: Persistence :: File System</name>
 
   <description>File System based persistence for Automatiko Engine</description>
+  
+  <properties>
+    <java.module.name>io.automatiko.addons.persistence.filesystem</java.module.name>
+  </properties>
 
   <dependencies>
     <dependency>

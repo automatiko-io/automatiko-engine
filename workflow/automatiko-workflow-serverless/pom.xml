@@ -15,7 +15,7 @@
   <description>Serverless Workflow support for Automatiko Engine</description>
 
   <properties>
-    <java.module.name>io.automatiko.workflow.serverless</java.module.name>
+    <java.module.name>io.automatiko.engine.workflow.serverless</java.module.name>
   </properties>
 
   <dependencies>

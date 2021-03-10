@@ -13,6 +13,10 @@
 
   <name>Automatiko Engine :: Add-Ons :: Predictions :: API</name>
   <description>Predictions API for Automatiko Engine</description>
+  
+  <properties>
+    <java.module.name>io.automatiko.addons.predictions.api</java.module.name>
+  </properties>
 
   <dependencies>
     <dependency>

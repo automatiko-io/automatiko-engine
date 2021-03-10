@@ -11,6 +11,9 @@
   <name>Automatiko Engine :: Quarkus Extension :: FunctionFlow</name>
   <description>Workflow as a Function Flow - processes and decision with Automatiko Engine</description>
 
+  <properties>
+    <java.module.name>io.automatiko.quarkus.function.flow</java.module.name>
+  </properties>
 
   <dependencies>
 
