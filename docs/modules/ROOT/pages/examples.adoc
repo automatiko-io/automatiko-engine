@@ -39,3 +39,10 @@ Document processor is implementing `Batch processing` use case.
 
 Complete example description and instructions can be
 found link:examples/batch.html[Document processor example].
+
+== MySQL Schema operator 
+
+MySQL Schema operator is implementing `Kubernetes Operator` use case.
+
+Complete example description and instructions can be
+found link:examples/operator.html[MySQL Schema operator example].

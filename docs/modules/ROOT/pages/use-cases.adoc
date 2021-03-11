@@ -245,3 +245,19 @@ deals with pdf files.
 
 To see this use case in action, have a look at
 the link:examples.html#_file-processor[File processor] example
+
+== Kubernetes Operator
+
+link:https://kubernetes.io/docs/concepts/extend-kubernetes/operator/[`Kubernetes operators`] are becoming more and more popular. 
+In most of the cases their logic is a sequence of steps that must be performed to provision particular service. 
+Operators are sort of watchers around link:https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/[`custom resources`] and react
+to following change events
+
+- custom resource created
+- custom resource updated
+- custom resource deleted
+
+Essentially possibility to express operator logic as a workflow provides direct insights into what a given operator
+does and what resources it has managed. Combined with capabilities of workflows e.g. isolation, error handling, retries,
+compensation, times and many more it makes a great fit for building Kubernetes operators. 
+

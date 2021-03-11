@@ -105,7 +105,7 @@ Workflow as a function flow always the exchanges of data as events in link:https
 It target deployment environment is link:https://knative.dev/docs/eventing/[`Knative Eventing`] in order to take advantage of
 its routing capabilities for events.
 
-=== Identification and description
+== Identification and description
 
 A workflow must include an assigned id. The id serves as an unique workflow identifier and as such should be:
 
@@ -131,7 +131,7 @@ Using documentation is recommended as it automatically enhances the service desc
 This allows service consumers to better understand the overall intention of the service
 which can aid with their integration efforts.
 
-=== Versioning
+== Versioning
 
 Versioning of a workflow should be considered from the very beginning as it might have
 severe impacts on service consumers and its maintainability.
@@ -150,7 +150,7 @@ IMPORTANT: Change the version only when there is good reason for it. As a rule o
  In other words, change the version only when the modifications to the workflow make the
  existing instances impossible to continue.
 
-=== Types of workflows
+== Types of workflows
 
 WARNING: workflow types are currently only supported in BPMN language and not in Serverless Workflow.
 
@@ -164,7 +164,7 @@ be started from outside.
 NOTE: Private workflows provide a perfect fit for subworkflows. This allows you to limit the creation of new instances
 of subworkflows only to their, so called, owning workflow instance.
 
-=== Workflow data
+== Workflow data
 
 Workflow data defines the actual domain of the service that is being modeled.
 In the end, all services are meant to deal with data and as such alter it.
@@ -173,7 +173,7 @@ Properly defining the workflow data model is extremely important to the service 
 contract it will expose. To help with that, Automatiko promotes the use of so called *tags* to
 annotate and enhance data handling.
 
-==== Data object tags
+=== Data object tags
 
 Workflow data, also known as *data objects* or *variables*, can be annotated with tags to
 enable additional features:
@@ -198,7 +198,7 @@ relying on security context
 WARNING: Serverless Workflow does not define data objects explicitly and allows to have data pushed on demand and thus
 do not make use of tags.
 
-=== Workflow instance
+== Workflow instance
 
 Workflow instance is an individual instance of a given workflow. This is a runtime
 representation of a single execution according to given workflow definition.
@@ -209,7 +209,7 @@ it can span hours, days, months and more.
 Each workflow instance is uniquely identified with generate id (of a form of UUID).
 This id remains unchanged during the entire life time of the instance.
 
-==== Business key
+=== Business key
 
 Business key can provide an alternative to the workflow instance id. Similarly to the id, a business
 key, when assigned, remains unchaged during the entire live-time of the workflow instance.
@@ -222,7 +222,7 @@ reference the instance.
 IMPORTANT: Business key must be unique within the scope of a workflow (or version of the workflow).
 That means you can have only one active instance with a given business key.
 
-=== Tags
+== Tags
 
 Similar to workflow data tags, a workflow itself can define tags. Tags allow you to put extra
 information (in addition to a business key) used for correlation purpose.

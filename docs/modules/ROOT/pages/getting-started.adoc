@@ -78,6 +78,9 @@ with preconfigured set of dependencies needed for given use case
 |automatiko-function-flow-archetype
 |Tailored project type for function flow use case backed by KNative
 
+|automatiko-operator-archetype
+|Tailored project type for building Kubernetes Operators
+
 |====
 
 Select archetype that matches the best for the type of automation you're going
