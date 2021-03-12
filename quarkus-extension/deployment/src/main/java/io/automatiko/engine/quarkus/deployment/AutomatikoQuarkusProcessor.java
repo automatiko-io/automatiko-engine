@@ -81,6 +81,7 @@ import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyIgnoreWarn
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
 import io.quarkus.deployment.index.IndexingUtil;
+import io.quarkus.deployment.pkg.PackageConfig;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.quarkus.runtime.LaunchMode;
 
@@ -108,7 +109,7 @@ public class AutomatikoQuarkusProcessor {
         return new FeatureBuildItem("automatiko");
     }
 
-    private void generatePersistenceInfo(AutomatikoBuildTimeConfig config, AppPaths appPaths,
+    private void generatePersistenceInfo(AutomatikoBuildTimeConfig config, PackageConfig pconfig, AppPaths appPaths,
             BuildProducer<GeneratedBeanBuildItem> generatedBeans,
             BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexClass,
             IndexView index, LaunchModeBuildItem launchMode,
@@ -133,7 +134,7 @@ public class AutomatikoQuarkusProcessor {
         if (!generatedFiles.isEmpty()) {
 
             compile(appPaths, curateOutcomeBuildItem.getEffectiveModel(), generatedFiles, launchMode.getLaunchMode(),
-                    generatedBeans, additionalIndexClass, GeneratedBeanBuildItem::new);
+                    generatedBeans, additionalIndexClass, GeneratedBeanBuildItem::new, pconfig);
         }
 
         if (usePersistence) {
@@ -192,7 +193,7 @@ public class AutomatikoQuarkusProcessor {
     }
 
     @BuildStep
-    public void generateModel(AutomatikoBuildTimeConfig config,
+    public void generateModel(AutomatikoBuildTimeConfig config, PackageConfig pconfig,
             ArchiveRootBuildItem root,
             ApplicationArchivesBuildItem archives,
             LaunchModeBuildItem launchMode,
@@ -238,11 +239,11 @@ public class AutomatikoQuarkusProcessor {
             compile(appPaths, curateOutcomeBuildItem.getEffectiveModel(), javaFiles, launchMode.getLaunchMode(),
                     generatedBeans, additionalIndexClass, (className, data) -> {
                         return generateBeanBuildItem(archivesIndex, automatikIndexer, automatikIndex, className, data);
-                    });
+                    }, pconfig);
 
             Index index = automatikIndexer.complete();
 
-            generatePersistenceInfo(config, appPaths, generatedBeans, additionalIndexClass,
+            generatePersistenceInfo(config, pconfig, appPaths, generatedBeans, additionalIndexClass,
                     CompositeIndex.create(archivesIndex, index), launchMode, resource,
                     curateOutcomeBuildItem);
 
@@ -319,7 +320,7 @@ public class AutomatikoQuarkusProcessor {
     private void compile(AppPaths appPaths, AppModel appModel, Collection<GeneratedFile> generatedFiles,
             LaunchMode launchMode, BuildProducer<GeneratedBeanBuildItem> generatedBeans,
             BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexClassProducer,
-            BiFunction<String, byte[], GeneratedBeanBuildItem> bif) throws Exception {
+            BiFunction<String, byte[], GeneratedBeanBuildItem> bif, PackageConfig config) throws Exception {
         List<JavaFileObject> sources = new ArrayList<JavaFileObject>();
         List<String> classpaths = new ArrayList<String>();
 
@@ -356,8 +357,9 @@ public class AutomatikoQuarkusProcessor {
             sources.add(new SourceCode(fileName, new String(entry.contents())));
 
             String location = generatedClassesDir;
-            if (launchMode == LaunchMode.DEVELOPMENT) {
+            if (launchMode == LaunchMode.DEVELOPMENT || config.type.equals(PackageConfig.MUTABLE_JAR)) {
                 location = Paths.get(buildDir.toString()).toString();
+
             }
 
             writeGeneratedFile(entry, location);
