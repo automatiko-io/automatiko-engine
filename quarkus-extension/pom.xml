@@ -19,7 +19,7 @@
   <packaging>pom</packaging>
   
   <properties>
-    <version.io.javaoperatorsdk>1.7.2</version.io.javaoperatorsdk>
+    <version.io.javaoperatorsdk>1.8.0.CR1</version.io.javaoperatorsdk>
   </properties>
 
   <dependencyManagement>

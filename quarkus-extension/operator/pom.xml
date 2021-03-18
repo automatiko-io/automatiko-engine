@@ -53,8 +53,13 @@
     </dependency>
     
     <dependency>
-      <groupId>io.javaoperatorsdk</groupId>
-      <artifactId>operator-framework-quarkus-extension</artifactId>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-kubernetes-client</artifactId>
+  </dependency>
+    
+    <dependency>
+      <groupId>io.quarkiverse.operatorsdk</groupId>
+      <artifactId>quarkus-operator-sdk</artifactId>
       <version>${version.io.javaoperatorsdk}</version>
     </dependency>
 
