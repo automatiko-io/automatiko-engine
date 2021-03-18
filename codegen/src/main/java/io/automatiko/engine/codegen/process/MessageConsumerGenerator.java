@@ -261,7 +261,9 @@ public class MessageConsumerGenerator {
             template.findAll(MethodCallExpr.class).forEach(this::interpolateStrings);
         }
         if (useInjection()) {
-            annotator.withApplicationComponent(template);
+            if (!OPERATOR_CONNECTOR.equals(connector)) {
+                annotator.withApplicationComponent(template);
+            }
 
             template.findAll(FieldDeclaration.class, fd -> isProcessField(fd))
                     .forEach(fd -> annotator.withNamedInjection(fd, processId + version));
@@ -338,6 +340,7 @@ public class MessageConsumerGenerator {
 
         template.getMembers().sort(new BodyDeclarationComparator());
         return clazz.toString().replaceAll("\\$DataType\\$", trigger.getDataType())
+                .replaceAll("\\$ProcessId\\$", processId + version)
                 .replaceAll("\\$ControllerParam\\$",
                         "{" + Stream.of(namespaces.split(","))
                                 .filter(s -> !s.trim().isEmpty()).map(s -> "\"" + s.trim() + "\"")

@@ -38,8 +38,12 @@
       <artifactId>quarkus-smallrye-openapi-deployment</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.javaoperatorsdk</groupId>
-      <artifactId>operator-framework-quarkus-extension-deployment</artifactId>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-kubernetes-client-deployment</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkiverse.operatorsdk</groupId>
+      <artifactId>quarkus-operator-sdk-deployment</artifactId>
       <version>${version.io.javaoperatorsdk}</version>
     </dependency>
 
