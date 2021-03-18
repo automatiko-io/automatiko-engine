@@ -136,6 +136,49 @@
 		});
 
 	}
+	
+	let abortInstance = function(id, instanceId) {
+
+		$.ajax({
+			url : '/management/processes/' + id + '/instances/' + instanceId,
+			type : 'DELETE',
+			dataType : 'json',
+			crossDomain : true,
+			success : function(data) {
+				$('#instanceDetailsModal').modal('hide');
+				loadInstances(currentProcess, currentPIDiv);
+			},
+		});
+
+	}
+	
+	let retryInstance = function(id, instanceId) {
+
+		$.ajax({
+			url : '/management/processes/' + id + '/instances/' + instanceId + '/retrigger',
+			type : 'POST',
+			dataType : 'json',
+			crossDomain : true,
+			success : function(data) {
+				loadInstance(id, instanceId);
+			},
+		});
+
+	}
+	
+	let skipInstance = function(id, instanceId) {
+
+		$.ajax({
+			url : '/management/processes/' + id + '/instances/' + instanceId + '/skip',
+			type : 'POST',
+			dataType : 'json',
+			crossDomain : true,
+			success : function(data) {				
+				loadInstance(id, instanceId);
+			},
+		});
+
+	}
 
 	let showDetails = function(instanceData) {
 
@@ -143,12 +186,18 @@
 		$("#piTags").empty();
 		$("#piSubinstances").empty();
 		$("#piVariables").empty();
+		$("#piError").empty();
 
 		$("#piTitle").text(
 				instanceData.description + " (" + instanceData.id + ")");
 		$("#piImage").replaceWith(
 				'<object id="piImage" data="' + instanceData.image
 						+ '" height="400" width="90%"></object>');
+		
+		$("#piActions-abort").attr('onclick', 'abortInstance(\''
+				+ instanceData.processId + '\', \''
+				+ instanceData.id
+				+ '\')');
 
 		let tags = '';
 		instanceData.tags
@@ -193,6 +242,9 @@
 											+ ' <td><button type="button" class="btn btn-sm btn-light" onclick="loadInstance(\''
 											+ item.processId + '\', \''
 											+ instanceData.id + ':' + item.id
+											+ '\')">Details</button>&nbsp;&nbsp;<button type="button" class="btn btn-sm btn-light" onclick="abortInstance(\''
+											+ item.processId + '\', \''
+											+ instanceData.id + ':' + item.id
 											+ '\')">Details</button></td>'
 											+ '</tr>');
 				});
@@ -202,6 +254,15 @@
 				.html(
 						"<pre>" + prettifyJson(instanceData.variables, true)
 								+ "</pre>");
+		
+		// display error information
+		if (instanceData.failed) {
+			$("#piError")
+				.html('<div class="row"><div class="col-12"><div class="float-right"><button type="button" class="btn btn-sm btn-dark" onclick="retryInstance(\''+ instanceData.processId + '\', \''+ instanceData.id + '\');">Retry</button>&nbsp;&nbsp;<button type="button" class="btn btn-sm btn-danger" onclick="skipInstance(\''+ instanceData.processId + '\', \''+ instanceData.id + '\');">Skip</button></div></div></div><div class="row"><div class="col-12"><hr/></div></div><div class="row"><pre>' + instanceData.errorMessage + '</pre></div>');
+		}
+		$('#collapseInstanceData').collapse();
+		$('#collapseSubprocesses').collapse();
+		$('#collapseError').collapse();
 		// lastly show modal
 		$('#instanceDetailsModal').modal();
 	};
@@ -226,7 +287,9 @@
 					});
 					$('#' + divId)
 							.append(
-									'<tr>'
+									'<tr'
+									+ (item.failed ? ' class="bg-danger"' : '')
+									+ '>'
 											+ ' <th scope="row">'
 											+ (++index + ((currentPage - 1) * 10))
 											+ '</th>'
@@ -244,7 +307,9 @@
 											+ '</td>'
 											+ ' <td><button type="button" class="btn btn-sm btn-light" onclick="loadInstance(\''
 											+ processId + '\', \'' + item.id
-											+ '\')">Details</button></td>'
+											+ '\')">Details</button>&nbsp;&nbsp;<button type="button" class="btn btn-sm btn-danger" onclick="abortInstance(\''
+											+ processId + '\', \'' + item.id
+											+ '\')">Abort</button></td>'
 											+ '</tr>');
 				});
 				
@@ -391,9 +456,31 @@
 						</div>
 						<div class="row">
 							<div class="col-12">
+								<div id="piActions" class="float-right">
+									<button id="piActions-abort" type="button" class="btn btn-sm btn-danger">Abort</button>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-12">
 								<object id="piImage" type="image/svg+xml" data="" height="400"
 									width="90%"> missing image </object>
 							</div>
+						</div>
+						<div class="row">
+							<div class="col-12">
+								<hr />
+							</div>
+						</div>						
+						<div class="row">
+							<div class="col-12">
+								<div class="page-header">
+									<h3><a class="link-dark" data-toggle="collapse" href="#collapseInstanceData" aria-expanded="false" aria-controls="collapseInstanceData" style="text-decoration: none;color:black">Instance data</a></h3>
+								</div>
+							</div>
+						</div>
+						<div class="row" id="collapseInstanceData" class="collapse" >
+							<div class="col-12" id="piVariables"></div>
 						</div>
 						<div class="row">
 							<div class="col-12">
@@ -403,11 +490,11 @@
 						<div class="row">
 							<div class="col-12">
 								<div class="page-header">
-									<h3>Subprocesses</h3>
+									<h3><a class="link-dark" data-toggle="collapse" href="#collapseSubprocesses" aria-expanded="false" aria-controls="collapseSubprocesses" style="text-decoration: none;color:black">Subprocesses</a></h3>
 								</div>
 							</div>
 						</div>
-						<div class="row">
+						<div class="row" id="collapseSubprocesses" class="collapse" >
 							<div class="col-12">
 								<table class="table table-dark" id="piSubinstances"></table>
 							</div>
@@ -420,12 +507,12 @@
 						<div class="row">
 							<div class="col-12">
 								<div class="page-header">
-									<h3>Instance data</h3>
+									<h3><a class="link-dark" data-toggle="collapse" href="#collapseError" aria-expanded="false" aria-controls="collapseError" style="text-decoration: none;color:black">Error</a></h3>
 								</div>
 							</div>
 						</div>
-						<div class="row">
-							<div class="col-12" id="piVariables"></div>
+						<div class="row" id="collapseError" class="collapse" >
+							<div class="col-12" id="piError"></div>
 						</div>
 					</div>
 				</div>

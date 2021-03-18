@@ -627,11 +627,17 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         StringBuilder script = new StringBuilder();
         String image = process().image();
 
+        List<String> completedNodes = ((WorkflowProcessInstanceImpl) processInstance()).getCompletedNodeIds();
+
         Collection<NodeInstance> activeInstances = ((WorkflowProcessInstanceImpl) processInstance()).getNodeInstances(true);
-        if (!activeInstances.isEmpty()) {
+        if (!activeInstances.isEmpty() || !completedNodes.isEmpty() || status == STATE_ERROR) {
             script.append("<script>");
             script.append(
-                    "var warnIcon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAADjklEQVR4XpVUSWhTURR9om7c1QFBFFwoSl2obTUatY1NfmvTJnFKbUzT/tf//m9rdOGwcRcRKWhBEKcurBUcQHAAXYhgFVFsSyCtqB2NA9pNWxWKjRl+rvf9IaZapwuH+/jvvvPOHf4j5DcGANPM9UHFN1dRXHMze4Rk9v7JzAPhFmXmOjdt2+iuHZ+/WhgnK+xt/JsR9h+kttAM7lY5xYvNR/fB8BMJPj4KQGjvNiC59ot6jE2L+avZjEB/rbTBWSXDaIeUgChT4U29OvLQn8hdLYDgLtuQHfsnwzSM2m2iHfcu1QNE5ST0MYB+xJCcvNO8FUhOcceP+D+krih6fawuUQzubYD4c5aAAQY3zlO4fmoXJ4Rvz6oTvrItMNMqiDw2Pz/frOkvpjfijjJr9mZxOHxbBnjD1K8RBh4fhU2CC75GKMBrWe08jyoX2IfDLa5Z2WcnmalusUNsOnGkkacY52nGehjU11Pw+zwQi4gAgwpAuDoeEp1AVpY08TO/qPR6vdO5379fWpJXTtXoAwkPsjT0MviGhBKjUOl1Q6wbFfah8n4pPXQZVeY61D3VpUuyOXQzujWtiN68dqYB02IJ9SU2oW8qQgYqJ40EEm2HyoEsF25mc5BQSJ85t08UdgYU+NwlpXgjNMLslKsMwn4Z1Ff6ZZ9ubU9Zi0rBYi8RdM7sMSoUe9qvKtqYcLK0cQg7DeWVFCzFLlSrE6ZfSbrK7kDy/rEKIEsdPT+I0AoqaoOHDjRA8gWOSZ9B1msAVYZv1UHXDb8+i8b3tOGT93YkZC82qEAIamRnm3bnLLDTsed3ZV47VUvVPMSJ+3n6UqYEmctMlZGA2n0aVeYKY2cby3PIvGLx5OmmRt7VeEaVSWb4BqxhzW4PktZpZZiUARJD+8748SCSLnOcxAeAjkTb8aYhpqZe6MG86Bx8zVO7corCpeZKrXbaPlfM99CnemU+l+rQBReQPMcIyXPSL28f4i3vWIrPFwwgBvEx4OBrvAii6KMyrhEDjHtVg7ZW0ticVLQVFeYLX0iBUzzHn6gPjyUcGQZjnTgOXZPBv412iDD2E0Y7KXx6WgPvr22FkOLhhOdICz6YlgraanXT8W0+OuGpohPuKhozgf9xrKKyNmYpKo2tLXQgBMM7YmsKhYn1VvsEWekYxy63tihZv+DhYM0cJFu03c8WTgWLrWwK2BauKSlZFKyxzzF5vgOkLcnshRMZJwAAAABJRU5ErkJggg==';");
+                    "function remove(item) {if (item != null) {var parent = item.parentNode; parent.removeChild(item);}}");
+            script.append(
+                    "var warnIcon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABz0lEQVQ4y2NgoBAwYhNsK7HVdbOWCpCX5FJjYGRgePzi+63dR59tKO86dBmvAQlB2kJT6ixncLN+CWH4/xvVcEbW/9//8q4taDuZPmvFpXcYBsQFagktaDM7zPj3sxZM7Or93wwMDAwM2oqscHP+M/Ney2g8aztrxeV3KAZ8Phe/moftSwiypfVzPjEwMDAwNKbwoTjm+x/e1VwGC8IYGBgYWBgYGBga88x1edi+BhMbcJwsX0I6S610y7uPXWZhYGBgcLUUDmBg+M9IfNj/Z3SxEA5gYGCAGCArzqpGavTJSUD0sDAwMDC8ef+VUUaMnyQDXr/9wgg34Oi5N3cM1DENkBfH7avDZ1/fgceCpb6Q8dElDqcZGRlRdPz//x8S16jCDP////9vF3/Q9Mi5t2dZGBgYGI5ffHd2475nWwOcpX2QFTbO+8zAwMDA0JCMGo2b9j/feuTc27Mo6UBUkE3q0EKHQxpKvMowsZNXvzMwMDAwmGtzwjXfuP/5rn38QbtX734+w0jKwgJsMjPrjWYHuUi5Y/HO/3V7nu3MaDyX+ubDryf4MhOzvjq/lb+TVIC6Ao86AwMDw80HX25u3Pds48WbH48xMDD8YaAmAAAYL5tXiXxXawAAAABJRU5ErkJggg==';");
+            script.append(
+                    "var errorIcon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAC80lEQVR42m2TD0yMYRzHP897d65y0akzUTYjVEKnMNQw2RqbzVrzd2wopkwrFrMw//8sDBtbNmZj5k9tDYXMbEYRM8oiSwqp6E53qbvu8uuG5c+zvXv37v09n+f3+36/j+I/azkERsJsM4zVg74D3tfC3ePw4e9a1fdjLvgnQJ5Z0zKGx8ebQqKi0BkM2OrqqH/wwGPr6LjaDDmHoeEfQDxY5kNJZHi4NTYzE1NY2B90l8NBVUEBNRUVLe9g3lF4/BswWNpcAWXxZnNibMZadCYjOk1D9Sh6usHrgW6PB6UUtZcuUVVd3XwPYovhow8wB1YthoKY5NkYJ0czKi2HugsnMdqbUN0aNqdi9IYt1F+5iquykprCQso9nnPHYKXqB1oWVEzVaZNGpE6he1oS1vU7cDu+Ub43DVfLJ2JzTzNoVCS114tp2LUbd81r3thsXUdgmDJBiMzzOdwfLTTBiNMcgHtaOjMy99L5zUZ78wcGR4zjVUkRb/LWYGn5juO9kyYvnIEFahhMPADPhgaJipPBbyi+n/bxeczL3ukT8EXZLar2zCfaz01XIzhExeZ2OA8ZSgSMFn9fWgIhOA76CfGVaxBx224THmP1AZxtX7mRlcSYzqfSq8CroUX8PAXpSoOBZ8XXED2BQePhi0U2599mSJSV+ofXaH1bjnXpfhmnjfubkghueIr9kUBssBUSe10wbITLM2UezQKhm3OJy9nHR9nceHERpgFu9DHZRKQe4vPjUp5nJtP1RBrx0rhWkuqzcTjMOgGl4pjBG6oYmbYaW8VZgkLcGPpLiCQL/Scso6msmLYyO3o7nJRE3oT8X2EzLoTt6ZBrV5IfuQT+oSKovHsBvXN2tkK7zB7gBGmgdAek9IiefdM6IEUA6yDbIVo6ZZNHQqJ0EhSXwNwgvJ47UHQQ1rl9cv51mWQFhMH0JVIghiRIRoLlFCUTOOTwyitifaUApK79v7fx59J6QfKY/QQgDeikaxmANnmkObx9i38AhmwGt8LiZCUAAAAASUVORK5CYII=';");
             script.append("function openInNewTab(url) {var win = window.open(url, '_blank');win.focus();}");
             for (NodeInstance nodeInstance : activeInstances) {
                 script.append("document.getElementById('").append(nodeInstance.getNodeDefinitionId())
@@ -668,7 +674,29 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                 if (nodeInstance.getNodeInstanceState().equals(NodeInstanceState.Retrying)) {
                     script.append("document.getElementById('").append(nodeInstance.getNodeDefinitionId())
                             .append("_warn_image').setAttribute('xlink:href', warnIcon);\n");
+                } else if (nodeInstance.getNodeInstanceState().equals(NodeInstanceState.Failed)) {
+                    script.append("document.getElementById('").append(nodeInstance.getNodeDefinitionId())
+                            .append("_warn_image').setAttribute('xlink:href', errorIcon);\n");
+                } else {
+                    script.append("remove(document.getElementById('").append(nodeInstance.getNodeDefinitionId())
+                            .append("_warn_image'));\n");
                 }
+            }
+            for (String nodeInstanceId : completedNodes) {
+                script.append("remove(document.getElementById('").append(nodeInstanceId)
+                        .append("_warn_image'));\n");
+                script.append("document.getElementById('").append(nodeInstanceId)
+                        .append("').style['fill']='rgb(160, 160, 160)';\n");
+            }
+
+            if (status == STATE_ERROR) {
+                String failedNodeId = error().get().failedNodeId();
+                script.append("document.getElementById('").append(failedNodeId)
+                        .append("').style['stroke']='rgb(255, 0, 0)';\n");
+                script.append("document.getElementById('").append(failedNodeId)
+                        .append("').style['stroke-width']='2';\n");
+                script.append("document.getElementById('").append(failedNodeId)
+                        .append("_warn_image').setAttribute('xlink:href', errorIcon);\n");
             }
             script.append("</script></svg>");
 

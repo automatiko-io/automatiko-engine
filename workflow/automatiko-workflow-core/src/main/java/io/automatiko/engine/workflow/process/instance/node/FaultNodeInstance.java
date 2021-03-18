@@ -1,6 +1,8 @@
 
 package io.automatiko.engine.workflow.process.instance.node;
 
+import static io.automatiko.engine.workflow.process.executable.core.Metadata.UNIQUE_ID;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -18,9 +20,11 @@ import io.automatiko.engine.workflow.base.instance.InternalProcessRuntime;
 import io.automatiko.engine.workflow.base.instance.ProcessInstance;
 import io.automatiko.engine.workflow.base.instance.context.exception.ExceptionScopeInstance;
 import io.automatiko.engine.workflow.base.instance.context.variable.VariableScopeInstance;
+import io.automatiko.engine.workflow.process.core.impl.NodeImpl;
 import io.automatiko.engine.workflow.process.core.node.FaultNode;
 import io.automatiko.engine.workflow.process.instance.NodeInstanceContainer;
 import io.automatiko.engine.workflow.process.instance.impl.NodeInstanceImpl;
+import io.automatiko.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
 
 /**
  * Runtime counterpart of a fault node.
@@ -77,6 +81,11 @@ public class FaultNodeInstance extends NodeInstanceImpl {
                 }
             }
         }
+        String uniqueId = (String) getNode().getMetaData().get(UNIQUE_ID);
+        if (uniqueId == null) {
+            uniqueId = ((NodeImpl) getNode()).getUniqueId();
+        }
+        ((WorkflowProcessInstanceImpl) getProcessInstance()).addCompletedNodeId(uniqueId);
         if (exceptionScopeInstance != null) {
             if (!exceptionHandled) {
                 handleException(faultName, exceptionScopeInstance);
