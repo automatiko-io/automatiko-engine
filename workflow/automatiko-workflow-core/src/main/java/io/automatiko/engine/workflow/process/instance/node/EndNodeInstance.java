@@ -4,6 +4,7 @@ package io.automatiko.engine.workflow.process.instance.node;
 import static io.automatiko.engine.api.runtime.process.ProcessInstance.STATE_COMPLETED;
 import static io.automatiko.engine.workflow.process.core.node.EndNode.PROCESS_SCOPE;
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.HIDDEN;
+import static io.automatiko.engine.workflow.process.executable.core.Metadata.UNIQUE_ID;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -12,9 +13,11 @@ import java.util.List;
 import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.workflow.base.instance.InternalProcessRuntime;
+import io.automatiko.engine.workflow.process.core.impl.NodeImpl;
 import io.automatiko.engine.workflow.process.core.node.EndNode;
 import io.automatiko.engine.workflow.process.instance.NodeInstanceContainer;
 import io.automatiko.engine.workflow.process.instance.impl.ExtendedNodeInstanceImpl;
+import io.automatiko.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
 
 /**
  * Runtime counterpart of an end node.
@@ -79,6 +82,11 @@ public class EndNodeInstance extends ExtendedNodeInstanceImpl {
         if (!hidden) {
             runtime.getProcessEventSupport().fireAfterNodeLeft(this, runtime);
         }
+        String uniqueId = (String) getNode().getMetaData().get(UNIQUE_ID);
+        if (uniqueId == null) {
+            uniqueId = ((NodeImpl) getNode()).getUniqueId();
+        }
+        ((WorkflowProcessInstanceImpl) getProcessInstance()).addCompletedNodeId(uniqueId);
     }
 
 }

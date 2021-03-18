@@ -196,9 +196,14 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             ProcessInstance<?> pi = instance.get();
             ProcessInstanceDetailsDTO details = new ProcessInstanceDetailsDTO();
             details.setId(pi.id());
+            details.setProcessId(processId);
             details.setBusinessKey(pi.businessKey());
             details.setDescription(pi.description());
             details.setFailed(pi.error().isPresent());
+            if (pi.error().isPresent()) {
+                details.setErrorMessage(pi.error().get().errorMessage());
+                details.setFailedNodeId(pi.error().get().failedNodeId());
+            }
             details.setImage(
                     uriInfo.getBaseUri().toString() + "management/processes/" + processId + "/instances/" + instanceId
                             + "/image");

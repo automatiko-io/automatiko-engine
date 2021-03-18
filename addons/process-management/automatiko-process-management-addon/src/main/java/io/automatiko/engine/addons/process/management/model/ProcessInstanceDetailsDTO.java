@@ -7,6 +7,8 @@ public class ProcessInstanceDetailsDTO {
 
     private String id;
 
+    private String processId;
+
     private String businessKey;
 
     private String description;
@@ -20,6 +22,10 @@ public class ProcessInstanceDetailsDTO {
     private List<ProcessInstanceDTO> subprocesses;
 
     private Object variables;
+
+    private String errorMessage;
+
+    private String failedNodeId;
 
     public String getId() {
         return id;
@@ -83,6 +89,30 @@ public class ProcessInstanceDetailsDTO {
 
     public void setVariables(Object variables) {
         this.variables = variables;
+    }
+
+    public String getProcessId() {
+        return processId;
+    }
+
+    public void setProcessId(String processId) {
+        this.processId = processId;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    public String getFailedNodeId() {
+        return failedNodeId;
+    }
+
+    public void setFailedNodeId(String failedNodeId) {
+        this.failedNodeId = failedNodeId;
     }
 
     @Override
