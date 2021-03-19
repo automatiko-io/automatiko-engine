@@ -8,18 +8,32 @@ import io.automatiko.engine.api.runtime.process.NodeInstance;
  */
 public interface ProcessNodeInstanceFailedEvent extends ProcessEvent {
 
-	/**
-	 * Returns node instance that failed at execution
-	 * 
-	 * @return work item
-	 */
-	NodeInstance getNodeInstance();
+    /**
+     * Returns node instance that failed at execution
+     * 
+     * @return work item
+     */
+    NodeInstance getNodeInstance();
 
-	/**
-	 * Returns the actual exception that was thrown at execution
-	 * 
-	 * @return transition
-	 */
-	Exception getException();
+    /**
+     * Unique identifier of the error
+     * 
+     * @return error identifier
+     */
+    String getErrorId();
+
+    /**
+     * Short descriptive message of the error
+     * 
+     * @return error message
+     */
+    String getErrorMessage();
+
+    /**
+     * Returns the actual exception that was thrown at execution
+     * 
+     * @return transition
+     */
+    Exception getException();
 
 }

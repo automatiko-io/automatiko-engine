@@ -361,11 +361,11 @@ public class ProcessEventSupport extends AbstractEventSupport<ProcessEventListen
     }
 
     public void fireAfterNodeInstanceFailed(final ProcessInstance instance, NodeInstance nodeInstance,
-            Exception exception, ProcessRuntime runtime) {
+            String errorId, String errorMessage, Exception exception, ProcessRuntime runtime) {
         final Iterator<ProcessEventListener> iter = getEventListenersIterator();
         final List<ProcessEventListener> delayedListeners = new ArrayList<ProcessEventListener>();
         final ProcessNodeInstanceFailedEvent event = new ProcessNodeInstanceFailedEventImpl(instance, nodeInstance,
-                exception, runtime);
+                errorId, errorMessage, exception, runtime);
         if (iter.hasNext()) {
             do {
                 ProcessEventListener listener = iter.next();

@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test;
 import io.automatiko.engine.addons.persistence.AbstractProcessInstancesFactory;
 import io.automatiko.engine.addons.persistence.data.Address;
 import io.automatiko.engine.addons.persistence.data.Person;
-import io.automatiko.engine.addons.persistence.filesystem.FileSystemProcessInstances;
 import io.automatiko.engine.api.auth.SecurityPolicy;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.api.runtime.process.ProcessContext;
@@ -103,7 +102,7 @@ public class FileSystemProcessInstancesTest {
         mutablePi.start();
         assertThat(mutablePi.status()).isEqualTo(STATE_ERROR);
         assertThat(mutablePi.error()).hasValueSatisfying(error -> {
-            assertThat(error.errorMessage()).endsWith("java.lang.NullPointerException - null");
+            assertThat(error.errorMessage()).isNull();
             assertThat(error.failedNodeId()).isEqualTo("ScriptTask_1");
         });
         assertThat(mutablePi.variables().toMap()).containsExactly(entry("var", "value"));
@@ -117,7 +116,7 @@ public class FileSystemProcessInstancesTest {
                 .findById(mutablePi.id(), ProcessInstanceReadMode.READ_ONLY).get();
         assertThat(readOnlyPi.status()).isEqualTo(STATE_ERROR);
         assertThat(readOnlyPi.error()).hasValueSatisfying(error -> {
-            assertThat(error.errorMessage()).endsWith("java.lang.NullPointerException - null");
+            assertThat(error.errorMessage()).isEqualTo("");
             assertThat(error.failedNodeId()).isEqualTo("ScriptTask_1");
         });
         assertThat(readOnlyPi.variables().toMap()).containsExactly(entry("var", "value"));

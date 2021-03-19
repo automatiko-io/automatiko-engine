@@ -34,7 +34,7 @@ public interface ProcessInstance
 
     void setState(int state, String outcome, Object faultData);
 
-    void setErrorState(NodeInstance nodeInstanceInError, Exception e);
+    String setErrorState(NodeInstance nodeInstanceInError, Exception e);
 
     void setProcessRuntime(InternalProcessRuntime runtime);
 

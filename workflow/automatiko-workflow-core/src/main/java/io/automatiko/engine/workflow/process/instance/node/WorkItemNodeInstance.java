@@ -172,6 +172,10 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         ExceptionScopeInstance exceptionScopeInstance = (ExceptionScopeInstance) resolveContextInstance(
                 ExceptionScope.EXCEPTION_SCOPE, exceptionName);
         if (exceptionScopeInstance == null) {
+            if (e instanceof WorkItemExecutionError) {
+                throw (WorkItemExecutionError) e;
+            }
+
             throw new WorkflowRuntimeException(this, getProcessInstance(),
                     "Unable to execute Action: " + e.getMessage(), e);
         }
@@ -287,6 +291,8 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
             ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
             context.setNodeInstance(this);
             action.execute(getWorkItem(), context);
+        } catch (WorkItemExecutionError e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("unable to execute Assignment", e);
         }
@@ -747,6 +753,12 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
     public void retry() {
 
         super.retry();
+    }
+
+    @Override
+    protected String captureError(Exception e) {
+        removeEventListeners();
+        return super.captureError(e);
     }
 
 }

@@ -6,18 +6,17 @@ import java.util.stream.Collectors;
 
 import org.kie.dmn.api.core.DMNContext;
 import org.kie.dmn.api.core.DMNMessage.Severity;
-
-import io.automatiko.engine.api.ExecutionIdSupplier;
-import io.automatiko.engine.api.decision.DecisionModel;
-
 import org.kie.dmn.api.core.DMNModel;
 import org.kie.dmn.api.core.DMNResult;
 import org.kie.dmn.api.core.DMNRuntime;
 import org.kie.dmn.api.core.FEELPropertyAccessible;
 
+import io.automatiko.engine.api.ExecutionIdSupplier;
+import io.automatiko.engine.api.decision.DecisionModel;
+
 public class DmnDecisionModel implements DecisionModel<DMNModel, DMNContext, DMNResult, FEELPropertyAccessible> {
 
-    private final DMNRuntime dmnRuntime;    
+    private final DMNRuntime dmnRuntime;
     private final DMNModel dmnModel;
 
     public DmnDecisionModel(DMNRuntime dmnRuntime, String namespace, String name) {
@@ -25,10 +24,11 @@ public class DmnDecisionModel implements DecisionModel<DMNModel, DMNContext, DMN
     }
 
     public DmnDecisionModel(DMNRuntime dmnRuntime, String namespace, String name, ExecutionIdSupplier execIdSupplier) {
-        this.dmnRuntime = dmnRuntime;        
+        this.dmnRuntime = dmnRuntime;
         this.dmnModel = dmnRuntime.getModel(namespace, name);
         if (dmnModel == null) {
-            throw new IllegalStateException("DMN model '" + name + "' not found with namespace '" + namespace + "' in the inherent DMNRuntime.");
+            throw new IllegalStateException(
+                    "DMN model '" + name + "' not found with namespace '" + namespace + "' in the inherent DMNRuntime.");
         }
     }
 
@@ -67,21 +67,26 @@ public class DmnDecisionModel implements DecisionModel<DMNModel, DMNContext, DMN
         return dmnModel;
     }
 
-	@Override
-	public boolean hasErrors(DMNResult result) {
-		return result.hasErrors();
-	}
+    @Override
+    public boolean hasErrors(DMNResult result) {
+        return result.hasErrors();
+    }
 
-	@Override
-	public Map<String, Object> getResultData(DMNResult result) {
+    @Override
+    public Map<String, Object> getResultData(DMNResult result) {
 
-		return result.getContext().getAll();
-	}
+        return result.getContext().getAll();
+    }
 
-	@Override
-	public String buildErrorMessage(DMNResult result) {
-		return result.getMessages(Severity.ERROR).stream()
+    @Override
+    public String buildErrorMessage(DMNResult result) {
+        return result.getMessages(Severity.ERROR).stream()
                 .map(Object::toString)
                 .collect(Collectors.joining(", "));
-	}
+    }
+
+    @Override
+    public String getName() {
+        return dmnModel.getName() + " (" + dmnModel.getNamespace() + ")";
+    }
 }

@@ -259,9 +259,10 @@ public abstract class NodeInstanceImpl
         try {
             internalTrigger(from, type);
         } catch (Exception e) {
-            captureError(e);
+            String errorId = captureError(e);
             internalChangeState(NodeInstanceState.Failed);
-            runtime.getProcessEventSupport().fireAfterNodeInstanceFailed(getProcessInstance(), this, e, runtime);
+            runtime.getProcessEventSupport().fireAfterNodeInstanceFailed(getProcessInstance(), this, errorId,
+                    getRootException(e).getMessage(), e, runtime);
             // stop after capturing error
             return;
         }
@@ -270,8 +271,8 @@ public abstract class NodeInstanceImpl
         }
     }
 
-    protected void captureError(Exception e) {
-        getProcessInstance().setErrorState(this, e);
+    protected String captureError(Exception e) {
+        return getProcessInstance().setErrorState(this, e);
     }
 
     public abstract void internalTrigger(NodeInstance from, String type);
@@ -535,9 +536,10 @@ public abstract class NodeInstanceImpl
                 runtime.getProcessEventSupport().fireAfterNodeLeft(this, runtime);
             }
         } catch (Exception e) {
-            captureError(e);
+            String errorId = captureError(e);
             internalChangeState(NodeInstanceState.Failed);
-            runtime.getProcessEventSupport().fireAfterNodeInstanceFailed(getProcessInstance(), this, e, runtime);
+            runtime.getProcessEventSupport().fireAfterNodeInstanceFailed(getProcessInstance(), this, errorId,
+                    getRootException(e).getMessage(), e, runtime);
             // stop after capturing error
             return;
         }
@@ -715,6 +717,14 @@ public abstract class NodeInstanceImpl
     protected void internalChangeState(NodeInstanceState newState) {
         this.nodeInstanceState = newState;
         ((WorkflowProcessInstanceImpl) getProcessInstance()).broadcaseNodeInstanceStateChange(this);
+    }
+
+    protected Throwable getRootException(Throwable exception) {
+        Throwable rootException = exception;
+        while (rootException.getCause() != null) {
+            rootException = rootException.getCause();
+        }
+        return rootException;
     }
 
 }

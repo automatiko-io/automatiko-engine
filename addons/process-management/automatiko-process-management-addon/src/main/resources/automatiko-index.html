@@ -258,7 +258,7 @@
 		// display error information
 		if (instanceData.failed) {
 			$("#piError")
-				.html('<div class="row"><div class="col-12"><div class="float-right"><button type="button" class="btn btn-sm btn-dark" onclick="retryInstance(\''+ instanceData.processId + '\', \''+ instanceData.id + '\');">Retry</button>&nbsp;&nbsp;<button type="button" class="btn btn-sm btn-danger" onclick="skipInstance(\''+ instanceData.processId + '\', \''+ instanceData.id + '\');">Skip</button></div></div></div><div class="row"><div class="col-12"><hr/></div></div><div class="row"><pre>' + instanceData.errorMessage + '</pre></div>');
+				.html('<div class="row"><div class="col-12"><div class="float-right"><button type="button" class="btn btn-sm btn-dark" onclick="retryInstance(\''+ instanceData.processId + '\', \''+ instanceData.id + '\');">Retry</button>&nbsp;&nbsp;<button type="button" class="btn btn-sm btn-danger" onclick="skipInstance(\''+ instanceData.processId + '\', \''+ instanceData.id + '\');">Skip</button></div></div></div><div class="row"><div class="col-12"><hr/></div></div><div class="row"><b>Error Id</b>&nbsp;&nbsp;' + instanceData.errorId + '</div><div class="row"><pre>' + instanceData.errorMessage + '</pre></div><div class="row"><pre>' + instanceData.errorDetails + '</pre></div>');
 		}
 		$('#collapseInstanceData').collapse();
 		$('#collapseSubprocesses').collapse();

@@ -2,7 +2,6 @@
 package io.automatiko.engine.workflow.base.instance.impl.humantask;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -154,11 +153,11 @@ public class HumanTaskWorkItemImpl extends WorkItemImpl implements HumanTaskWork
                         "User " + user + " is not authorized to access task instance with id " + getId());
             }
 
-            checkAssignedOwners(user, identity.getRoles());
+            checkAssignedOwners(user, identity);
         }
     }
 
-    protected void checkAssignedOwners(String user, List<String> roles) {
+    protected void checkAssignedOwners(String user, IdentityProvider identity) {
         // is not in the excluded users
         if (getExcludedUsers().contains(user)) {
             logger.debug("Requesting user '{}' is excluded from the potential workers on work item {}", user, getId());
@@ -171,7 +170,7 @@ public class HumanTaskWorkItemImpl extends WorkItemImpl implements HumanTaskWork
             return;
         }
         // check if user is in potential users or groups
-        if (!getPotentialUsers().contains(user) && getPotentialGroups().stream().noneMatch(roles::contains)) {
+        if (!getPotentialUsers().contains(user) && getPotentialGroups().stream().noneMatch(identity::hasRole)) {
             throw new NotAuthorizedException(
                     "User " + user + " is not authorized to access task instance with id " + getId());
         }

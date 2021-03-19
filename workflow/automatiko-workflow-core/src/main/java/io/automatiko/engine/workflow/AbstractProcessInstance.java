@@ -821,7 +821,9 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     protected ProcessError buildProcessError() {
         WorkflowProcessInstanceImpl pi = (WorkflowProcessInstanceImpl) processInstance();
 
+        final String errorId = pi.getErrorId();
         final String errorMessage = pi.getErrorMessage();
+        final String errorDetails = pi.getErrorDetails();
         final String nodeInError = pi.getNodeIdInError();
         return new ProcessError() {
 
@@ -836,6 +838,16 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
             }
 
             @Override
+            public String errorId() {
+                return errorId;
+            }
+
+            @Override
+            public String errorDetails() {
+                return errorDetails;
+            }
+
+            @Override
             public void retrigger() {
                 WorkflowProcessInstanceImpl pInstance = (WorkflowProcessInstanceImpl) processInstance();
                 NodeInstance ni = pInstance.getNodeInstanceByNodeDefinitionId(nodeInError,
@@ -843,6 +855,9 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                 pInstance.setState(STATE_ACTIVE);
                 pInstance.internalSetErrorNodeId(null);
                 pInstance.internalSetErrorMessage(null);
+                pInstance.internalSetErrorId(null);
+                pInstance.internalSetErrorDetails(null);
+
                 ni.trigger(null, io.automatiko.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
                 removeOnFinish();
             }
@@ -855,6 +870,9 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                 pInstance.setState(STATE_ACTIVE);
                 pInstance.internalSetErrorNodeId(null);
                 pInstance.internalSetErrorMessage(null);
+                pInstance.internalSetErrorId(null);
+                pInstance.internalSetErrorDetails(null);
+
                 ((NodeInstanceImpl) ni)
                         .triggerCompleted(io.automatiko.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE, true);
                 removeOnFinish();

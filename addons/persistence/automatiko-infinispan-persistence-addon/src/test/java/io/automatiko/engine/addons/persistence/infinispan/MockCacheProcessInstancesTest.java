@@ -126,7 +126,8 @@ public class MockCacheProcessInstancesTest {
         mutablePi.start();
         assertThat(mutablePi.status()).isEqualTo(STATE_ERROR);
         assertThat(mutablePi.error()).hasValueSatisfying(error -> {
-            assertThat(error.errorMessage()).endsWith("java.lang.NullPointerException - null");
+            assertThat(error.errorMessage()).isNull();
+            ;
             assertThat(error.failedNodeId()).isEqualTo("ScriptTask_1");
         });
         assertThat(mutablePi.variables().toMap()).containsExactly(entry("var", "value"));
@@ -140,7 +141,7 @@ public class MockCacheProcessInstancesTest {
                 .findById(mutablePi.id(), ProcessInstanceReadMode.READ_ONLY).get();
         assertThat(readOnlyPi.status()).isEqualTo(STATE_ERROR);
         assertThat(readOnlyPi.error()).hasValueSatisfying(error -> {
-            assertThat(error.errorMessage()).endsWith("java.lang.NullPointerException - null");
+            assertThat(error.errorMessage()).isEqualTo("");
             assertThat(error.failedNodeId()).isEqualTo("ScriptTask_1");
         });
         assertThat(readOnlyPi.variables().toMap()).containsExactly(entry("var", "value"));
@@ -268,7 +269,7 @@ public class MockCacheProcessInstancesTest {
         Optional<ProcessError> errorOp = processInstance.error();
         assertThat(errorOp).isPresent();
         assertThat(errorOp.get().failedNodeId()).isEqualTo("ScriptTask_1");
-        assertThat(errorOp.get().errorMessage()).isNotNull().contains("java.lang.NullPointerException - null");
+        assertThat(errorOp.get().errorMessage()).isNull();
 
         op.accept(processInstance);
         processInstance.error().ifPresent(e -> e.retrigger());

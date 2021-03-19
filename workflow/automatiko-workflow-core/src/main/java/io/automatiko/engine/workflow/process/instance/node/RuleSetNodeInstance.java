@@ -19,6 +19,7 @@ import io.automatiko.engine.api.runtime.process.DataTransformer;
 import io.automatiko.engine.api.runtime.process.EventListener;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.api.workflow.datatype.DataType;
+import io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError;
 import io.automatiko.engine.workflow.base.core.Context;
 import io.automatiko.engine.workflow.base.core.ContextContainer;
 import io.automatiko.engine.workflow.base.core.context.exception.ExceptionScope;
@@ -90,7 +91,9 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
 
                 if (modelInstance.hasErrors(dmnResult)) {
 
-                    throw new RuntimeException("DMN result errors:: " + modelInstance.buildErrorMessage(dmnResult));
+                    throw new WorkItemExecutionError("DMNEvaluationFailure", modelInstance.buildErrorMessage(dmnResult),
+                            new RuntimeException("Execution of DMN model " + modelInstance.getName()
+                                    + (dName != null ? " and decision " + dName : "") + " failed"));
                 }
                 processOutputs(inputs, modelInstance.getResultData(dmnResult));
                 triggerCompleted();
@@ -116,6 +119,10 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
                     return;
                 }
             }
+            if (e instanceof WorkItemExecutionError) {
+                throw (WorkItemExecutionError) e;
+            }
+
             throw new WorkflowRuntimeException(this, getProcessInstance(),
                     "Unable to execute Action: " + e.getMessage(), e);
         }

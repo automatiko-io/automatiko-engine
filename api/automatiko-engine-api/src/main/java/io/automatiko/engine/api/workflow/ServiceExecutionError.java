@@ -14,4 +14,12 @@ public class ServiceExecutionError extends WorkItemExecutionError {
         super(errorCode);
     }
 
+    public ServiceExecutionError(String errorCode, String errorDetails, Throwable e) {
+        super(errorCode, errorDetails, e);
+    }
+
+    public ServiceExecutionError(String errorCode, String errorDetails) {
+        super(errorCode, errorDetails);
+    }
+
 }

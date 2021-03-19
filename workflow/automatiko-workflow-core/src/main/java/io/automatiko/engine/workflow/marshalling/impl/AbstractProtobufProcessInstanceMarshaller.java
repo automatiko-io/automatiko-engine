@@ -101,6 +101,12 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         if (workFlow.getErrorMessage() != null) {
             _instance.setErrorMessage(workFlow.getErrorMessage());
         }
+        if (workFlow.getErrorId() != null) {
+            _instance.setErrorId(workFlow.getErrorId());
+        }
+        if (workFlow.getErrorDetails() != null) {
+            _instance.setErrorDetails(workFlow.getErrorDetails());
+        }
         if (workFlow.getReferenceId() != null) {
             _instance.setReferenceId(workFlow.getReferenceId());
         }
@@ -692,6 +698,8 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
 
         processInstance.internalSetErrorNodeId(_instance.getErrorNodeId());
         processInstance.internalSetErrorMessage(_instance.getErrorMessage());
+        processInstance.internalSetErrorId(_instance.getErrorId());
+        processInstance.internalSetErrorDetails(_instance.getErrorDetails());
 
         processInstance.setReferenceId(_instance.getReferenceId());
 
