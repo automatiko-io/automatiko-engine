@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- origin at X=0.0 Y=0.0 -->
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:automatiko="https://automatiko.io" xmlns="https://automatiko.io" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:java="http://www.java.com/javaTypes" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatiko.io automatiko.xsd" id="Definition" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="2.0.0" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="https://automatiko.io" typeLanguage="http://www.java.com/javaTypes">
+  <bpmn2:itemDefinition id="ItemDefinition_61" isCollection="false" structureRef="java.lang.Boolean"/>
+  <bpmn2:itemDefinition id="ItemDefinition_95" isCollection="false" structureRef="java.lang.Double"/>
+  <bpmn2:itemDefinition id="ItemDefinition_244" isCollection="false" structureRef="java.lang.Float"/>
+  <bpmn2:itemDefinition id="ItemDefinition_266" isCollection="false" structureRef="java.lang.Integer"/>
+  <bpmn2:itemDefinition id="ItemDefinition_381" isCollection="false" structureRef="java.lang.Long"/>
+  <bpmn2:itemDefinition id="ItemDefinition_398" isCollection="false" structureRef="java.lang.String"/>
+  <bpmn2:process id="varvalues" automatiko:packageName="com.sample" name="default var values" isExecutable="true" processType="Public">
+    <bpmn2:startEvent id="StartEvent_1" name="StartProcess">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="elementname">
+          <automatiko:metaValue><![CDATA[StartProcess]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
+    </bpmn2:startEvent>
+    <bpmn2:endEvent id="EndEvent_1" name="End Event 1">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="elementname">
+          <automatiko:metaValue><![CDATA[End Event 1]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_1" automatiko:priority="1" sourceRef="StartEvent_1" targetRef="EndEvent_1"/>
+    <bpmn2:dataObject id="var1" name="var1" itemSubjectRef="ItemDefinition_61">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="tags">
+          <automatiko:metaValue><![CDATA[auto-initialized]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:dataObject>
+    <bpmn2:dataObject id="var2" name="var2" itemSubjectRef="ItemDefinition_95">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="tags">
+          <automatiko:metaValue><![CDATA[auto-initialized]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:dataObject>
+    <bpmn2:dataObject id="var3" name="var3" itemSubjectRef="ItemDefinition_244">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="tags">
+          <automatiko:metaValue><![CDATA[auto-initialized]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:dataObject>
+    <bpmn2:dataObject id="var4" name="var4" itemSubjectRef="ItemDefinition_266">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="tags">
+          <automatiko:metaValue><![CDATA[auto-initialized]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:dataObject>
+    <bpmn2:dataObject id="var5" name="var5" itemSubjectRef="ItemDefinition_381">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="tags">
+          <automatiko:metaValue><![CDATA[auto-initialized]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:dataObject>
+    <bpmn2:dataObject id="var6" name="var6" itemSubjectRef="ItemDefinition_398">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="tags">
+          <automatiko:metaValue><![CDATA[auto-initialized]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:dataObject>
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_Process_1" bpmnElement="varvalues">
+      <bpmndi:BPMNShape id="BPMNShape_StartEvent_1" bpmnElement="StartEvent_1">
+        <dc:Bounds height="0.0" width="0.0" x="45.0" y="45.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="52.0" x="37.0" y="81.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_1" bpmnElement="EndEvent_1">
+        <dc:Bounds height="36.0" width="36.0" x="149.0" y="45.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="50.0" x="142.0" y="81.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_1" bpmnElement="var1">
+        <dc:Bounds height="50.0" width="36.0" x="200.0" y="300.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="18.0" x="209.0" y="350.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_2" bpmnElement="var2">
+        <dc:Bounds height="50.0" width="36.0" x="270.0" y="300.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="18.0" x="279.0" y="350.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_3" bpmnElement="var3">
+        <dc:Bounds height="50.0" width="36.0" x="330.0" y="300.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="18.0" x="339.0" y="350.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_4" bpmnElement="var4">
+        <dc:Bounds height="50.0" width="36.0" x="384.0" y="300.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="18.0" x="393.0" y="350.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_5" bpmnElement="var5">
+        <dc:Bounds height="50.0" width="36.0" x="440.0" y="300.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="18.0" x="449.0" y="350.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_6" bpmnElement="var6">
+        <dc:Bounds height="50.0" width="36.0" x="494.0" y="300.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="18.0" x="503.0" y="350.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_1" bpmnElement="SequenceFlow_1" sourceElement="BPMNShape_StartEvent_1" targetElement="BPMNShape_EndEvent_1">
+        <di:waypoint xsi:type="dc:Point" x="81.0" y="63.0"/>
+        <di:waypoint xsi:type="dc:Point" x="115.0" y="63.0"/>
+        <di:waypoint xsi:type="dc:Point" x="149.0" y="63.0"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>
