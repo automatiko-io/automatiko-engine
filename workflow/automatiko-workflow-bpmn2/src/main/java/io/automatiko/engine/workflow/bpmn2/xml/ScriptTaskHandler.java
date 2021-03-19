@@ -3,6 +3,7 @@ package io.automatiko.engine.workflow.bpmn2.xml;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -87,8 +88,8 @@ public class ScriptTaskHandler extends AbstractNodeHandler {
             xmlNode = xmlNode.getNextSibling();
         }
 
-        actionNode.setMetaData("DataInputs", new HashMap<String, String>(dataInputs));
-        actionNode.setMetaData("DataOutputs", new HashMap<String, String>(dataOutputs));
+        actionNode.setMetaData("DataInputs", new LinkedHashMap<String, String>(dataInputs));
+        actionNode.setMetaData("DataOutputs", new LinkedHashMap<String, String>(dataOutputs));
 
         String compensation = element.getAttribute("isForCompensation");
         if (compensation != null) {

@@ -16,6 +16,7 @@ import io.automatiko.engine.api.jobs.ProcessInstanceJobDescription;
 import io.automatiko.engine.api.runtime.process.EventListener;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.api.runtime.process.NodeInstanceState;
+import io.automatiko.engine.api.uow.WorkUnit;
 import io.automatiko.engine.api.workflow.BaseEventDescription;
 import io.automatiko.engine.api.workflow.EventDescription;
 import io.automatiko.engine.services.time.TimerInstance;
@@ -78,7 +79,13 @@ public class TimerNodeInstance extends StateBasedNodeInstance implements EventLi
     public void triggerCompleted(boolean remove) {
         if (remove) {
             removeEventListeners();
+            InternalProcessRuntime processRuntime = ((InternalProcessRuntime) getProcessInstance().getProcessRuntime());
+            processRuntime.getUnitOfWorkManager().currentUnitOfWork().intercept(WorkUnit.create(timerId, e -> {
+                processRuntime.getJobsService().cancelJob(timerId);
+            }));
+
         }
+
         internalChangeState(NodeInstanceState.Occur);
         triggerCompleted(io.automatiko.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE, remove);
     }

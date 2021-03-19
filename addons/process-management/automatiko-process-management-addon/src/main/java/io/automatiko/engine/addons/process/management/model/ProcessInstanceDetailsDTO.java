@@ -23,7 +23,11 @@ public class ProcessInstanceDetailsDTO {
 
     private Object variables;
 
+    private String errorId;
+
     private String errorMessage;
+
+    private String errorDetails;
 
     private String failedNodeId;
 
@@ -105,6 +109,22 @@ public class ProcessInstanceDetailsDTO {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getErrorId() {
+        return errorId;
+    }
+
+    public void setErrorId(String errorId) {
+        this.errorId = errorId;
+    }
+
+    public String getErrorDetails() {
+        return errorDetails;
+    }
+
+    public void setErrorDetails(String errorDetails) {
+        this.errorDetails = errorDetails;
     }
 
     public String getFailedNodeId() {

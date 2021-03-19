@@ -137,6 +137,9 @@ message ProcessInstance {
     optional string error_message = 26;
     optional string reference_id = 27;
     optional string initiator = 30;
+    optional string error_id = 31;
+    optional string error_details = 32;
+    
 
     repeated SwimlaneContextInstance swimlane_context = 6;
     repeated NodeInstance node_instance = 7;

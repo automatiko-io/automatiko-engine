@@ -2,11 +2,15 @@ package io.automatiko.engine.api.workflow;
 
 public interface ProcessError {
 
-	String failedNodeId();
+    String failedNodeId();
 
-	String errorMessage();
+    String errorId();
 
-	void retrigger();
+    String errorMessage();
 
-	void skip();
+    String errorDetails();
+
+    void retrigger();
+
+    void skip();
 }

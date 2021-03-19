@@ -2,7 +2,7 @@
 package io.automatiko.engine.workflow.bpmn2.xml;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -210,7 +210,7 @@ public class StartEventHandler extends AbstractNodeHandler {
             xmlNode = xmlNode.getNextSibling();
         }
 
-        node.setMetaData("DataOutputs", new HashMap<String, String>(dataOutputTypes));
+        node.setMetaData("DataOutputs", new LinkedHashMap<String, String>(dataOutputTypes));
     }
 
     private void addTriggerWithInMappings(StartNode startNode, String triggerEventType) {

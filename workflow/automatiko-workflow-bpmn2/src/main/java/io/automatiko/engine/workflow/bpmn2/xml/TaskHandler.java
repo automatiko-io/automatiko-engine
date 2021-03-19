@@ -5,7 +5,6 @@ import static io.automatiko.engine.workflow.compiler.util.ClassUtils.constructCl
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.CONDITION;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -81,8 +80,8 @@ public class TaskHandler extends AbstractNodeHandler {
             }
             xmlNode = xmlNode.getNextSibling();
         }
-        workItemNode.setMetaData("DataInputs", new HashMap<String, String>(dataTypeInputs));
-        workItemNode.setMetaData("DataOutputs", new HashMap<String, String>(dataTypeOutputs));
+        workItemNode.setMetaData("DataInputs", new LinkedHashMap<String, String>(dataTypeInputs));
+        workItemNode.setMetaData("DataOutputs", new LinkedHashMap<String, String>(dataTypeOutputs));
         handleScript(workItemNode, element, "onEntry");
         handleScript(workItemNode, element, "onExit");
 

@@ -436,7 +436,7 @@ public class PublishEventTest extends AbstractCodegenTest {
                                                                                               // time
 
         assertThat(body.getError()).isNotNull();
-        assertThat(body.getError().getErrorMessage()).contains("java.lang.NullPointerException - null");
+        assertThat(body.getError().getErrorMessage()).isNull();
         assertThat(body.getError().getNodeDefinitionId()).isEqualTo("_38E04E27-3CCA-47F9-927B-E37DC4B8CE25");
 
         parameters.put("s", "john");
@@ -450,7 +450,7 @@ public class PublishEventTest extends AbstractCodegenTest {
         assertThat(events).isNotNull().hasSize(1);
         body = assertProcessInstanceEvent(events.get(0), "ServiceProcessDifferentOperations", "Service Process", 5);
         assertThat(body.getError()).isNotNull();
-        assertThat(body.getError().getErrorMessage()).contains("java.lang.NullPointerException - null");
+        assertThat(body.getError().getErrorMessage()).isNull();
         assertThat(body.getError().getNodeDefinitionId()).isEqualTo("_38E04E27-3CCA-47F9-927B-E37DC4B8CE25");
 
         uow = app.unitOfWorkManager().newUnitOfWork();

@@ -2,8 +2,9 @@
 package io.automatiko.engine.workflow.process.instance.node;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import io.automatiko.engine.api.runtime.process.DataTransformer;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
@@ -68,8 +69,13 @@ public class ActionNodeInstance extends NodeInstanceImpl {
                         DataTransformer transformer = DataTransformerRegistry.get().find(transformation.getLanguage());
                         if (transformer != null) {
                             final Object currentValue = variable;
-                            variable = transformer.transform(transformation.getCompiledExpression(),
-                                    output.getSources().stream().collect(Collectors.toMap(s -> s, v -> currentValue)));
+                            Map<String, Object> dataSet = new HashMap<String, Object>();
+
+                            for (String source : output.getSources()) {
+                                dataSet.put(source, currentValue);
+                            }
+
+                            variable = transformer.transform(transformation.getCompiledExpression(), dataSet);
                         }
                     }
 

@@ -60,17 +60,28 @@ public interface WorkflowProcessInstance extends ProcessInstance, NodeInstanceCo
     String getNodeIdInError();
 
     /**
+     * Returns unique error id associated with this process instance in case it is in an error
+     * state.
+     * 
+     * @return unique error id
+     */
+    String getErrorId();
+
+    /**
      * Returns error message associated with this process instance in case it is in
-     * an error state. It will consists of
-     * <ul>
-     * <li>unique error id (uuid)</li>
-     * <li>fully qualified class name of the root cause</li>
-     * <li>error message of the root cause</li>
-     * </ul>
+     * an error state.
      * 
      * @return error message
      */
     String getErrorMessage();
+
+    /**
+     * Returns error details associated with this process instance in case it is in an error
+     * state.
+     * 
+     * @return error message
+     */
+    String getErrorDetails();
 
     /**
      * Returns optional correlation key assigned to process instance

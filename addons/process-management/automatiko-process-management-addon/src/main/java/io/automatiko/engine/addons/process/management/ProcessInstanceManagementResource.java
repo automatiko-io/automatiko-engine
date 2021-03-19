@@ -201,7 +201,9 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             details.setDescription(pi.description());
             details.setFailed(pi.error().isPresent());
             if (pi.error().isPresent()) {
+                details.setErrorId(pi.error().get().errorId());
                 details.setErrorMessage(pi.error().get().errorMessage());
+                details.setErrorDetails(pi.error().get().errorDetails());
                 details.setFailedNodeId(pi.error().get().failedNodeId());
             }
             details.setImage(

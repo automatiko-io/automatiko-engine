@@ -19,6 +19,7 @@ import io.automatiko.engine.api.definition.process.Connection;
 import io.automatiko.engine.api.runtime.process.DataTransformer;
 import io.automatiko.engine.api.runtime.process.ProcessContext;
 import io.automatiko.engine.api.workflow.ProcessInstance;
+import io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError;
 import io.automatiko.engine.workflow.base.core.Context;
 import io.automatiko.engine.workflow.base.core.ContextContainer;
 import io.automatiko.engine.workflow.base.core.context.AbstractContext;
@@ -423,6 +424,8 @@ public class SubProcessNode extends StateBasedNode implements Mappable, ContextC
                     action.execute(workItem, ctx);
 
                     output.putAll(workItem.getParameters());
+                } catch (WorkItemExecutionError e) {
+                    throw e;
                 } catch (Exception e) {
                     throw new RuntimeException("unable to execute Assignment", e);
                 }
