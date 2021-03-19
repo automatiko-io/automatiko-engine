@@ -31,6 +31,18 @@ public class DefaultVariableInitializer implements VariableInitializer {
                 return new LinkedHashSet<>();
             } else if (Map.class.isAssignableFrom(clazz)) {
                 return new HashMap<>();
+            } else if (String.class.isAssignableFrom(clazz)) {
+                return "";
+            } else if (Boolean.class.isAssignableFrom(clazz)) {
+                return false;
+            } else if (Integer.class.isAssignableFrom(clazz)) {
+                return 0;
+            } else if (Long.class.isAssignableFrom(clazz)) {
+                return Long.valueOf(0);
+            } else if (Double.class.isAssignableFrom(clazz)) {
+                return Double.valueOf(0);
+            } else if (Float.class.isAssignableFrom(clazz)) {
+                return Float.valueOf(0);
             } else {
                 try {
                     return clazz.getConstructor().newInstance();
