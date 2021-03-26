@@ -852,6 +852,9 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                 WorkflowProcessInstanceImpl pInstance = (WorkflowProcessInstanceImpl) processInstance();
                 NodeInstance ni = pInstance.getNodeInstanceByNodeDefinitionId(nodeInError,
                         pInstance.getNodeContainer());
+                if (ni == null) {
+                    throw new IllegalArgumentException("Node with definition id " + nodeInError + " was not found");
+                }
                 pInstance.setState(STATE_ACTIVE);
                 pInstance.internalSetErrorNodeId(null);
                 pInstance.internalSetErrorMessage(null);
@@ -867,6 +870,9 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                 WorkflowProcessInstanceImpl pInstance = (WorkflowProcessInstanceImpl) processInstance();
                 NodeInstance ni = pInstance.getNodeInstanceByNodeDefinitionId(nodeInError,
                         pInstance.getNodeContainer());
+                if (ni == null) {
+                    throw new IllegalArgumentException("Node with definition id " + nodeInError + " was not found");
+                }
                 pInstance.setState(STATE_ACTIVE);
                 pInstance.internalSetErrorNodeId(null);
                 pInstance.internalSetErrorMessage(null);
