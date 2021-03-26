@@ -193,6 +193,10 @@ it guarantees that the value will be set
 the start of a new instance
 |initiator| Marks a given data object to be the source of initiator of the instance instead of
 relying on security context
+|versioned | Marks a given data object to be versioned. Each change to the variable records the previous one and makes it available 
+to be fetched with construct `variablename$VERSION` for example `person$3` will get the version 3 of the person variable. 
+Note that versions start at 0. `person$` will return list of all versions of the variable and `person$-1` will return the 
+last version.
 |===
 
 WARNING: Serverless Workflow does not define data objects explicitly and allows to have data pushed on demand and thus

@@ -31,6 +31,8 @@ public class ProcessInstanceDetailsDTO {
 
     private String failedNodeId;
 
+    private List<String> versionedVariables;
+
     public String getId() {
         return id;
     }
@@ -133,6 +135,14 @@ public class ProcessInstanceDetailsDTO {
 
     public void setFailedNodeId(String failedNodeId) {
         this.failedNodeId = failedNodeId;
+    }
+
+    public List<String> getVersionedVariables() {
+        return versionedVariables;
+    }
+
+    public void setVersionedVariables(List<String> versionedVariables) {
+        this.versionedVariables = versionedVariables;
     }
 
     @Override

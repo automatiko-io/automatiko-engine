@@ -1,9 +1,12 @@
 
 package io.automatiko.engine.workflow.base.instance.context.variable;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.api.runtime.process.ProcessInstance;
@@ -33,6 +36,7 @@ public class VariableScopeInstance extends AbstractContextInstance {
         return VariableScope.VARIABLE_SCOPE;
     }
 
+    @SuppressWarnings("unchecked")
     public Object getVariable(String name) {
         String defaultValue = null;
         if (name.contains(":")) {
@@ -41,6 +45,36 @@ public class VariableScopeInstance extends AbstractContextInstance {
             name = items[0];
             defaultValue = items[1];
         }
+
+        if (name.contains(VariableScope.VERSION_SEPARATOR)) {
+            String[] items = name.split("\\" + VariableScope.VERSION_SEPARATOR);
+
+            Variable var = getVariableScope().findVariable(items[0]);
+            if (var.hasTag(Variable.VERSIONED_TAG)) {
+                Map<String, List<Object>> versions = (Map<String, List<Object>>) variables.computeIfAbsent(
+                        VariableScope.VERSIONED_VARIABLES,
+                        key -> new ConcurrentHashMap<>());
+                List<Object> varVersions = (List<Object>) versions.getOrDefault(items[0], Collections.emptyList());
+                if (items.length == 1) {
+                    return varVersions;
+                }
+
+                try {
+                    int version = Integer.parseInt(items[1]);
+
+                    if (version < 0) {
+                        // negative position means last item
+                        return varVersions.get(varVersions.size() - 1);
+                    }
+                    // otherwise return version with given number
+                    return varVersions.get(version);
+                } catch (IndexOutOfBoundsException e) {
+                    // in case position/version points at not existing version return null
+                    return null;
+                }
+            }
+        }
+
         Object value = internalGetVariable(name);
         if (value != null) {
             return value;
@@ -76,6 +110,7 @@ public class VariableScopeInstance extends AbstractContextInstance {
         setVariable(null, name, value);
     }
 
+    @SuppressWarnings("unchecked")
     public void setVariable(NodeInstance nodeInstance, String name, Object value) {
         if (name == null) {
             throw new IllegalArgumentException("The name of a variable may not be null!");
@@ -99,6 +134,17 @@ public class VariableScopeInstance extends AbstractContextInstance {
         // in case variable is marked as notnull (via tag) then null values should be ignored
         if (value == null && getVariableScope().isNullable(name)) {
             return;
+        }
+        // in case variable is versioned store the old value into versioned variable by variable name
+        if (var != null && var.hasTag(Variable.VERSIONED_TAG)) {
+            Map<String, List<Object>> versions = (Map<String, List<Object>>) variables.computeIfAbsent(
+                    VariableScope.VERSIONED_VARIABLES,
+                    key -> new ConcurrentHashMap<>());
+            List<Object> varVersions = versions.computeIfAbsent(name, k -> new ArrayList<>());
+
+            if (oldValue != null) {
+                varVersions.add(oldValue);
+            }
         }
 
         ProcessInstance processInstance = getProcessInstance();

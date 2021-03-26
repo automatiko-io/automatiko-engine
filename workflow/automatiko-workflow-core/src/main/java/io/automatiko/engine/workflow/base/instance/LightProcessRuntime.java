@@ -175,7 +175,7 @@ public class LightProcessRuntime implements InternalProcessRuntime {
                     .getDefaultContext(VariableScope.VARIABLE_SCOPE);
 
             Optional<Object> businessKeyVar = variableScope.getVariables().stream()
-                    .filter(var -> var.hasTag(Variable.BUSINESS_KEY)).map(v -> pi.getVariables().get(v.getName()))
+                    .filter(var -> var.hasTag(Variable.BUSINESS_KEY_TAG)).map(v -> pi.getVariables().get(v.getName()))
                     .filter(var -> var != null)
                     .findAny();
 

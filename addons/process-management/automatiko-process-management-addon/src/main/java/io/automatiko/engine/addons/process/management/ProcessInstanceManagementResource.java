@@ -42,6 +42,7 @@ import io.automatiko.engine.addons.process.management.model.ProcessDTO;
 import io.automatiko.engine.addons.process.management.model.ProcessInstanceDTO;
 import io.automatiko.engine.addons.process.management.model.ProcessInstanceDetailsDTO;
 import io.automatiko.engine.api.Application;
+import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.IdentitySupplier;
 import io.automatiko.engine.api.workflow.Process;
@@ -49,7 +50,13 @@ import io.automatiko.engine.api.workflow.ProcessImageNotFoundException;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceNotFoundException;
 import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
+import io.automatiko.engine.api.workflow.VariableNotFoundException;
+import io.automatiko.engine.services.uow.UnitOfWorkExecutor;
 import io.automatiko.engine.workflow.AbstractProcess;
+import io.automatiko.engine.workflow.AbstractProcessInstance;
+import io.automatiko.engine.workflow.base.core.ContextContainer;
+import io.automatiko.engine.workflow.base.core.context.variable.Variable;
+import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 
 @Tag(name = "Process Management", description = "Process management operations on top of the service", externalDocs = @ExternalDocumentation(description = "Manangement UI", url = "/management/processes/ui"))
@@ -215,10 +222,112 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
                     .map(spi -> new ProcessInstanceDTO(spi.id(), spi.businessKey(), spi.description(), pi.tags().values(),
                             spi.error().isPresent(), spi.process().id()))
                     .collect(Collectors.toList()));
+
+            VariableScope variableScope = (VariableScope) ((ContextContainer) ((AbstractProcess<?>) process).process())
+                    .getDefaultContext(VariableScope.VARIABLE_SCOPE);
+
+            details.setVersionedVariables(variableScope.getVariables().stream().filter(v -> v.hasTag(Variable.VERSIONED_TAG))
+                    .map(v -> v.getName()).collect(Collectors.toList()));
             return details;
         } finally {
             IdentityProvider.set(null);
         }
+    }
+
+    @APIResponses(value = {
+            @APIResponse(responseCode = "404", description = "In case of instance with given id was not found or variable was not versioned", content = @Content(mediaType = "application/json")),
+            @APIResponse(responseCode = "200", description = "Variable versions currently known to the process instance", content = @Content(mediaType = "application/json")) })
+    @Operation(summary = "Returns list of versions of a given variable that is marked as versioned")
+    @SuppressWarnings("unchecked")
+    @GET
+    @Path("/{processId}/instances/{instanceId}/variables/{name}/versions")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Object> getInstanceVariableVersions(@Context UriInfo uriInfo,
+            @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
+            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("instanceId") String instanceId,
+            @Parameter(description = "Unique name of the process variable", required = true) @PathParam("name") String name,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        try {
+            identitySupplier.buildIdentityProvider(user, groups);
+            Process<?> process = processData.get(processId);
+
+            Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId,
+                    ProcessInstanceReadMode.READ_ONLY);
+
+            if (instance.isEmpty()) {
+                throw new ProcessInstanceNotFoundException(instanceId);
+            }
+
+            ProcessInstance<?> pi = instance.get();
+
+            Map<String, List<Object>> versions = (Map<String, List<Object>>) ((AbstractProcessInstance<?>) pi)
+                    .processInstance().getVariable(VariableScope.VERSIONED_VARIABLES);
+
+            List<Object> varVersions = (List<Object>) versions.get(name);
+
+            if (varVersions == null) {
+                throw new VariableNotFoundException(instanceId, name);
+            }
+
+            return varVersions;
+        } finally {
+            IdentityProvider.set(null);
+        }
+    }
+
+    @APIResponses(value = {
+            @APIResponse(responseCode = "404", description = "In case of instance with given id was not found or variable was not versioned", content = @Content(mediaType = "application/json")),
+            @APIResponse(responseCode = "200", description = "Variable versions currently known to the process instance", content = @Content(mediaType = "application/json")) })
+    @Operation(summary = "Returns list of versions of a given variable that is marked as versioned")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @POST
+    @Path("/{processId}/instances/{instanceId}/variables/{name}/versions/{version}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Object> restoreInstanceVariableVersions(@Context UriInfo uriInfo,
+            @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
+            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("instanceId") String instanceId,
+            @Parameter(description = "Unique name of the process variable", required = true) @PathParam("name") String name,
+            @Parameter(description = "Version number of the process variable to be made as current", required = true) @PathParam("version") Integer version,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+
+        identitySupplier.buildIdentityProvider(user, groups);
+        return UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+
+            Process<?> process = processData.get(processId);
+
+            Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId,
+                    ProcessInstanceReadMode.MUTABLE);
+
+            if (instance.isEmpty()) {
+                throw new ProcessInstanceNotFoundException(instanceId);
+            }
+
+            ProcessInstance<?> pi = instance.get();
+
+            Map<String, List<Object>> versions = (Map<String, List<Object>>) ((AbstractProcessInstance<?>) pi)
+                    .processInstance().getVariable(VariableScope.VERSIONED_VARIABLES);
+
+            List<Object> varVersions = (List<Object>) versions.get(name);
+            // make sure that variable versions and requested version exists, otherwise throw not found
+            if (varVersions == null || version < 0 || varVersions.size() <= version) {
+                throw new VariableNotFoundException(instanceId, name);
+            }
+
+            // sets the variable with value from the versions
+            ((AbstractProcessInstance<?>) pi).processInstance().setVariable(name, varVersions.get(version));
+            ((AbstractProcessInstance) pi).updateVariables((Model) process.createModel());
+
+            versions = (Map<String, List<Object>>) ((AbstractProcessInstance<?>) pi).processInstance()
+                    .getVariable(VariableScope.VERSIONED_VARIABLES);
+
+            varVersions = (List<Object>) versions.get(name);
+
+            return varVersions;
+
+        });
+
     }
 
     @APIResponses(value = {

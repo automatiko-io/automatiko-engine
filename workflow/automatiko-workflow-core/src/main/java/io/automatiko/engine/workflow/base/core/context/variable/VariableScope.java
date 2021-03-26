@@ -16,6 +16,8 @@ public class VariableScope extends AbstractContext {
             .parseBoolean(System.getProperty(VARIABLE_STRICT_ENABLED_PROPERTY, Boolean.FALSE.toString()));
 
     public static final String VARIABLE_SCOPE = "VariableScope";
+    public static final String VERSIONED_VARIABLES = "__versioned__";
+    public static final String VERSION_SEPARATOR = "$";
 
     private static final long serialVersionUID = 510l;
 
