@@ -107,6 +107,21 @@ public interface ProcessInstance extends EventListener {
     Map<String, Object> getVariables();
 
     /**
+     * Returns current snapshot of process instance variable identified by name
+     * 
+     * @return current value of given process variable or null if not found
+     */
+    Object getVariable(String name);
+
+    /**
+     * Sets value for given variable overriding previous value if it was present
+     * 
+     * @param name name of the variable
+     * @param value value of the variable
+     */
+    void setVariable(String name, Object value);
+
+    /**
      * Returns optional reference id this process instance was triggered by
      * 
      * @return reference id or null if not set

@@ -32,11 +32,12 @@ public class Variable implements ValueObject, Serializable, io.automatiko.engine
     public static final String NOT_NULL_TAG = "notnull";
     public static final String INPUT_TAG = "input";
     public static final String OUTPUT_TAG = "output";
-    public static final String BUSINESS_RELEVANT = "business-relevant";
-    public static final String TRACKED = "tracked";
-    public static final String AUTO_INITIALIZED = "auto-initialized";
-    public static final String BUSINESS_KEY = "business-key";
-    public static final String INITIATOR = "initiator";
+    public static final String BUSINESS_RELEVANT_TAG = "business-relevant";
+    public static final String TRACKED_TAG = "tracked";
+    public static final String AUTO_INITIALIZED_TAG = "auto-initialized";
+    public static final String BUSINESS_KEY_TAG = "business-key";
+    public static final String INITIATOR_TAG = "initiator";
+    public static final String VERSIONED_TAG = "versioned";
 
     public static final String DEFAULT_VALUE = "value";
 

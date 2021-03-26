@@ -93,11 +93,11 @@
 			$("#" + currentPIDiv).empty();
 			instancesCollapsed = false;
 			$("#card_" + currentProcess).removeClass('active-card');
-			$(".collapse").removeClass('show');
+			$(".collapse, .atk_inst").removeClass('show');
 		}
 
 		if (!instancesCollapsed) {
-			$(".collapse").addClass('show');
+			$(".collapse, .atk_inst").addClass('show');
 			currentProcess = id;
 			currentPIDiv = divId;
 			$("#card_" + id).addClass('active-card');
@@ -118,7 +118,7 @@
 			currentPage = 1;
 			instancesCollapsed = false;
 			$("#card_" + id).removeClass('active-card');
-			$(".collapse").removeClass('show');
+			$(".collapse, .atk_inst").removeClass('show');
 		}
 	}
 
@@ -175,6 +175,58 @@
 			crossDomain : true,
 			success : function(data) {				
 				loadInstance(id, instanceId);
+			},
+		});
+
+	}
+	
+	let variableVersion = function(id, instanceId, varName) {
+
+		$.ajax({
+			url : '/management/processes/' + id + '/instances/' + instanceId + '/variables/' + varName + "/versions",
+			type : 'GET',
+			dataType : 'json',
+			crossDomain : true,
+			success : function(data) {	
+				
+				var content = '<ol class="list-group list-group-flush">';
+				data.forEach(function(item, index) {
+					var i = index;
+					content += '<p class="text-right"><b>Version: ' + ++index + '</b>&nbsp;&nbsp;&nbsp;';
+					content += '<button type="button" class="btn btn-outline-dark btn-sm" onclick="restoreVariableVersion(\''+ id + '\', \'' + instanceId + '\', \'' + varName + '\', \'' + i + '\')">Make this current value</button></p>';
+					content += '<li class="list-group-item"><pre>' + prettifyJson(item, true) + '</pre></li>';
+				});
+			    content += '</ol>';
+				
+				$("#piVariableVersions_" + varName)
+				.html(content);
+			},
+		});
+
+	}
+	
+	let restoreVariableVersion = function(id, instanceId, varName, index) {
+
+		$.ajax({
+			url : '/management/processes/' + id + '/instances/' + instanceId + '/variables/' + varName + "/versions/" + index,
+			type : 'POST',
+			dataType : 'json',
+			crossDomain : true,
+			success : function(data) {
+				
+				$("#piVariableVersions_" + varName).empty();
+				
+				var content = '<ol class="list-group list-group-flush">';
+				data.forEach(function(item, index) {
+					var i = index;
+					content += '<p class="text-right"><b>Version: ' + ++index + '</b>&nbsp;&nbsp;&nbsp;';
+					content += '<button type="button" class="btn btn-outline-dark btn-sm" onclick="restoreVariableVersion(\''+ id + '\', \'' + instanceId + '\', \'' + varName + '\', \'' + i + '\')">Make this current value</button></p>';
+					content += '<li class="list-group-item"><pre>' + prettifyJson(item, true) + '</pre></li>';
+				});
+			    content += '</ol>';
+				
+				$("#piVariableVersions_" + varName)
+				.html(content);
 			},
 		});
 
@@ -255,16 +307,48 @@
 						"<pre>" + prettifyJson(instanceData.variables, true)
 								+ "</pre>");
 		
+		// display variables that are versioned			
+		let versions = '<div id="accordion">';
+
+		instanceData.versionedVariables.forEach(function(item) {
+				versions += '';
+				versions += '  <div class="card">';
+				versions += '    <div class="card-header" id="heading_'+item+'">';
+				versions += '      <h5 class="mb-0">';
+				versions += '        <button style="text-decoration: none;color:black" class="btn btn-link btn-lg btn-block" data-toggle="collapse" data-target="#collapse_'+item+'" aria-expanded="true" aria-controls="collapse_'+item+'" onclick="variableVersion(\''+ instanceData.processId + '\', \'' + instanceData.id + '\', \'' + item + '\')">';
+				versions += 'Versions for variable <b>' + item + '</b>';
+				versions += '        </button>';
+				versions += '      </h5>';
+				versions += '    </div>';
+				versions += '    <div id="collapse_'+item+'" class="collapse" aria-labelledby="heading_'+item+'" data-parent="#accordion">';
+				versions += '      <div class="card-body" id="piVariableVersions_' + item + '">';
+				versions += '    </div>';
+				versions += '   </div>';
+				versions += ' </div>';
+			});
+			versions += '</div>';
+		$("#piVariableVersions")
+				.html(versions);
+		
 		// display error information
 		if (instanceData.failed) {
 			$("#piError")
 				.html('<div class="row"><div class="col-12"><div class="float-right"><button type="button" class="btn btn-sm btn-dark" onclick="retryInstance(\''+ instanceData.processId + '\', \''+ instanceData.id + '\');">Retry</button>&nbsp;&nbsp;<button type="button" class="btn btn-sm btn-danger" onclick="skipInstance(\''+ instanceData.processId + '\', \''+ instanceData.id + '\');">Skip</button></div></div></div><div class="row"><div class="col-12"><hr/></div></div><div class="row"><b>Error Id</b>&nbsp;&nbsp;' + instanceData.errorId + '</div><div class="row"><pre>' + instanceData.errorMessage + '</pre></div><div class="row"><pre>' + instanceData.errorDetails + '</pre></div>');
 		}
+		
 		$('#collapseInstanceData').collapse();
+		$('#collapseInstanceDataVersions').collapse();		
 		$('#collapseSubprocesses').collapse();
 		$('#collapseError').collapse();
+				
 		// lastly show modal
 		$('#instanceDetailsModal').modal();
+		$('#instanceDetailsModal').on('shown.bs.modal', function (event) {
+			$('#collapseInstanceDataVersions').removeClass("show");
+			$('#collapseSubprocesses').removeClass("show");
+			$('#collapseError').removeClass("show");
+		 });
+
 	};
 
 	let loadProcessInstanceTable = function(data, divId, processId) {
@@ -372,14 +456,14 @@
 					if (index % 3 == 0) {
 						lastRow = false;
 						$newRow = $(
-								'<div class="w-100 py-2"><div class="collapse" id="instances_' + rowCount +'"><table class="table table-bordered table-dark" id="tableinstances_' + rowCount +'"></table></div></div>')
+								'<div class="w-100 py-2"><div class="collapse atk_inst" id="instances_' + rowCount +'"><table class="table table-bordered table-dark" id="tableinstances_' + rowCount +'"></table></div></div>')
 								.appendTo($cards);
 					}
 				});
 
 		if (lastRow) {
 			$newRow = $(
-					'<div class="w-100 py-2"><div class="collapse" id="instances_' + rowCount +'"><table class="table table-dark" id="tableinstances_' + rowCount +'"></table></div></div>')
+					'<div class="w-100 py-2"><div class="collapse atk_inst" id="instances_' + rowCount +'"><table class="table table-dark" id="tableinstances_' + rowCount +'"></table></div></div>')
 					.appendTo($cards);
 		}
 	};
@@ -449,16 +533,22 @@
 				</div>
 				<div class="modal-body">
 					<div class="container">
-						<div class="row">
-							<div class="col-12">
-								<div id="piTags" class="float-right"></div>
-							</div>
-						</div>
+		
 						<div class="row">
 							<div class="col-12">
 								<div id="piActions" class="float-right">
 									<button id="piActions-abort" type="button" class="btn btn-sm btn-danger">Abort</button>
 								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-12">
+								<hr />
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-12">
+								<div id="piTags" class="float-right"></div>
 							</div>
 						</div>
 						<div class="row">
@@ -472,14 +562,14 @@
 								<hr />
 							</div>
 						</div>						
-						<div class="row">
+						<div class="row" title="Click to expand or collapse">
 							<div class="col-12">
 								<div class="page-header">
 									<h3><a class="link-dark" data-toggle="collapse" href="#collapseInstanceData" aria-expanded="false" aria-controls="collapseInstanceData" style="text-decoration: none;color:black">Instance data</a></h3>
 								</div>
 							</div>
 						</div>
-						<div class="row" id="collapseInstanceData" class="collapse" >
+						<div class="row" id="collapseInstanceData" class="collapse show" >
 							<div class="col-12" id="piVariables"></div>
 						</div>
 						<div class="row">
@@ -487,19 +577,34 @@
 								<hr />
 							</div>
 						</div>
+						<div class="row" title="Click to expand or collapse">
+							<div class="col-12">
+								<div class="page-header">
+									<h3><a class="link-dark" data-toggle="collapse" href="#collapseInstanceDataVersions" aria-expanded="false" aria-controls="collapseInstanceDataVersions" style="text-decoration: none;color:black">Instance data versions</a></h3>
+								</div>
+							</div>
+						</div>
+						<div class="row" id="collapseInstanceDataVersions" class="collapse show" >
+							<div class="col-12" id="piVariableVersions"></div>
+						</div>
 						<div class="row">
+							<div class="col-12">
+								<hr />
+							</div>
+						</div>
+						<div class="row" title="Click to expand or collapse">
 							<div class="col-12">
 								<div class="page-header">
 									<h3><a class="link-dark" data-toggle="collapse" href="#collapseSubprocesses" aria-expanded="false" aria-controls="collapseSubprocesses" style="text-decoration: none;color:black">Subprocesses</a></h3>
 								</div>
 							</div>
 						</div>
-						<div class="row" id="collapseSubprocesses" class="collapse" >
+						<div class="row" id="collapseSubprocesses" class="collapse show" >
 							<div class="col-12">
 								<table class="table table-dark" id="piSubinstances"></table>
 							</div>
 						</div>
-						<div class="row">
+						<div class="row" title="Click to expand or collapse">
 							<div class="col-12">
 								<hr />
 							</div>
@@ -511,7 +616,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="row" id="collapseError" class="collapse" >
+						<div class="row" id="collapseError" class="collapse show" >
 							<div class="col-12" id="piError"></div>
 						</div>
 					</div>
