@@ -281,7 +281,7 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
             }
         }
 
-        throw new IllegalArgumentException("Node with definition id " + nodeDefinitionId + " was not found");
+        return null;
     }
 
     @Override
