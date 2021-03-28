@@ -207,6 +207,8 @@ public class EventSubProcessTest extends AbstractCodegenTest {
         List<Object> personVersions = (List<Object>) versions.get("person");
         assertThat(personVersions).hasSize(2);
 
+        processInstance.send(Sig.of("MySignal", new Person("john", 25)));
+
         processInstance.abort();
         assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ABORTED);
     }
