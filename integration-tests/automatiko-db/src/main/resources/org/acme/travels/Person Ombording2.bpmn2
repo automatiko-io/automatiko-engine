@@ -315,7 +315,7 @@
       </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_4</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_7</bpmn2:outgoing>
-      <bpmn2:script>kcontext.setVariable(&quot;person&quot;, PersonsList.get(0));</bpmn2:script>
+      <bpmn2:script>context.setVariable(&quot;person&quot;, PersonsList.get(0));</bpmn2:script>
     </bpmn2:scriptTask>
     <bpmn2:sequenceFlow id="SequenceFlow_7" tns:priority="1" sourceRef="ScriptTask_1" targetRef="EndEvent_1"/>
     <bpmn2:sequenceFlow id="SequenceFlow_11" tns:priority="1" sourceRef="UserTask_2" targetRef="EndEvent_2"/>

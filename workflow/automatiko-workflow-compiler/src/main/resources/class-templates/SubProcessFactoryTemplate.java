@@ -2,13 +2,13 @@ import io.automatiko.engine.api.workflow.ProcessInstance;
 
 class Template {
     Object f = new io.automatiko.engine.workflow.process.core.node.SubProcessFactory<$Type$>() {
-        public $Type$ bind(io.automatiko.engine.api.runtime.process.ProcessContext kcontext) {
+        public $Type$ bind(io.automatiko.engine.api.runtime.process.ProcessContext context) {
             return null;
         }
         public io.automatiko.engine.api.workflow.ProcessInstance<$Type$> createInstance($Type$ model) {
             return null;
         }
-        public void unbind(io.automatiko.engine.api.runtime.process.ProcessContext kcontext, $Type$ model) {
+        public void unbind(io.automatiko.engine.api.runtime.process.ProcessContext context, $Type$ model) {
 
         }
         public void abortInstance(String instanceId) {

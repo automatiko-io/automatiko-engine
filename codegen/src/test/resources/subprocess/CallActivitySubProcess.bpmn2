@@ -24,10 +24,10 @@
     <startEvent id="_1" name="StartProcess" />
     <scriptTask id="_2" name="Hello" >
       <script>System.out.println("subX=" + subX);
-System.out.println("ParentProcessInstanceId=" + ((io.automatiko.engine.workflow.base.instance.ProcessInstance)kcontext.getProcessInstance()).getMetaData().get("ParentProcessInstanceId"));
-System.out.println("ParentNodeInstanceId=" + ((io.automatiko.engine.workflow.base.instance.ProcessInstance)kcontext.getProcessInstance()).getMetaData().get("ParentNodeInstanceId"));
-System.out.println("ParentNodeId=" + ((io.automatiko.engine.workflow.base.instance.ProcessInstance)kcontext.getProcessInstance()).getMetaData().get("ParentNodeId"));
-kcontext.setVariable("subY", "new value");</script>
+System.out.println("ParentProcessInstanceId=" + ((io.automatiko.engine.workflow.base.instance.ProcessInstance)context.getProcessInstance()).getMetaData().get("ParentProcessInstanceId"));
+System.out.println("ParentNodeInstanceId=" + ((io.automatiko.engine.workflow.base.instance.ProcessInstance)context.getProcessInstance()).getMetaData().get("ParentNodeInstanceId"));
+System.out.println("ParentNodeId=" + ((io.automatiko.engine.workflow.base.instance.ProcessInstance)context.getProcessInstance()).getMetaData().get("ParentNodeId"));
+context.setVariable("subY", "new value");</script>
     </scriptTask>
     <endEvent id="_3" name="EndProcess" >
         <terminateEventDefinition/>

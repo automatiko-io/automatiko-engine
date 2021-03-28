@@ -45,7 +45,7 @@ System.out.println("Assigned data: " + caseFile_assignedData);]]></bpmn2:script>
       </bpmn2:extensionElements>
       <bpmn2:outgoing>_00D79ACB-077B-4438-AAF4-4CCDD281B460</bpmn2:outgoing>
       <bpmn2:script><![CDATA[System.out.println("Hello Case.");
-kcontext.setVariable("caseFile_assignedData", "My assigned data!");]]></bpmn2:script>
+context.setVariable("caseFile_assignedData", "My assigned data!");]]></bpmn2:script>
     </bpmn2:scriptTask>
     <bpmn2:sequenceFlow id="_00D79ACB-077B-4438-AAF4-4CCDD281B460" automatik:selectable="true" color:background-color="#000000" color:border-color="#000000" color:color="#000000" sourceRef="_C31E712F-25F0-4B6A-9191-8EB54D70A3AE" targetRef="_B6A465DF-4939-4559-95E6-E52528F25F4B"/>
   </bpmn2:process>

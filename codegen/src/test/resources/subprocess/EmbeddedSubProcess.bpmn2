@@ -46,7 +46,7 @@
         </bpmn2:extensionElements>
         <bpmn2:incoming>_2-2-_2-3</bpmn2:incoming>
         <bpmn2:outgoing>_2-3-_2-4</bpmn2:outgoing>
-        <bpmn2:script>kcontext.setVariable(&quot;x&quot;, &quot;Hello&quot;);</bpmn2:script>
+        <bpmn2:script>context.setVariable(&quot;x&quot;, &quot;Hello&quot;);</bpmn2:script>
       </bpmn2:scriptTask>
       <bpmn2:scriptTask id="_2-4" name="Hello3">
         <bpmn2:extensionElements>

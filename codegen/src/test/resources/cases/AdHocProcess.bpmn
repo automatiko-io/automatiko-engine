@@ -25,7 +25,7 @@
           <automatik:metaValue><![CDATA[true]]></automatik:metaValue>
         </automatik:metaData>
       </bpmn2:extensionElements>
-      <bpmn2:script>kcontext.setVariable("var2", var2 + " Script 2");</bpmn2:script>
+      <bpmn2:script>context.setVariable("var2", var2 + " Script 2");</bpmn2:script>
     </bpmn2:scriptTask>
     <bpmn2:scriptTask id="_43637F43-6B5B-4737-B108-3491CB2E9551" name="Script Task" scriptFormat="http://www.java.com/java">
       <bpmn2:extensionElements>
@@ -34,7 +34,7 @@
         </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_9D9841CA-2B86-4113-9AC3-F6D803541C8D</bpmn2:incoming>
-      <bpmn2:script>kcontext.setVariable("var1", var1 + " Script");</bpmn2:script>
+      <bpmn2:script>context.setVariable("var1", var1 + " Script");</bpmn2:script>
     </bpmn2:scriptTask>
     <bpmn2:serviceTask id="_F0FA249C-853B-4F78-91CB-24275587D66D" automatik:serviceimplementation="Java" automatik:serviceinterface="io.automatiko.engine.codegen.data.HelloService" automatik:serviceoperation="hello" name="Service Task" implementation="Java" operationRef="_F0FA249C-853B-4F78-91CB-24275587D66D_ServiceOperation">
       <bpmn2:extensionElements>

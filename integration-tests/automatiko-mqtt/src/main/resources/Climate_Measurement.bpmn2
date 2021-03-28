@@ -153,7 +153,7 @@
         <bpmn2:incoming>SequenceFlow_6</bpmn2:incoming>
         <bpmn2:outgoing>SequenceFlow_7</bpmn2:outgoing>
         <bpmn2:script>System.out.println(&quot;Closing climate measurement on timeout&quot;);
-kcontext.setVariable(&quot;expirationNote&quot;, &quot;expired&quot;);</bpmn2:script>
+context.setVariable(&quot;expirationNote&quot;, &quot;expired&quot;);</bpmn2:script>
       </bpmn2:scriptTask>
       <bpmn2:sequenceFlow id="SequenceFlow_6" tns:priority="1" sourceRef="StartEvent_3" targetRef="ScriptTask_3"/>
       <bpmn2:endEvent id="EndEvent_2" name="end on expiration">

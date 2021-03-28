@@ -98,7 +98,7 @@
           <tns:metaValue><![CDATA[Compensate]]></tns:metaValue>
         </tns:metaData>
       </bpmn2:extensionElements>
-      <bpmn2:script>kcontext.setVariable(&quot;x&quot;, Integer.toString(Integer.parseInt(kcontext.getVariable(&quot;x&quot;).toString()) + 1));</bpmn2:script>
+      <bpmn2:script>context.setVariable(&quot;x&quot;, Integer.toString(Integer.parseInt(context.getVariable(&quot;x&quot;).toString()) + 1));</bpmn2:script>
     </bpmn2:scriptTask>
     <bpmn2:association id="_10-_11" sourceRef="_10" targetRef="_11"/>
   </bpmn2:process>

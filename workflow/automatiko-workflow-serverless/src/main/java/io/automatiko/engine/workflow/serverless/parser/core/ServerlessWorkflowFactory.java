@@ -248,13 +248,13 @@ public class ServerlessWorkflowFactory {
 //        actions.add(new DroolsConsequenceAction("java",
 //                "org.drools.core.process.instance.impl.WorkItemImpl workItem = new org.drools.core.process.instance.impl.WorkItemImpl();" + EOL +
 //                        "workItem.setName(\"Send Task\");" + EOL +
-//                        "workItem.setNodeInstanceId(kcontext.getNodeInstance().getId());" + EOL +
-//                        "workItem.setProcessInstanceId(kcontext.getProcessInstance().getId());" + EOL +
-//                        "workItem.setNodeId(kcontext.getNodeInstance().getNodeId());" + EOL +
+//                        "workItem.setNodeInstanceId(context.getNodeInstance().getId());" + EOL +
+//                        "workItem.setProcessInstanceId(context.getProcessInstance().getId());" + EOL +
+//                        "workItem.setNodeId(context.getNodeInstance().getNodeId());" + EOL +
 //                        "workItem.setParameter(\"MessageType\", \"" + messageType + "\");" + EOL +
 //                        (variable == null ? "" : "workItem.setParameter(\"Message\", " + variable + ");" + EOL) +
-//                        "workItem.setDeploymentId((String) kcontext.getKnowledgeRuntime().getEnvironment().get(\"deploymentId\"));" + EOL +
-//                        "((org.drools.core.process.instance.WorkItemManager) kcontext.getKnowledgeRuntime().getWorkItemManager()).internalExecuteWorkItem(workItem);"));
+//                        "workItem.setDeploymentId((String) context.getKnowledgeRuntime().getEnvironment().get(\"deploymentId\"));" + EOL +
+//                        "((org.drools.core.process.instance.WorkItemManager) context.getKnowledgeRuntime().getWorkItemManager()).internalExecuteWorkItem(workItem);"));
 //        endNode.setActions(ExtendedNodeImpl.EVENT_NODE_ENTER, actions);
     }
 

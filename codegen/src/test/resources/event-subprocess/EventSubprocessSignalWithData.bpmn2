@@ -66,7 +66,7 @@
         </bpmn2:extensionElements>
         <bpmn2:incoming>SequenceFlow_3</bpmn2:incoming>
         <bpmn2:outgoing>SequenceFlow_4</bpmn2:outgoing>
-        <bpmn2:script>System.out.println(&quot;Event sub process triggered with data &quot; + kcontext.getVariable(&quot;person&quot;));</bpmn2:script>
+        <bpmn2:script>System.out.println(&quot;Event sub process triggered with data &quot; + context.getVariable(&quot;person&quot;));</bpmn2:script>
       </bpmn2:scriptTask>
       <bpmn2:sequenceFlow id="SequenceFlow_3" tns:priority="1" sourceRef="StartEvent_2" targetRef="ScriptTask_1"/>
       <bpmn2:endEvent id="EndEvent_2" name="end-sub">

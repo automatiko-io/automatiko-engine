@@ -53,7 +53,7 @@
       <bpmn2:script>
       System.out.println(&quot;Logged customer with id &quot; + customerId);
       person.setName(customerId);
-      kcontext.setVariable("person", person);
+      context.setVariable("person", person);
       </bpmn2:script>
     </bpmn2:scriptTask>
     <bpmn2:sequenceFlow id="SequenceFlow_2" tns:priority="1" sourceRef="StartEvent_1" targetRef="ScriptTask_1"/>
