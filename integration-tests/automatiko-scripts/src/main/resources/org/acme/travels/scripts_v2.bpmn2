@@ -35,7 +35,7 @@
       </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_2</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_3</bpmn2:outgoing>
-      <bpmn2:script>kcontext.setVariable(&quot;message&quot;, &quot;Hello &quot; + firstname);</bpmn2:script>
+      <bpmn2:script>context.setVariable(&quot;message&quot;, &quot;Hello &quot; + firstname);</bpmn2:script>
     </bpmn2:scriptTask>
     <bpmn2:sequenceFlow id="SequenceFlow_2" tns:priority="1" sourceRef="ExclusiveGateway_1" targetRef="ScriptTask_2">
       <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" id="FormalExpression_19" language="http://www.java.com/java">firstname.equals(&quot;john&quot;)</bpmn2:conditionExpression>

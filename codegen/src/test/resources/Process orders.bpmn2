@@ -550,7 +550,7 @@
       </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_16</bpmn2:outgoing>
-      <bpmn2:script>kcontext.setVariable(&quot;order&quot;, event.getOrder());</bpmn2:script>
+      <bpmn2:script>context.setVariable(&quot;order&quot;, event.getOrder());</bpmn2:script>
     </bpmn2:scriptTask>
     <bpmn2:sequenceFlow id="SequenceFlow_16" automatik:priority="1" sourceRef="ScriptTask_1" targetRef="EventBasedGateway_1"/>
     <bpmn2:association id="Association_1" associationDirection="One" sourceRef="BoundaryEvent_1" targetRef="ServiceTask_5"/>

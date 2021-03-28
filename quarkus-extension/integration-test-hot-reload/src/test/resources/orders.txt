@@ -27,7 +27,7 @@
       <bpmn2:outgoing>_58684613-0155-48B2-8746-7675AFF24439</bpmn2:outgoing>
       <bpmn2:script><![CDATA[
       System.out.println("Order has been created " + order + " with assigned approver " + approver);
-      kcontext.setVariable("approver", approver.toUpperCase());
+      context.setVariable("approver", approver.toUpperCase());
       ]]></bpmn2:script>
     </bpmn2:scriptTask>
     <bpmn2:endEvent id="_2D876EF2-93F4-4CBE-959A-04EF7BFA9CED">

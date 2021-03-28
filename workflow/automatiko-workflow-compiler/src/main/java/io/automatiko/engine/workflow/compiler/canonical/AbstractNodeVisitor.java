@@ -103,7 +103,7 @@ public abstract class AbstractNodeVisitor<T extends Node> extends AbstractVisito
 
     public static Statement makeAssignment(String targetLocalVariable, Variable processVariable) {
         ClassOrInterfaceType type = parseClassOrInterfaceType(processVariable.getType().getStringType());
-        // `type` `name` = (`type`) `kcontext.getVariable
+        // `type` `name` = (`type`) `context.getVariable
         AssignExpr assignExpr = new AssignExpr(new VariableDeclarationExpr(type, targetLocalVariable),
                 new CastExpr(type, new MethodCallExpr(new NameExpr(KCONTEXT_VAR), "getVariable")
                         .addArgument(new StringLiteralExpr(targetLocalVariable))),
@@ -115,7 +115,7 @@ public abstract class AbstractNodeVisitor<T extends Node> extends AbstractVisito
         String targetLocalVariable = processVariable.getSanitizedName();
         ClassOrInterfaceType type = new ClassOrInterfaceType(null, new SimpleName(List.class.getCanonicalName()),
                 NodeList.nodeList(parseClassOrInterfaceType(processVariable.getType().getStringType())));
-        // List<`type`> `name$` = (`type`) `kcontext.getVariable
+        // List<`type`> `name$` = (`type`) `context.getVariable
         AssignExpr assignExpr = new AssignExpr(new VariableDeclarationExpr(type, targetLocalVariable + "$"),
                 new CastExpr(type, new MethodCallExpr(new NameExpr(KCONTEXT_VAR), "getVariable")
                         .addArgument(new StringLiteralExpr(targetLocalVariable + "$"))),

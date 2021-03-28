@@ -87,7 +87,7 @@
         </bpmn2:extensionElements>
         <bpmn2:incoming>_2FE1DE34-5EA9-49F2-A3DC-96CE0F3E4473</bpmn2:incoming>
         <bpmn2:outgoing>_669E32DC-6276-4BD0-9A35-D3838E257875</bpmn2:outgoing>
-        <bpmn2:script>kcontext.setVariable("inPerson", kcontext.getVariable("person"));</bpmn2:script>
+        <bpmn2:script>context.setVariable("inPerson", context.getVariable("person"));</bpmn2:script>
       </bpmn2:scriptTask>
       <bpmn2:endEvent id="_6A6E9F0F-E78B-4EE2-B01A-F27A2D1B7A1B">
         <bpmn2:incoming>_CCF9B880-5F01-49E8-808C-7A70A3CE2ECB</bpmn2:incoming>

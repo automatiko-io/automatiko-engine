@@ -15,7 +15,7 @@
         </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>_E28E897A-1553-4C74-B78C-D8C03448064C</bpmn2:incoming>
-      <bpmn2:script>kcontext.setVariable(&quot;caseFile_stage1_finished&quot;, true);
+      <bpmn2:script>context.setVariable(&quot;caseFile_stage1_finished&quot;, true);
 System.out.println(&quot;timer on stage 1&quot;);</bpmn2:script>
     </bpmn2:scriptTask>
     <bpmn2:endEvent id="_18AF4E55-2DF4-4B8E-90D2-C0033747334F" automatik:selectable="true" color:background-color="#ff6347" color:border-color="#000000" color:color="#000000" name="end">
@@ -76,7 +76,7 @@ System.out.println(&quot;timer on stage 1&quot;);</bpmn2:script>
           <automatik:metaValue><![CDATA[Stage 1]]></automatik:metaValue>
         </automatik:metaData>
         <automatik:metaData name="customActivationCondition">
-          <automatik:metaValue><![CDATA[Boolean.parseBoolean((String) kcontext.getVariable("readyToActivate"))]]></automatik:metaValue>
+          <automatik:metaValue><![CDATA[Boolean.parseBoolean((String) context.getVariable("readyToActivate"))]]></automatik:metaValue>
         </automatik:metaData>
       </bpmn2:extensionElements>
       <bpmn2:outgoing>_8C3DD5EF-FF36-4929-9651-04D7B62A6C12</bpmn2:outgoing>

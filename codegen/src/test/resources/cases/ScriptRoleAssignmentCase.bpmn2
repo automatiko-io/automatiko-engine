@@ -23,7 +23,7 @@
     <bpmn2:scriptTask id="ScriptTask_1" name="Script Task 1" scriptFormat="http://www.java.com/java">
       <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
-      <bpmn2:script>org.kie.api.runtime.process.CaseAssignment assignments = kcontext.getCaseAssignment();
+      <bpmn2:script>org.kie.api.runtime.process.CaseAssignment assignments = context.getCaseAssignment();
 assignments.assignUser(&quot;owner&quot;, &quot;john&quot;);
 System.out.println(&quot;Onwer role assigned to john&quot;);</bpmn2:script>
     </bpmn2:scriptTask>

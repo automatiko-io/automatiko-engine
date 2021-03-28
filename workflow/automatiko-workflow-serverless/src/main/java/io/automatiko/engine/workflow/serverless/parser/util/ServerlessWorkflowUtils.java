@@ -165,7 +165,7 @@ public class ServerlessWorkflowUtils {
 
         }
 
-        return "!((java.util.List<java.lang.String>) com.jayway.jsonpath.JsonPath.parse(((com.fasterxml.jackson.databind.JsonNode)kcontext.getVariable(\""
+        return "!((java.util.List<java.lang.String>) com.jayway.jsonpath.JsonPath.parse(((com.fasterxml.jackson.databind.JsonNode)context.getVariable(\""
                 + processVar + "\")).toString()).read(\"" + conditionStr + "\")).isEmpty()";
     }
 
@@ -174,7 +174,7 @@ public class ServerlessWorkflowUtils {
         if (script.indexOf("$") >= 0) {
 
             String replacement = "toPrint += com.jayway.jsonpath.JsonPath.using(jsonPathConfig)" +
-                    ".parse(((com.fasterxml.jackson.databind.JsonNode)kcontext.getVariable(\"workflowdata\")))" +
+                    ".parse(((com.fasterxml.jackson.databind.JsonNode)context.getVariable(\"workflowdata\")))" +
                     ".read(\"@@.$1\", com.fasterxml.jackson.databind.JsonNode.class).textValue();";
             script = script.replaceAll("\\$.([A-Za-z]+)", replacement);
             script = script.replaceAll("@@", Matcher.quoteReplacement("$"));
@@ -194,7 +194,7 @@ public class ServerlessWorkflowUtils {
                     +
                     "        com.fasterxml.jackson.databind.JsonNode updateNode2 = objectMapper.readTree(\""
                     + injectStr.replaceAll("\"", "\\\\\"") + "\");\n" +
-                    "        com.fasterxml.jackson.databind.JsonNode mainNode2 = (com.fasterxml.jackson.databind.JsonNode)kcontext.getVariable(\"workflowdata\");\n"
+                    "        com.fasterxml.jackson.databind.JsonNode mainNode2 = (com.fasterxml.jackson.databind.JsonNode)context.getVariable(\"workflowdata\");\n"
                     +
                     "        java.util.Iterator<String> fieldNames2 = updateNode2.fieldNames();\n" +
                     "        while(fieldNames2.hasNext()) {\n" +
@@ -208,7 +208,7 @@ public class ServerlessWorkflowUtils {
                     +
                     "            }\n" +
                     "        }\n" +
-                    "        kcontext.setVariable(\"workflowdata\", mainNode2);\n";
+                    "        context.setVariable(\"workflowdata\", mainNode2);\n";
 
         } catch (JsonProcessingException e) {
             LOGGER.warn("unable to set inject script: {}", e.getMessage());
