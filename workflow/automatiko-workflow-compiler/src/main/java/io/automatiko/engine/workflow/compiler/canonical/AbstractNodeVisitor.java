@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.CastExpr;
@@ -22,6 +23,7 @@ import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -109,6 +111,18 @@ public abstract class AbstractNodeVisitor<T extends Node> extends AbstractVisito
         return new ExpressionStmt(assignExpr);
     }
 
+    public static Statement makeAssignmentVersions(Variable processVariable) {
+        String targetLocalVariable = processVariable.getSanitizedName();
+        ClassOrInterfaceType type = new ClassOrInterfaceType(null, new SimpleName(List.class.getCanonicalName()),
+                NodeList.nodeList(parseClassOrInterfaceType(processVariable.getType().getStringType())));
+        // List<`type`> `name$` = (`type`) `kcontext.getVariable
+        AssignExpr assignExpr = new AssignExpr(new VariableDeclarationExpr(type, targetLocalVariable + "$"),
+                new CastExpr(type, new MethodCallExpr(new NameExpr(KCONTEXT_VAR), "getVariable")
+                        .addArgument(new StringLiteralExpr(targetLocalVariable + "$"))),
+                AssignExpr.Operator.ASSIGN);
+        return new ExpressionStmt(assignExpr);
+    }
+
     public static Statement makeAssignmentFromMap(Variable v) {
         String name = v.getSanitizedName();
         return makeAssignmentFromMap(name, v);
@@ -183,6 +197,9 @@ public abstract class AbstractNodeVisitor<T extends Node> extends AbstractVisito
         BlockStmt conditionBody = new BlockStmt();
         List<Variable> variables = scope.getVariables();
         variables.stream().map(ActionNodeVisitor::makeAssignment).forEach(conditionBody::addStatement);
+
+        variables.stream().filter(v -> v.hasTag(Variable.VERSIONED_TAG)).map(ActionNodeVisitor::makeAssignmentVersions)
+                .forEach(conditionBody::addStatement);
 
         conditionBody.addStatement(new ReturnStmt(new EnclosedExpr(new NameExpr(consequence))));
 

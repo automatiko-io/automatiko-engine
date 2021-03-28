@@ -40,6 +40,7 @@ public class Variable implements ValueObject, Serializable, io.automatiko.engine
     public static final String VERSIONED_TAG = "versioned";
 
     public static final String DEFAULT_VALUE = "value";
+    public static final String VAR_VERSIONS_LIMIT = "versionsLimit";
 
     private String id;
     private String name;

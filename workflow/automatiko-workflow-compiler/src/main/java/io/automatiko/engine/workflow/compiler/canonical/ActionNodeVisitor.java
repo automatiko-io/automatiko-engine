@@ -61,6 +61,9 @@ public class ActionNodeVisitor extends AbstractNodeVisitor<ActionNode> {
             variables.stream().filter(v -> consequence.contains(v.getName())).map(ActionNodeVisitor::makeAssignment)
                     .forEach(actionBody::addStatement);
 
+            variables.stream().filter(v -> v.hasTag(Variable.VERSIONED_TAG)).map(ActionNodeVisitor::makeAssignmentVersions)
+                    .forEach(actionBody::addStatement);
+
             actionBody.addStatement(new NameExpr(consequence));
 
             LambdaExpr lambda = new LambdaExpr(new Parameter(new UnknownType(), KCONTEXT_VAR), // (kcontext) ->

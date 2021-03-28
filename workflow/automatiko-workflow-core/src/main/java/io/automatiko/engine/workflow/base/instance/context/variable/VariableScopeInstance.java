@@ -142,8 +142,15 @@ public class VariableScopeInstance extends AbstractContextInstance {
                     key -> new ConcurrentHashMap<>());
             List<Object> varVersions = versions.computeIfAbsent(name, k -> new ArrayList<>());
 
+            int versionLimit = Integer.parseInt(var.getMetaData().getOrDefault(Variable.VAR_VERSIONS_LIMIT, "10").toString());
+
             if (oldValue != null) {
                 varVersions.add(oldValue);
+                // check the size of the variables compared with limit - max number of versions stored
+                // and remove the oldest if exceeding
+                if (varVersions.size() > versionLimit) {
+                    varVersions.remove(0);
+                }
             }
         }
 

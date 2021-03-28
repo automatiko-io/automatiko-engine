@@ -52,6 +52,10 @@ public class SplitNodeVisitor extends AbstractNodeVisitor<Split> {
                         actionBody.addStatement(makeAssignment(v));
                     }
 
+                    variableScope.getVariables().stream().filter(v -> v.hasTag(Variable.VERSIONED_TAG))
+                            .map(ActionNodeVisitor::makeAssignmentVersions)
+                            .forEach(actionBody::addStatement);
+
                     if (entry.getValue().getConstraint().contains(System.getProperty("line.separator"))) {
                         BlockStmt constraintBody = new BlockStmt();
                         constraintBody.addStatement(entry.getValue().getConstraint());
