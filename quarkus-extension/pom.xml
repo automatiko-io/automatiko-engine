@@ -17,10 +17,6 @@
 
 
   <packaging>pom</packaging>
-  
-  <properties>
-    <version.io.javaoperatorsdk>1.8.0.CR1</version.io.javaoperatorsdk>
-  </properties>
 
   <dependencyManagement>
     <dependencies>
