@@ -1,6 +1,7 @@
 
 package io.automatiko.engine.workflow.base.instance;
 
+import java.time.format.DateTimeParseException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,7 @@ import io.automatiko.engine.api.runtime.process.WorkItemManager;
 import io.automatiko.engine.api.uow.UnitOfWorkManager;
 import io.automatiko.engine.api.workflow.VariableInitializer;
 import io.automatiko.engine.api.workflow.signal.SignalManager;
+import io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError;
 import io.automatiko.engine.services.correlation.CorrelationKey;
 import io.automatiko.engine.services.jobs.impl.InMemoryJobService;
 import io.automatiko.engine.services.uow.CollectingUnitOfWorkFactory;
@@ -340,8 +342,13 @@ public class ProcessRuntimeImpl implements InternalProcessRuntime {
                 return DurationExpirationTime.after(duration);
 
             case Timer.TIME_DATE:
-
-                return ExactExpirationTime.of(timer.getDate());
+                try {
+                    return ExactExpirationTime.of(timer.getDate());
+                } catch (DateTimeParseException e) {
+                    throw new WorkItemExecutionError("Parsing of date and time for timer failed",
+                            "DateTimeParseFailure",
+                            "Unable to parse '" + timer.getDate() + "' as valid ISO date and time format", e);
+                }
 
             default:
                 throw new UnsupportedOperationException("Not supported timer definition");

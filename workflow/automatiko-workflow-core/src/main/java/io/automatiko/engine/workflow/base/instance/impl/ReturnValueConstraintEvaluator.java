@@ -1,6 +1,9 @@
 
 package io.automatiko.engine.workflow.base.instance.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.automatiko.engine.api.definition.process.Connection;
 import io.automatiko.engine.workflow.base.core.context.ProcessContext;
 import io.automatiko.engine.workflow.base.instance.ProcessInstance;
@@ -13,105 +16,108 @@ import io.automatiko.engine.workflow.process.instance.NodeInstance;
  */
 public class ReturnValueConstraintEvaluator implements Constraint, ConstraintEvaluator {
 
-	private String name;
-	private String constraint;
-	private int priority;
-	private String dialect;
-	private String type;
-	private boolean isDefault = false;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReturnValueConstraintEvaluator.class);
 
-	public ReturnValueConstraintEvaluator() {
-	}
+    private String name;
+    private String constraint;
+    private int priority;
+    private String dialect;
+    private String type;
+    private boolean isDefault = false;
 
-	private ReturnValueEvaluator evaluator;
+    public ReturnValueConstraintEvaluator() {
+    }
 
-	public String getConstraint() {
-		return this.constraint;
-	}
+    private ReturnValueEvaluator evaluator;
 
-	public void setConstraint(final String constraint) {
-		this.constraint = constraint;
-	}
+    public String getConstraint() {
+        return this.constraint;
+    }
 
-	public String getName() {
-		return this.name;
-	}
+    public void setConstraint(final String constraint) {
+        this.constraint = constraint;
+    }
 
-	public void setName(final String name) {
-		this.name = name;
-	}
+    public String getName() {
+        return this.name;
+    }
 
-	public String toString() {
-		return this.name;
-	}
+    public void setName(final String name) {
+        this.name = name;
+    }
 
-	public int getPriority() {
-		return this.priority;
-	}
+    public String toString() {
+        return this.name;
+    }
 
-	public void setPriority(final int priority) {
-		this.priority = priority;
-	}
+    public int getPriority() {
+        return this.priority;
+    }
 
-	public String getDialect() {
-		return dialect;
-	}
+    public void setPriority(final int priority) {
+        this.priority = priority;
+    }
 
-	public void setDialect(String dialect) {
-		this.dialect = dialect;
-	}
+    public String getDialect() {
+        return dialect;
+    }
 
-	public String getType() {
-		return type;
-	}
+    public void setDialect(String dialect) {
+        this.dialect = dialect;
+    }
 
-	public void setType(String type) {
-		this.type = type;
-	}
+    public String getType() {
+        return type;
+    }
 
-	public boolean isDefault() {
-		return isDefault;
-	}
+    public void setType(String type) {
+        this.type = type;
+    }
 
-	public void setDefault(boolean isDefault) {
-		this.isDefault = isDefault;
-	}
+    public boolean isDefault() {
+        return isDefault;
+    }
 
-	public void wire(Object object) {
-		setEvaluator((ReturnValueEvaluator) object);
-	}
+    public void setDefault(boolean isDefault) {
+        this.isDefault = isDefault;
+    }
 
-	public void setEvaluator(ReturnValueEvaluator evaluator) {
-		this.evaluator = evaluator;
-	}
+    public void wire(Object object) {
+        setEvaluator((ReturnValueEvaluator) object);
+    }
 
-	public ReturnValueEvaluator getReturnValueEvaluator() {
-		return this.evaluator;
-	}
+    public void setEvaluator(ReturnValueEvaluator evaluator) {
+        this.evaluator = evaluator;
+    }
 
-	public boolean evaluate(NodeInstance instance, Connection connection, Constraint constraint) {
-		Object value;
-		try {
-			ProcessContext context = new ProcessContext(
-					((ProcessInstance) instance.getProcessInstance()).getProcessRuntime());
-			context.setNodeInstance(instance);
-			value = this.evaluator.evaluate(context);
-		} catch (Exception e) {
-			throw new RuntimeException("unable to execute ReturnValueEvaluator: ", e);
-		}
-		if (!(value instanceof Boolean)) {
-			throw new RuntimeException(
-					"Constraints must return boolean values: " + value + " for expression " + constraint);
-		}
-		return ((Boolean) value).booleanValue();
-	}
+    public ReturnValueEvaluator getReturnValueEvaluator() {
+        return this.evaluator;
+    }
 
-	public void setMetaData(String name, Object value) {
-		// Do nothing
-	}
+    public boolean evaluate(NodeInstance instance, Connection connection, Constraint constraint) {
+        Object value;
+        try {
+            ProcessContext context = new ProcessContext(
+                    ((ProcessInstance) instance.getProcessInstance()).getProcessRuntime());
+            context.setNodeInstance(instance);
+            value = this.evaluator.evaluate(context);
+        } catch (Exception e) {
+            LOGGER.warn("Constraints evaluation for expression {} failed", constraint, e);
+            return false;
+        }
+        if (!(value instanceof Boolean)) {
+            LOGGER.warn("Constraints must return boolean values: " + value + " for expression " + constraint);
+            return false;
+        }
+        return ((Boolean) value).booleanValue();
+    }
 
-	public Object getMetaData(String name) {
-		return null;
-	}
+    public void setMetaData(String name, Object value) {
+        // Do nothing
+    }
+
+    public Object getMetaData(String name) {
+        return null;
+    }
 
 }

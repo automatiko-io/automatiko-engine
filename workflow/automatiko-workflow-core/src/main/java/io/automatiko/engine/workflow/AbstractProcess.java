@@ -1,6 +1,7 @@
 
 package io.automatiko.engine.workflow;
 
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +24,7 @@ import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.api.workflow.ProcessInstances;
 import io.automatiko.engine.api.workflow.ProcessInstancesFactory;
 import io.automatiko.engine.api.workflow.Signal;
+import io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError;
 import io.automatiko.engine.workflow.auth.AccessPolicyFactory;
 import io.automatiko.engine.workflow.auth.AllowAllAccessPolicy;
 import io.automatiko.engine.workflow.base.core.timer.DateTimeUtils;
@@ -203,7 +205,13 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
 
             case Timer.TIME_DATE:
 
-                return ExactExpirationTime.of(timer.getDate());
+                try {
+                    return ExactExpirationTime.of(timer.getDate());
+                } catch (DateTimeParseException e) {
+                    throw new WorkItemExecutionError("Parsing of date and time for timer failed",
+                            "DateTimeParseFailure",
+                            "Unable to parse '" + timer.getDate() + "' as valid ISO date and time format", e);
+                }
 
             default:
                 throw new UnsupportedOperationException("Not supported timer definition");

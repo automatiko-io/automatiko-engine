@@ -17,6 +17,8 @@ import org.junit.jupiter.api.Timeout;
 import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.workflow.Process;
+import io.automatiko.engine.api.workflow.ProcessError;
+import io.automatiko.engine.api.workflow.ProcessErrors;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.codegen.AbstractCodegenTest;
 import io.automatiko.engine.codegen.process.ProcessCodegenException;
@@ -182,6 +184,117 @@ public class ServiceTaskTest extends AbstractCodegenTest {
         Model result = (Model) processInstance.variables();
         assertThat(result.toMap()).hasSize(1).containsKeys("s");
         assertThat(result.toMap().get("s")).isNotNull().isEqualTo("Goodbye Hello john!!");
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Test
+    public void testServiceProcessDifferentOperationsParallelTask() throws Exception {
+
+        Application app = generateCodeProcessesOnly("servicetask/ServiceProcessDifferentOperationsParallel.bpmn2");
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("ServiceProcessDifferentOperations_1_0");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        //parameters.put("s", "john");
+        m.fromMap(parameters);
+
+        ProcessInstance processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ERROR);
+
+        assertThat(processInstance.errors()).isPresent();
+        assertThat(((ProcessErrors) processInstance.errors().get()).errors()).hasSize(2);
+
+        parameters.put("s", "john");
+        m.fromMap(parameters);
+        processInstance.updateVariables(m);
+
+        ((ProcessErrors) processInstance.errors().get()).retrigger();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(1).containsKeys("s");
+        assertThat(result.toMap().get("s")).isNotNull().asString().contains("Goodbye").contains("Hello");
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Test
+    public void testServiceProcessDifferentOperationsParallelTaskRetriggerIndividually() throws Exception {
+
+        Application app = generateCodeProcessesOnly("servicetask/ServiceProcessDifferentOperationsParallel.bpmn2");
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("ServiceProcessDifferentOperations_1_0");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        //parameters.put("s", "john");
+        m.fromMap(parameters);
+
+        ProcessInstance processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ERROR);
+
+        assertThat(processInstance.errors()).isPresent();
+        assertThat(((ProcessErrors) processInstance.errors().get()).errors()).hasSize(2);
+
+        parameters.put("s", "john");
+        m.fromMap(parameters);
+        processInstance.updateVariables(m);
+
+        ProcessErrors errors = (ProcessErrors) processInstance.errors().get();
+
+        for (ProcessError error : errors.errors()) {
+
+            errors.retrigger(error.failedNodeId());
+
+        }
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(1).containsKeys("s");
+        assertThat(result.toMap().get("s")).isNotNull().asString().contains("Goodbye").contains("Hello");
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Test
+    public void testServiceProcessDifferentOperationsParallelTaskSkip() throws Exception {
+
+        Application app = generateCodeProcessesOnly("servicetask/ServiceProcessDifferentOperationsParallel.bpmn2");
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("ServiceProcessDifferentOperations_1_0");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        m.fromMap(parameters);
+
+        ProcessInstance processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ERROR);
+
+        assertThat(processInstance.errors()).isPresent();
+        assertThat(((ProcessErrors) processInstance.errors().get()).errors()).hasSize(2);
+
+        parameters.put("s", "john");
+        m.fromMap(parameters);
+        processInstance.updateVariables(m);
+
+        ((ProcessErrors) processInstance.errors().get()).skip();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(1).containsKeys("s");
+        assertThat(result.toMap().get("s")).isNotNull().isEqualTo("john");
     }
 
     @Test

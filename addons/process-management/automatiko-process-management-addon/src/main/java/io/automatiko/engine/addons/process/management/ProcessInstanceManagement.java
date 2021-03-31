@@ -11,7 +11,11 @@ public interface ProcessInstanceManagement<T> {
 
     T retriggerInstanceInError(String processId, String processInstanceId, String user, List<String> groups);
 
+    T retriggerInstanceInError(String processId, String processInstanceId, String errord, String user, List<String> groups);
+
     T skipInstanceInError(String processId, String processInstanceId, String user, List<String> groups);
+
+    T skipInstanceInError(String processId, String processInstanceId, String errorId, String user, List<String> groups);
 
     T triggerNodeInstanceId(String processId, String processInstanceId, String nodeId, String user, List<String> groups);
 

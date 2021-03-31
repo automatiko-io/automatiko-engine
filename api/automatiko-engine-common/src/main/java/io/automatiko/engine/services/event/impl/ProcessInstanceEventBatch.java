@@ -26,6 +26,7 @@ import io.automatiko.engine.api.runtime.process.ProcessInstance;
 import io.automatiko.engine.api.runtime.process.WorkItem;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatiko.engine.api.uow.WorkUnit;
+import io.automatiko.engine.api.workflow.ExecutionsErrorInfo;
 import io.automatiko.engine.api.workflow.Tag;
 import io.automatiko.engine.services.event.ProcessInstanceDataEvent;
 import io.automatiko.engine.services.event.UserTaskInstanceDataEvent;
@@ -155,8 +156,10 @@ public class ProcessInstanceEventBatch implements EventBatch {
                 .businessKey(pi.getCorrelationKey()).variables(pi.getVariables()).milestones(createMilestones(pi));
 
         if (pi.getState() == ProcessInstance.STATE_ERROR) {
-            eventBuilder.error(ProcessErrorEventBody.create().nodeDefinitionId(pi.getNodeIdInError())
-                    .errorMessage(pi.getErrorMessage()).build());
+            for (ExecutionsErrorInfo error : pi.errors()) {
+                eventBuilder.error(ProcessErrorEventBody.create().nodeDefinitionId(error.getFailedNodeId())
+                        .errorMessage(error.getErrorMessage()).build());
+            }
         }
 
         String securityRoles = (String) pi.getProcess().getMetaData().get("securityRoles");

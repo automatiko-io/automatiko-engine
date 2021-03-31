@@ -34,83 +34,83 @@ import io.automatiko.engine.workflow.process.executable.instance.ExecutableProce
 
 class MilestoneTest extends AbstractCodegenTest {
 
-	@Test
-	void testSimpleMilestone() throws Exception {
-		Application app = generateCodeProcessesOnly("cases/milestones/SimpleMilestone.bpmn");
-		assertThat(app).isNotNull();
+    @Test
+    void testSimpleMilestone() throws Exception {
+        Application app = generateCodeProcessesOnly("cases/milestones/SimpleMilestone.bpmn");
+        assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("TestCase.SimpleMilestone_1_0");
-		ProcessInstance<?> processInstance = p.createInstance(p.createModel());
-		assertState(processInstance, ProcessInstance.STATE_PENDING);
+        Process<? extends Model> p = app.processes().processById("TestCase.SimpleMilestone_1_0");
+        ProcessInstance<?> processInstance = p.createInstance(p.createModel());
+        assertState(processInstance, ProcessInstance.STATE_PENDING);
 
-		Collection<Milestone> expected = new ArrayList<>();
-		expected.add(Milestone.builder().withName("AutoStartMilestone").withStatus(AVAILABLE).build());
-		expected.add(Milestone.builder().withName("SimpleMilestone").withStatus(AVAILABLE).build());
-		assertMilestones(expected, processInstance.milestones());
+        Collection<Milestone> expected = new ArrayList<>();
+        expected.add(Milestone.builder().withName("AutoStartMilestone").withStatus(AVAILABLE).build());
+        expected.add(Milestone.builder().withName("SimpleMilestone").withStatus(AVAILABLE).build());
+        assertMilestones(expected, processInstance.milestones());
 
-		processInstance.start();
-		assertState(processInstance, ProcessInstance.STATE_COMPLETED);
+        processInstance.start();
+        assertState(processInstance, ProcessInstance.STATE_COMPLETED);
 
-		expected = expected.stream()
-				.map(m -> Milestone.builder().withId(m.getId()).withName(m.getName()).withStatus(COMPLETED).build())
-				.collect(Collectors.toList());
-		assertMilestones(expected, processInstance.milestones());
+        expected = expected.stream()
+                .map(m -> Milestone.builder().withId(m.getId()).withName(m.getName()).withStatus(COMPLETED).build())
+                .collect(Collectors.toList());
+        assertMilestones(expected, processInstance.milestones());
 
-		ExecutableProcessInstance legacyProcessInstance = (ExecutableProcessInstance) ((AbstractProcessInstance<?>) processInstance)
-				.processInstance();
-		assertThat(legacyProcessInstance.getNodeInstances()).isEmpty();
-		assertThat(legacyProcessInstance.getNodeIdInError()).isNullOrEmpty();
-		Optional<String> milestoneId = Stream.of(legacyProcessInstance.getNodeContainer().getNodes())
-				.filter(node -> node.getName().equals("SimpleMilestone"))
-				.map(n -> (String) n.getMetaData().get(Metadata.UNIQUE_ID)).findFirst();
-		assertTrue(milestoneId.isPresent());
-		assertThat(legacyProcessInstance.getCompletedNodeIds()).contains(milestoneId.get());
-	}
+        ExecutableProcessInstance legacyProcessInstance = (ExecutableProcessInstance) ((AbstractProcessInstance<?>) processInstance)
+                .processInstance();
+        assertThat(legacyProcessInstance.getNodeInstances()).isEmpty();
 
-	@Test
-	void testConditionalMilestone() throws Exception {
-		Application app = generateCodeProcessesOnly("cases/milestones/ConditionalMilestone.bpmn");
-		assertThat(app).isNotNull();
+        Optional<String> milestoneId = Stream.of(legacyProcessInstance.getNodeContainer().getNodes())
+                .filter(node -> node.getName().equals("SimpleMilestone"))
+                .map(n -> (String) n.getMetaData().get(Metadata.UNIQUE_ID)).findFirst();
+        assertTrue(milestoneId.isPresent());
+        assertThat(legacyProcessInstance.getCompletedNodeIds()).contains(milestoneId.get());
+    }
 
-		Process<? extends Model> p = app.processes().processById("TestCase.ConditionalMilestone_1_0");
-		Model model = p.createModel();
-		Map<String, Object> params = new HashMap<>();
-		params.put("favouriteColour", "orange");
-		model.fromMap(params);
-		ProcessInstance<?> processInstance = p.createInstance(model);
-		assertState(processInstance, ProcessInstance.STATE_PENDING);
+    @Test
+    void testConditionalMilestone() throws Exception {
+        Application app = generateCodeProcessesOnly("cases/milestones/ConditionalMilestone.bpmn");
+        assertThat(app).isNotNull();
 
-		Collection<Milestone> expected = new ArrayList<>();
-		expected.add(Milestone.builder().withName("Milestone").withStatus(AVAILABLE).build());
-		assertMilestones(expected, processInstance.milestones());
+        Process<? extends Model> p = app.processes().processById("TestCase.ConditionalMilestone_1_0");
+        Model model = p.createModel();
+        Map<String, Object> params = new HashMap<>();
+        params.put("favouriteColour", "orange");
+        model.fromMap(params);
+        ProcessInstance<?> processInstance = p.createInstance(model);
+        assertState(processInstance, ProcessInstance.STATE_PENDING);
 
-		processInstance.start();
-		assertState(processInstance, ProcessInstance.STATE_ACTIVE);
+        Collection<Milestone> expected = new ArrayList<>();
+        expected.add(Milestone.builder().withName("Milestone").withStatus(AVAILABLE).build());
+        assertMilestones(expected, processInstance.milestones());
 
-		expected = expected.stream()
-				.map(m -> Milestone.builder().withId(m.getId()).withName(m.getName()).withStatus(AVAILABLE).build())
-				.collect(Collectors.toList());
-		assertMilestones(expected, processInstance.milestones());
+        processInstance.start();
+        assertState(processInstance, ProcessInstance.STATE_ACTIVE);
 
-		List<WorkItem> workItems = processInstance.workItems();
-		params.put("favouriteColour", "blue");
-		processInstance.completeWorkItem(workItems.get(0).getId(), params);
+        expected = expected.stream()
+                .map(m -> Milestone.builder().withId(m.getId()).withName(m.getName()).withStatus(AVAILABLE).build())
+                .collect(Collectors.toList());
+        assertMilestones(expected, processInstance.milestones());
 
-		expected = expected.stream()
-				.map(m -> Milestone.builder().withId(m.getId()).withName(m.getName()).withStatus(COMPLETED).build())
-				.collect(Collectors.toList());
-		assertMilestones(expected, processInstance.milestones());
-	}
+        List<WorkItem> workItems = processInstance.workItems();
+        params.put("favouriteColour", "blue");
+        processInstance.completeWorkItem(workItems.get(0).getId(), params);
 
-	private void assertMilestones(Collection<Milestone> expected, Collection<Milestone> milestones) {
-		if (expected == null) {
-			assertNull(milestones);
-		}
-		assertNotNull(milestones);
-		assertThat(milestones.size()).isEqualTo(expected.size());
-		expected.forEach(e -> assertThat(milestones.stream().anyMatch(
-				c -> Objects.equals(c.getName(), e.getName()) && Objects.equals(c.getStatus(), e.getStatus())))
-						.withFailMessage("Expected: " + e + " - Not present in: " + milestones).isTrue());
-	}
+        expected = expected.stream()
+                .map(m -> Milestone.builder().withId(m.getId()).withName(m.getName()).withStatus(COMPLETED).build())
+                .collect(Collectors.toList());
+        assertMilestones(expected, processInstance.milestones());
+    }
+
+    private void assertMilestones(Collection<Milestone> expected, Collection<Milestone> milestones) {
+        if (expected == null) {
+            assertNull(milestones);
+        }
+        assertNotNull(milestones);
+        assertThat(milestones.size()).isEqualTo(expected.size());
+        expected.forEach(e -> assertThat(milestones.stream().anyMatch(
+                c -> Objects.equals(c.getName(), e.getName()) && Objects.equals(c.getStatus(), e.getStatus())))
+                        .withFailMessage("Expected: " + e + " - Not present in: " + milestones).isTrue());
+    }
 
 }

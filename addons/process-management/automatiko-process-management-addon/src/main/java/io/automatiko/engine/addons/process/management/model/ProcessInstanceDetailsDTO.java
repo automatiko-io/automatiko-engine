@@ -23,15 +23,9 @@ public class ProcessInstanceDetailsDTO {
 
     private Object variables;
 
-    private String errorId;
-
-    private String errorMessage;
-
-    private String errorDetails;
-
-    private String failedNodeId;
-
     private List<String> versionedVariables;
+
+    private List<ErrorInfoDTO> errors;
 
     public String getId() {
         return id;
@@ -105,44 +99,20 @@ public class ProcessInstanceDetailsDTO {
         this.processId = processId;
     }
 
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
-
-    public String getErrorId() {
-        return errorId;
-    }
-
-    public void setErrorId(String errorId) {
-        this.errorId = errorId;
-    }
-
-    public String getErrorDetails() {
-        return errorDetails;
-    }
-
-    public void setErrorDetails(String errorDetails) {
-        this.errorDetails = errorDetails;
-    }
-
-    public String getFailedNodeId() {
-        return failedNodeId;
-    }
-
-    public void setFailedNodeId(String failedNodeId) {
-        this.failedNodeId = failedNodeId;
-    }
-
     public List<String> getVersionedVariables() {
         return versionedVariables;
     }
 
     public void setVersionedVariables(List<String> versionedVariables) {
         this.versionedVariables = versionedVariables;
+    }
+
+    public List<ErrorInfoDTO> getErrors() {
+        return errors;
+    }
+
+    public void setErrors(List<ErrorInfoDTO> errors) {
+        this.errors = errors;
     }
 
     @Override

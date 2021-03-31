@@ -30,7 +30,7 @@ import io.automatiko.engine.addons.persistence.AbstractProcessInstancesFactory;
 import io.automatiko.engine.api.auth.SecurityPolicy;
 import io.automatiko.engine.api.definition.process.Node;
 import io.automatiko.engine.api.runtime.process.ProcessContext;
-import io.automatiko.engine.api.workflow.ProcessError;
+import io.automatiko.engine.api.workflow.ProcessErrors;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceNotFoundException;
 import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
@@ -125,10 +125,9 @@ public class MockCacheProcessInstancesTest {
 
         mutablePi.start();
         assertThat(mutablePi.status()).isEqualTo(STATE_ERROR);
-        assertThat(mutablePi.error()).hasValueSatisfying(error -> {
-            assertThat(error.errorMessage()).isNull();
-            ;
-            assertThat(error.failedNodeId()).isEqualTo("ScriptTask_1");
+        assertThat(mutablePi.errors()).hasValueSatisfying(errors -> {
+            assertThat(errors.errorMessages()).isEqualTo("null");
+            assertThat(errors.failedNodeIds()).isEqualTo("ScriptTask_1");
         });
         assertThat(mutablePi.variables().toMap()).containsExactly(entry("var", "value"));
 
@@ -140,9 +139,9 @@ public class MockCacheProcessInstancesTest {
         ProcessInstance<BpmnVariables> readOnlyPi = instances
                 .findById(mutablePi.id(), ProcessInstanceReadMode.READ_ONLY).get();
         assertThat(readOnlyPi.status()).isEqualTo(STATE_ERROR);
-        assertThat(readOnlyPi.error()).hasValueSatisfying(error -> {
-            assertThat(error.errorMessage()).isEqualTo("");
-            assertThat(error.failedNodeId()).isEqualTo("ScriptTask_1");
+        assertThat(readOnlyPi.errors()).hasValueSatisfying(errors -> {
+            assertThat(errors.errorMessages()).isEqualTo("");
+            assertThat(errors.failedNodeIds()).isEqualTo("ScriptTask_1");
         });
         assertThat(readOnlyPi.variables().toMap()).containsExactly(entry("var", "value"));
         assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> readOnlyPi.abort());
@@ -222,7 +221,7 @@ public class MockCacheProcessInstancesTest {
 
         testBasicFlowWithError((processInstance) -> {
             processInstance.updateVariables(BpmnVariables.create(Collections.singletonMap("s", "test")));
-            processInstance.error().orElseThrow(() -> new IllegalStateException("Process instance not in error"))
+            processInstance.errors().orElseThrow(() -> new IllegalStateException("Process instance not in error"))
                     .retrigger();
         });
     }
@@ -232,7 +231,7 @@ public class MockCacheProcessInstancesTest {
 
         testBasicFlowWithError((processInstance) -> {
             processInstance.updateVariables(BpmnVariables.create(Collections.singletonMap("s", "test")));
-            processInstance.error().orElseThrow(() -> new IllegalStateException("Process instance not in error"))
+            processInstance.errors().orElseThrow(() -> new IllegalStateException("Process instance not in error"))
                     .skip();
         });
     }
@@ -266,13 +265,13 @@ public class MockCacheProcessInstancesTest {
         processInstance.start();
         assertThat(processInstance.status()).isEqualTo(STATE_ERROR);
 
-        Optional<ProcessError> errorOp = processInstance.error();
+        Optional<ProcessErrors> errorOp = processInstance.errors();
         assertThat(errorOp).isPresent();
-        assertThat(errorOp.get().failedNodeId()).isEqualTo("ScriptTask_1");
-        assertThat(errorOp.get().errorMessage()).isNull();
+        assertThat(errorOp.get().failedNodeIds()).isEqualTo("ScriptTask_1");
+        assertThat(errorOp.get().errorMessages()).isEqualTo("null");
 
         op.accept(processInstance);
-        processInstance.error().ifPresent(e -> e.retrigger());
+        processInstance.errors().ifPresent(e -> e.retrigger());
 
         WorkItem workItem = processInstance.workItems(SecurityPolicy.of(new StaticIdentityProvider("john"))).get(0);
         assertThat(workItem).isNotNull();

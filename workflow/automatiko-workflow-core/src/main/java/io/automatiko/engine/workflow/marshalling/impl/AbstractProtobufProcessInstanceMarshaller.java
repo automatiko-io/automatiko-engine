@@ -21,6 +21,7 @@ import io.automatiko.engine.api.runtime.process.NodeInstanceContainer;
 import io.automatiko.engine.api.runtime.process.ProcessInstance;
 import io.automatiko.engine.api.runtime.process.WorkItem;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
+import io.automatiko.engine.api.workflow.ExecutionsErrorInfo;
 import io.automatiko.engine.api.workflow.Tag;
 import io.automatiko.engine.workflow.base.core.Context;
 import io.automatiko.engine.workflow.base.core.context.exclusive.ExclusiveGroup;
@@ -95,17 +96,15 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         if (workFlow.getRootProcessId() != null) {
             _instance.setRootProcessId(workFlow.getRootProcessId());
         }
-        if (workFlow.getNodeIdInError() != null) {
-            _instance.setErrorNodeId(workFlow.getNodeIdInError());
-        }
-        if (workFlow.getErrorMessage() != null) {
-            _instance.setErrorMessage(workFlow.getErrorMessage());
-        }
-        if (workFlow.getErrorId() != null) {
-            _instance.setErrorId(workFlow.getErrorId());
-        }
-        if (workFlow.getErrorDetails() != null) {
-            _instance.setErrorDetails(workFlow.getErrorDetails());
+        List<ExecutionsErrorInfo> errors = workFlow.errors();
+        if (errors != null) {
+            for (ExecutionsErrorInfo error : errors) {
+                _instance.addErrors(
+                        AutomatikoMessages.ProcessInstance.Error.newBuilder().setErrorNodeId(error.getFailedNodeId())
+                                .setErrorId(error.getErrorId())
+                                .setErrorMessage(error.getErrorMessage() == null ? "" : error.getErrorMessage())
+                                .setErrorDetails(error.getErrorDetails() == null ? "" : error.getErrorDetails()));
+            }
         }
         if (workFlow.getReferenceId() != null) {
             _instance.setReferenceId(workFlow.getReferenceId());
@@ -696,10 +695,13 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
 
         processInstance.setProcessRuntime(context.getProcessRuntime());
 
-        processInstance.internalSetErrorNodeId(_instance.getErrorNodeId());
-        processInstance.internalSetErrorMessage(_instance.getErrorMessage());
-        processInstance.internalSetErrorId(_instance.getErrorId());
-        processInstance.internalSetErrorDetails(_instance.getErrorDetails());
+        List<ExecutionsErrorInfo> errors = new ArrayList<>();
+        for (io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.Error error : _instance
+                .getErrorsList()) {
+            errors.add(new ExecutionsErrorInfo(error.getErrorNodeId(), error.getErrorId(), error.getErrorMessage(),
+                    error.getErrorDetails()));
+        }
+        processInstance.internalSetExecutionErrors(errors);
 
         processInstance.setReferenceId(_instance.getReferenceId());
 

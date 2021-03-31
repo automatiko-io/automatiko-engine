@@ -33,12 +33,11 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
-import io.automatiko.engine.addons.process.management.ProcessInstanceManagementResource;
 import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.IdentitySupplier;
 import io.automatiko.engine.api.workflow.Process;
-import io.automatiko.engine.api.workflow.ProcessError;
+import io.automatiko.engine.api.workflow.ProcessErrors;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstances;
 import io.automatiko.engine.services.identity.StaticIdentityProvider;
@@ -58,7 +57,7 @@ public class ProcessInstanceManagementResourceTest {
     private Map<String, Process<?>> processes;
     @SuppressWarnings("rawtypes")
     private ProcessInstance processInstance;
-    private ProcessError error;
+    private ProcessErrors errors;
     private Application application;
     private ProcessInstanceManagementResource resource;
 
@@ -86,16 +85,16 @@ public class ProcessInstanceManagementResourceTest {
         Process process = mock(Process.class);
         ProcessInstances instances = mock(ProcessInstances.class);
         processInstance = mock(ProcessInstance.class);
-        error = mock(ProcessError.class);
+        errors = mock(ProcessErrors.class);
 
         lenient().when(processes.get(anyString())).thenReturn(process);
         lenient().when(process.instances()).thenReturn(instances);
         lenient().when(instances.findById(anyString())).thenReturn(Optional.of(processInstance));
-        lenient().when(processInstance.error()).thenReturn(Optional.of(error));
+        lenient().when(processInstance.errors()).thenReturn(Optional.of(errors));
         lenient().when(processInstance.id()).thenReturn("abc-def");
         lenient().when(processInstance.status()).thenReturn(ProcessInstance.STATE_ACTIVE);
-        lenient().when(error.failedNodeId()).thenReturn("xxxxx");
-        lenient().when(error.errorMessage()).thenReturn("Test error message");
+        lenient().when(errors.failedNodeIds()).thenReturn("xxxxx");
+        lenient().when(errors.errorMessages()).thenReturn("Test error message");
 
         lenient().when(application.unitOfWorkManager())
                 .thenReturn(new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory()));
@@ -119,9 +118,9 @@ public class ProcessInstanceManagementResourceTest {
         verify(responseBuilder, times(1)).status((StatusType) Status.OK);
         verify(responseBuilder, times(1)).entity(any());
 
-        verify(processInstance, times(2)).error();
-        verify(error, times(0)).retrigger();
-        verify(error, times(0)).skip();
+        verify(processInstance, times(2)).errors();
+        verify(errors, times(0)).retrigger();
+        verify(errors, times(0)).skip();
 
         verify(resource).doGetInstanceInError(PROCESS_ID, PROCESS_INSTANCE_ID);
     }
@@ -136,7 +135,7 @@ public class ProcessInstanceManagementResourceTest {
                 when(processInstance.status()).thenReturn(ProcessInstance.STATE_ACTIVE);
                 return null;
             }
-        }).when(error).retrigger();
+        }).when(errors).retrigger();
 
         Response response = resource.retriggerInstanceInError(PROCESS_ID, PROCESS_INSTANCE_ID, null, Collections.emptyList());
         assertThat(response).isNotNull();
@@ -144,9 +143,9 @@ public class ProcessInstanceManagementResourceTest {
         verify(responseBuilder, times(1)).status((StatusType) Status.OK);
         verify(responseBuilder, times(1)).entity(any());
 
-        verify(processInstance, times(2)).error();
-        verify(error, times(1)).retrigger();
-        verify(error, times(0)).skip();
+        verify(processInstance, times(2)).errors();
+        verify(errors, times(1)).retrigger();
+        verify(errors, times(0)).skip();
 
         verify(resource).doRetriggerInstanceInError(PROCESS_ID, PROCESS_INSTANCE_ID);
     }

@@ -35,8 +35,8 @@ public class WorkflowFunction {
     }
     
     protected $Type$Output getModel(ProcessInstance<$Type$> pi) {
-        if (pi.status() == ProcessInstance.STATE_ERROR && pi.error().isPresent()) {
-            throw new ProcessInstanceExecutionException(pi.id(), pi.error().get().failedNodeId(), pi.error().get().errorMessage());
+        if (pi.status() == ProcessInstance.STATE_ERROR && pi.errors().isPresent()) {
+            throw new ProcessInstanceExecutionException(pi.id(), pi.errors().get().failedNodeIds(), pi.errors().get().errorMessages());
         }
         
         return mapOutput(new $Type$Output(), pi.variables(), pi.businessKey());

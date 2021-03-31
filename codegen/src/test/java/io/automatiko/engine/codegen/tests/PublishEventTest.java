@@ -21,7 +21,7 @@ import io.automatiko.engine.api.event.DataEvent;
 import io.automatiko.engine.api.event.EventPublisher;
 import io.automatiko.engine.api.uow.UnitOfWork;
 import io.automatiko.engine.api.workflow.Process;
-import io.automatiko.engine.api.workflow.ProcessError;
+import io.automatiko.engine.api.workflow.ProcessErrors;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.WorkItem;
 import io.automatiko.engine.api.workflow.flexible.ItemDescription.Status;
@@ -435,9 +435,9 @@ public class PublishEventTest extends AbstractCodegenTest {
                                                                                               // thus null for leave
                                                                                               // time
 
-        assertThat(body.getError()).isNotNull();
-        assertThat(body.getError().getErrorMessage()).isNull();
-        assertThat(body.getError().getNodeDefinitionId()).isEqualTo("_38E04E27-3CCA-47F9-927B-E37DC4B8CE25");
+        assertThat(body.getErrors()).hasSize(1);
+        assertThat(body.getErrors().get(0).getErrorMessage()).isNull();
+        assertThat(body.getErrors().get(0).getNodeDefinitionId()).isEqualTo("_38E04E27-3CCA-47F9-927B-E37DC4B8CE25");
 
         parameters.put("s", "john");
         m.fromMap(parameters);
@@ -449,14 +449,14 @@ public class PublishEventTest extends AbstractCodegenTest {
         events = publisher.extract();
         assertThat(events).isNotNull().hasSize(1);
         body = assertProcessInstanceEvent(events.get(0), "ServiceProcessDifferentOperations", "Service Process", 5);
-        assertThat(body.getError()).isNotNull();
-        assertThat(body.getError().getErrorMessage()).isNull();
-        assertThat(body.getError().getNodeDefinitionId()).isEqualTo("_38E04E27-3CCA-47F9-927B-E37DC4B8CE25");
+        assertThat(body.getErrors()).hasSize(1);
+        assertThat(body.getErrors().get(0).getErrorMessage()).isNull();
+        assertThat(body.getErrors().get(0).getNodeDefinitionId()).isEqualTo("_38E04E27-3CCA-47F9-927B-E37DC4B8CE25");
 
         uow = app.unitOfWorkManager().newUnitOfWork();
         uow.start();
-        if (processInstance.error().isPresent()) {
-            ((ProcessError) processInstance.error().get()).retrigger();
+        if (processInstance.errors().isPresent()) {
+            ((ProcessErrors) processInstance.errors().get()).retrigger();
         }
         uow.end();
 
@@ -464,7 +464,7 @@ public class PublishEventTest extends AbstractCodegenTest {
         assertThat(events).isNotNull().hasSize(1);
 
         body = assertProcessInstanceEvent(events.get(0), "ServiceProcessDifferentOperations", "Service Process", 2);
-        assertThat(body.getError()).isNull();
+        assertThat(body.getErrors()).isEmpty();
 
         assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
         Model result = (Model) processInstance.variables();
