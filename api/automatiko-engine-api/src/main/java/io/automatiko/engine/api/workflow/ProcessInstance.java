@@ -202,11 +202,11 @@ public interface ProcessInstance<T> {
     Date startDate();
 
     /**
-     * Returns process error in case process instance is in error state.
+     * Returns process errors in case process instance is in error state.
      *
-     * @return returns process error
+     * @return returns process errors
      */
-    Optional<ProcessError> error();
+    Optional<ProcessErrors> errors();
 
     /**
      * Returns optional initiator of the process instance

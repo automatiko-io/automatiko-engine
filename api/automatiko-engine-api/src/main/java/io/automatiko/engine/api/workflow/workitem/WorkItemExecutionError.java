@@ -21,6 +21,12 @@ public class WorkItemExecutionError extends RuntimeException {
         this.errorDetails = errorDetails;
     }
 
+    public WorkItemExecutionError(String message, String errorCode, String errorDetails) {
+        super(message);
+        this.errorCode = errorCode;
+        this.errorDetails = errorDetails;
+    }
+
     public WorkItemExecutionError(String errorCode, Throwable e) {
         super("WorkItem execution failed with error code " + errorCode, e);
         this.errorCode = errorCode;
@@ -29,6 +35,12 @@ public class WorkItemExecutionError extends RuntimeException {
 
     public WorkItemExecutionError(String errorCode, String errorDetails, Throwable e) {
         super("WorkItem execution failed with error code " + errorCode, e);
+        this.errorCode = errorCode;
+        this.errorDetails = errorDetails;
+    }
+
+    public WorkItemExecutionError(String message, String errorCode, String errorDetails, Throwable e) {
+        super(message);
         this.errorCode = errorCode;
         this.errorDetails = errorDetails;
     }

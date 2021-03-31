@@ -1,6 +1,8 @@
 
 package io.automatiko.engine.workflow.process.instance.node;
 
+import static io.automatiko.engine.api.runtime.process.ProcessInstance.STATE_ABORTED;
+import static io.automatiko.engine.api.runtime.process.ProcessInstance.STATE_COMPLETED;
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.UNIQUE_ID;
 
 import java.util.ArrayList;
@@ -142,7 +144,8 @@ public class SplitInstance extends NodeInstanceImpl {
 
                 for (NodeInstanceTrigger nodeInstance : nodeInstances) {
                     // stop if this process instance has been aborted / completed
-                    if (getProcessInstance().getState() != ProcessInstance.STATE_ACTIVE) {
+                    if (getProcessInstance().getState() == STATE_COMPLETED
+                            || getProcessInstance().getState() == STATE_ABORTED) {
                         return;
                     }
                     triggerNodeInstance(nodeInstance.getNodeInstance(), nodeInstance.getToType());

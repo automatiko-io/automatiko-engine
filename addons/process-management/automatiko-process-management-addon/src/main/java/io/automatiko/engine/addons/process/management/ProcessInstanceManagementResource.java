@@ -38,6 +38,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import io.automatiko.engine.addons.process.management.model.ErrorInfoDTO;
 import io.automatiko.engine.addons.process.management.model.ProcessDTO;
 import io.automatiko.engine.addons.process.management.model.ProcessInstanceDTO;
 import io.automatiko.engine.addons.process.management.model.ProcessInstanceDetailsDTO;
@@ -168,7 +169,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
 
             process.instances().values(page, size).forEach(pi -> collected
                     .add(new ProcessInstanceDTO(pi.id(), pi.businessKey(), pi.description(), pi.tags().values(),
-                            pi.error().isPresent(), processId)));
+                            pi.errors().isPresent(), processId)));
 
             return collected;
         } finally {
@@ -206,12 +207,12 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             details.setProcessId(processId);
             details.setBusinessKey(pi.businessKey());
             details.setDescription(pi.description());
-            details.setFailed(pi.error().isPresent());
-            if (pi.error().isPresent()) {
-                details.setErrorId(pi.error().get().errorId());
-                details.setErrorMessage(pi.error().get().errorMessage());
-                details.setErrorDetails(pi.error().get().errorDetails());
-                details.setFailedNodeId(pi.error().get().failedNodeId());
+            details.setFailed(pi.errors().isPresent());
+            if (pi.errors().isPresent()) {
+
+                details.setErrors(pi.errors().get().errors().stream()
+                        .map(e -> new ErrorInfoDTO(e.failedNodeId(), e.errorId(), e.errorMessage(), e.errorDetails()))
+                        .collect(Collectors.toList()));
             }
             details.setImage(
                     uriInfo.getBaseUri().toString() + "management/processes/" + processId + "/instances/" + instanceId
@@ -220,7 +221,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             details.setVariables(pi.variables());
             details.setSubprocesses(pi.subprocesses().stream()
                     .map(spi -> new ProcessInstanceDTO(spi.id(), spi.businessKey(), spi.description(), pi.tags().values(),
-                            spi.error().isPresent(), spi.process().id()))
+                            spi.errors().isPresent(), spi.process().id()))
                     .collect(Collectors.toList()));
 
             VariableScope variableScope = (VariableScope) ((ContextContainer) ((AbstractProcess<?>) process).process())
@@ -419,6 +420,24 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @APIResponses(value = {
             @APIResponse(responseCode = "404", description = "In case of instance with given id was not found", content = @Content(mediaType = "application/json")),
             @APIResponse(responseCode = "200", description = "List of available processes", content = @Content(mediaType = "application/json")) })
+    @Operation(summary = "Retriggers the node instance that is in error")
+    @Override
+    @POST
+    @Path("/{processId}/instances/{processInstanceId}/retrigger/{errorId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response retriggerInstanceInError(
+            @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
+            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("processInstanceId") String processInstanceId,
+            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("errorId") String errorId,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        identitySupplier.buildIdentityProvider(user, groups);
+        return doRetriggerInstanceInError(processId, processInstanceId, errorId);
+    }
+
+    @APIResponses(value = {
+            @APIResponse(responseCode = "404", description = "In case of instance with given id was not found", content = @Content(mediaType = "application/json")),
+            @APIResponse(responseCode = "200", description = "List of available processes", content = @Content(mediaType = "application/json")) })
     @Operation(summary = "Skips the node instance that is in error")
     @Override
     @POST
@@ -431,6 +450,24 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         identitySupplier.buildIdentityProvider(user, groups);
         return doSkipInstanceInError(processId, processInstanceId);
+    }
+
+    @APIResponses(value = {
+            @APIResponse(responseCode = "404", description = "In case of instance with given id was not found", content = @Content(mediaType = "application/json")),
+            @APIResponse(responseCode = "200", description = "List of available processes", content = @Content(mediaType = "application/json")) })
+    @Operation(summary = "Skips the node instance that is in error")
+    @Override
+    @POST
+    @Path("/{processId}/instances/{processInstanceId}/skip/{errorId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response skipInstanceInError(
+            @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
+            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("processInstanceId") String processInstanceId,
+            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("errorId") String errorId,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        identitySupplier.buildIdentityProvider(user, groups);
+        return doSkipInstanceInError(processId, processInstanceId, errorId);
     }
 
     @APIResponses(value = {

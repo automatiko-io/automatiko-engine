@@ -1,6 +1,7 @@
 
 package io.automatiko.engine.addons.process.management;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,6 +13,7 @@ import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.auth.SecurityPolicy;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessError;
+import io.automatiko.engine.api.workflow.ProcessErrors;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceExecutionException;
 import io.automatiko.engine.api.workflow.WorkItem;
@@ -36,14 +38,20 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
     public T doGetInstanceInError(String processId, String processInstanceId) {
 
         return executeOnInstanceInError(processId, processInstanceId, processInstance -> {
-            ProcessError error = processInstance.error().get();
+            ProcessErrors errors = processInstance.errors().get();
 
-            Map<String, String> data = new HashMap<>();
-            data.put("id", processInstance.id());
-            data.put("failedNodeId", error.failedNodeId());
-            data.put("message", error.errorMessage());
+            List<Map<String, String>> errorsData = new ArrayList<>();
 
-            return buildOkResponse(data);
+            for (ProcessError error : errors.errors()) {
+                Map<String, String> data = new HashMap<>();
+                data.put("id", processInstance.id());
+                data.put("failedNodeId", error.failedNodeId());
+                data.put("message", error.errorMessage());
+
+                errorsData.add(data);
+            }
+
+            return buildOkResponse(errorsData);
         });
     }
 
@@ -62,11 +70,26 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
     public T doRetriggerInstanceInError(String processId, String processInstanceId) {
 
         return executeOnInstanceInError(processId, processInstanceId, processInstance -> {
-            processInstance.error().get().retrigger();
+            processInstance.errors().get().retrigger();
 
             if (processInstance.status() == ProcessInstance.STATE_ERROR) {
                 throw new ProcessInstanceExecutionException(processInstance.id(),
-                        processInstance.error().get().failedNodeId(), processInstance.error().get().errorMessage());
+                        processInstance.errors().get().failedNodeIds(), processInstance.errors().get().errorMessages());
+            } else {
+                return buildOkResponse(processInstance.variables());
+            }
+        });
+    }
+
+    public T doRetriggerInstanceInError(String processId, String processInstanceId, String errorId) {
+
+        return executeOnInstanceInError(processId, processInstanceId, processInstance -> {
+            processInstance.errors().get().errors().stream().filter(e -> e.errorId().equals(errorId)).findFirst()
+                    .ifPresent(e -> e.retrigger());
+
+            if (processInstance.status() == ProcessInstance.STATE_ERROR) {
+                throw new ProcessInstanceExecutionException(processInstance.id(),
+                        processInstance.errors().get().failedNodeIds(), processInstance.errors().get().errorMessages());
             } else {
                 return buildOkResponse(processInstance.variables());
             }
@@ -76,11 +99,26 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
     public T doSkipInstanceInError(String processId, String processInstanceId) {
 
         return executeOnInstanceInError(processId, processInstanceId, processInstance -> {
-            processInstance.error().get().skip();
+            processInstance.errors().get().skip();
 
             if (processInstance.status() == ProcessInstance.STATE_ERROR) {
                 throw new ProcessInstanceExecutionException(processInstance.id(),
-                        processInstance.error().get().failedNodeId(), processInstance.error().get().errorMessage());
+                        processInstance.errors().get().failedNodeIds(), processInstance.errors().get().errorMessages());
+            } else {
+                return buildOkResponse(processInstance.variables());
+            }
+        });
+    }
+
+    public T doSkipInstanceInError(String processId, String processInstanceId, String errorId) {
+
+        return executeOnInstanceInError(processId, processInstanceId, processInstance -> {
+            processInstance.errors().get().errors().stream().filter(e -> e.errorId().equals(errorId)).findFirst()
+                    .ifPresent(e -> e.skip());
+
+            if (processInstance.status() == ProcessInstance.STATE_ERROR) {
+                throw new ProcessInstanceExecutionException(processInstance.id(),
+                        processInstance.errors().get().failedNodeIds(), processInstance.errors().get().errorMessages());
             } else {
                 return buildOkResponse(processInstance.variables());
             }
@@ -94,7 +132,7 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
 
             if (processInstance.status() == ProcessInstance.STATE_ERROR) {
                 throw new ProcessInstanceExecutionException(processInstance.id(),
-                        processInstance.error().get().failedNodeId(), processInstance.error().get().errorMessage());
+                        processInstance.errors().get().failedNodeIds(), processInstance.errors().get().errorMessages());
             } else {
                 return buildOkResponse(processInstance.variables());
             }
@@ -108,7 +146,7 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
 
             if (processInstance.status() == ProcessInstance.STATE_ERROR) {
                 throw new ProcessInstanceExecutionException(processInstance.id(),
-                        processInstance.error().get().failedNodeId(), processInstance.error().get().errorMessage());
+                        processInstance.errors().get().failedNodeIds(), processInstance.errors().get().errorMessages());
             } else {
                 return buildOkResponse(processInstance.variables());
             }
@@ -122,7 +160,7 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
 
             if (processInstance.status() == ProcessInstance.STATE_ERROR) {
                 throw new ProcessInstanceExecutionException(processInstance.id(),
-                        processInstance.error().get().failedNodeId(), processInstance.error().get().errorMessage());
+                        processInstance.errors().get().failedNodeIds(), processInstance.errors().get().errorMessages());
             } else {
                 return buildOkResponse(processInstance.variables());
             }
@@ -136,7 +174,7 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
 
             if (processInstance.status() == ProcessInstance.STATE_ERROR) {
                 throw new ProcessInstanceExecutionException(processInstance.id(),
-                        processInstance.error().get().failedNodeId(), processInstance.error().get().errorMessage());
+                        processInstance.errors().get().failedNodeIds(), processInstance.errors().get().errorMessages());
             } else {
                 return buildOkResponse(processInstance.variables());
             }
@@ -164,7 +202,7 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
             if (processInstanceFound.isPresent()) {
                 ProcessInstance<?> processInstance = processInstanceFound.get();
 
-                if (processInstance.error().isPresent()) {
+                if (processInstance.errors().isPresent()) {
                     return supplier.apply(processInstance);
                 } else {
                     return badRequestResponse(String.format(PROCESS_INSTANCE_NOT_IN_ERROR, processInstanceId));

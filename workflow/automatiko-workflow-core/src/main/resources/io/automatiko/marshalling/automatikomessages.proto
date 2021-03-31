@@ -133,12 +133,8 @@ message ProcessInstance {
     optional string root_process_instance_id = 22;
     optional int64 start_date = 23;
     optional string root_process_id = 24;
-    optional string error_node_id = 25;
-    optional string error_message = 26;
-    optional string reference_id = 27;
-    optional string initiator = 30;
-    optional string error_id = 31;
-    optional string error_details = 32;
+    optional string reference_id = 25;
+    optional string initiator = 26;
     
 
     repeated SwimlaneContextInstance swimlane_context = 6;
@@ -148,9 +144,11 @@ message ProcessInstance {
     repeated string completedNodeIds = 13;
     repeated IterationLevel iterationLevels = 14;
     
-    repeated ProcessInstanchChildren children = 28;
+    repeated ProcessInstanchChildren children = 27;
     
-    repeated Tag tags = 29;
+    repeated Tag tags = 28;
+    
+    repeated Error errors = 29;
         
 	message ProcessInstanchChildren {
 	    optional string process_id = 1;
@@ -160,6 +158,13 @@ message ProcessInstance {
 	message Tag {
 	    optional string id = 1;
 	    optional string value = 2;
+	}
+	
+	message Error {
+        optional string error_id = 31;
+        optional string error_node_id = 25;
+    	optional string error_message = 26;
+		optional string error_details = 32;
 	}
 
     message SwimlaneContextInstance {

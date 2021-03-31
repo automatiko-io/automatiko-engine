@@ -152,10 +152,10 @@
 
 	}
 	
-	let retryInstance = function(id, instanceId) {
+	let retryInstance = function(id, instanceId, errorId) {
 
 		$.ajax({
-			url : '/management/processes/' + id + '/instances/' + instanceId + '/retrigger',
+			url : '/management/processes/' + id + '/instances/' + instanceId + '/retrigger/' + errorId,
 			type : 'POST',
 			dataType : 'json',
 			crossDomain : true,
@@ -166,10 +166,10 @@
 
 	}
 	
-	let skipInstance = function(id, instanceId) {
+	let skipInstance = function(id, instanceId, errorId) {
 
 		$.ajax({
-			url : '/management/processes/' + id + '/instances/' + instanceId + '/skip',
+			url : '/management/processes/' + id + '/instances/' + instanceId + '/skip/' + errorId,
 			type : 'POST',
 			dataType : 'json',
 			crossDomain : true,
@@ -332,8 +332,20 @@
 		
 		// display error information
 		if (instanceData.failed) {
+			var errorHtml = '<div class="container">';
+			instanceData.errors.forEach(function(item) {
+				errorHtml += '<div class="row"><div class="col-12"><div class="float-right"><button type="button" class="btn btn-sm btn-dark" onclick="retryInstance(\''+ instanceData.processId + '\', \''+ instanceData.id + '\', \''+ item.errorId + '\');">Retry</button>&nbsp;&nbsp;<button type="button" class="btn btn-sm btn-danger" onclick="skipInstance(\''+ instanceData.processId + '\', \''+ instanceData.id + '\', \''+ item.errorId + '\');">Skip</button></div></div></div>' + 
+				'<div class="row"><div class="col-12"><hr/></div></div>' +
+				'<div class="row"><b>Error Id:</b>&nbsp;&nbsp;' + item.errorId + '</div>' +
+				'<div class="row"><b>Failed node id:</b>&nbsp;&nbsp;' + item.failedNodeId + '</div>' +
+				'<div class="row"><pre style="background-color:lightgrey;width:100%">' + item.errorMessage + '</pre></div>' +
+				'<div class="row"><hr/></div>' + 
+				'<div class="row"><pre style="background-color:lightgrey;width:100%">' + item.errorDetails + '</pre></div>'
+				'<div class="row"><hr/></div>';
+			});
+			errorHtml += '</div>';
 			$("#piError")
-				.html('<div class="row"><div class="col-12"><div class="float-right"><button type="button" class="btn btn-sm btn-dark" onclick="retryInstance(\''+ instanceData.processId + '\', \''+ instanceData.id + '\');">Retry</button>&nbsp;&nbsp;<button type="button" class="btn btn-sm btn-danger" onclick="skipInstance(\''+ instanceData.processId + '\', \''+ instanceData.id + '\');">Skip</button></div></div></div><div class="row"><div class="col-12"><hr/></div></div><div class="row"><b>Error Id</b>&nbsp;&nbsp;' + instanceData.errorId + '</div><div class="row"><pre>' + instanceData.errorMessage + '</pre></div><div class="row"><pre>' + instanceData.errorDetails + '</pre></div>');
+				.html(errorHtml);
 		}
 		
 		$('#collapseInstanceData').collapse();

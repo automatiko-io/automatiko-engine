@@ -29,11 +29,13 @@ import io.automatiko.engine.api.runtime.process.ProcessRuntime;
 import io.automatiko.engine.api.runtime.process.WorkItemNotFoundException;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatiko.engine.api.workflow.EventDescription;
+import io.automatiko.engine.api.workflow.ExecutionsErrorInfo;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
 import io.automatiko.engine.api.workflow.NodeInstanceNotFoundException;
 import io.automatiko.engine.api.workflow.NodeNotFoundException;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessError;
+import io.automatiko.engine.api.workflow.ProcessErrors;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceDuplicatedException;
 import io.automatiko.engine.api.workflow.ProcessInstanceNotFoundException;
@@ -82,7 +84,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     protected String initiator;
 
-    protected ProcessError processError;
+    protected ProcessErrors processErrors;
 
     protected Tags tags;
 
@@ -240,7 +242,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         this.reloadSupplier = reloadSupplier;
         this.status = processInstance.getState();
         if (this.status == STATE_ERROR) {
-            this.processError = buildProcessError();
+            this.processErrors = buildProcessErrors();
         }
         removeCompletionListener();
         if (((WorkflowProcessInstanceImpl) processInstance).getProcessRuntime() != null) {
@@ -404,9 +406,9 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     }
 
     @Override
-    public Optional<ProcessError> error() {
+    public Optional<ProcessErrors> errors() {
         if (this.status == STATE_ERROR) {
-            return Optional.of(this.processError != null ? this.processError : buildProcessError());
+            return Optional.of(this.processErrors != null ? this.processErrors : buildProcessErrors());
         }
 
         return Optional.empty();
@@ -690,13 +692,16 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
             }
 
             if (status == STATE_ERROR) {
-                String failedNodeId = error().get().failedNodeId();
-                script.append("document.getElementById('").append(failedNodeId)
-                        .append("').style['stroke']='rgb(255, 0, 0)';\n");
-                script.append("document.getElementById('").append(failedNodeId)
-                        .append("').style['stroke-width']='2';\n");
-                script.append("document.getElementById('").append(failedNodeId)
-                        .append("_warn_image').setAttribute('xlink:href', errorIcon);\n");
+
+                for (ProcessError error : errors().get().errors()) {
+                    String failedNodeId = error.failedNodeId();
+                    script.append("document.getElementById('").append(failedNodeId)
+                            .append("').style['stroke']='rgb(255, 0, 0)';\n");
+                    script.append("document.getElementById('").append(failedNodeId)
+                            .append("').style['stroke-width']='2';\n");
+                    script.append("document.getElementById('").append(failedNodeId)
+                            .append("_warn_image').setAttribute('xlink:href', errorIcon);\n");
+                }
             }
             script.append("</script></svg>");
 
@@ -818,72 +823,69 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         }
     }
 
-    protected ProcessError buildProcessError() {
+    protected ProcessErrors buildProcessErrors() {
         WorkflowProcessInstanceImpl pi = (WorkflowProcessInstanceImpl) processInstance();
 
-        final String errorId = pi.getErrorId();
-        final String errorMessage = pi.getErrorMessage();
-        final String errorDetails = pi.getErrorDetails();
-        final String nodeInError = pi.getNodeIdInError();
-        return new ProcessError() {
+        final List<ExecutionsErrorInfo> errors = pi.errors();
+        return new ProcessErrors(errors.stream().map(e -> new ProcessError() {
 
             @Override
             public String failedNodeId() {
-                return nodeInError;
+                return e.getFailedNodeId();
             }
 
             @Override
             public String errorMessage() {
-                return errorMessage;
+                return e.getErrorMessage();
             }
 
             @Override
             public String errorId() {
-                return errorId;
+                return e.getErrorId();
             }
 
             @Override
             public String errorDetails() {
-                return errorDetails;
+                return e.getErrorDetails();
             }
 
             @Override
             public void retrigger() {
                 WorkflowProcessInstanceImpl pInstance = (WorkflowProcessInstanceImpl) processInstance();
-                NodeInstance ni = pInstance.getNodeInstanceByNodeDefinitionId(nodeInError,
+                NodeInstance ni = pInstance.getNodeInstanceByNodeDefinitionId(e.getFailedNodeId(),
                         pInstance.getNodeContainer());
                 if (ni == null) {
-                    throw new IllegalArgumentException("Node with definition id " + nodeInError + " was not found");
+                    throw new IllegalArgumentException("Node with definition id " + e.getFailedNodeId() + " was not found");
                 }
                 pInstance.setState(STATE_ACTIVE);
-                pInstance.internalSetErrorNodeId(null);
-                pInstance.internalSetErrorMessage(null);
-                pInstance.internalSetErrorId(null);
-                pInstance.internalSetErrorDetails(null);
+                pInstance.resetErrorForNode(e.getFailedNodeId());
 
                 ni.trigger(null, io.automatiko.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
+                if (pInstance.hasErrors()) {
+                    pInstance.setState(STATE_ERROR);
+                }
                 removeOnFinish();
             }
 
             @Override
             public void skip() {
                 WorkflowProcessInstanceImpl pInstance = (WorkflowProcessInstanceImpl) processInstance();
-                NodeInstance ni = pInstance.getNodeInstanceByNodeDefinitionId(nodeInError,
+                NodeInstance ni = pInstance.getNodeInstanceByNodeDefinitionId(e.getFailedNodeId(),
                         pInstance.getNodeContainer());
                 if (ni == null) {
-                    throw new IllegalArgumentException("Node with definition id " + nodeInError + " was not found");
+                    throw new IllegalArgumentException("Node with definition id " + e.getFailedNodeId() + " was not found");
                 }
                 pInstance.setState(STATE_ACTIVE);
-                pInstance.internalSetErrorNodeId(null);
-                pInstance.internalSetErrorMessage(null);
-                pInstance.internalSetErrorId(null);
-                pInstance.internalSetErrorDetails(null);
+                pInstance.resetErrorForNode(e.getFailedNodeId());
 
                 ((NodeInstanceImpl) ni)
                         .triggerCompleted(io.automatiko.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE, true);
+                if (pInstance.hasErrors()) {
+                    pInstance.setState(STATE_ERROR);
+                }
                 removeOnFinish();
             }
-        };
+        }).collect(Collectors.toList()));
     }
 
     protected Tags buildTags() {

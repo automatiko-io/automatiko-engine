@@ -53,6 +53,7 @@ import io.automatiko.engine.api.runtime.process.NodeInstanceContainer;
 import io.automatiko.engine.api.runtime.process.ProcessInstance;
 import io.automatiko.engine.api.workflow.BaseEventDescription;
 import io.automatiko.engine.api.workflow.EventDescription;
+import io.automatiko.engine.api.workflow.ExecutionsErrorInfo;
 import io.automatiko.engine.api.workflow.NamedDataType;
 import io.automatiko.engine.api.workflow.Tag;
 import io.automatiko.engine.api.workflow.flexible.AdHocFragment;
@@ -133,9 +134,7 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
     private Date endDate;
 
     private String nodeIdInError;
-    private String errorId;
-    private String errorMessage;
-    private String errorDetails;
+    private List<ExecutionsErrorInfo> errors = new ArrayList<>();
 
     private int slaCompliance = SLA_NA;
     private Date slaDueDate;
@@ -1099,24 +1098,6 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
     }
 
     @Override
-    public String getNodeIdInError() {
-        return nodeIdInError;
-    }
-
-    @Override
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public String getErrorId() {
-        return errorId;
-    }
-
-    public String getErrorDetails() {
-        return errorDetails;
-    }
-
-    @Override
     public void setReferenceId(String referenceId) {
         this.referenceId = referenceId;
     }
@@ -1152,16 +1133,17 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
         String errorId = UUID.randomUUID().toString();
         this.nodeIdInError = nodeInstanceInError.getNodeDefinitionId();
         Throwable rootException = getRootException(e);
-        this.errorMessage = rootException.getMessage();
+        String errorDetails = null;
         if (e instanceof WorkItemExecutionError) {
-            this.errorDetails = ((WorkItemExecutionError) e).getErrorDetails();
+            errorDetails = ((WorkItemExecutionError) e).getErrorDetails();
         } else {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
-            this.errorDetails = sw.toString();
+            errorDetails = sw.toString();
         }
-
+        errors.add(new ExecutionsErrorInfo(nodeInstanceInError.getNodeDefinitionId(), errorId, rootException.getMessage(),
+                errorDetails));
         setState(STATE_ERROR);
         logger.error("Unexpected error (id {}) while executing node {} in process instance {}", errorId,
                 nodeInstanceInError.getNode().getName(), this.getId(), e);
@@ -1170,22 +1152,6 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
                 .getNodeInstanceContainer()).removeNodeInstance(nodeInstanceInError);
 
         return errorId;
-    }
-
-    public void internalSetErrorNodeId(String errorNodeId) {
-        this.nodeIdInError = errorNodeId;
-    }
-
-    public void internalSetErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
-
-    public void internalSetErrorId(String errorId) {
-        this.errorId = errorId;
-    }
-
-    public void internalSetErrorDetails(String errorDetails) {
-        this.errorDetails = errorDetails;
     }
 
     @Override
@@ -1321,5 +1287,22 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
     @Override
     public int hashCode() {
         return Objects.hash(getId(), getState());
+    }
+
+    public void resetErrorForNode(String nodeInError) {
+        this.errors.stream().filter(e -> e.getFailedNodeId().equals(nodeInError)).findFirst()
+                .ifPresent(e -> this.errors.remove(e));
+    }
+
+    public List<ExecutionsErrorInfo> errors() {
+        return this.errors;
+    }
+
+    public boolean hasErrors() {
+        return !this.errors.isEmpty();
+    }
+
+    public void internalSetExecutionErrors(List<ExecutionsErrorInfo> errors) {
+        this.errors = errors;
     }
 }

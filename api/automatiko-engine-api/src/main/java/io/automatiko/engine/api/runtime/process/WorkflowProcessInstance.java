@@ -3,7 +3,9 @@ package io.automatiko.engine.api.runtime.process;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
+import io.automatiko.engine.api.workflow.ExecutionsErrorInfo;
 import io.automatiko.engine.api.workflow.Tag;
 import io.automatiko.engine.api.workflow.flexible.AdHocFragment;
 import io.automatiko.engine.api.workflow.flexible.Milestone;
@@ -52,36 +54,11 @@ public interface WorkflowProcessInstance extends ProcessInstance, NodeInstanceCo
     Date getEndDate();
 
     /**
-     * Returns node definition id associated with node instance that failed in case
-     * this process instance is in an error
+     * Returns list of errors for this process instance.
      * 
-     * @return node definition id of the failed node instance
+     * @return list of errors if the process instance is in error state
      */
-    String getNodeIdInError();
-
-    /**
-     * Returns unique error id associated with this process instance in case it is in an error
-     * state.
-     * 
-     * @return unique error id
-     */
-    String getErrorId();
-
-    /**
-     * Returns error message associated with this process instance in case it is in
-     * an error state.
-     * 
-     * @return error message
-     */
-    String getErrorMessage();
-
-    /**
-     * Returns error details associated with this process instance in case it is in an error
-     * state.
-     * 
-     * @return error message
-     */
-    String getErrorDetails();
+    List<ExecutionsErrorInfo> errors();
 
     /**
      * Returns optional correlation key assigned to process instance

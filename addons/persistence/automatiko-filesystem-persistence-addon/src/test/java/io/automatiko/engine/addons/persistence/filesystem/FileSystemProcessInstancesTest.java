@@ -101,9 +101,9 @@ public class FileSystemProcessInstancesTest {
 
         mutablePi.start();
         assertThat(mutablePi.status()).isEqualTo(STATE_ERROR);
-        assertThat(mutablePi.error()).hasValueSatisfying(error -> {
-            assertThat(error.errorMessage()).isNull();
-            assertThat(error.failedNodeId()).isEqualTo("ScriptTask_1");
+        assertThat(mutablePi.errors()).hasValueSatisfying(errors -> {
+            assertThat(errors.errorMessages()).isEqualTo("null");
+            assertThat(errors.failedNodeIds()).isEqualTo("ScriptTask_1");
         });
         assertThat(mutablePi.variables().toMap()).containsExactly(entry("var", "value"));
 
@@ -115,9 +115,9 @@ public class FileSystemProcessInstancesTest {
         ProcessInstance<BpmnVariables> readOnlyPi = instances
                 .findById(mutablePi.id(), ProcessInstanceReadMode.READ_ONLY).get();
         assertThat(readOnlyPi.status()).isEqualTo(STATE_ERROR);
-        assertThat(readOnlyPi.error()).hasValueSatisfying(error -> {
-            assertThat(error.errorMessage()).isEqualTo("");
-            assertThat(error.failedNodeId()).isEqualTo("ScriptTask_1");
+        assertThat(readOnlyPi.errors()).hasValueSatisfying(errors -> {
+            assertThat(errors.errorMessages()).isEqualTo("");
+            assertThat(errors.failedNodeIds()).isEqualTo("ScriptTask_1");
         });
         assertThat(readOnlyPi.variables().toMap()).containsExactly(entry("var", "value"));
         assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> readOnlyPi.abort());

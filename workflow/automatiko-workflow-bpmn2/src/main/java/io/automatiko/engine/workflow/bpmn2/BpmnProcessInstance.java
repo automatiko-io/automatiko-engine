@@ -282,7 +282,7 @@ public class BpmnProcessInstance extends AbstractProcessInstance<BpmnVariables> 
         }
 
         @Override
-        public Optional error() {
+        public Optional errors() {
             return null;
         }
 

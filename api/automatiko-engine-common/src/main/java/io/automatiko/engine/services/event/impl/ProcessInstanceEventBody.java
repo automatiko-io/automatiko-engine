@@ -1,6 +1,7 @@
 
 package io.automatiko.engine.services.event.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -38,7 +39,7 @@ public class ProcessInstanceEventBody {
 
     private Map<String, Object> variables;
 
-    private ProcessErrorEventBody error;
+    private List<ProcessErrorEventBody> errors = new ArrayList<>();
 
     private List<String> roles;
 
@@ -93,8 +94,8 @@ public class ProcessInstanceEventBody {
         return businessKey;
     }
 
-    public ProcessErrorEventBody getError() {
-        return error;
+    public List<ProcessErrorEventBody> getErrors() {
+        return errors;
     }
 
     public Set<NodeInstanceEventBody> getNodeInstances() {
@@ -245,7 +246,7 @@ public class ProcessInstanceEventBody {
         }
 
         public Builder error(ProcessErrorEventBody error) {
-            instance.error = error;
+            instance.errors.add(error);
             return this;
         }
 

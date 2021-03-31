@@ -1,7 +1,9 @@
 
 package io.automatiko.engine.workflow.process.instance.impl;
 
+import static io.automatiko.engine.api.runtime.process.ProcessInstance.STATE_ABORTED;
 import static io.automatiko.engine.api.runtime.process.ProcessInstance.STATE_ACTIVE;
+import static io.automatiko.engine.api.runtime.process.ProcessInstance.STATE_COMPLETED;
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.HIDDEN;
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.INCOMING_CONNECTION;
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.OUTGOING_CONNECTION;
@@ -419,11 +421,16 @@ public abstract class NodeInstanceImpl
             for (Map.Entry<io.automatiko.engine.workflow.process.instance.NodeInstance, String> nodeInstance : nodeInstances
                     .entrySet()) {
                 // stop if this process instance has been aborted / completed
-                if (((io.automatiko.engine.workflow.process.instance.NodeInstanceContainer) getNodeInstanceContainer())
-                        .getState() != STATE_ACTIVE) {
+                int state = ((io.automatiko.engine.workflow.process.instance.NodeInstanceContainer) getNodeInstanceContainer())
+                        .getState();
+                if (state == STATE_COMPLETED || state == STATE_ABORTED) {
                     return;
                 }
-                triggerNodeInstance(nodeInstance.getKey(), nodeInstance.getValue());
+                try {
+                    triggerNodeInstance(nodeInstance.getKey(), nodeInstance.getValue());
+                } catch (Exception e) {
+                    logger.warn("Error caught at executing node instance " + nodeInstance.getKey(), e);
+                }
             }
         }
     }

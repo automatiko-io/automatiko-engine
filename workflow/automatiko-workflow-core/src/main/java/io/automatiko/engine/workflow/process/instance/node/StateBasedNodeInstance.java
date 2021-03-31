@@ -3,6 +3,7 @@ package io.automatiko.engine.workflow.process.instance.node;
 
 import static io.automatiko.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE;
 
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import io.automatiko.engine.api.jobs.ProcessInstanceJobDescription;
 import io.automatiko.engine.api.runtime.process.EventListener;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.api.runtime.process.NodeInstanceState;
+import io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError;
 import io.automatiko.engine.services.time.TimerInstance;
 import io.automatiko.engine.workflow.base.core.ContextContainer;
 import io.automatiko.engine.workflow.base.core.context.ProcessContext;
@@ -161,13 +163,21 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
                 return DurationExpirationTime.after(duration);
 
             case Timer.TIME_DATE:
+                String timeDate = timer.getDate();
                 try {
-                    return ExactExpirationTime.of(timer.getDate());
-                } catch (RuntimeException e) {
-                    // cannot parse delay, trying to interpret it
-                    s = resolveVariable(timer.getDate());
-                    return ExactExpirationTime.of(s);
+                    try {
+                        return ExactExpirationTime.of(timer.getDate());
+                    } catch (RuntimeException e) {
+                        // cannot parse delay, trying to interpret it
+                        timeDate = resolveVariable(timer.getDate());
+                        return ExactExpirationTime.of(timeDate);
+                    }
+                } catch (DateTimeParseException e) {
+                    throw new WorkItemExecutionError("Parsing of date and time for timer failed",
+                            "DateTimeParseFailure",
+                            "Unable to parse '" + timeDate + "' as valid ISO date and time format", e);
                 }
+
         }
         throw new UnsupportedOperationException("Not supported timer definition");
 
