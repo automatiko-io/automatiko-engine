@@ -2,8 +2,11 @@
 package io.automatiko.engine.codegen.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import java.util.HashMap;
+
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -20,244 +23,180 @@ import io.automatiko.engine.codegen.AbstractCodegenTest;
 
 public class ServerlessWorkflowTest extends AbstractCodegenTest {
 
-	@ParameterizedTest
-	@ValueSource(strings = { "serverless/single-inject-state.sw.json", "serverless/single-inject-state.sw.yml" })
-	public void testSingleInjectWorkflow(String processLocation) throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = { "serverless/single-inject-state.sw.json", "serverless/single-inject-state.sw.yml" })
+    public void testSingleInjectWorkflow(String processLocation) throws Exception {
 
-		Application app = generateCodeProcessesOnly(processLocation);
-		assertThat(app).isNotNull();
+        Application app = generateCodeProcessesOnly(processLocation);
+        assertThat(app).isNotNull();
 
-		Process<? extends Model> p = app.processes().processById("singleinject_1_0");
+        Process<? extends Model> p = app.processes().processById("singleinject_1_0");
 
-		Model m = p.createModel();
-		Map<String, Object> parameters = new HashMap<>();
+        Model m = p.createModel();
 
-		String jsonParamStr = "{}";
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
 
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode jsonParamObj = mapper.readTree(jsonParamStr);
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).containsKeys("name");
 
-		parameters.put("workflowdata", jsonParamObj);
-		m.fromMap(parameters);
+        JsonNode dataOut = (JsonNode) result.toMap().get("name");
 
-		ProcessInstance<?> processInstance = p.createInstance(m);
-		processInstance.start();
+        assertThat(dataOut.textValue()).isEqualTo("john");
+    }
 
-		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
-		Model result = (Model) processInstance.variables();
-		assertThat(result.toMap()).hasSize(1).containsKeys("workflowdata");
+    @ParameterizedTest
+    @ValueSource(strings = { "serverless/switch-state.sw.json", "serverless/switch-state.sw.yml" })
+    public void testApproveSwitchStateWorkflow(String processLocation) throws Exception {
 
-		assertThat(result.toMap().get("workflowdata")).isInstanceOf(JsonNode.class);
+        Application app = generateCodeProcessesOnly(processLocation);
+        assertThat(app).isNotNull();
 
-		JsonNode dataOut = (JsonNode) result.toMap().get("workflowdata");
+        Process<? extends Model> p = app.processes().processById("switchworkflow_1_0");
 
-		assertThat(dataOut.get("name").textValue()).isEqualTo("john");
-	}
+        Model m = p.createModel();
 
-	@ParameterizedTest
-	@ValueSource(strings = { "serverless/switch-state.sw.json", "serverless/switch-state.sw.yml" })
-	public void testApproveSwitchStateWorkflow(String processLocation) throws Exception {
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
 
-		Application app = generateCodeProcessesOnly(processLocation);
-		assertThat(app).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).containsKeys("decision");
 
-		Process<? extends Model> p = app.processes().processById("switchworkflow_1_0");
+        JsonNode dataOut = (JsonNode) result.toMap().get("decision");
 
-		Model m = p.createModel();
-		Map<String, Object> parameters = new HashMap<>();
+        assertThat(dataOut.textValue()).isEqualTo("Approved");
+    }
 
-		String jsonParamStr = "{}";
+    @ParameterizedTest
+    @ValueSource(strings = { "serverless/switch-state-deny.sw.json", "serverless/switch-state-deny.sw.yml" })
+    public void testDenySwitchStateWorkflow(String processLocation) throws Exception {
 
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode jsonParamObj = mapper.readTree(jsonParamStr);
+        Application app = generateCodeProcessesOnly(processLocation);
+        assertThat(app).isNotNull();
 
-		parameters.put("workflowdata", jsonParamObj);
-		m.fromMap(parameters);
+        Process<? extends Model> p = app.processes().processById("switchworkflow_1_0");
 
-		ProcessInstance<?> processInstance = p.createInstance(m);
-		processInstance.start();
+        Model m = p.createModel();
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
 
-		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
-		Model result = (Model) processInstance.variables();
-		assertThat(result.toMap()).hasSize(1).containsKeys("workflowdata");
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).containsKeys("decision");
 
-		assertThat(result.toMap().get("workflowdata")).isInstanceOf(JsonNode.class);
+        JsonNode dataOut = (JsonNode) result.toMap().get("decision");
 
-		JsonNode dataOut = (JsonNode) result.toMap().get("workflowdata");
+        assertThat(dataOut.textValue()).isEqualTo("Denied");
+    }
 
-		assertThat(dataOut.get("decision").textValue()).isEqualTo("Approved");
-	}
+    @Test
+    public void testSubFlowWorkflow() throws Exception {
 
-	@ParameterizedTest
-	@ValueSource(strings = { "serverless/switch-state-deny.sw.json", "serverless/switch-state-deny.sw.yml" })
-	public void testDenySwitchStateWorkflow(String processLocation) throws Exception {
+        Application app = generateCodeProcessesOnly("serverless/single-subflow.sw.json",
+                "serverless/called-subflow.sw.json");
+        assertThat(app).isNotNull();
 
-		Application app = generateCodeProcessesOnly(processLocation);
-		assertThat(app).isNotNull();
+        Process<? extends Model> p = app.processes().processById("singlesubflow_1_0");
 
-		Process<? extends Model> p = app.processes().processById("switchworkflow_1_0");
+        Model m = p.createModel();
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
 
-		Model m = p.createModel();
-		Map<String, Object> parameters = new HashMap<>();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
 
-		String jsonParamStr = "{}";
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).containsKeys("parentData", "childData");
 
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode jsonParamObj = mapper.readTree(jsonParamStr);
+        Map<String, Object> dataOut = result.toMap();
 
-		parameters.put("workflowdata", jsonParamObj);
-		m.fromMap(parameters);
+        assertThat(((JsonNode) dataOut.get("parentData")).textValue()).isEqualTo("parentTestData");
+        assertThat(((JsonNode) dataOut.get("childData")).textValue()).isEqualTo("childTestData");
 
-		ProcessInstance<?> processInstance = p.createInstance(m);
-		processInstance.start();
+    }
 
-		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
-		Model result = (Model) processInstance.variables();
-		assertThat(result.toMap()).hasSize(1).containsKeys("workflowdata");
+    @Test
+    public void testParallelExecWorkflow() throws Exception {
 
-		assertThat(result.toMap().get("workflowdata")).isInstanceOf(JsonNode.class);
+        Application app = generateCodeProcessesOnly("serverless/parallel-state.sw.json",
+                "serverless/parallel-state-branch1.sw.json", "serverless/parallel-state-branch2.sw.json");
+        assertThat(app).isNotNull();
 
-		JsonNode dataOut = (JsonNode) result.toMap().get("workflowdata");
+        Process<? extends Model> p = app.processes().processById("parallelworkflow_1_0");
 
-		assertThat(dataOut.get("decision").textValue()).isEqualTo("Denied");
-	}
+        Model m = p.createModel();
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
 
-	@Test
-	public void testSubFlowWorkflow() throws Exception {
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
 
-		Application app = generateCodeProcessesOnly("serverless/single-subflow.sw.json",
-				"serverless/called-subflow.sw.json");
-		assertThat(app).isNotNull();
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).containsKeys("branch1data", "branch2data");
 
-		Process<? extends Model> p = app.processes().processById("singlesubflow_1_0");
+        Map<String, Object> dataOut = result.toMap();
 
-		Model m = p.createModel();
-		Map<String, Object> parameters = new HashMap<>();
+        assertThat(((JsonNode) dataOut.get("branch1data")).textValue()).isEqualTo("testBranch1Data");
+        assertThat(((JsonNode) dataOut.get("branch2data")).textValue()).isEqualTo("testBranch2Data");
 
-		String jsonParamStr = "{}";
+    }
 
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode jsonParamObj = mapper.readTree(jsonParamStr);
+    @ParameterizedTest
+    @ValueSource(strings = { "serverless/compensation.sw.json", "serverless/compensation.sw.yml" })
+    public void testCompensationWorkflow(String processLocation) throws Exception {
 
-		parameters.put("workflowdata", jsonParamObj);
-		m.fromMap(parameters);
+        Application app = generateCodeProcessesOnly(processLocation);
+        assertThat(app).isNotNull();
 
-		ProcessInstance<?> processInstance = p.createInstance(m);
-		processInstance.start();
+        Process<? extends Model> p = app.processes().processById("compensationworkflow");
 
-		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model m = p.createModel();
 
-		Model result = (Model) processInstance.variables();
-		assertThat(result.toMap()).hasSize(1).containsKeys("workflowdata");
+        String jsonParamStr = "{\"x\": \"0\"}";
 
-		assertThat(result.toMap().get("workflowdata")).isInstanceOf(JsonNode.class);
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonParamObj = mapper.readTree(jsonParamStr);
 
-		JsonNode dataOut = (JsonNode) result.toMap().get("workflowdata");
+        m.fromMap(toMap(jsonParamObj));
 
-		assertThat(dataOut.get("parentData").textValue()).isEqualTo("parentTestData");
-		assertThat(dataOut.get("childData").textValue()).isEqualTo("childTestData");
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
 
-	}
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).containsKeys("x");
 
-	@Test
-	public void testParallelExecWorkflow() throws Exception {
-		try {
-			Application app = generateCodeProcessesOnly("serverless/parallel-state.sw.json",
-					"serverless/parallel-state-branch1.sw.json", "serverless/parallel-state-branch2.sw.json");
-			assertThat(app).isNotNull();
+        JsonNode dataOut = (JsonNode) result.toMap().get("x");
+        assertThat(dataOut.textValue()).isEqualTo("2");
+    }
 
-			Process<? extends Model> p = app.processes().processById("parallelworkflow_1_0");
+    @ParameterizedTest
+    @ValueSource(strings = { "serverless/operation-no-actions.sw.json", "serverless/operation-no-actions.sw.yml" })
+    public void testNoActionsOperationWorkflow(String processLocation) throws Exception {
 
-			Model m = p.createModel();
-			Map<String, Object> parameters = new HashMap<>();
+        Application app = generateCodeProcessesOnly(processLocation);
+        assertThat(app).isNotNull();
 
-			String jsonParamStr = "{}";
+        Process<? extends Model> p = app.processes().processById("noactions_1_0");
 
-			ObjectMapper mapper = new ObjectMapper();
-			JsonNode jsonParamObj = mapper.readTree(jsonParamStr);
+        Model m = p.createModel();
 
-			parameters.put("workflowdata", jsonParamObj);
-			m.fromMap(parameters);
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
 
-			ProcessInstance<?> processInstance = p.createInstance(m);
-			processInstance.start();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+    }
 
-			assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+    protected Map<String, Object> toMap(JsonNode json) {
+        Map<String, Object> copy = new LinkedHashMap<>();
+        Iterator<Entry<String, JsonNode>> it = json.fields();
 
-			Model result = (Model) processInstance.variables();
-			assertThat(result.toMap()).hasSize(1).containsKeys("workflowdata");
+        while (it.hasNext()) {
+            Entry<String, JsonNode> entry = (Entry<String, JsonNode>) it.next();
+            copy.put(entry.getKey(), entry.getValue());
+        }
 
-			assertThat(result.toMap().get("workflowdata")).isInstanceOf(JsonNode.class);
-
-			JsonNode dataOut = (JsonNode) result.toMap().get("workflowdata");
-
-			assertThat(dataOut.get("branch1data").textValue()).isEqualTo("testBranch1Data");
-			assertThat(dataOut.get("branch2data").textValue()).isEqualTo("testBranch2Data");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	@ParameterizedTest
-	@ValueSource(strings = { "serverless/compensation.sw.json", "serverless/compensation.sw.yml"})
-	public void testCompensationWorkflow(String processLocation) throws Exception {
-
-		Application app = generateCodeProcessesOnly(processLocation);
-		assertThat(app).isNotNull();
-
-		Process<? extends Model> p = app.processes().processById("compensationworkflow");
-
-		Model m = p.createModel();
-		Map<String, Object> parameters = new HashMap<>();
-
-		String jsonParamStr = "{\"x\": \"0\"}";
-
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode jsonParamObj = mapper.readTree(jsonParamStr);
-
-		parameters.put("workflowdata", jsonParamObj);
-		m.fromMap(parameters);
-
-		ProcessInstance<?> processInstance = p.createInstance(m);
-		processInstance.start();
-
-		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
-		Model result = (Model) processInstance.variables();
-		assertThat(result.toMap()).hasSize(1).containsKeys("workflowdata");
-
-		assertThat(result.toMap().get("workflowdata")).isInstanceOf(JsonNode.class);
-
-		JsonNode dataOut = (JsonNode) result.toMap().get("workflowdata");
-
-		System.out.println(dataOut.toPrettyString());
-
-		assertThat(dataOut.get("x").textValue()).isEqualTo("2");
-	}
-
-	@ParameterizedTest
-	@ValueSource(strings = { "serverless/operation-no-actions.sw.json", "serverless/operation-no-actions.sw.yml" })
-	public void testNoActionsOperationWorkflow(String processLocation) throws Exception {
-
-		Application app = generateCodeProcessesOnly(processLocation);
-		assertThat(app).isNotNull();
-
-		Process<? extends Model> p = app.processes().processById("noactions_1_0");
-
-		Model m = p.createModel();
-		Map<String, Object> parameters = new HashMap<>();
-
-		String jsonParamStr = "{}";
-
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode jsonParamObj = mapper.readTree(jsonParamStr);
-
-		parameters.put("workflowdata", jsonParamObj);
-		m.fromMap(parameters);
-
-		ProcessInstance<?> processInstance = p.createInstance(m);
-		processInstance.start();
-
-		assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
-	}
+        return copy;
+    }
 
 }

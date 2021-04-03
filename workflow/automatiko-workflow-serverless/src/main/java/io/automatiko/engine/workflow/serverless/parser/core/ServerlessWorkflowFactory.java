@@ -1,5 +1,15 @@
 package io.automatiko.engine.workflow.serverless.parser.core;
 
+import static io.automatiko.engine.workflow.process.executable.core.Metadata.ACTION;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 import io.automatiko.engine.api.definition.process.Node;
@@ -18,9 +28,25 @@ import io.automatiko.engine.workflow.process.core.ProcessAction;
 import io.automatiko.engine.workflow.process.core.impl.ConnectionImpl;
 import io.automatiko.engine.workflow.process.core.impl.ConsequenceAction;
 import io.automatiko.engine.workflow.process.core.impl.ConstraintImpl;
-import io.automatiko.engine.workflow.process.core.node.*;
+import io.automatiko.engine.workflow.process.core.node.ActionNode;
+import io.automatiko.engine.workflow.process.core.node.Assignment;
+import io.automatiko.engine.workflow.process.core.node.BoundaryEventNode;
+import io.automatiko.engine.workflow.process.core.node.CompositeContextNode;
+import io.automatiko.engine.workflow.process.core.node.DataAssociation;
+import io.automatiko.engine.workflow.process.core.node.EndNode;
+import io.automatiko.engine.workflow.process.core.node.EventNode;
+import io.automatiko.engine.workflow.process.core.node.EventTrigger;
+import io.automatiko.engine.workflow.process.core.node.HumanTaskNode;
+import io.automatiko.engine.workflow.process.core.node.Join;
+import io.automatiko.engine.workflow.process.core.node.RuleSetNode;
+import io.automatiko.engine.workflow.process.core.node.Split;
+import io.automatiko.engine.workflow.process.core.node.StartNode;
+import io.automatiko.engine.workflow.process.core.node.SubProcessNode;
+import io.automatiko.engine.workflow.process.core.node.TimerNode;
+import io.automatiko.engine.workflow.process.core.node.WorkItemNode;
 import io.automatiko.engine.workflow.process.executable.core.ExecutableProcess;
 import io.automatiko.engine.workflow.process.executable.core.Metadata;
+import io.automatiko.engine.workflow.process.executable.core.ServerlessExecutableProcess;
 import io.automatiko.engine.workflow.process.executable.core.validation.ExecutableProcessValidator;
 import io.automatiko.engine.workflow.serverless.parser.util.ServerlessWorkflowUtils;
 import io.automatiko.engine.workflow.serverless.parser.util.WorkflowAppContext;
@@ -30,15 +56,6 @@ import io.serverlessworkflow.api.error.Error;
 import io.serverlessworkflow.api.events.EventDefinition;
 import io.serverlessworkflow.api.functions.FunctionDefinition;
 import io.serverlessworkflow.api.retry.RetryDefinition;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static io.automatiko.engine.workflow.process.executable.core.Metadata.ACTION;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class ServerlessWorkflowFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerlessWorkflowFactory.class);
@@ -72,7 +89,7 @@ public class ServerlessWorkflowFactory {
     }
 
     public ExecutableProcess createProcess(Workflow workflow) {
-        ExecutableProcess process = new ExecutableProcess();
+        ExecutableProcess process = new ServerlessExecutableProcess();
 
         if (workflow.getId() != null && !workflow.getId().isEmpty()) {
             process.setId(workflow.getId());
@@ -106,7 +123,7 @@ public class ServerlessWorkflowFactory {
         process.setVisibility(DEFAULT_VISIBILITY);
 
         // add workflow data var
-        processVar(DEFAULT_WORKFLOW_VAR, JsonNode.class, process);
+        //processVar(DEFAULT_WORKFLOW_VAR, JsonNode.class, process);
 
         return process;
     }
@@ -132,8 +149,9 @@ public class ServerlessWorkflowFactory {
         startNode.setMetaData(Metadata.TRIGGER_MAPPING, DEFAULT_WORKFLOW_VAR);
         startNode.setMetaData(Metadata.TRIGGER_TYPE, "ConsumeMessage");
 
-        if(ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()) != null) {
-            startNode.setMetaData(Metadata.TRIGGER_CORRELATION_EXPR, ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()));
+        if (ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()) != null) {
+            startNode.setMetaData(Metadata.TRIGGER_CORRELATION_EXPR,
+                    ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()));
         }
 
         startNode.setMetaData(Metadata.TRIGGER_REF, eventDefinition.getSource());
@@ -179,13 +197,15 @@ public class ServerlessWorkflowFactory {
         //currently support a single produce event
         if (!stateEnd.getProduceEvents().isEmpty()) {
 
-            EventDefinition eventDef = ServerlessWorkflowUtils.getWorkflowEventFor(workflow, stateEnd.getProduceEvents().get(0).getEventRef());
+            EventDefinition eventDef = ServerlessWorkflowUtils.getWorkflowEventFor(workflow,
+                    stateEnd.getProduceEvents().get(0).getEventRef());
 
             endNode.setMetaData(Metadata.TRIGGER_REF, eventDef.getSource());
             endNode.setMetaData(Metadata.TRIGGER_TYPE, "ProduceMessage");
 
-            if(ServerlessWorkflowUtils.correlationExpressionFromSource(eventDef.getSource()) != null) {
-                endNode.setMetaData(Metadata.TRIGGER_CORRELATION_EXPR, ServerlessWorkflowUtils.correlationExpressionFromSource(eventDef.getSource()));
+            if (ServerlessWorkflowUtils.correlationExpressionFromSource(eventDef.getSource()) != null) {
+                endNode.setMetaData(Metadata.TRIGGER_CORRELATION_EXPR,
+                        ServerlessWorkflowUtils.correlationExpressionFromSource(eventDef.getSource()));
             }
 
             endNode.setMetaData(Metadata.MESSAGE_TYPE, JSON_NODE);
@@ -216,7 +236,8 @@ public class ServerlessWorkflowFactory {
         return timerNode;
     }
 
-    public SubProcessNode callActivity(long id, String name, String calledId, boolean waitForCompletion, NodeContainer nodeContainer) {
+    public SubProcessNode callActivity(long id, String name, String calledId, boolean waitForCompletion,
+            NodeContainer nodeContainer) {
         SubProcessNode subProcessNode = new SubProcessNode();
         subProcessNode.setId(id);
         subProcessNode.setName(name);
@@ -243,19 +264,19 @@ public class ServerlessWorkflowFactory {
     }
 
     public void addMessageEndNodeAction(EndNode endNode, String variable, String messageType) {
-//        List<DroolsAction> actions = new ArrayList<>();
-//
-//        actions.add(new DroolsConsequenceAction("java",
-//                "org.drools.core.process.instance.impl.WorkItemImpl workItem = new org.drools.core.process.instance.impl.WorkItemImpl();" + EOL +
-//                        "workItem.setName(\"Send Task\");" + EOL +
-//                        "workItem.setNodeInstanceId(context.getNodeInstance().getId());" + EOL +
-//                        "workItem.setProcessInstanceId(context.getProcessInstance().getId());" + EOL +
-//                        "workItem.setNodeId(context.getNodeInstance().getNodeId());" + EOL +
-//                        "workItem.setParameter(\"MessageType\", \"" + messageType + "\");" + EOL +
-//                        (variable == null ? "" : "workItem.setParameter(\"Message\", " + variable + ");" + EOL) +
-//                        "workItem.setDeploymentId((String) context.getKnowledgeRuntime().getEnvironment().get(\"deploymentId\"));" + EOL +
-//                        "((org.drools.core.process.instance.WorkItemManager) context.getKnowledgeRuntime().getWorkItemManager()).internalExecuteWorkItem(workItem);"));
-//        endNode.setActions(ExtendedNodeImpl.EVENT_NODE_ENTER, actions);
+        //        List<DroolsAction> actions = new ArrayList<>();
+        //
+        //        actions.add(new DroolsConsequenceAction("java",
+        //                "org.drools.core.process.instance.impl.WorkItemImpl workItem = new org.drools.core.process.instance.impl.WorkItemImpl();" + EOL +
+        //                        "workItem.setName(\"Send Task\");" + EOL +
+        //                        "workItem.setNodeInstanceId(context.getNodeInstance().getId());" + EOL +
+        //                        "workItem.setProcessInstanceId(context.getProcessInstance().getId());" + EOL +
+        //                        "workItem.setNodeId(context.getNodeInstance().getNodeId());" + EOL +
+        //                        "workItem.setParameter(\"MessageType\", \"" + messageType + "\");" + EOL +
+        //                        (variable == null ? "" : "workItem.setParameter(\"Message\", " + variable + ");" + EOL) +
+        //                        "workItem.setDeploymentId((String) context.getKnowledgeRuntime().getEnvironment().get(\"deploymentId\"));" + EOL +
+        //                        "((org.drools.core.process.instance.WorkItemManager) context.getKnowledgeRuntime().getWorkItemManager()).internalExecuteWorkItem(workItem);"));
+        //        endNode.setActions(ExtendedNodeImpl.EVENT_NODE_ENTER, actions);
     }
 
     public void addTriggerToStartNode(StartNode startNode, String triggerEventType) {
@@ -272,8 +293,9 @@ public class ServerlessWorkflowFactory {
         startNode.addTrigger(trigger);
     }
 
-    public void addOutMapping(StartNode startNode, String source, String target, String assignmentDialect, String assignmentFrom,
-                           String assignmentTo) {
+    public void addOutMapping(StartNode startNode, String source, String target, String assignmentDialect,
+            String assignmentFrom,
+            String assignmentTo) {
         List<Assignment> assignments = null;
         if (assignmentFrom != null && assignmentTo != null) {
             assignments = Arrays.asList(new Assignment(assignmentDialect, assignmentFrom, assignmentTo));
@@ -291,8 +313,9 @@ public class ServerlessWorkflowFactory {
         sendEventNode.setMetaData(Metadata.TRIGGER_REF, eventDefinition.getSource());
         sendEventNode.setMetaData(Metadata.MESSAGE_TYPE, JSON_NODE);
 
-        if(ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()) != null) {
-            sendEventNode.setMetaData(Metadata.TRIGGER_CORRELATION_EXPR, ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()));
+        if (ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()) != null) {
+            sendEventNode.setMetaData(Metadata.TRIGGER_CORRELATION_EXPR,
+                    ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()));
         }
 
         nodeContainer.addNode(sendEventNode);
@@ -334,8 +357,9 @@ public class ServerlessWorkflowFactory {
         eventNode.setMetaData(Metadata.EVENT_TYPE, "message");
         eventNode.setMetaData(Metadata.MESSAGE_TYPE, JSON_NODE);
 
-        if(ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()) != null) {
-            eventNode.setMetaData(Metadata.TRIGGER_CORRELATION_EXPR, ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()));
+        if (ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()) != null) {
+            eventNode.setMetaData(Metadata.TRIGGER_CORRELATION_EXPR,
+                    ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()));
         }
 
         nodeContainer.addNode(eventNode);
@@ -369,7 +393,8 @@ public class ServerlessWorkflowFactory {
         workItemNode.setWork(work);
 
         work.setName("org.apache.camel.ProducerTemplate.requestBody");
-        work.setParameter(SERVICE_ENDPOINT, ServerlessWorkflowUtils.resolveFunctionMetadata(function, SERVICE_ENDPOINT, workflowAppContext));
+        work.setParameter(SERVICE_ENDPOINT,
+                ServerlessWorkflowUtils.resolveFunctionMetadata(function, SERVICE_ENDPOINT, workflowAppContext));
         work.setParameter("Interface", "org.apache.camel.ProducerTemplate");
         work.setParameter("Operation", "requestBody");
         work.setParameter("interfaceImplementationRef", "org.apache.camel.ProducerTemplate");
@@ -413,11 +438,11 @@ public class ServerlessWorkflowFactory {
 
         //work.setParameter("interfaceImplementationRef", ServerlessWorkflowUtils.resolveFunctionMetadata(function, SERVICE_INTERFACE_KEY, workflowAppContext));
         //work.setParameter("operationImplementationRef", ServerlessWorkflowUtils.resolveFunctionMetadata(function, SERVICE_OPERATION_KEY, workflowAppContext));
-//        String metaImpl = ServerlessWorkflowUtils.resolveFunctionMetadata(function, SERVICE_IMPL_KEY, workflowAppContext);
-//        if (metaImpl == null || metaImpl.isEmpty()) {
-//            metaImpl = DEFAULT_SERVICE_IMPL;
-//        }
-//        work.setParameter(SERVICE_IMPL_KEY, metaImpl);
+        //        String metaImpl = ServerlessWorkflowUtils.resolveFunctionMetadata(function, SERVICE_IMPL_KEY, workflowAppContext);
+        //        if (metaImpl == null || metaImpl.isEmpty()) {
+        //            metaImpl = DEFAULT_SERVICE_IMPL;
+        //        }
+        //        work.setParameter(SERVICE_IMPL_KEY, metaImpl);
 
         workItemNode.addInMapping("Parameter", DEFAULT_WORKFLOW_VAR);
         workItemNode.addOutMapping("Result", DEFAULT_WORKFLOW_VAR);
@@ -428,7 +453,7 @@ public class ServerlessWorkflowFactory {
 
     }
 
-    public void processVar(String varName, Class varType, ExecutableProcess process) {
+    public void processVar(String varName, Class<?> varType, ExecutableProcess process) {
         Variable variable = new Variable();
         variable.setName(varName);
         variable.setType(new ObjectDataType(varType));
@@ -446,7 +471,6 @@ public class ServerlessWorkflowFactory {
 
         return subProcessNode;
     }
-
 
     public Split splitNode(long id, String name, int type, NodeContainer nodeContainer) {
         Split split = new Split();
@@ -482,7 +506,8 @@ public class ServerlessWorkflowFactory {
         return join;
     }
 
-    public ConstraintImpl splitConstraint(String name, String type, String dialect, String constraint, int priority, boolean isDefault) {
+    public ConstraintImpl splitConstraint(String name, String type, String dialect, String constraint, int priority,
+            boolean isDefault) {
         ConstraintImpl constraintImpl = new ConstraintImpl();
         constraintImpl.setName(name);
         constraintImpl.setType(type);
@@ -494,7 +519,8 @@ public class ServerlessWorkflowFactory {
         return constraintImpl;
     }
 
-    public HumanTaskNode humanTaskNode(long id, String name, FunctionDefinition function, ExecutableProcess process, NodeContainer nodeContainer) {
+    public HumanTaskNode humanTaskNode(long id, String name, FunctionDefinition function, ExecutableProcess process,
+            NodeContainer nodeContainer) {
         // first add the node "decision" variable
         processVar(ServerlessWorkflowUtils.resolveFunctionMetadata(function, HT_TASKNAME, workflowAppContext)
                 + DEFAULT_DECISION, JsonNode.class, process);
@@ -506,17 +532,23 @@ public class ServerlessWorkflowFactory {
         work.setName("Human Task");
         humanTaskNode.setWork(work);
 
-        work.setParameter("TaskName", ServerlessWorkflowUtils.resolveFunctionMetadata(function, HT_TASKNAME, workflowAppContext).length() > 0 ?
-                ServerlessWorkflowUtils.resolveFunctionMetadata(function, HT_TASKNAME, workflowAppContext) : DEFAULT_HT_TASKNAME);
-        work.setParameter("Skippable", ServerlessWorkflowUtils.resolveFunctionMetadata(function, HT_SKIPPABLE, workflowAppContext).length() > 0 ?
-                ServerlessWorkflowUtils.resolveFunctionMetadata(function, HT_SKIPPABLE, workflowAppContext) : DEFAULT_HT_SKIPPABLE);
+        work.setParameter("TaskName",
+                ServerlessWorkflowUtils.resolveFunctionMetadata(function, HT_TASKNAME, workflowAppContext).length() > 0
+                        ? ServerlessWorkflowUtils.resolveFunctionMetadata(function, HT_TASKNAME, workflowAppContext)
+                        : DEFAULT_HT_TASKNAME);
+        work.setParameter("Skippable",
+                ServerlessWorkflowUtils.resolveFunctionMetadata(function, HT_SKIPPABLE, workflowAppContext).length() > 0
+                        ? ServerlessWorkflowUtils.resolveFunctionMetadata(function, HT_SKIPPABLE, workflowAppContext)
+                        : DEFAULT_HT_SKIPPABLE);
 
         if (ServerlessWorkflowUtils.resolveFunctionMetadata(function, HTP_GROUPID, workflowAppContext).length() > 0) {
-            work.setParameter("GroupId", ServerlessWorkflowUtils.resolveFunctionMetadata(function, HTP_GROUPID, workflowAppContext));
+            work.setParameter("GroupId",
+                    ServerlessWorkflowUtils.resolveFunctionMetadata(function, HTP_GROUPID, workflowAppContext));
         }
 
         if (ServerlessWorkflowUtils.resolveFunctionMetadata(function, HT_ACTORID, workflowAppContext).length() > 0) {
-            work.setParameter("ActorId", ServerlessWorkflowUtils.resolveFunctionMetadata(function, HT_ACTORID, workflowAppContext));
+            work.setParameter("ActorId",
+                    ServerlessWorkflowUtils.resolveFunctionMetadata(function, HT_ACTORID, workflowAppContext));
         }
         work.setParameter("NodeName", name);
 
@@ -553,37 +585,38 @@ public class ServerlessWorkflowFactory {
         return boundaryEventNode;
     }
 
-   public BoundaryEventNode errorBoundaryEventNode(long id, Error error, ExecutableProcess process, CompositeContextNode embeddedSubProcess, Workflow workflow) {
-       BoundaryEventNode boundaryEventNode = new BoundaryEventNode();
+    public BoundaryEventNode errorBoundaryEventNode(long id, Error error, ExecutableProcess process,
+            CompositeContextNode embeddedSubProcess, Workflow workflow) {
+        BoundaryEventNode boundaryEventNode = new BoundaryEventNode();
 
-       boundaryEventNode.setId(id);
-       boundaryEventNode.setName(error.getError());
+        boundaryEventNode.setId(id);
+        boundaryEventNode.setName(error.getError());
 
-       EventTypeFilter filter = new EventTypeFilter();
-       filter.setType("Error-" + embeddedSubProcess.getId() + "-" + error.getCode());
-       boundaryEventNode.addEventFilter(filter);
+        EventTypeFilter filter = new EventTypeFilter();
+        filter.setType("Error-" + embeddedSubProcess.getId() + "-" + error.getCode());
+        boundaryEventNode.addEventFilter(filter);
 
-       boundaryEventNode.setAttachedToNodeId(Long.toString(embeddedSubProcess.getId()));
+        boundaryEventNode.setAttachedToNodeId(Long.toString(embeddedSubProcess.getId()));
 
-       boundaryEventNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
-       boundaryEventNode.setMetaData("EventType", "error");
-       boundaryEventNode.setMetaData("ErrorEvent", error.getCode());
-       boundaryEventNode.setMetaData("AttachedTo", Long.toString(embeddedSubProcess.getId()));
-       boundaryEventNode.setMetaData("HasErrorEvent", true);
+        boundaryEventNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
+        boundaryEventNode.setMetaData("EventType", "error");
+        boundaryEventNode.setMetaData("ErrorEvent", error.getCode());
+        boundaryEventNode.setMetaData("AttachedTo", Long.toString(embeddedSubProcess.getId()));
+        boundaryEventNode.setMetaData("HasErrorEvent", true);
 
-       if(error.getRetryRef() != null && error.getRetryRef().length() > 0) {
-           RetryDefinition retryDefinition = ServerlessWorkflowUtils.getWorkflowRetryFor(workflow, error.getRetryRef());
+        if (error.getRetryRef() != null && error.getRetryRef().length() > 0) {
+            RetryDefinition retryDefinition = ServerlessWorkflowUtils.getWorkflowRetryFor(workflow, error.getRetryRef());
 
-           int delayAsInt = ((Long) DateTimeUtils.parseDuration(retryDefinition.getDelay())).intValue();
+            int delayAsInt = ((Long) DateTimeUtils.parseDuration(retryDefinition.getDelay())).intValue();
 
-           boundaryEventNode.setMetaData("ErrorRetry", retryDefinition.getDelay() == null ? DEFAULT_RETRY_AFTER : delayAsInt);
-           boundaryEventNode.setMetaData("ErrorRetryLimit", retryDefinition.getMaxAttempts() == null ? DEFAULT_RETRY_LIMIT : Integer.parseInt(retryDefinition.getMaxAttempts()));
-       }
+            boundaryEventNode.setMetaData("ErrorRetry", retryDefinition.getDelay() == null ? DEFAULT_RETRY_AFTER : delayAsInt);
+            boundaryEventNode.setMetaData("ErrorRetryLimit", retryDefinition.getMaxAttempts() == null ? DEFAULT_RETRY_LIMIT
+                    : Integer.parseInt(retryDefinition.getMaxAttempts()));
+        }
 
-       process.addNode(boundaryEventNode);
-       return boundaryEventNode;
-   }
-
+        process.addNode(boundaryEventNode);
+        return boundaryEventNode;
+    }
 
     public void connect(long fromId, long toId, String uniqueId, NodeContainer nodeContainer, boolean association) {
         Node from = nodeContainer.getNode(fromId);
@@ -592,7 +625,7 @@ public class ServerlessWorkflowFactory {
                 from, io.automatiko.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE,
                 to, io.automatiko.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
         connection.setMetaData(UNIQUE_ID_PARAM, uniqueId);
-        if(association) {
+        if (association) {
             connection.setMetaData("association", true);
         }
     }

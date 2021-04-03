@@ -84,6 +84,7 @@ public class ProcessVisitor extends AbstractVisitor {
     private Map<Class<?>, AbstractNodeVisitor<? extends io.automatiko.engine.api.definition.process.Node>> nodesVisitors = new HashMap<>();
 
     public ProcessVisitor(ClassLoader contextClassLoader) {
+
         this.nodesVisitors.put(StartNode.class, new StartNodeVisitor());
         this.nodesVisitors.put(ActionNode.class, new ActionNodeVisitor());
         this.nodesVisitors.put(EndNode.class, new EndNodeVisitor());
@@ -117,7 +118,8 @@ public class ProcessVisitor extends AbstractVisitor {
         MethodCallExpr assignFactoryMethod = new MethodCallExpr(new NameExpr(processFactoryType.getName().asString()),
                 "createProcess");
         assignFactoryMethod.addArgument(new StringLiteralExpr(process.getId()))
-                .addArgument(new StringLiteralExpr(workflowType));
+                .addArgument(new StringLiteralExpr(workflowType))
+                .addArgument(new BooleanLiteralExpr(ProcessToExecModelGenerator.isServerlessWorkflow(process)));
         body.addStatement(new AssignExpr(factoryField, assignFactoryMethod, AssignExpr.Operator.ASSIGN));
 
         // item definitions
@@ -324,4 +326,5 @@ public class ProcessVisitor extends AbstractVisitor {
     private boolean isConnectionRepresentingLinkEvent(Connection connection) {
         return connection.getMetaData().get(LINK_NODE_HIDDEN) != null;
     }
+
 }

@@ -21,6 +21,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
@@ -195,6 +196,22 @@ public class ModelMetaData {
                             new MemberValuePair("hidden", new BooleanLiteralExpr(hidden)))));
         }
         modelClass.setName(modelClassSimpleName);
+        modelClass.getConstructors().forEach(c -> c.setName(modelClass.getName()));
+        modelClass.findAll(MethodDeclaration.class, md -> md.getNameAsString().equals("build"))
+                .forEach(md -> {
+
+                    md.getBody().get().findAll(SimpleName.class).stream().findFirst().ifPresent(o -> {
+                        o.setIdentifier(modelClassSimpleName);
+                    });
+                    md.toString();
+                });
+        modelClass.findAll(AnnotationExpr.class, ae -> ae.getNameAsString().equals("JsonDeserialize"))
+                .forEach(ae -> {
+                    ae.findAll(ClassOrInterfaceType.class, cit -> cit.getNameAsString().contains("$TYPE$")).stream().findFirst()
+                            .ifPresent(
+                                    cit -> cit.setName(cit.getNameAsString().replaceAll("\\$TYPE\\$", modelClassSimpleName)));
+                    ae.toString();
+                });
 
         // setup of the toMap method body
         BlockStmt toMapBody = new BlockStmt();

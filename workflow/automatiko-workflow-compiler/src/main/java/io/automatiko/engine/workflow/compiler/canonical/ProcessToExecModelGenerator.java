@@ -4,6 +4,7 @@ package io.automatiko.engine.workflow.compiler.canonical;
 import static com.github.javaparser.StaticJavaParser.parse;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -31,6 +32,8 @@ public class ProcessToExecModelGenerator {
     private static final String MODEL_CLASS_SUFFIX = "Model";
     private static final String PROCESS_TEMPLATE_FILE = "/class-templates/ProcessTemplate.java";
 
+    private static List<String> serverlessExtensions = Arrays.asList(".sw.yml", ".sw.yaml", ".sw.json");
+
     private final ProcessVisitor processVisitor;
     private String workflowType;
 
@@ -52,6 +55,7 @@ public class ProcessToExecModelGenerator {
         }
         ClassOrInterfaceDeclaration processClazz = processClazzOptional.get();
         processClazz.setName(StringUtils.capitalize(extractedProcessId + PROCESS_CLASS_SUFFIX));
+
         String packageName = parsedClazzFile.getPackageDeclaration().map(NodeWithName::getNameAsString).orElse(null);
         ProcessMetaData metadata = new ProcessMetaData(process.getId(), extractedProcessId, process.getName(),
                 ModelMetaData.version(process.getVersion()), packageName, processClazz.getNameAsString(),
@@ -92,6 +96,8 @@ public class ProcessToExecModelGenerator {
                 VariableDeclarations.of((VariableScope) ((io.automatiko.engine.workflow.base.core.Process) process)
                         .getDefaultContext(VariableScope.VARIABLE_SCOPE)),
                 false,
+                isServerlessWorkflow(process) ? "/class-templates/JsonModelTemplate.java"
+                        : "/class-templates/ModelTemplate.java",
                 "Complete data model for " + process.getName(),
                 "Describes complete data model expected by " + process.getName());
     }
@@ -104,7 +110,9 @@ public class ProcessToExecModelGenerator {
                 process.getVisibility(),
                 VariableDeclarations.ofInput((VariableScope) ((io.automatiko.engine.workflow.base.core.Process) process)
                         .getDefaultContext(VariableScope.VARIABLE_SCOPE)),
-                true, "/class-templates/ModelNoIDTemplate.java",
+                true,
+                isServerlessWorkflow(process) ? "/class-templates/JsonModelTemplate.java"
+                        : "/class-templates/ModelNoIDTemplate.java",
                 "Input data model for " + process.getName(),
                 "Describes input data model expected by " + process.getName());
     }
@@ -118,6 +126,8 @@ public class ProcessToExecModelGenerator {
                 VariableDeclarations.ofOutput((VariableScope) ((io.automatiko.engine.workflow.base.core.Process) process)
                         .getDefaultContext(VariableScope.VARIABLE_SCOPE)),
                 true,
+                isServerlessWorkflow(process) ? "/class-templates/JsonModelTemplate.java"
+                        : "/class-templates/ModelTemplate.java",
                 "Output data model for " + process.getName(),
                 "Describes output data model expected by " + process.getName());
     }
@@ -160,6 +170,14 @@ public class ProcessToExecModelGenerator {
         }
 
         return id;
+    }
+
+    public static boolean isServerlessWorkflow(WorkflowProcess process) {
+
+        return serverlessExtensions.stream()
+                .filter(ext -> process.getResource() != null && process.getResource().getSourcePath().endsWith(ext)).findAny()
+                .isPresent();
+
     }
 
     protected String extractSourcePath(WorkflowProcess process) {

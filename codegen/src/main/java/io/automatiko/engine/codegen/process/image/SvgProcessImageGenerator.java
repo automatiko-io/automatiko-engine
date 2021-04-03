@@ -90,7 +90,7 @@ public class SvgProcessImageGenerator {
 
             return writer.toString();
         } catch (Throwable e) {
-            LOGGER.warn("Unable to generate process image due to " + e.getMessage(), e);
+            LOGGER.warn("Unable to generate process image due to " + e.getMessage());
             return null;
         }
     }

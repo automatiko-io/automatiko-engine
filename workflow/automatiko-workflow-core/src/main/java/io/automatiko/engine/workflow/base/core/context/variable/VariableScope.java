@@ -23,7 +23,7 @@ public class VariableScope extends AbstractContext {
 
     private List<Variable> variables;
 
-    private List<Variable> internalVariables;
+    protected List<Variable> internalVariables;
 
     public VariableScope() {
         this.variables = new ArrayList<>();

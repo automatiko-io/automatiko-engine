@@ -146,7 +146,7 @@
 					"doctor": {
 						"$ref": "#/components/schemas/Doctor"
 					},
-					"id": {
+					"identifier": {
 						"type": "string"
 					},
 					"name": {

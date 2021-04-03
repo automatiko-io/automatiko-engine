@@ -74,15 +74,19 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
     private static final Logger logger = LoggerFactory.getLogger(ExecutableProcessFactory.class);
 
     public static ExecutableProcessFactory createProcess(String id) {
-        return new ExecutableProcessFactory(id, ExecutableProcess.WORKFLOW_TYPE);
+        return new ExecutableProcessFactory(id, ExecutableProcess.WORKFLOW_TYPE, false);
     }
 
     public static ExecutableProcessFactory createProcess(String id, String type) {
-        return new ExecutableProcessFactory(id, type);
+        return new ExecutableProcessFactory(id, type, false);
     }
 
-    protected ExecutableProcessFactory(String id, String type) {
-        ExecutableProcess process = new ExecutableProcess();
+    public static ExecutableProcessFactory createProcess(String id, String type, boolean isServerless) {
+        return new ExecutableProcessFactory(id, type, isServerless);
+    }
+
+    protected ExecutableProcessFactory(String id, String type, boolean isServerlessWorkflow) {
+        ExecutableProcess process = isServerlessWorkflow ? new ServerlessExecutableProcess() : new ExecutableProcess();
         process.setId(id);
         process.setAutoComplete(true);
         process.setType(type);

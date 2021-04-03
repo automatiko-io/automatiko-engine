@@ -17,7 +17,7 @@ public class NewPatientWorkflowTest {
 
     @Test
     public void testNewPatientWorkflow() throws Exception {
-        String addPayload = "{ \"workflowdata\": {\"id\": \"123\", \"name\": \"John\", \"condition\": \"bladder infection\"} }";
+        String addPayload = "{\"identifier\": \"123\", \"name\": \"John\", \"condition\": \"bladder infection\"}";
 
         String workflowData = given()
                 .contentType("application/json")
@@ -27,19 +27,19 @@ public class NewPatientWorkflowTest {
                 .post("/newpatient")
                 .then()
                 .statusCode(200)
-                .body("workflowdata", notNullValue()).extract().asString();
+                .body("id", notNullValue()).extract().asString();
 
         assertNotNull(workflowData);
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode responseNode = mapper.readTree(workflowData);
-        assertNotNull(responseNode.get("workflowdata").get("doctor"));
+        assertNotNull(responseNode.get("doctor"));
 
     }
 
     @Test
     public void testNewPatientWorkflowErrorRetries() throws Exception {
-        String addPayload = "{ \"workflowdata\": {\"id\": \"123\", \"name\": \"John\"} }";
+        String addPayload = "{\"identifier\": \"123\", \"name\": \"John\"}";
 
         String id = given()
                 .contentType("application/json")
@@ -50,7 +50,7 @@ public class NewPatientWorkflowTest {
                 .then()
                 .log().body(true)
                 .statusCode(200)
-                .body("workflowdata", notNullValue())
+                .body("id", notNullValue())
                 .extract().path("id");
 
         long elapsed = 3000;
