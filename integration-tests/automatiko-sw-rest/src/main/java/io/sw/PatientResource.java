@@ -1,11 +1,17 @@
 package io.sw;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Set;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 @Path("/patients")
 @Produces(MediaType.APPLICATION_JSON)
@@ -24,7 +30,7 @@ public class PatientResource {
     @POST
     public Response add(Patient patient) {
 
-        if(patient.condition == null || patient.condition.trim().length() < 1) {
+        if (patient.condition == null || patient.condition.trim().length() < 1) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -34,7 +40,7 @@ public class PatientResource {
 
     @DELETE
     public Set<Patient> delete(Patient patient) {
-        patients.removeIf(existingPatient -> existingPatient.id.contentEquals(patient.id));
+        patients.removeIf(existingPatient -> existingPatient.identifier.contentEquals(patient.identifier));
         return patients;
     }
 }

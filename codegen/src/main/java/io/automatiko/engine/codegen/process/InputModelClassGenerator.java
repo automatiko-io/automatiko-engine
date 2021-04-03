@@ -39,7 +39,9 @@ public class InputModelClassGenerator {
                 VariableDeclarations
                         .ofInput((VariableScope) ((io.automatiko.engine.workflow.base.core.Process) workFlowProcess)
                                 .getDefaultContext(VariableScope.VARIABLE_SCOPE)),
-                true, "/class-templates/ModelNoIDTemplate.java",
+                true,
+                ProcessToExecModelGenerator.isServerlessWorkflow(workFlowProcess) ? "/class-templates/JsonModelTemplate.java"
+                        : "/class-templates/ModelNoIDTemplate.java",
                 "Input data model for " + workFlowProcess.getName(),
                 "Describes input data model expected by " + workFlowProcess.getName());
         modelMetaData.setSupportsValidation(context.getBuildContext().isValidationSupported());

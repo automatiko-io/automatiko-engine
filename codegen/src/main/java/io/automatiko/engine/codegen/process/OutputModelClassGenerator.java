@@ -40,6 +40,8 @@ public class OutputModelClassGenerator {
                         .ofOutput((VariableScope) ((io.automatiko.engine.workflow.base.core.Process) workFlowProcess)
                                 .getDefaultContext(VariableScope.VARIABLE_SCOPE)),
                 true,
+                ProcessToExecModelGenerator.isServerlessWorkflow(workFlowProcess) ? "/class-templates/JsonModelTemplate.java"
+                        : "/class-templates/ModelTemplate.java",
                 "Output data model for " + workFlowProcess.getName(),
                 "Describes output data model expected by " + workFlowProcess.getName());
         modelFileName = modelMetaData.getModelClassName().replace('.', '/') + ".java";
