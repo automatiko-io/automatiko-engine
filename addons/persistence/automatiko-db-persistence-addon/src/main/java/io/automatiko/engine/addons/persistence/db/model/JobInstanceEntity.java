@@ -46,11 +46,14 @@ public class JobInstanceEntity extends PanacheEntityBase {
     @Column(name = "ATK_JOB_INTERVAL")
     public Long repeatInterval;
 
+    @Column(name = "ATK_EXPRESSION")
+    public String expression;
+
     public JobInstanceEntity() {
     }
 
     public JobInstanceEntity(String id, String triggerType, String ownerDefinitionId, String ownerInstanceId,
-            JobStatus status, LocalDateTime expirationTime, Integer limit, Long repeatInterval) {
+            JobStatus status, LocalDateTime expirationTime, Integer limit, Long repeatInterval, String expression) {
         this.id = id;
         this.triggerType = triggerType;
         this.ownerDefinitionId = ownerDefinitionId;
@@ -59,10 +62,11 @@ public class JobInstanceEntity extends PanacheEntityBase {
         this.expirationTime = expirationTime;
         this.limit = limit;
         this.repeatInterval = repeatInterval;
+        this.expression = expression;
     }
 
     public JobInstanceEntity(String id, String ownerDefinitionId,
-            JobStatus status, LocalDateTime expirationTime, Integer limit, Long repeatInterval) {
+            JobStatus status, LocalDateTime expirationTime, Integer limit, Long repeatInterval, String expression) {
         this.id = id;
         this.ownerDefinitionId = ownerDefinitionId;
         this.ownerInstanceId = null;
@@ -70,6 +74,7 @@ public class JobInstanceEntity extends PanacheEntityBase {
         this.expirationTime = expirationTime;
         this.limit = limit;
         this.repeatInterval = repeatInterval;
+        this.expression = expression;
     }
 
     public static JobInstanceEntity acquireJob(String id) {

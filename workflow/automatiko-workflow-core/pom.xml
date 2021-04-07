@@ -49,11 +49,16 @@
       <artifactId>jaxb-api</artifactId>
       <scope>provided</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>com.cronutils</groupId>
+      <artifactId>cron-utils</artifactId>
     </dependency>
 
     <!-- test -->

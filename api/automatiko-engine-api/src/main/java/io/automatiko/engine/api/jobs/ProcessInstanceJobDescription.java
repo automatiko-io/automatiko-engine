@@ -37,6 +37,20 @@ public class ProcessInstanceJobDescription implements JobDescription {
         this.triggerType = requireNonNull(triggerType);
     }
 
+    private ProcessInstanceJobDescription(String jobIdId, ExpirationTime expirationTime, Integer priority,
+            String processInstanceId, String rootProcessInstanceId, String processId, String processVersion,
+            String rootProcessId, String triggerType) {
+        this.id = jobIdId;
+        this.expirationTime = requireNonNull(expirationTime);
+        this.priority = requireNonNull(priority);
+        this.processInstanceId = requireNonNull(processInstanceId);
+        this.rootProcessInstanceId = rootProcessInstanceId;
+        this.processId = processId;
+        this.processVersion = processVersion;
+        this.rootProcessId = rootProcessId;
+        this.triggerType = requireNonNull(triggerType);
+    }
+
     public static ProcessInstanceJobDescription of(long timerId, ExpirationTime expirationTime,
             String processInstanceId, String processId, String processVersion) {
         return of(timerId, expirationTime, processInstanceId, null, processId, processVersion, null);
@@ -60,6 +74,12 @@ public class ProcessInstanceJobDescription implements JobDescription {
     public static ProcessInstanceJobDescription of(long timerId, String triggerType, ExpirationTime expirationTime,
             String processInstanceId, String processId, String processVersion) {
         return of(timerId, triggerType, expirationTime, processInstanceId, null, processId, processVersion, null);
+    }
+
+    public static ProcessInstanceJobDescription of(String jobId, String triggerType, ExpirationTime expirationTime,
+            String processInstanceId, String processId, String processVersion) {
+        return new ProcessInstanceJobDescription(jobId, expirationTime, DEFAULT_PRIORITY, processInstanceId,
+                null, processId, processVersion, null, triggerType);
     }
 
     public static ProcessInstanceJobDescription of(long timerId, String triggerType, ExpirationTime expirationTime,

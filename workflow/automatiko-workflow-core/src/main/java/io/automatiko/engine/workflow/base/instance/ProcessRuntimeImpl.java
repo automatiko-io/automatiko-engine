@@ -30,6 +30,7 @@ import io.automatiko.engine.workflow.base.core.event.EventFilter;
 import io.automatiko.engine.workflow.base.core.event.EventTransformer;
 import io.automatiko.engine.workflow.base.core.event.EventTypeFilter;
 import io.automatiko.engine.workflow.base.core.event.ProcessEventSupport;
+import io.automatiko.engine.workflow.base.core.timer.CronExpirationTime;
 import io.automatiko.engine.workflow.base.core.timer.DateTimeUtils;
 import io.automatiko.engine.workflow.base.core.timer.TimeUtils;
 import io.automatiko.engine.workflow.base.core.timer.Timer;
@@ -318,24 +319,28 @@ public class ProcessRuntimeImpl implements InternalProcessRuntime {
         long duration = -1;
         switch (timer.getTimeType()) {
             case Timer.TIME_CYCLE:
-                // when using ISO date/time period is not set
-                long[] repeatValues = DateTimeUtils.parseRepeatableDateTime(timer.getDelay());
-                if (repeatValues.length == 3) {
-                    int parsedReapedCount = (int) repeatValues[0];
-
-                    return DurationExpirationTime.repeat(repeatValues[1], repeatValues[2], parsedReapedCount);
+                if (CronExpirationTime.isCronExpression(timer.getDelay())) {
+                    return CronExpirationTime.of(timer.getDelay());
                 } else {
-                    long delay = repeatValues[0];
-                    long period = -1;
-                    try {
-                        period = TimeUtils.parseTimeString(timer.getPeriod());
-                    } catch (RuntimeException e) {
-                        period = repeatValues[0];
+
+                    // when using ISO date/time period is not set
+                    long[] repeatValues = DateTimeUtils.parseRepeatableDateTime(timer.getDelay());
+                    if (repeatValues.length == 3) {
+                        int parsedReapedCount = (int) repeatValues[0];
+
+                        return DurationExpirationTime.repeat(repeatValues[1], repeatValues[2], parsedReapedCount);
+                    } else {
+                        long delay = repeatValues[0];
+                        long period = -1;
+                        try {
+                            period = TimeUtils.parseTimeString(timer.getPeriod());
+                        } catch (RuntimeException e) {
+                            period = repeatValues[0];
+                        }
+
+                        return DurationExpirationTime.repeat(delay, period);
                     }
-
-                    return DurationExpirationTime.repeat(delay, period);
                 }
-
             case Timer.TIME_DURATION:
 
                 duration = DateTimeUtils.parseDuration(timer.getDelay());

@@ -70,11 +70,13 @@ public class InMemoryJobService implements JobsService {
             future = scheduler.scheduleAtFixedRate(
                     new SignalProcessInstanceOnExpiredTimer(description.id(), description.triggerType(),
                             description.processInstanceId(), false,
-                            description.expirationTime().repeatLimit()),
+                            description.expirationTime().repeatLimit(), description),
                     calculateDelay(description), description.expirationTime().repeatInterval(), TimeUnit.MILLISECONDS);
         } else {
             future = scheduler.schedule(new SignalProcessInstanceOnExpiredTimer(description.id(), description.triggerType(),
-                    description.processInstanceId(), true, -1), calculateDelay(description), TimeUnit.MILLISECONDS);
+                    description.processInstanceId(), true, description.expirationTime().repeatLimit(), description),
+                    calculateDelay(description),
+                    TimeUnit.MILLISECONDS);
         }
         scheduledJobs.put(description.id(), future);
         return description.id();
@@ -82,8 +84,9 @@ public class InMemoryJobService implements JobsService {
 
     @Override
     public boolean cancelJob(String id) {
-        LOGGER.debug("Cancel Job: {}", id);
+
         if (scheduledJobs.containsKey(id)) {
+            LOGGER.debug("Cancel Job: {}", id);
             return scheduledJobs.remove(id).cancel(false);
         }
 
@@ -106,25 +109,31 @@ public class InMemoryJobService implements JobsService {
     }
 
     protected long calculateDelay(JobDescription description) {
-        return Duration.between(ZonedDateTime.now(), description.expirationTime().get()).toMillis();
+        return log(description.expirationTime().get(),
+                Duration.between(ZonedDateTime.now(), description.expirationTime().get()).toMillis());
     }
 
     protected Runnable processJobByDescription(ProcessJobDescription description) {
         if (description.process() != null) {
-            return new StartProcessOnExpiredTimer(description.id(), description.process(), true, -1);
+            return new StartProcessOnExpiredTimer(description.id(), description.process(), true, -1, description);
         } else {
-            return new LegacyStartProcessOnExpiredTimer(description.id(), description.processId(), true, -1);
+            return new LegacyStartProcessOnExpiredTimer(description.id(), description.processId(), true, -1, description);
         }
     }
 
     protected Runnable repeatableProcessJobByDescription(ProcessJobDescription description) {
         if (description.process() != null) {
             return new StartProcessOnExpiredTimer(description.id(), description.process(), false,
-                    description.expirationTime().repeatLimit());
+                    description.expirationTime().repeatLimit(), description);
         } else {
             return new LegacyStartProcessOnExpiredTimer(description.id(), description.processId(), false,
-                    description.expirationTime().repeatLimit());
+                    description.expirationTime().repeatLimit(), description);
         }
+    }
+
+    protected long log(ZonedDateTime dt, long delay) {
+        LOGGER.debug("Timer scheduled for date {} will expire in {}", dt, delay);
+        return delay;
     }
 
     private class SignalProcessInstanceOnExpiredTimer implements Runnable {
@@ -135,14 +144,17 @@ public class InMemoryJobService implements JobsService {
         private String trigger;
         private Integer limit;
 
+        private ProcessInstanceJobDescription description;
+
         private SignalProcessInstanceOnExpiredTimer(String id, String trigger, String processInstanceId,
-                boolean removeAtExecution,
-                Integer limit) {
+                boolean removeAtExecution, Integer limit, ProcessInstanceJobDescription description) {
             this.id = id;
             this.processInstanceId = processInstanceId;
             this.trigger = trigger;
             this.removeAtExecution = removeAtExecution;
             this.limit = limit;
+
+            this.description = description;
         }
 
         @Override
@@ -168,7 +180,13 @@ public class InMemoryJobService implements JobsService {
                 });
                 LOGGER.debug("Job {} completed", id);
             } finally {
-                if (removeAtExecution) {
+                ZonedDateTime next = description.expirationTime().next();
+
+                if (next != null) {
+
+                    scheduleProcessInstanceJob(description);
+
+                } else if (removeAtExecution) {
                     scheduledJobs.remove(id);
                 }
             }
@@ -185,12 +203,16 @@ public class InMemoryJobService implements JobsService {
 
         private Integer limit;
 
+        private ProcessJobDescription description;
+
         private StartProcessOnExpiredTimer(String id, io.automatiko.engine.api.workflow.Process<?> process,
-                boolean removeAtExecution, Integer limit) {
+                boolean removeAtExecution, Integer limit, ProcessJobDescription description) {
             this.id = id;
             this.process = process;
             this.removeAtExecution = removeAtExecution;
             this.limit = limit;
+
+            this.description = description;
         }
 
         @SuppressWarnings("unchecked")
@@ -214,7 +236,13 @@ public class InMemoryJobService implements JobsService {
                 }
                 LOGGER.debug("Job {} completed", id);
             } finally {
-                if (removeAtExecution) {
+                ZonedDateTime next = description.expirationTime().next();
+
+                if (next != null) {
+
+                    scheduleProcessJob(description);
+
+                } else if (removeAtExecution) {
                     scheduledJobs.remove(id);
                 }
             }
@@ -230,12 +258,16 @@ public class InMemoryJobService implements JobsService {
 
         private Integer limit;
 
+        private ProcessJobDescription description;
+
         private LegacyStartProcessOnExpiredTimer(String id, String processId, boolean removeAtExecution,
-                Integer limit) {
+                Integer limit, ProcessJobDescription description) {
             this.id = id;
             this.processId = processId;
             this.removeAtExecution = removeAtExecution;
             this.limit = limit;
+
+            this.description = description;
         }
 
         @Override
@@ -257,7 +289,13 @@ public class InMemoryJobService implements JobsService {
                 }
                 LOGGER.debug("Job {} completed", id);
             } finally {
-                if (removeAtExecution) {
+                ZonedDateTime next = description.expirationTime().next();
+
+                if (next != null) {
+
+                    scheduleProcessJob(description);
+
+                } else if (removeAtExecution) {
                     scheduledJobs.remove(id);
                 }
             }

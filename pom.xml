@@ -114,6 +114,8 @@
     <version.org.eclipse.microprofile.openapi>1.1.2</version.org.eclipse.microprofile.openapi>
     
     <version.io.javaoperatorsdk>1.8.0</version.io.javaoperatorsdk>
+    
+    <version.com.cronutils>9.1.5</version.com.cronutils>
 
     <version.org.antlr>3.5.2</version.org.antlr>
     <version.org.antlr4>4.8</version.org.antlr4>
@@ -643,6 +645,13 @@
         <groupId>com.github.haifengl</groupId>
         <artifactId>smile-core</artifactId>
         <version>${version.com.github.haifengl.smile}</version>
+      </dependency>
+      
+      <!-- cron timers parsing -->
+      <dependency>
+        <groupId>com.cronutils</groupId>
+        <artifactId>cron-utils</artifactId>
+        <version>${version.com.cronutils}</version>
       </dependency>
 
       <dependency>
