@@ -28,6 +28,7 @@ import io.automatiko.engine.workflow.base.core.ContextContainer;
 import io.automatiko.engine.workflow.base.core.context.ProcessContext;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
+import io.automatiko.engine.workflow.base.core.timer.CronExpirationTime;
 import io.automatiko.engine.workflow.base.core.timer.DateTimeUtils;
 import io.automatiko.engine.workflow.base.core.timer.Timer;
 import io.automatiko.engine.workflow.base.instance.InternalProcessRuntime;
@@ -116,41 +117,45 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
         long duration = -1;
         switch (timer.getTimeType()) {
             case Timer.TIME_CYCLE:
-                if (timer.getPeriod() != null) {
-
-                    long actualDelay = DateTimeUtils.parseDuration(resolveVariable(timer.getDelay()));
-                    if (timer.getPeriod() == null) {
-                        return DurationExpirationTime.repeat(actualDelay, actualDelay, Integer.MAX_VALUE);
-                    } else {
-                        return DurationExpirationTime.repeat(actualDelay,
-                                DateTimeUtils.parseDuration(resolveVariable(timer.getPeriod())), Integer.MAX_VALUE);
-                    }
+                if (CronExpirationTime.isCronExpression(timer.getDelay())) {
+                    return CronExpirationTime.of(timer.getDelay());
                 } else {
-                    String resolvedDelay = resolveVariable(timer.getDelay());
 
-                    // when using ISO date/time period is not set
-                    long[] repeatValues = null;
-                    try {
-                        repeatValues = DateTimeUtils.parseRepeatableDateTime(timer.getDelay());
-                    } catch (RuntimeException e) {
-                        // cannot parse delay, trying to interpret it
-                        repeatValues = DateTimeUtils.parseRepeatableDateTime(resolvedDelay);
-                    }
-                    if (repeatValues.length == 3) {
-                        int parsedReapedCount = (int) repeatValues[0];
-                        if (parsedReapedCount <= -1) {
-                            parsedReapedCount = Integer.MAX_VALUE;
+                    if (timer.getPeriod() != null) {
+
+                        long actualDelay = DateTimeUtils.parseDuration(resolveVariable(timer.getDelay()));
+                        if (timer.getPeriod() == null) {
+                            return DurationExpirationTime.repeat(actualDelay, actualDelay, Integer.MAX_VALUE);
+                        } else {
+                            return DurationExpirationTime.repeat(actualDelay,
+                                    DateTimeUtils.parseDuration(resolveVariable(timer.getPeriod())), Integer.MAX_VALUE);
+                        }
+                    } else {
+                        String resolvedDelay = resolveVariable(timer.getDelay());
+
+                        // when using ISO date/time period is not set
+                        long[] repeatValues = null;
+                        try {
+                            repeatValues = DateTimeUtils.parseRepeatableDateTime(timer.getDelay());
+                        } catch (RuntimeException e) {
+                            // cannot parse delay, trying to interpret it
+                            repeatValues = DateTimeUtils.parseRepeatableDateTime(resolvedDelay);
+                        }
+                        if (repeatValues.length == 3) {
+                            int parsedReapedCount = (int) repeatValues[0];
+                            if (parsedReapedCount <= -1) {
+                                parsedReapedCount = Integer.MAX_VALUE;
+                            }
+
+                            return DurationExpirationTime.repeat(repeatValues[1], repeatValues[2], parsedReapedCount);
+                        } else if (repeatValues.length == 2) {
+                            return DurationExpirationTime.repeat(repeatValues[0], repeatValues[1], Integer.MAX_VALUE);
+                        } else {
+                            return DurationExpirationTime.repeat(repeatValues[0], repeatValues[0], Integer.MAX_VALUE);
                         }
 
-                        return DurationExpirationTime.repeat(repeatValues[1], repeatValues[2], parsedReapedCount);
-                    } else if (repeatValues.length == 2) {
-                        return DurationExpirationTime.repeat(repeatValues[0], repeatValues[1], Integer.MAX_VALUE);
-                    } else {
-                        return DurationExpirationTime.repeat(repeatValues[0], repeatValues[0], Integer.MAX_VALUE);
                     }
-
                 }
-
             case Timer.TIME_DURATION:
 
                 try {

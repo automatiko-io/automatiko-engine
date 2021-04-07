@@ -48,6 +48,7 @@ import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.TrustedIdentityProvider;
 import io.automatiko.engine.api.config.CassandraJobsConfig;
+import io.automatiko.engine.api.jobs.ExpirationTime;
 import io.automatiko.engine.api.jobs.JobsService;
 import io.automatiko.engine.api.jobs.ProcessInstanceJobDescription;
 import io.automatiko.engine.api.jobs.ProcessJobDescription;
@@ -58,6 +59,8 @@ import io.automatiko.engine.api.workflow.Processes;
 import io.automatiko.engine.services.time.TimerInstance;
 import io.automatiko.engine.services.uow.UnitOfWorkExecutor;
 import io.automatiko.engine.workflow.Sig;
+import io.automatiko.engine.workflow.base.core.timer.CronExpirationTime;
+import io.automatiko.engine.workflow.base.core.timer.NoOpExpirationTime;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
 
@@ -74,6 +77,7 @@ public class CassandraJobService implements JobsService {
     private static final String STATUS_FIELD = "JobStatus";
     private static final String FIRE_LIMIT_FIELD = "JobFireLimit";
     private static final String REPEAT_INTERVAL_FIELD = "JobRepeatInterval";
+    private static final String EXPRESSION_FIELD = "JobExpression";
 
     protected final CqlSession cqlSession;
 
@@ -124,10 +128,14 @@ public class CassandraJobService implements JobsService {
                 for (Row job : jobs) {
 
                     if (job.getString(OWNER_INSTANCE_ID_FIELD) == null) {
+                        ProcessJobDescription description = ProcessJobDescription.of(build(job.getString(EXPRESSION_FIELD)),
+                                null,
+                                job.getString(OWNER_DEF_ID_FIELD));
+
                         scheduledJobs.computeIfAbsent(job.getString(INSTANCE_ID_FIELD), k -> {
                             return log(job.getString(INSTANCE_ID_FIELD),
                                     scheduler.schedule(new StartProcessOnExpiredTimer(job.getString(INSTANCE_ID_FIELD),
-                                            job.getString(OWNER_DEF_ID_FIELD), -1),
+                                            job.getString(OWNER_DEF_ID_FIELD), -1, description),
                                             Duration.between(LocalDateTime.now(),
                                                     ZonedDateTime.ofInstant(
                                                             Instant.ofEpochMilli(job.getLong(FIRE_AT_FIELD)),
@@ -136,13 +144,19 @@ public class CassandraJobService implements JobsService {
                                             TimeUnit.MILLISECONDS));
                         });
                     } else {
+                        ProcessInstanceJobDescription description = ProcessInstanceJobDescription.of(
+                                job.getString(INSTANCE_ID_FIELD),
+                                job.getString(TRIGGER_TYPE_FIELD),
+                                build(job.getString(EXPRESSION_FIELD)), job.getString(OWNER_INSTANCE_ID_FIELD),
+                                job.getString(OWNER_DEF_ID_FIELD), null);
+
                         scheduledJobs.computeIfAbsent(job.getString(INSTANCE_ID_FIELD), k -> {
                             return log(job.getString(INSTANCE_ID_FIELD), scheduler.schedule(
                                     new SignalProcessInstanceOnExpiredTimer(job.getString(INSTANCE_ID_FIELD),
                                             job.getString(TRIGGER_TYPE_FIELD),
                                             job.getString(OWNER_DEF_ID_FIELD),
                                             job.getString(OWNER_INSTANCE_ID_FIELD),
-                                            job.getInt(FIRE_LIMIT_FIELD)),
+                                            job.getInt(FIRE_LIMIT_FIELD), description),
                                     Duration.between(LocalDateTime.now(), ZonedDateTime.ofInstant(
                                             Instant.ofEpochMilli(job.getLong(FIRE_AT_FIELD)),
                                             ZoneId.systemDefault())).toMillis(),
@@ -176,7 +190,8 @@ public class CassandraJobService implements JobsService {
                                     .toInstant()
                                     .toEpochMilli()))
                     .value(FIRE_LIMIT_FIELD, literal(description.expirationTime().repeatLimit()))
-                    .value(REPEAT_INTERVAL_FIELD, literal(description.expirationTime().repeatInterval()));
+                    .value(REPEAT_INTERVAL_FIELD, literal(description.expirationTime().repeatInterval()))
+                    .value(EXPRESSION_FIELD, literal(description.expirationTime().expression()));
         } else {
             insert = insertInto(config.keyspace().orElse("automatiko"), tableName)
                     .value(INSTANCE_ID_FIELD, literal(description.id()))
@@ -186,7 +201,8 @@ public class CassandraJobService implements JobsService {
                             literal(description.expirationTime().get().toLocalDateTime().atZone(ZoneId.systemDefault())
                                     .toInstant()
                                     .toEpochMilli()))
-                    .value(FIRE_LIMIT_FIELD, literal(-1));
+                    .value(FIRE_LIMIT_FIELD, literal(description.expirationTime().repeatLimit()))
+                    .value(EXPRESSION_FIELD, literal(description.expirationTime().expression()));
 
         }
         cqlSession.execute(insert.build());
@@ -219,7 +235,8 @@ public class CassandraJobService implements JobsService {
                                     .toInstant()
                                     .toEpochMilli()))
                     .value(FIRE_LIMIT_FIELD, literal(description.expirationTime().repeatLimit()))
-                    .value(REPEAT_INTERVAL_FIELD, literal(description.expirationTime().repeatInterval()));
+                    .value(REPEAT_INTERVAL_FIELD, literal(description.expirationTime().repeatInterval()))
+                    .value(EXPRESSION_FIELD, literal(description.expirationTime().expression()));
 
         } else {
             insert = insertInto(config.keyspace().orElse("automatiko"), tableName)
@@ -232,7 +249,8 @@ public class CassandraJobService implements JobsService {
                             literal(description.expirationTime().get().toLocalDateTime().atZone(ZoneId.systemDefault())
                                     .toInstant()
                                     .toEpochMilli()))
-                    .value(FIRE_LIMIT_FIELD, literal(-1));
+                    .value(FIRE_LIMIT_FIELD, literal(description.expirationTime().repeatLimit()))
+                    .value(EXPRESSION_FIELD, literal(description.expirationTime().expression()));
         }
 
         cqlSession.execute(insert.build());
@@ -244,7 +262,7 @@ public class CassandraJobService implements JobsService {
                 return log(description.id(), scheduler.schedule(
                         new SignalProcessInstanceOnExpiredTimer(description.id(), description.triggerType(),
                                 description.processId() + version(description.processVersion()),
-                                description.processInstanceId(), description.expirationTime().repeatLimit()),
+                                description.processInstanceId(), description.expirationTime().repeatLimit(), description),
                         calculateDelay(description.expirationTime().get()),
                         TimeUnit.MILLISECONDS));
             });
@@ -284,7 +302,7 @@ public class CassandraJobService implements JobsService {
 
     protected Runnable processJobByDescription(ProcessJobDescription description) {
         return new StartProcessOnExpiredTimer(description.id(),
-                description.process().id(), description.expirationTime().repeatLimit());
+                description.process().id(), description.expirationTime().repeatLimit(), description);
 
     }
 
@@ -326,20 +344,28 @@ public class CassandraJobService implements JobsService {
             cqlSession.execute(statement);
 
             if (job.getString(OWNER_INSTANCE_ID_FIELD) == null) {
+                ProcessJobDescription description = ProcessJobDescription.of(build(job.getString(EXPRESSION_FIELD)), null,
+                        job.getString(OWNER_DEF_ID_FIELD));
+
                 scheduledJobs.computeIfAbsent(job.getString(INSTANCE_ID_FIELD), k -> {
                     return log(job.getString(INSTANCE_ID_FIELD),
                             scheduler.schedule(new StartProcessOnExpiredTimer(job.getString(INSTANCE_ID_FIELD),
-                                    job.getString(OWNER_DEF_ID_FIELD), limit),
+                                    job.getString(OWNER_DEF_ID_FIELD), limit, description),
                                     Duration.between(LocalDateTime.now(), fireTime).toMillis(),
                                     TimeUnit.MILLISECONDS));
                 });
             } else {
+                ProcessInstanceJobDescription description = ProcessInstanceJobDescription.of(job.getString(INSTANCE_ID_FIELD),
+                        job.getString(TRIGGER_TYPE_FIELD),
+                        build(job.getString(EXPRESSION_FIELD)), job.getString(OWNER_INSTANCE_ID_FIELD),
+                        job.getString(OWNER_DEF_ID_FIELD), null);
+
                 scheduledJobs.computeIfAbsent(job.getString(INSTANCE_ID_FIELD), k -> {
                     return log(job.getString(INSTANCE_ID_FIELD), scheduler.scheduleAtFixedRate(
                             new SignalProcessInstanceOnExpiredTimer(job.getString(INSTANCE_ID_FIELD),
                                     job.getString(TRIGGER_TYPE_FIELD),
                                     job.getString(OWNER_DEF_ID_FIELD),
-                                    job.getString(OWNER_INSTANCE_ID_FIELD), limit),
+                                    job.getString(OWNER_INSTANCE_ID_FIELD), limit, description),
                             Duration.between(LocalDateTime.now(), fireTime).toMillis(), repeat,
                             TimeUnit.MILLISECONDS));
                 });
@@ -351,6 +377,14 @@ public class CassandraJobService implements JobsService {
         LOGGER.debug("Next fire of job {} is in {} seconds ", jobId, future.getDelay(TimeUnit.SECONDS));
 
         return future;
+    }
+
+    protected ExpirationTime build(String expression) {
+        if (expression != null) {
+            return CronExpirationTime.of(expression);
+        }
+
+        return new NoOpExpirationTime();
     }
 
     protected void createTable() {
@@ -366,7 +400,8 @@ public class CassandraJobService implements JobsService {
                 .withColumn(TRIGGER_TYPE_FIELD, DataTypes.TEXT)
                 .withColumn(STATUS_FIELD, DataTypes.TEXT)
                 .withColumn(FIRE_LIMIT_FIELD, DataTypes.INT)
-                .withColumn(REPEAT_INTERVAL_FIELD, DataTypes.BIGINT);
+                .withColumn(REPEAT_INTERVAL_FIELD, DataTypes.BIGINT)
+                .withColumn(EXPRESSION_FIELD, DataTypes.TEXT);
 
         cqlSession.execute(createTable.build());
 
@@ -384,13 +419,17 @@ public class CassandraJobService implements JobsService {
         private final String trigger;
         private Integer limit;
 
+        private ProcessInstanceJobDescription description;
+
         private SignalProcessInstanceOnExpiredTimer(String id, String trigger, String processId, String processInstanceId,
-                Integer limit) {
+                Integer limit, ProcessInstanceJobDescription description) {
             this.id = id;
             this.processId = processId;
             this.processInstanceId = processInstanceId;
             this.trigger = trigger;
             this.limit = limit;
+
+            this.description = description;
         }
 
         @Override
@@ -426,7 +465,10 @@ public class CassandraJobService implements JobsService {
                         processInstance
                                 .send(Sig.of(trigger, TimerInstance.with(Long.parseLong(ids[1]), id, limit)));
                         scheduledJobs.remove(id).cancel(false);
-                        if (limit > 0) {
+                        if (description.expirationTime().next() != null) {
+                            removeScheduledJob(id);
+                            scheduleProcessInstanceJob(description);
+                        } else if (limit > 0) {
                             updateRepeatableJob(id);
                         } else {
                             removeScheduledJob(id);
@@ -454,10 +496,14 @@ public class CassandraJobService implements JobsService {
 
         private Integer limit;
 
-        private StartProcessOnExpiredTimer(String id, String processId, Integer limit) {
+        private ProcessJobDescription description;
+
+        private StartProcessOnExpiredTimer(String id, String processId, Integer limit, ProcessJobDescription description) {
             this.id = id;
             this.processId = processId;
             this.limit = limit;
+
+            this.description = description;
         }
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -490,7 +536,10 @@ public class CassandraJobService implements JobsService {
                     }
                     scheduledJobs.remove(id).cancel(false);
                     limit--;
-                    if (limit > 0) {
+                    if (description.expirationTime().next() != null) {
+                        removeScheduledJob(id);
+                        scheduleProcessJob(description);
+                    } else if (limit > 0) {
                         updateRepeatableJob(id);
                     } else {
                         removeScheduledJob(id);

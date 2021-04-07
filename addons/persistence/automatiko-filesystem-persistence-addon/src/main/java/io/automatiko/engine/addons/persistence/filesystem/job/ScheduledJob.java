@@ -18,6 +18,8 @@ public class ScheduledJob {
 
     private ZonedDateTime fireTime;
 
+    private String expression;
+
     public ScheduledJob() {
 
     }
@@ -33,14 +35,15 @@ public class ScheduledJob {
      * @param fireTime exact date and time when to fire
      */
     public ScheduledJob(String id, String processId, boolean removeAtExecution, Integer limit,
-            Long reapeatInterval,
-            ZonedDateTime fireTime) {
+            Long reapeatInterval, ZonedDateTime fireTime, String expression) {
         this.id = id;
         this.processId = processId;
         this.removeAtExecution = removeAtExecution;
         this.limit = limit;
         this.reapeatInterval = reapeatInterval;
         this.fireTime = fireTime;
+
+        this.expression = expression;
     }
 
     /**
@@ -59,7 +62,7 @@ public class ScheduledJob {
      */
     public ScheduledJob(String id, String triggerType, String processId, boolean removeAtExecution, String processInstanceId,
             Integer limit,
-            Long reapeatInterval, ZonedDateTime fireTime) {
+            Long reapeatInterval, ZonedDateTime fireTime, String expression) {
         this.id = id;
         this.triggerType = triggerType;
         this.processId = processId;
@@ -68,6 +71,8 @@ public class ScheduledJob {
         this.limit = limit;
         this.reapeatInterval = reapeatInterval;
         this.fireTime = fireTime;
+
+        this.expression = expression;
     }
 
     public boolean isRemoveAtExecution() {
@@ -132,6 +137,14 @@ public class ScheduledJob {
 
     public void setTriggerType(String triggerType) {
         this.triggerType = triggerType;
+    }
+
+    public String getExpression() {
+        return expression;
+    }
+
+    public void setExpression(String expression) {
+        this.expression = expression;
     }
 
     @Override

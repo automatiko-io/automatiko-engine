@@ -29,6 +29,7 @@ import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.TrustedIdentityProvider;
+import io.automatiko.engine.api.jobs.ExpirationTime;
 import io.automatiko.engine.api.jobs.JobsService;
 import io.automatiko.engine.api.jobs.ProcessInstanceJobDescription;
 import io.automatiko.engine.api.jobs.ProcessJobDescription;
@@ -39,6 +40,8 @@ import io.automatiko.engine.api.workflow.Processes;
 import io.automatiko.engine.services.time.TimerInstance;
 import io.automatiko.engine.services.uow.UnitOfWorkExecutor;
 import io.automatiko.engine.workflow.Sig;
+import io.automatiko.engine.workflow.base.core.timer.CronExpirationTime;
+import io.automatiko.engine.workflow.base.core.timer.NoOpExpirationTime;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
 
@@ -71,8 +74,8 @@ public class DatabaseJobService implements JobsService {
 
         this.unitOfWorkManager = application.unitOfWorkManager();
 
-        this.scheduler = new ScheduledThreadPoolExecutor(threads, r -> new Thread(r, "automatik-jobs-executor"));
-        this.loadScheduler = new ScheduledThreadPoolExecutor(1, r -> new Thread(r, "automatik-jobs-loader"));
+        this.scheduler = new ScheduledThreadPoolExecutor(threads, r -> new Thread(r, "automatiko-jobs-executor"));
+        this.loadScheduler = new ScheduledThreadPoolExecutor(1, r -> new Thread(r, "automatiko-jobs-loader"));
     }
 
     public void start(@Observes StartupEvent event) {
@@ -84,18 +87,21 @@ public class DatabaseJobService implements JobsService {
                 for (JobInstanceEntity job : jobs) {
 
                     if (job.ownerInstanceId == null) {
+                        ProcessJobDescription description = ProcessJobDescription.of(build(job), null, job.ownerDefinitionId);
                         scheduledJobs.computeIfAbsent(job.id, k -> {
                             return log(job.id, scheduler.schedule(new StartProcessOnExpiredTimer(job.id,
-                                    job.ownerDefinitionId, -1),
+                                    job.ownerDefinitionId, -1, description),
                                     Duration.between(LocalDateTime.now(), job.expirationTime).toMillis(),
                                     TimeUnit.MILLISECONDS));
                         });
                     } else {
+                        ProcessInstanceJobDescription description = ProcessInstanceJobDescription.of(job.id, job.triggerType,
+                                build(job), job.ownerInstanceId, job.ownerDefinitionId, null);
                         scheduledJobs.computeIfAbsent(job.id, k -> {
                             return log(job.id, scheduler.schedule(
                                     new SignalProcessInstanceOnExpiredTimer(job.id, job.triggerType,
                                             job.ownerDefinitionId,
-                                            job.ownerInstanceId, job.limit),
+                                            job.ownerInstanceId, job.limit, description),
                                     Duration.between(LocalDateTime.now(), job.expirationTime).toMillis(),
                                     TimeUnit.MILLISECONDS));
                         });
@@ -123,14 +129,15 @@ public class DatabaseJobService implements JobsService {
                     description.process().id(),
                     JobInstanceEntity.JobStatus.SCHEDULED,
                     description.expirationTime().get().toLocalDateTime(),
-                    description.expirationTime().repeatLimit(), description.expirationTime().repeatInterval());
+                    description.expirationTime().repeatLimit(), description.expirationTime().repeatInterval(),
+                    description.expirationTime().expression());
         } else {
 
             scheduledJob = new JobInstanceEntity(description.id(),
                     description.process().id(),
                     JobInstanceEntity.JobStatus.SCHEDULED,
                     description.expirationTime().get().toLocalDateTime(),
-                    -1, null);
+                    description.expirationTime().repeatLimit(), null, description.expirationTime().expression());
         }
         JobInstanceEntity persist = scheduledJob;
         UnitOfWorkExecutor.executeInUnitOfWork(unitOfWorkManager, () -> {
@@ -162,13 +169,14 @@ public class DatabaseJobService implements JobsService {
                     description.processInstanceId(),
                     JobInstanceEntity.JobStatus.SCHEDULED,
                     description.expirationTime().get().toLocalDateTime(),
-                    description.expirationTime().repeatLimit(), description.expirationTime().repeatInterval());
+                    description.expirationTime().repeatLimit(), description.expirationTime().repeatInterval(),
+                    description.expirationTime().expression());
         } else {
             scheduledJob = new JobInstanceEntity(description.id(), description.triggerType(),
                     description.processId() + version(description.processVersion()), description.processInstanceId(),
                     JobInstanceEntity.JobStatus.SCHEDULED,
                     description.expirationTime().get().toLocalDateTime(),
-                    -1, null);
+                    description.expirationTime().repeatLimit(), null, description.expirationTime().expression());
         }
         JobInstanceEntity.persist(scheduledJob);
 
@@ -178,7 +186,7 @@ public class DatabaseJobService implements JobsService {
                 return log(description.id(), scheduler.schedule(
                         new SignalProcessInstanceOnExpiredTimer(description.id(), description.triggerType(),
                                 description.processId() + version(description.processVersion()),
-                                description.processInstanceId(), description.expirationTime().repeatLimit()),
+                                description.processInstanceId(), description.expirationTime().repeatLimit(), description),
                         calculateDelay(description.expirationTime().get()),
                         TimeUnit.MILLISECONDS));
             });
@@ -209,7 +217,7 @@ public class DatabaseJobService implements JobsService {
 
     protected Runnable processJobByDescription(ProcessJobDescription description) {
         return new StartProcessOnExpiredTimer(description.id(),
-                description.process().id(), description.expirationTime().repeatLimit());
+                description.process().id(), description.expirationTime().repeatLimit(), description);
 
     }
 
@@ -233,19 +241,23 @@ public class DatabaseJobService implements JobsService {
         JobInstanceEntity.persist(job);
 
         if (job.ownerInstanceId == null) {
+
+            ProcessJobDescription description = ProcessJobDescription.of(build(job), null, job.ownerDefinitionId);
             scheduledJobs.computeIfAbsent(job.id, k -> {
                 return log(job.id, scheduler.schedule(new StartProcessOnExpiredTimer(job.id,
-                        job.ownerDefinitionId, job.limit),
+                        job.ownerDefinitionId, job.limit, description),
                         Duration.between(LocalDateTime.now(), job.expirationTime).toMillis(),
                         TimeUnit.MILLISECONDS));
             });
         } else {
+            ProcessInstanceJobDescription description = ProcessInstanceJobDescription.of(job.id, job.triggerType,
+                    build(job), job.ownerInstanceId, job.ownerDefinitionId, null);
             scheduledJobs.computeIfAbsent(job.id, k -> {
                 return log(job.id, scheduler.scheduleAtFixedRate(
                         new SignalProcessInstanceOnExpiredTimer(job.id,
                                 job.triggerType,
                                 job.ownerDefinitionId,
-                                job.ownerInstanceId, job.limit),
+                                job.ownerInstanceId, job.limit, description),
                         Duration.between(LocalDateTime.now(), job.expirationTime).toMillis(), job.repeatInterval,
                         TimeUnit.MILLISECONDS));
             });
@@ -258,6 +270,14 @@ public class DatabaseJobService implements JobsService {
         return future;
     }
 
+    protected ExpirationTime build(JobInstanceEntity job) {
+        if (job.expression != null) {
+            return CronExpirationTime.of(job.expression);
+        }
+
+        return new NoOpExpirationTime();
+    }
+
     private class SignalProcessInstanceOnExpiredTimer implements Runnable {
 
         private final String id;
@@ -267,13 +287,17 @@ public class DatabaseJobService implements JobsService {
         private final String trigger;
         private Integer limit;
 
+        private ProcessInstanceJobDescription description;
+
         private SignalProcessInstanceOnExpiredTimer(String id, String trigger, String processId, String processInstanceId,
-                Integer limit) {
+                Integer limit, ProcessInstanceJobDescription description) {
             this.id = id;
             this.processId = processId;
             this.processInstanceId = processInstanceId;
             this.trigger = trigger;
             this.limit = limit;
+
+            this.description = description;
         }
 
         @Override
@@ -313,8 +337,14 @@ public class DatabaseJobService implements JobsService {
                     processInstance
                             .send(Sig.of(trigger, TimerInstance.with(Long.parseLong(ids[1]), id, limit)));
                     scheduledJobs.remove(id).cancel(false);
-                    if (limit > 0) {
+
+                    if (description.expirationTime().next() != null) {
+                        JobInstanceEntity.deleteById(id);
+                        scheduleProcessInstanceJob(description);
+                    } else if (limit > 0) {
                         updateRepeatableJob(id);
+                    } else {
+                        JobInstanceEntity.deleteById(id);
                     }
                 } else {
                     // since owning process instance does not exist cancel timers
@@ -336,10 +366,14 @@ public class DatabaseJobService implements JobsService {
 
         private Integer limit;
 
-        private StartProcessOnExpiredTimer(String id, String processId, Integer limit) {
+        private ProcessJobDescription description;
+
+        private StartProcessOnExpiredTimer(String id, String processId, Integer limit, ProcessJobDescription description) {
             this.id = id;
             this.processId = processId;
             this.limit = limit;
+
+            this.description = description;
         }
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -378,8 +412,13 @@ public class DatabaseJobService implements JobsService {
                 }
                 scheduledJobs.remove(id).cancel(false);
                 limit--;
-                if (limit > 0) {
+                if (description.expirationTime().next() != null) {
+                    JobInstanceEntity.deleteById(id);
+                    scheduleProcessJob(description);
+                } else if (limit > 0) {
                     updateRepeatableJob(id);
+                } else {
+                    JobInstanceEntity.deleteById(id);
                 }
                 return null;
             });

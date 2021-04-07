@@ -25,6 +25,7 @@ import io.automatiko.engine.workflow.base.core.context.exception.CompensationSco
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.event.EventFilter;
 import io.automatiko.engine.workflow.base.core.event.EventTypeFilter;
+import io.automatiko.engine.workflow.base.core.timer.CronExpirationTime;
 import io.automatiko.engine.workflow.base.core.timer.DateTimeUtils;
 import io.automatiko.engine.workflow.base.core.timer.Timer;
 import io.automatiko.engine.workflow.base.core.validation.ProcessValidationError;
@@ -607,9 +608,11 @@ public class ExecutableProcessValidator implements ProcessValidator {
                 try {
                     switch (timer.getTimeType()) {
                         case Timer.TIME_CYCLE:
-                            // when using ISO date/time period is not set
-                            DateTimeUtils.parseRepeatableDateTime(timer.getDelay());
-
+                            if (CronExpirationTime.isCronExpression(timer.getDelay())) {
+                            } else {
+                                // when using ISO date/time period is not set
+                                DateTimeUtils.parseRepeatableDateTime(timer.getDelay());
+                            }
                             break;
                         case Timer.TIME_DURATION:
                             DateTimeUtils.parseDuration(timer.getDelay());
@@ -619,6 +622,7 @@ public class ExecutableProcessValidator implements ProcessValidator {
                             break;
                         default:
                             break;
+
                     }
                 } catch (RuntimeException e) {
                     addErrorMessage(process, node, errors,
@@ -628,8 +632,11 @@ public class ExecutableProcessValidator implements ProcessValidator {
         }
         if (timer.getPeriod() != null && !timer.getPeriod().contains("#{")) {
             try {
-                // when using ISO date/time period is not set
-                DateTimeUtils.parseRepeatableDateTime(timer.getPeriod());
+                if (CronExpirationTime.isCronExpression(timer.getDelay())) {
+                } else {
+                    // when using ISO date/time period is not set
+                    DateTimeUtils.parseRepeatableDateTime(timer.getPeriod());
+                }
 
             } catch (RuntimeException e) {
                 addErrorMessage(process, node, errors,

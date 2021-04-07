@@ -270,4 +270,95 @@ public class TimerEventTest extends AbstractCodegenTest {
         assertThat(instances).hasSize(0);
 
     }
+
+    @Test
+    public void testStartTimerEventTimeCycleCron() throws Exception {
+
+        Application app = generateCodeProcessesOnly("timer/StartTimerCycleCron.bpmn2");
+        assertThat(app).isNotNull();
+
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("timer fired", 2);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+
+        Process<? extends Model> p = app.processes().processById("defaultPackage.TimerProcess");
+        // activate to schedule timers
+        p.activate();
+
+        boolean completed = listener.waitTillCompleted(5000);
+        assertThat(completed).isTrue();
+
+        Collection<?> instances = p.instances().values(1, 10);
+        assertThat(instances).hasSize(2);
+
+        ProcessInstance<?> processInstance = (ProcessInstance<?>) instances.iterator().next();
+        assertThat(processInstance).isNotNull();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+        // deactivate to cancel timer, so there should be no more timers fired
+        p.deactivate();
+
+        // reset the listener to make sure nothing more is triggered
+        listener.reset(1);
+        completed = listener.waitTillCompleted(3000);
+
+        // same amount of instances should be active as before deactivation
+        instances = p.instances().values(1, 10);
+
+        // clean up by aborting all instances
+        instances.forEach(i -> ((ProcessInstance<?>) i).abort());
+        instances = p.instances().values(1, 10);
+        assertThat(instances).hasSize(0);
+
+    }
+
+    @Test
+    public void testIntermediateCycleTimerCronEvent() throws Exception {
+
+        Application app = generateCodeProcessesOnly("timer/IntermediateCatchEventTimerCycleCron.bpmn2");
+        assertThat(app).isNotNull();
+
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("timer", 3);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+
+        Process<? extends Model> p = app.processes().processById("IntermediateCatchEvent");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        boolean completed = listener.waitTillCompleted(5000);
+        assertThat(completed).isTrue();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+        processInstance.abort();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ABORTED);
+    }
+
+    @Test
+    public void testBoundaryCycleCronTimerEventOnTask() throws Exception {
+
+        Application app = generateCodeProcessesOnly("timer/TimerBoundaryEventCycleCronOnTask.bpmn2");
+        assertThat(app).isNotNull();
+
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("TimerEvent", 1);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+
+        Process<? extends Model> p = app.processes().processById("TimerBoundaryEvent");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        boolean completed = listener.waitTillCompleted(5000);
+        assertThat(completed).isTrue();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+    }
 }

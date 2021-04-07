@@ -3,7 +3,12 @@ package io.automatiko.engine.services.execution;
 import java.util.List;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class BaseFunctions {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger("io.automatiko.logger");
 
     /**
      * Checks two objects for equality
@@ -64,5 +69,17 @@ public class BaseFunctions {
         } catch (IndexOutOfBoundsException e) {
             return null;
         }
+    }
+
+    public static void log(String template, Object... items) {
+        LOGGER.info(template, items);
+    }
+
+    public static void logWarning(String template, Object... items) {
+        LOGGER.warn(template, items);
+    }
+
+    public static void logError(String template, Object... items) {
+        LOGGER.error(template, items);
     }
 }

@@ -30,6 +30,7 @@ import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.TrustedIdentityProvider;
 import io.automatiko.engine.api.config.DynamoDBJobsConfig;
+import io.automatiko.engine.api.jobs.ExpirationTime;
 import io.automatiko.engine.api.jobs.JobsService;
 import io.automatiko.engine.api.jobs.ProcessInstanceJobDescription;
 import io.automatiko.engine.api.jobs.ProcessJobDescription;
@@ -40,6 +41,8 @@ import io.automatiko.engine.api.workflow.Processes;
 import io.automatiko.engine.services.time.TimerInstance;
 import io.automatiko.engine.services.uow.UnitOfWorkExecutor;
 import io.automatiko.engine.workflow.Sig;
+import io.automatiko.engine.workflow.base.core.timer.CronExpirationTime;
+import io.automatiko.engine.workflow.base.core.timer.NoOpExpirationTime;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
 import software.amazon.awssdk.core.waiters.WaiterResponse;
@@ -85,6 +88,7 @@ public class DynamoDBJobService implements JobsService {
     private static final String STATUS_FIELD = "JobStatus";
     private static final String FIRE_LIMIT_FIELD = "JobFireLimit";
     private static final String REPEAT_INTERVAL_FIELD = "JobRepeatInterval";
+    private static final String EXPRESSION_FIELD = "JobExpression";
 
     protected final DynamoDbClient dynamodb;
 
@@ -139,10 +143,13 @@ public class DynamoDBJobService implements JobsService {
                 for (Map<String, AttributeValue> job : jobs) {
 
                     if (job.get(OWNER_INSTANCE_ID_FIELD) == null) {
+                        ProcessJobDescription description = ProcessJobDescription.of(build(job.get(EXPRESSION_FIELD).s()), null,
+                                job.get(OWNER_DEF_ID_FIELD).s());
+
                         scheduledJobs.computeIfAbsent(job.get(INSTANCE_ID_FIELD).s(), k -> {
                             return log(job.get(INSTANCE_ID_FIELD).s(),
                                     scheduler.schedule(new StartProcessOnExpiredTimer(job.get(INSTANCE_ID_FIELD).s(),
-                                            job.get(OWNER_DEF_ID_FIELD).s(), -1),
+                                            job.get(OWNER_DEF_ID_FIELD).s(), -1, description),
                                             Duration.between(LocalDateTime.now(),
                                                     ZonedDateTime.ofInstant(
                                                             Instant.ofEpochMilli(Long.parseLong(job.get(FIRE_AT_FIELD).n())),
@@ -151,13 +158,19 @@ public class DynamoDBJobService implements JobsService {
                                             TimeUnit.MILLISECONDS));
                         });
                     } else {
+                        ProcessInstanceJobDescription description = ProcessInstanceJobDescription.of(
+                                job.get(INSTANCE_ID_FIELD).s(),
+                                job.get(TRIGGER_TYPE_FIELD).s(),
+                                build(job.get(EXPRESSION_FIELD).s()), job.get(OWNER_INSTANCE_ID_FIELD).s(),
+                                job.get(OWNER_DEF_ID_FIELD).s(), null);
+
                         scheduledJobs.computeIfAbsent(job.get(INSTANCE_ID_FIELD).s(), k -> {
                             return log(job.get(INSTANCE_ID_FIELD).s(), scheduler.schedule(
                                     new SignalProcessInstanceOnExpiredTimer(job.get(INSTANCE_ID_FIELD).s(),
                                             job.get(TRIGGER_TYPE_FIELD).s(),
                                             job.get(OWNER_DEF_ID_FIELD).s(),
                                             job.get(OWNER_INSTANCE_ID_FIELD).s(),
-                                            Integer.parseInt(job.get(FIRE_LIMIT_FIELD).n())),
+                                            Integer.parseInt(job.get(FIRE_LIMIT_FIELD).n()), description),
                                     Duration.between(LocalDateTime.now(), ZonedDateTime.ofInstant(
                                             Instant.ofEpochMilli(Long.parseLong(job.get(FIRE_AT_FIELD).n())),
                                             ZoneId.systemDefault())).toMillis(),
@@ -196,6 +209,8 @@ public class DynamoDBJobService implements JobsService {
                     AttributeValue.builder().n(Integer.toString(description.expirationTime().repeatLimit())).build());
             itemValues.put(REPEAT_INTERVAL_FIELD,
                     AttributeValue.builder().n(Long.toString(description.expirationTime().repeatInterval())).build());
+            itemValues.put(EXPRESSION_FIELD,
+                    AttributeValue.builder().s(nonNull(description.expirationTime().expression())).build());
         } else {
             itemValues.put(INSTANCE_ID_FIELD, AttributeValue.builder().s(description.id()).build());
             itemValues.put(OWNER_DEF_ID_FIELD,
@@ -208,7 +223,10 @@ public class DynamoDBJobService implements JobsService {
                                     .toEpochMilli()))
                             .build());
             itemValues.put(FIRE_LIMIT_FIELD,
-                    AttributeValue.builder().n(Integer.toString(-1)).build());
+                    AttributeValue.builder().n(Integer.toString(description.expirationTime().repeatLimit() == null ? -1
+                            : description.expirationTime().repeatLimit())).build());
+            itemValues.put(EXPRESSION_FIELD,
+                    AttributeValue.builder().s(nonNull(description.expirationTime().expression())).build());
 
         }
         PutItemRequest request = PutItemRequest.builder()
@@ -250,6 +268,8 @@ public class DynamoDBJobService implements JobsService {
                     AttributeValue.builder().n(Integer.toString(description.expirationTime().repeatLimit())).build());
             itemValues.put(REPEAT_INTERVAL_FIELD,
                     AttributeValue.builder().n(Long.toString(description.expirationTime().repeatInterval())).build());
+            itemValues.put(EXPRESSION_FIELD,
+                    AttributeValue.builder().s(nonNull(description.expirationTime().expression())).build());
 
         } else {
             itemValues.put(INSTANCE_ID_FIELD, AttributeValue.builder().s(description.id()).build());
@@ -265,7 +285,10 @@ public class DynamoDBJobService implements JobsService {
                                     .toEpochMilli()))
                             .build());
             itemValues.put(FIRE_LIMIT_FIELD,
-                    AttributeValue.builder().n(Integer.toString(-1)).build());
+                    AttributeValue.builder().n(Integer.toString(description.expirationTime().repeatLimit() == null ? -1
+                            : description.expirationTime().repeatLimit())).build());
+            itemValues.put(EXPRESSION_FIELD,
+                    AttributeValue.builder().s(nonNull(description.expirationTime().expression())).build());
         }
 
         PutItemRequest request = PutItemRequest.builder()
@@ -282,7 +305,7 @@ public class DynamoDBJobService implements JobsService {
                 return log(description.id(), scheduler.schedule(
                         new SignalProcessInstanceOnExpiredTimer(description.id(), description.triggerType(),
                                 description.processId() + version(description.processVersion()),
-                                description.processInstanceId(), description.expirationTime().repeatLimit()),
+                                description.processInstanceId(), description.expirationTime().repeatLimit(), description),
                         calculateDelay(description.expirationTime().get()),
                         TimeUnit.MILLISECONDS));
             });
@@ -328,7 +351,7 @@ public class DynamoDBJobService implements JobsService {
 
     protected Runnable processJobByDescription(ProcessJobDescription description) {
         return new StartProcessOnExpiredTimer(description.id(),
-                description.process().id(), description.expirationTime().repeatLimit());
+                description.process().id(), description.expirationTime().repeatLimit(), description);
 
     }
 
@@ -396,20 +419,27 @@ public class DynamoDBJobService implements JobsService {
         dynamodb.updateItem(request);
 
         if (job.get(OWNER_INSTANCE_ID_FIELD) == null) {
+            ProcessJobDescription description = ProcessJobDescription.of(build(job.get(EXPRESSION_FIELD).s()), null,
+                    job.get(OWNER_DEF_ID_FIELD).s());
             scheduledJobs.computeIfAbsent(job.get(INSTANCE_ID_FIELD).s(), k -> {
                 return log(job.get(INSTANCE_ID_FIELD).s(),
                         scheduler.schedule(new StartProcessOnExpiredTimer(job.get(INSTANCE_ID_FIELD).s(),
-                                job.get(OWNER_DEF_ID_FIELD).s(), limit),
+                                job.get(OWNER_DEF_ID_FIELD).s(), limit, description),
                                 Duration.between(LocalDateTime.now(), fireTime).toMillis(),
                                 TimeUnit.MILLISECONDS));
             });
         } else {
+            ProcessInstanceJobDescription description = ProcessInstanceJobDescription.of(job.get(INSTANCE_ID_FIELD).s(),
+                    job.get(TRIGGER_TYPE_FIELD).s(),
+                    build(job.get(EXPRESSION_FIELD).s()), job.get(OWNER_INSTANCE_ID_FIELD).s(),
+                    job.get(OWNER_DEF_ID_FIELD).s(), null);
+
             scheduledJobs.computeIfAbsent(job.get(INSTANCE_ID_FIELD).s(), k -> {
                 return log(job.get(INSTANCE_ID_FIELD).s(), scheduler.scheduleAtFixedRate(
                         new SignalProcessInstanceOnExpiredTimer(job.get(INSTANCE_ID_FIELD).s(),
                                 job.get(TRIGGER_TYPE_FIELD).s(),
                                 job.get(OWNER_DEF_ID_FIELD).s(),
-                                job.get(OWNER_INSTANCE_ID_FIELD).s(), limit),
+                                job.get(OWNER_INSTANCE_ID_FIELD).s(), limit, description),
                         Duration.between(LocalDateTime.now(), fireTime).toMillis(), repeat,
                         TimeUnit.MILLISECONDS));
             });
@@ -420,6 +450,22 @@ public class DynamoDBJobService implements JobsService {
         LOGGER.debug("Next fire of job {} is in {} seconds ", jobId, future.getDelay(TimeUnit.SECONDS));
 
         return future;
+    }
+
+    protected ExpirationTime build(String expression) {
+        if (expression != null && !expression.equals("notset")) {
+            return CronExpirationTime.of(expression);
+        }
+
+        return new NoOpExpirationTime();
+    }
+
+    protected String nonNull(String expression) {
+        if (expression != null) {
+            return expression;
+        }
+
+        return "notset";
     }
 
     protected void createTable() {
@@ -474,13 +520,17 @@ public class DynamoDBJobService implements JobsService {
         private final String trigger;
         private Integer limit;
 
+        private ProcessInstanceJobDescription description;
+
         private SignalProcessInstanceOnExpiredTimer(String id, String trigger, String processId, String processInstanceId,
-                Integer limit) {
+                Integer limit, ProcessInstanceJobDescription description) {
             this.id = id;
             this.processId = processId;
             this.processInstanceId = processInstanceId;
             this.trigger = trigger;
             this.limit = limit;
+
+            this.description = description;
         }
 
         @Override
@@ -530,7 +580,11 @@ public class DynamoDBJobService implements JobsService {
                         processInstance
                                 .send(Sig.of(trigger, TimerInstance.with(Long.parseLong(ids[1]), id, limit)));
                         scheduledJobs.remove(id).cancel(false);
-                        if (limit > 0) {
+
+                        if (description.expirationTime().next() != null) {
+                            removeScheduledJob(id);
+                            scheduleProcessInstanceJob(description);
+                        } else if (limit > 0) {
                             updateRepeatableJob(id);
                         } else {
                             removeScheduledJob(id);
@@ -560,10 +614,14 @@ public class DynamoDBJobService implements JobsService {
 
         private Integer limit;
 
-        private StartProcessOnExpiredTimer(String id, String processId, Integer limit) {
+        private ProcessJobDescription description;
+
+        private StartProcessOnExpiredTimer(String id, String processId, Integer limit, ProcessJobDescription description) {
             this.id = id;
             this.processId = processId;
             this.limit = limit;
+
+            this.description = description;
         }
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -610,7 +668,10 @@ public class DynamoDBJobService implements JobsService {
                     }
                     scheduledJobs.remove(id).cancel(false);
                     limit--;
-                    if (limit > 0) {
+                    if (description.expirationTime().next() != null) {
+                        removeScheduledJob(id);
+                        scheduleProcessJob(description);
+                    } else if (limit > 0) {
                         updateRepeatableJob(id);
                     } else {
                         removeScheduledJob(id);

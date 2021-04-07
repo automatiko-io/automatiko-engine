@@ -4,9 +4,18 @@ import java.time.ZonedDateTime;
 
 public interface ExpirationTime {
 
-	ZonedDateTime get();
+    ZonedDateTime get();
 
-	Long repeatInterval();
+    default ZonedDateTime next() {
+        return null;
+    }
 
-	Integer repeatLimit();
+    Long repeatInterval();
+
+    Integer repeatLimit();
+
+    default String expression() {
+        return null;
+    }
+
 }
