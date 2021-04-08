@@ -328,12 +328,12 @@ public class FileSystemBasedJobService implements JobsService {
                         processInstance
                                 .send(Sig.of(trigger, TimerInstance.with(Long.parseLong(ids[1]), id, limit)));
                         if (limit == 0) {
-                            scheduledJobs.remove(id).cancel(false);
+                            Optional.ofNullable(scheduledJobs.remove(id)).ifPresent(j -> j.cancel(false));
                             removeScheduledJob(id);
                         }
                     } else {
                         // since owning process instance does not exist cancel timers
-                        scheduledJobs.remove(id).cancel(false);
+                        Optional.ofNullable(scheduledJobs.remove(id)).ifPresent(j -> j.cancel(false));
                         removeScheduledJob(id);
                     }
 
@@ -393,7 +393,7 @@ public class FileSystemBasedJobService implements JobsService {
                 });
                 limit--;
                 if (limit == 0) {
-                    scheduledJobs.remove(id).cancel(false);
+                    Optional.ofNullable(scheduledJobs.remove(id)).ifPresent(j -> j.cancel(false));
                     removeScheduledJob(id);
                 }
                 LOGGER.debug("Job {} completed", id);

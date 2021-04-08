@@ -35,25 +35,27 @@ public class DefaultExceptionScopeInstance extends ExceptionScopeInstance {
                 Integer retryAttempts = ((NodeInstanceImpl) nodeInstance).getRetryAttempts();
                 if (retryAttempts == null) {
                     retryAttempts = 1;
-                    DurationExpirationTime expirationTime = DurationExpirationTime.repeat(
-                            exceptionHandler.getRetryAfter().longValue(),
-                            exceptionHandler.getRetryAfter().longValue(), exceptionHandler.getRetryLimit());
-
-                    JobsService jobService = getProcessInstance().getProcessRuntime().getJobsService();
-
-                    String jobId = jobService
-                            .scheduleProcessInstanceJob(ProcessInstanceJobDescription.of(nodeInstance.getNodeId(),
-                                    "retry:" + nodeInstance.getId(),
-                                    expirationTime, getProcessInstance().getId(),
-                                    getProcessInstance().getRootProcessInstanceId(),
-                                    getProcessInstance().getProcessId(), getProcessInstance().getProcess().getVersion(),
-                                    getProcessInstance().getRootProcessId()));
-                    ((NodeInstanceImpl) nodeInstance).internalSetRetryJobId(jobId);
-                    ((NodeInstanceImpl) nodeInstance).internalSetRetryAttempts(retryAttempts);
-                    ((NodeInstanceImpl) nodeInstance).registerRetryEventListener();
                 } else {
-                    ((NodeInstanceImpl) nodeInstance).internalSetRetryAttempts(retryAttempts + 1);
+                    retryAttempts = retryAttempts + 1;
                 }
+                long delay = calculateDelay(exceptionHandler.getRetryAfter().longValue(), retryAttempts,
+                        exceptionHandler.getRetryIncrement(), exceptionHandler.getRetryIncrementMultiplier());
+
+                DurationExpirationTime expirationTime = DurationExpirationTime.after(delay);
+
+                JobsService jobService = getProcessInstance().getProcessRuntime().getJobsService();
+
+                String jobId = jobService
+                        .scheduleProcessInstanceJob(ProcessInstanceJobDescription.of(nodeInstance.getNodeId(),
+                                "retry:" + nodeInstance.getId(),
+                                expirationTime, getProcessInstance().getId(),
+                                getProcessInstance().getRootProcessInstanceId(),
+                                getProcessInstance().getProcessId(), getProcessInstance().getProcess().getVersion(),
+                                getProcessInstance().getRootProcessId()));
+                ((NodeInstanceImpl) nodeInstance).internalSetRetryJobId(jobId);
+                ((NodeInstanceImpl) nodeInstance).internalSetRetryAttempts(retryAttempts);
+                ((NodeInstanceImpl) nodeInstance).registerRetryEventListener();
+
                 if (nodeInstance instanceof WorkItemNodeInstance) {
                     ((WorkItemImpl) ((WorkItemNodeInstance) nodeInstance).getWorkItem()).setState(WorkItem.RETRYING);
                 }
@@ -93,6 +95,24 @@ public class DefaultExceptionScopeInstance extends ExceptionScopeInstance {
             }
         }
         return false;
+    }
+
+    private long calculateDelay(long delay, int attempts, Integer increment, Float multiplier) {
+        // if multiplier is set use it to calculate delay
+        if (multiplier != null && multiplier > 0) {
+            for (int i = 1; i < attempts; i++) {
+                delay = (long) (delay * multiplier);
+            }
+
+            return delay;
+        }
+        // otherwise check if increment is given and use it to calculate delay
+        // this only applies to subsequent retries not the first one
+        if (increment != null && attempts > 1) {
+            return delay + (increment * attempts);
+        }
+        // lastly use the delay itself
+        return delay;
     }
 
 }

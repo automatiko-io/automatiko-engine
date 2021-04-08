@@ -6,6 +6,7 @@ import static io.automatiko.engine.workflow.process.executable.core.factory.Node
 import java.util.Map;
 
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
+import com.github.javaparser.ast.expr.DoubleLiteralExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
@@ -53,6 +54,10 @@ public abstract class AbstractVisitor {
                 expression = new IntegerLiteralExpr((Integer) v);
             } else if (v instanceof Long) {
                 expression = new LongLiteralExpr((Long) v);
+            } else if (v instanceof Float) {
+                expression = new DoubleLiteralExpr((Float) v);
+            } else if (v instanceof Double) {
+                expression = new DoubleLiteralExpr((Double) v);
             } else if (v instanceof String) {
                 expression = new StringLiteralExpr(StringEscapeUtils.escapeJava(v.toString()));
             }
