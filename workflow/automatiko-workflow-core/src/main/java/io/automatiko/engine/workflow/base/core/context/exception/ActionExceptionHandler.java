@@ -14,6 +14,10 @@ public class ActionExceptionHandler implements ExceptionHandler, Serializable {
 
     private Integer retryAfter;
 
+    private Integer retryIncrement;
+
+    private Float retryIncrementMultiplier;
+
     private Integer retryLimit = 3;
 
     public String getFaultVariable() {
@@ -37,7 +41,7 @@ public class ActionExceptionHandler implements ExceptionHandler, Serializable {
     }
 
     public void setRetryAfter(Integer retryAfter) {
-        if (retryLimit != null && retryLimit > 0) {
+        if (retryLimit != null) {
             this.retryAfter = retryAfter;
         }
     }
@@ -47,9 +51,25 @@ public class ActionExceptionHandler implements ExceptionHandler, Serializable {
     }
 
     public void setRetryLimit(Integer retryLimit) {
-        if (retryLimit != null && retryLimit > 0) {
+        if (retryLimit != null) {
             this.retryLimit = retryLimit;
         }
+    }
+
+    public Integer getRetryIncrement() {
+        return retryIncrement;
+    }
+
+    public void setRetryIncrement(Integer retryIncrement) {
+        this.retryIncrement = retryIncrement;
+    }
+
+    public Float getRetryIncrementMultiplier() {
+        return retryIncrementMultiplier;
+    }
+
+    public void setRetryIncrementMultiplier(Float retryIncrementMultiplier) {
+        this.retryIncrementMultiplier = retryIncrementMultiplier;
     }
 
     @Override

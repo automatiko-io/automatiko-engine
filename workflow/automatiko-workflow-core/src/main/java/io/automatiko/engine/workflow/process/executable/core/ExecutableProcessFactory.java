@@ -362,6 +362,12 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
         exceptionHandler.setAction(action);
         exceptionHandler.setFaultVariable(variable);
         exceptionHandler.setRetryAfter((Integer) node.getMetaData().get("ErrorRetry"));
+        exceptionHandler.setRetryIncrement((Integer) node.getMetaData().get("ErrorRetryIncrement"));
+        if (node.getMetaData().get("ErrorRetryIncrementMultiplier") != null) {
+            exceptionHandler
+                    .setRetryIncrementMultiplier(
+                            ((Number) node.getMetaData().get("ErrorRetryIncrementMultiplier")).floatValue());
+        }
         exceptionHandler.setRetryLimit((Integer) node.getMetaData().get("ErrorRetryLimit"));
         exceptionScope.setExceptionHandler(hasErrorCode ? errorCode : null, exceptionHandler);
         if (errorStructureRef != null) {
@@ -500,6 +506,13 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
                             exceptionHandler.setAction(action);
                             exceptionHandler.setFaultVariable(faultVariable);
                             exceptionHandler.setRetryAfter((Integer) subNode.getMetaData().get("ErrorRetry"));
+                            exceptionHandler.setRetryIncrement((Integer) subNode.getMetaData().get("ErrorRetryIncrement"));
+                            if (subNode.getMetaData().get("ErrorRetryIncrementMultiplier") != null) {
+                                exceptionHandler
+                                        .setRetryIncrementMultiplier(
+                                                ((Number) subNode.getMetaData().get("ErrorRetryIncrementMultiplier"))
+                                                        .floatValue());
+                            }
                             exceptionHandler.setRetryLimit((Integer) subNode.getMetaData().get("ErrorRetryLimit"));
                             if (faultCode != null) {
                                 String trimmedType = type.replaceFirst(replaceRegExp, "");

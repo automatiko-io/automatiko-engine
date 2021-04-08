@@ -226,6 +226,15 @@ public class BoundaryEventHandler extends AbstractNodeHandler {
                             eventNode.setMetaData("ErrorRetryLimit",
                                     Integer.parseInt((String) error.getMetaData().get("retryLimit")));
                         }
+                        if (error.getMetaData().get("retryIncrement") != null) {
+                            eventNode.setMetaData("ErrorRetryIncrement",
+                                    ((Long) DateTimeUtils.parseDuration((String) error.getMetaData().get("retryIncrement")))
+                                            .intValue());
+                        }
+                        if (error.getMetaData().get("retryMultiplier") != null) {
+                            eventNode.setMetaData("ErrorRetryIncrementMultiplier",
+                                    Float.parseFloat((String) error.getMetaData().get("retryMultiplier")));
+                        }
                     }
                 }
             }

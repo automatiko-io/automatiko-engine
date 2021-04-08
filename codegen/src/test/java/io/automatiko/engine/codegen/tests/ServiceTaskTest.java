@@ -79,6 +79,62 @@ public class ServiceTaskTest extends AbstractCodegenTest {
     }
 
     @Test
+    @Timeout(unit = TimeUnit.SECONDS, value = 30)
+    public void testBasicServiceProcessTaskWithRetryMultiplier() throws Exception {
+
+        Application app = generateCodeProcessesOnly("servicetask/ServiceProcessRetryMultiplier.bpmn2");
+        assertThat(app).isNotNull();
+
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("Print error", 1);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("s", "john");
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        listener.waitTillCompleted();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(1).containsKeys("s");
+        assertThat(result.toMap().get("s")).isNotNull().isEqualTo("john");
+    }
+
+    @Test
+    @Timeout(unit = TimeUnit.SECONDS, value = 30)
+    public void testBasicServiceProcessTaskWithRetryIncrement() throws Exception {
+
+        Application app = generateCodeProcessesOnly("servicetask/ServiceProcessRetryIncrement.bpmn2");
+        assertThat(app).isNotNull();
+
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("Print error", 1);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("s", "john");
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        listener.waitTillCompleted();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(1).containsKeys("s");
+        assertThat(result.toMap().get("s")).isNotNull().isEqualTo("john");
+    }
+
+    @Test
     @Timeout(unit = TimeUnit.SECONDS, value = 10)
     public void testBasicServiceProcessTaskWithRetryDefaultLimit() throws Exception {
 
