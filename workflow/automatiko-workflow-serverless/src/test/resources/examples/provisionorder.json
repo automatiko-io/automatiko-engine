@@ -3,6 +3,7 @@
   "version": "1.0",
   "name": "Provision Orders",
   "description": "Provision Orders and handle errors thrown",
+  "start":"ProvisionOrder",
   "functions": [
     {
       "name": "provisionOrderFunction",
@@ -13,9 +14,6 @@
     {
       "name":"ProvisionOrder",
       "type":"operation",
-      "start": {
-        "kind": "default"
-      },
       "actionMode":"sequential",
       "actions":[
         {
@@ -30,61 +28,45 @@
       "onErrors": [
         {
           "error": "Missing Order Id",
-          "transition": {
-            "nextState": "MissingId"
-          }
+          "transition": "MissingId"          
         },
         {
           "error": "Missing Order Item",
-          "transition": {
-            "nextState": "MissingItem"
-          }
+          "transition": "MissingItem"          
         },
         {
           "error": "Missing Order Quantity",
-          "transition": {
-            "nextState": "MissingQuantity"
-          }
+          "transition": "MissingQuantity"          
         }
       ],
       "stateDataFilter": {
-        "dataOutputPath": "{{ $.exceptions }}"
+        "output": "{{ $.exceptions }}"
       },
-      "transition": {
-        "nextState":"ApplyOrder"
-      }
+      "transition": "ApplyOrder"      
     },
     {
       "name": "MissingId",
       "type": "subflow",
       "workflowId": "handleMissingIdExceptionWorkflow",
-      "end": {
-        "kind": "default"
-      }
+      "end": true
     },
     {
       "name": "MissingItem",
       "type": "subflow",
       "workflowId": "handleMissingItemExceptionWorkflow",
-      "end": {
-        "kind": "default"
-      }
+      "end": true
     },
     {
       "name": "MissingQuantity",
       "type": "subflow",
       "workflowId": "handleMissingQuantityExceptionWorkflow",
-      "end": {
-        "kind": "default"
-      }
+      "end": true
     },
     {
       "name": "ApplyOrder",
       "type": "subflow",
       "workflowId": "applyOrderWorkflowId",
-      "end": {
-        "kind": "default"
-      }
+      "end": true
     }
   ]
 }

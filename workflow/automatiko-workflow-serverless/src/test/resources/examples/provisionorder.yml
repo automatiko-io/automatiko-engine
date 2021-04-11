@@ -2,14 +2,13 @@ id: provisionorders
 version: '1.0'
 name: Provision Orders
 description: Provision Orders and handle errors thrown
+start: ProvisionOrder
 functions:
   - name: provisionOrderFunction
     operation: http://myapis.org/provisioningapi.json#doProvision
 states:
   - name: ProvisionOrder
     type: operation
-    start:
-      kind: default
     actionMode: sequential
     actions:
       - functionRef:
@@ -18,35 +17,27 @@ states:
             order: "{{ $.order }}"
     onErrors:
       - error: "Missing Order Id"
-        transition:
-          nextState: MissingId
+        transition: MissingId
       - error: "Missing Order Item"
-        transition:
-          nextState: MissingItem
+        transition: MissingItem
       - error: "Missing Order Quantity"
-        transition:
-          nextState: MissingQuantity
+        transition: MissingQuantity
     stateDataFilter:
-      dataOutputPath: "{{ $.exceptions }}"
-    transition:
-      nextState: ApplyOrder
+      output: "{{ $.exceptions }}"
+    transition: ApplyOrder
   - name: MissingId
     type: subflow
     workflowId: handleMissingIdExceptionWorkflow
-    end:
-      kind: default
+    end: true
   - name: MissingItem
     type: subflow
     workflowId: handleMissingItemExceptionWorkflow
-    end:
-      kind: default
+    end: true
   - name: MissingQuantity
     type: subflow
     workflowId: handleMissingQuantityExceptionWorkflow
-    end:
-      kind: default
+    end: true
   - name: ApplyOrder
     type: subflow
     workflowId: applyOrderWorkflowId
-    end:
-      kind: default
+    end: true

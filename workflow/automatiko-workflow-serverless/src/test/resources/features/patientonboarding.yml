@@ -1,11 +1,10 @@
 ---
 id: patientonboarding
 name: Patient Onboarding Workflow
+start: Onboard
 states:
   - name: Onboard
     type: event
-    start:
-      kind: default
     compensatedBy: DoAbort
     onEvents:
       - eventRefs:
@@ -23,18 +22,15 @@ states:
         retryRef: ServicesNotAvailableRetryStrategy
         end:
           kind: default
-    transition:
-      nextState: MakeOnboardingDecision
+    transition: MakeOnboardingDecision
   - name: MakeOnboardingDecision
     type: switch
     eventConditions:
       - eventRef: OnboardingApprovedEvent
-        end:
-          kind: default
+        end: trie
       - eventRef: OnboardingCancelledEvent
         end:
           compensate: true
-          kind: default
   - name: DoAbort
     type: operation
     usedForCompensation: true

@@ -3,6 +3,7 @@
   "version": "1.0",
   "name": "Solve Math Problems Workflow",
   "description": "Solve math problems",
+  "start":"Solve",
   "functions": [
     {
       "name": "solveMathExpressionFunction",
@@ -12,9 +13,6 @@
   "states":[
     {
       "name":"Solve",
-      "start": {
-        "kind": "default"
-      },
       "type":"foreach",
       "inputCollection": "{{ $.expressions }}",
       "iterationParam": "singleexpression",
@@ -30,11 +28,9 @@
         }
       ],
       "stateDataFilter": {
-        "dataOutputPath": "{{ $.results }}"
+        "output": "{{ $.results }}"
       },
-      "end": {
-        "kind": "default"
-      }
+      "end": true
     }
   ]
 }

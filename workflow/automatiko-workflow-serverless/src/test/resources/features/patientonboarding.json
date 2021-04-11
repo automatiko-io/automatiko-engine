@@ -1,13 +1,11 @@
 {
   "id": "patientonboarding",
   "name": "Patient Onboarding Workflow",
+  "start": "Onboard",
   "states": [
     {
       "name": "Onboard",
       "type": "event",
-      "start": {
-        "kind": "default"
-      },
       "compensatedBy": "DoAbort",
       "onEvents": [
         {
@@ -43,9 +41,7 @@
           }
         }
       ],
-      "transition": {
-        "nextState": "MakeOnboardingDecision"
-      }
+      "transition": "MakeOnboardingDecision"      
     },
     {
       "name":"MakeOnboardingDecision",
@@ -60,8 +56,7 @@
         {
           "eventRef": "OnboardingCancelledEvent",
           "end": {
-            "compensate": true,
-            "kind": "default"
+            "compensate": true
           }
         }
       ]

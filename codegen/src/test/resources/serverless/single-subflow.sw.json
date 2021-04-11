@@ -2,19 +2,15 @@
   "id": "singlesubflow",
   "name": "singlesubflow",
   "version": "1.0",
+  "start":"InjectTestData",
   "states":[
     {
       "name":"InjectTestData",
       "type":"inject",
-      "start": {
-        "kind": "default"
-      },
       "data": {
         "parentData" : "parentTestData"
       },
-      "transition": {
-        "nextState": "SimpleSubFlow"
-      }
+      "transition": "SimpleSubFlow"      
     },
     {
       "name":"SimpleSubFlow",
@@ -22,7 +18,7 @@
       "workflowId": "calledsubflow_1_0",
       "waitForCompletion":true,
       "end": {
-        "kind": "terminate"
+        "terminate": true
       }
     }
   ]

@@ -1,6 +1,7 @@
 id: compensationworkflow
 name: CompensationTestWorkflow
 version: '1.0'
+start: ExecService
 functions:
   - name: FirstService
     operation: api/services.json#first
@@ -9,14 +10,11 @@ functions:
 states:
   - name: ExecService
     type: operation
-    start:
-      kind: default
     actions:
       - functionRef:
           refName: FirstService
     compensatedBy: SecondExecService
-    end:
-      kind: default
+    end: true
   - name: SecondExecService
     usedForCompensation: true
     type: operation

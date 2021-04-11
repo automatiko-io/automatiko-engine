@@ -1,19 +1,22 @@
 package io.automatiko.engine.workflow.serverless;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
 import io.automatiko.engine.workflow.serverless.utils.WorkflowTestUtils;
 import io.serverlessworkflow.api.Workflow;
 import io.serverlessworkflow.api.states.EventState;
 import io.serverlessworkflow.api.states.OperationState;
 import io.serverlessworkflow.api.states.SwitchState;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class MarkupToWorkflowTest {
 
     @ParameterizedTest
-    @ValueSource(strings = {"/examples/applicantrequest.json", "/examples/applicantrequest.yml",
+    @ValueSource(strings = { "/examples/applicantrequest.json", "/examples/applicantrequest.yml",
             "/examples/carauctionbids.json", "/examples/carauctionbids.yml",
             "/examples/creditcheck.json", "/examples/creditcheck.yml",
             "/examples/eventbasedgreeting.json", "/examples/eventbasedgreeting.yml",
@@ -42,7 +45,7 @@ public class MarkupToWorkflowTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"/features/applicantrequest.json", "/features/applicantrequest.yml"})
+    @ValueSource(strings = { "/features/applicantrequest.json", "/features/applicantrequest.yml" })
     public void testSpecFeatureFunctionRef(String workflowLocation) {
         Workflow workflow = Workflow.fromSource(WorkflowTestUtils.readWorkflowFile(workflowLocation));
 
@@ -57,7 +60,7 @@ public class MarkupToWorkflowTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"/features/vetappointment.json", "/features/vetappointment.yml"})
+    @ValueSource(strings = { "/features/vetappointment.json", "/features/vetappointment.yml" })
     public void testSpecFeatureEventRef(String workflowLocation) {
         Workflow workflow = Workflow.fromSource(WorkflowTestUtils.readWorkflowFile(workflowLocation));
 
@@ -70,8 +73,9 @@ public class MarkupToWorkflowTest {
         assertNotNull(workflow.getEvents());
         assertTrue(workflow.getEvents().getEventDefs().size() == 2);
     }
+
     @ParameterizedTest
-    @ValueSource(strings = {"/features/retryforservicecall.json", "/features/retryforservicecall.yml"})
+    @ValueSource(strings = { "/features/retryforservicecall.json", "/features/retryforservicecall.yml" })
     public void testRetryForServiceCall(String workflowLocation) {
         Workflow workflow = Workflow.fromSource(WorkflowTestUtils.readWorkflowFile(workflowLocation));
 
@@ -94,7 +98,7 @@ public class MarkupToWorkflowTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"/features/compensation.json", "/features/compensation.yml"})
+    @ValueSource(strings = { "/features/compensation.json", "/features/compensation.yml" })
     public void testCompensationWorkflow(String workflowLocation) {
         Workflow workflow = Workflow.fromSource(WorkflowTestUtils.readWorkflowFile(workflowLocation));
 
@@ -118,7 +122,7 @@ public class MarkupToWorkflowTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"/features/patientonboarding.json", "/features/patientonboarding.yml"})
+    @ValueSource(strings = { "/features/patientonboarding.json", "/features/patientonboarding.yml" })
     public void testPatientOnboardingWorkflow(String workflowLocation) {
         Workflow workflow = Workflow.fromSource(WorkflowTestUtils.readWorkflowFile(workflowLocation));
 

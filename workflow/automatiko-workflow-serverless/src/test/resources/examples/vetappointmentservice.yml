@@ -2,6 +2,7 @@ id: VetAppointmentWorkflow
 name: Vet Appointment Workflow
 description: Vet service call via events
 version: '1.0'
+start: MakeVetAppointmentState
 events:
   - name: MakeVetAppointment
     source: VetServiceSoure
@@ -12,8 +13,6 @@ events:
 states:
   - name: MakeVetAppointmentState
     type: operation
-    start:
-      kind: default
     actions:
       - name: MakeAppointmentAction
         eventRef:
@@ -21,7 +20,6 @@ states:
           data: "{{ $.patientInfo }}"
           resultEventRef: VetAppointmentInfo
         actionDataFilter:
-          dataResultsPath: "{{ $.appointmentInfo }}"
+          results: "{{ $.appointmentInfo }}"
         timeout: PT15M
-    end:
-      kind: default
+    end: true

@@ -1,5 +1,14 @@
 package io.automatiko.engine.workflow.serverless;
 
+import static io.serverlessworkflow.api.states.DefaultState.Type.DELAY;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Arrays;
+
+import org.junit.jupiter.api.Test;
+
 import io.serverlessworkflow.api.Workflow;
 import io.serverlessworkflow.api.end.End;
 import io.serverlessworkflow.api.error.Error;
@@ -7,17 +16,10 @@ import io.serverlessworkflow.api.events.EventDefinition;
 import io.serverlessworkflow.api.functions.FunctionDefinition;
 import io.serverlessworkflow.api.interfaces.State;
 import io.serverlessworkflow.api.retry.RetryDefinition;
-import io.serverlessworkflow.api.start.Start;
 import io.serverlessworkflow.api.states.DelayState;
 import io.serverlessworkflow.api.workflow.Events;
 import io.serverlessworkflow.api.workflow.Functions;
 import io.serverlessworkflow.api.workflow.Retries;
-import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-
-import static io.serverlessworkflow.api.states.DefaultState.Type.DELAY;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class WorkflowToMarkupTest {
     @Test
@@ -26,15 +28,10 @@ public class WorkflowToMarkupTest {
         Workflow workflow = new Workflow().withId("test-workflow").withName("test-workflow-name").withVersion("1.0")
                 .withStates(Arrays.asList(
                         new DelayState().withName("delayState").withType(DELAY)
-                                .withStart(
-                                        new Start().withKind(Start.Kind.DEFAULT)
-                                )
+
                                 .withEnd(
-                                        new End().withKind(End.Kind.DEFAULT)
-                                )
-                                .withTimeDelay("PT1M")
-                        )
-                );
+                                        new End())
+                                .withTimeDelay("PT1M")));
 
         assertNotNull(workflow);
         assertEquals(1, workflow.getStates().size());
@@ -51,19 +48,12 @@ public class WorkflowToMarkupTest {
         Workflow workflow = new Workflow().withId("test-workflow").withName("test-workflow-name").withVersion("1.0")
                 .withFunctions(new Functions(Arrays.asList(
                         new FunctionDefinition().withName("testFunction")
-                                .withOperation("testSwaggerDef#testOperationId")))
-                )
+                                .withOperation("testSwaggerDef#testOperationId"))))
                 .withStates(Arrays.asList(
                         new DelayState().withName("delayState").withType(DELAY)
-                                .withStart(
-                                        new Start().withKind(Start.Kind.DEFAULT)
-                                )
                                 .withEnd(
-                                        new End().withKind(End.Kind.DEFAULT)
-                                )
-                                .withTimeDelay("PT1M")
-                        )
-                );
+                                        new End())
+                                .withTimeDelay("PT1M")));
 
         assertNotNull(workflow);
         assertEquals(1, workflow.getStates().size());
@@ -83,23 +73,15 @@ public class WorkflowToMarkupTest {
         Workflow workflow = new Workflow().withId("test-workflow").withName("test-workflow-name").withVersion("1.0")
                 .withEvents(new Events(Arrays.asList(
                         new EventDefinition().withName("testEvent").withSource("testSource").withType("testType")
-                                .withKind(EventDefinition.Kind.PRODUCED)))
-                )
+                                .withKind(EventDefinition.Kind.PRODUCED))))
                 .withFunctions(new Functions(Arrays.asList(
                         new FunctionDefinition().withName("testFunction")
-                                .withOperation("testSwaggerDef#testOperationId")))
-                )
+                                .withOperation("testSwaggerDef#testOperationId"))))
                 .withStates(Arrays.asList(
                         new DelayState().withName("delayState").withType(DELAY)
-                                .withStart(
-                                        new Start().withKind(Start.Kind.DEFAULT)
-                                )
                                 .withEnd(
-                                        new End().withKind(End.Kind.DEFAULT)
-                                )
-                                .withTimeDelay("PT1M")
-                        )
-                );
+                                        new End())
+                                .withTimeDelay("PT1M")));
 
         assertNotNull(workflow);
         assertEquals(1, workflow.getStates().size());
@@ -123,29 +105,20 @@ public class WorkflowToMarkupTest {
         Workflow workflow = new Workflow().withId("test-workflow").withName("test-workflow-name").withVersion("1.0")
                 .withFunctions(new Functions(Arrays.asList(
                         new FunctionDefinition().withName("testFunction")
-                                .withOperation("testSwaggerDef#testOperationId")))
-                )
+                                .withOperation("testSwaggerDef#testOperationId"))))
                 .withRetries(new Retries(Arrays.asList(
                         new RetryDefinition().withName("TestRetryStrat")
-                        .withMaxAttempts("10")
-                        .withDelay("PT1S")
-                )))
+                                .withMaxAttempts("10")
+                                .withDelay("PT1S"))))
                 .withStates(Arrays.asList(
                         new DelayState().withName("delayState").withType(DELAY)
-                                .withStart(
-                                        new Start().withKind(Start.Kind.DEFAULT)
-                                )
                                 .withEnd(
-                                        new End().withKind(End.Kind.DEFAULT)
-                                )
+                                        new End())
                                 .withTimeDelay("PT1M")
                                 .withOnErrors(Arrays.asList(
-                                    new Error().withError("TestError").withCode("500")
-                                            .withRetryRef("TestRetryStrat")
-                                        .withEnd(new End().withKind(End.Kind.DEFAULT))
-                                ))
-                        )
-                );
+                                        new Error().withError("TestError").withCode("500")
+                                                .withRetryRef("TestRetryStrat")
+                                                .withEnd(new End())))));
 
         assertNotNull(workflow);
         assertEquals(1, workflow.getStates().size());

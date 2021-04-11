@@ -2,6 +2,7 @@
   "id": "newpatient",
   "name": "Onboard a new patient",
   "description": "Adds a new Patient and assigns a doctor",
+  "start":"OnboardNewPatient",
   "functions": [
     {
       "name": "storeNewPatient",
@@ -23,7 +24,6 @@
     {
       "name":"OnboardNewPatient",
       "type":"operation",
-      "start": {"kind":  "default"},
       "actions":[
         {
           "functionRef": {
@@ -41,14 +41,10 @@
           "error": "NotFound",
           "code": "404",
           "retryRef": "NotFoundStrategy",
-          "transition": {
-            "nextState": "AddNotFoundInfo"
-          }
+          "transition":  "AddNotFoundInfo"          
         }
       ],
-      "end": {
-        "kind": "default"
-      }
+      "end": true
     },
     {
       "name": "AddNotFoundInfo",
@@ -56,7 +52,7 @@
       "data": {
         "errormessage": "Invalid Patient Data"
       },
-      "end": {"kind":"default"}
+      "end": true
     }
   ]
 }

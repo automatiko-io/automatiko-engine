@@ -1,19 +1,15 @@
 {
   "id": "branch1subflow",
   "name": "branch1subflow",
+  "start":"InjectTestData1",
   "states":[
     {
       "name":"InjectTestData1",
       "type":"inject",
-      "start": {
-        "kind": "default"
-      },
       "data": {
         "branch1data" : "testBranch1Data"
       },
-      "end": {
-        "kind": "terminate"
-      }
+      "end": true
     }
   ]
 }
