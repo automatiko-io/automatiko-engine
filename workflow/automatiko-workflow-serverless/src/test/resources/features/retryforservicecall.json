@@ -2,6 +2,7 @@
   "id": "retriesworkflow",
   "name": "RetriesOnServiceCall",
   "version": "1.0",
+  "start": "ExecService",
   "functions": [
     {
       "name": "FirstService",
@@ -19,7 +20,6 @@
     {
       "name": "ExecService",
       "type": "operation",
-      "start": {"kind":"default"},
       "actions": [
         {
           "functionRef": {
@@ -37,7 +37,7 @@
           }
         }
       ],
-      "end": {"kind": "default"}
+      "end": true
     }
   ]
 }

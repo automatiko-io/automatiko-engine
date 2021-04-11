@@ -3,6 +3,7 @@ id: jobmonitoring
 version: '1.0'
 name: Job Monitoring
 description: Monitor finished execution of a submitted job
+start: SubmitJob
 functions:
   - name: submitJob
     operation: http://myapis.org/monitorapi.json#doSubmit
@@ -15,8 +16,6 @@ functions:
 states:
   - name: SubmitJob
     type: operation
-    start:
-      kind: default
     actionMode: sequential
     actions:
       - functionRef:
@@ -24,25 +23,21 @@ states:
           parameters:
             name: "{{ $.job.name }}"
         actionDataFilter:
-          dataResultsPath: "{{ $.jobuid }}"
+          results: "{{ $.jobuid }}"
     onErrors:
       - error: "*"
-        transition:
-          nextState: SubmitError
+        transition: SubmitError
     stateDataFilter:
-      dataOutputPath: "{{ $.jobuid }}"
-    transition:
-      nextState: WaitForCompletion
+      output: "{{ $.jobuid }}"
+    transition: WaitForCompletion
   - name: SubmitError
     type: subflow
     workflowId: handleJobSubmissionErrorWorkflow
-    end:
-      kind: default
+    end: true
   - name: WaitForCompletion
     type: delay
     timeDelay: PT5S
-    transition:
-      nextState: GetJobStatus
+    transition: GetJobStatus
   - name: GetJobStatus
     type: operation
     actionMode: sequential
@@ -52,11 +47,10 @@ states:
           parameters:
             name: "{{ $.jobuid }}"
         actionDataFilter:
-          dataResultsPath: "{{ $.jobstatus }}"
+          results: "{{ $.jobstatus }}"
     stateDataFilter:
-      dataOutputPath: "{{ $.jobstatus }}"
-    transition:
-      nextState: DetermineCompletion
+      output: "{{ $.jobstatus }}"
+    transition: DetermineCompletion
   - name: DetermineCompletion
     type: switch
     dataConditions:
@@ -67,8 +61,7 @@ states:
         transition:
           nextState: JobFailed
     default:
-      transition:
-        nextState: WaitForCompletion
+      transition: WaitForCompletion
   - name: JobSucceeded
     type: operation
     actionMode: sequential
@@ -77,8 +70,7 @@ states:
           refName: reportJobSuceeded
           parameters:
             name: "{{ $.jobuid }}"
-    end:
-      kind: default
+    end: true
   - name: JobFailed
     type: operation
     actionMode: sequential
@@ -87,5 +79,4 @@ states:
           refName: reportJobFailed
           parameters:
             name: "{{ $.jobuid }}"
-    end:
-      kind: default
+    end: true

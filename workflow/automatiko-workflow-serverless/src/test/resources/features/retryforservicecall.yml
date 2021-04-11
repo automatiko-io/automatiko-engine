@@ -1,6 +1,7 @@
 id: retriesworkflow
 name: RetriesOnServiceCall
 version: '1.0'
+start: ExecService
 functions:
   - name: FirstService
     operation: api/services.json#first
@@ -11,8 +12,6 @@ retries:
 states:
   - name: ExecService
     type: operation
-    start:
-      kind: default
     actions:
       - functionRef:
           refName: FirstService
@@ -22,5 +21,4 @@ states:
         retryRef: InternalServerErrorRetryStrategy
         end:
           kind: default
-    end:
-      kind: default
+    end: true

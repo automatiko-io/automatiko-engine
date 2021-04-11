@@ -612,6 +612,11 @@ public class ServerlessWorkflowFactory {
             boundaryEventNode.setMetaData("ErrorRetry", retryDefinition.getDelay() == null ? DEFAULT_RETRY_AFTER : delayAsInt);
             boundaryEventNode.setMetaData("ErrorRetryLimit", retryDefinition.getMaxAttempts() == null ? DEFAULT_RETRY_LIMIT
                     : Integer.parseInt(retryDefinition.getMaxAttempts()));
+
+            if (retryDefinition.getMultiplier() != null) {
+                boundaryEventNode.setMetaData("ErrorRetryIncrementMultiplier",
+                        Float.parseFloat(retryDefinition.getMultiplier()));
+            }
         }
 
         process.addNode(boundaryEventNode);

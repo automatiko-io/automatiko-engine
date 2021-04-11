@@ -2,15 +2,13 @@
   "id": "noactions",
   "name": "noactions",
   "version": "1.0",
+  "start":"DoNothing",
   "states":[
     {
       "name":"DoNothing",
       "type":"operation",
-      "start": {
-        "kind": "default"
-      },
       "end": {
-        "kind": "terminate"
+        "terminate": true
       }
     }
   ]

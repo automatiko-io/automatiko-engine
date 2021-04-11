@@ -2,6 +2,7 @@
   "id": "finalizeCollegeApplication",
   "name": "Finalize College Application",
   "version": "1.0",
+  "start": "FinalizeApplication",
   "events": [
     {
       "name": "ApplicationSubmitted",
@@ -44,9 +45,6 @@
     {
       "name": "FinalizeApplication",
       "type": "event",
-      "start": {
-        "kind": "default"
-      },
       "exclusive": false,
       "onEvents": [
         {
@@ -68,7 +66,7 @@
         }
       ],
       "end": {
-        "kind": "terminate"
+        "terminate": true
       }
     }
   ]

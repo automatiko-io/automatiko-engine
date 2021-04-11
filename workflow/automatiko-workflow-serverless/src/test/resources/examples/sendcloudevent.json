@@ -2,6 +2,7 @@
   "id": "sendcloudeventonprovision",
   "version": "1.0",
   "name": "Send CloudEvent on provision completion",
+  "start": "ProvisionOrdersState",
   "events": [
     {
       "name": "provisioningCompleteEvent",
@@ -19,9 +20,6 @@
     {
       "name": "ProvisionOrdersState",
       "type": "foreach",
-      "start": {
-        "kind": "default"
-      },
       "inputCollection": "{{ $.orders }}",
       "iterationParam": "singleorder",
       "outputCollection": "{{ $.provisionedOrders }}",
@@ -36,7 +34,6 @@
         }
       ],
       "end": {
-        "kind": "event",
         "produceEvents": [
           {
             "eventRef": "provisioningCompleteEvent",

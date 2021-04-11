@@ -3,6 +3,7 @@
   "version": "1.0",
   "name": "Event Based Switch Transitions",
   "description": "Event Based Switch Transitions",
+  "start":"CheckVisaStatus",
   "events": [
     {
       "name": "visaApprovedEvent",
@@ -19,53 +20,38 @@
     {
       "name":"CheckVisaStatus",
       "type":"switch",
-      "start": {
-        "kind": "default"
-      },
       "eventConditions": [
         {
           "eventRef": "visaApprovedEvent",
-          "transition": {
-            "nextState": "HandleApprovedVisa"
-          }
+          "transition": "HandleApprovedVisa"          
         },
         {
           "eventRef": "visaRejectedEvent",
-          "transition": {
-            "nextState": "HandleRejectedVisa"
-          }
+          "transition": "HandleRejectedVisa"          
         }
       ],
       "eventTimeout": "PT1H",
       "default": {
-        "transition": {
-          "nextState": "HandleNoVisaDecision"
-        }
+        "transition": "HandleNoVisaDecision"        
       }
     },
     {
       "name": "HandleApprovedVisa",
       "type": "subflow",
       "workflowId": "handleApprovedVisaWorkflowID",
-      "end": {
-        "kind": "default"
-      }
+      "end": true
     },
     {
       "name": "HandleRejectedVisa",
       "type": "subflow",
       "workflowId": "handleRejectedVisaWorkflowID",
-      "end": {
-        "kind": "default"
-      }
+      "end": true
     },
     {
       "name": "HandleNoVisaDecision",
       "type": "subflow",
       "workflowId": "handleNoVisaDecisionWorkfowId",
-      "end": {
-        "kind": "default"
-      }
+      "end": true
     }
   ]
 }

@@ -3,6 +3,7 @@
   "version": "1.0",
   "name": "Applicant Request Decision Workflow",
   "description": "Determine if applicant request is valid",
+  "start": "CheckApplication",
   "functions": [
     {
       "name": "sendRejectionEmailFunction",
@@ -13,36 +14,25 @@
     {
       "name":"CheckApplication",
       "type":"switch",
-      "start": {
-        "kind": "default"
-      },
       "dataConditions": [
         {
           "condition": "{{ $.applicants[?(@.age >= 18)] }}",
-          "transition": {
-            "nextState": "StartApplication"
-          }
+          "transition": "StartApplication"          
         },
         {
           "condition": "{{ $.applicants[?(@.age < 18)] }}",
-          "transition": {
-            "nextState": "RejectApplication"
-          }
+          "transition": "RejectApplication"          
         }
       ],
       "default": {
-        "transition": {
-          "nextState": "RejectApplication"
-        }
+        "transition": "RejectApplication"        
       }
     },
     {
       "name": "StartApplication",
       "type": "subflow",
       "workflowId": "startApplicationWorkflowId",
-      "end": {
-        "kind": "default"
-      }
+      "end": true
     },
     {
       "name":"RejectApplication",
@@ -58,9 +48,7 @@
           }
         }
       ],
-      "end": {
-        "kind": "default"
-      }
+      "end": true
     }
   ]
 }

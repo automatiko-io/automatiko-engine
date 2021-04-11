@@ -2,6 +2,10 @@ id: checkInbox
 name: Check Inbox Workflow
 description: Periodically Check Inbox
 version: '1.0'
+start:
+  startName: scheduled
+  schedule:
+    cron: 0 0/15 * * * ?
 functions:
   - name: checkInboxFunction
     operation: http://myapis.org/inboxapi.json#checkNewMessages
@@ -10,16 +14,11 @@ functions:
 states:
   - name: CheckInbox
     type: operation
-    start:
-      kind: scheduled
-      schedule:
-        cron: 0 0/15 * * * ?
     actionMode: sequential
     actions:
       - functionRef:
           refName: checkInboxFunction
-    transition:
-      nextState: SendTextForHighPrioriry
+    transition: SendTextForHighPrioriry
   - name: SendTextForHighPrioriry
     type: foreach
     inputCollection: "{{ $.messages }}"
@@ -29,5 +28,4 @@ states:
           refName: sendTextFunction
           parameters:
             message: "{{ $.singlemessage }}"
-    end:
-      kind: default
+    end: true

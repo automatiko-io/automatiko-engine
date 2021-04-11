@@ -3,6 +3,11 @@
   "name": "Check Inbox Workflow",
   "description": "Periodically Check Inbox",
   "version": "1.0",
+  "start": {
+    "schedule": {
+      "cron": "0 0/15 * * * ?"
+    }
+  },
   "functions": [
     {
       "name": "checkInboxFunction",
@@ -16,13 +21,7 @@
   "states": [
     {
       "name": "CheckInbox",
-      "type": "operation",
-      "start": {
-        "kind": "scheduled",
-        "schedule": {
-          "cron": "0 0/15 * * * ?"
-        }
-      },
+      "type": "operation",      
       "actionMode": "sequential",
       "actions": [
         {
@@ -31,9 +30,7 @@
           }
         }
       ],
-      "transition": {
-        "nextState": "SendTextForHighPrioriry"
-      }
+      "transition": "SendTextForHighPrioriry"      
     },
     {
       "name": "SendTextForHighPrioriry",
@@ -50,9 +47,7 @@
           }
         }
       ],
-      "end": {
-        "kind": "default"
-      }
+      "end": true
     }
   ]
 }

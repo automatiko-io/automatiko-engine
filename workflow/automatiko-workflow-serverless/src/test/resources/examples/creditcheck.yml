@@ -3,6 +3,7 @@ id: customercreditcheck
 version: '1.0'
 name: Customer Credit Check Workflow
 description: Perform Customer Credit Check
+start: CheckCredit
 functions:
   - name: creditCheckFunction
     operation: http://myapis.org/creditcheckapi.json#doCreditCheck
@@ -17,8 +18,6 @@ events:
 states:
   - name: CheckCredit
     type: callback
-    start:
-      kind: default
     action:
       functionRef:
         refName: callCreditCheckMicroservice
@@ -26,27 +25,22 @@ states:
           customer: "{{ $.customer }}"
     eventRef: CreditCheckCompletedEvent
     timeout: PT15M
-    transition:
-      nextState: EvaluateDecision
+    transition: EvaluateDecision
   - name: EvaluateDecision
     type: switch
     dataConditions:
       - name: Approved
         condition: "{{ $.creditCheck[?(@.decision == 'Approved')] }}"
-        transition:
-          nextState: StartApplication
+        transition: StartApplication
       - name: Denied
         condition: "{{ $.creditCheck[?(@.decision == 'Denied')] }}"
-        transition:
-          nextState: RejectApplication
+        transition: RejectApplication
     default:
-      transition:
-        nextState: RejectApplication
+      transition: RejectApplication
   - name: StartApplication
     type: subflow
     workflowId: startApplicationWorkflowId
-    end:
-      kind: default
+    end: true
   - name: RejectApplication
     type: operation
     actionMode: sequential
@@ -55,5 +49,4 @@ states:
           refName: sendRejectionEmailFunction
           parameters:
             applicant: "{{ $.customer }}"
-    end:
-      kind: default
+    end: true

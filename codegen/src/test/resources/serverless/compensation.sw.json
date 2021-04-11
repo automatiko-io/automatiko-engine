@@ -1,18 +1,17 @@
 {
   "id": "compensationworkflow",
   "name": "CompensationTestWorkflow",
+  "start": "FirstState",
   "states": [
     {
       "name": "FirstState",
-      "type": "inject",
-      "start": {"kind":"default"},
+      "type": "inject",      
       "data": {
         "x": "1"
       },
       "compensatedBy": "SecondState",
       "end": {
-        "compensate": true,
-        "kind": "default"
+        "compensate": true
       }
     },
     {

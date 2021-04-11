@@ -1,16 +1,14 @@
 id: compensationworkflow
 name: CompensationTestWorkflow
+start: FirstState
 states:
   - name: FirstState
     type: inject
-    start:
-      kind: default
     data:
       x: '1'
     compensatedBy: SecondState
     end:
       compensate: true
-      kind: default
   - name: SecondState
     usedForCompensation: true
     type: inject

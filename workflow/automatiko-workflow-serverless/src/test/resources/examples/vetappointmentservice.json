@@ -3,6 +3,7 @@
   "name": "Vet Appointment Workflow",
   "description": "Vet service call via events",
   "version": "1.0",
+  "start": "MakeVetAppointmentState",
   "events": [
     {
       "name": "MakeVetAppointment",
@@ -19,9 +20,6 @@
     {
       "name": "MakeVetAppointmentState",
       "type": "operation",
-      "start": {
-        "kind": "default"
-      },
       "actions": [
         {
           "name": "MakeAppointmentAction",
@@ -31,14 +29,12 @@
             "resultEventRef":  "VetAppointmentInfo"
           },
           "actionDataFilter": {
-            "dataResultsPath": "{{ $.appointmentInfo }}"
+            "results": "{{ $.appointmentInfo }}"
           },
           "timeout": "PT15M"
         }
       ],
-      "end": {
-        "kind": "default"
-      }
+      "end": true
     }
   ]
 }

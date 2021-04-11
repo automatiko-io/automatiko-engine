@@ -1,6 +1,7 @@
 id: patientVitalsWorkflow
 name: Monitor Patient Vitals
 version: '1.0'
+start: MonitorVitals
 events:
   - name: HighBodyTemperature
     type: org.monitor.highBodyTemp
@@ -27,8 +28,6 @@ functions:
 states:
   - name: MonitorVitals
     type: event
-    start:
-      kind: default
     exclusive: true
     onEvents:
       - eventRefs:
@@ -53,4 +52,4 @@ states:
               parameters:
                 patientid: "{{ $.patientId }}"
     end:
-      kind: terminate
+      terminate: true

@@ -64,7 +64,7 @@ public class ServerlessWorkflowUtils {
 
     public static State getWorkflowStartState(Workflow workflow) {
         return workflow.getStates().stream()
-                .filter(ws -> ws.getStart() != null)
+                .filter(ws -> ws.getType() != null)
                 .findFirst().get();
     }
 
@@ -123,7 +123,7 @@ public class ServerlessWorkflowUtils {
                 .filter(wt -> wt.getName().equals(eventName))
                 .findFirst().get();
     }
-    
+
     public static RetryDefinition getWorkflowRetryFor(Workflow workflow, String retryName) {
         return workflow.getRetries().getRetryDefs().stream()
                 .filter(wt -> wt.getName().equals(retryName))
@@ -287,12 +287,12 @@ public class ServerlessWorkflowUtils {
     }
 
     public static String correlationExpressionFromSource(String source) {
-        if(source != null && source.contains("+")) {
+        if (source != null && source.contains("+")) {
             int pos = -1;
             String[] sourceParts = source.split("/");
-            for (String s: sourceParts) {
+            for (String s : sourceParts) {
                 pos++;
-                if(s.equals("+")) {
+                if (s.equals("+")) {
                     return "topic(message, " + pos + ")";
                 }
             }

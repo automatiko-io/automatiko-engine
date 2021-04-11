@@ -2,6 +2,7 @@ id: eventbasedgreeting
 version: '1.0'
 name: Event Based Greeting Workflow
 description: Event Based Greeting
+start: Greet
 events:
   - name: GreetingEvent
     type: greetingEventType
@@ -12,19 +13,16 @@ functions:
 states:
   - name: Greet
     type: event
-    start:
-      kind: default
     onEvents:
       - eventRefs:
           - GreetingEvent
         eventDataFilter:
-          dataOutputPath: "{{ $.data.greet }}"
+          data: "{{ $.data.greet }}"
         actions:
           - functionRef:
               refName: greetingFunction
               parameters:
                 name: "{{ $.greet.name }}"
     stateDataFilter:
-      dataOutputPath: "{{ $.payload.greeting }}"
-    end:
-      kind: default
+      output: "{{ $.payload.greeting }}"
+    end: true

@@ -3,6 +3,7 @@
   "version": "1.0",
   "name": "Job Monitoring",
   "description": "Monitor finished execution of a submitted job",
+  "start":"SubmitJob",
   "functions": [
     {
       "name": "submitJob",
@@ -25,9 +26,6 @@
     {
       "name":"SubmitJob",
       "type":"operation",
-      "start": {
-        "kind": "default"
-      },
       "actionMode":"sequential",
       "actions":[
         {
@@ -38,40 +36,32 @@
             }
           },
           "actionDataFilter": {
-            "dataResultsPath": "{{ $.jobuid }}"
+            "results": "{{ $.jobuid }}"
           }
         }
       ],
       "onErrors": [
         {
           "error": "*",
-          "transition": {
-            "nextState": "SubmitError"
-          }
+          "transition": "SubmitError"          
         }
       ],
       "stateDataFilter": {
-        "dataOutputPath": "{{ $.jobuid }}"
+        "output": "{{ $.jobuid }}"
       },
-      "transition": {
-        "nextState":"WaitForCompletion"
-      }
+      "transition": "WaitForCompletion"      
     },
     {
       "name": "SubmitError",
       "type": "subflow",
       "workflowId": "handleJobSubmissionErrorWorkflow",
-      "end": {
-        "kind": "default"
-      }
+      "end": true
     },
     {
       "name": "WaitForCompletion",
       "type": "delay",
       "timeDelay": "PT5S",
-      "transition": {
-        "nextState":"GetJobStatus"
-      }
+      "transition": "GetJobStatus"      
     },
     {
       "name":"GetJobStatus",
@@ -86,16 +76,14 @@
             }
           },
           "actionDataFilter": {
-            "dataResultsPath": "{{ $.jobstatus }}"
+            "results": "{{ $.jobstatus }}"
           }
         }
       ],
       "stateDataFilter": {
-        "dataOutputPath": "{{ $.jobstatus }}"
+        "output": "{{ $.jobstatus }}"
       },
-      "transition": {
-        "nextState":"DetermineCompletion"
-      }
+      "transition": "DetermineCompletion"      
     },
     {
       "name":"DetermineCompletion",
@@ -103,21 +91,15 @@
       "dataConditions": [
         {
           "condition": "{{ $[?(@.jobstatus == 'SUCCEEDED')] }}",
-          "transition": {
-            "nextState": "JobSucceeded"
-          }
+          "transition": "JobSucceeded"          
         },
         {
           "condition": "{{ $[?(@.jobstatus == 'FAILED')] }}",
-          "transition": {
-            "nextState": "JobFailed"
-          }
+          "transition": "JobFailed"          
         }
       ],
       "default": {
-        "transition": {
-          "nextState": "WaitForCompletion"
-        }
+        "transition": "WaitForCompletion"        
       }
     },
     {
@@ -134,9 +116,7 @@
           }
         }
       ],
-      "end": {
-        "kind": "default"
-      }
+      "end": true
     },
     {
       "name":"JobFailed",
@@ -152,9 +132,7 @@
           }
         }
       ],
-      "end": {
-        "kind": "default"
-      }
+      "end": true
     }
   ]
 }
