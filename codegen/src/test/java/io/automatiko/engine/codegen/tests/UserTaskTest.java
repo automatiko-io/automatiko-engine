@@ -47,6 +47,7 @@ import io.automatiko.engine.workflow.base.instance.impl.humantask.phases.Claim;
 import io.automatiko.engine.workflow.base.instance.impl.humantask.phases.Release;
 import io.automatiko.engine.workflow.base.instance.impl.workitem.Active;
 import io.automatiko.engine.workflow.base.instance.impl.workitem.Complete;
+import io.automatiko.engine.workflow.compiler.util.NodeLeftCountDownProcessEventListener;
 
 public class UserTaskTest extends AbstractCodegenTest {
 
@@ -1070,6 +1071,42 @@ public class UserTaskTest extends AbstractCodegenTest {
 
         processInstance.completeWorkItem(workItems.get(0).getId(), null, securityPolicy);
         assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+
+    }
+
+    @Test
+    public void testBasicUserTaskProcessExecutionTimeout() throws Exception {
+
+        Application app = generateCodeProcessesOnly("usertask/UserTasksProcessExecTimeout.bpmn2");
+        assertThat(app).isNotNull();
+
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("Execution timeout :: end",
+                1);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+
+        Process<? extends Model> p = app.processes().processById("UserTasksProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("name", "john");
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        List<WorkItem> workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("FirstTask", workItems.get(0).getName());
+
+        processInstance.completeWorkItem(workItems.get(0).getId(), null, securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        boolean completed = listener.waitTillCompleted(3000);
+        assertThat(completed).isTrue();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ABORTED);
 
     }
 }

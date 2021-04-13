@@ -20,6 +20,8 @@ import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.codegen.AbstractCodegenTest;
+import io.automatiko.engine.workflow.DefaultProcessEventListenerConfig;
+import io.automatiko.engine.workflow.compiler.util.NodeLeftCountDownProcessEventListener;
 
 public class ServerlessWorkflowTest extends AbstractCodegenTest {
 
@@ -44,6 +46,46 @@ public class ServerlessWorkflowTest extends AbstractCodegenTest {
         JsonNode dataOut = (JsonNode) result.toMap().get("name");
 
         assertThat(dataOut.textValue()).isEqualTo("john");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "serverless/single-inject-state-timeout.sw.json",
+            "serverless/single-inject-state-timeout.sw.yml" })
+    public void testSingleInjectWithExecTimeoutWorkflow(String processLocation) throws Exception {
+
+        Application app = generateCodeProcessesOnly(processLocation);
+        assertThat(app).isNotNull();
+
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("Execution timeout :: end",
+                1);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+
+        Process<? extends Model> p = app.processes().processById("singleinject_1_0");
+
+        Model m = p.createModel();
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).containsKeys("name");
+
+        JsonNode dataOut = (JsonNode) result.toMap().get("name");
+
+        assertThat(dataOut.textValue()).isEqualTo("john");
+
+        boolean completed = listener.waitTillCompleted(3000);
+        assertThat(completed).isTrue();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ABORTED);
+        result = (Model) processInstance.variables();
+        assertThat(result.toMap()).containsKeys("name");
+
+        dataOut = (JsonNode) result.toMap().get("name");
+
+        assertThat(dataOut.textValue()).isEqualTo("anothernotset");
+
     }
 
     @ParameterizedTest

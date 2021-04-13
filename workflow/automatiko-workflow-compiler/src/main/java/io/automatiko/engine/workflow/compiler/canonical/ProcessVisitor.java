@@ -3,6 +3,7 @@ package io.automatiko.engine.workflow.compiler.canonical;
 
 import static io.automatiko.engine.workflow.process.executable.core.ExecutableNodeContainerFactory.METHOD_CONNECTION;
 import static io.automatiko.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_DYNAMIC;
+import static io.automatiko.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_EXEC_TIMEOUT;
 import static io.automatiko.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_GLOBAL;
 import static io.automatiko.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_IMPORTS;
 import static io.automatiko.engine.workflow.process.executable.core.ExecutableProcessFactory.METHOD_NAME;
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -30,6 +33,7 @@ import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.ClassExpr;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -187,6 +191,26 @@ public class ProcessVisitor extends AbstractVisitor {
         }
         visitNodes(process, processNodes, body, variableScope, metadata);
         visitConnections(process.getNodes(), body);
+
+        String timeout = (String) process.getMetaData().get("timeout");
+        if (timeout != null) {
+            String extraNodeIds = (String) process.getMetaData().get("timeoutNodes");
+
+            if (extraNodeIds != null) {
+                List<Expression> arguments = new ArrayList<>();
+                arguments.add(new IntegerLiteralExpr(process.getNodes().length));
+                arguments.add(new StringLiteralExpr(timeout));
+                arguments.addAll(
+                        Stream.of(extraNodeIds.split(",")).map(s -> new LongLiteralExpr(s)).collect(Collectors.toList()));
+
+                body.addStatement(getFactoryMethod(FACTORY_FIELD_NAME, METHOD_EXEC_TIMEOUT,
+                        arguments.toArray(Expression[]::new)));
+            } else {
+
+                body.addStatement(getFactoryMethod(FACTORY_FIELD_NAME, METHOD_EXEC_TIMEOUT,
+                        new IntegerLiteralExpr(process.getNodes().length), new StringLiteralExpr(timeout)));
+            }
+        }
 
         body.addStatement(getFactoryMethod(FACTORY_FIELD_NAME, METHOD_VALIDATE));
 

@@ -561,6 +561,11 @@ public class ServerlessWorkflowParser {
         }
 
         factory.validate(process);
+
+        if (workflow.getExecTimeout() != null) {
+            factory.addExecutionTimeout(idCounter.get(), workflow.getExecTimeout(), process);
+        }
+
         return process;
     }
 

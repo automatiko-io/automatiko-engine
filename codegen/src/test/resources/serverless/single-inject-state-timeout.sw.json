@@ -1,0 +1,36 @@
+{
+  "id": "singleinject",
+  "name": "test-wf",
+  "version": "1.0",
+  "start":"SimpleInject",
+  "execTimeout" : {
+  	"duration": "PT2S",
+    "runBefore": "BeforeTimeout"
+  },
+  "keepActive": true,
+  "states":[
+    {
+      "name":"SimpleInject",
+      "type":"inject",
+      "data": {
+        "name": "john"
+      },
+      "end": true
+    },
+    {
+      "name":"BeforeTimeout",
+      "type":"inject",
+      "transition" : "AnotherBeforeTimeout",
+      "data": {
+        "name": "notset"
+      }
+    },
+    {
+      "name":"AnotherBeforeTimeout",
+      "type":"inject",
+      "data": {
+        "name": "anothernotset"
+      }
+    }
+  ]
+}
