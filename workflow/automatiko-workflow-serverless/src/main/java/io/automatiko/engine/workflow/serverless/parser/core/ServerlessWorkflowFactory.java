@@ -2,16 +2,19 @@ package io.automatiko.engine.workflow.serverless.parser.core;
 
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.ACTION;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import io.automatiko.engine.api.definition.process.Connection;
 import io.automatiko.engine.api.definition.process.Node;
 import io.automatiko.engine.workflow.base.core.Work;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
@@ -28,6 +31,7 @@ import io.automatiko.engine.workflow.process.core.ProcessAction;
 import io.automatiko.engine.workflow.process.core.impl.ConnectionImpl;
 import io.automatiko.engine.workflow.process.core.impl.ConsequenceAction;
 import io.automatiko.engine.workflow.process.core.impl.ConstraintImpl;
+import io.automatiko.engine.workflow.process.core.impl.NodeImpl;
 import io.automatiko.engine.workflow.process.core.node.ActionNode;
 import io.automatiko.engine.workflow.process.core.node.Assignment;
 import io.automatiko.engine.workflow.process.core.node.BoundaryEventNode;
@@ -54,6 +58,7 @@ import io.serverlessworkflow.api.Workflow;
 import io.serverlessworkflow.api.end.End;
 import io.serverlessworkflow.api.error.Error;
 import io.serverlessworkflow.api.events.EventDefinition;
+import io.serverlessworkflow.api.exectimeout.ExecTimeout;
 import io.serverlessworkflow.api.functions.FunctionDefinition;
 import io.serverlessworkflow.api.retry.RetryDefinition;
 
@@ -119,7 +124,12 @@ public class ServerlessWorkflowFactory {
 
         // seems not needed
         //process.setMetaData("Compensation", true);
-        process.setAutoComplete(true);
+        if (workflow.isKeepActive()) {
+            process.setAutoComplete(false);
+            process.setDynamic(true);
+        } else {
+            process.setAutoComplete(true);
+        }
         process.setVisibility(DEFAULT_VISIBILITY);
 
         // add workflow data var
@@ -635,6 +645,24 @@ public class ServerlessWorkflowFactory {
         }
     }
 
+    public void addExecutionTimeout(long id, ExecTimeout timeout, ExecutableProcess process) {
+        process.setMetaData("timeout", timeout.getDuration());
+
+        if (timeout.getRunBefore() != null) {
+            List<Long> timeoutNodes = new ArrayList<>();
+            for (Node node : process.getNodes()) {
+                if (node.getName().equals(timeout.getRunBefore())) {
+                    timeoutNodes.add(node.getId());
+
+                    collectConnectedNodes(node, process, timeoutNodes);
+                    break;
+                }
+            }
+            process.setMetaData("timeoutNodes",
+                    timeoutNodes.stream().map(l -> Long.toString(l)).collect(Collectors.joining(",")));
+        }
+    }
+
     public void validate(ExecutableProcess process) {
         ProcessValidationError[] errors = ExecutableProcessValidator.getInstance().validateProcess(process);
         for (ProcessValidationError error : errors) {
@@ -642,6 +670,20 @@ public class ServerlessWorkflowFactory {
         }
         if (errors.length > 0) {
             throw new RuntimeException("Workflow could not be validated !");
+        }
+    }
+
+    private void collectConnectedNodes(Node start, NodeContainer container, List<Long> nodeIds) {
+        List<Connection> outgoingConnections = start.getOutgoingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE);
+        if (outgoingConnections.isEmpty()) {
+            return;
+        }
+
+        for (Connection conn : outgoingConnections) {
+
+            nodeIds.add(conn.getTo().getId());
+
+            collectConnectedNodes(conn.getTo(), container, nodeIds);
         }
     }
 

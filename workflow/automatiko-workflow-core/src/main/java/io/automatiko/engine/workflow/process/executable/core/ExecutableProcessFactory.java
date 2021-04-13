@@ -56,6 +56,9 @@ import io.automatiko.engine.workflow.process.core.node.FaultNode;
 import io.automatiko.engine.workflow.process.core.node.StartNode;
 import io.automatiko.engine.workflow.process.core.node.StateBasedNode;
 import io.automatiko.engine.workflow.process.core.node.Trigger;
+import io.automatiko.engine.workflow.process.executable.core.factory.EndNodeFactory;
+import io.automatiko.engine.workflow.process.executable.core.factory.EventSubProcessNodeFactory;
+import io.automatiko.engine.workflow.process.executable.core.factory.StartNodeFactory;
 import io.automatiko.engine.workflow.process.executable.core.factory.VariableFactory;
 import io.automatiko.engine.workflow.process.executable.core.validation.ExecutableProcessValidator;
 
@@ -70,6 +73,7 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
     public static final String METHOD_IMPORTS = "imports";
     public static final String METHOD_GLOBAL = "global";
     public static final String METHOD_VARIABLE = "variable";
+    public static final String METHOD_EXEC_TIMEOUT = "executionTimeout";
 
     private static final Logger logger = LoggerFactory.getLogger(ExecutableProcessFactory.class);
 
@@ -253,6 +257,63 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
     @Override
     public ExecutableProcessFactory connection(long fromId, long toId, String uniqueId, boolean association) {
         super.connection(fromId, toId, uniqueId, association);
+        return this;
+    }
+
+    public ExecutableProcessFactory executionTimeout(int nodeIdCounter, String timeoutExpression,
+            long... extranodes) {
+        int nodeId = ++nodeIdCounter;
+        EventSubProcessNodeFactory eventSubProcessNode4 = eventSubProcessNode(nodeId);
+        eventSubProcessNode4.name("Execution timeout");
+        eventSubProcessNode4.metaData("UniqueId", "SubProcess_" + nodeId);
+        eventSubProcessNode4.keepActive(true);
+        eventSubProcessNode4.event("Timer-" + nodeId);
+        eventSubProcessNode4.autoComplete(true);
+
+        int startNodeId = ++nodeIdCounter;
+        StartNodeFactory startNode5 = eventSubProcessNode4.startNode(startNodeId);
+        startNode5.name("Execution timeout :: start");
+        startNode5.interrupting(true);
+        startNode5.metaData("UniqueId", "StartEvent_" + startNodeId);
+        startNode5.metaData("TriggerType", "Timer");
+        startNode5.done();
+        startNode5.timer(timeoutExpression, null, null, 1);
+
+        int endNodeId = ++nodeIdCounter;
+        EndNodeFactory endNode7 = eventSubProcessNode4.endNode(endNodeId);
+        endNode7.name("Execution timeout :: end");
+        endNode7.terminate(false);
+        endNode7.metaData("UniqueId", "EndEvent_" + endNodeId);
+        endNode7.done();
+
+        if (extranodes != null && extranodes.length > 0) {
+            for (long extraNodId : extranodes) {
+                Node node = getNodeContainer().getNode(extraNodId);
+                getNodeContainer().removeNode(node);
+
+                eventSubProcessNode4.getNodeContainer().addNode(node);
+            }
+            if (extranodes.length == 1) {
+                eventSubProcessNode4.connection(startNodeId, extranodes[0], "SequenceFlow_e_" + startNodeId);
+                eventSubProcessNode4.connection(extranodes[0], endNodeId, "SequenceFlow_e_" + endNodeId);
+            } else {
+
+                eventSubProcessNode4.connection(startNodeId, extranodes[0], "SequenceFlow_e_" + startNodeId);
+                int counter = 1;
+                for (long extraNodId : extranodes) {
+                    if (counter > extranodes.length) {
+                        eventSubProcessNode4.connection(extraNodId, extranodes[counter], "SequenceFlow_e_" + counter);
+                        counter++;
+                    }
+                }
+
+                eventSubProcessNode4.connection(extranodes[extranodes.length - 1], endNodeId, "SequenceFlow_e_" + endNodeId);
+            }
+        } else {
+            eventSubProcessNode4.connection(startNodeId, endNodeId, "SequenceFlow_" + startNodeId);
+        }
+        eventSubProcessNode4.done();
+
         return this;
     }
 
