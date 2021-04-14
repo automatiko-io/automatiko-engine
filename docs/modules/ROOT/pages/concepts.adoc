@@ -184,6 +184,7 @@ enable additional features:
 |input | Marks a given data object as input that should be available upon starting a new instance
 |output| Marks a given data object as output that will be always returned when an instance is altered or is completed
 |internal | Marks a given data object as internal, meaning it not be visible from the outside
+|sensitive | Marks a given data object as sensitive, meaning it not be visible from the outside and is not published via events
 |notnull | Marks a given data object as non-nullable, meaning once it was assigned a value it cannot be reset to null
 |readonly | Marks a given data object as read only, meaning that it cannot be changed after being set once
 |required| Marks a given data object as required to start new instance
@@ -225,6 +226,14 @@ reference the instance.
 
 IMPORTANT: Business key must be unique within the scope of a workflow (or version of the workflow).
 That means you can have only one active instance with a given business key.
+
+=== Execution timeout
+
+Execution timeout of an instance can be defined within the workflow definition as part of custom attributes.
+It allows to specify the maximum amount of time (since the start) that workflow instance is allowed to 
+remain active. It is given as a ISO formatted duration `PT5H`, `P5D` (5 hours and 5 days respectively).
+
+TIP: To define it add `timeout` custom attribute on the workflow definition with desired duration  
 
 == Tags
 

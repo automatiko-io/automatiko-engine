@@ -153,7 +153,7 @@ public class ProcessInstanceEventBatch implements EventBatch {
                 .parentInstanceId(pi.getParentProcessInstanceId()).rootInstanceId(pi.getRootProcessInstanceId())
                 .processId(pi.getProcessId()).rootProcessId(pi.getRootProcessId()).processName(pi.getProcessName())
                 .startDate(pi.getStartDate()).endDate(pi.getEndDate()).state(pi.getState())
-                .businessKey(pi.getCorrelationKey()).variables(pi.getVariables()).milestones(createMilestones(pi));
+                .businessKey(pi.getCorrelationKey()).variables(pi.getPublicVariables()).milestones(createMilestones(pi));
 
         if (pi.getState() == ProcessInstance.STATE_ERROR) {
             for (ExecutionsErrorInfo error : pi.errors()) {
