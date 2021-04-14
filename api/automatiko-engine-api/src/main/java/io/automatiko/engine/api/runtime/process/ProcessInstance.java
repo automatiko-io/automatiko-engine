@@ -107,6 +107,13 @@ public interface ProcessInstance extends EventListener {
     Map<String, Object> getVariables();
 
     /**
+     * Returns current snapshot of process instance variables that are publicly accessible
+     * 
+     * @return non empty map of process instance variables
+     */
+    Map<String, Object> getPublicVariables();
+
+    /**
      * Returns current snapshot of process instance variable identified by name
      * 
      * @return current value of given process variable or null if not found

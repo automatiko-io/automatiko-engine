@@ -472,6 +472,90 @@ public class PublishEventTest extends AbstractCodegenTest {
         assertThat(result.toMap().get("s")).isNotNull().isEqualTo("Goodbye Hello john!!");
     }
 
+    @Test
+    public void testBasicUserTaskProcessWithSensitiveData() throws Exception {
+
+        Application app = generateCodeProcessesOnly("usertask/UserTasksProcessSensitive.bpmn2");
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("UserTasksProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("name", "john");
+        parameters.put("ssn", "123-456");
+        m.fromMap(parameters);
+
+        TestEventPublisher publisher = new TestEventPublisher();
+        app.unitOfWorkManager().eventManager().setService("http://myhost");
+        app.unitOfWorkManager().eventManager().addPublisher(publisher);
+
+        UnitOfWork uow = app.unitOfWorkManager().newUnitOfWork();
+        uow.start();
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+        uow.end();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+        List<DataEvent<?>> events = publisher.extract();
+        assertThat(events).isNotNull().hasSize(2);
+        ProcessInstanceEventBody body = assertProcessInstanceEvent(events.get(0), "UserTasksProcess",
+                "UserTasksProcess", 1);
+        assertThat(body.getTags()).hasSize(0);
+        assertThat(body.getVariables()).hasSize(1).containsEntry("name", "john");
+        assertThat(body.getNodeInstances()).hasSize(2).extractingResultOf("getNodeType").contains("StartNode",
+                "HumanTaskNode");
+        assertThat(body.getNodeInstances()).extractingResultOf("getTriggerTime").allMatch(v -> v != null);
+        assertThat(body.getNodeInstances()).extractingResultOf("getLeaveTime").containsNull();// human task is active
+                                                                                              // thus null for leave
+                                                                                              // time
+
+        assertUserTaskInstanceEvent(events.get(1), "First Task", null, "1", "Ready", "UserTasksProcess");
+
+        List<WorkItem> workItems = processInstance.workItems(SecurityPolicy.of(new StaticIdentityProvider("john")));
+        assertEquals(1, workItems.size());
+        assertEquals("FirstTask", workItems.get(0).getName());
+
+        uow = app.unitOfWorkManager().newUnitOfWork();
+        uow.start();
+        processInstance.completeWorkItem(workItems.get(0).getId(), null,
+                SecurityPolicy.of(new StaticIdentityProvider("john")));
+        uow.end();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+        events = publisher.extract();
+        assertThat(events).isNotNull().hasSize(3);
+        body = assertProcessInstanceEvent(events.get(0), "UserTasksProcess", "UserTasksProcess", 1);
+        assertThat(body.getNodeInstances()).hasSize(2).extractingResultOf("getNodeType").contains("HumanTaskNode",
+                "HumanTaskNode");
+        assertThat(body.getNodeInstances()).extractingResultOf("getTriggerTime").allMatch(v -> v != null);
+        assertThat(body.getNodeInstances()).extractingResultOf("getLeaveTime").containsNull();// human task is active
+                                                                                              // thus null for leave
+                                                                                              // time
+
+        assertUserTaskInstanceEvent(events.get(1), "Second Task", null, "1", "Ready", "UserTasksProcess");
+        assertUserTaskInstanceEvent(events.get(2), "First Task", null, "1", "Completed", "UserTasksProcess");
+
+        workItems = processInstance.workItems(SecurityPolicy.of(new StaticIdentityProvider("john")));
+        assertEquals(1, workItems.size());
+        assertEquals("SecondTask", workItems.get(0).getName());
+
+        uow = app.unitOfWorkManager().newUnitOfWork();
+        uow.start();
+        processInstance.completeWorkItem(workItems.get(0).getId(), null,
+                SecurityPolicy.of(new StaticIdentityProvider("john")));
+        uow.end();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        events = publisher.extract();
+        assertThat(events).isNotNull().hasSize(2);
+        body = assertProcessInstanceEvent(events.get(0), "UserTasksProcess", "UserTasksProcess", 2);
+        assertThat(body.getNodeInstances()).hasSize(2).extractingResultOf("getNodeType").contains("HumanTaskNode",
+                "EndNode");
+        assertThat(body.getNodeInstances()).extractingResultOf("getTriggerTime").allMatch(v -> v != null);
+        assertThat(body.getNodeInstances()).extractingResultOf("getLeaveTime").allMatch(v -> v != null);
+
+        assertUserTaskInstanceEvent(events.get(1), "Second Task", null, "1", "Completed", "UserTasksProcess");
+    }
+
     /*
      * Helper methods
      */

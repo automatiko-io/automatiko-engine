@@ -766,6 +766,32 @@ public class UserTaskTest extends AbstractCodegenTest {
     }
 
     @Test
+    public void testApprovalWithSensitiveVariableTags() throws Exception {
+
+        Application app = generateCodeProcessesOnly("usertask/approval-with-internal-variable-tags.bpmn2");
+        assertThat(app).isNotNull();
+
+        Class<?> resourceClazz = Class.forName("org.acme.travels.ApprovalsModel", true, testClassLoader());
+        assertNotNull(resourceClazz);
+        // sensitive variables are not exposed on the model
+        assertThrows(NoSuchFieldException.class, () -> resourceClazz.getDeclaredField("approver"));
+
+        Process<? extends Model> p = app.processes().processById("approvals");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+        assertEquals(io.automatiko.engine.api.runtime.process.ProcessInstance.STATE_ACTIVE, processInstance.status());
+
+        processInstance.abort();
+
+        assertEquals(io.automatiko.engine.api.runtime.process.ProcessInstance.STATE_ABORTED, processInstance.status());
+    }
+
+    @Test
     public void testApprovalWithRequiredVariableTags() throws Exception {
 
         Application app = generateCodeProcessesOnly("usertask/approval-with-required-variable-tags.bpmn2");

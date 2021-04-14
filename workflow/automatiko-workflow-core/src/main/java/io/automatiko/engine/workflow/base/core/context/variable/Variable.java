@@ -38,6 +38,7 @@ public class Variable implements ValueObject, Serializable, io.automatiko.engine
     public static final String BUSINESS_KEY_TAG = "business-key";
     public static final String INITIATOR_TAG = "initiator";
     public static final String VERSIONED_TAG = "versioned";
+    public static final String SENSITIVE_TAG = "sensitive";
 
     public static final String DEFAULT_VALUE = "value";
     public static final String VAR_VERSIONS_LIMIT = "versionsLimit";

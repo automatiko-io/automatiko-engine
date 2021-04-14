@@ -355,6 +355,22 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
     }
 
     @Override
+    public Map<String, Object> getPublicVariables() {
+        Map<String, Object> variables = new HashMap<>(getVariables());
+
+        VariableScope variableScope = (VariableScope) ((io.automatiko.engine.workflow.process.core.WorkflowProcess) getProcess())
+                .getDefaultContext(VariableScope.VARIABLE_SCOPE);
+
+        for (Variable variable : variableScope.getVariables()) {
+            if (variable.hasTag(Variable.SENSITIVE_TAG)) {
+                variables.remove(variable.getName());
+            }
+        }
+
+        return variables;
+    }
+
+    @Override
     public void setVariable(String name, Object value) {
         VariableScope variableScope = (VariableScope) ((ContextContainer) getProcess())
                 .getDefaultContext(VariableScope.VARIABLE_SCOPE);

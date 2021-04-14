@@ -15,74 +15,76 @@ import io.automatiko.engine.workflow.base.core.datatype.impl.type.ObjectDataType
 
 public class VariableDeclarations {
 
-	public static VariableDeclarations of(VariableScope vscope) {
-		HashMap<String, Variable> vs = new HashMap<>();
-		for (Variable variable : vscope.getVariables()) {
-			if (variable.hasTag(Variable.INTERNAL_TAG)) {
-				continue;
-			}
+    public static VariableDeclarations of(VariableScope vscope) {
+        HashMap<String, Variable> vs = new HashMap<>();
+        for (Variable variable : vscope.getVariables()) {
+            if (variable.hasTag(Variable.INTERNAL_TAG) || variable.hasTag(Variable.SENSITIVE_TAG)) {
+                continue;
+            }
 
-			vs.put(variable.getName(), variable);
-		}
-		return of(vs);
-	}
+            vs.put(variable.getName(), variable);
+        }
+        return of(vs);
+    }
 
-	public static VariableDeclarations ofInput(VariableScope vscope) {
+    public static VariableDeclarations ofInput(VariableScope vscope) {
 
-		return of(vscope, variable -> variable.hasTag(Variable.INTERNAL_TAG) || variable.hasTag(Variable.OUTPUT_TAG));
-	}
+        return of(vscope, variable -> variable.hasTag(Variable.INTERNAL_TAG) || variable.hasTag(Variable.OUTPUT_TAG)
+                || variable.hasTag(Variable.SENSITIVE_TAG));
+    }
 
-	public static VariableDeclarations ofOutput(VariableScope vscope) {
+    public static VariableDeclarations ofOutput(VariableScope vscope) {
 
-		return of(vscope, variable -> variable.hasTag(Variable.INTERNAL_TAG) || variable.hasTag(Variable.INPUT_TAG));
-	}
+        return of(vscope, variable -> variable.hasTag(Variable.INTERNAL_TAG) || variable.hasTag(Variable.INPUT_TAG)
+                || variable.hasTag(Variable.SENSITIVE_TAG));
+    }
 
-	public static VariableDeclarations of(VariableScope vscope, Predicate<Variable> filterOut) {
-		HashMap<String, Variable> vs = new HashMap<>();
-		for (Variable variable : vscope.getVariables()) {
-			if (filterOut.test(variable)) {
-				continue;
-			}
+    public static VariableDeclarations of(VariableScope vscope, Predicate<Variable> filterOut) {
+        HashMap<String, Variable> vs = new HashMap<>();
+        for (Variable variable : vscope.getVariables()) {
+            if (filterOut.test(variable)) {
+                continue;
+            }
 
-			vs.put(variable.getName(), variable);
-		}
-		return of(vs);
-	}
+            vs.put(variable.getName(), variable);
+        }
+        return of(vs);
+    }
 
-	public static VariableDeclarations of(Map<String, Variable> vscope) {
-		return new VariableDeclarations(vscope);
-	}
+    public static VariableDeclarations of(Map<String, Variable> vscope) {
+        return new VariableDeclarations(vscope);
+    }
 
-	public static VariableDeclarations ofRawInfo(Map<String, String> vscope) {
-		HashMap<String, Variable> vs = new HashMap<>();
+    public static VariableDeclarations ofRawInfo(Map<String, String> vscope) {
+        HashMap<String, Variable> vs = new HashMap<>();
 
-		if (vscope != null) {
-			for (Entry<String, String> entry : vscope.entrySet()) {
-				Variable variable = new Variable();
-				variable.setName(entry.getKey());
-				variable.setType(new ObjectDataType(constructClass(entry.getValue()), entry.getValue()));
-				vs.put(entry.getKey(), variable);
-			}
-		}
+        if (vscope != null) {
+            for (Entry<String, String> entry : vscope.entrySet()) {
+                Variable variable = new Variable();
+                variable.setName(entry.getKey());
+                variable.setType(new ObjectDataType(constructClass(entry.getValue()), entry.getValue()));
+                vs.put(entry.getKey(), variable);
+            }
+        }
 
-		return new VariableDeclarations(vs);
-	}
+        return new VariableDeclarations(vs);
+    }
 
-	private final Map<String, Variable> vscope;
+    private final Map<String, Variable> vscope;
 
-	public VariableDeclarations(Map<String, Variable> vscope) {
-		this.vscope = vscope;
-	}
+    public VariableDeclarations(Map<String, Variable> vscope) {
+        this.vscope = vscope;
+    }
 
-	public String getType(String vname) {
-		return vscope.get(vname).getType().getStringType();
-	}
+    public String getType(String vname) {
+        return vscope.get(vname).getType().getStringType();
+    }
 
-	public List<String> getTags(String vname) {
-		return vscope.get(vname).getTags();
-	}
+    public List<String> getTags(String vname) {
+        return vscope.get(vname).getTags();
+    }
 
-	public Map<String, Variable> getTypes() {
-		return vscope;
-	}
+    public Map<String, Variable> getTypes() {
+        return vscope;
+    }
 }
