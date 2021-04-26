@@ -220,7 +220,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             details.setTags(pi.tags().values());
             details.setVariables(pi.variables());
             details.setSubprocesses(pi.subprocesses().stream()
-                    .map(spi -> new ProcessInstanceDTO(spi.id(), spi.businessKey(), spi.description(), pi.tags().values(),
+                    .map(spi -> new ProcessInstanceDTO(spi.id(), spi.businessKey(), spi.description(), spi.tags().values(),
                             spi.errors().isPresent(), spi.process().id()))
                     .collect(Collectors.toList()));
 

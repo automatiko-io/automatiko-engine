@@ -10031,6 +10031,23 @@ public final class AutomatikoMessages {
         getInitiatorBytes();
 
     /**
+     * <code>optional string reference_from_root = 30;</code>
+     * @return Whether the referenceFromRoot field is set.
+     */
+    boolean hasReferenceFromRoot();
+    /**
+     * <code>optional string reference_from_root = 30;</code>
+     * @return The referenceFromRoot.
+     */
+    java.lang.String getReferenceFromRoot();
+    /**
+     * <code>optional string reference_from_root = 30;</code>
+     * @return The bytes for referenceFromRoot.
+     */
+    com.google.protobuf.ByteString
+        getReferenceFromRootBytes();
+
+    /**
      * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.SwimlaneContextInstance swimlane_context = 6;</code>
      */
     java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.SwimlaneContextInstance> 
@@ -10274,6 +10291,7 @@ public final class AutomatikoMessages {
       rootProcessId_ = "";
       referenceId_ = "";
       initiator_ = "";
+      referenceFromRoot_ = "";
       swimlaneContext_ = java.util.Collections.emptyList();
       nodeInstance_ = java.util.Collections.emptyList();
       variable_ = java.util.Collections.emptyList();
@@ -10345,36 +10363,36 @@ public final class AutomatikoMessages {
               break;
             }
             case 50: {
-              if (!((mutable_bitField0_ & 0x00080000) != 0)) {
+              if (!((mutable_bitField0_ & 0x00100000) != 0)) {
                 swimlaneContext_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.SwimlaneContextInstance>();
-                mutable_bitField0_ |= 0x00080000;
+                mutable_bitField0_ |= 0x00100000;
               }
               swimlaneContext_.add(
                   input.readMessage(io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.SwimlaneContextInstance.PARSER, extensionRegistry));
               break;
             }
             case 58: {
-              if (!((mutable_bitField0_ & 0x00100000) != 0)) {
+              if (!((mutable_bitField0_ & 0x00200000) != 0)) {
                 nodeInstance_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.NodeInstance>();
-                mutable_bitField0_ |= 0x00100000;
+                mutable_bitField0_ |= 0x00200000;
               }
               nodeInstance_.add(
                   input.readMessage(io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.NodeInstance.PARSER, extensionRegistry));
               break;
             }
             case 66: {
-              if (!((mutable_bitField0_ & 0x00200000) != 0)) {
+              if (!((mutable_bitField0_ & 0x00400000) != 0)) {
                 variable_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.Variable>();
-                mutable_bitField0_ |= 0x00200000;
+                mutable_bitField0_ |= 0x00400000;
               }
               variable_.add(
                   input.readMessage(io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.Variable.PARSER, extensionRegistry));
               break;
             }
             case 82: {
-              if (!((mutable_bitField0_ & 0x00400000) != 0)) {
+              if (!((mutable_bitField0_ & 0x00800000) != 0)) {
                 exclusiveGroup_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.ExclusiveGroupInstance>();
-                mutable_bitField0_ |= 0x00400000;
+                mutable_bitField0_ |= 0x00800000;
               }
               exclusiveGroup_.add(
                   input.readMessage(io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.ExclusiveGroupInstance.PARSER, extensionRegistry));
@@ -10394,17 +10412,17 @@ public final class AutomatikoMessages {
             }
             case 106: {
               com.google.protobuf.ByteString bs = input.readBytes();
-              if (!((mutable_bitField0_ & 0x00800000) != 0)) {
+              if (!((mutable_bitField0_ & 0x01000000) != 0)) {
                 completedNodeIds_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00800000;
+                mutable_bitField0_ |= 0x01000000;
               }
               completedNodeIds_.add(bs);
               break;
             }
             case 114: {
-              if (!((mutable_bitField0_ & 0x01000000) != 0)) {
+              if (!((mutable_bitField0_ & 0x02000000) != 0)) {
                 iterationLevels_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.IterationLevel>();
-                mutable_bitField0_ |= 0x01000000;
+                mutable_bitField0_ |= 0x02000000;
               }
               iterationLevels_.add(
                   input.readMessage(io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.IterationLevel.PARSER, extensionRegistry));
@@ -10479,30 +10497,36 @@ public final class AutomatikoMessages {
               break;
             }
             case 218: {
-              if (!((mutable_bitField0_ & 0x02000000) != 0)) {
+              if (!((mutable_bitField0_ & 0x04000000) != 0)) {
                 children_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.ProcessInstanchChildren>();
-                mutable_bitField0_ |= 0x02000000;
+                mutable_bitField0_ |= 0x04000000;
               }
               children_.add(
                   input.readMessage(io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.ProcessInstanchChildren.PARSER, extensionRegistry));
               break;
             }
             case 226: {
-              if (!((mutable_bitField0_ & 0x04000000) != 0)) {
+              if (!((mutable_bitField0_ & 0x08000000) != 0)) {
                 tags_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.Tag>();
-                mutable_bitField0_ |= 0x04000000;
+                mutable_bitField0_ |= 0x08000000;
               }
               tags_.add(
                   input.readMessage(io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.Tag.PARSER, extensionRegistry));
               break;
             }
             case 234: {
-              if (!((mutable_bitField0_ & 0x08000000) != 0)) {
+              if (!((mutable_bitField0_ & 0x10000000) != 0)) {
                 errors_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.Error>();
-                mutable_bitField0_ |= 0x08000000;
+                mutable_bitField0_ |= 0x10000000;
               }
               errors_.add(
                   input.readMessage(io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.Error.PARSER, extensionRegistry));
+              break;
+            }
+            case 242: {
+              com.google.protobuf.ByteString bs = input.readBytes();
+              bitField0_ |= 0x00080000;
+              referenceFromRoot_ = bs;
               break;
             }
             default: {
@@ -10520,31 +10544,31 @@ public final class AutomatikoMessages {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00080000) != 0)) {
+        if (((mutable_bitField0_ & 0x00100000) != 0)) {
           swimlaneContext_ = java.util.Collections.unmodifiableList(swimlaneContext_);
         }
-        if (((mutable_bitField0_ & 0x00100000) != 0)) {
+        if (((mutable_bitField0_ & 0x00200000) != 0)) {
           nodeInstance_ = java.util.Collections.unmodifiableList(nodeInstance_);
         }
-        if (((mutable_bitField0_ & 0x00200000) != 0)) {
+        if (((mutable_bitField0_ & 0x00400000) != 0)) {
           variable_ = java.util.Collections.unmodifiableList(variable_);
         }
-        if (((mutable_bitField0_ & 0x00400000) != 0)) {
+        if (((mutable_bitField0_ & 0x00800000) != 0)) {
           exclusiveGroup_ = java.util.Collections.unmodifiableList(exclusiveGroup_);
         }
-        if (((mutable_bitField0_ & 0x00800000) != 0)) {
+        if (((mutable_bitField0_ & 0x01000000) != 0)) {
           completedNodeIds_ = completedNodeIds_.getUnmodifiableView();
         }
-        if (((mutable_bitField0_ & 0x01000000) != 0)) {
+        if (((mutable_bitField0_ & 0x02000000) != 0)) {
           iterationLevels_ = java.util.Collections.unmodifiableList(iterationLevels_);
         }
-        if (((mutable_bitField0_ & 0x02000000) != 0)) {
+        if (((mutable_bitField0_ & 0x04000000) != 0)) {
           children_ = java.util.Collections.unmodifiableList(children_);
         }
-        if (((mutable_bitField0_ & 0x04000000) != 0)) {
+        if (((mutable_bitField0_ & 0x08000000) != 0)) {
           tags_ = java.util.Collections.unmodifiableList(tags_);
         }
-        if (((mutable_bitField0_ & 0x08000000) != 0)) {
+        if (((mutable_bitField0_ & 0x10000000) != 0)) {
           errors_ = java.util.Collections.unmodifiableList(errors_);
         }
         this.unknownFields = unknownFields.build();
@@ -34002,6 +34026,54 @@ public final class AutomatikoMessages {
       }
     }
 
+    public static final int REFERENCE_FROM_ROOT_FIELD_NUMBER = 30;
+    private volatile java.lang.Object referenceFromRoot_;
+    /**
+     * <code>optional string reference_from_root = 30;</code>
+     * @return Whether the referenceFromRoot field is set.
+     */
+    @java.lang.Override
+    public boolean hasReferenceFromRoot() {
+      return ((bitField0_ & 0x00080000) != 0);
+    }
+    /**
+     * <code>optional string reference_from_root = 30;</code>
+     * @return The referenceFromRoot.
+     */
+    @java.lang.Override
+    public java.lang.String getReferenceFromRoot() {
+      java.lang.Object ref = referenceFromRoot_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          referenceFromRoot_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string reference_from_root = 30;</code>
+     * @return The bytes for referenceFromRoot.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString
+        getReferenceFromRootBytes() {
+      java.lang.Object ref = referenceFromRoot_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        referenceFromRoot_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     public static final int SWIMLANE_CONTEXT_FIELD_NUMBER = 6;
     private java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.SwimlaneContextInstance> swimlaneContext_;
     /**
@@ -34455,6 +34527,9 @@ public final class AutomatikoMessages {
       for (int i = 0; i < errors_.size(); i++) {
         output.writeMessage(29, errors_.get(i));
       }
+      if (((bitField0_ & 0x00080000) != 0)) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 30, referenceFromRoot_);
+      }
       unknownFields.writeTo(output);
     }
 
@@ -34567,6 +34642,9 @@ public final class AutomatikoMessages {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(29, errors_.get(i));
       }
+      if (((bitField0_ & 0x00080000) != 0)) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(30, referenceFromRoot_);
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -34677,6 +34755,11 @@ public final class AutomatikoMessages {
         if (!getInitiator()
             .equals(other.getInitiator())) return false;
       }
+      if (hasReferenceFromRoot() != other.hasReferenceFromRoot()) return false;
+      if (hasReferenceFromRoot()) {
+        if (!getReferenceFromRoot()
+            .equals(other.getReferenceFromRoot())) return false;
+      }
       if (!getSwimlaneContextList()
           .equals(other.getSwimlaneContextList())) return false;
       if (!getNodeInstanceList()
@@ -34785,6 +34868,10 @@ public final class AutomatikoMessages {
       if (hasInitiator()) {
         hash = (37 * hash) + INITIATOR_FIELD_NUMBER;
         hash = (53 * hash) + getInitiator().hashCode();
+      }
+      if (hasReferenceFromRoot()) {
+        hash = (37 * hash) + REFERENCE_FROM_ROOT_FIELD_NUMBER;
+        hash = (53 * hash) + getReferenceFromRoot().hashCode();
       }
       if (getSwimlaneContextCount() > 0) {
         hash = (37 * hash) + SWIMLANE_CONTEXT_FIELD_NUMBER;
@@ -35001,53 +35088,55 @@ public final class AutomatikoMessages {
         bitField0_ = (bitField0_ & ~0x00020000);
         initiator_ = "";
         bitField0_ = (bitField0_ & ~0x00040000);
+        referenceFromRoot_ = "";
+        bitField0_ = (bitField0_ & ~0x00080000);
         if (swimlaneContextBuilder_ == null) {
           swimlaneContext_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00080000);
+          bitField0_ = (bitField0_ & ~0x00100000);
         } else {
           swimlaneContextBuilder_.clear();
         }
         if (nodeInstanceBuilder_ == null) {
           nodeInstance_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00100000);
+          bitField0_ = (bitField0_ & ~0x00200000);
         } else {
           nodeInstanceBuilder_.clear();
         }
         if (variableBuilder_ == null) {
           variable_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00200000);
+          bitField0_ = (bitField0_ & ~0x00400000);
         } else {
           variableBuilder_.clear();
         }
         if (exclusiveGroupBuilder_ == null) {
           exclusiveGroup_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00400000);
+          bitField0_ = (bitField0_ & ~0x00800000);
         } else {
           exclusiveGroupBuilder_.clear();
         }
         completedNodeIds_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00800000);
+        bitField0_ = (bitField0_ & ~0x01000000);
         if (iterationLevelsBuilder_ == null) {
           iterationLevels_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x01000000);
+          bitField0_ = (bitField0_ & ~0x02000000);
         } else {
           iterationLevelsBuilder_.clear();
         }
         if (childrenBuilder_ == null) {
           children_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x02000000);
+          bitField0_ = (bitField0_ & ~0x04000000);
         } else {
           childrenBuilder_.clear();
         }
         if (tagsBuilder_ == null) {
           tags_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x04000000);
+          bitField0_ = (bitField0_ & ~0x08000000);
         } else {
           tagsBuilder_.clear();
         }
         if (errorsBuilder_ == null) {
           errors_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x08000000);
+          bitField0_ = (bitField0_ & ~0x10000000);
         } else {
           errorsBuilder_.clear();
         }
@@ -35155,78 +35244,82 @@ public final class AutomatikoMessages {
           to_bitField0_ |= 0x00040000;
         }
         result.initiator_ = initiator_;
+        if (((from_bitField0_ & 0x00080000) != 0)) {
+          to_bitField0_ |= 0x00080000;
+        }
+        result.referenceFromRoot_ = referenceFromRoot_;
         if (swimlaneContextBuilder_ == null) {
-          if (((bitField0_ & 0x00080000) != 0)) {
+          if (((bitField0_ & 0x00100000) != 0)) {
             swimlaneContext_ = java.util.Collections.unmodifiableList(swimlaneContext_);
-            bitField0_ = (bitField0_ & ~0x00080000);
+            bitField0_ = (bitField0_ & ~0x00100000);
           }
           result.swimlaneContext_ = swimlaneContext_;
         } else {
           result.swimlaneContext_ = swimlaneContextBuilder_.build();
         }
         if (nodeInstanceBuilder_ == null) {
-          if (((bitField0_ & 0x00100000) != 0)) {
+          if (((bitField0_ & 0x00200000) != 0)) {
             nodeInstance_ = java.util.Collections.unmodifiableList(nodeInstance_);
-            bitField0_ = (bitField0_ & ~0x00100000);
+            bitField0_ = (bitField0_ & ~0x00200000);
           }
           result.nodeInstance_ = nodeInstance_;
         } else {
           result.nodeInstance_ = nodeInstanceBuilder_.build();
         }
         if (variableBuilder_ == null) {
-          if (((bitField0_ & 0x00200000) != 0)) {
+          if (((bitField0_ & 0x00400000) != 0)) {
             variable_ = java.util.Collections.unmodifiableList(variable_);
-            bitField0_ = (bitField0_ & ~0x00200000);
+            bitField0_ = (bitField0_ & ~0x00400000);
           }
           result.variable_ = variable_;
         } else {
           result.variable_ = variableBuilder_.build();
         }
         if (exclusiveGroupBuilder_ == null) {
-          if (((bitField0_ & 0x00400000) != 0)) {
+          if (((bitField0_ & 0x00800000) != 0)) {
             exclusiveGroup_ = java.util.Collections.unmodifiableList(exclusiveGroup_);
-            bitField0_ = (bitField0_ & ~0x00400000);
+            bitField0_ = (bitField0_ & ~0x00800000);
           }
           result.exclusiveGroup_ = exclusiveGroup_;
         } else {
           result.exclusiveGroup_ = exclusiveGroupBuilder_.build();
         }
-        if (((bitField0_ & 0x00800000) != 0)) {
+        if (((bitField0_ & 0x01000000) != 0)) {
           completedNodeIds_ = completedNodeIds_.getUnmodifiableView();
-          bitField0_ = (bitField0_ & ~0x00800000);
+          bitField0_ = (bitField0_ & ~0x01000000);
         }
         result.completedNodeIds_ = completedNodeIds_;
         if (iterationLevelsBuilder_ == null) {
-          if (((bitField0_ & 0x01000000) != 0)) {
+          if (((bitField0_ & 0x02000000) != 0)) {
             iterationLevels_ = java.util.Collections.unmodifiableList(iterationLevels_);
-            bitField0_ = (bitField0_ & ~0x01000000);
+            bitField0_ = (bitField0_ & ~0x02000000);
           }
           result.iterationLevels_ = iterationLevels_;
         } else {
           result.iterationLevels_ = iterationLevelsBuilder_.build();
         }
         if (childrenBuilder_ == null) {
-          if (((bitField0_ & 0x02000000) != 0)) {
+          if (((bitField0_ & 0x04000000) != 0)) {
             children_ = java.util.Collections.unmodifiableList(children_);
-            bitField0_ = (bitField0_ & ~0x02000000);
+            bitField0_ = (bitField0_ & ~0x04000000);
           }
           result.children_ = children_;
         } else {
           result.children_ = childrenBuilder_.build();
         }
         if (tagsBuilder_ == null) {
-          if (((bitField0_ & 0x04000000) != 0)) {
+          if (((bitField0_ & 0x08000000) != 0)) {
             tags_ = java.util.Collections.unmodifiableList(tags_);
-            bitField0_ = (bitField0_ & ~0x04000000);
+            bitField0_ = (bitField0_ & ~0x08000000);
           }
           result.tags_ = tags_;
         } else {
           result.tags_ = tagsBuilder_.build();
         }
         if (errorsBuilder_ == null) {
-          if (((bitField0_ & 0x08000000) != 0)) {
+          if (((bitField0_ & 0x10000000) != 0)) {
             errors_ = java.util.Collections.unmodifiableList(errors_);
-            bitField0_ = (bitField0_ & ~0x08000000);
+            bitField0_ = (bitField0_ & ~0x10000000);
           }
           result.errors_ = errors_;
         } else {
@@ -35364,11 +35457,16 @@ public final class AutomatikoMessages {
           initiator_ = other.initiator_;
           onChanged();
         }
+        if (other.hasReferenceFromRoot()) {
+          bitField0_ |= 0x00080000;
+          referenceFromRoot_ = other.referenceFromRoot_;
+          onChanged();
+        }
         if (swimlaneContextBuilder_ == null) {
           if (!other.swimlaneContext_.isEmpty()) {
             if (swimlaneContext_.isEmpty()) {
               swimlaneContext_ = other.swimlaneContext_;
-              bitField0_ = (bitField0_ & ~0x00080000);
+              bitField0_ = (bitField0_ & ~0x00100000);
             } else {
               ensureSwimlaneContextIsMutable();
               swimlaneContext_.addAll(other.swimlaneContext_);
@@ -35381,7 +35479,7 @@ public final class AutomatikoMessages {
               swimlaneContextBuilder_.dispose();
               swimlaneContextBuilder_ = null;
               swimlaneContext_ = other.swimlaneContext_;
-              bitField0_ = (bitField0_ & ~0x00080000);
+              bitField0_ = (bitField0_ & ~0x00100000);
               swimlaneContextBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getSwimlaneContextFieldBuilder() : null;
@@ -35394,7 +35492,7 @@ public final class AutomatikoMessages {
           if (!other.nodeInstance_.isEmpty()) {
             if (nodeInstance_.isEmpty()) {
               nodeInstance_ = other.nodeInstance_;
-              bitField0_ = (bitField0_ & ~0x00100000);
+              bitField0_ = (bitField0_ & ~0x00200000);
             } else {
               ensureNodeInstanceIsMutable();
               nodeInstance_.addAll(other.nodeInstance_);
@@ -35407,7 +35505,7 @@ public final class AutomatikoMessages {
               nodeInstanceBuilder_.dispose();
               nodeInstanceBuilder_ = null;
               nodeInstance_ = other.nodeInstance_;
-              bitField0_ = (bitField0_ & ~0x00100000);
+              bitField0_ = (bitField0_ & ~0x00200000);
               nodeInstanceBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getNodeInstanceFieldBuilder() : null;
@@ -35420,7 +35518,7 @@ public final class AutomatikoMessages {
           if (!other.variable_.isEmpty()) {
             if (variable_.isEmpty()) {
               variable_ = other.variable_;
-              bitField0_ = (bitField0_ & ~0x00200000);
+              bitField0_ = (bitField0_ & ~0x00400000);
             } else {
               ensureVariableIsMutable();
               variable_.addAll(other.variable_);
@@ -35433,7 +35531,7 @@ public final class AutomatikoMessages {
               variableBuilder_.dispose();
               variableBuilder_ = null;
               variable_ = other.variable_;
-              bitField0_ = (bitField0_ & ~0x00200000);
+              bitField0_ = (bitField0_ & ~0x00400000);
               variableBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getVariableFieldBuilder() : null;
@@ -35446,7 +35544,7 @@ public final class AutomatikoMessages {
           if (!other.exclusiveGroup_.isEmpty()) {
             if (exclusiveGroup_.isEmpty()) {
               exclusiveGroup_ = other.exclusiveGroup_;
-              bitField0_ = (bitField0_ & ~0x00400000);
+              bitField0_ = (bitField0_ & ~0x00800000);
             } else {
               ensureExclusiveGroupIsMutable();
               exclusiveGroup_.addAll(other.exclusiveGroup_);
@@ -35459,7 +35557,7 @@ public final class AutomatikoMessages {
               exclusiveGroupBuilder_.dispose();
               exclusiveGroupBuilder_ = null;
               exclusiveGroup_ = other.exclusiveGroup_;
-              bitField0_ = (bitField0_ & ~0x00400000);
+              bitField0_ = (bitField0_ & ~0x00800000);
               exclusiveGroupBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getExclusiveGroupFieldBuilder() : null;
@@ -35471,7 +35569,7 @@ public final class AutomatikoMessages {
         if (!other.completedNodeIds_.isEmpty()) {
           if (completedNodeIds_.isEmpty()) {
             completedNodeIds_ = other.completedNodeIds_;
-            bitField0_ = (bitField0_ & ~0x00800000);
+            bitField0_ = (bitField0_ & ~0x01000000);
           } else {
             ensureCompletedNodeIdsIsMutable();
             completedNodeIds_.addAll(other.completedNodeIds_);
@@ -35482,7 +35580,7 @@ public final class AutomatikoMessages {
           if (!other.iterationLevels_.isEmpty()) {
             if (iterationLevels_.isEmpty()) {
               iterationLevels_ = other.iterationLevels_;
-              bitField0_ = (bitField0_ & ~0x01000000);
+              bitField0_ = (bitField0_ & ~0x02000000);
             } else {
               ensureIterationLevelsIsMutable();
               iterationLevels_.addAll(other.iterationLevels_);
@@ -35495,7 +35593,7 @@ public final class AutomatikoMessages {
               iterationLevelsBuilder_.dispose();
               iterationLevelsBuilder_ = null;
               iterationLevels_ = other.iterationLevels_;
-              bitField0_ = (bitField0_ & ~0x01000000);
+              bitField0_ = (bitField0_ & ~0x02000000);
               iterationLevelsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getIterationLevelsFieldBuilder() : null;
@@ -35508,7 +35606,7 @@ public final class AutomatikoMessages {
           if (!other.children_.isEmpty()) {
             if (children_.isEmpty()) {
               children_ = other.children_;
-              bitField0_ = (bitField0_ & ~0x02000000);
+              bitField0_ = (bitField0_ & ~0x04000000);
             } else {
               ensureChildrenIsMutable();
               children_.addAll(other.children_);
@@ -35521,7 +35619,7 @@ public final class AutomatikoMessages {
               childrenBuilder_.dispose();
               childrenBuilder_ = null;
               children_ = other.children_;
-              bitField0_ = (bitField0_ & ~0x02000000);
+              bitField0_ = (bitField0_ & ~0x04000000);
               childrenBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getChildrenFieldBuilder() : null;
@@ -35534,7 +35632,7 @@ public final class AutomatikoMessages {
           if (!other.tags_.isEmpty()) {
             if (tags_.isEmpty()) {
               tags_ = other.tags_;
-              bitField0_ = (bitField0_ & ~0x04000000);
+              bitField0_ = (bitField0_ & ~0x08000000);
             } else {
               ensureTagsIsMutable();
               tags_.addAll(other.tags_);
@@ -35547,7 +35645,7 @@ public final class AutomatikoMessages {
               tagsBuilder_.dispose();
               tagsBuilder_ = null;
               tags_ = other.tags_;
-              bitField0_ = (bitField0_ & ~0x04000000);
+              bitField0_ = (bitField0_ & ~0x08000000);
               tagsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getTagsFieldBuilder() : null;
@@ -35560,7 +35658,7 @@ public final class AutomatikoMessages {
           if (!other.errors_.isEmpty()) {
             if (errors_.isEmpty()) {
               errors_ = other.errors_;
-              bitField0_ = (bitField0_ & ~0x08000000);
+              bitField0_ = (bitField0_ & ~0x10000000);
             } else {
               ensureErrorsIsMutable();
               errors_.addAll(other.errors_);
@@ -35573,7 +35671,7 @@ public final class AutomatikoMessages {
               errorsBuilder_.dispose();
               errorsBuilder_ = null;
               errors_ = other.errors_;
-              bitField0_ = (bitField0_ & ~0x08000000);
+              bitField0_ = (bitField0_ & ~0x10000000);
               errorsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getErrorsFieldBuilder() : null;
@@ -36938,12 +37036,96 @@ public final class AutomatikoMessages {
         return this;
       }
 
+      private java.lang.Object referenceFromRoot_ = "";
+      /**
+       * <code>optional string reference_from_root = 30;</code>
+       * @return Whether the referenceFromRoot field is set.
+       */
+      public boolean hasReferenceFromRoot() {
+        return ((bitField0_ & 0x00080000) != 0);
+      }
+      /**
+       * <code>optional string reference_from_root = 30;</code>
+       * @return The referenceFromRoot.
+       */
+      public java.lang.String getReferenceFromRoot() {
+        java.lang.Object ref = referenceFromRoot_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            referenceFromRoot_ = s;
+          }
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string reference_from_root = 30;</code>
+       * @return The bytes for referenceFromRoot.
+       */
+      public com.google.protobuf.ByteString
+          getReferenceFromRootBytes() {
+        java.lang.Object ref = referenceFromRoot_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          referenceFromRoot_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string reference_from_root = 30;</code>
+       * @param value The referenceFromRoot to set.
+       * @return This builder for chaining.
+       */
+      public Builder setReferenceFromRoot(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00080000;
+        referenceFromRoot_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string reference_from_root = 30;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearReferenceFromRoot() {
+        bitField0_ = (bitField0_ & ~0x00080000);
+        referenceFromRoot_ = getDefaultInstance().getReferenceFromRoot();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string reference_from_root = 30;</code>
+       * @param value The bytes for referenceFromRoot to set.
+       * @return This builder for chaining.
+       */
+      public Builder setReferenceFromRootBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00080000;
+        referenceFromRoot_ = value;
+        onChanged();
+        return this;
+      }
+
       private java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.SwimlaneContextInstance> swimlaneContext_ =
         java.util.Collections.emptyList();
       private void ensureSwimlaneContextIsMutable() {
-        if (!((bitField0_ & 0x00080000) != 0)) {
+        if (!((bitField0_ & 0x00100000) != 0)) {
           swimlaneContext_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.SwimlaneContextInstance>(swimlaneContext_);
-          bitField0_ |= 0x00080000;
+          bitField0_ |= 0x00100000;
          }
       }
 
@@ -37093,7 +37275,7 @@ public final class AutomatikoMessages {
       public Builder clearSwimlaneContext() {
         if (swimlaneContextBuilder_ == null) {
           swimlaneContext_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00080000);
+          bitField0_ = (bitField0_ & ~0x00100000);
           onChanged();
         } else {
           swimlaneContextBuilder_.clear();
@@ -37170,7 +37352,7 @@ public final class AutomatikoMessages {
           swimlaneContextBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.SwimlaneContextInstance, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.SwimlaneContextInstance.Builder, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.SwimlaneContextInstanceOrBuilder>(
                   swimlaneContext_,
-                  ((bitField0_ & 0x00080000) != 0),
+                  ((bitField0_ & 0x00100000) != 0),
                   getParentForChildren(),
                   isClean());
           swimlaneContext_ = null;
@@ -37181,9 +37363,9 @@ public final class AutomatikoMessages {
       private java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.NodeInstance> nodeInstance_ =
         java.util.Collections.emptyList();
       private void ensureNodeInstanceIsMutable() {
-        if (!((bitField0_ & 0x00100000) != 0)) {
+        if (!((bitField0_ & 0x00200000) != 0)) {
           nodeInstance_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.NodeInstance>(nodeInstance_);
-          bitField0_ |= 0x00100000;
+          bitField0_ |= 0x00200000;
          }
       }
 
@@ -37333,7 +37515,7 @@ public final class AutomatikoMessages {
       public Builder clearNodeInstance() {
         if (nodeInstanceBuilder_ == null) {
           nodeInstance_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00100000);
+          bitField0_ = (bitField0_ & ~0x00200000);
           onChanged();
         } else {
           nodeInstanceBuilder_.clear();
@@ -37410,7 +37592,7 @@ public final class AutomatikoMessages {
           nodeInstanceBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.NodeInstance, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.NodeInstance.Builder, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.NodeInstanceOrBuilder>(
                   nodeInstance_,
-                  ((bitField0_ & 0x00100000) != 0),
+                  ((bitField0_ & 0x00200000) != 0),
                   getParentForChildren(),
                   isClean());
           nodeInstance_ = null;
@@ -37421,9 +37603,9 @@ public final class AutomatikoMessages {
       private java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.Variable> variable_ =
         java.util.Collections.emptyList();
       private void ensureVariableIsMutable() {
-        if (!((bitField0_ & 0x00200000) != 0)) {
+        if (!((bitField0_ & 0x00400000) != 0)) {
           variable_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.Variable>(variable_);
-          bitField0_ |= 0x00200000;
+          bitField0_ |= 0x00400000;
          }
       }
 
@@ -37573,7 +37755,7 @@ public final class AutomatikoMessages {
       public Builder clearVariable() {
         if (variableBuilder_ == null) {
           variable_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00200000);
+          bitField0_ = (bitField0_ & ~0x00400000);
           onChanged();
         } else {
           variableBuilder_.clear();
@@ -37650,7 +37832,7 @@ public final class AutomatikoMessages {
           variableBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.Variable, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.Variable.Builder, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.VariableOrBuilder>(
                   variable_,
-                  ((bitField0_ & 0x00200000) != 0),
+                  ((bitField0_ & 0x00400000) != 0),
                   getParentForChildren(),
                   isClean());
           variable_ = null;
@@ -37661,9 +37843,9 @@ public final class AutomatikoMessages {
       private java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.ExclusiveGroupInstance> exclusiveGroup_ =
         java.util.Collections.emptyList();
       private void ensureExclusiveGroupIsMutable() {
-        if (!((bitField0_ & 0x00400000) != 0)) {
+        if (!((bitField0_ & 0x00800000) != 0)) {
           exclusiveGroup_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.ExclusiveGroupInstance>(exclusiveGroup_);
-          bitField0_ |= 0x00400000;
+          bitField0_ |= 0x00800000;
          }
       }
 
@@ -37813,7 +37995,7 @@ public final class AutomatikoMessages {
       public Builder clearExclusiveGroup() {
         if (exclusiveGroupBuilder_ == null) {
           exclusiveGroup_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00400000);
+          bitField0_ = (bitField0_ & ~0x00800000);
           onChanged();
         } else {
           exclusiveGroupBuilder_.clear();
@@ -37890,7 +38072,7 @@ public final class AutomatikoMessages {
           exclusiveGroupBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.ExclusiveGroupInstance, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.ExclusiveGroupInstance.Builder, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.ExclusiveGroupInstanceOrBuilder>(
                   exclusiveGroup_,
-                  ((bitField0_ & 0x00400000) != 0),
+                  ((bitField0_ & 0x00800000) != 0),
                   getParentForChildren(),
                   isClean());
           exclusiveGroup_ = null;
@@ -37900,9 +38082,9 @@ public final class AutomatikoMessages {
 
       private com.google.protobuf.LazyStringList completedNodeIds_ = com.google.protobuf.LazyStringArrayList.EMPTY;
       private void ensureCompletedNodeIdsIsMutable() {
-        if (!((bitField0_ & 0x00800000) != 0)) {
+        if (!((bitField0_ & 0x01000000) != 0)) {
           completedNodeIds_ = new com.google.protobuf.LazyStringArrayList(completedNodeIds_);
-          bitField0_ |= 0x00800000;
+          bitField0_ |= 0x01000000;
          }
       }
       /**
@@ -37987,7 +38169,7 @@ public final class AutomatikoMessages {
        */
       public Builder clearCompletedNodeIds() {
         completedNodeIds_ = com.google.protobuf.LazyStringArrayList.EMPTY;
-        bitField0_ = (bitField0_ & ~0x00800000);
+        bitField0_ = (bitField0_ & ~0x01000000);
         onChanged();
         return this;
       }
@@ -38010,9 +38192,9 @@ public final class AutomatikoMessages {
       private java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.IterationLevel> iterationLevels_ =
         java.util.Collections.emptyList();
       private void ensureIterationLevelsIsMutable() {
-        if (!((bitField0_ & 0x01000000) != 0)) {
+        if (!((bitField0_ & 0x02000000) != 0)) {
           iterationLevels_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.IterationLevel>(iterationLevels_);
-          bitField0_ |= 0x01000000;
+          bitField0_ |= 0x02000000;
          }
       }
 
@@ -38162,7 +38344,7 @@ public final class AutomatikoMessages {
       public Builder clearIterationLevels() {
         if (iterationLevelsBuilder_ == null) {
           iterationLevels_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x01000000);
+          bitField0_ = (bitField0_ & ~0x02000000);
           onChanged();
         } else {
           iterationLevelsBuilder_.clear();
@@ -38239,7 +38421,7 @@ public final class AutomatikoMessages {
           iterationLevelsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.IterationLevel, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.IterationLevel.Builder, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.IterationLevelOrBuilder>(
                   iterationLevels_,
-                  ((bitField0_ & 0x01000000) != 0),
+                  ((bitField0_ & 0x02000000) != 0),
                   getParentForChildren(),
                   isClean());
           iterationLevels_ = null;
@@ -38250,9 +38432,9 @@ public final class AutomatikoMessages {
       private java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.ProcessInstanchChildren> children_ =
         java.util.Collections.emptyList();
       private void ensureChildrenIsMutable() {
-        if (!((bitField0_ & 0x02000000) != 0)) {
+        if (!((bitField0_ & 0x04000000) != 0)) {
           children_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.ProcessInstanchChildren>(children_);
-          bitField0_ |= 0x02000000;
+          bitField0_ |= 0x04000000;
          }
       }
 
@@ -38402,7 +38584,7 @@ public final class AutomatikoMessages {
       public Builder clearChildren() {
         if (childrenBuilder_ == null) {
           children_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x02000000);
+          bitField0_ = (bitField0_ & ~0x04000000);
           onChanged();
         } else {
           childrenBuilder_.clear();
@@ -38479,7 +38661,7 @@ public final class AutomatikoMessages {
           childrenBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.ProcessInstanchChildren, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.ProcessInstanchChildren.Builder, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.ProcessInstanchChildrenOrBuilder>(
                   children_,
-                  ((bitField0_ & 0x02000000) != 0),
+                  ((bitField0_ & 0x04000000) != 0),
                   getParentForChildren(),
                   isClean());
           children_ = null;
@@ -38490,9 +38672,9 @@ public final class AutomatikoMessages {
       private java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.Tag> tags_ =
         java.util.Collections.emptyList();
       private void ensureTagsIsMutable() {
-        if (!((bitField0_ & 0x04000000) != 0)) {
+        if (!((bitField0_ & 0x08000000) != 0)) {
           tags_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.Tag>(tags_);
-          bitField0_ |= 0x04000000;
+          bitField0_ |= 0x08000000;
          }
       }
 
@@ -38642,7 +38824,7 @@ public final class AutomatikoMessages {
       public Builder clearTags() {
         if (tagsBuilder_ == null) {
           tags_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x04000000);
+          bitField0_ = (bitField0_ & ~0x08000000);
           onChanged();
         } else {
           tagsBuilder_.clear();
@@ -38719,7 +38901,7 @@ public final class AutomatikoMessages {
           tagsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.Tag, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.Tag.Builder, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.TagOrBuilder>(
                   tags_,
-                  ((bitField0_ & 0x04000000) != 0),
+                  ((bitField0_ & 0x08000000) != 0),
                   getParentForChildren(),
                   isClean());
           tags_ = null;
@@ -38730,9 +38912,9 @@ public final class AutomatikoMessages {
       private java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.Error> errors_ =
         java.util.Collections.emptyList();
       private void ensureErrorsIsMutable() {
-        if (!((bitField0_ & 0x08000000) != 0)) {
+        if (!((bitField0_ & 0x10000000) != 0)) {
           errors_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.Error>(errors_);
-          bitField0_ |= 0x08000000;
+          bitField0_ |= 0x10000000;
          }
       }
 
@@ -38882,7 +39064,7 @@ public final class AutomatikoMessages {
       public Builder clearErrors() {
         if (errorsBuilder_ == null) {
           errors_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x08000000);
+          bitField0_ = (bitField0_ & ~0x10000000);
           onChanged();
         } else {
           errorsBuilder_.clear();
@@ -38959,7 +39141,7 @@ public final class AutomatikoMessages {
           errorsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.Error, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.Error.Builder, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.ErrorOrBuilder>(
                   errors_,
-                  ((bitField0_ & 0x08000000) != 0),
+                  ((bitField0_ & 0x10000000) != 0),
                   getParentForChildren(),
                   isClean());
           errors_ = null;
@@ -51181,7 +51363,7 @@ public final class AutomatikoMessages {
       "atiko.engine.workflow.marshalling.Trigge" +
       "r\"T\n\013TriggerType\022\010\n\004CRON\020\000\022\014\n\010INTERVAL\020\001" +
       "\022\021\n\rPOINT_IN_TIME\020\002\022\032\n\026COMPOSITE_MAX_DUR" +
-      "ATION\020\003\"\024\n\013ProcessData*\005\010\n\020\310\001\"\353)\n\017Proces" +
+      "ATION\020\003\"\024\n\013ProcessData*\005\010\n\020\310\001\"\210*\n\017Proces" +
       "sInstance\022\024\n\014process_type\030\001 \001(\t\022\n\n\002id\030\002 " +
       "\001(\t\022\022\n\nprocess_id\030\003 \001(\t\022\r\n\005state\030\004 \001(\005\022\035" +
       "\n\025node_instance_counter\030\005 \001(\003\022\023\n\013process" +
@@ -51193,179 +51375,180 @@ public final class AutomatikoMessages {
       "ompliance\030\025 \001(\005\022 \n\030root_process_instance" +
       "_id\030\026 \001(\t\022\022\n\nstart_date\030\027 \001(\003\022\027\n\017root_pr" +
       "ocess_id\030\030 \001(\t\022\024\n\014reference_id\030\031 \001(\t\022\021\n\t" +
-      "initiator\030\032 \001(\t\022l\n\020swimlane_context\030\006 \003(" +
-      "\0132R.io.automatiko.engine.workflow.marsha" +
-      "lling.ProcessInstance.SwimlaneContextIns" +
-      "tance\022^\n\rnode_instance\030\007 \003(\0132G.io.automa" +
-      "tiko.engine.workflow.marshalling.Process" +
-      "Instance.NodeInstance\022E\n\010variable\030\010 \003(\0132" +
-      "3.io.automatiko.engine.workflow.marshall" +
-      "ing.Variable\022j\n\017exclusive_group\030\n \003(\0132Q." +
-      "io.automatiko.engine.workflow.marshallin" +
-      "g.ProcessInstance.ExclusiveGroupInstance" +
-      "\022\030\n\020completedNodeIds\030\r \003(\t\022R\n\017iterationL" +
-      "evels\030\016 \003(\01329.io.automatiko.engine.workf" +
-      "low.marshalling.IterationLevel\022d\n\010childr" +
-      "en\030\033 \003(\0132R.io.automatiko.engine.workflow" +
-      ".marshalling.ProcessInstance.ProcessInst" +
-      "anchChildren\022L\n\004tags\030\034 \003(\0132>.io.automati" +
-      "ko.engine.workflow.marshalling.ProcessIn" +
-      "stance.Tag\022P\n\006errors\030\035 \003(\0132@.io.automati" +
-      "ko.engine.workflow.marshalling.ProcessIn" +
-      "stance.Error\032:\n\027ProcessInstanchChildren\022" +
-      "\022\n\nprocess_id\030\001 \001(\t\022\013\n\003ids\030\002 \003(\t\032 \n\003Tag\022" +
-      "\n\n\002id\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\032^\n\005Error\022\020\n\010e" +
-      "rror_id\030\037 \001(\t\022\025\n\rerror_node_id\030\031 \001(\t\022\025\n\r" +
-      "error_message\030\032 \001(\t\022\025\n\rerror_details\030  \001" +
-      "(\t\032=\n\027SwimlaneContextInstance\022\020\n\010swimlan" +
-      "e\030\001 \001(\t\022\020\n\010actor_id\030\002 \001(\t\032\243\002\n\014NodeInstan" +
-      "ce\022\n\n\002id\030\001 \001(\t\022\017\n\007node_id\030\002 \001(\003\022_\n\007conte" +
-      "nt\030\004 \001(\0132N.io.automatiko.engine.workflow" +
-      ".marshalling.ProcessInstance.NodeInstanc" +
-      "eContent\022\r\n\005level\030\005 \001(\005\022\024\n\014sla_timer_id\030" +
-      "\006 \001(\t\022\024\n\014sla_due_date\030\007 \001(\003\022\026\n\016sla_compl" +
-      "iance\030\010 \001(\005\022\024\n\014trigger_date\030\t \001(\003\022\024\n\014ret" +
-      "ry_job_id\030\n \001(\t\022\026\n\016retry_attempts\030\013 \001(\005\032" +
-      "8\n\026ExclusiveGroupInstance\022\036\n\026group_node_" +
-      "instance_id\030\001 \003(\t\032\206\031\n\023NodeInstanceConten" +
-      "t\022Y\n\004type\030\001 \001(\0162K.io.automatiko.engine.w" +
-      "orkflow.marshalling.ProcessInstance.Node" +
-      "InstanceType\022l\n\010rule_set\030\002 \001(\0132Z.io.auto" +
+      "initiator\030\032 \001(\t\022\033\n\023reference_from_root\030\036" +
+      " \001(\t\022l\n\020swimlane_context\030\006 \003(\0132R.io.auto" +
       "matiko.engine.workflow.marshalling.Proce" +
-      "ssInstance.NodeInstanceContent.RuleSetNo" +
-      "de\022p\n\nhuman_task\030\003 \001(\0132\\.io.automatiko.e" +
-      "ngine.workflow.marshalling.ProcessInstan" +
-      "ce.NodeInstanceContent.HumanTaskNode\022n\n\t" +
-      "work_item\030\004 \001(\0132[.io.automatiko.engine.w" +
-      "orkflow.marshalling.ProcessInstance.Node" +
-      "InstanceContent.WorkItemNode\022r\n\013sub_proc" +
-      "ess\030\005 \001(\0132].io.automatiko.engine.workflo" +
-      "w.marshalling.ProcessInstance.NodeInstan" +
-      "ceContent.SubProcessNode\022o\n\tmilestone\030\006 " +
-      "\001(\0132\\.io.automatiko.engine.workflow.mars" +
-      "halling.ProcessInstance.NodeInstanceCont" +
-      "ent.MilestoneNode\022g\n\005event\030\007 \001(\0132X.io.au" +
-      "tomatiko.engine.workflow.marshalling.Pro" +
-      "cessInstance.NodeInstanceContent.EventNo" +
-      "de\022g\n\005timer\030\010 \001(\0132X.io.automatiko.engine" +
+      "ssInstance.SwimlaneContextInstance\022^\n\rno" +
+      "de_instance\030\007 \003(\0132G.io.automatiko.engine" +
       ".workflow.marshalling.ProcessInstance.No" +
-      "deInstanceContent.TimerNode\022e\n\004join\030\t \001(" +
-      "\0132W.io.automatiko.engine.workflow.marsha" +
-      "lling.ProcessInstance.NodeInstanceConten" +
-      "t.JoinNode\022g\n\005state\030\n \001(\0132X.io.automatik" +
-      "o.engine.workflow.marshalling.ProcessIns" +
-      "tance.NodeInstanceContent.StateNode\022v\n\tc" +
-      "omposite\030\013 \001(\0132c.io.automatiko.engine.wo" +
-      "rkflow.marshalling.ProcessInstance.NodeI" +
-      "nstanceContent.CompositeContextNode\022l\n\010f" +
-      "or_each\030\014 \001(\0132Z.io.automatiko.engine.wor" +
-      "kflow.marshalling.ProcessInstance.NodeIn" +
-      "stanceContent.ForEachNode\022r\n\013async_event" +
-      "\030\r \001(\0132].io.automatiko.engine.workflow.m" +
+      "deInstance\022E\n\010variable\030\010 \003(\01323.io.automa" +
+      "tiko.engine.workflow.marshalling.Variabl" +
+      "e\022j\n\017exclusive_group\030\n \003(\0132Q.io.automati" +
+      "ko.engine.workflow.marshalling.ProcessIn" +
+      "stance.ExclusiveGroupInstance\022\030\n\020complet" +
+      "edNodeIds\030\r \003(\t\022R\n\017iterationLevels\030\016 \003(\013" +
+      "29.io.automatiko.engine.workflow.marshal" +
+      "ling.IterationLevel\022d\n\010children\030\033 \003(\0132R." +
+      "io.automatiko.engine.workflow.marshallin" +
+      "g.ProcessInstance.ProcessInstanchChildre" +
+      "n\022L\n\004tags\030\034 \003(\0132>.io.automatiko.engine.w" +
+      "orkflow.marshalling.ProcessInstance.Tag\022" +
+      "P\n\006errors\030\035 \003(\0132@.io.automatiko.engine.w" +
+      "orkflow.marshalling.ProcessInstance.Erro" +
+      "r\032:\n\027ProcessInstanchChildren\022\022\n\nprocess_" +
+      "id\030\001 \001(\t\022\013\n\003ids\030\002 \003(\t\032 \n\003Tag\022\n\n\002id\030\001 \001(\t" +
+      "\022\r\n\005value\030\002 \001(\t\032^\n\005Error\022\020\n\010error_id\030\037 \001" +
+      "(\t\022\025\n\rerror_node_id\030\031 \001(\t\022\025\n\rerror_messa" +
+      "ge\030\032 \001(\t\022\025\n\rerror_details\030  \001(\t\032=\n\027Swiml" +
+      "aneContextInstance\022\020\n\010swimlane\030\001 \001(\t\022\020\n\010" +
+      "actor_id\030\002 \001(\t\032\243\002\n\014NodeInstance\022\n\n\002id\030\001 " +
+      "\001(\t\022\017\n\007node_id\030\002 \001(\003\022_\n\007content\030\004 \001(\0132N." +
+      "io.automatiko.engine.workflow.marshallin" +
+      "g.ProcessInstance.NodeInstanceContent\022\r\n" +
+      "\005level\030\005 \001(\005\022\024\n\014sla_timer_id\030\006 \001(\t\022\024\n\014sl" +
+      "a_due_date\030\007 \001(\003\022\026\n\016sla_compliance\030\010 \001(\005" +
+      "\022\024\n\014trigger_date\030\t \001(\003\022\024\n\014retry_job_id\030\n" +
+      " \001(\t\022\026\n\016retry_attempts\030\013 \001(\005\0328\n\026Exclusiv" +
+      "eGroupInstance\022\036\n\026group_node_instance_id" +
+      "\030\001 \003(\t\032\206\031\n\023NodeInstanceContent\022Y\n\004type\030\001" +
+      " \001(\0162K.io.automatiko.engine.workflow.mar" +
+      "shalling.ProcessInstance.NodeInstanceTyp" +
+      "e\022l\n\010rule_set\030\002 \001(\0132Z.io.automatiko.engi" +
+      "ne.workflow.marshalling.ProcessInstance." +
+      "NodeInstanceContent.RuleSetNode\022p\n\nhuman" +
+      "_task\030\003 \001(\0132\\.io.automatiko.engine.workf" +
+      "low.marshalling.ProcessInstance.NodeInst" +
+      "anceContent.HumanTaskNode\022n\n\twork_item\030\004" +
+      " \001(\0132[.io.automatiko.engine.workflow.mar" +
+      "shalling.ProcessInstance.NodeInstanceCon" +
+      "tent.WorkItemNode\022r\n\013sub_process\030\005 \001(\0132]" +
+      ".io.automatiko.engine.workflow.marshalli" +
+      "ng.ProcessInstance.NodeInstanceContent.S" +
+      "ubProcessNode\022o\n\tmilestone\030\006 \001(\0132\\.io.au" +
+      "tomatiko.engine.workflow.marshalling.Pro" +
+      "cessInstance.NodeInstanceContent.Milesto" +
+      "neNode\022g\n\005event\030\007 \001(\0132X.io.automatiko.en" +
+      "gine.workflow.marshalling.ProcessInstanc" +
+      "e.NodeInstanceContent.EventNode\022g\n\005timer" +
+      "\030\010 \001(\0132X.io.automatiko.engine.workflow.m" +
       "arshalling.ProcessInstance.NodeInstanceC" +
-      "ontent.AsyncEventNode\032\351\001\n\013RuleSetNode\022\031\n" +
-      "\021timer_instance_id\030\001 \003(\t\022y\n\010mapEntry\030\002 \003" +
-      "(\0132g.io.automatiko.engine.workflow.marsh" +
+      "ontent.TimerNode\022e\n\004join\030\t \001(\0132W.io.auto" +
+      "matiko.engine.workflow.marshalling.Proce" +
+      "ssInstance.NodeInstanceContent.JoinNode\022" +
+      "g\n\005state\030\n \001(\0132X.io.automatiko.engine.wo" +
+      "rkflow.marshalling.ProcessInstance.NodeI" +
+      "nstanceContent.StateNode\022v\n\tcomposite\030\013 " +
+      "\001(\0132c.io.automatiko.engine.workflow.mars" +
+      "halling.ProcessInstance.NodeInstanceCont" +
+      "ent.CompositeContextNode\022l\n\010for_each\030\014 \001" +
+      "(\0132Z.io.automatiko.engine.workflow.marsh" +
       "alling.ProcessInstance.NodeInstanceConte" +
-      "nt.RuleSetNode.TextMapEntry\022\027\n\017rule_flow" +
-      "_group\030\003 \001(\t\032+\n\014TextMapEntry\022\014\n\004name\030\001 \001" +
-      "(\t\022\r\n\005value\030\002 \001(\t\032\274\001\n\rHumanTaskNode\022\024\n\014w" +
-      "ork_item_id\030\001 \001(\t\022\031\n\021timer_instance_id\030\002" +
-      " \003(\t\022*\n\"error_handling_process_instance_" +
-      "id\030\003 \001(\t\022N\n\010workitem\030\004 \001(\0132<.io.automati" +
-      "ko.engine.workflow.marshalling.HumanTask" +
-      "WorkItem\032\262\001\n\014WorkItemNode\022\024\n\014work_item_i" +
-      "d\030\001 \001(\t\022\031\n\021timer_instance_id\030\002 \003(\t\022*\n\"er" +
-      "ror_handling_process_instance_id\030\003 \001(\t\022E" +
-      "\n\010workitem\030\004 \001(\01323.io.automatiko.engine." +
-      "workflow.marshalling.WorkItem\032g\n\016SubProc" +
-      "essNode\022\033\n\023process_instance_id\030\001 \001(\t\022\031\n\021" +
-      "timer_instance_id\030\002 \003(\t\022\035\n\025process_insta" +
-      "nce_name\030\003 \001(\t\032*\n\rMilestoneNode\022\031\n\021timer" +
-      "_instance_id\030\001 \003(\t\032\013\n\tEventNode\032\035\n\tTimer" +
-      "Node\022\020\n\010timer_id\030\001 \001(\t\032\261\001\n\010JoinNode\022t\n\007t" +
-      "rigger\030\001 \003(\0132c.io.automatiko.engine.work" +
-      "flow.marshalling.ProcessInstance.NodeIns" +
-      "tanceContent.JoinNode.JoinTrigger\032/\n\013Joi" +
-      "nTrigger\022\017\n\007node_id\030\001 \001(\003\022\017\n\007counter\030\002 \001" +
-      "(\005\032&\n\tStateNode\022\031\n\021timer_instance_id\030\001 \003" +
-      "(\t\032\230\003\n\024CompositeContextNode\022\031\n\021timer_ins" +
-      "tance_id\030\002 \003(\t\022E\n\010variable\030\003 \003(\01323.io.au" +
-      "tomatiko.engine.workflow.marshalling.Var" +
-      "iable\022^\n\rnode_instance\030\004 \003(\0132G.io.automa" +
-      "tiko.engine.workflow.marshalling.Process" +
-      "Instance.NodeInstance\022j\n\017exclusive_group" +
-      "\030\005 \003(\0132Q.io.automatiko.engine.workflow.m" +
-      "arshalling.ProcessInstance.ExclusiveGrou" +
-      "pInstance\022R\n\017iterationLevels\030\006 \003(\01329.io." +
-      "automatiko.engine.workflow.marshalling.I" +
-      "terationLevel\032\244\002\n\013ForEachNode\022^\n\rnode_in" +
-      "stance\030\001 \003(\0132G.io.automatiko.engine.work" +
-      "flow.marshalling.ProcessInstance.NodeIns" +
-      "tance\022E\n\010variable\030\002 \003(\01323.io.automatiko." +
-      "engine.workflow.marshalling.Variable\022R\n\017" +
-      "iterationLevels\030\003 \003(\01329.io.automatiko.en" +
-      "gine.workflow.marshalling.IterationLevel" +
-      "\022\032\n\022sequential_counter\030\004 \001(\005\032$\n\016AsyncEve" +
-      "ntNode\022\022\n\nevent_type\030\001 \001(\t\"\276\002\n\020NodeInsta" +
-      "nceType\022\021\n\rRULE_SET_NODE\020\000\022\023\n\017HUMAN_TASK" +
-      "_NODE\020\001\022\022\n\016WORK_ITEM_NODE\020\002\022\023\n\017SUBPROCES" +
-      "S_NODE\020\003\022\022\n\016MILESTONE_NODE\020\004\022\016\n\nEVENT_NO" +
-      "DE\020\005\022\016\n\nTIMER_NODE\020\006\022\r\n\tJOIN_NODE\020\007\022\016\n\nS" +
-      "TATE_NODE\020\010\022\032\n\026COMPOSITE_CONTEXT_NODE\020\t\022" +
-      "\021\n\rFOR_EACH_NODE\020\n\022\020\n\014DYNAMIC_NODE\020\013\022\031\n\025" +
-      "EVENT_SUBPROCESS_NODE\020\014\022\024\n\020ASYNC_EVENT_N" +
-      "ODE\020\r\022\024\n\020SUB_PROCESS_NODE\020\016\"R\n\010Variable\022" +
-      "\014\n\004name\030\001 \001(\t\022\026\n\016strategy_index\030\002 \001(\005\022\r\n" +
-      "\005value\030\003 \001(\014\022\021\n\tdata_type\030\004 \001(\t\"\255\002\n\010Work" +
-      "Item\022\n\n\002id\030\001 \001(\t\022\034\n\024process_instances_id" +
-      "\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\r\n\005state\030\004 \001(\005\022E\n\010v" +
-      "ariable\030\005 \003(\01323.io.automatiko.engine.wor" +
-      "kflow.marshalling.Variable\022\025\n\rdeployment" +
-      "_id\030\006 \001(\t\022\030\n\020node_instance_id\030\007 \001(\t\022\017\n\007n" +
-      "ode_id\030\010 \001(\003\022\020\n\010phase_id\030\t \001(\t\022\024\n\014phase_" +
-      "status\030\n \001(\t\022\022\n\nstart_date\030\013 \001(\003\022\025\n\rcomp" +
-      "lete_date\030\014 \001(\003\"\227\004\n\021HumanTaskWorkItem\022\n\n" +
-      "\002id\030\001 \001(\t\022\034\n\024process_instances_id\030\002 \001(\t\022" +
-      "\014\n\004name\030\003 \001(\t\022\r\n\005state\030\004 \001(\005\022E\n\010variable" +
-      "\030\005 \003(\01323.io.automatiko.engine.workflow.m" +
-      "arshalling.Variable\022\025\n\rdeployment_id\030\006 \001" +
-      "(\t\022\030\n\020node_instance_id\030\007 \001(\t\022\017\n\007node_id\030" +
-      "\010 \001(\003\022\020\n\010phase_id\030\t \001(\t\022\024\n\014phase_status\030" +
-      "\n \001(\t\022\022\n\nstart_date\030\013 \001(\003\022\025\n\rcomplete_da" +
-      "te\030\014 \001(\003\022\021\n\ttask_name\030\r \001(\t\022\030\n\020task_desc" +
-      "ription\030\016 \001(\t\022\025\n\rtask_priority\030\017 \001(\t\022\024\n\014" +
-      "actual_owner\030\020 \001(\t\022\021\n\tpot_users\030\021 \003(\t\022\022\n" +
-      "\npot_groups\030\022 \003(\t\022\026\n\016excluded_users\030\023 \003(" +
-      "\t\022\023\n\013admin_users\030\024 \003(\t\022\024\n\014admin_groups\030\025" +
-      " \003(\t\022\033\n\023task_reference_name\030\026 \001(\t\"\213\003\n\014Pr" +
-      "ocessTimer\022T\n\005timer\030\001 \001(\0132E.io.automatik" +
-      "o.engine.workflow.marshalling.ProcessTim" +
-      "er.TimerInstance\022C\n\007trigger\030\002 \001(\01322.io.a" +
-      "utomatiko.engine.workflow.marshalling.Tr" +
-      "igger\032\337\001\n\rTimerInstance\022\n\n\002id\030\001 \001(\003\022\020\n\010t" +
-      "imer_id\030\002 \001(\t\022\r\n\005delay\030\003 \001(\003\022\016\n\006period\030\004" +
-      " \001(\003\022\033\n\023process_instance_id\030\005 \001(\t\022\026\n\016act" +
-      "ivated_time\030\006 \001(\003\022\026\n\016last_triggered\030\007 \001(" +
-      "\003\022\034\n\024DEPRECATED_sessionId\030\010 \001(\005\022\021\n\tsessi" +
-      "onId\030\t \001(\003\022\023\n\013repeatLimit\030\n \001(\005\"+\n\016Itera" +
-      "tionLevel\022\n\n\002id\030\001 \001(\t\022\r\n\005level\030\002 \001(\005\"Z\n\021" +
-      "VariableContainer\022E\n\010variable\030\001 \003(\01323.io" +
+      "nt.ForEachNode\022r\n\013async_event\030\r \001(\0132].io" +
       ".automatiko.engine.workflow.marshalling." +
-      "Variable:\214\001\n\020process_instance\0226.io.autom" +
-      "atiko.engine.workflow.marshalling.Proces" +
-      "sData\030\n \003(\0132:.io.automatiko.engine.workf" +
-      "low.marshalling.ProcessInstance:~\n\twork_" +
-      "item\0226.io.automatiko.engine.workflow.mar" +
-      "shalling.ProcessData\030\013 \003(\01323.io.automati" +
-      "ko.engine.workflow.marshalling.WorkItem:" +
-      "H\n\010timer_id\0226.io.automatiko.engine.workf" +
-      "low.marshalling.ProcessData\030\r \001(\003:\206\001\n\rpr" +
-      "ocess_timer\0226.io.automatiko.engine.workf" +
-      "low.marshalling.ProcessData\030\014 \003(\01327.io.a" +
+      "ProcessInstance.NodeInstanceContent.Asyn" +
+      "cEventNode\032\351\001\n\013RuleSetNode\022\031\n\021timer_inst" +
+      "ance_id\030\001 \003(\t\022y\n\010mapEntry\030\002 \003(\0132g.io.aut" +
+      "omatiko.engine.workflow.marshalling.Proc" +
+      "essInstance.NodeInstanceContent.RuleSetN" +
+      "ode.TextMapEntry\022\027\n\017rule_flow_group\030\003 \001(" +
+      "\t\032+\n\014TextMapEntry\022\014\n\004name\030\001 \001(\t\022\r\n\005value" +
+      "\030\002 \001(\t\032\274\001\n\rHumanTaskNode\022\024\n\014work_item_id" +
+      "\030\001 \001(\t\022\031\n\021timer_instance_id\030\002 \003(\t\022*\n\"err" +
+      "or_handling_process_instance_id\030\003 \001(\t\022N\n" +
+      "\010workitem\030\004 \001(\0132<.io.automatiko.engine.w" +
+      "orkflow.marshalling.HumanTaskWorkItem\032\262\001" +
+      "\n\014WorkItemNode\022\024\n\014work_item_id\030\001 \001(\t\022\031\n\021" +
+      "timer_instance_id\030\002 \003(\t\022*\n\"error_handlin" +
+      "g_process_instance_id\030\003 \001(\t\022E\n\010workitem\030" +
+      "\004 \001(\01323.io.automatiko.engine.workflow.ma" +
+      "rshalling.WorkItem\032g\n\016SubProcessNode\022\033\n\023" +
+      "process_instance_id\030\001 \001(\t\022\031\n\021timer_insta" +
+      "nce_id\030\002 \003(\t\022\035\n\025process_instance_name\030\003 " +
+      "\001(\t\032*\n\rMilestoneNode\022\031\n\021timer_instance_i" +
+      "d\030\001 \003(\t\032\013\n\tEventNode\032\035\n\tTimerNode\022\020\n\010tim" +
+      "er_id\030\001 \001(\t\032\261\001\n\010JoinNode\022t\n\007trigger\030\001 \003(" +
+      "\0132c.io.automatiko.engine.workflow.marsha" +
+      "lling.ProcessInstance.NodeInstanceConten" +
+      "t.JoinNode.JoinTrigger\032/\n\013JoinTrigger\022\017\n" +
+      "\007node_id\030\001 \001(\003\022\017\n\007counter\030\002 \001(\005\032&\n\tState" +
+      "Node\022\031\n\021timer_instance_id\030\001 \003(\t\032\230\003\n\024Comp" +
+      "ositeContextNode\022\031\n\021timer_instance_id\030\002 " +
+      "\003(\t\022E\n\010variable\030\003 \003(\01323.io.automatiko.en" +
+      "gine.workflow.marshalling.Variable\022^\n\rno" +
+      "de_instance\030\004 \003(\0132G.io.automatiko.engine" +
+      ".workflow.marshalling.ProcessInstance.No" +
+      "deInstance\022j\n\017exclusive_group\030\005 \003(\0132Q.io" +
+      ".automatiko.engine.workflow.marshalling." +
+      "ProcessInstance.ExclusiveGroupInstance\022R" +
+      "\n\017iterationLevels\030\006 \003(\01329.io.automatiko." +
+      "engine.workflow.marshalling.IterationLev" +
+      "el\032\244\002\n\013ForEachNode\022^\n\rnode_instance\030\001 \003(" +
+      "\0132G.io.automatiko.engine.workflow.marsha" +
+      "lling.ProcessInstance.NodeInstance\022E\n\010va" +
+      "riable\030\002 \003(\01323.io.automatiko.engine.work" +
+      "flow.marshalling.Variable\022R\n\017iterationLe" +
+      "vels\030\003 \003(\01329.io.automatiko.engine.workfl" +
+      "ow.marshalling.IterationLevel\022\032\n\022sequent" +
+      "ial_counter\030\004 \001(\005\032$\n\016AsyncEventNode\022\022\n\ne" +
+      "vent_type\030\001 \001(\t\"\276\002\n\020NodeInstanceType\022\021\n\r" +
+      "RULE_SET_NODE\020\000\022\023\n\017HUMAN_TASK_NODE\020\001\022\022\n\016" +
+      "WORK_ITEM_NODE\020\002\022\023\n\017SUBPROCESS_NODE\020\003\022\022\n" +
+      "\016MILESTONE_NODE\020\004\022\016\n\nEVENT_NODE\020\005\022\016\n\nTIM" +
+      "ER_NODE\020\006\022\r\n\tJOIN_NODE\020\007\022\016\n\nSTATE_NODE\020\010" +
+      "\022\032\n\026COMPOSITE_CONTEXT_NODE\020\t\022\021\n\rFOR_EACH" +
+      "_NODE\020\n\022\020\n\014DYNAMIC_NODE\020\013\022\031\n\025EVENT_SUBPR" +
+      "OCESS_NODE\020\014\022\024\n\020ASYNC_EVENT_NODE\020\r\022\024\n\020SU" +
+      "B_PROCESS_NODE\020\016\"R\n\010Variable\022\014\n\004name\030\001 \001" +
+      "(\t\022\026\n\016strategy_index\030\002 \001(\005\022\r\n\005value\030\003 \001(" +
+      "\014\022\021\n\tdata_type\030\004 \001(\t\"\255\002\n\010WorkItem\022\n\n\002id\030" +
+      "\001 \001(\t\022\034\n\024process_instances_id\030\002 \001(\t\022\014\n\004n" +
+      "ame\030\003 \001(\t\022\r\n\005state\030\004 \001(\005\022E\n\010variable\030\005 \003" +
+      "(\01323.io.automatiko.engine.workflow.marsh" +
+      "alling.Variable\022\025\n\rdeployment_id\030\006 \001(\t\022\030" +
+      "\n\020node_instance_id\030\007 \001(\t\022\017\n\007node_id\030\010 \001(" +
+      "\003\022\020\n\010phase_id\030\t \001(\t\022\024\n\014phase_status\030\n \001(" +
+      "\t\022\022\n\nstart_date\030\013 \001(\003\022\025\n\rcomplete_date\030\014" +
+      " \001(\003\"\227\004\n\021HumanTaskWorkItem\022\n\n\002id\030\001 \001(\t\022\034" +
+      "\n\024process_instances_id\030\002 \001(\t\022\014\n\004name\030\003 \001" +
+      "(\t\022\r\n\005state\030\004 \001(\005\022E\n\010variable\030\005 \003(\01323.io" +
+      ".automatiko.engine.workflow.marshalling." +
+      "Variable\022\025\n\rdeployment_id\030\006 \001(\t\022\030\n\020node_" +
+      "instance_id\030\007 \001(\t\022\017\n\007node_id\030\010 \001(\003\022\020\n\010ph" +
+      "ase_id\030\t \001(\t\022\024\n\014phase_status\030\n \001(\t\022\022\n\nst" +
+      "art_date\030\013 \001(\003\022\025\n\rcomplete_date\030\014 \001(\003\022\021\n" +
+      "\ttask_name\030\r \001(\t\022\030\n\020task_description\030\016 \001" +
+      "(\t\022\025\n\rtask_priority\030\017 \001(\t\022\024\n\014actual_owne" +
+      "r\030\020 \001(\t\022\021\n\tpot_users\030\021 \003(\t\022\022\n\npot_groups" +
+      "\030\022 \003(\t\022\026\n\016excluded_users\030\023 \003(\t\022\023\n\013admin_" +
+      "users\030\024 \003(\t\022\024\n\014admin_groups\030\025 \003(\t\022\033\n\023tas" +
+      "k_reference_name\030\026 \001(\t\"\213\003\n\014ProcessTimer\022" +
+      "T\n\005timer\030\001 \001(\0132E.io.automatiko.engine.wo" +
+      "rkflow.marshalling.ProcessTimer.TimerIns" +
+      "tance\022C\n\007trigger\030\002 \001(\01322.io.automatiko.e" +
+      "ngine.workflow.marshalling.Trigger\032\337\001\n\rT" +
+      "imerInstance\022\n\n\002id\030\001 \001(\003\022\020\n\010timer_id\030\002 \001" +
+      "(\t\022\r\n\005delay\030\003 \001(\003\022\016\n\006period\030\004 \001(\003\022\033\n\023pro" +
+      "cess_instance_id\030\005 \001(\t\022\026\n\016activated_time" +
+      "\030\006 \001(\003\022\026\n\016last_triggered\030\007 \001(\003\022\034\n\024DEPREC" +
+      "ATED_sessionId\030\010 \001(\005\022\021\n\tsessionId\030\t \001(\003\022" +
+      "\023\n\013repeatLimit\030\n \001(\005\"+\n\016IterationLevel\022\n" +
+      "\n\002id\030\001 \001(\t\022\r\n\005level\030\002 \001(\005\"Z\n\021VariableCon" +
+      "tainer\022E\n\010variable\030\001 \003(\01323.io.automatiko" +
+      ".engine.workflow.marshalling.Variable:\214\001" +
+      "\n\020process_instance\0226.io.automatiko.engin" +
+      "e.workflow.marshalling.ProcessData\030\n \003(\013" +
+      "2:.io.automatiko.engine.workflow.marshal" +
+      "ling.ProcessInstance:~\n\twork_item\0226.io.a" +
       "utomatiko.engine.workflow.marshalling.Pr" +
-      "ocessTimerBD\n.io.automatiko.engine.workf" +
-      "low.marshalling.implB\022AutomatikoMessages"
+      "ocessData\030\013 \003(\01323.io.automatiko.engine.w" +
+      "orkflow.marshalling.WorkItem:H\n\010timer_id" +
+      "\0226.io.automatiko.engine.workflow.marshal" +
+      "ling.ProcessData\030\r \001(\003:\206\001\n\rprocess_timer" +
+      "\0226.io.automatiko.engine.workflow.marshal" +
+      "ling.ProcessData\030\014 \003(\01327.io.automatiko.e" +
+      "ngine.workflow.marshalling.ProcessTimerB" +
+      "D\n.io.automatiko.engine.workflow.marshal" +
+      "ling.implB\022AutomatikoMessages"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -51436,7 +51619,7 @@ public final class AutomatikoMessages {
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor,
-        new java.lang.String[] { "ProcessType", "Id", "ProcessId", "State", "NodeInstanceCounter", "ProcessXml", "ParentProcessInstanceId", "Description", "SignalCompletion", "DeploymentId", "CorrelationKey", "SlaTimerId", "SlaDueDate", "SlaCompliance", "RootProcessInstanceId", "StartDate", "RootProcessId", "ReferenceId", "Initiator", "SwimlaneContext", "NodeInstance", "Variable", "ExclusiveGroup", "CompletedNodeIds", "IterationLevels", "Children", "Tags", "Errors", });
+        new java.lang.String[] { "ProcessType", "Id", "ProcessId", "State", "NodeInstanceCounter", "ProcessXml", "ParentProcessInstanceId", "Description", "SignalCompletion", "DeploymentId", "CorrelationKey", "SlaTimerId", "SlaDueDate", "SlaCompliance", "RootProcessInstanceId", "StartDate", "RootProcessId", "ReferenceId", "Initiator", "ReferenceFromRoot", "SwimlaneContext", "NodeInstance", "Variable", "ExclusiveGroup", "CompletedNodeIds", "IterationLevels", "Children", "Tags", "Errors", });
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_ProcessInstanchChildren_descriptor =
       internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(0);
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_ProcessInstanchChildren_fieldAccessorTable = new

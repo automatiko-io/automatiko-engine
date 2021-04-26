@@ -73,10 +73,15 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
 
         io.automatiko.engine.api.runtime.process.ProcessInstance pi = ((AbstractProcessInstance<?>) processInstance)
                 .internalGetProcessInstance();
-        ((ProcessInstanceImpl) pi).setMetaData("ParentProcessInstanceId", getProcessInstance().getId());
+        String parentInstanceId = getProcessInstance().getId();
+        if (getProcessInstance().getParentProcessInstanceId() != null
+                && !getProcessInstance().getParentProcessInstanceId().isEmpty()) {
+            parentInstanceId = getProcessInstance().getParentProcessInstanceId() + ":" + parentInstanceId;
+        }
+        ((ProcessInstanceImpl) pi).setMetaData("ParentProcessInstanceId", parentInstanceId);
         ((ProcessInstanceImpl) pi).setMetaData("ParentNodeInstanceId", getUniqueId());
         ((ProcessInstanceImpl) pi).setMetaData("ParentNodeId", getSubProcessNode().getUniqueId());
-        ((ProcessInstanceImpl) pi).setParentProcessInstanceId(getProcessInstance().getId());
+        ((ProcessInstanceImpl) pi).setParentProcessInstanceId(parentInstanceId);
         ((ProcessInstanceImpl) pi).setRootProcessInstanceId(
                 StringUtils.isEmpty(getProcessInstance().getRootProcessInstanceId()) ? getProcessInstance().getId()
                         : getProcessInstance().getRootProcessInstanceId());
@@ -84,6 +89,8 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
                 StringUtils.isEmpty(getProcessInstance().getRootProcessId()) ? getProcessInstance().getProcessId()
                         : getProcessInstance().getRootProcessId());
         ((ProcessInstanceImpl) pi).setSignalCompletion(getSubProcessNode().isWaitForCompletion());
+        ((ProcessInstanceImpl) pi)
+                .setReferenceFromRoot(getProcessInstance().getReferenceFromRoot());
 
         processInstance.start();
         this.processInstanceId = processInstance.id();
@@ -97,7 +104,7 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
                 || processInstance.status() == ProcessInstance.STATE_ABORTED) {
             triggerCompleted();
         } else {
-            String subprocessInstanceId = getProcessInstance().getId() + ":" + processInstance.id();
+            String subprocessInstanceId = parentInstanceId + ":" + processInstance.id();
 
             ((ProcessInstanceImpl) getProcessInstance()).addChild(processInstance.process().id(), subprocessInstanceId);
             addProcessListener();
@@ -160,8 +167,13 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
 
     public void processInstanceCompleted(ProcessInstance processInstance) {
         removeEventListeners();
+        String parentInstanceId = getProcessInstance().getId();
+        if (getProcessInstance().getParentProcessInstanceId() != null
+                && !getProcessInstance().getParentProcessInstanceId().isEmpty()) {
+            parentInstanceId = getProcessInstance().getParentProcessInstanceId() + ":" + parentInstanceId;
+        }
         ((ProcessInstanceImpl) getProcessInstance()).removeChild(processInstance.getProcess().getId(),
-                processInstance.getId());
+                parentInstanceId + ":" + processInstance.getId());
         handleOutMappings(processInstance);
         if (processInstance.getState() == ProcessInstance.STATE_ABORTED) {
             String faultName = processInstance.getOutcome() == null ? "" : processInstance.getOutcome();

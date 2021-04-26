@@ -96,6 +96,9 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         if (workFlow.getRootProcessId() != null) {
             _instance.setRootProcessId(workFlow.getRootProcessId());
         }
+        if (workFlow.getReferenceFromRoot() != null) {
+            _instance.setReferenceFromRoot(workFlow.getReferenceFromRoot());
+        }
         List<ExecutionsErrorInfo> errors = workFlow.errors();
         if (errors != null) {
             for (ExecutionsErrorInfo error : errors) {
@@ -704,6 +707,8 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         processInstance.internalSetExecutionErrors(errors);
 
         processInstance.setReferenceId(_instance.getReferenceId());
+
+        processInstance.internalSetReferenceFromRoot(_instance.getReferenceFromRoot());
 
         for (String completedNodeId : _instance.getCompletedNodeIdsList()) {
             processInstance.addCompletedNodeId(completedNodeId);

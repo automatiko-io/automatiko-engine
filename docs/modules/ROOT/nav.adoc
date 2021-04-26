@@ -11,5 +11,6 @@
 ** xref:components/errors.adoc[Error handling]
 ** xref:components/management.adoc[Process management]
 ** xref:components/event-publishers.adoc[Event publishers]
+** xref:components/user-tasks.adoc[User tasks]
 * xref:configuration.adoc[Configuration reference]
 * xref:faq.adoc[FAQ]

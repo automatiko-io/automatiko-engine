@@ -8,8 +8,10 @@ import static io.automatiko.engine.api.runtime.process.WorkItem.COMPLETED;
 import static io.automatiko.engine.workflow.base.core.context.variable.VariableScope.VARIABLE_SCOPE;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -738,12 +740,10 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
     }
 
     public String buildReferenceId() {
-        if (getProcessInstance().getId().equals(getProcessInstance().getRootProcessInstanceId())) {
-            return getWorkItem().getId();
-        }
         StringBuilder builder = new StringBuilder();
-        builder.append(getProcessInstance().getProcessId()).append("/").append(getProcessInstance().getId()).append("/")
-                .append(getWorkItem().getParameters().getOrDefault("TaskName", getNodeName())).append("/")
+        builder.append("/" + getProcessInstance().getReferenceFromRoot())
+                .append(sanitizeName((String) getWorkItem().getParameters().getOrDefault("TaskName", getNodeName())))
+                .append("/")
                 .append(getWorkItem().getId());
 
         return builder.toString();
@@ -761,4 +761,32 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         return super.captureError(e);
     }
 
+    private String sanitizeName(String name) {
+        return name.replaceAll("\\s", "_");
+    }
+
+    public String buildFormLink() {
+        if (getProcessInstance().getProcess().getMetaData().containsKey("UserTaskMgmt")) {
+            String parentProcessInstanceId = getProcessInstance().getParentProcessInstanceId();
+            if (parentProcessInstanceId != null && !parentProcessInstanceId.isEmpty()) {
+                parentProcessInstanceId += ":";
+            } else {
+                parentProcessInstanceId = "";
+            }
+            String version = version(getProcessInstance().getProcess().getVersion());
+            String encoded = Base64.getEncoder().encodeToString((getProcessInstance().getProcessId() + version + "|"
+                    + parentProcessInstanceId + getProcessInstance().getId() + "|" + getWorkItemId() + "|")
+                            .getBytes(StandardCharsets.UTF_8));
+            return "/management/tasks/link/" + encoded;
+        } else {
+            return null;
+        }
+    }
+
+    protected String version(String version) {
+        if (version != null && !version.trim().isEmpty()) {
+            return "_" + version.replaceAll("\\.", "_");
+        }
+        return "";
+    }
 }

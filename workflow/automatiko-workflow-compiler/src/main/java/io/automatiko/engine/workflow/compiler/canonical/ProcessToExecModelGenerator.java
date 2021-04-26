@@ -136,7 +136,7 @@ public class ProcessToExecModelGenerator {
         return StringUtils.capitalize(extractProcessId(processId, version) + MODEL_CLASS_SUFFIX);
     }
 
-    public List<UserTaskModelMetaData> generateUserTaskModel(WorkflowProcess process) {
+    public List<UserTaskModelMetaData> generateUserTaskModel(WorkflowProcess process, boolean templateSupported) {
         String packageName = process.getPackageName();
         List<UserTaskModelMetaData> usertaskModels = new ArrayList<>();
 
@@ -152,7 +152,7 @@ public class ProcessToExecModelGenerator {
                     nodeVariableScope = variableScope;
                 }
                 usertaskModels.add(new UserTaskModelMetaData(packageName, variableScope, nodeVariableScope,
-                        humanTaskNode, process.getId(), ModelMetaData.version(process.getVersion())));
+                        humanTaskNode, process.getId(), ModelMetaData.version(process.getVersion()), templateSupported));
             }
         }
 

@@ -1,0 +1,178 @@
+:imagesdir: ../../images
+= User tasks
+
+User assigned tasks are rather common in workflow based systems. They usually represent some need of either doing
+manual work by human actors or there is a need to collect some data from users. In anyway there is often the need
+to present this is human readable way (user interface) and to make sure people are aware of the tasks is to notify
+them.
+
+Automatiko comes with following addons that help with user tasks within workflows
+
+* automatiko-user-tasks-management-addon
+* automatiko-user-tasks-email-addon
+
+== User tasks management
+
+User task management addon brings basic support for displaying user focused information about tasks assigned 
+to human actors. That is usually in form format where users can provide input required to continue with 
+the workflow instance. 
+
+NOTE: Automatiko does not aim at providing you with auto generated forms as this is usually more complex than 
+automatic generation can handle. For instance layout of the form might be really complex, data that the form 
+displays can come from various places and not all of them are kept in workflow instance etc.
+
+Forms are based on templates that are suppose to be given as part of your service where Automatiko can locate them
+and present to the user when requested. All will be rendered as fully featured website so it can be easily embedded
+ in custom websites for integration purpose.
+ 
+Templates are based on link:https://quarkus.io/guides/qute[Qute templating engine].
+ 
+Developers can build their templates for each task to ensure that proper readability of the work to be done is given
+to users who get tasks assigned. Template files should be located in `src/main/resources/templates` folder of your
+service project. Files are expected to have following extensions
+
+* `.html`
+* `.txt`
+
+It is recommended to use `html` as it is closer to the actual content of it.
+
+Naming convention of the template files is as follows
+
+* task name property defined on the user task
+* name of the user task
+* workflow identifier with task name property defined on the user task
+* workflow identifier with name of the user task
+
+For example when you have a task named `My Task` that has task name property `approval` within workflow with id 'vacations'
+ then you can create following template files that will be found
+
+* `approval.html`
+* `vacations.approval.html`
+* `My Task.html`
+* `vacations.My Task.html`
+
+TIP: Recommended it to use simple names that are defined as `TaskName` property of the user task as template name as it 
+is also used as part of service api (REST api) so it will be easier to correlate these two.
+
+Since these files are considered to be templates there are several variables given that will represent various data 
+of the user task assigned.
+
+|===
+|Name| Description
+
+|task | task instance in simplified format giving access to task name, description workflow metadata etc
+|link | link to the endpoint to work on a user task instance, allows to push data and complete it
+|inputs | input data of the user task
+|results | results data of the user task - this will be populated with inputs if the match by name and do not have value set
+
+|===
+
+NOTE: When there is no template file found for given task a default form will be returned but it will only 
+provide simple text based form inputs. It is recommended to always provide custom templates for user tasks.
+
+
+=== Configure
+
+To enable user tasks management addon add following dependency to your service
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-user-tasks-management-addon</artifactId>
+</dependency>
+----
+
+
+== User tasks email notifications
+
+Human actors usually prefer to receive notifications when there is an awaiting task assigned to them. This is where
+email notifications come handy. Similar to forms, email notifications are template based but here relying on defaults
+might be actually a good thing. 
+
+Here is a sample email with default template for user task
+
+image::email-notification.png[]
+
+Them main purpose for the notification is to give a hint there is something and provide base set of information. 
+
+Naming convention of the template files is as follows
+
+* task name property defined on the user task with suffix `-email.html`
+* name of the user task with suffix `-email.html`
+* workflow identifier with task name property defined on the user task with suffix `-email.html`
+* workflow identifier with name of the user task with suffix `-email.html`
+
+For example when you have a task named `My Task` that has task name property `approval` within workflow with id 'vacations'
+ then you can create following template files that will be found
+
+* `approval-email.html`
+* `vacations.approval-email.html`
+* `My Task-email.html`
+* `vacations.My Task-email.html`
+
+There might be some special cases where extra information should be included but by default notifications via email
+aim at not exposing too much of the task context like input information.
+
+Note that in case of multiple users are assigned to the task or assignment is based on group, all of these will receive an email
+It will be sent with dedicated link to the form so access to the task is really simple.
+
+Since these files are considered to be templates there are several variables given that will represent various data 
+of the user task assigned.
+
+|===
+|Name| Description
+
+|name | name of the user task
+|description | description of the user task (can be null or empty)
+|taskId | unique identifier of the task instance
+|instanceId | unique identifier of the workflow instance task belongs to
+|processId | identifier of the workflow definition user task belongs to
+|inputs | current data set for the user task - in form of a Map
+|link | direct and absolute link to the form for user task
+
+|===
+
+=== Configure
+
+To enable user tasks email addon add following dependency to your service
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-user-tasks-email-addon</artifactId>
+</dependency>
+----
+
+In addition to that there must be configuration of your email server also provided. Usually this is set in
+`application.properties` of your service but can also be given as system properties or environment variables
+
+[source,plain]
+----
+quarkus.mailer.auth-methods=DIGEST-MD5 CRAM-SHA256 CRAM-SHA1 CRAM-MD5 PLAIN LOGIN
+quarkus.mailer.from=YOUR_EMAIL@gmail.com
+quarkus.mailer.host=smtp.gmail.com
+quarkus.mailer.port=587
+quarkus.mailer.start-tls=REQUIRED
+quarkus.mailer.username=YOUR_EMAIL@gmail.com
+quarkus.mailer.password=PASSWORD
+----
+
+In addition, service url must also be defined as it is used to construct the absolute url of the form sent out 
+via email.
+
+[source,plain]
+----
+quarkus.automatiko.serviceUrl=https://myservice.hostname.com
+----
+
+IMPORTANT: When you run your service in development mode or test mode email are not being sent out so you can easily 
+work on them without spamming too much. You can also use mock inbox to validate emails being sent out in your tests.
+
+Email is sent only to valid email addresses so when your user ids are not represented as email address then you need
+to provide custom implementation of `io.automatiko.engine.addons.usertasks.email.EmailAddressResolver` interface that
+is responsible for resolving user and groups to their email addresses.
+You can also use that interface to suppress sending emails for certain users and/or groups.
+
+ 

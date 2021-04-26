@@ -1,7 +1,9 @@
 
 package io.automatiko.engine.services.event.impl;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -133,9 +135,23 @@ public class ProcessInstanceEventBatch implements EventBatch {
     protected UserTaskInstanceEventBody createUserTask(ProcessWorkItemTransitionEvent workItemTransitionEvent) {
         WorkflowProcessInstance pi = (WorkflowProcessInstance) workItemTransitionEvent.getProcessInstance();
         HumanTaskWorkItem workItem = (HumanTaskWorkItem) workItemTransitionEvent.getWorkItem();
+
+        String parentProcessInstanceId = pi.getParentProcessInstanceId();
+        if (parentProcessInstanceId != null && !parentProcessInstanceId.isEmpty()) {
+            parentProcessInstanceId += ":";
+        } else {
+            parentProcessInstanceId = "";
+        }
+        String version = version(pi.getProcess().getVersion());
+        String encoded = Base64.getEncoder().encodeToString((pi.getProcessId() + version + "|"
+                + parentProcessInstanceId + pi.getId() + "|" + workItem.getId() + "|")
+                        .getBytes(StandardCharsets.UTF_8));
+        String link = "/management/tasks/link/" + encoded;
+
         return UserTaskInstanceEventBody.create().id(workItem.getId()).state(workItem.getPhaseStatus())
                 .taskName(workItem.getTaskName()).taskDescription(workItem.getTaskDescription())
                 .taskPriority(workItem.getTaskPriority()).referenceName(workItem.getReferenceName())
+                .referenceId(workItem.getReferenceId()).formLink(link)
                 .actualOwner(workItem.getActualOwner()).startDate(workItem.getStartDate())
                 .completeDate(workItem.getCompleteDate()).adminGroups(workItem.getAdminGroups())
                 .adminUsers(workItem.getAdminUsers()).excludedUsers(workItem.getExcludedUsers())
@@ -229,5 +245,12 @@ public class ProcessInstanceEventBatch implements EventBatch {
             return service + "/"
                     + (processId.contains(".") ? processId.substring(processId.lastIndexOf('.') + 1) : processId);
         }
+    }
+
+    protected String version(String version) {
+        if (version != null && !version.trim().isEmpty()) {
+            return "_" + version.replaceAll("\\.", "_");
+        }
+        return "";
     }
 }

@@ -523,7 +523,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                         workItemInstance.getNodeName()),
                 workItemInstance.getWorkItem().getState(), workItemInstance.getWorkItem().getPhaseId(),
                 workItemInstance.getWorkItem().getPhaseStatus(), workItemInstance.getWorkItem().getParameters(),
-                workItemInstance.getWorkItem().getResults());
+                workItemInstance.getWorkItem().getResults(),
+                workItemInstance.buildFormLink());
     }
 
     @Override
@@ -540,7 +541,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                         ((WorkItemNodeInstance) ni).getWorkItem().getPhaseId(),
                         ((WorkItemNodeInstance) ni).getWorkItem().getPhaseStatus(),
                         ((WorkItemNodeInstance) ni).getWorkItem().getParameters(),
-                        ((WorkItemNodeInstance) ni).getWorkItem().getResults()))
+                        ((WorkItemNodeInstance) ni).getWorkItem().getResults(),
+                        ((WorkItemNodeInstance) ni).buildFormLink()))
                 .collect(Collectors.toList());
 
         subprocesses().forEach(pi -> mainProcessInstance.addAll(pi.workItems(policies)));

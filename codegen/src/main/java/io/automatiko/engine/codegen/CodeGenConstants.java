@@ -9,6 +9,8 @@ public class CodeGenConstants {
 
     public static final String VALIDATION_CLASS = "javax.validation.constraints.NotNull";
 
+    public static final String USERTASK_MGMT_DATA_CLASS = "io.automatiko.engine.addons.usertasks.management.UserTaskManagementResource";
+
     public static final String JAXRS_PATH = "javax.ws.rs.Path";
 
     public static final String ENTITY_CLASS = "io.automatiko.engine.addons.persistence.db.model.ProcessInstanceEntity";

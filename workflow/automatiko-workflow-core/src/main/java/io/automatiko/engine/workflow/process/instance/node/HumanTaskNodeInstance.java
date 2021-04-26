@@ -11,6 +11,7 @@ import io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskWorkI
 import io.automatiko.engine.workflow.base.instance.impl.workitem.WorkItemImpl;
 import io.automatiko.engine.workflow.process.core.node.HumanTaskNode;
 import io.automatiko.engine.workflow.process.core.node.WorkItemNode;
+import io.automatiko.engine.workflow.process.instance.WorkflowProcessInstance;
 
 public class HumanTaskNodeInstance extends WorkItemNodeInstance {
 
@@ -46,6 +47,8 @@ public class HumanTaskNodeInstance extends WorkItemNodeInstance {
         workItem.setTaskDescription((String) workItem.getParameter("Description"));
         workItem.setTaskPriority(String.valueOf(workItem.getParameter("Priority")));
         workItem.setReferenceName((String) workItem.getParameter("TaskName"));
+        workItem.setReferenceId(buildReferenceId());
+        workItem.setReferenceId(buildReferenceId());
 
         return workItem;
     }
@@ -122,4 +125,13 @@ public class HumanTaskNodeInstance extends WorkItemNodeInstance {
             }
         }
     }
+
+    @Override
+    public void setProcessInstance(WorkflowProcessInstance processInstance) {
+        super.setProcessInstance(processInstance);
+        if (getWorkItem() != null) {
+            ((HumanTaskWorkItemImpl) getWorkItem()).setReferenceId(buildReferenceId());
+        }
+    }
+
 }

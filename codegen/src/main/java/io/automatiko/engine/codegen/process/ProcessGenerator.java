@@ -3,6 +3,7 @@ package io.automatiko.engine.codegen.process;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 
@@ -26,12 +27,14 @@ import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.SuperExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.UnknownType;
@@ -53,6 +56,7 @@ import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.AbstractProcess;
 import io.automatiko.engine.workflow.compiler.canonical.ProcessMetaData;
 import io.automatiko.engine.workflow.compiler.canonical.TriggerMetaData;
+import io.automatiko.engine.workflow.compiler.canonical.UserTaskModelMetaData;
 
 /**
  * Generates the Process&lt;T&gt; container for a process, which encapsulates
@@ -85,9 +89,11 @@ public class ProcessGenerator {
 
     private List<CompilationUnit> additionalClasses = new ArrayList<>();
 
+    private List<UserTaskModelMetaData> userTasks;
+
     public ProcessGenerator(GeneratorContext context, WorkflowProcess process, ProcessExecutableModelGenerator processGenerator,
             String typeName,
-            String modelTypeName, String appCanonicalName) {
+            String modelTypeName, String appCanonicalName, List<UserTaskModelMetaData> userTasks) {
         this.context = context;
         this.appCanonicalName = appCanonicalName;
 
@@ -100,6 +106,7 @@ public class ProcessGenerator {
         this.targetCanonicalName = packageName + "." + targetTypeName;
         this.generatedFilePath = targetCanonicalName.replace('.', '/') + ".java";
         this.completePath = "src/main/java/" + generatedFilePath;
+        this.userTasks = userTasks;
         if (process.getVersion() != null && !process.getVersion().trim().isEmpty()) {
             this.versionSuffix = CodegenUtils.version(process.getVersion());
         }
@@ -221,6 +228,66 @@ public class ProcessGenerator {
         return processMetaData.getGeneratedClassModel().findFirst(MethodDeclaration.class)
                 .orElseThrow(() -> new NoSuchElementException("Compilation unit doesn't contain a method declaration!"))
                 .setModifiers(Modifier.Keyword.PUBLIC).setType(Process.class.getCanonicalName()).setName("buildProcess");
+    }
+
+    private MethodDeclaration userTaskInputModels(ProcessMetaData processMetaData) {
+        ReturnStmt returnStmt = new ReturnStmt(new NullLiteralExpr());
+        BlockStmt body = new BlockStmt();
+
+        if (userTasks != null && !userTasks.isEmpty()) {
+            body = new BlockStmt();
+            for (UserTaskModelMetaData userTask : userTasks) {
+
+                body.addStatement(new IfStmt(
+                        new MethodCallExpr(new StringLiteralExpr(userTask.getTaskName()), "equals",
+                                NodeList.nodeList(new NameExpr("taskName"))),
+                        new ReturnStmt(
+                                new MethodCallExpr(new NameExpr(userTask.getInputModelClassName()), new SimpleName("fromMap"))
+                                        .addArgument(new NameExpr("taskId"))
+                                        .addArgument(new NameExpr("taskName")).addArgument(new NameExpr("taskData"))),
+                        null));
+            }
+        }
+        body.addStatement(returnStmt);
+        MethodDeclaration methodDeclaration = new MethodDeclaration();
+
+        methodDeclaration.setName("taskInputs").addModifier(Modifier.Keyword.PUBLIC)
+                .addParameter(String.class.getCanonicalName(), "taskId")
+                .addParameter(String.class.getCanonicalName(), "taskName")
+                .addParameter(Map.class.getCanonicalName(), "taskData")
+                .setType(Object.class.getCanonicalName())
+                .setBody(body);
+        return methodDeclaration;
+    }
+
+    private MethodDeclaration userTaskOutputModels(ProcessMetaData processMetaData) {
+        ReturnStmt returnStmt = new ReturnStmt(new NullLiteralExpr());
+        BlockStmt body = new BlockStmt();
+
+        if (userTasks != null && !userTasks.isEmpty()) {
+            body = new BlockStmt();
+            for (UserTaskModelMetaData userTask : userTasks) {
+
+                body.addStatement(new IfStmt(
+                        new MethodCallExpr(new StringLiteralExpr(userTask.getTaskName()), "equals",
+                                NodeList.nodeList(new NameExpr("taskName"))),
+                        new ReturnStmt(
+                                new MethodCallExpr(new NameExpr(userTask.getOutputModelClassName()), new SimpleName("fromMap"))
+                                        .addArgument(new NameExpr("taskId"))
+                                        .addArgument(new NameExpr("taskName")).addArgument(new NameExpr("taskData"))),
+                        null));
+            }
+        }
+        body.addStatement(returnStmt);
+        MethodDeclaration methodDeclaration = new MethodDeclaration();
+
+        methodDeclaration.setName("taskOutputs").addModifier(Modifier.Keyword.PUBLIC)
+                .addParameter(String.class.getCanonicalName(), "taskId")
+                .addParameter(String.class.getCanonicalName(), "taskName")
+                .addParameter(Map.class.getCanonicalName(), "taskData")
+                .setType(Object.class.getCanonicalName())
+                .setBody(body);
+        return methodDeclaration;
     }
 
     private MethodCallExpr createProcessRuntime() {
@@ -432,6 +499,8 @@ public class ProcessGenerator {
                 .addMember(createInstanceGenericWithWorkflowInstanceMethod(processInstanceFQCN))
                 .addMember(createReadOnlyInstanceGenericWithWorkflowInstanceMethod(processInstanceFQCN))
                 .addMember(internalConfigure(processMetaData)).addMember(internalRegisterListeners(processMetaData))
+                .addMember(userTaskInputModels(processMetaData))
+                .addMember(userTaskOutputModels(processMetaData))
                 .addMember(process(processMetaData));
 
         if (isServiceProject()) {

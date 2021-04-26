@@ -16,6 +16,7 @@
 	src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
 <script
 	src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <!-- optional script that can allow to use more advanced authorization setup such as keycloak etc -->
 <script src="/js/automatiko-authorization.js"></script>
 
@@ -294,10 +295,10 @@
 											+ ' <td><button type="button" class="btn btn-sm btn-light" onclick="loadInstance(\''
 											+ item.processId + '\', \''
 											+ instanceData.id + ':' + item.id
-											+ '\')">Details</button>&nbsp;&nbsp;<button type="button" class="btn btn-sm btn-light" onclick="abortInstance(\''
+											+ '\')"><i class="fa fa-info-circle"></i></button>&nbsp;&nbsp;<button type="button" class="btn btn-sm btn-danger" onclick="abortInstance(\''
 											+ item.processId + '\', \''
 											+ instanceData.id + ':' + item.id
-											+ '\')">Details</button></td>'
+											+ '\')"><i class="fa fa-trash"></i></button></td>'
 											+ '</tr>');
 				});
 
@@ -403,9 +404,9 @@
 											+ '</td>'
 											+ ' <td><button type="button" class="btn btn-sm btn-light" onclick="loadInstance(\''
 											+ processId + '\', \'' + item.id
-											+ '\')">Details</button>&nbsp;&nbsp;<button type="button" class="btn btn-sm btn-danger" onclick="abortInstance(\''
+											+ '\')"><i class="fa fa-info-circle"></i></button>&nbsp;&nbsp;<button type="button" class="btn btn-sm btn-danger" onclick="abortInstance(\''
 											+ processId + '\', \'' + item.id
-											+ '\')">Abort</button></td>'
+											+ '\')"><i class="fa fa-trash"></i></button></td>'
 											+ '</tr>');
 				});
 				

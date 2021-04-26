@@ -5,77 +5,90 @@ import java.util.Map;
 
 public interface WorkItem {
 
-	String getId();
+    String getId();
 
-	String getNodeInstanceId();
+    String getNodeInstanceId();
 
-	String getProcessInstanceId();
+    String getProcessInstanceId();
 
-	String getName();
+    String getName();
 
-	int getState();
+    int getState();
 
-	String getPhase();
+    String getPhase();
 
-	String getPhaseStatus();
+    String getPhaseStatus();
 
-	Map<String, Object> getParameters();
+    Map<String, Object> getParameters();
 
-	Map<String, Object> getResults();
+    Map<String, Object> getResults();
 
-	/**
-	 * Reference id gives a complete path like id to this work item. It will
-	 * represent a complete navigation to work item traversing subprocesses <br/>
-	 * - root level work item <code>Name/ID</code> <br/>
-	 * - first subprocess level work item
-	 * <code>subprocess-name/subprocess-id/Name/ID</code> <br/>
-	 * - second subprocess level work item
-	 * <code>subprocess-name/subprocess-id/subprocess-name2/subprocess-id2/Name/ID</code>
-	 * <br/>
-	 * 
-	 * @return returns complete path like reference id of this work item
-	 */
-	String getReferenceId();
+    /**
+     * Reference id gives a complete path like id to this work item. It will
+     * represent a complete navigation to work item traversing subprocesses <br/>
+     * - root level work item <code>Name/ID</code> <br/>
+     * - first subprocess level work item
+     * <code>subprocess-name/subprocess-id/Name/ID</code> <br/>
+     * - second subprocess level work item
+     * <code>subprocess-name/subprocess-id/subprocess-name2/subprocess-id2/Name/ID</code>
+     * <br/>
+     * 
+     * @return returns complete path like reference id of this work item
+     */
+    String getReferenceId();
 
-	default Descriptor toMap() {
+    String getFormLink();
 
-		return new Descriptor(getId(), getName().replaceAll("\\s", "_"), getReferenceId().replaceAll("\\s", "_"));
-	}
+    default Descriptor toMap() {
 
-	public static class Descriptor {
-		String id;
-		String name;
-		String reference;
+        return new Descriptor(getId(), getName().replaceAll("\\s", "_"), getReferenceId().replaceAll("\\s", "_"),
+                getFormLink());
+    }
 
-		public Descriptor(String id, String name, String reference) {
-			this.id = id;
-			this.name = name;
-			this.reference = reference;
-		}
+    public static class Descriptor {
+        String id;
+        String name;
+        String reference;
+        String formLink;
 
-		public String getId() {
-			return id;
-		}
+        public Descriptor(String id, String name, String reference, String formLink) {
+            this.id = id;
+            this.name = name;
+            this.reference = reference;
+            this.formLink = formLink;
+        }
 
-		public void setId(String id) {
-			this.id = id;
-		}
+        public String getId() {
+            return id;
+        }
 
-		public String getName() {
-			return name;
-		}
+        public void setId(String id) {
+            this.id = id;
+        }
 
-		public void setName(String name) {
-			this.name = name;
-		}
+        public String getName() {
+            return name;
+        }
 
-		public String getReference() {
-			return reference;
-		}
+        public void setName(String name) {
+            this.name = name;
+        }
 
-		public void setReference(String reference) {
-			this.reference = reference;
-		}
+        public String getReference() {
+            return reference;
+        }
 
-	}
+        public void setReference(String reference) {
+            this.reference = reference;
+        }
+
+        public String getFormLink() {
+            return formLink;
+        }
+
+        public void setFormLink(String formLink) {
+            this.formLink = formLink;
+        }
+
+    }
 }

@@ -216,7 +216,30 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
+      
+      <dependency>
+        <groupId>io.automatiko.addons</groupId>
+        <artifactId>automatiko-user-tasks-email-addon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.addons</groupId>
+        <artifactId>automatiko-user-tasks-email-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
 
+      <dependency>
+        <groupId>io.automatiko.addons</groupId>
+        <artifactId>automatiko-user-tasks-management-addon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.addons</groupId>
+        <artifactId>automatiko-user-tasks-management-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
 
       <!-- workflow -->
       <dependency>

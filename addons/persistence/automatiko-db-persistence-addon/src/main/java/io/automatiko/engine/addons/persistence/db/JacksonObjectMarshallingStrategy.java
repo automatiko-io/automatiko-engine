@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.slf4j.Logger;
@@ -15,7 +16,6 @@ import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 
 import io.automatiko.engine.api.marshalling.ObjectMarshallingStrategy;
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
 public class JacksonObjectMarshallingStrategy implements ObjectMarshallingStrategy {
 
@@ -37,10 +37,8 @@ public class JacksonObjectMarshallingStrategy implements ObjectMarshallingStrate
 
     @Override
     public byte[] marshal(Context context, ObjectOutputStream os, Object object) throws IOException {
-        if (object instanceof PanacheEntityBase) {
-            return new byte[0];
-        } else if (object instanceof Collection) {
-            return new byte[0];
+        if (object instanceof Collection) {
+            return log(mapper.writeValueAsBytes(new ArrayList<>((Collection<?>) object)));
         }
         return log(mapper.writeValueAsBytes(object));
     }

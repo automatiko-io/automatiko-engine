@@ -9,73 +9,80 @@ import java.util.Set;
  */
 public interface HumanTaskWorkItem extends WorkItem {
 
-	/**
-	 * Returns name of the task
-	 * 
-	 * @return task name
-	 */
-	String getTaskName();
+    /**
+     * Returns name of the task
+     * 
+     * @return task name
+     */
+    String getTaskName();
 
-	/**
-	 * Returns optional description of the task
-	 * 
-	 * @return task description if present
-	 */
-	String getTaskDescription();
+    /**
+     * Returns optional description of the task
+     * 
+     * @return task description if present
+     */
+    String getTaskDescription();
 
-	/**
-	 * Returns optional priority of the task
-	 * 
-	 * @return task priority if present
-	 */
-	String getTaskPriority();
+    /**
+     * Returns optional priority of the task
+     * 
+     * @return task priority if present
+     */
+    String getTaskPriority();
 
-	/**
-	 * Returns reference name of the task
-	 * 
-	 * @return task reference
-	 */
-	String getReferenceName();
+    /**
+     * Returns reference name of the task
+     * 
+     * @return task reference
+     */
+    String getReferenceName();
 
-	/**
-	 * Returns actual owner assigned to the task
-	 * 
-	 * @return task actual owner
-	 */
-	String getActualOwner();
+    /**
+     * Returns reference id of the task that usually will contain a complete path to this workitem
+     * 
+     * @return task reference id
+     */
+    String getReferenceId();
 
-	/**
-	 * Returns potential users that can work on this task
-	 * 
-	 * @return potential users
-	 */
-	Set<String> getPotentialUsers();
+    /**
+     * Returns actual owner assigned to the task
+     * 
+     * @return task actual owner
+     */
+    String getActualOwner();
 
-	/**
-	 * Returns potential groups that can work on this task
-	 * 
-	 * @return potential groups
-	 */
-	Set<String> getPotentialGroups();
+    /**
+     * Returns potential users that can work on this task
+     * 
+     * @return potential users
+     */
+    Set<String> getPotentialUsers();
 
-	/**
-	 * Returns admin users that can administer this task
-	 * 
-	 * @return admin users
-	 */
-	Set<String> getAdminUsers();
+    /**
+     * Returns potential groups that can work on this task
+     * 
+     * @return potential groups
+     */
+    Set<String> getPotentialGroups();
 
-	/**
-	 * Returns admin groups that can administer this task
-	 * 
-	 * @return admin groups
-	 */
-	Set<String> getAdminGroups();
+    /**
+     * Returns admin users that can administer this task
+     * 
+     * @return admin users
+     */
+    Set<String> getAdminUsers();
 
-	/**
-	 * Returns excluded users that cannot work on this task
-	 * 
-	 * @return excluded users
-	 */
-	Set<String> getExcludedUsers();
+    /**
+     * Returns admin groups that can administer this task
+     * 
+     * @return admin groups
+     */
+    Set<String> getAdminGroups();
+
+    /**
+     * Returns excluded users that cannot work on this task
+     * 
+     * @return excluded users
+     */
+    Set<String> getExcludedUsers();
 }
