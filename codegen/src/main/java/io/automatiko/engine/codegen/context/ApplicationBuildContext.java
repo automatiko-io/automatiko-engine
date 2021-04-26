@@ -25,4 +25,8 @@ public interface ApplicationBuildContext {
     default boolean isOpenApiSupported() {
         return hasClassAvailable(CodeGenConstants.JAXRS_PATH);
     }
+
+    default boolean isUserTaskMgmtSupported() {
+        return hasClassAvailable(CodeGenConstants.USERTASK_MGMT_DATA_CLASS);
+    }
 }

@@ -300,7 +300,7 @@ public class ProcessCodegen extends AbstractGenerator {
 
         // then we generate user task inputs and outputs if any
         for (Entry<String, WorkflowProcess> entry : processes.entrySet()) {
-            UserTasksModelClassGenerator utcg = new UserTasksModelClassGenerator(entry.getValue());
+            UserTasksModelClassGenerator utcg = new UserTasksModelClassGenerator(entry.getValue(), context);
             processIdToUserTaskModel.put(entry.getKey(), utcg.generate());
         }
         String workflowType = Process.WORKFLOW_TYPE;
@@ -320,6 +320,11 @@ public class ProcessCodegen extends AbstractGenerator {
                     execModelGenerator);
             String packageName = entry.getValue().getPackageName();
             String id = entry.getKey();
+
+            // add extra meta data to indicate if user task mgmt is available
+            if (context.getBuildContext().isUserTaskMgmtSupported()) {
+                entry.getValue().getMetaData().put("UserTaskMgmt", "true");
+            }
             try {
                 ProcessMetaData generate = execModelGen.generate();
                 processIdToMetadata.put(id, generate);
@@ -339,7 +344,8 @@ public class ProcessCodegen extends AbstractGenerator {
             ModelClassGenerator modelClassGenerator = processIdToModelGenerator.get(execModelGen.getProcessId());
 
             ProcessGenerator p = new ProcessGenerator(context, workFlowProcess, execModelGen, classPrefix,
-                    modelClassGenerator.className(), applicationCanonicalName).withDependencyInjection(annotator)
+                    modelClassGenerator.className(), applicationCanonicalName,
+                    processIdToUserTaskModel.get(execModelGen.getProcessId())).withDependencyInjection(annotator)
                             .withPersistence(persistence);
 
             ProcessInstanceGenerator pi = new ProcessInstanceGenerator(context(), execModelGen,

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Task assigned to you - {task.name}</title> 
+	
+	<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+	<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+	
+	<script src="/js/jquery.serializejson.js"></script>
+	
+	
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+	
+	<style type="text/css">
+	   .register{
+		    background: -webkit-linear-gradient(left, #3931af, #00c6ff);
+		    margin-top: 3%;
+		    padding: 3%;
+		}
+		.register-left{
+		    text-align: center;
+		    color: #fff;
+		    margin-top: 4%;
+		}
+		.register-left input{
+		    border: none;
+		    border-radius: 1.5rem;
+		    padding: 2%;
+		    width: 60%;
+		    background: #f8f9fa;
+		    font-weight: bold;
+		    color: #383d41;
+		    margin-top: 30%;
+		    margin-bottom: 3%;
+		    cursor: pointer;
+		}
+		.register-right{
+		    background: #f8f9fa;
+		    border-top-left-radius: 10% 50%;
+		    border-bottom-left-radius: 10% 50%;
+		}
+		.register-left img{
+		    margin-top: 15%;
+		    margin-bottom: 5%;
+		    width: 25%;
+		    -webkit-animation: mover 2s infinite  alternate;
+		    animation: mover 1s infinite  alternate;
+		}
+		@-webkit-keyframes mover {
+		    0% { transform: translateY(0); }
+		    100% { transform: translateY(-20px); }
+		}
+		@keyframes mover {
+		    0% { transform: translateY(0); }
+		    100% { transform: translateY(-20px); }
+		}
+		.register-left p{
+		    font-weight: lighter;
+		    padding: 12%;
+		    margin-top: -9%;
+		}
+		.register .register-form{
+		    padding: 10%;
+		    margin-top: 10%;
+		}
+		.btnRegister{
+		    float: right;
+		    margin-top: 10%;
+		    border: none;
+		    border-radius: 1.5rem;
+		    padding: 2%;
+		    background: #0062cc;
+		    color: #fff;
+		    font-weight: 600;
+		    width: 50%;
+		    cursor: pointer;
+		}
+		.btnClaim{
+		    float: right;
+		    margin-top: 10%;
+		    border: none;
+		    border-radius: 1.5rem;
+		    padding: 2%;
+		    background: #99c0ea;
+		    color: #fff;
+		    font-weight: 600;
+		    width: 50%;
+		    cursor: pointer;
+		}
+		.register .nav-tabs{
+		    margin-top: 3%;
+		    border: none;
+		    background: #0062cc;
+		    border-radius: 1.5rem;
+		    width: 28%;
+		    float: right;
+		}
+		.register .nav-tabs .nav-link{
+		    padding: 2%;
+		    height: 34px;
+		    font-weight: 600;
+		    color: #fff;
+		    border-top-right-radius: 1.5rem;
+		    border-bottom-right-radius: 1.5rem;
+		}
+		.register .nav-tabs .nav-link:hover{
+		    border: none;
+		}
+		.register .nav-tabs .nav-link.active{
+		    width: 100px;
+		    color: #0062cc;
+		    border: 2px solid #0062cc;
+		    border-top-left-radius: 1.5rem;
+		    border-bottom-left-radius: 1.5rem;
+		}
+		.register-heading{
+		    text-align: center;
+		    margin-top: 8%;
+		    margin-bottom: -15%;
+		    color: #495057;
+		}
+	</style>
+	<script type="text/javascript">
+		var taskActionUrl = "{url}";
+	</script>
+
+</head>
+<body>
+<div class="alert alert-warning fade out" id="bsalert">
+  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+  <strong>Warning!</strong> Task operation cannot be completed
+</div>
+  <form id="dataForm">
+    <div class="container register">
+      <div class="row">
+          <div class="col-md-3 register-left">
+              <span class="fas fa-tasks"  style="font-size:60px;"></span>
+              <hr/>
+              <h3>Hello</h3>
+              <p>A new task is waiting</p>
+          </div>
+          
+          <div class="col-md-9 register-right">
+              <div class="tab-content" id="myTabContent">
+                  <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                      <h3 id="info" class="register-heading">{task.name}</h3>
+                      <div id="content" class="row register-form">
+                      	
+                          <div class="col-md-6">   
+                              <ul>
+							    {#if inputs != null}
+							      {#each inputs.toMap().entrySet()} 
+							      
+							      <li>
+							      <div class="form-group">
+							        <strong>{it.getKey()}</strong> {it.getValue()}
+							        </div>
+							      </li>
+							    {/each}
+							    {/if}
+							    </ul>      
+                          </div>
+                          <div class="col-md-6">
+                              {#if results != null}
+      							{#each results.toMap().entrySet()} 
+                              <div class="form-group">
+                              	<label for="output_{it.getKey()}" class="form-label">{it.getKey()}</label>
+                                 <input id="output_{it.getKey()}" type="text" class="form-control" name="{it.getKey()}" placeholder="{it.getKey()}" value="{it.getValue() or ''}" />
+                              </div>
+
+                                  {/each}
+   							  {/if}
+                              <input type="button" class="btnRegister" id="completeButton" value="Complete"/>
+                              {#if task.phase eq "active"}
+                              	<input type="button" class="btnClaim" id="claimButton" value="Claim"/>
+                              	<input type="button" class="btnClaim" id="releaseButton" value="Release" hidden/>
+                              {#else}
+                              	<input type="button" class="btnClaim" id="claimButton" value="Claim" hidden/>
+                              	<input type="button" class="btnClaim" id="releaseButton" value="Release"/>
+                              {/if}
+                          </div>                          
+                      </div>
+                  </div>                            
+              </div>
+          </div>
+      </div>
+  </div>  
+ </form>
+</body>
+	<script type="text/javascript">
+	
+	function toggleAlert() {
+	    $(".alert").toggleClass('in out'); 
+	    return false; // Keep close.bs.alert event from removing from DOM
+	}
+	
+	let completeTask = function() {
+
+		$.ajax({
+			url : taskActionUrl,
+			type : 'POST',
+			dataType : 'json',
+			contentType: 'application/json',
+			data: JSON.stringify($('#dataForm').serializeJSON()),
+			crossDomain : true,
+			success : function(data) {				
+				$( "#content" ).parent()
+			    .append(
+			      $('<h3 class="register-heading">Task has been successfully completed</h3>')
+			    );
+				$( "#content" ).remove();
+				$( "#info" ).remove();
+			},
+			error : function(req, status, error) {
+				toggleAlert();
+				console.error("Task complete failed with " + status + ", error: " + error);
+			}
+		});
+
+	}
+	
+	let claimTask = function() {
+
+		$.ajax({
+			url : taskActionUrl + '?phase=claim',
+			type : 'POST',
+			dataType : 'json',
+			contentType: 'application/json',
+			data: JSON.stringify($('#dataForm').serializeJSON()),
+			crossDomain : true,
+			success : function(data) {
+				$( "#claimButton" ).attr('hidden', true);
+				$( "#releaseButton" ).attr('hidden', false);
+			},
+			error : function(req, status, error) {
+				toggleAlert();
+				console.error("Task complete failed with " + status + ", error: " + error);
+			}
+		});
+
+	}
+	
+	let releaseTask = function() {
+
+		$.ajax({
+			url : taskActionUrl + '?phase=release',
+			type : 'POST',
+			dataType : 'json',
+			contentType: 'application/json',
+			data: JSON.stringify($('#dataForm').serializeJSON()),
+			crossDomain : true,
+			success : function(data) {
+				$( "#claimButton" ).attr('hidden', false);
+				$( "#releaseButton" ).attr('hidden', true);
+			},
+			error : function(req, status, error) {
+				toggleAlert();
+				console.error("Task complete failed with " + status + ", error: " + error);
+			}
+		});
+
+	}
+	$(document).ready(function() {
+		$( "#completeButton" ).on( "click", function() {
+			completeTask();
+			$( "#completeButton" ).prop('disabled', true);			
+			  
+		});
+		$( "#claimButton" ).on( "click", function() {
+			claimTask();						
+			  
+		});
+		$( "#releaseButton" ).on( "click", function() {
+			releaseTask();						
+			  
+		});
+	});
+	</script>
+</html>

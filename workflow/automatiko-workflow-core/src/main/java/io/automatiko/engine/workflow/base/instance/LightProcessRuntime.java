@@ -127,6 +127,7 @@ public class LightProcessRuntime implements InternalProcessRuntime {
         ProcessInstance processInstance = getProcessInstance(processInstanceId);
         ((io.automatiko.engine.workflow.base.instance.ProcessInstance) processInstance).configureSLA();
         getProcessEventSupport().fireBeforeProcessStarted(processInstance, this);
+        ((io.automatiko.engine.workflow.base.instance.ProcessInstance) processInstance).setReferenceFromRoot(null);
         ((io.automatiko.engine.workflow.base.instance.ProcessInstance) processInstance).start(trigger, triggerData);
         getProcessEventSupport().fireAfterProcessStarted(processInstance, this);
         return processInstance;

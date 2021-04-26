@@ -74,6 +74,10 @@ public interface ProcessInstance
 
     void setInitiator(String initiator);
 
+    String getReferenceFromRoot();
+
+    void setReferenceFromRoot(String referenceFromRoot);
+
     default boolean isFunctionFlow() {
         return getProcess().getType().equals(Process.FUNCTION_FLOW_TYPE);
     }

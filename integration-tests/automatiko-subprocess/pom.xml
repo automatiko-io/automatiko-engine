@@ -52,11 +52,25 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-metrics</artifactId>
     </dependency>
+    
+    <dependency>
+      <groupId>io.automatiko.addons</groupId>
+      <artifactId>automatiko-filesystem-persistence-addon</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>io.automatiko.addons</groupId>
       <artifactId>automatiko-process-management-addon</artifactId>
-      <version>${automatiko.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>io.automatiko.addons</groupId>
+      <artifactId>automatiko-user-tasks-management-addon</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>io.automatiko.addons</groupId>
+      <artifactId>automatiko-user-tasks-email-addon</artifactId>
     </dependency>
 
     <dependency>

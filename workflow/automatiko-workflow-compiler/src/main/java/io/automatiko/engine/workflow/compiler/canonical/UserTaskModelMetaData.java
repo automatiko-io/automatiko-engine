@@ -4,6 +4,7 @@ import static com.github.javaparser.StaticJavaParser.parse;
 import static com.github.javaparser.StaticJavaParser.parseClassOrInterfaceType;
 import static io.automatiko.engine.workflow.compiler.util.ClassUtils.constructClass;
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.CUSTOM_AUTO_START;
+import static io.automatiko.engine.workflow.process.executable.core.Metadata.DATA_INPUTS;
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.DATA_OUTPUTS;
 
 import java.util.Arrays;
@@ -72,14 +73,17 @@ public class UserTaskModelMetaData {
     private String outputModelClassName;
     private String outputModelClassSimpleName;
 
+    private boolean templateSupported;
+
     public UserTaskModelMetaData(String packageName, VariableScope processVariableScope, VariableScope variableScope,
-            HumanTaskNode humanTaskNode, String processId, String version) {
+            HumanTaskNode humanTaskNode, String processId, String version, boolean templateSupported) {
         this.packageName = packageName;
         this.processVariableScope = processVariableScope;
         this.variableScope = variableScope;
         this.humanTaskNode = humanTaskNode;
         this.processId = processId;
         this.version = version;
+        this.templateSupported = templateSupported;
 
         this.inputModelClassSimpleName = StringUtils
                 .capitalize(ProcessToExecModelGenerator.extractProcessId(processId, version) + "_"
@@ -143,6 +147,11 @@ public class UserTaskModelMetaData {
         return humanTaskNode.getName();
     }
 
+    public String getTaskName() {
+        return (String) humanTaskNode.getWork().getParameters().getOrDefault("TaskName",
+                humanTaskNode.getName());
+    }
+
     public long getId() {
         return humanTaskNode.getId();
     }
@@ -179,6 +188,10 @@ public class UserTaskModelMetaData {
         addUserTaskAnnotation(modelClass);
 
         modelClass.setName(inputModelClassSimpleName);
+
+        if (templateSupported) {
+            modelClass.addAnnotation("io.quarkus.qute.TemplateData");
+        }
 
         modelClass.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.media.Schema"),
                 NodeList.nodeList(
@@ -235,7 +248,7 @@ public class UserTaskModelMetaData {
 
             FieldDeclaration fd = new FieldDeclaration().addVariable(new VariableDeclarator()
                     .setType(entry.getValue().getClass().getCanonicalName()).setName(entry.getKey()))
-                    .addModifier(Modifier.Keyword.PRIVATE);
+                    .addModifier(Modifier.Keyword.PUBLIC);
             modelClass.addMember(fd);
             addUserTaskParamAnnotation(fd, UserTaskParam.ParamType.INPUT);
 
@@ -261,6 +274,53 @@ public class UserTaskModelMetaData {
             staticFromMap.addStatement(new ReturnStmt(new NameExpr("item")));
             fromMap.setBody(staticFromMap);
         }
+
+        // setup of the toMap method body
+        BlockStmt toMapBody = new BlockStmt();
+        ClassOrInterfaceType toMap = new ClassOrInterfaceType(null, new SimpleName(Map.class.getSimpleName()),
+                NodeList.nodeList(new ClassOrInterfaceType(null, String.class.getSimpleName()),
+                        new ClassOrInterfaceType(null, Object.class.getSimpleName())));
+        VariableDeclarationExpr paramsField = new VariableDeclarationExpr(toMap, "params");
+        toMapBody
+                .addStatement(new AssignExpr(
+                        paramsField, new ObjectCreationExpr(null,
+                                new ClassOrInterfaceType(null, HashMap.class.getSimpleName()), NodeList.nodeList()),
+                        AssignExpr.Operator.ASSIGN));
+
+        for (Entry<String, String> entry : humanTaskNode.getInMappings().entrySet()) {
+            if (entry.getValue() == null || INTERNAL_FIELDS.contains(entry.getKey())) {
+                continue;
+            }
+
+            Variable variable = Optional.ofNullable(variableScope.findVariable(entry.getValue()))
+                    .orElse(processVariableScope.findVariable(entry.getValue()));
+
+            if (variable == null) {
+                // check if given mapping is an expression
+                Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(entry.getValue());
+                if (matcher.find()) {
+                    Map<String, String> dataOutputs = (Map<String, String>) humanTaskNode.getMetaData(DATA_INPUTS);
+                    variable = new Variable();
+                    variable.setName(entry.getKey());
+                    variable.setType(new ObjectDataType(constructClass(dataOutputs.get(entry.getKey())),
+                            dataOutputs.get(entry.getKey())));
+                } else {
+                    throw new IllegalStateException("Task " + humanTaskNode.getName() + " (output) " + entry.getKey()
+                            + " reference not existing variable " + entry.getValue());
+                }
+            }
+
+            // toMap method body
+            MethodCallExpr putVariable = new MethodCallExpr(new NameExpr("params"), "put");
+            putVariable.addArgument(new StringLiteralExpr(entry.getKey()));
+            putVariable.addArgument(new FieldAccessExpr(new ThisExpr(), entry.getKey()));
+            toMapBody.addStatement(putVariable);
+        }
+        Optional<MethodDeclaration> toMapMethod = modelClass.findFirst(MethodDeclaration.class,
+                sl -> sl.getName().asString().equals("toMap"));
+
+        toMapBody.addStatement(new ReturnStmt(new NameExpr("params")));
+        toMapMethod.ifPresent(methodDeclaration -> methodDeclaration.setBody(toMapBody));
         return compilationUnit;
     }
 
@@ -280,13 +340,65 @@ public class UserTaskModelMetaData {
                 "Task output model for user task '" + humanTaskNode.getName() + "' in process '" + processId + "'"));
         addUserTaskAnnotation(modelClass);
         modelClass.setName(outputModelClassSimpleName);
-
+        if (templateSupported) {
+            modelClass.addAnnotation("io.quarkus.qute.TemplateData");
+        }
         modelClass.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.media.Schema"),
                 NodeList.nodeList(
                         new MemberValuePair("name", new StringLiteralExpr("Output model for " + humanTaskNode.getName())),
                         new MemberValuePair("description", new StringLiteralExpr(
                                 "Task output model for user task '" + humanTaskNode.getName() + "' in '" + processId
                                         + "'")))));
+
+        // setup of static fromMap method body
+        ClassOrInterfaceType modelType = new ClassOrInterfaceType(null, modelClass.getNameAsString());
+        BlockStmt staticFromMap = new BlockStmt();
+        VariableDeclarationExpr itemField = new VariableDeclarationExpr(modelType, "item");
+        staticFromMap.addStatement(new AssignExpr(itemField,
+                new ObjectCreationExpr(null, modelType, NodeList.nodeList()), AssignExpr.Operator.ASSIGN));
+        NameExpr item = new NameExpr("item");
+        for (Entry<String, String> entry : humanTaskNode.getOutMappings().entrySet()) {
+            if (entry.getValue() == null || INTERNAL_FIELDS.contains(entry.getKey())) {
+                continue;
+            }
+            Variable variable = Optional.ofNullable(variableScope.findVariable(entry.getValue()))
+                    .orElse(processVariableScope.findVariable(entry.getValue()));
+
+            if (variable == null) {
+                // check if given mapping is an expression
+                Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(entry.getValue());
+                if (matcher.find()) {
+                    Map<String, String> dataOutputs = (Map<String, String>) humanTaskNode.getMetaData(DATA_OUTPUTS);
+                    variable = new Variable();
+                    variable.setName(entry.getKey());
+                    variable.setType(new ObjectDataType(constructClass(dataOutputs.get(entry.getKey())),
+                            dataOutputs.get(entry.getKey())));
+                } else {
+
+                    throw new IllegalStateException("Task " + humanTaskNode.getName() + " (output) " + entry.getKey()
+                            + " reference not existing variable " + entry.getValue());
+                }
+            }
+
+            // fromMap static method body
+            FieldAccessExpr field = new FieldAccessExpr(item, entry.getKey());
+
+            ClassOrInterfaceType type = parseClassOrInterfaceType(variable.getType().getStringType());
+            staticFromMap
+                    .addStatement(new AssignExpr(field,
+                            new CastExpr(type,
+                                    new MethodCallExpr(new NameExpr("params"), "get")
+                                            .addArgument(new StringLiteralExpr(entry.getKey()))),
+                            AssignExpr.Operator.ASSIGN));
+        }
+        Optional<MethodDeclaration> staticFromMapMethod = modelClass.findFirst(MethodDeclaration.class,
+                sl -> sl.getName().asString().equals("fromMap") && sl.isStatic());
+        if (staticFromMapMethod.isPresent()) {
+            MethodDeclaration fromMap = staticFromMapMethod.get();
+            fromMap.setType(modelClass.getNameAsString());
+            staticFromMap.addStatement(new ReturnStmt(new NameExpr("item")));
+            fromMap.setBody(staticFromMap);
+        }
 
         // setup of the toMap method body
         BlockStmt toMapBody = new BlockStmt();

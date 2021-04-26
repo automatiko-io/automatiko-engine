@@ -9,4 +9,8 @@ public class XXXTaskOutput {
     public Map<String, Object> toMap() {
         
     }
+    
+    public static XXXTaskOutput fromMap(String id, String name,  Map<String, Object> params) {
+        
+    }
 }

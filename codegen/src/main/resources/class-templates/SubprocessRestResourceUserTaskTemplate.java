@@ -41,7 +41,13 @@ public class $Type$Resource {
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         identitySupplier.buildIdentityProvider(user, groups);
         return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-            ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+            String combinedId;
+            if (id_$name$.contains(":")) {
+                combinedId = id_$name$;
+            } else {
+                combinedId = $parentprocessid$ + ":" + id_$name$;
+            }
+            ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById(combinedId).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             tracing(pi);
             pi.send(Sig.of("$taskNodeName$", java.util.Collections.emptyMap()));
             java.util.Optional<WorkItem> task = pi.workItems().stream().filter(wi -> wi.getName().equals("$taskName$")).findFirst();
@@ -82,7 +88,13 @@ public class $Type$Resource {
         try {
             identitySupplier.buildIdentityProvider(user, groups);
             return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-                ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+                String combinedId;
+                if (id_$name$.contains(":")) {
+                    combinedId = id_$name$;
+                } else {
+                    combinedId = $parentprocessid$ + ":" + id_$name$;
+                }
+                ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById(combinedId).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
                 tracing(pi);
                 io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, model.toMap(), io.automatiko.engine.api.auth.IdentityProvider.get());
                 pi.transitionWorkItem(workItemId, transition);
@@ -119,7 +131,13 @@ public class $Type$Resource {
     public $TaskInput$ getTask(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$, @PathParam("workItemId") String workItemId, @QueryParam("user") final String user, @QueryParam("group") final List<String> groups) {
         try {
             identitySupplier.buildIdentityProvider(user, groups);
-            ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+            String combinedId;
+            if (id_$name$.contains(":")) {
+                combinedId = id_$name$;
+            } else {
+                combinedId = $parentprocessid$ + ":" + id_$name$;
+            }
+            ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById(combinedId, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
 
             WorkItem workItem = pi.workItem(workItemId, policies(user, groups));
             if (workItem == null) {
@@ -161,7 +179,13 @@ public class $Type$Resource {
         try {
             identitySupplier.buildIdentityProvider(user, groups);
             return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-                ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+                String combinedId;
+                if (id_$name$.contains(":")) {
+                    combinedId = id_$name$;
+                } else {
+                    combinedId = $parentprocessid$ + ":" + id_$name$;
+                }
+                ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById(combinedId).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
                 tracing(pi);
                 io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, null, io.automatiko.engine.api.auth.IdentityProvider.get());
                 pi.transitionWorkItem(workItemId, transition);

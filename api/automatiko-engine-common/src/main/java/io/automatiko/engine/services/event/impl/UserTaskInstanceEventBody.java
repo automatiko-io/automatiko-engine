@@ -18,6 +18,8 @@ public class UserTaskInstanceEventBody {
     private String taskDescription;
     private String taskPriority;
     private String referenceName;
+    private String referenceId;
+    private String formLink;
     private Date startDate;
     private Date completeDate;
 
@@ -62,6 +64,14 @@ public class UserTaskInstanceEventBody {
 
     public String getReferenceName() {
         return referenceName;
+    }
+
+    public String getReferenceId() {
+        return referenceId;
+    }
+
+    public String getFormLink() {
+        return formLink;
     }
 
     public Date getStartDate() {
@@ -205,6 +215,16 @@ public class UserTaskInstanceEventBody {
 
         public Builder referenceName(String referenceName) {
             instance.referenceName = referenceName;
+            return this;
+        }
+
+        public Builder referenceId(String referenceId) {
+            instance.referenceId = referenceId;
+            return this;
+        }
+
+        public Builder formLink(String formLink) {
+            instance.formLink = formLink;
             return this;
         }
 

@@ -24,6 +24,8 @@ public class HumanTaskWorkItemImpl extends WorkItemImpl implements HumanTaskWork
     private String taskPriority;
     private String referenceName;
 
+    private String referenceId;
+
     private String actualOwner;
     private Set<String> potentialUsers = new HashSet<>();
     private Set<String> potentialGroups = new HashSet<>();
@@ -174,5 +176,13 @@ public class HumanTaskWorkItemImpl extends WorkItemImpl implements HumanTaskWork
             throw new NotAuthorizedException(
                     "User " + user + " is not authorized to access task instance with id " + getId());
         }
+    }
+
+    public String getReferenceId() {
+        return referenceId;
+    }
+
+    public void setReferenceId(String referenceId) {
+        this.referenceId = referenceId;
     }
 }

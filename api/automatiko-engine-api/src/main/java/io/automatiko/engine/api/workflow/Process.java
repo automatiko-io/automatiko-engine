@@ -1,6 +1,8 @@
 
 package io.automatiko.engine.api.workflow;
 
+import java.util.Map;
+
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.AccessPolicy;
 
@@ -33,6 +35,14 @@ public interface Process<T> {
     AccessPolicy<? extends ProcessInstance<T>> accessPolicy();
 
     default String image() {
+        return null;
+    }
+
+    default Object taskInputs(String taskId, String taskName, Map<String, Object> taskData) {
+        return null;
+    }
+
+    default Object taskOutputs(String taskId, String taskName, Map<String, Object> taskData) {
         return null;
     }
 }

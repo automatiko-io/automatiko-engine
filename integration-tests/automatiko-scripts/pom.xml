@@ -51,6 +51,16 @@
       <groupId>io.automatiko.addons</groupId>
       <artifactId>automatiko-events-websocket-addon</artifactId>
     </dependency>
+    
+    <dependency>
+      <groupId>io.automatiko.addons</groupId>
+      <artifactId>automatiko-user-tasks-management-addon</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>io.automatiko.addons</groupId>
+      <artifactId>automatiko-user-tasks-email-addon</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>io.quarkus</groupId>

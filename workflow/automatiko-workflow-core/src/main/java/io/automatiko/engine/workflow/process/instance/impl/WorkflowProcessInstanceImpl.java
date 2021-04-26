@@ -142,6 +142,8 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
 
     private String referenceId;
 
+    private String referenceFromRoot;
+
     private String initiator;
 
     private Collection<Tag> tags = new LinkedHashSet<Tag>();
@@ -1134,6 +1136,41 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
         if (this.initiator == null) {
             this.initiator = initiator;
         }
+    }
+
+    @Override
+    public String getReferenceFromRoot() {
+        return referenceFromRoot;
+    }
+
+    @Override
+    public void setReferenceFromRoot(String referenceFromRoot) {
+        if (this.referenceFromRoot != null) {
+            return;
+        }
+        if (referenceFromRoot != null) {
+            String parentProcessInstanceId = getParentProcessInstanceId();
+            if (parentProcessInstanceId != null && !parentProcessInstanceId.isEmpty()) {
+                parentProcessInstanceId += ":";
+            } else {
+                parentProcessInstanceId = "";
+            }
+            this.referenceFromRoot = referenceFromRoot + getProcessId() + "/" + parentProcessInstanceId + getId() + "/";
+        } else {
+            this.referenceFromRoot = version() + getProcessId() + "/" + getId() + "/";
+        }
+    }
+
+    protected String version() {
+        String version = getProcess().getVersion();
+        if (version != null && !version.trim().isEmpty()) {
+            return "v" + version.replaceAll("\\.", "_") + "/";
+        }
+        return "";
+    }
+
+    public void internalSetReferenceFromRoot(String referenceFromRoot) {
+        this.referenceFromRoot = referenceFromRoot;
     }
 
     private boolean isVariableExpression(String eventType) {
