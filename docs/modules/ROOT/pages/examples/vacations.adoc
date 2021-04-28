@@ -70,6 +70,49 @@ so there is no need for additional components to run this example.
 
 `docker run -p 8080:8080 automatiko/vacation-requests`
 
+Alternatively there is also a option to run this service with email notifications enabled. This requires
+some extra environment variables to be set when starting the container
+
+`docker run -p 8080:8080 -e QUARKUS_PROFILE=withemail -e EMAIL_TO=TO -e EMAIL_FROM=FROM  -e EMAIL_HOST=HOST -e EMAIL_PORT=PORT -e EMAIL_USER=USER -e EMAIL_PASSWORD=PASSWORD automatiko/vacation-requests`
+
+You need to set following environment variables with proper email server data
+
+.Environment variables for email notifications
+|===
+|Name |Value | Example
+
+|EMAIL_TO
+|email address where all notifications should be sent to
+|user@gmail.com
+
+|EMAIL_FROM
+|email address the the emails are sent from
+|user@gmail.com
+
+|EMAIL_HOST
+|host name of SMTP server
+|smtp.gmail.com
+
+|EMAIL_PORT
+|port number of SMTP server
+|587
+
+|EMAIL_USER
+|username to be used to authenticate on SMTP server
+|user@gmail.com
+
+|EMAIL_PASSWORD
+|password to be used to authenticate on SMTP server
+|secret_password
+
+|===
+
+With above configuration email notifications for user tasks are going to be sent out. Using default template 
+for email addresses that will look like this
+
+image::examples-vacation-request-form-email.png[]
+
+
 once this is done you can see the fully described service at
  link:http://localhost:8080/swagger-ui/#/[]
 
@@ -125,7 +168,9 @@ policy. This means that given instance will be visible to the owner of it
 manager who has at least one approval task awaiting.
 
 TIP: Note that there is simple UI for manager to see incoming approval tasks.
-Just open browser at link:http://localhost:8080[] and connect using `john@email.com`
+Just open browser at link:http://localhost:8080[] and connect using `john@email.com`. You can also use this
+UI for employees to see the cancelation of vacation requests, connect using `mary@email.com` to receive 
+tasks assigned to mary as employee.
 
 
 === The happy path
@@ -221,6 +266,12 @@ the approval task
 
 IMPORTANT: Replace the `\{ID}` at the end of endpoint with ID from the previous call.
 Same is required in the below curl command.
+
+There is also option to look at the UI based form to work on the approval task. When getting task list for manager
+there are formLink returned that can be easily used to open a form in a browser window. Just prepend the host name
+of the service before the form link and open in the browser which should look like this
+
+image::examples-vacation-request-form-approval.png[]
 
 complete curl command for this request is as follows
 
@@ -484,6 +535,12 @@ the approval task
 IMPORTANT: Replace the `\{ID}` at the end of endpoint with ID from the previous call.
 Same is required in the below curl command.
 
+There is also option to look at the UI based form to work on the approval task. When getting task list for manager
+there are formLink returned that can be easily used to open a form in a browser window. Just prepend the host name
+of the service before the form link and open in the browser which should look like this
+
+image::examples-vacation-request-form-approval.png[]
+
 complete curl command for this request is as follows
 
 [source,plain]
@@ -522,6 +579,12 @@ the cancel task
 
 IMPORTANT: Replace the `\{ID}` at the end of endpoint with ID from the previous call.
 Same is required in the below curl command.
+
+There is also option to look at the UI based form to work on the cancel task. When getting task list for employee
+there are formLinks returned that can be easily used to open a form in a browser window. Just prepend the host name
+of the service before the form link and open in the browser which should look like this
+
+image::examples-vacation-request-form-cancel.png[]
 
 complete curl command for this request is as follows
 
