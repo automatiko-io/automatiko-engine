@@ -78,6 +78,8 @@ attributes to control retries
 e.g. PT5S to retry every 5 seconds|No default value
 |retryLimit|Defines how many retries there should be before triggering error
 handler and take the error path|3
+|retryIncrement|Duration which will be added to the delay between successive retries (ISO 8601 duration format)|PT5M
+|retryMultiplier|Value by which the delay is multiplied before each attempt|1.5
 
 |===
 
