@@ -24,6 +24,6 @@ public interface ProcessInstances<T> {
 
     Collection<? extends ProcessInstance<T>> findByIdOrTag(ProcessInstanceReadMode mode, String... values);
 
-    Integer size();
+    Long size();
 
 }

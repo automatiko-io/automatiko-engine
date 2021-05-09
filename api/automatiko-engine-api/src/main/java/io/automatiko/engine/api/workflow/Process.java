@@ -45,4 +45,8 @@ public interface Process<T> {
     default Object taskOutputs(String taskId, String taskName, Map<String, Object> taskData) {
         return null;
     }
+
+    ExportedProcessInstance exportInstance(String id, boolean abort);
+
+    ProcessInstance<T> importInstance(ExportedProcessInstance instance);
 }

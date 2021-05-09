@@ -67,4 +67,9 @@ public class CronExpirationTime implements ExpirationTime {
         }
     }
 
+    @Override
+    public void reset(ZonedDateTime time) {
+
+    }
+
 }

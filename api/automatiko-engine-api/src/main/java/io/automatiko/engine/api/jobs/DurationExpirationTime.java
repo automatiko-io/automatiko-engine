@@ -7,60 +7,66 @@ import java.util.Objects;
 
 public class DurationExpirationTime implements ExpirationTime {
 
-	private final ZonedDateTime expirationTime;
-	private Long repeatInterval;
-	private Integer repeatLimit;
+    private ZonedDateTime expirationTime;
+    private Long repeatInterval;
+    private Integer repeatLimit;
 
-	private DurationExpirationTime(ZonedDateTime expirationTime, Long repeatInterval, Integer repeatLimit) {
-		this.expirationTime = Objects.requireNonNull(expirationTime);
-		this.repeatInterval = repeatInterval;
-		this.repeatLimit = repeatLimit;
-	}
+    private DurationExpirationTime(ZonedDateTime expirationTime, Long repeatInterval, Integer repeatLimit) {
+        this.expirationTime = Objects.requireNonNull(expirationTime);
+        this.repeatInterval = repeatInterval;
+        this.repeatLimit = repeatLimit;
+    }
 
-	@Override
-	public ZonedDateTime get() {
-		return expirationTime;
-	}
+    @Override
+    public ZonedDateTime get() {
+        return expirationTime;
+    }
 
-	@Override
-	public Long repeatInterval() {
-		return repeatInterval;
-	}
+    @Override
+    public Long repeatInterval() {
+        return repeatInterval;
+    }
 
-	@Override
-	public Integer repeatLimit() {
-		return repeatLimit;
-	}
+    @Override
+    public Integer repeatLimit() {
+        return repeatLimit;
+    }
 
-	public static DurationExpirationTime now() {
-		return new DurationExpirationTime(ZonedDateTime.now(), null, 0);
-	}
+    @Override
+    public void reset(ZonedDateTime time) {
+        this.expirationTime = time;
+    }
 
-	public static DurationExpirationTime after(long delay) {
-		return after(delay, ChronoUnit.MILLIS);
-	}
+    public static DurationExpirationTime now() {
+        return new DurationExpirationTime(ZonedDateTime.now(), null, 0);
+    }
 
-	public static DurationExpirationTime after(long delay, TemporalUnit unit) {
-		return new DurationExpirationTime(ZonedDateTime.now().plus(delay, unit), null, 0);
-	}
+    public static DurationExpirationTime after(long delay) {
+        return after(delay, ChronoUnit.MILLIS);
+    }
 
-	public static DurationExpirationTime repeat(long delay) {
-		return repeat(delay, null, ChronoUnit.MILLIS);
-	}
+    public static DurationExpirationTime after(long delay, TemporalUnit unit) {
+        return new DurationExpirationTime(ZonedDateTime.now().plus(delay, unit), null, 0);
+    }
 
-	public static DurationExpirationTime repeat(long delay, Long repeatInterval) {
-		return repeat(delay, repeatInterval, ChronoUnit.MILLIS);
-	}
+    public static DurationExpirationTime repeat(long delay) {
+        return repeat(delay, null, ChronoUnit.MILLIS);
+    }
 
-	public static DurationExpirationTime repeat(long delay, Long repeatInterval, Integer repeatLimit) {
-		return repeat(delay, repeatInterval, repeatLimit, ChronoUnit.MILLIS);
-	}
+    public static DurationExpirationTime repeat(long delay, Long repeatInterval) {
+        return repeat(delay, repeatInterval, ChronoUnit.MILLIS);
+    }
 
-	public static DurationExpirationTime repeat(long delay, Long repeatInterval, TemporalUnit unit) {
-		return new DurationExpirationTime(ZonedDateTime.now().plus(delay, unit), repeatInterval, 0);
-	}
+    public static DurationExpirationTime repeat(long delay, Long repeatInterval, Integer repeatLimit) {
+        return repeat(delay, repeatInterval, repeatLimit, ChronoUnit.MILLIS);
+    }
 
-	public static DurationExpirationTime repeat(long delay, Long repeatInterval, Integer limit, TemporalUnit unit) {
-		return new DurationExpirationTime(ZonedDateTime.now().plus(delay, unit), repeatInterval, limit);
-	}
+    public static DurationExpirationTime repeat(long delay, Long repeatInterval, TemporalUnit unit) {
+        return new DurationExpirationTime(ZonedDateTime.now().plus(delay, unit), repeatInterval, 0);
+    }
+
+    public static DurationExpirationTime repeat(long delay, Long repeatInterval, Integer limit, TemporalUnit unit) {
+        return new DurationExpirationTime(ZonedDateTime.now().plus(delay, unit), repeatInterval, limit);
+    }
+
 }

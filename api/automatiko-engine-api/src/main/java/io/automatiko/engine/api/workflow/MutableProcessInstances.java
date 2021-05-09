@@ -60,4 +60,12 @@ public interface MutableProcessInstances<T> extends ProcessInstances<T> {
 
         return (page - 1) * size;
     }
+
+    default ExportedProcessInstance exportInstance(String id) {
+        return exportInstance(id, false);
+    }
+
+    ExportedProcessInstance exportInstance(String id, boolean abort);
+
+    ProcessInstance<T> importInstance(ExportedProcessInstance instance, Process<T> process);
 }

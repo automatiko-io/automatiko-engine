@@ -21,4 +21,9 @@ public class NoOpExpirationTime implements ExpirationTime {
         return 0;
     }
 
+    @Override
+    public void reset(ZonedDateTime time) {
+
+    }
+
 }

@@ -734,4 +734,14 @@ public abstract class NodeInstanceImpl
         return rootException;
     }
 
+    public String getProcessInstanceIdWithParent() {
+        String parentProcessInstanceId = getProcessInstance().getParentProcessInstanceId();
+        if (parentProcessInstanceId != null && !parentProcessInstanceId.isEmpty()) {
+            parentProcessInstanceId += ":";
+        } else {
+            parentProcessInstanceId = "";
+        }
+
+        return parentProcessInstanceId + getProcessInstance().getId();
+    }
 }

@@ -64,6 +64,7 @@
         </automatiko:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_4</bpmn2:incoming>
+      <bpmn2:terminateEventDefinition id="TerminateEventDefinition_1"/>
     </bpmn2:endEvent>
     <bpmn2:serviceTask id="ServiceTask_1" name="Calculate total" implementation="java" operationRef="Operation_1">
       <bpmn2:extensionElements>
@@ -93,14 +94,14 @@
       </bpmn2:dataOutputAssociation>
     </bpmn2:serviceTask>
     <bpmn2:sequenceFlow id="SequenceFlow_1" automatiko:priority="1" sourceRef="_6AB17406-9386-43F2-BC8B-C987B93CA9F2" targetRef="ServiceTask_1"/>
-    <bpmn2:sequenceFlow id="SequenceFlow_3" automatiko:priority="1" sourceRef="ServiceTask_1" targetRef="UserTask_1"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_3" automatiko:priority="1" sourceRef="ServiceTask_1" targetRef="ParallelGateway_1"/>
     <bpmn2:userTask id="UserTask_1" name="Verify order item">
       <bpmn2:extensionElements>
         <automatiko:metaData name="elementname">
           <automatiko:metaValue><![CDATA[Verify order item]]></automatiko:metaValue>
         </automatiko:metaData>
       </bpmn2:extensionElements>
-      <bpmn2:incoming>SequenceFlow_3</bpmn2:incoming>
+      <bpmn2:incoming>SequenceFlow_5</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
       <bpmn2:ioSpecification id="InputOutputSpecification_5">
         <bpmn2:dataInput id="DataInput_14" itemSubjectRef="ItemDefinition_14" name="TaskName"/>
@@ -195,6 +196,34 @@
       </bpmn2:ioSpecification>
     </bpmn2:callActivity>
     <bpmn2:sequenceFlow id="SequenceFlow_2" automatiko:priority="1" sourceRef="UserTask_1" targetRef="CallActivity_1"/>
+    <bpmn2:parallelGateway id="ParallelGateway_1" name="Parallel Gateway 1" gatewayDirection="Diverging">
+      <bpmn2:incoming>SequenceFlow_3</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_5</bpmn2:outgoing>
+      <bpmn2:outgoing>SequenceFlow_6</bpmn2:outgoing>
+    </bpmn2:parallelGateway>
+    <bpmn2:sequenceFlow id="SequenceFlow_5" automatiko:priority="1" sourceRef="ParallelGateway_1" targetRef="UserTask_1"/>
+    <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_1" name="wait a bit">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="elementname">
+          <automatiko:metaValue><![CDATA[wait a bit]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_6</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_7</bpmn2:outgoing>
+      <bpmn2:timerEventDefinition id="TimerEventDefinition_1">
+        <bpmn2:timeDuration xsi:type="bpmn2:tFormalExpression" id="FormalExpression_5">PT1H</bpmn2:timeDuration>
+      </bpmn2:timerEventDefinition>
+    </bpmn2:intermediateCatchEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_6" automatiko:priority="1" sourceRef="ParallelGateway_1" targetRef="IntermediateCatchEvent_1"/>
+    <bpmn2:endEvent id="EndEvent_1" name="End Event 1">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="elementname">
+          <automatiko:metaValue><![CDATA[End Event 1]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_7</bpmn2:incoming>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_7" automatiko:priority="1" sourceRef="IntermediateCatchEvent_1" targetRef="EndEvent_1"/>
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="_TQTRw0cJEemyodG9iPy-Bw">
     <bpmndi:BPMNPlane id="_TQTRxEcJEemyodG9iPy-Bw" bpmnElement="orderItems">
@@ -224,16 +253,34 @@
           <dc:Bounds height="11.0" width="48.0" x="671.0" y="122.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ParallelGateway_1" bpmnElement="ParallelGateway_1" isMarkerVisible="true">
+        <dc:Bounds height="50.0" width="50.0" x="395.0" y="225.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_6">
+          <dc:Bounds height="11.0" width="76.0" x="382.0" y="275.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_IntermediateCatchEvent_1" bpmnElement="IntermediateCatchEvent_1">
+        <dc:Bounds height="36.0" width="36.0" x="478.0" y="340.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_7">
+          <dc:Bounds height="11.0" width="36.0" x="478.0" y="376.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_1" bpmnElement="EndEvent_1">
+        <dc:Bounds height="36.0" width="36.0" x="582.0" y="340.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_8">
+          <dc:Bounds height="11.0" width="50.0" x="575.0" y="376.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_1" bpmnElement="SequenceFlow_1" sourceElement="shape__6AB17406-9386-43F2-BC8B-C987B93CA9F2" targetElement="BPMNShape_ServiceTask_1">
         <di:waypoint xsi:type="dc:Point" x="156.0" y="128.0"/>
         <di:waypoint xsi:type="dc:Point" x="188.0" y="128.0"/>
         <di:waypoint xsi:type="dc:Point" x="220.0" y="128.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_5"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_3" bpmnElement="SequenceFlow_3" sourceElement="BPMNShape_ServiceTask_1" targetElement="BPMNShape_UserTask_1">
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_3" bpmnElement="SequenceFlow_3" sourceElement="BPMNShape_ServiceTask_1" targetElement="BPMNShape_ParallelGateway_1">
         <di:waypoint xsi:type="dc:Point" x="381.0" y="128.0"/>
-        <di:waypoint xsi:type="dc:Point" x="405.0" y="128.0"/>
-        <di:waypoint xsi:type="dc:Point" x="430.0" y="128.0"/>
+        <di:waypoint xsi:type="dc:Point" x="420.0" y="128.0"/>
+        <di:waypoint xsi:type="dc:Point" x="420.0" y="225.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_6"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_4" bpmnElement="SequenceFlow_4" sourceElement="BPMNShape_CallActivity_1" targetElement="shape__ACB2B473-2FCB-4E52-B96A-C0926782126F">
@@ -247,6 +294,24 @@
         <di:waypoint xsi:type="dc:Point" x="595.0" y="128.0"/>
         <di:waypoint xsi:type="dc:Point" x="630.0" y="128.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_8"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_5" bpmnElement="SequenceFlow_5" sourceElement="BPMNShape_ParallelGateway_1" targetElement="BPMNShape_UserTask_1">
+        <di:waypoint xsi:type="dc:Point" x="445.0" y="250.0"/>
+        <di:waypoint xsi:type="dc:Point" x="495.0" y="250.0"/>
+        <di:waypoint xsi:type="dc:Point" x="495.0" y="179.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_9"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_6" bpmnElement="SequenceFlow_6" sourceElement="BPMNShape_ParallelGateway_1" targetElement="BPMNShape_IntermediateCatchEvent_1">
+        <di:waypoint xsi:type="dc:Point" x="420.0" y="275.0"/>
+        <di:waypoint xsi:type="dc:Point" x="420.0" y="358.0"/>
+        <di:waypoint xsi:type="dc:Point" x="478.0" y="358.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_10"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_7" bpmnElement="SequenceFlow_7" sourceElement="BPMNShape_IntermediateCatchEvent_1" targetElement="BPMNShape_EndEvent_1">
+        <di:waypoint xsi:type="dc:Point" x="514.0" y="358.0"/>
+        <di:waypoint xsi:type="dc:Point" x="548.0" y="358.0"/>
+        <di:waypoint xsi:type="dc:Point" x="582.0" y="358.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_11"/>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
     <bpmndi:BPMNLabelStyle id="BPMNLabelStyle_1">

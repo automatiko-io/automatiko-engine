@@ -2,6 +2,8 @@ package io.automatiko.engine.addons.persistence.filesystem.job;
 
 import java.time.ZonedDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
@@ -16,7 +18,7 @@ public class ScheduledJob {
 
     private String triggerType;
 
-    private ZonedDateTime fireTime;
+    private String fireTime;
 
     private String expression;
 
@@ -41,7 +43,7 @@ public class ScheduledJob {
         this.removeAtExecution = removeAtExecution;
         this.limit = limit;
         this.reapeatInterval = reapeatInterval;
-        this.fireTime = fireTime;
+        this.fireTime = fireTime.toString();
 
         this.expression = expression;
     }
@@ -70,7 +72,7 @@ public class ScheduledJob {
         this.processInstanceId = processInstanceId;
         this.limit = limit;
         this.reapeatInterval = reapeatInterval;
-        this.fireTime = fireTime;
+        this.fireTime = fireTime.toString();
 
         this.expression = expression;
     }
@@ -115,8 +117,13 @@ public class ScheduledJob {
         return processId;
     }
 
-    public ZonedDateTime getFireTime() {
+    public String getFireTime() {
         return fireTime;
+    }
+
+    @JsonIgnore
+    public ZonedDateTime getFireTimeAsDateTime() {
+        return ZonedDateTime.parse(fireTime);
     }
 
     public void setId(String id) {
@@ -127,7 +134,7 @@ public class ScheduledJob {
         this.processId = processId;
     }
 
-    public void setFireTime(ZonedDateTime fireTime) {
+    public void setFireTime(String fireTime) {
         this.fireTime = fireTime;
     }
 

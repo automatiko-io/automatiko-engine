@@ -290,6 +290,7 @@ public class CassandraJobService implements JobsService {
             Long fireAt = row.getLong(FIRE_AT_FIELD);
 
             return ZonedDateTime.ofInstant(Instant.ofEpochMilli(fireAt), ZoneId.systemDefault());
+
         } else {
             return null;
         }

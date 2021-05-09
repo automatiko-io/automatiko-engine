@@ -30,10 +30,9 @@
       <groupId>io.automatiko.workflow</groupId>
       <artifactId>automatiko-workflow-core</artifactId>
     </dependency>
-
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
+      <groupId>io.automatiko.addons</groupId>
+      <artifactId>automatiko-common-persistence</artifactId>
     </dependency>
 
     <!-- db related dependencies -->
@@ -44,16 +43,6 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-context-propagation</artifactId>
-    </dependency>
-
-    <!-- json based marshalling of variables -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
     </dependency>
 
     <!-- test dependencies -->

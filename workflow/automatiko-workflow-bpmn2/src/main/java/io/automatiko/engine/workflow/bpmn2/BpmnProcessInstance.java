@@ -13,6 +13,7 @@ import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.AccessPolicy;
 import io.automatiko.engine.api.runtime.process.ProcessRuntime;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
+import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstances;
@@ -168,6 +169,16 @@ public class BpmnProcessInstance extends AbstractProcessInstance<BpmnVariables> 
 
                 @Override
                 public AccessPolicy<? extends ProcessInstance<BpmnVariables>> accessPolicy() {
+                    return null;
+                }
+
+                @Override
+                public ExportedProcessInstance exportInstance(String id, boolean abort) {
+                    return null;
+                }
+
+                @Override
+                public ProcessInstance<BpmnVariables> importInstance(ExportedProcessInstance instance) {
                     return null;
                 }
             };

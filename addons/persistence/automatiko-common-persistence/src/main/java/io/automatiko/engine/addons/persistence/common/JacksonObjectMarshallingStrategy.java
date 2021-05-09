@@ -1,4 +1,4 @@
-package io.automatiko.engine.addons.persistence.dynamodb;
+package io.automatiko.engine.addons.persistence.common;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -19,7 +19,7 @@ public class JacksonObjectMarshallingStrategy implements ObjectMarshallingStrate
 
     private static final Logger logger = LoggerFactory.getLogger(JacksonObjectMarshallingStrategy.class);
 
-    private ObjectMapper mapper;
+    protected ObjectMapper mapper;
 
     public JacksonObjectMarshallingStrategy() {
         this.mapper = new ObjectMapper().activateDefaultTyping(

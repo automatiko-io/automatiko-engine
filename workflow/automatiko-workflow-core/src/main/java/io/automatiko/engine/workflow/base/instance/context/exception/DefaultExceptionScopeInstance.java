@@ -48,7 +48,7 @@ public class DefaultExceptionScopeInstance extends ExceptionScopeInstance {
                 String jobId = jobService
                         .scheduleProcessInstanceJob(ProcessInstanceJobDescription.of(nodeInstance.getNodeId(),
                                 "retry:" + nodeInstance.getId(),
-                                expirationTime, getProcessInstance().getId(),
+                                expirationTime, ((NodeInstanceImpl) nodeInstance).getProcessInstanceIdWithParent(),
                                 getProcessInstance().getRootProcessInstanceId(),
                                 getProcessInstance().getProcessId(), getProcessInstance().getProcess().getVersion(),
                                 getProcessInstance().getRootProcessId()));

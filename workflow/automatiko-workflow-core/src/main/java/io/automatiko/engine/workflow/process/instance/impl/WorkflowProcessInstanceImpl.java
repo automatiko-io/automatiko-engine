@@ -550,8 +550,16 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
         timerInstance.setDelay(duration);
         timerInstance.setPeriod(0);
         if (useTimerSLATracking()) {
+            String parentProcessInstanceId = getParentProcessInstanceId();
+            if (parentProcessInstanceId != null && !parentProcessInstanceId.isEmpty()) {
+                parentProcessInstanceId += ":";
+            } else {
+                parentProcessInstanceId = "";
+            }
+
+            String id = parentProcessInstanceId + getId();
             ProcessInstanceJobDescription description = ProcessInstanceJobDescription.of(-1L,
-                    DurationExpirationTime.after(duration), getId(), getProcessId(), getProcess().getVersion());
+                    DurationExpirationTime.after(duration), id, getProcessId(), getProcess().getVersion());
             timerInstance.setId(getProcessRuntime().getJobsService().scheduleProcessInstanceJob(description));
         }
         return timerInstance;

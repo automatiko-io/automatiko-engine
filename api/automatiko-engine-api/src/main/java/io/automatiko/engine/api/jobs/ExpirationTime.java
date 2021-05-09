@@ -18,4 +18,5 @@ public interface ExpirationTime {
         return null;
     }
 
+    void reset(ZonedDateTime time);
 }

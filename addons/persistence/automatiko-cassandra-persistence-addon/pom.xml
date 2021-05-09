@@ -11,7 +11,7 @@
 
   <name>Automatiko Engine :: Add-Ons :: Persistence :: Apache Cassandra</name>
   <description>Apache Cassandra based persistence for Automatiko Engine</description>
-  
+
   <properties>
     <java.module.name>io.automatiko.addons.persistence.cassandra</java.module.name>
   </properties>
@@ -29,19 +29,9 @@
       <groupId>io.automatiko.workflow</groupId>
       <artifactId>automatiko-workflow-core</artifactId>
     </dependency>
-
-    <!-- json based marshalling of variables -->
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
+      <groupId>io.automatiko.addons</groupId>
+      <artifactId>automatiko-common-persistence</artifactId>
     </dependency>
 
     <!-- cassandra dependencies -->

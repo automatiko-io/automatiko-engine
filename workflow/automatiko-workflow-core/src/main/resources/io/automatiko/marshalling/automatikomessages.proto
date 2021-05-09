@@ -119,6 +119,7 @@ message ProcessInstance {
 
     optional string id = 2;
     optional string process_id = 3;
+    optional string process_version = 31;
     optional int32 state = 4;
     optional int64 node_instance_counter = 5;
     optional string process_xml = 11;
@@ -352,9 +353,8 @@ message ProcessTimer {
         optional string process_instance_id = 5;
         optional int64 activated_time = 6;
         optional int64 last_triggered = 7;
-        optional int32 DEPRECATED_sessionId = 8;
-        optional int64 sessionId = 9;
-        optional int32 repeatLimit = 10;
+        optional int32 repeatLimit = 8;
+        optional int64 next_trigger = 9;
     }
 }
 

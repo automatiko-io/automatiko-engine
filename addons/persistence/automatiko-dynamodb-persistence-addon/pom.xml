@@ -29,21 +29,11 @@
       <groupId>io.automatiko.workflow</groupId>
       <artifactId>automatiko-workflow-core</artifactId>
     </dependency>
-
-    <!-- json based marshalling of variables -->
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
+      <groupId>io.automatiko.addons</groupId>
+      <artifactId>automatiko-common-persistence</artifactId>
     </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-    </dependency>
-
+    
     <!-- dynamodb dependencies -->
     <dependency>
       <groupId>io.quarkus</groupId>
