@@ -38,7 +38,9 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import io.automatiko.engine.addons.process.management.export.ProcessInstanceExporter;
 import io.automatiko.engine.addons.process.management.model.ErrorInfoDTO;
+import io.automatiko.engine.addons.process.management.model.JsonExportedProcessInstance;
 import io.automatiko.engine.addons.process.management.model.ProcessDTO;
 import io.automatiko.engine.addons.process.management.model.ProcessInstanceDTO;
 import io.automatiko.engine.addons.process.management.model.ProcessInstanceDetailsDTO;
@@ -554,4 +556,94 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             output.write(image.getBytes(StandardCharsets.UTF_8));
         }
     }
+
+    @APIResponses(value = {
+            @APIResponse(responseCode = "404", description = "In case of instance with given id was not found", content = @Content(mediaType = "application/json")),
+            @APIResponse(responseCode = "200", description = "Exported process instance", content = @Content(mediaType = "application/json")) })
+    @Operation(summary = "Returns exported process instance for given instance id")
+    @SuppressWarnings("unchecked")
+    @GET
+    @Path("/{processId}/instances/{instanceId}/export")
+    @Produces(MediaType.APPLICATION_JSON)
+    public JsonExportedProcessInstance exportInstance(@Context UriInfo uriInfo,
+            @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
+            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("instanceId") String instanceId,
+            @Parameter(description = "Indicates if the instance should be aborted after export, defaults to false", required = false) @QueryParam("abort") @DefaultValue("false") final boolean abort,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+
+        identitySupplier.buildIdentityProvider(user, groups);
+        JsonExportedProcessInstance exported = UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+            Process<?> process = processData.get(processId);
+            if (process == null) {
+                throw new ProcessInstanceNotFoundException(instanceId);
+            }
+
+            Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId);
+
+            if (instance.isEmpty()) {
+                throw new ProcessInstanceNotFoundException(instanceId);
+            }
+
+            ProcessInstance<?> pi = instance.get();
+
+            ProcessInstanceExporter exporter = new ProcessInstanceExporter();
+            return exporter.exportInstance(processData, instanceId, pi);
+        });
+
+        if (abort) {
+            cancelProcessInstanceId(processId, instanceId, user, groups);
+        }
+
+        return exported;
+    }
+
+    @APIResponses(value = {
+            @APIResponse(responseCode = "404", description = "In case of instance with given process id was not found", content = @Content(mediaType = "application/json")),
+            @APIResponse(responseCode = "200", description = "Exported process instance", content = @Content(mediaType = "application/json")) })
+    @Operation(summary = "Imports exported process instance and returns its details after the import")
+    @POST
+    @Path("/{processId}/instances")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ProcessInstanceDetailsDTO importInstance(@Context UriInfo uriInfo,
+            @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
+            JsonExportedProcessInstance instance) {
+
+        identitySupplier.buildIdentityProvider(user, groups);
+        return UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+
+            ProcessInstanceExporter exporter = new ProcessInstanceExporter();
+            ProcessInstance<?> pi = exporter.importInstance(processData, instance);
+
+            ProcessInstanceDetailsDTO details = new ProcessInstanceDetailsDTO();
+            details.setId(pi.id());
+            details.setProcessId(processId);
+            details.setBusinessKey(pi.businessKey());
+            details.setDescription(pi.description());
+            details.setFailed(pi.errors().isPresent());
+            if (pi.errors().isPresent()) {
+
+                details.setErrors(pi.errors().get().errors().stream()
+                        .map(e -> new ErrorInfoDTO(e.failedNodeId(), e.errorId(), e.errorMessage(), e.errorDetails()))
+                        .collect(Collectors.toList()));
+            }
+            details.setImage(
+                    uriInfo.getBaseUri().toString() + "management/processes/" + processId + "/instances/" + pi.id()
+                            + "/image");
+            details.setTags(pi.tags().values());
+            details.setVariables(pi.variables());
+
+            VariableScope variableScope = (VariableScope) ((ContextContainer) ((AbstractProcess<?>) pi.process()).process())
+                    .getDefaultContext(VariableScope.VARIABLE_SCOPE);
+
+            details.setVersionedVariables(
+                    variableScope.getVariables().stream().filter(v -> v.hasTag(Variable.VERSIONED_TAG))
+                            .map(v -> v.getName()).collect(Collectors.toList()));
+            return details;
+        });
+
+    }
+
 }

@@ -99,6 +99,9 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         if (workFlow.getReferenceFromRoot() != null) {
             _instance.setReferenceFromRoot(workFlow.getReferenceFromRoot());
         }
+        if (workFlow.getProcess().getVersion() != null) {
+            _instance.setProcessVersion(workFlow.getProcess().getVersion());
+        }
         List<ExecutionsErrorInfo> errors = workFlow.errors();
         if (errors != null) {
             for (ExecutionsErrorInfo error : errors) {

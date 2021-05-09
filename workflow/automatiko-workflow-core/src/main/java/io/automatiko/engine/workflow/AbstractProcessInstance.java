@@ -623,6 +623,10 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         return ((WorkflowProcessInstance) processInstance()).adHocFragments();
     }
 
+    public void imported() {
+        unlock(true);
+    }
+
     @Override
     public String image(String path) {
         if (process().image() == null) {

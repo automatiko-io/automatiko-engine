@@ -38,11 +38,80 @@ REST api of the process management addon provides following capabilities
 - Retrigger active node in given workflow instance
 - Cancels active node in given workflow instance
 - Cancel entire workflow instance
+- Export workflow instance
+- Import (previously exported) workflow instance
 
 NOTE: REST api of process management addon is not included in the *OpenAPI*
 definition of the service by default. This is to avoid exposing non domain
 specific endpoints in the service. It can be enabled by setting
 `quarkus.automatiko.include-automatiko-api` property to `true` in `application.properties`
+
+=== Export workflow instance
+
+Exporting of workflow instance can be rather useful feature especially in situation where one or more instances
+are stuck and there is no clear reason the the problem. Being able to export such an instance
+from production environment and importing it back on test or development environment for further investigation
+can help significantly. 
+
+Export of a workflow instance is responsible for extracting complete set of information about 
+workflow instance, this includes:
+
+- workflow instance metadata such as id, business key, state etc
+- active node instances with thier metadata and variables
+- workflow instance variables
+- timers
+- sub instances when there are any being currently active
+
+Exported workflow instance is delivered as a JSON document that can be stored and later on
+used to import that workflow instance in different environments.
+
+IMPORTANT: Export format is not considered public API and thus might change between releases.
+
+Exported instance includes all the details of the instance meaning it has exactly the same identifiers, 
+timestamps and variables. Keep in mind that same instance cannot be imported twice as it will cause a duplicate id
+of the instance and thus result in an error.
+
+Instance can also be aborted directly after the export so this allows simple way of exporting and removing
+instance from a given environment. 
+
+Here is a curl command that will export instance with id `1234` of a workflow definition with id `orders` and
+version `1.0`
+
+[source, plain]
+----
+curl -X GET 'Accept:application/json' http://localhost:8080/management/processes/orders_1_0/instances/1234/export
+----
+
+=== Import workflow instance
+
+An exported instance can be imported into another environment. There is only one main requirement -
+it needs to be an environment with the same workflow definitions as the exported one.
+
+Import of the workflow instance is based on the exact data that where exported. There is no need to make
+any changes to the structure to make it successfully imported.
+
+Import of the instance includes
+
+- importing all sub instances first
+- importing top level instance
+- scheduling timers for all imported instances - note that this preserves the exact same times from the exported 
+instance and not rescheduling them again
+- includes user restrictions if they were any defined.
+
+Imported instance is directly usable as it have been started in this environment from the beginning.
+
+Here is a curl command that will import instance of a workflow definition with id `orders` and
+version `1.0`
+
+[source, plain]
+----
+curl -X POST 'Content-Type: application/json' 'Accept: application/json' http://localhost:8080/management/processes/orders_1_0/instances - d '$EXPORTED_INSTANCE'
+----
+
+`EXPORTED_INSTANCE` environment variable must be set with content of the exported instance.
+
+TIP: Import of a workflow instance can also serve as instance migration between workflow definition versions. Though
+this will require some manual updates on the exported data.
 
 == User interface
 

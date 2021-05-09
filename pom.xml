@@ -233,6 +233,12 @@
         <artifactId>protobuf-java</artifactId>
         <version>${version.com.google.protobuf}</version>
       </dependency>
+      
+      <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-java-util</artifactId>
+        <version>${version.com.google.protobuf}</version>
+      </dependency>
 
       <dependency>
         <groupId>org.antlr</groupId>

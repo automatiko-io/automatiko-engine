@@ -13,13 +13,16 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.automatiko.engine.addons.persistence.common.JacksonObjectMarshallingStrategy;
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.AccessDeniedException;
 import io.automatiko.engine.api.config.DynamoDBPersistenceConfig;
+import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceDuplicatedException;
+import io.automatiko.engine.api.workflow.ProcessInstanceNotFoundException;
 import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.marshalling.ProcessInstanceMarshaller;
@@ -171,10 +174,10 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
     }
 
     @Override
-    public Integer size() {
+    public Long size() {
         LOGGER.debug("size() called");
         ScanRequest query = ScanRequest.builder().tableName(tableName).select(Select.COUNT).build();
-        return dynamodb.scan(query).count();
+        return dynamodb.scan(query).count().longValue();
     }
 
     @Override
@@ -199,7 +202,7 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
 
     @Override
     public void create(String id, ProcessInstance instance) {
-        String resolvedId = resolveId(id);
+        String resolvedId = resolveId(id, instance);
 
         if (isActive(instance)) {
             LOGGER.debug("create() called for instance {}", resolvedId);
@@ -249,7 +252,7 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
 
     @Override
     public void update(String id, ProcessInstance instance) {
-        String resolvedId = resolveId(id);
+        String resolvedId = resolveId(id, instance);
 
         if (isActive(instance)) {
             LOGGER.debug("update() called for instance {}", resolvedId);
@@ -294,7 +297,7 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
 
     @Override
     public void remove(String id, ProcessInstance instance) {
-        String resolvedId = resolveId(id);
+        String resolvedId = resolveId(id, instance);
         LOGGER.debug("remove() called for instance {}", resolvedId);
         cachedInstances.remove(resolvedId);
         cachedInstances.remove(id);
@@ -382,5 +385,35 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
             }
 
         });
+    }
+
+    @Override
+    public ExportedProcessInstance exportInstance(String id, boolean abort) {
+        Optional<? extends ProcessInstance> found = findById(id,
+                abort ? ProcessInstanceReadMode.MUTABLE : ProcessInstanceReadMode.READ_ONLY);
+
+        if (found.isPresent()) {
+            ProcessInstance instance = found.get();
+            ExportedProcessInstance exported = marshaller.exportProcessInstance(instance);
+
+            if (abort) {
+                instance.abort();
+            }
+
+            return exported;
+        }
+        throw new ProcessInstanceNotFoundException(id);
+    }
+
+    @Override
+    public ProcessInstance importInstance(ExportedProcessInstance instance, Process process) {
+        ProcessInstance imported = marshaller.importProcessInstance(instance, process);
+
+        if (exists(imported.id())) {
+            throw new ProcessInstanceDuplicatedException(imported.id());
+        }
+
+        create(imported.id(), imported);
+        return imported;
     }
 }

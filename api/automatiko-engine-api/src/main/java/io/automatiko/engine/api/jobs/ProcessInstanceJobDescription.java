@@ -37,6 +37,20 @@ public class ProcessInstanceJobDescription implements JobDescription {
         this.triggerType = requireNonNull(triggerType);
     }
 
+    private ProcessInstanceJobDescription(String jobId, long timerId, ExpirationTime expirationTime, Integer priority,
+            String processInstanceId, String rootProcessInstanceId, String processId, String processVersion,
+            String rootProcessId, String triggerType) {
+        this.id = jobId;
+        this.expirationTime = requireNonNull(expirationTime);
+        this.priority = requireNonNull(priority);
+        this.processInstanceId = requireNonNull(processInstanceId);
+        this.rootProcessInstanceId = rootProcessInstanceId;
+        this.processId = processId;
+        this.processVersion = processVersion;
+        this.rootProcessId = rootProcessId;
+        this.triggerType = requireNonNull(triggerType);
+    }
+
     private ProcessInstanceJobDescription(String jobIdId, ExpirationTime expirationTime, Integer priority,
             String processInstanceId, String rootProcessInstanceId, String processId, String processVersion,
             String rootProcessId, String triggerType) {
@@ -54,6 +68,13 @@ public class ProcessInstanceJobDescription implements JobDescription {
     public static ProcessInstanceJobDescription of(long timerId, ExpirationTime expirationTime,
             String processInstanceId, String processId, String processVersion) {
         return of(timerId, expirationTime, processInstanceId, null, processId, processVersion, null);
+    }
+
+    public static ProcessInstanceJobDescription of(String jobId, long timerId, ExpirationTime expirationTime,
+            String processInstanceId, String rootProcessInstanceId, String processId, String processVersion,
+            String rootProcessId) {
+        return new ProcessInstanceJobDescription(jobId, timerId, expirationTime, DEFAULT_PRIORITY, processInstanceId,
+                rootProcessInstanceId, processId, processVersion, rootProcessId, "timerTriggered");
     }
 
     public static ProcessInstanceJobDescription of(long timerId, ExpirationTime expirationTime,
@@ -89,12 +110,31 @@ public class ProcessInstanceJobDescription implements JobDescription {
                 processVersion, rootProcessId);
     }
 
+    public static ProcessInstanceJobDescription of(String jobId, long timerId, String triggerType,
+            ExpirationTime expirationTime,
+            String processInstanceId, String rootProcessInstanceId, String processId, String processVersion,
+            String rootProcessId) {
+        return of(jobId, timerId, triggerType, expirationTime, DEFAULT_PRIORITY, processInstanceId, rootProcessInstanceId,
+                processId,
+                processVersion, rootProcessId);
+    }
+
     public static ProcessInstanceJobDescription of(long timerId, String triggerType, ExpirationTime expirationTime,
             Integer priority,
             String processInstanceId, String rootProcessInstanceId, String processId, String processVersion,
             String rootProcessId) {
 
         return new ProcessInstanceJobDescription(timerId, expirationTime, priority, processInstanceId,
+                rootProcessInstanceId, processId, processVersion, rootProcessId, triggerType);
+    }
+
+    public static ProcessInstanceJobDescription of(String jobId, long timerId, String triggerType,
+            ExpirationTime expirationTime,
+            Integer priority,
+            String processInstanceId, String rootProcessInstanceId, String processId, String processVersion,
+            String rootProcessId) {
+
+        return new ProcessInstanceJobDescription(jobId, timerId, expirationTime, priority, processInstanceId,
                 rootProcessInstanceId, processId, processVersion, rootProcessId, triggerType);
     }
 

@@ -17,6 +17,7 @@ import io.automatiko.engine.api.event.EventBatch;
 import io.automatiko.engine.api.event.EventManager;
 import io.automatiko.engine.api.uow.UnitOfWork;
 import io.automatiko.engine.api.uow.WorkUnit;
+import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
@@ -162,7 +163,7 @@ public class CollectingUnitOfWork implements UnitOfWork {
         }
 
         @Override
-        public Integer size() {
+        public Long size() {
             return delegate.size();
         }
 
@@ -231,6 +232,16 @@ public class CollectingUnitOfWork implements UnitOfWork {
                     return 200;
                 }
             });
+        }
+
+        @Override
+        public ExportedProcessInstance exportInstance(String id, boolean abort) {
+            return delegate.exportInstance(id, abort);
+        }
+
+        @Override
+        public ProcessInstance importInstance(ExportedProcessInstance instance, Process process) {
+            return delegate.importInstance(instance, process);
         }
     }
 

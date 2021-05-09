@@ -56,7 +56,7 @@ public class TimerNodeInstance extends StateBasedNodeInstance implements EventLi
         }
         JobsService jobService = getProcessInstance().getProcessRuntime().getJobsService();
         timerId = jobService.scheduleProcessInstanceJob(ProcessInstanceJobDescription.of(
-                getTimerNode().getTimer().getId(), expirationTime, getProcessInstance().getId(),
+                getTimerNode().getTimer().getId(), expirationTime, getProcessInstanceIdWithParent(),
                 getProcessInstance().getRootProcessInstanceId(), getProcessInstance().getProcessId(),
                 getProcessInstance().getProcess().getVersion(), getProcessInstance().getRootProcessId()));
         logger.debug("Scheduled timer with id {} for node {} with fire date {}", timerId, getNodeName(), expirationTime.get());

@@ -10,7 +10,7 @@ import java.util.Objects;
 
 public class ExactExpirationTime implements ExpirationTime {
 
-    private final ZonedDateTime expirationTime;
+    private ZonedDateTime expirationTime;
 
     private ExactExpirationTime(ZonedDateTime expirationTime) {
         this.expirationTime = Objects.requireNonNull(expirationTime);
@@ -29,6 +29,11 @@ public class ExactExpirationTime implements ExpirationTime {
     @Override
     public Integer repeatLimit() {
         return 0;
+    }
+
+    @Override
+    public void reset(ZonedDateTime time) {
+        this.expirationTime = time;
     }
 
     public static ExactExpirationTime of(ZonedDateTime expirationTime) {

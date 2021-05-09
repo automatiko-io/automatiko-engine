@@ -14,9 +14,12 @@ import org.slf4j.LoggerFactory;
 import io.automatiko.engine.addons.persistence.db.model.ProcessInstanceEntity;
 import io.automatiko.engine.api.auth.AccessDeniedException;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
+import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
+import io.automatiko.engine.api.workflow.ProcessInstanceDuplicatedException;
+import io.automatiko.engine.api.workflow.ProcessInstanceNotFoundException;
 import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.workflow.AbstractProcess;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
@@ -88,8 +91,8 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
     }
 
     @Override
-    public Integer size() {
-        return (int) JpaOperations.INSTANCE.count(type);
+    public Long size() {
+        return JpaOperations.INSTANCE.count(type);
     }
 
     @SuppressWarnings("unchecked")
@@ -203,6 +206,36 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
         }
 
         return pi;
+    }
+
+    @Override
+    public ExportedProcessInstance exportInstance(String id, boolean abort) {
+        Optional<? extends ProcessInstance<?>> found = findById(id,
+                abort ? ProcessInstanceReadMode.MUTABLE : ProcessInstanceReadMode.READ_ONLY);
+
+        if (found.isPresent()) {
+            ProcessInstance<?> instance = found.get();
+            ExportedProcessInstance exported = marshaller.exportProcessInstance(instance);
+
+            if (abort) {
+                instance.abort();
+            }
+
+            return exported;
+        }
+        throw new ProcessInstanceNotFoundException(id);
+    }
+
+    @Override
+    public ProcessInstance importInstance(ExportedProcessInstance instance, Process process) {
+        ProcessInstance imported = marshaller.importProcessInstance(instance, process);
+
+        if (exists(imported.id())) {
+            throw new ProcessInstanceDuplicatedException(imported.id());
+        }
+
+        create(imported.id(), imported);
+        return imported;
     }
 
 }

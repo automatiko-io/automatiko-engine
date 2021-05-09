@@ -16,6 +16,7 @@ import io.automatiko.engine.api.runtime.process.EventListener;
 import io.automatiko.engine.api.runtime.process.ProcessRuntime;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatiko.engine.api.uow.UnitOfWork;
+import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessConfig;
@@ -251,6 +252,21 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
 
     public LockManager locks() {
         return locks;
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public ExportedProcessInstance exportInstance(String id, boolean abort) {
+        return ((MutableProcessInstances<?>) instances()).exportInstance(id, abort);
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public ProcessInstance<T> importInstance(ExportedProcessInstance instance) {
+        ProcessInstance<T> importedInstance = ((MutableProcessInstances<?>) instances()).importInstance(instance,
+                (Process) this);
+        ((AbstractProcessInstance<T>) importedInstance).imported();
+        return importedInstance;
     }
 
     protected class CompletionEventListener implements EventListener {

@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.Model;
@@ -60,7 +60,7 @@ public class FileSystemBasedJobService implements JobsService {
     protected ConcurrentHashMap<String, ScheduledFuture<?>> scheduledJobs = new ConcurrentHashMap<>();
     protected final ScheduledThreadPoolExecutor scheduler;
 
-    protected ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    protected ObjectMapper mapper = new ObjectMapper();
 
     protected Map<String, Process<? extends Model>> mappedProcesses = new HashMap<>();
 
@@ -166,7 +166,8 @@ public class FileSystemBasedJobService implements JobsService {
 
             long remainingTime = scheduled.getDelay(TimeUnit.MILLISECONDS);
             if (remainingTime > 0) {
-                return ZonedDateTime.from(Instant.ofEpochMilli(System.currentTimeMillis() + remainingTime));
+                return ZonedDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis() + remainingTime),
+                        ZoneId.systemDefault());
             }
         }
 
@@ -207,13 +208,13 @@ public class FileSystemBasedJobService implements JobsService {
                     future = scheduler.scheduleAtFixedRate(
                             new SignalProcessInstanceOnExpiredTimer(job.getId(), job.getTriggerType(), job.getProcessId(),
                                     job.getProcessInstanceId(), false, job.getLimit(), description),
-                            calculateDelay(job.getFireTime()), job.getReapeatInterval(), TimeUnit.MILLISECONDS);
+                            calculateDelay(job.getFireTimeAsDateTime()), job.getReapeatInterval(), TimeUnit.MILLISECONDS);
 
                 } else {
                     future = scheduler.schedule(
                             new SignalProcessInstanceOnExpiredTimer(job.getId(), job.getTriggerType(), job.getProcessId(),
                                     job.getProcessInstanceId(), true, description.expirationTime().repeatLimit(), description),
-                            calculateDelay(job.getFireTime()), TimeUnit.MILLISECONDS);
+                            calculateDelay(job.getFireTimeAsDateTime()), TimeUnit.MILLISECONDS);
                 }
 
             } else {
@@ -222,11 +223,11 @@ public class FileSystemBasedJobService implements JobsService {
                 if (job.getReapeatInterval() != null) {
                     future = scheduler.scheduleAtFixedRate(
                             new StartProcessOnExpiredTimer(job.getId(), job.getProcessId(), false, job.getLimit(), description),
-                            calculateDelay(job.getFireTime()), job.getReapeatInterval(), TimeUnit.MILLISECONDS);
+                            calculateDelay(job.getFireTimeAsDateTime()), job.getReapeatInterval(), TimeUnit.MILLISECONDS);
                 } else {
                     future = scheduler.schedule(
                             new StartProcessOnExpiredTimer(job.getId(), job.getProcessId(), true, -1, description),
-                            calculateDelay(job.getFireTime()), TimeUnit.MILLISECONDS);
+                            calculateDelay(job.getFireTimeAsDateTime()), TimeUnit.MILLISECONDS);
                 }
             }
             scheduledJobs.put(job.getId(), future);
