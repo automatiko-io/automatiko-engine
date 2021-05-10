@@ -108,10 +108,10 @@ public class GeneratorContext {
         BlockStmt constructorBody = new BlockStmt();
 
         // hide automatik api (e.g. process management api) from OpenAPI definition
-        String includeAutomatikApi = applicationProperties.getProperty("quarkus.automatiko.include-automatik-api");
+        String includeAutomatikApi = applicationProperties.getProperty("quarkus.automatiko.include-automatiko-api");
         if (!"true".equalsIgnoreCase(includeAutomatikApi)) {
             modifiedApplicationProperties.put("mp.openapi.scan.exclude.classes",
-                    "io.automatiko.engine.addons.process.management.ProcessInstanceManagementResource");
+                    "io.automatiko.engine.addons.process.management.ProcessInstanceManagementResource,io.automatiko.engine.addons.usertasks.management.UserTaskManagementResource");
         }
 
         for (Entry<String, String> entry : modifiedApplicationProperties.entrySet()) {
