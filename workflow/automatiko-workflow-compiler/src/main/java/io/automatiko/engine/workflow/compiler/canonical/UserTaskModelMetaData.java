@@ -195,7 +195,8 @@ public class UserTaskModelMetaData {
 
         modelClass.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.media.Schema"),
                 NodeList.nodeList(
-                        new MemberValuePair("name", new StringLiteralExpr("Input model for " + humanTaskNode.getName())),
+                        new MemberValuePair("name",
+                                new StringLiteralExpr(("Input model for " + humanTaskNode.getName()).replaceAll("\\s", ""))),
                         new MemberValuePair("description", new StringLiteralExpr(
                                 "Task input model for user task '" + humanTaskNode.getName() + "' in '" + processId
                                         + "'")))));
@@ -345,7 +346,8 @@ public class UserTaskModelMetaData {
         }
         modelClass.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.media.Schema"),
                 NodeList.nodeList(
-                        new MemberValuePair("name", new StringLiteralExpr("Output model for " + humanTaskNode.getName())),
+                        new MemberValuePair("name",
+                                new StringLiteralExpr(("Output model for " + humanTaskNode.getName()).replaceAll("\\s", ""))),
                         new MemberValuePair("description", new StringLiteralExpr(
                                 "Task output model for user task '" + humanTaskNode.getName() + "' in '" + processId
                                         + "'")))));

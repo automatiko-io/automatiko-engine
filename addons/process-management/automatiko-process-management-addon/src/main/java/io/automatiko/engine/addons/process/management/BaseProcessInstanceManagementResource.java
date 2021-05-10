@@ -81,7 +81,7 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
         });
     }
 
-    public T doRetriggerInstanceInError(String processId, String processInstanceId, String errorId) {
+    public T doRetriggerInstanceInErrorByErrorId(String processId, String processInstanceId, String errorId) {
 
         return executeOnInstanceInError(processId, processInstanceId, processInstance -> {
             processInstance.errors().get().errors().stream().filter(e -> e.errorId().equals(errorId)).findFirst()
@@ -110,7 +110,7 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
         });
     }
 
-    public T doSkipInstanceInError(String processId, String processInstanceId, String errorId) {
+    public T doSkipInstanceInErrorByErrorId(String processId, String processInstanceId, String errorId) {
 
         return executeOnInstanceInError(processId, processInstanceId, processInstance -> {
             processInstance.errors().get().errors().stream().filter(e -> e.errorId().equals(errorId)).findFirst()

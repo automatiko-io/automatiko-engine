@@ -183,7 +183,7 @@ public class ModelMetaData {
         if (supportsOpenApi) {
             modelClass.addAnnotation(
                     new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.media.Schema"),
-                            NodeList.nodeList(new MemberValuePair("name", new StringLiteralExpr(name)),
+                            NodeList.nodeList(new MemberValuePair("name", new StringLiteralExpr(name.replaceAll("\\s", ""))),
                                     new MemberValuePair("description", new StringLiteralExpr(description)))));
         }
         if (!WorkflowProcess.PRIVATE_VISIBILITY.equals(visibility)) {

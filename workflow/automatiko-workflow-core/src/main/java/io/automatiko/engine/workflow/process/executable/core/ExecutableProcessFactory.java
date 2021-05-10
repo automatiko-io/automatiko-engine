@@ -266,6 +266,7 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
         EventSubProcessNodeFactory eventSubProcessNode4 = eventSubProcessNode(nodeId);
         eventSubProcessNode4.name("Execution timeout");
         eventSubProcessNode4.metaData("UniqueId", "SubProcess_" + nodeId);
+        eventSubProcessNode4.metaData("hidden_node", true);
         eventSubProcessNode4.keepActive(true);
         eventSubProcessNode4.event("Timer-" + nodeId);
         eventSubProcessNode4.autoComplete(true);

@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -30,6 +33,24 @@ public class JsonExportedProcessInstance extends ExportedProcessInstance<JsonNod
 
     public List<JsonExportedProcessInstance> getSubInstances() {
         return subInstances;
+    }
+
+    @Schema(type = SchemaType.OBJECT, implementation = Map.class)
+    @Override
+    public JsonNode getHeader() {
+        return super.getHeader();
+    }
+
+    @Schema(type = SchemaType.OBJECT, implementation = Map.class)
+    @Override
+    public JsonNode getInstance() {
+        return super.getInstance();
+    }
+
+    @Schema(type = SchemaType.OBJECT, implementation = List.class)
+    @Override
+    public JsonNode getTimers() {
+        return super.getTimers();
     }
 
     public static JsonExportedProcessInstance of(ExportedProcessInstance<String> instance) {
