@@ -648,6 +648,10 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                     "var errorIcon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAC80lEQVR42m2TD0yMYRzHP897d65y0akzUTYjVEKnMNQw2RqbzVrzd2wopkwrFrMw//8sDBtbNmZj5k9tDYXMbEYRM8oiSwqp6E53qbvu8uuG5c+zvXv37v09n+f3+36/j+I/azkERsJsM4zVg74D3tfC3ePw4e9a1fdjLvgnQJ5Z0zKGx8ebQqKi0BkM2OrqqH/wwGPr6LjaDDmHoeEfQDxY5kNJZHi4NTYzE1NY2B90l8NBVUEBNRUVLe9g3lF4/BswWNpcAWXxZnNibMZadCYjOk1D9Sh6usHrgW6PB6UUtZcuUVVd3XwPYovhow8wB1YthoKY5NkYJ0czKi2HugsnMdqbUN0aNqdi9IYt1F+5iquykprCQso9nnPHYKXqB1oWVEzVaZNGpE6he1oS1vU7cDu+Ub43DVfLJ2JzTzNoVCS114tp2LUbd81r3thsXUdgmDJBiMzzOdwfLTTBiNMcgHtaOjMy99L5zUZ78wcGR4zjVUkRb/LWYGn5juO9kyYvnIEFahhMPADPhgaJipPBbyi+n/bxeczL3ukT8EXZLar2zCfaz01XIzhExeZ2OA8ZSgSMFn9fWgIhOA76CfGVaxBx224THmP1AZxtX7mRlcSYzqfSq8CroUX8PAXpSoOBZ8XXED2BQePhi0U2599mSJSV+ofXaH1bjnXpfhmnjfubkghueIr9kUBssBUSe10wbITLM2UezQKhm3OJy9nHR9nceHERpgFu9DHZRKQe4vPjUp5nJtP1RBrx0rhWkuqzcTjMOgGl4pjBG6oYmbYaW8VZgkLcGPpLiCQL/Scso6msmLYyO3o7nJRE3oT8X2EzLoTt6ZBrV5IfuQT+oSKovHsBvXN2tkK7zB7gBGmgdAek9IiefdM6IEUA6yDbIVo6ZZNHQqJ0EhSXwNwgvJ47UHQQ1rl9cv51mWQFhMH0JVIghiRIRoLlFCUTOOTwyitifaUApK79v7fx59J6QfKY/QQgDeikaxmANnmkObx9i38AhmwGt8LiZCUAAAAASUVORK5CYII=';");
             script.append("function openInNewTab(url) {var win = window.open(url, '_blank');win.focus();}");
             for (NodeInstance nodeInstance : activeInstances) {
+                if (((NodeInstanceImpl) nodeInstance).getNode().getMetaData().containsKey("hidden_node")) {
+                    continue;
+                }
+
                 script.append("document.getElementById('").append(nodeInstance.getNodeDefinitionId())
                         .append("').style['stroke']='rgb(255, 0, 0)';\n");
                 script.append("document.getElementById('").append(nodeInstance.getNodeDefinitionId())

@@ -32,7 +32,9 @@ import javax.ws.rs.core.UriInfo;
 
 import org.eclipse.microprofile.openapi.annotations.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
@@ -205,7 +207,13 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
 
             ProcessInstance<?> pi = instance.get();
             ProcessInstanceDetailsDTO details = new ProcessInstanceDetailsDTO();
-            details.setId(pi.id());
+
+            String id = pi.id();
+            if (pi.parentProcessInstanceId() != null) {
+                id = pi.parentProcessInstanceId() + ":" + id;
+            }
+
+            details.setId(id);
             details.setProcessId(processId);
             details.setBusinessKey(pi.businessKey());
             details.setDescription(pi.description());
@@ -360,7 +368,11 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             if (instance.isEmpty()) {
                 throw new ProcessInstanceNotFoundException(instanceId);
             }
-            StreamingOutput entity = new ImageStreamingOutput(instance.get().image(""));
+            String path = ((AbstractProcess<?>) process).process().getId() + "/" + instanceId;
+            if (process.version() != null) {
+                path = "/v" + process.version().replaceAll("\\.", "_") + "/" + path;
+            }
+            StreamingOutput entity = new ImageStreamingOutput(instance.get().image(path));
             ResponseBuilder builder = Response.ok().entity(entity);
             return builder.header("Content-Type", "image/svg+xml").build();
         } finally {
@@ -427,14 +439,14 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @POST
     @Path("/{processId}/instances/{processInstanceId}/retrigger/{errorId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response retriggerInstanceInError(
+    public Response retriggerInstanceInErrorByErrorId(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("processInstanceId") String processInstanceId,
             @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("errorId") String errorId,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         identitySupplier.buildIdentityProvider(user, groups);
-        return doRetriggerInstanceInError(processId, processInstanceId, errorId);
+        return doRetriggerInstanceInErrorByErrorId(processId, processInstanceId, errorId);
     }
 
     @APIResponses(value = {
@@ -462,14 +474,14 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @POST
     @Path("/{processId}/instances/{processInstanceId}/skip/{errorId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response skipInstanceInError(
+    public Response skipInstanceInErrorByErrorId(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("processInstanceId") String processInstanceId,
             @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("errorId") String errorId,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         identitySupplier.buildIdentityProvider(user, groups);
-        return doSkipInstanceInError(processId, processInstanceId, errorId);
+        return doSkipInstanceInErrorByErrorId(processId, processInstanceId, errorId);
     }
 
     @APIResponses(value = {
@@ -558,7 +570,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     }
 
     @APIResponses(value = {
-            @APIResponse(responseCode = "404", description = "In case of instance with given id was not found", content = @Content(mediaType = "application/json")),
+            @APIResponse(responseCode = "404", description = "In case of instance with given id was not found", content = @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT))),
             @APIResponse(responseCode = "200", description = "Exported process instance", content = @Content(mediaType = "application/json")) })
     @Operation(summary = "Returns exported process instance for given instance id")
     @SuppressWarnings("unchecked")
@@ -609,7 +621,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
-            JsonExportedProcessInstance instance) {
+            @Parameter(description = "The input model for orders instance", schema = @Schema(type = SchemaType.OBJECT, implementation = Map.class)) JsonExportedProcessInstance instance) {
 
         identitySupplier.buildIdentityProvider(user, groups);
         return UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {

@@ -143,13 +143,14 @@ class BaseProcessInstanceManagementResourceTest {
             }
 
             @Override
-            public Object retriggerInstanceInError(String processId, String processInstanceId, String errord, String user,
+            public Object retriggerInstanceInErrorByErrorId(String processId, String processInstanceId, String errord,
+                    String user,
                     List groups) {
                 return null;
             }
 
             @Override
-            public Object skipInstanceInError(String processId, String processInstanceId, String errorId, String user,
+            public Object skipInstanceInErrorByErrorId(String processId, String processInstanceId, String errorId, String user,
                     List groups) {
                 return null;
             }

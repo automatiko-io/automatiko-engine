@@ -492,7 +492,7 @@ public class $Type$Resource {
     @DELETE()
     @Path("/{id}/tags/{tagId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<? extends Tag> get_tags_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id, 
+    public Collection<? extends Tag> get_tag_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id, 
             @Parameter(description = "TagInstance to be removed", required = true) @PathParam("tagId") String tagId,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {

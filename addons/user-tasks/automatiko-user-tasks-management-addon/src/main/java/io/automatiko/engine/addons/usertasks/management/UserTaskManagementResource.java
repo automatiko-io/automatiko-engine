@@ -21,7 +21,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
 import org.eclipse.microprofile.openapi.annotations.ExternalDocumentation;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import io.automatiko.engine.api.Application;
@@ -66,6 +70,10 @@ public class UserTaskManagementResource {
         this.engine = engine;
     }
 
+    @APIResponses(value = {
+            @APIResponse(responseCode = "404", description = "In case of instance with given id was not found", content = @Content(mediaType = "text/html")),
+            @APIResponse(responseCode = "200", description = "List of available processes", content = @Content(mediaType = "text/html")) })
+    @Operation(summary = "Retrives user task form for given user task", operationId = "getUserTaskForm")
     @SuppressWarnings("unchecked")
     @GET
     @Path("{processId}/{pInstanceId}/{taskId}")
@@ -128,6 +136,10 @@ public class UserTaskManagementResource {
         }
     }
 
+    @APIResponses(value = {
+            @APIResponse(responseCode = "404", description = "In case of instance with given id was not found", content = @Content(mediaType = "text/html")),
+            @APIResponse(responseCode = "200", description = "List of available processes", content = @Content(mediaType = "text/html")) })
+    @Operation(summary = "Retrives user task form for given user task given from a email link", operationId = "getUserTaskFormFromEmailLink")
     @GET
     @Path("link/{details}")
     @Produces(MediaType.TEXT_HTML)
