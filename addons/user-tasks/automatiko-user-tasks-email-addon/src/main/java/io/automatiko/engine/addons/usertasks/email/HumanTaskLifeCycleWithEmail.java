@@ -13,6 +13,7 @@ import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.runtime.process.HumanTaskWorkItem;
 import io.automatiko.engine.api.runtime.process.WorkItem;
 import io.automatiko.engine.api.runtime.process.WorkItemManager;
@@ -80,7 +81,7 @@ public class HumanTaskLifeCycleWithEmail extends BaseHumanTaskLifeCycle {
 
         String subject = "New task has been assigned to you (" + humanTask.getTaskName() + ")";
 
-        Template template = getTemplate(humanTask.getProcessInstance().getProcessId(), humanTask);
+        Template template = getTemplate(humanTask.getProcessInstance().getProcess(), humanTask);
         if (template == null) {
             template = engine.getTemplate(DEFAULT_TEMPLATE);
         }
@@ -135,13 +136,15 @@ public class HumanTaskLifeCycleWithEmail extends BaseHumanTaskLifeCycle {
      * <li>taskname-email</li>
      * </ul>
      * 
-     * @param processId id of the process task belongs to
+     * @param process id of the process task belongs to
      * @param humanTask an instance of user task
      * @return template for email if found otherwise null
      */
-    protected Template getTemplate(String processId, HumanTaskWorkItem humanTask) {
-        Template template = engine.getTemplate(processId + "." + (String) humanTask.getParameters().getOrDefault("TaskName",
-                humanTask.getTaskName()) + TEMPLATE_SUFFIX);
+    protected Template getTemplate(Process process, HumanTaskWorkItem humanTask) {
+        Template template = engine.getTemplate(process.getId() + version(process.getVersion()) + "."
+                + (String) humanTask.getParameters().getOrDefault("TaskName",
+                        humanTask.getTaskName())
+                + TEMPLATE_SUFFIX);
         if (template == null) {
             template = engine.getTemplate((String) humanTask.getParameters().getOrDefault("TaskName",
                     humanTask.getTaskName()) + TEMPLATE_SUFFIX);

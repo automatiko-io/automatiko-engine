@@ -101,7 +101,7 @@ public class UserTaskManagementResource {
             ProcessInstance<?> pi = instance.get();
 
             WorkItem task = pi.workItem(taskId, SecurityPolicy.of(identityProvider));
-            Template template = getTemplate(pi.id(), task);
+            Template template = getTemplate(process.id(), task);
 
             if (template == null) {
                 template = engine.getTemplate(DEFAULT_TEMPLATE);
