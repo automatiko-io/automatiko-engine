@@ -13,6 +13,9 @@ import org.junit.jupiter.api.Test;
 import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.SecurityPolicy;
+import io.automatiko.engine.api.workflow.ArchiveBuilder;
+import io.automatiko.engine.api.workflow.ArchivedProcessInstance;
+import io.automatiko.engine.api.workflow.ArchivedVariable;
 import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
@@ -63,6 +66,92 @@ public class ExportProcessInstanceTest extends AbstractCodegenTest {
 
         imported.completeWorkItem(workItems.get(0).getId(), null, securityPolicy);
         assertThat(imported.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+
+    }
+
+    @Test
+    public void testBasicUserTaskProcessArchive() throws Exception {
+
+        Application app = generateCodeProcessesOnly("usertask/UserTasksProcess.bpmn2");
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("UserTasksProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("name", "John");
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        List<WorkItem> workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("FirstTask", workItems.get(0).getName());
+
+        processInstance.completeWorkItem(workItems.get(0).getId(), null, securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        // archive active process instance
+        ArchivedProcessInstance archived = processInstance.archive(new ArchiveBuilder() {
+
+            @Override
+            public ArchivedVariable variable(String name, Object value) {
+                return new ArchivedVariable(name, value) {
+
+                    @Override
+                    public byte[] data() {
+                        return getValue().toString().getBytes();
+                    }
+                };
+            }
+
+            @Override
+            public ArchivedProcessInstance instance(String id, ExportedProcessInstance<?> exported) {
+                return new ArchivedProcessInstance(id, exported);
+            }
+        });
+        assertThat(archived).isNotNull();
+        assertThat(archived.getExport()).isNotNull();
+        assertThat(archived.getVariables()).isNotNull();
+        assertThat(archived.getSubInstances()).isNotNull();
+        assertThat(archived.getVariables()).hasSize(1);
+        assertThat(archived.getSubInstances()).hasSize(0);
+
+        workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("SecondTask", workItems.get(0).getName());
+
+        processInstance.completeWorkItem(workItems.get(0).getId(), null, securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+
+        // and now let's export completed instance
+        archived = processInstance.archive(new ArchiveBuilder() {
+
+            @Override
+            public ArchivedVariable variable(String name, Object value) {
+                return new ArchivedVariable(name, value) {
+
+                    @Override
+                    public byte[] data() {
+                        return getValue().toString().getBytes();
+                    }
+                };
+            }
+
+            @Override
+            public ArchivedProcessInstance instance(String id, ExportedProcessInstance<?> exported) {
+                return new ArchivedProcessInstance(id, exported);
+            }
+        });
+        assertThat(archived).isNotNull();
+        assertThat(archived.getExport()).isNotNull();
+        assertThat(archived.getVariables()).isNotNull();
+        assertThat(archived.getSubInstances()).isNotNull();
+        assertThat(archived.getVariables()).hasSize(1);
+        assertThat(archived.getSubInstances()).hasSize(0);
 
     }
 

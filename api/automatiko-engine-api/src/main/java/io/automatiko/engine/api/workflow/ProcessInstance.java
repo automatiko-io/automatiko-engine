@@ -102,6 +102,15 @@ public interface ProcessInstance<T> {
     Collection<ProcessInstance<? extends Model>> subprocesses();
 
     /**
+     * Returns collection of currently active subprocess instances where this
+     * process instance is the parent;
+     * 
+     * @param mode mode that process instance should be loaded with
+     * @return all active subprocesses if any or empty collection
+     */
+    Collection<ProcessInstance<? extends Model>> subprocesses(ProcessInstanceReadMode mode);
+
+    /**
      * Completes work item belonging to this process instance with given variables
      *
      * @param id id of the work item to complete
@@ -280,5 +289,13 @@ public interface ProcessInstance<T> {
      * @return annotated process instance image
      */
     String image(String path);
+
+    /**
+     * Archives this process instance by collecting all relevant information of it.
+     * 
+     * @param builder an archive build implementation
+     * @return returns archived representation of this process instance
+     */
+    ArchivedProcessInstance archive(ArchiveBuilder builder);
 
 }

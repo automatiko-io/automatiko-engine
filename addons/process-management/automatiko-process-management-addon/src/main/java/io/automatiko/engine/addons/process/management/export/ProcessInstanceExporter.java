@@ -14,7 +14,14 @@ import io.automatiko.engine.workflow.StringExportedProcessInstance;
 
 public class ProcessInstanceExporter {
 
-    public JsonExportedProcessInstance exportInstance(Map<String, Process<?>> processData, String id,
+    private final Map<String, Process<?>> processData;
+
+    public ProcessInstanceExporter(Map<String, Process<?>> processData) {
+        this.processData = processData;
+    }
+
+    @SuppressWarnings("unchecked")
+    public JsonExportedProcessInstance exportInstance(String id,
             ProcessInstance<?> processInstance) {
 
         Collection<ProcessInstance<? extends Model>> subInstances = processInstance.subprocesses();
@@ -23,7 +30,7 @@ public class ProcessInstanceExporter {
 
             for (ProcessInstance<? extends Model> si : subInstances) {
 
-                JsonExportedProcessInstance subExported = exportInstance(processData, id + ":" + si.id(), si);
+                JsonExportedProcessInstance subExported = exportInstance(id + ":" + si.id(), si);
                 subinstances.add(subExported);
             }
         }
@@ -36,12 +43,12 @@ public class ProcessInstanceExporter {
         return jsonExported;
     }
 
-    public ProcessInstance<?> importInstance(Map<String, Process<?>> processData, JsonExportedProcessInstance instance) {
+    public ProcessInstance<?> importInstance(JsonExportedProcessInstance instance) {
 
         if (!instance.getSubInstances().isEmpty()) {
 
             for (JsonExportedProcessInstance subinstance : instance.getSubInstances()) {
-                importInstance(processData, subinstance);
+                importInstance(subinstance);
             }
         }
 
@@ -62,4 +69,5 @@ public class ProcessInstanceExporter {
                             return instance.convertTimers();
                         }));
     }
+
 }

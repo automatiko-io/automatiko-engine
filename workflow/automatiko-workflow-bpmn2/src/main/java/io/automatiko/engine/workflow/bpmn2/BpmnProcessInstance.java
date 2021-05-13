@@ -13,9 +13,12 @@ import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.AccessPolicy;
 import io.automatiko.engine.api.runtime.process.ProcessRuntime;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
+import io.automatiko.engine.api.workflow.ArchiveBuilder;
+import io.automatiko.engine.api.workflow.ArchivedProcessInstance;
 import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
+import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.api.workflow.ProcessInstances;
 import io.automatiko.engine.api.workflow.Signal;
 import io.automatiko.engine.api.workflow.Tags;
@@ -179,6 +182,11 @@ public class BpmnProcessInstance extends AbstractProcessInstance<BpmnVariables> 
 
                 @Override
                 public ProcessInstance<BpmnVariables> importInstance(ExportedProcessInstance instance) {
+                    return null;
+                }
+
+                @Override
+                public ArchivedProcessInstance archiveInstance(String id, ArchiveBuilder builder) {
                     return null;
                 }
             };
@@ -345,5 +353,18 @@ public class BpmnProcessInstance extends AbstractProcessInstance<BpmnVariables> 
         public String image(String path) {
             return null;
         }
+
+        @Override
+        public ArchivedProcessInstance archive(ArchiveBuilder builder) {
+
+            return null;
+        }
+
+        @Override
+        public Collection<ProcessInstance<? extends Model>> subprocesses(ProcessInstanceReadMode mode) {
+
+            return null;
+        }
+
     }
 }

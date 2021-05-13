@@ -5,6 +5,8 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.AccessPolicy;
@@ -16,6 +18,8 @@ import io.automatiko.engine.api.runtime.process.EventListener;
 import io.automatiko.engine.api.runtime.process.ProcessRuntime;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatiko.engine.api.uow.UnitOfWork;
+import io.automatiko.engine.api.workflow.ArchiveBuilder;
+import io.automatiko.engine.api.workflow.ArchivedProcessInstance;
 import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
 import io.automatiko.engine.api.workflow.Process;
@@ -267,6 +271,23 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
                 (Process) this);
         ((AbstractProcessInstance<T>) importedInstance).imported();
         return importedInstance;
+    }
+
+    public ArchivedProcessInstance archiveInstance(String id, ArchiveBuilder builder) {
+        ExportedProcessInstance<?> exported = exportInstance(id, false);
+
+        ArchivedProcessInstance archived = builder.instance(id, exported);
+
+        ProcessInstance<?> instance = instances().findById(id, ProcessInstanceReadMode.READ_ONLY).get();
+
+        Map<String, Object> variables = ((AbstractProcessInstance<?>) instance).processInstance().getVariables();
+
+        for (Entry<String, Object> entry : variables.entrySet()) {
+
+            archived.addVariable(builder.variable(entry.getKey(), entry.getValue()));
+        }
+
+        return archived;
     }
 
     protected class CompletionEventListener implements EventListener {

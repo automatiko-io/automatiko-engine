@@ -7,6 +7,7 @@ import java.util.Map;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -72,5 +73,15 @@ public class JsonExportedProcessInstance extends ExportedProcessInstance<JsonNod
     public List<Map<String, String>> convertTimers() {
 
         return mapper.convertValue(getTimers(), List.class);
+    }
+
+    @Override
+    public byte[] data() {
+
+        try {
+            return mapper.writeValueAsBytes(this);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Unable to serialize exported instance", e);
+        }
     }
 }

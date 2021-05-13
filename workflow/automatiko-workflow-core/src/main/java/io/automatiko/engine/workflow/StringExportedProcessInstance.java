@@ -1,5 +1,6 @@
 package io.automatiko.engine.workflow;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,5 +29,16 @@ public class StringExportedProcessInstance extends ExportedProcessInstance<Strin
             return Collections.emptyList();
         }
         return converter.apply(getTimers());
+    }
+
+    @Override
+    public String toString() {
+        return "[header=" + getHeader() + ", instance=" + getInstance()
+                + ", timers=" + getTimers() + "]";
+    }
+
+    @Override
+    public byte[] data() {
+        return toString().getBytes(StandardCharsets.UTF_8);
     }
 }

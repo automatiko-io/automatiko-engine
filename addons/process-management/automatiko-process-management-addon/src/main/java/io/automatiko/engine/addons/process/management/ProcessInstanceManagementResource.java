@@ -40,6 +40,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
+import io.automatiko.engine.addons.process.management.archive.JsonArchiveBuilder;
 import io.automatiko.engine.addons.process.management.export.ProcessInstanceExporter;
 import io.automatiko.engine.addons.process.management.model.ErrorInfoDTO;
 import io.automatiko.engine.addons.process.management.model.JsonExportedProcessInstance;
@@ -50,6 +51,7 @@ import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.IdentitySupplier;
+import io.automatiko.engine.api.workflow.ArchivedProcessInstance;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessImageNotFoundException;
 import io.automatiko.engine.api.workflow.ProcessInstance;
@@ -69,6 +71,7 @@ import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 public class ProcessInstanceManagementResource extends BaseProcessInstanceManagementResource<Response> {
 
     private IdentitySupplier identitySupplier;
+    private ProcessInstanceExporter exporter;
 
     // CDI
     public ProcessInstanceManagementResource() {
@@ -79,6 +82,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             IdentitySupplier identitySupplier) {
         super(process, application);
         this.identitySupplier = identitySupplier;
+        this.exporter = new ProcessInstanceExporter(processData);
     }
 
     @Inject
@@ -87,6 +91,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
         super(availableProcesses == null ? Collections.emptyMap()
                 : availableProcesses.stream().collect(Collectors.toMap(p -> p.id(), p -> p)), application);
         this.identitySupplier = identitySupplier;
+        this.exporter = new ProcessInstanceExporter(processData);
     }
 
     @Override
@@ -599,8 +604,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
 
             ProcessInstance<?> pi = instance.get();
 
-            ProcessInstanceExporter exporter = new ProcessInstanceExporter();
-            return exporter.exportInstance(processData, instanceId, pi);
+            return exporter.exportInstance(instanceId, pi);
         });
 
         if (abort) {
@@ -626,8 +630,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
         identitySupplier.buildIdentityProvider(user, groups);
         return UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
 
-            ProcessInstanceExporter exporter = new ProcessInstanceExporter();
-            ProcessInstance<?> pi = exporter.importInstance(processData, instance);
+            ProcessInstance<?> pi = exporter.importInstance(instance);
 
             ProcessInstanceDetailsDTO details = new ProcessInstanceDetailsDTO();
             details.setId(pi.id());
@@ -656,6 +659,63 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             return details;
         });
 
+    }
+
+    @SuppressWarnings("unchecked")
+    @APIResponses(value = {
+            @APIResponse(responseCode = "404", description = "In case of instance with given id was not found", content = @Content(mediaType = "application/json", schema = @Schema(type = SchemaType.OBJECT))),
+            @APIResponse(responseCode = "200", description = "Exported process instance", content = @Content(mediaType = "application/json")) })
+    @Operation(summary = "Returns archived process instance for given instance id as zip")
+    @GET()
+    @Path("/{processId}/instances/{instanceId}/archive")
+    @Produces("application/zip")
+    public Response archiveInstance(@Context UriInfo uriInfo,
+            @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
+            @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("instanceId") String instanceId,
+            @Parameter(description = "Indicates if the instance should be aborted after export, defaults to false", required = false) @QueryParam("abort") @DefaultValue("false") final boolean abort,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+        identitySupplier.buildIdentityProvider(user, groups);
+        ArchivedProcessInstance archived = UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+            Process<?> process = processData.get(processId);
+            if (process == null) {
+                throw new ProcessInstanceNotFoundException(instanceId);
+            }
+
+            Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId);
+
+            if (instance.isEmpty()) {
+                throw new ProcessInstanceNotFoundException(instanceId);
+            }
+
+            ProcessInstance<?> pi = instance.get();
+
+            return pi.archive(new JsonArchiveBuilder());
+
+        });
+        StreamingOutput entity = new ZipStreamingOutput(archived);
+        ResponseBuilder builder = Response.ok().entity(entity);
+
+        if (abort) {
+            cancelProcessInstanceId(processId, instanceId, user, groups);
+        }
+
+        return builder.header("Content-Type", "application/zip").header("Content-Disposition",
+                "attachment; filename=" + archived.getId() + ".zip").build();
+    }
+
+    protected class ZipStreamingOutput implements StreamingOutput {
+
+        private ArchivedProcessInstance archived;
+
+        public ZipStreamingOutput(ArchivedProcessInstance archived) {
+            this.archived = archived;
+        }
+
+        @Override
+        public void write(OutputStream output) throws IOException, WebApplicationException {
+            archived.writeAsZip(output);
+        }
     }
 
 }

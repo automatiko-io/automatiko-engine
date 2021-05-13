@@ -113,6 +113,33 @@ curl -X POST 'Content-Type: application/json' 'Accept: application/json' http://
 TIP: Import of a workflow instance can also serve as instance migration between workflow definition versions. Though
 this will require some manual updates on the exported data.
 
+== Archive workflow instance
+
+Additionally to export feature, there is also an option to archive a workflow instance which essentially performs export and
+collects all variables of the workflow instance and saves them individually. That in turn will give a hierarchical 
+structure of archived instance. Main use case for it is to save the results of the workflow instance execution to keep
+the record of it. In many situations workflow instances are handling legal business processes which require to keep the record 
+of the execution. 
+Archive can actually be performed at any point in life time of the instance. Usually archive will either happen at the end of execution
+or when it is no longer expected to be active.
+
+Process management api allows to archive instance with following characteristics:
+
+- exported instance is in JSON format
+- variables are stored in JSON format
+- sub instances are stored in dedicated folders including their variables and sub instances
+- complete archived instance is delivered as zip archive
+
+Archive operation on the management api allows you to optionally abort the instance after archive operation is completed.
+
+Here is a curl command that will archive instance with id `1234` of a workflow definition with id `orders` and
+version `1.0`
+
+[source, plain]
+----
+curl -X GET 'Accept:application/json' http://localhost:8080/management/processes/orders_1_0/instances/1234/archive
+----
+
 == User interface
 
 IMPORTANT: Currently UI of process management is read only but over time
