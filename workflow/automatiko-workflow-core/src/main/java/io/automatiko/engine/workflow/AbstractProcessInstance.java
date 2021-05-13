@@ -2,6 +2,7 @@
 package io.automatiko.engine.workflow;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -28,6 +29,8 @@ import io.automatiko.engine.api.runtime.process.NodeInstanceState;
 import io.automatiko.engine.api.runtime.process.ProcessRuntime;
 import io.automatiko.engine.api.runtime.process.WorkItemNotFoundException;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
+import io.automatiko.engine.api.workflow.ArchiveBuilder;
+import io.automatiko.engine.api.workflow.ArchivedProcessInstance;
 import io.automatiko.engine.api.workflow.EventDescription;
 import io.automatiko.engine.api.workflow.ExecutionsErrorInfo;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
@@ -320,6 +323,11 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     @Override
     public Collection<ProcessInstance<? extends Model>> subprocesses() {
+        return subprocesses(ProcessInstanceReadMode.READ_ONLY);
+    }
+
+    @Override
+    public Collection<ProcessInstance<? extends Model>> subprocesses(ProcessInstanceReadMode mode) {
         return Collections.emptyList();
     }
 
@@ -720,6 +728,33 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         return image;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
+    public ArchivedProcessInstance archive(ArchiveBuilder builder) {
+        ArchivedProcessInstance archived = builder.instance(id,
+                ((MutableProcessInstances) process().instances()).exportInstance(this, false));
+
+        Map<String, Object> variables = processInstance().getVariables();
+
+        for (Entry<String, Object> var : variables.entrySet()) {
+            archived.addVariable(builder.variable(var.getKey(), var.getValue()));
+        }
+
+        Collection<ProcessInstance<? extends Model>> subInstances = subprocesses(ProcessInstanceReadMode.MUTABLE);
+        List<ArchivedProcessInstance> subinstances = new ArrayList<ArchivedProcessInstance>();
+        if (!subInstances.isEmpty()) {
+
+            for (ProcessInstance<? extends Model> si : subInstances) {
+
+                ArchivedProcessInstance subArchived = si.archive(builder);
+                subinstances.add(subArchived);
+            }
+        }
+        archived.setSubInstances(subinstances);
+
+        return archived;
+    }
+
     protected void removeOnFinish() {
         io.automatiko.engine.api.runtime.process.ProcessInstance processInstance = processInstance();
         if (processInstance.getState() != ProcessInstance.STATE_ACTIVE
@@ -777,8 +812,13 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         vmap.put("$v", variables);
     }
 
-    @SuppressWarnings("unchecked")
     protected void populateChildProcesses(Process<?> process, Collection<ProcessInstance<? extends Model>> collection) {
+        populateChildProcesses(process, collection, ProcessInstanceReadMode.READ_ONLY);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void populateChildProcesses(Process<?> process, Collection<ProcessInstance<? extends Model>> collection,
+            ProcessInstanceReadMode mode) {
 
         WorkflowProcessInstanceImpl instance = (WorkflowProcessInstanceImpl) processInstance();
 
@@ -786,7 +826,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         if (children != null && !children.isEmpty()) {
 
             for (String id : children) {
-                process.instances().findById(id, ProcessInstanceReadMode.READ_ONLY)
+                process.instances().findById(id, mode)
                         .ifPresent(pi -> collection.add((ProcessInstance<? extends Model>) pi));
 
             }

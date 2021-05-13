@@ -62,10 +62,14 @@ public interface MutableProcessInstances<T> extends ProcessInstances<T> {
     }
 
     default ExportedProcessInstance exportInstance(String id) {
-        return exportInstance(id, false);
+        return exportInstance(findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id)), false);
     }
 
-    ExportedProcessInstance exportInstance(String id, boolean abort);
+    default ExportedProcessInstance exportInstance(String id, boolean abort) {
+        return exportInstance(findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id)), abort);
+    }
+
+    ExportedProcessInstance exportInstance(ProcessInstance<?> instance, boolean abort);
 
     ProcessInstance<T> importInstance(ExportedProcessInstance instance, Process<T> process);
 }

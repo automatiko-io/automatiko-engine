@@ -31,6 +31,7 @@ import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.runtime.process.ProcessRuntime;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstance;
+import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.codegen.BodyDeclarationComparator;
 import io.automatiko.engine.codegen.GeneratorContext;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
@@ -190,6 +191,7 @@ public class ProcessInstanceGenerator {
                                 new WildcardType(new ClassOrInterfaceType(null, Model.class.getCanonicalName()))))));
 
         MethodDeclaration subprocessesMethod = new MethodDeclaration().setName("subprocesses")
+                .addParameter(ProcessInstanceReadMode.class.getCanonicalName(), "mode")
                 .setModifiers(Keyword.PUBLIC).setType(collectionOfprocessInstanceType);
         BlockStmt body = new BlockStmt();
 
@@ -207,7 +209,8 @@ public class ProcessInstanceGenerator {
                     getterName);
 
             body.addStatement(new MethodCallExpr(new ThisExpr(), "populateChildProcesses")
-                    .addArgument(fetchProcessInstance).addArgument(new NameExpr("subprocesses")));
+                    .addArgument(fetchProcessInstance).addArgument(new NameExpr("subprocesses"))
+                    .addArgument(new NameExpr("mode")));
 
         }
         body.addStatement(new ReturnStmt(new NameExpr("subprocesses")));

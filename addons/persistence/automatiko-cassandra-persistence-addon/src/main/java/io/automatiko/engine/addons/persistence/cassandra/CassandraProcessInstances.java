@@ -48,7 +48,6 @@ import io.automatiko.engine.api.workflow.MutableProcessInstances;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceDuplicatedException;
-import io.automatiko.engine.api.workflow.ProcessInstanceNotFoundException;
 import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.marshalling.ProcessInstanceMarshaller;
@@ -334,21 +333,16 @@ public class CassandraProcessInstances implements MutableProcessInstances {
     }
 
     @Override
-    public ExportedProcessInstance exportInstance(String id, boolean abort) {
-        Optional<? extends ProcessInstance> found = findById(id,
-                abort ? ProcessInstanceReadMode.MUTABLE : ProcessInstanceReadMode.READ_ONLY);
+    public ExportedProcessInstance exportInstance(ProcessInstance instance, boolean abort) {
 
-        if (found.isPresent()) {
-            ProcessInstance instance = found.get();
-            ExportedProcessInstance exported = marshaller.exportProcessInstance(instance);
+        ExportedProcessInstance exported = marshaller.exportProcessInstance(instance);
 
-            if (abort) {
-                instance.abort();
-            }
-
-            return exported;
+        if (abort) {
+            instance.abort();
         }
-        throw new ProcessInstanceNotFoundException(id);
+
+        return exported;
+
     }
 
     @Override

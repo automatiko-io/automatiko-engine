@@ -235,8 +235,8 @@ public class CollectingUnitOfWork implements UnitOfWork {
         }
 
         @Override
-        public ExportedProcessInstance exportInstance(String id, boolean abort) {
-            return delegate.exportInstance(id, abort);
+        public ExportedProcessInstance exportInstance(ProcessInstance instance, boolean abort) {
+            return delegate.exportInstance(instance, abort);
         }
 
         @Override

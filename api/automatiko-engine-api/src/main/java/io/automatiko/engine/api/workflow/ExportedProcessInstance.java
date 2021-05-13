@@ -31,4 +31,6 @@ public abstract class ExportedProcessInstance<T> {
 
     public abstract List<Map<String, String>> convertTimers();
 
+    public abstract byte[] data();
+
 }

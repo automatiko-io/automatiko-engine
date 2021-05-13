@@ -49,4 +49,6 @@ public interface Process<T> {
     ExportedProcessInstance exportInstance(String id, boolean abort);
 
     ProcessInstance<T> importInstance(ExportedProcessInstance instance);
+
+    ArchivedProcessInstance archiveInstance(String id, ArchiveBuilder builder);
 }
