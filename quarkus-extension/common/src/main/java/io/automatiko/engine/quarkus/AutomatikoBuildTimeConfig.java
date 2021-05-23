@@ -40,6 +40,12 @@ public class AutomatikoBuildTimeConfig extends AutomatikoConfig {
     public Optional<Boolean> instanceLocking;
 
     /**
+     * Specifies target deployment that might have impact on generated service
+     */
+    @ConfigItem
+    public Optional<String> targetDeployment;
+
+    /**
      * Configures metrics
      */
     @ConfigItem
@@ -87,6 +93,11 @@ public class AutomatikoBuildTimeConfig extends AutomatikoConfig {
     @Override
     public Optional<Boolean> instanceLocking() {
         return instanceLocking;
+    }
+
+    @Override
+    public Optional<String> targetDeployment() {
+        return targetDeployment;
     }
 
     @Override

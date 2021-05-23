@@ -196,12 +196,14 @@ public class ProcessGenerator {
     private MethodDeclaration createInstanceGenericWithWorkflowInstanceMethod(String processInstanceFQCN) {
 
         ReturnStmt returnStmt = new ReturnStmt(new ObjectCreationExpr().setType(processInstanceFQCN).setArguments(
-                NodeList.nodeList(new ThisExpr(), new NameExpr("model"), createProcessRuntime(), new NameExpr(WPI))));
+                NodeList.nodeList(new ThisExpr(), new NameExpr("model"), createProcessRuntime(), new NameExpr(WPI),
+                        new NameExpr("versionTrack"))));
         MethodDeclaration methodDeclaration = new MethodDeclaration();
 
         methodDeclaration.setName("createInstance").addModifier(Modifier.Keyword.PUBLIC)
                 .addParameter(WorkflowProcessInstance.class.getCanonicalName(), "wpi")
                 .addParameter(modelTypeName, "model")
+                .addParameter(long.class, "versionTrack")
                 .setType(processInstanceFQCN)
                 .setBody(new BlockStmt()
                         .addStatement(returnStmt));

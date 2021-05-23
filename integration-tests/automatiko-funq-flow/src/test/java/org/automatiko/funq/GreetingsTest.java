@@ -167,5 +167,28 @@ public class GreetingsTest {
         assertEquals("org.acme.travels.greetings.spanishname", data.source);
         assertEquals("org.acme.travels.greetings.endevent2", data.type); 
     }
+    
+    @Test
+    public void testStartSingleFunctionEndpoint() {
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .header("ce-id", UUID.randomUUID().toString())
+            .header("ce-type", "com.acme.sayhellosingle")
+            .header("ce-source", "test")
+            .header("ce-specversion", "1.0")
+            .body("{\"name\" : \"john\"}")
+        .when()
+            .post("/")
+        .then()
+            .statusCode(204);
+        
+        List<EventData> events = eventSource.events();
+        assertEquals(1, events.size());
+        
+        EventData data = events.get(0);
+        assertEquals("org.acme.travels.greetingssingle", data.source);
+        assertEquals("org.acme.travels.greetingssingle.end", data.type);       
+    }
     // @formatter:on
 }

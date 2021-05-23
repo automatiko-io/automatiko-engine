@@ -13,6 +13,7 @@ import java.util.List;
 import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.workflow.base.instance.InternalProcessRuntime;
+import io.automatiko.engine.workflow.base.instance.ProcessInstance;
 import io.automatiko.engine.workflow.process.core.impl.NodeImpl;
 import io.automatiko.engine.workflow.process.core.node.EndNode;
 import io.automatiko.engine.workflow.process.instance.NodeInstanceContainer;
@@ -41,14 +42,16 @@ public class EndNodeInstance extends ExtendedNodeInstanceImpl {
             hidden = true;
         }
 
-        if (getProcessInstance().isFunctionFlow()) {
+        if (getProcessInstance().isFunctionFlow(this) && getNodeInstanceContainer() instanceof ProcessInstance) {
+            // only when running as function flow and node is in the top level node container meaning process instance
+            // and not subprocesses
             getProcessInstance().getMetaData().compute("ATK_FUNC_FLOW_NEXT", (k, v) -> {
 
                 if (v == null) {
                     v = new ArrayList<String>();
                 }
                 Process process = getProcessInstance().getProcess();
-                String defaultNextNode = process.getPackageName() + "." + process.getId() + "." + getNodeName();
+                String defaultNextNode = process.getPackageName() + "." + process.getId() + "." + getNodeName().toLowerCase();
 
                 ((List<String>) v).add((String) getNode().getMetaData().getOrDefault("functionType", defaultNextNode));
 

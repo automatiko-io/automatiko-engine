@@ -217,7 +217,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     public void remove(String id, ProcessInstance instance) {
         String resolvedId = resolveId(id, instance);
         Path processInstanceStorage = Paths.get(storage.toString(), resolvedId);
-        Path processInstanceMetadataStorage = Paths.get(storage.toString(), "._metadata_" + resolveId(id));
+        Path processInstanceMetadataStorage = Paths.get(storage.toString(), "._metadata_" + resolvedId);
         cachedInstances.remove(resolvedId);
         cachedInstances.remove(id);
         try {

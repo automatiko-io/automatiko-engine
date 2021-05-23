@@ -122,8 +122,6 @@ public class ServerlessWorkflowFactory {
             process.setPackageName(DEFAULT_PACKAGE_NAME);
         }
 
-        // seems not needed
-        //process.setMetaData("Compensation", true);
         if (workflow.isKeepActive()) {
             process.setAutoComplete(false);
             process.setDynamic(true);
@@ -132,8 +130,9 @@ public class ServerlessWorkflowFactory {
         }
         process.setVisibility(DEFAULT_VISIBILITY);
 
-        // add workflow data var
-        //processVar(DEFAULT_WORKFLOW_VAR, JsonNode.class, process);
+        if (workflow.getMetadata() != null) {
+            process.getMetaData().putAll(workflow.getMetadata());
+        }
 
         return process;
     }

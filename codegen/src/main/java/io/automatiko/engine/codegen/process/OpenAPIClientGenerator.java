@@ -97,7 +97,11 @@ public class OpenAPIClientGenerator {
                             if (isServerlessWorkflow() && p.isBodyParam) {
                                 p.dataType = "com.fasterxml.jackson.databind.JsonNode";
                             } else {
-                                usedTypes.add("io.automatiko.engine.app.rest.model." + p.dataType);
+
+                                if (!context.getBuildContext()
+                                        .hasClassAvailable("io.automatiko.engine.app.rest.model." + p.dataType)) {
+                                    usedTypes.add("io.automatiko.engine.app.rest.model." + p.dataType);
+                                }
                             }
                         });
 
@@ -105,9 +109,15 @@ public class OpenAPIClientGenerator {
 
                     } else {
                         codegenOperation.allParams.forEach(p -> {
-                            usedTypes.add("io.automatiko.engine.app.rest.model." + p.dataType);
+                            if (!context.getBuildContext()
+                                    .hasClassAvailable("io.automatiko.engine.app.rest.model." + p.dataType)) {
+                                usedTypes.add("io.automatiko.engine.app.rest.model." + p.dataType);
+                            }
                         });
-                        usedTypes.add("io.automatiko.engine.app.rest.model." + codegenOperation.returnType);
+                        if (!context.getBuildContext()
+                                .hasClassAvailable("io.automatiko.engine.app.rest.model." + codegenOperation.returnType)) {
+                            usedTypes.add("io.automatiko.engine.app.rest.model." + codegenOperation.returnType);
+                        }
                     }
                 }
             }

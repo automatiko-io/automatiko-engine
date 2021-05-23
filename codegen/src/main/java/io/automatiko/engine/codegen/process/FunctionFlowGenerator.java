@@ -97,9 +97,9 @@ public class FunctionFlowGenerator {
                     .ifPresent(s -> s.setValue(process.getPackageName() + "." + processId));
 
             if (useInjection()) {
-                String trigger = (String) process.getMetaData().getOrDefault("functionType",
-                        process.getPackageName() + "." + processId);
-                annotator.withCloudEventMapping(md, trigger);
+                String trigger = functionTrigger(process);
+                String filter = (String) process.getMetaData().get("functionFilter");
+                annotator.withCloudEventMapping(md, trigger, filter);
             }
         });
 
@@ -113,11 +113,10 @@ public class FunctionFlowGenerator {
                 MethodDeclaration flowStepFunction = callTemplate.clone();
 
                 if (useInjection()) {
-                    String trigger = (String) node.getMetaData().getOrDefault("functionType",
-                            process.getPackageName() + "." + processId + "."
-                                    + sanitizeIdentifier(node.getName()).toLowerCase());
+                    String trigger = functionTrigger(node);
+                    String filter = (String) node.getMetaData().get("functionFilter");
 
-                    annotator.withCloudEventMapping(flowStepFunction, trigger);
+                    annotator.withCloudEventMapping(flowStepFunction, trigger, filter);
                 }
 
                 flowStepFunction.getBody().get().findFirst(StringLiteralExpr.class, s -> s.getValue().equals("$StartFromNode$"))
@@ -161,6 +160,11 @@ public class FunctionFlowGenerator {
     }
 
     private boolean isExecutionNode(Node node) {
+        if (Boolean.parseBoolean((String) node.getMetaData().getOrDefault("functionFlowContinue", "false"))) {
+            // if node has "functionFlowContinue" set then it should not create new function but continue with workflow execution in the same call
+            return false;
+        }
+
         if (node instanceof WorkItemNode || node instanceof ActionNode || node instanceof RuleSetNode
                 || node instanceof SubProcessNode || node instanceof EventNode) {
 
@@ -176,5 +180,26 @@ public class FunctionFlowGenerator {
 
     private String sanitizeIdentifier(String name) {
         return name.replaceAll("\\s", "").toLowerCase();
+    }
+
+    private String functionTrigger(Node node) {
+
+        if (context.getApplicationProperty("quarkus.automatiko.target-deployment").orElse("unknown").equals("gcp-pubsub")) {
+            return "google.cloud.pubsub.topic.v1.messagePublished";
+        }
+
+        return (String) node.getMetaData().getOrDefault("functionType",
+                process.getPackageName() + "." + processId + "."
+                        + sanitizeIdentifier(node.getName()).toLowerCase());
+    }
+
+    private String functionTrigger(WorkflowProcess process) {
+
+        if (context.getApplicationProperty("quarkus.automatiko.target-deployment").orElse("unknown").equals("gcp-pubsub")) {
+            return "google.cloud.pubsub.topic.v1.messagePublished";
+        }
+
+        return (String) process.getMetaData().getOrDefault("functionType",
+                process.getPackageName() + "." + processId);
     }
 }

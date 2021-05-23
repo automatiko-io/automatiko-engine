@@ -20,6 +20,10 @@ public class AutomatikoConfig {
         return Optional.of(true);
     };
 
+    public Optional<String> targetDeployment() {
+        return Optional.empty();
+    };
+
     public MetricsConfig metrics() {
         return new MetricsConfig();
     }

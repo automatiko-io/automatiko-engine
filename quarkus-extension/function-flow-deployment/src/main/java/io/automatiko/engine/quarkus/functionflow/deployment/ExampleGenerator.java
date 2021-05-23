@@ -40,20 +40,24 @@ public class ExampleGenerator {
 
     public String generate(Schema property, OpenAPI openApi) {
         LOGGER.debug("debugging generate in ExampleGenerator");
-        Set<String> processedModels = new HashSet<>();
+        try {
+            Set<String> processedModels = new HashSet<>();
 
-        Map<String, Object> kv = new LinkedHashMap<>();
+            Map<String, Object> kv = new LinkedHashMap<>();
 
-        for (Entry<String, Schema> prop : property.getProperties().entrySet()) {
+            for (Entry<String, Schema> prop : property.getProperties().entrySet()) {
 
-            Object example = resolvePropertyToExample(prop.getKey(), prop.getValue(), processedModels, openApi);
-            if (example != null) {
+                Object example = resolvePropertyToExample(prop.getKey(), prop.getValue(), processedModels, openApi);
+                if (example != null) {
 
-                kv.put(prop.getKey(), example);
+                    kv.put(prop.getKey(), example);
 
+                }
             }
+            return Json.pretty(kv);
+        } catch (Exception e) {
+            return "{}";
         }
-        return Json.pretty(kv);
     }
 
     private Object resolvePropertyToExample(String propertyName, Schema property,

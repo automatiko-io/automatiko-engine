@@ -4,12 +4,14 @@ package io.automatiko.engine.workflow.compiler.canonical;
 import static com.github.javaparser.StaticJavaParser.parse;
 import static com.github.javaparser.StaticJavaParser.parseClassOrInterfaceType;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -75,6 +77,8 @@ public class ModelMetaData {
 
     private String name;
     private String description;
+
+    private List<Consumer<CompilationUnit>> augmentors = new ArrayList<>();
 
     public ModelMetaData(String processId, String version, String packageName, String modelClassSimpleName,
             String visibility, VariableDeclarations variableScope, boolean hidden, String name, String description) {
@@ -296,6 +300,10 @@ public class ModelMetaData {
                 // params)
                 .ifPresent(m -> m.setBody(staticFromMap));
 
+        for (Consumer<CompilationUnit> augmentor : augmentors) {
+            augmentor.accept(compilationUnit);
+        }
+
         return compilationUnit;
     }
 
@@ -391,6 +399,10 @@ public class ModelMetaData {
     public void setAsEntity(boolean asEntity, boolean removeAtCompletion) {
         this.asEntity = asEntity;
         this.removeAtCompletion = removeAtCompletion;
+    }
+
+    public void addAugmentor(Consumer<CompilationUnit> augmentor) {
+        this.augmentors.add(augmentor);
     }
 
     @Override
