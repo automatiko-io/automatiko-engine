@@ -123,7 +123,7 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
         return createInstance(businessKey, m);
     }
 
-    public abstract ProcessInstance<T> createInstance(WorkflowProcessInstance wpi, T m);
+    public abstract ProcessInstance<T> createInstance(WorkflowProcessInstance wpi, T m, long versionracker);
 
     public abstract ProcessInstance<T> createReadOnlyInstance(WorkflowProcessInstance wpi, T m);
 

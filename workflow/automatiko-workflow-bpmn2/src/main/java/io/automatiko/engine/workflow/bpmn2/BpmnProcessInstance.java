@@ -43,8 +43,8 @@ public class BpmnProcessInstance extends AbstractProcessInstance<BpmnVariables> 
     }
 
     public BpmnProcessInstance(AbstractProcess<BpmnVariables> process, BpmnVariables variables, ProcessRuntime rt,
-            WorkflowProcessInstance wpi) {
-        super(process, variables, rt, wpi);
+            WorkflowProcessInstance wpi, long versionTrack) {
+        super(process, variables, rt, wpi, versionTrack);
     }
 
     public BpmnProcessInstance(AbstractProcess<BpmnVariables> process, BpmnVariables variables,

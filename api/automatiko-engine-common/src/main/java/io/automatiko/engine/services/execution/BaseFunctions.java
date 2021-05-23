@@ -71,6 +71,10 @@ public class BaseFunctions {
         }
     }
 
+    public static void log(Object value) {
+        LOGGER.info(value == null ? "" : value.toString());
+    }
+
     public static void log(String template, Object... items) {
         LOGGER.info(template, items);
     }

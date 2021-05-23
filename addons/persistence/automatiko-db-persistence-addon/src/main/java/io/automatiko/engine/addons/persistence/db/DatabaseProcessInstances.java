@@ -8,12 +8,16 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.persistence.OptimisticLockException;
+
+import org.hibernate.StaleObjectStateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.addons.persistence.db.model.ProcessInstanceEntity;
 import io.automatiko.engine.api.auth.AccessDeniedException;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
+import io.automatiko.engine.api.workflow.ConflictingVersionException;
 import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
 import io.automatiko.engine.api.workflow.Process;
@@ -143,9 +147,14 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
             entity.state = instance.status();
 
             entity.tags = new HashSet<>(instance.tags().values());
-
-            JpaOperations.INSTANCE.persist(entity);
-            disconnect(instance);
+            try {
+                JpaOperations.INSTANCE.persist(entity);
+            } catch (OptimisticLockException | StaleObjectStateException e) {
+                throw new ConflictingVersionException("Process instance with id '" + instance.id()
+                        + "' has older version than tha stored one");
+            } finally {
+                disconnect(instance);
+            }
         }
     }
 
@@ -189,7 +198,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
                     variableScopeInstance.internalSetVariable(k, v);
                 }
             });
-            pi = ((AbstractProcess<ProcessInstanceEntity>) process).createInstance(wpi, entity);
+            pi = ((AbstractProcess<ProcessInstanceEntity>) process).createInstance(wpi, entity, entity.version);
 
         } else {
             WorkflowProcessInstance wpi = marshaller.unmarshallWorkflowProcessInstance(entity.content, process);

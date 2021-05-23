@@ -43,6 +43,7 @@ import io.automatiko.engine.addons.persistence.common.JacksonObjectMarshallingSt
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.AccessDeniedException;
 import io.automatiko.engine.api.config.CassandraPersistenceConfig;
+import io.automatiko.engine.api.workflow.ConflictingVersionException;
 import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
 import io.automatiko.engine.api.workflow.Process;
@@ -60,6 +61,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
     private static final String INSTANCE_ID_FIELD = "InstanceId";
     private static final String CONTENT_FIELD = "Content";
     private static final String TAGS_FIELD = "Tags";
+    private static final String VERSION_FIELD = "VersionTrack";
 
     private final Process<? extends Model> process;
     private final ProcessInstanceMarshaller marshaller;
@@ -94,6 +96,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
         LOGGER.debug("findById() called for instance {}", resolvedId);
 
         Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName).column(CONTENT_FIELD)
+                .column(VERSION_FIELD)
                 .whereColumn(INSTANCE_ID_FIELD).isEqualTo(literal(resolvedId));
 
         ResultSet rs = cqlSession.execute(select.build());
@@ -102,8 +105,9 @@ public class CassandraProcessInstances implements MutableProcessInstances {
 
             byte[] content = ByteUtils.getArray(row.getByteBuffer(CONTENT_FIELD));
 
-            return Optional.of(mode == MUTABLE ? marshaller.unmarshallProcessInstance(content, process)
-                    : marshaller.unmarshallReadOnlyProcessInstance(content, process));
+            return Optional
+                    .of(mode == MUTABLE ? marshaller.unmarshallProcessInstance(content, process, row.getLong(VERSION_FIELD))
+                            : marshaller.unmarshallReadOnlyProcessInstance(content, process));
 
         } else {
             return Optional.empty();
@@ -114,7 +118,8 @@ public class CassandraProcessInstances implements MutableProcessInstances {
     @Override
     public Collection values(ProcessInstanceReadMode mode, int page, int size) {
         LOGGER.debug("values() called");
-        Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName).column(CONTENT_FIELD);
+        Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName).column(CONTENT_FIELD)
+                .column(VERSION_FIELD);
 
         ResultSet rs = cqlSession.execute(select.build());
 
@@ -122,7 +127,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
             try {
                 byte[] content = ByteUtils.getArray(item.getByteBuffer(CONTENT_FIELD));
 
-                return mode == MUTABLE ? marshaller.unmarshallProcessInstance(content, process)
+                return mode == MUTABLE ? marshaller.unmarshallProcessInstance(content, process, item.getLong(VERSION_FIELD))
                         : marshaller.unmarshallReadOnlyProcessInstance(content, process);
             } catch (AccessDeniedException e) {
                 return null;
@@ -145,6 +150,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
 
             Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName).column(INSTANCE_ID_FIELD)
                     .column(CONTENT_FIELD)
+                    .column(VERSION_FIELD)
                     .whereColumn(TAGS_FIELD).contains(literal(value));
 
             ResultSet rs = cqlSession.execute(select.build());
@@ -157,7 +163,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
             try {
                 byte[] content = ByteUtils.getArray(item.getByteBuffer(CONTENT_FIELD));
 
-                return mode == MUTABLE ? marshaller.unmarshallProcessInstance(content, process)
+                return mode == MUTABLE ? marshaller.unmarshallProcessInstance(content, process, item.getLong(VERSION_FIELD))
                         : marshaller.unmarshallReadOnlyProcessInstance(content, process);
             } catch (AccessDeniedException e) {
                 return null;
@@ -219,11 +225,15 @@ public class CassandraProcessInstances implements MutableProcessInstances {
 
             Insert insert = insertInto(config.keyspace().orElse("automatiko"), tableName)
                     .value(INSTANCE_ID_FIELD, literal(resolvedId))
+                    .value(VERSION_FIELD, literal(((AbstractProcessInstance<?>) instance).getVersionTracker()))
                     .value(CONTENT_FIELD, bindMarker())
-                    .value(TAGS_FIELD, bindMarker());
+                    .value(TAGS_FIELD, bindMarker()).ifNotExists();
 
             try {
-                cqlSession.execute(cqlSession.prepare(insert.build()).bind(ByteBuffer.wrap(data), tags));
+                ResultSet rs = cqlSession.execute(cqlSession.prepare(insert.build()).bind(ByteBuffer.wrap(data), tags));
+                if (!rs.wasApplied()) {
+                    throw new ProcessInstanceDuplicatedException(id);
+                }
             } catch (QueryExecutionException e) {
                 throw new ProcessInstanceDuplicatedException(id);
             } finally {
@@ -264,11 +274,17 @@ public class CassandraProcessInstances implements MutableProcessInstances {
             SimpleStatement statement = QueryBuilder.update(config.keyspace().orElse("automatiko"), tableName)
                     .setColumn(CONTENT_FIELD, bindMarker())
                     .setColumn(TAGS_FIELD, bindMarker())
+                    .setColumn(VERSION_FIELD, literal(((AbstractProcessInstance<?>) instance).getVersionTracker() + 1))
                     .whereColumn(INSTANCE_ID_FIELD).isEqualTo(literal(resolvedId))
+                    .whereColumn(VERSION_FIELD).isEqualTo(literal(((AbstractProcessInstance<?>) instance).getVersionTracker()))
                     .build();
 
-            cqlSession.execute(cqlSession.prepare(statement)
+            ResultSet rs = cqlSession.execute(cqlSession.prepare(statement)
                     .bind(ByteBuffer.wrap(data), tags));
+            if (!rs.wasApplied()) {
+                throw new ConflictingVersionException("Process instance with id '" + instance.id()
+                        + "' has older version than the stored one");
+            }
 
             disconnect(instance);
 
@@ -298,7 +314,8 @@ public class CassandraProcessInstances implements MutableProcessInstances {
                 .ifNotExists()
                 .withPartitionKey(INSTANCE_ID_FIELD, DataTypes.TEXT)
                 .withColumn(CONTENT_FIELD, DataTypes.BLOB)
-                .withColumn(TAGS_FIELD, DataTypes.setOf(DataTypes.TEXT));
+                .withColumn(TAGS_FIELD, DataTypes.setOf(DataTypes.TEXT))
+                .withColumn(VERSION_FIELD, DataTypes.BIGINT);
 
         cqlSession.execute(createTable.build());
 

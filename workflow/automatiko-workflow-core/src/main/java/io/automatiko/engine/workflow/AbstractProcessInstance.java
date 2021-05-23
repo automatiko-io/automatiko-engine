@@ -97,6 +97,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     protected ReentrantLock lock;
 
+    protected long versionTracker;
+
     public AbstractProcessInstance(AbstractProcess<T> process, T variables, ProcessRuntime rt) {
         this(process, variables, null, rt);
     }
@@ -126,6 +128,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         // add to the instances upon creation so it can be immediately found even if not
         // started
         ((MutableProcessInstances<T>) process.instances()).create(id, this);
+        this.versionTracker = 1;
     }
 
     /**
@@ -149,11 +152,22 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         }
     }
 
+    /**
+     * With provided process runtime and version tracker process instance is mutable meaning it will be persisted
+     * to the configured data store at the end of unit of work
+     * 
+     * @param process
+     * @param variables
+     * @param rt
+     * @param wpi
+     * @param version
+     */
     public AbstractProcessInstance(AbstractProcess<T> process, T variables, ProcessRuntime rt,
-            WorkflowProcessInstance wpi) {
+            WorkflowProcessInstance wpi, long version) {
         this.process = process;
         this.rt = rt;
         this.variables = variables;
+        this.versionTracker = version;
         configureLock(wpi.getCorrelationKey());
         lock();
 
@@ -753,6 +767,10 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         archived.setSubInstances(subinstances);
 
         return archived;
+    }
+
+    public long getVersionTracker() {
+        return versionTracker;
     }
 
     protected void removeOnFinish() {

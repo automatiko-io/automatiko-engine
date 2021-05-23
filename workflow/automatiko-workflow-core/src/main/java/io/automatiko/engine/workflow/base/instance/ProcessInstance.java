@@ -78,8 +78,15 @@ public interface ProcessInstance
 
     void setReferenceFromRoot(String referenceFromRoot);
 
-    default boolean isFunctionFlow() {
-        return getProcess().getType().equals(Process.FUNCTION_FLOW_TYPE);
+    default boolean isFunctionFlow(NodeInstance nodeInstance) {
+        boolean isFunctionFlow = getProcess().getType().equals(Process.FUNCTION_FLOW_TYPE);
+
+        if (!isFunctionFlow) {
+            return false;
+        }
+        // if node has "functionFlowContinue" set then it should not create new function but continue with workflow execution in the same call
+        return !Boolean.parseBoolean(
+                (String) ((NodeInstance) nodeInstance).getNode().getMetaData().getOrDefault("functionFlowContinue", "false"));
     }
 
     default boolean isExecutionNode(Node node) {

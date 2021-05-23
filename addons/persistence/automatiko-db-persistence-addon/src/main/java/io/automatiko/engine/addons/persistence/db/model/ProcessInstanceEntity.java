@@ -10,6 +10,7 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.Version;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -55,6 +56,11 @@ public abstract class ProcessInstanceEntity extends PanacheEntityBase implements
     @JsonIgnore
     @Lob
     public byte[] content;
+
+    @Column(name = "ATK_VERSION")
+    @JsonIgnore
+    @Version
+    public Long version;
 
     @ElementCollection(fetch = FetchType.EAGER)
     public Set<String> tags = new HashSet<String>();

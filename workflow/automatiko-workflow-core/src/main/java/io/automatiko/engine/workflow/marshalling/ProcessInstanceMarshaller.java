@@ -236,12 +236,12 @@ public class ProcessInstanceMarshaller {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public ProcessInstance unmarshallProcessInstance(byte[] data, Process process) {
+    public ProcessInstance unmarshallProcessInstance(byte[] data, Process process, long versionracker) {
         WorkflowProcessInstance wpi = unmarshallWorkflowProcessInstance(data, process);
         Model model = ((AbstractProcess) process).createModel();
 
         model.fromMap(wpi.getVariables());
-        return ((AbstractProcess) process).createInstance(wpi, model);
+        return ((AbstractProcess) process).createInstance(wpi, model, versionracker);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -262,7 +262,7 @@ public class ProcessInstanceMarshaller {
         Model model = ((AbstractProcess) process).createModel();
 
         model.fromMap(wpi.getVariables());
-        ProcessInstance processInstance = ((AbstractProcess) process).createInstance(wpi, model);
+        ProcessInstance processInstance = ((AbstractProcess) process).createInstance(wpi, model, 1);
 
         if (timers != null && !timers.isEmpty()) {
             String parentProcessInstanceId = wpi.getParentProcessInstanceId();
