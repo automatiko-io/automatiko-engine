@@ -60,7 +60,7 @@ public class CacheProcessInstances implements MutableProcessInstances {
             return Optional.empty();
         }
 
-        return Optional.of(mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process)
+        return Optional.of(mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process, 1)
                 : marshaller.unmarshallReadOnlyProcessInstance(data, process));
     }
 
@@ -72,7 +72,7 @@ public class CacheProcessInstances implements MutableProcessInstances {
             cache.values().parallelStream()
                     .map(data -> {
                         try {
-                            return mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process)
+                            return mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process, 1)
                                     : marshaller.unmarshallReadOnlyProcessInstance(data, process);
                         } catch (AccessDeniedException e) {
                             return null;
@@ -97,7 +97,7 @@ public class CacheProcessInstances implements MutableProcessInstances {
         return cache.values().parallelStream()
                 .map(data -> {
                     try {
-                        return mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process)
+                        return mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process, 1)
                                 : marshaller.unmarshallReadOnlyProcessInstance(data, process);
                     } catch (AccessDeniedException e) {
                         return null;

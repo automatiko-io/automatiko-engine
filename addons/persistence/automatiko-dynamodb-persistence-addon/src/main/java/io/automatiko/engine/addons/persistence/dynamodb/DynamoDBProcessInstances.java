@@ -17,6 +17,7 @@ import io.automatiko.engine.addons.persistence.common.JacksonObjectMarshallingSt
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.AccessDeniedException;
 import io.automatiko.engine.api.config.DynamoDBPersistenceConfig;
+import io.automatiko.engine.api.workflow.ConflictingVersionException;
 import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
 import io.automatiko.engine.api.workflow.Process;
@@ -59,6 +60,7 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
     private static final String INSTANCE_ID_FIELD = "InstanceId";
     private static final String CONTENT_FIELD = "Content";
     private static final String TAGS_FIELD = "Tags";
+    private static final String VERSION_FIELD = "VersionTrack";
 
     private final Process<? extends Model> process;
     private final ProcessInstanceMarshaller marshaller;
@@ -105,7 +107,9 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
         if (returnedItem != null) {
             byte[] content = returnedItem.get(CONTENT_FIELD).b().asByteArray();
 
-            return Optional.of(mode == MUTABLE ? marshaller.unmarshallProcessInstance(content, process)
+            return Optional.of(mode == MUTABLE
+                    ? marshaller.unmarshallProcessInstance(content, process,
+                            Long.parseLong(returnedItem.get(VERSION_FIELD).n()))
                     : marshaller.unmarshallReadOnlyProcessInstance(content, process));
 
         } else {
@@ -127,7 +131,8 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
             try {
                 byte[] content = item.get(CONTENT_FIELD).b().asByteArray();
 
-                return mode == MUTABLE ? marshaller.unmarshallProcessInstance(content, process)
+                return mode == MUTABLE ? marshaller.unmarshallProcessInstance(content, process,
+                        Long.parseLong(item.get(VERSION_FIELD).n()))
                         : marshaller.unmarshallReadOnlyProcessInstance(content, process);
             } catch (AccessDeniedException e) {
                 return null;
@@ -161,7 +166,8 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
             try {
                 byte[] content = item.get(CONTENT_FIELD).b().asByteArray();
 
-                return mode == MUTABLE ? marshaller.unmarshallProcessInstance(content, process)
+                return mode == MUTABLE ? marshaller.unmarshallProcessInstance(content, process,
+                        Long.parseLong(item.get(VERSION_FIELD).n()))
                         : marshaller.unmarshallReadOnlyProcessInstance(content, process);
             } catch (AccessDeniedException e) {
                 return null;
@@ -212,6 +218,8 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
 
             Map<String, AttributeValue> itemValues = new HashMap<String, AttributeValue>();
             itemValues.put(INSTANCE_ID_FIELD, AttributeValue.builder().s(resolvedId).build());
+            itemValues.put(VERSION_FIELD, AttributeValue.builder()
+                    .n(String.valueOf(((AbstractProcessInstance<?>) instance).getVersionTracker())).build());
             itemValues.put(CONTENT_FIELD, AttributeValue.builder().b(SdkBytes.fromByteArray(data)).build());
 
             Collection<String> tags = new ArrayList(instance.tags().values());
@@ -269,6 +277,12 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
                     .action(AttributeAction.PUT)
                     .build());
 
+            updatedValues.put(VERSION_FIELD, AttributeValueUpdate.builder()
+                    .value(AttributeValue.builder()
+                            .n(String.valueOf(((AbstractProcessInstance<?>) instance).getVersionTracker() + 1)).build())
+                    .action(AttributeAction.PUT)
+                    .build());
+
             Collection<String> tags = new ArrayList(instance.tags().values());
             tags.add(resolvedId);
             if (instance.businessKey() != null) {
@@ -283,11 +297,17 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
                     .tableName(tableName)
                     .key(itemKey)
                     .attributeUpdates(updatedValues)
+                    .conditionExpression(VERSION_FIELD + " = " + ((AbstractProcessInstance<?>) instance).getVersionTracker())
                     .build();
 
-            dynamodb.updateItem(request);
-
-            disconnect(instance);
+            try {
+                dynamodb.updateItem(request);
+            } catch (ConditionalCheckFailedException e) {
+                throw new ConflictingVersionException("Process instance with id '" + instance.id()
+                        + "' has older version than the stored one");
+            } finally {
+                disconnect(instance);
+            }
 
         }
         cachedInstances.remove(resolvedId);

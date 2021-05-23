@@ -17,6 +17,7 @@ import io.automatiko.engine.api.event.EventBatch;
 import io.automatiko.engine.api.event.EventManager;
 import io.automatiko.engine.api.uow.UnitOfWork;
 import io.automatiko.engine.api.uow.WorkUnit;
+import io.automatiko.engine.api.workflow.ConflictingVersionException;
 import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
 import io.automatiko.engine.api.workflow.Process;
@@ -65,6 +66,8 @@ public class CollectingUnitOfWork implements UnitOfWork {
             LOGGER.debug("Performing work unit {}", work);
             try {
                 work.perform();
+            } catch (ConflictingVersionException e) {
+                throw e;
             } catch (Exception e) {
                 LOGGER.error("Error during performing work unit {} error message {}", work, e.getMessage(), e);
             }

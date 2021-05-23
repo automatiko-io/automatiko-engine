@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.addons.persistence.common.JacksonObjectMarshallingStrategy;
 import io.automatiko.engine.api.auth.AccessDeniedException;
+import io.automatiko.engine.api.workflow.ConflictingVersionException;
 import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
 import io.automatiko.engine.api.workflow.Process;
@@ -49,6 +50,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     public static final String PI_ROOT_INSTANCE = "RootProcessInstance";
     public static final String PI_SUB_INSTANCE_COUNT = "SubProcessInstanceCount";
     public static final String PI_TAGS = "ProcessInstanceTags";
+    public static final String PI_VERSION = "ProcessInstanceVersion";
 
     private boolean useCompositeIdForSubprocess = true;
 
@@ -108,8 +110,9 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             return Optional.empty();
         }
         byte[] data = readBytesFromFile(processInstanceStorage);
-        return Optional.of(mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process)
-                : marshaller.unmarshallReadOnlyProcessInstance(data, process));
+        return Optional.of(
+                mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process, getVersionTracker(processInstanceStorage))
+                        : marshaller.unmarshallReadOnlyProcessInstance(data, process));
 
     }
 
@@ -124,10 +127,11 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             try (Stream<Path> stream = Files.walk(storage)) {
                 stream.filter(file -> isValidProcessFile(file))
                         .filter(file -> matchTag(getMetadata(file, PI_TAGS), idOrTag))
-                        .map(this::readBytesFromFile)
-                        .map(b -> {
+                        .map(file -> {
                             try {
-                                return mode == MUTABLE ? marshaller.unmarshallProcessInstance(b, process)
+                                byte[] b = readBytesFromFile(file);
+                                return mode == MUTABLE
+                                        ? marshaller.unmarshallProcessInstance(b, process, getVersionTracker(file))
                                         : marshaller.unmarshallReadOnlyProcessInstance(b, process);
                             } catch (AccessDeniedException e) {
                                 return null;
@@ -145,10 +149,11 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     @Override
     public Collection values(ProcessInstanceReadMode mode, int page, int size) {
         try (Stream<Path> stream = Files.walk(storage)) {
-            return stream.filter(file -> isValidProcessFile(file)).map(this::readBytesFromFile)
-                    .map(b -> {
+            return stream.filter(file -> isValidProcessFile(file))
+                    .map(file -> {
                         try {
-                            return mode == MUTABLE ? marshaller.unmarshallProcessInstance(b, process)
+                            byte[] b = readBytesFromFile(file);
+                            return mode == MUTABLE ? marshaller.unmarshallProcessInstance(b, process, getVersionTracker(file))
                                     : marshaller.unmarshallReadOnlyProcessInstance(b, process);
                         } catch (AccessDeniedException e) {
                             return null;
@@ -237,6 +242,16 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             if (data == null) {
                 return;
             }
+            long storedVersion = getVersionTracker(processInstanceStorage);
+            long instanceVersion = ((AbstractProcessInstance<?>) instance).getVersionTracker();
+
+            if (storedVersion != instanceVersion) {
+                throw new ConflictingVersionException("Process instance with id '" + instance.id()
+                        + "' has older version than the stored one (" + instanceVersion + " != " + storedVersion + ")");
+            }
+            // first store the version of the instance for conflict tracking
+            setMetadata(processInstanceStorage, PI_VERSION, String.valueOf(instanceVersion + 1));
+            // then store the instance and other metadata
             Files.write(processInstanceStorage, data);
             setMetadata(processInstanceStorage, PI_DESCRIPTION, instance.description());
             setMetadata(processInstanceStorage, PI_STATUS, String.valueOf(instance.status()));
@@ -408,6 +423,15 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 
         create(imported.id(), imported);
         return imported;
+    }
+
+    protected long getVersionTracker(Path file) {
+        String version = getMetadata(file, PI_VERSION);
+        if (version == null) {
+            return 1;
+        }
+
+        return Long.parseLong(version);
     }
 
 }
