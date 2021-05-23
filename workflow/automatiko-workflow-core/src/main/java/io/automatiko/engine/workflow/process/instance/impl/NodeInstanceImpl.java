@@ -194,7 +194,7 @@ public abstract class NodeInstanceImpl
         io.automatiko.engine.workflow.process.core.Node currentNode = (io.automatiko.engine.workflow.process.core.Node) getNode();
 
         // function flow check
-        if (getProcessInstance().isFunctionFlow() && getProcessInstance().isExecutionNode(currentNode)) {
+        if (getProcessInstance().isFunctionFlow(this) && getProcessInstance().isExecutionNode(currentNode)) {
             Integer functionFlowCounter = (Integer) getProcessInstance().getMetaData("ATK_FUNC_FLOW_COUNTER");
             if (functionFlowCounter == null) {
                 functionFlowCounter = 1;
@@ -208,7 +208,8 @@ public abstract class NodeInstanceImpl
                     }
 
                     Process process = getProcessInstance().getProcess();
-                    String defaultNextNode = process.getPackageName() + "." + process.getId() + "." + getNodeName();
+                    String defaultNextNode = process.getPackageName() + "." + process.getId() + "."
+                            + getNodeName().toLowerCase();
 
                     ((List<String>) v).add((String) getNode().getMetaData().getOrDefault("functionType", defaultNextNode));
 

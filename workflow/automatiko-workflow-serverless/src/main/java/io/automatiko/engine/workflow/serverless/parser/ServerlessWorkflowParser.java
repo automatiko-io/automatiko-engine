@@ -2,6 +2,7 @@ package io.automatiko.engine.workflow.serverless.parser;
 
 import java.io.Reader;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -822,9 +823,32 @@ public class ServerlessWorkflowParser {
                 actionFunction = optionalActionFunction.isPresent() ? optionalActionFunction.get() : null;
 
                 if (actionFunction != null && actionFunction.getOperation() != null) {
-                    current = factory.serviceNode(idCounter.getAndIncrement(), action.getFunctionRef().getRefName(),
-                            actionFunction, embeddedSubProcess);
-                    factory.connect(start.getId(), current.getId(), start.getId() + "_" + current.getId(), embeddedSubProcess,
+
+                    if (actionFunction.getType().equals(FunctionDefinition.Type.EXPRESSION)) {
+                        StringBuilder operation = new StringBuilder(actionFunction.getOperation());
+                        operation.append("(");
+                        JsonNode params = action.getFunctionRef().getArguments();
+
+                        if (params != null) {
+                            Iterator<String> it = params.fieldNames();
+                            while (it.hasNext()) {
+
+                                String name = it.next();
+                                String value = params.get(name).asText();
+                                operation.append("context.getVariable(\"" + value + "\")");
+                            }
+                        }
+                        operation.append(")");
+                        current = factory.scriptNode(idCounter.getAndIncrement(), action.getName(),
+                                operation.toString(), embeddedSubProcess);
+                    } else if (actionFunction.getType().equals(FunctionDefinition.Type.REST)) {
+
+                        current = factory.serviceNode(idCounter.getAndIncrement(), action.getName(),
+                                actionFunction, embeddedSubProcess);
+
+                    }
+                    factory.connect(start.getId(), current.getId(), start.getId() + "_" + current.getId(),
+                            embeddedSubProcess,
                             false);
                     start = current;
                 } else {

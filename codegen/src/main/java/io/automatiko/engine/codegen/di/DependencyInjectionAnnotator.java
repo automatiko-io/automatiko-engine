@@ -247,7 +247,7 @@ public interface DependencyInjectionAnnotator {
      * @param string the trigger mapping for cloud event
      * @return returns annotated node
      */
-    <T extends NodeWithAnnotations<?>> T withCloudEventMapping(T node, String string);
+    <T extends NodeWithAnnotations<?>> T withCloudEventMapping(T node, String string, String filter);
 
     /**
      * Annotates given node with blocking annotation

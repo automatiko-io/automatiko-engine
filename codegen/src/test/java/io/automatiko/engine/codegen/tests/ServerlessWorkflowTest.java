@@ -229,6 +229,35 @@ public class ServerlessWorkflowTest extends AbstractCodegenTest {
         assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = { "serverless/logvar.sw.json" })
+    public void testLogVarWorkflow(String processLocation) throws Exception {
+
+        Application app = generateCodeProcessesOnly(processLocation);
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("logvar_1_0");
+
+        Model m = p.createModel();
+        String jsonParamStr = "{\"name\": \"john\"}";
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonParamObj = mapper.readTree(jsonParamStr);
+
+        m.fromMap(toMap(jsonParamObj));
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).containsKeys("name");
+
+        JsonNode dataOut = (JsonNode) result.toMap().get("name");
+
+        assertThat(dataOut.textValue()).isEqualTo("john");
+    }
+
     protected Map<String, Object> toMap(JsonNode json) {
         Map<String, Object> copy = new LinkedHashMap<>();
         Iterator<Entry<String, JsonNode>> it = json.fields();

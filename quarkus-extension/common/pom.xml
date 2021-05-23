@@ -36,5 +36,16 @@
       <groupId>io.automatiko.engine</groupId>
       <artifactId>automatiko-engine-common</artifactId>
     </dependency>
+    
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-opentracing</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-rest-client</artifactId>
+      <optional>true</optional>
+    </dependency>
   </dependencies>
 </project>

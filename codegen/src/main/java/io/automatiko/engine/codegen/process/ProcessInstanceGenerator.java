@@ -45,6 +45,7 @@ public class ProcessInstanceGenerator {
     private static final String PROCESS_RUNTIME = "processRuntime";
     private static final String BUSINESS_KEY = "businessKey";
     private static final String WPI = "wpi";
+    private static final String VERSION_TRACK = "versionTrack";
 
     private final String packageName;
     private final String typeName;
@@ -163,8 +164,9 @@ public class ProcessInstanceGenerator {
                 .addParameter(model.getModelClassSimpleName(), VALUE)
                 .addParameter(ProcessRuntime.class.getCanonicalName(), PROCESS_RUNTIME)
                 .addParameter(WorkflowProcessInstance.class.getCanonicalName(), WPI)
+                .addParameter(long.class, VERSION_TRACK)
                 .setBody(new BlockStmt().addStatement(new MethodCallExpr("super", new NameExpr(PROCESS),
-                        new NameExpr(VALUE), new NameExpr(PROCESS_RUNTIME), new NameExpr(WPI))));
+                        new NameExpr(VALUE), new NameExpr(PROCESS_RUNTIME), new NameExpr(WPI), new NameExpr(VERSION_TRACK))));
     }
 
     private ConstructorDeclaration constructorWorkflowInstanceDecl() {

@@ -4,6 +4,7 @@ package io.automatiko.engine.codegen.process;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.codegen.CodegenUtils;
 import io.automatiko.engine.codegen.GeneratorContext;
+import io.automatiko.engine.codegen.process.augmentors.GcpPubSubModelAugmentor;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.compiler.canonical.ModelMetaData;
@@ -46,6 +47,10 @@ public class InputModelClassGenerator {
                 "Describes input data model expected by " + workFlowProcess.getName());
         modelMetaData.setSupportsValidation(context.getBuildContext().isValidationSupported());
         modelMetaData.setSupportsOpenApi(context.getBuildContext().isOpenApiSupported());
+
+        if (context.getApplicationProperty("quarkus.automatiko.target-deployment").orElse("unknown").equals("gcp-pubsub")) {
+            modelMetaData.addAugmentor(new GcpPubSubModelAugmentor());
+        }
 
         modelFileName = modelMetaData.getModelClassName().replace('.', '/') + ".java";
         return modelMetaData;

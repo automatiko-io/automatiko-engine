@@ -1,0 +1,35 @@
+{
+  "id": "logvar",
+  "version": "1.0",
+  "name": "Log variable Workflow",
+  "description": "Logging variable value",
+  "start": "Log",
+  "metadata": {
+    "functionType":"test"
+  },
+  "functions": [
+    {
+      "name": "sysout",
+      "type": "expression",
+      "operation": "log"
+      }
+  ],
+  "states": [
+    {
+      "name": "Log",
+      "type": "operation",
+      "actions": [
+        {
+          "name": "showvalue",
+          "functionRef": {
+            "refName": "sysout",
+            "arguments": {
+                "name": "name"
+            }
+          }
+        }
+      ],
+      "end": true
+    }
+  ]
+}

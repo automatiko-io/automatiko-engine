@@ -44,14 +44,16 @@ public class FaultNodeInstance extends NodeInstanceImpl {
             throw new IllegalArgumentException("A FaultNode only accepts default incoming connections!");
         }
         triggerTime = new Date();
-        if (getProcessInstance().isFunctionFlow()) {
+        if (getProcessInstance().isFunctionFlow(this) && getNodeInstanceContainer() instanceof ProcessInstance) {
+            // only when running as function flow and node is in the top level node container meaning process instance
+            // and not subprocesses
             getProcessInstance().getMetaData().compute("ATK_FUNC_FLOW_NEXT", (k, v) -> {
 
                 if (v == null) {
                     v = new ArrayList<String>();
                 }
                 Process process = getProcessInstance().getProcess();
-                String defaultNextNode = process.getPackageName() + "." + process.getId() + "." + getNodeName();
+                String defaultNextNode = process.getPackageName() + "." + process.getId() + "." + getNodeName().toLowerCase();
 
                 ((List<String>) v).add((String) getNode().getMetaData().getOrDefault("functionType", defaultNextNode));
 

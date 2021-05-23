@@ -86,7 +86,7 @@ public class WorkflowFunction {
             for (String nextNode : ctx.nextNodes) {
         
                 LOGGER.debug("Next function to trigger {}", sanitizeIdentifier(nextNode));
-                eventSource.produce(sanitizeIdentifier(nextNode), typePrefix + sanitizeIdentifier("$ThisNode$"), ctx.model);
+                eventSource.produce(sanitizeIdentifier(nextNode), typePrefix + sanitizeIdentifier("$ThisNode$".toLowerCase()), ctx.model);
             }
         }  
     }
@@ -106,7 +106,7 @@ public class WorkflowFunction {
     }
     
     private String sanitizeIdentifier(String name) {
-        return name.replaceAll("\\s", "").toLowerCase();
+        return name.replaceAll("\\s", "");
     }
     
     private class FunctionContext {

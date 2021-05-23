@@ -36,15 +36,22 @@ public class HttpEventSource implements EventSource {
     private HttpClient httpClient;
 
     @Inject
-    public HttpEventSource(ObjectMapper mapper, @ConfigProperty(name = "k.sink") Optional<String> url) {
+    public HttpEventSource(ObjectMapper mapper, @ConfigProperty(name = "k.sink") Optional<String> url,
+            @ConfigProperty(name = "quarkus.http.host") Optional<String> host,
+            @ConfigProperty(name = "quarkus.http.port") Optional<String> port) {
         this.mapper = mapper;
-        this.url = url.orElse(null);
+        this.url = url.orElse("http://" + host.get() + ":" + port.get());
 
         this.httpClient = HttpClient.newBuilder().version(Version.HTTP_2).followRedirects(Redirect.NORMAL).build();
     }
 
     @Override
     public void produce(String type, String source, Object data) {
+        if (url == null) {
+            LOGGER.warn("No broker url is given, returning without publishing an event");
+            return;
+        }
+
         HttpRequest request;
         try {
             request = HttpRequest.newBuilder()
@@ -57,12 +64,12 @@ public class HttpEventSource implements EventSource {
                     .POST(BodyPublishers.ofByteArray(mapper.writeValueAsBytes(data))).build();
 
             httpClient.sendAsync(request, BodyHandlers.ofString()).handle((res, t) -> {
-                if (res.statusCode() < 300) {
+                if (res != null && res.statusCode() < 300) {
                     LOGGER.debug("Successfully produced event to {} with source {} and type {}", url, source, type);
                 } else {
                     LOGGER.error(
                             "Failed at publishing event to {} with source {} and type {}, returned response code {} and body {}",
-                            url, source, type, res.statusCode(), res.body());
+                            url, source, type, res.statusCode(), res.body(), t);
                 }
                 return null;
             });
