@@ -11,7 +11,7 @@ public class CodeGenConstants {
 
     public static final String USERTASK_MGMT_DATA_CLASS = "io.automatiko.engine.addons.usertasks.management.UserTaskManagementResource";
 
-    public static final String JAXRS_PATH = "javax.ws.rs.Path";
+    public static final String OPENA_API_SCHEMA_CLASS = "org.eclipse.microprofile.openapi.annotations.media.Schema";
 
     public static final String ENTITY_CLASS = "io.automatiko.engine.addons.persistence.db.model.ProcessInstanceEntity";
 
