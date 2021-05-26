@@ -46,3 +46,10 @@ MySQL Schema operator is implementing `Kubernetes Operator` use case.
 
 Complete example description and instructions can be
 found link:examples/operator.html[MySQL Schema operator example].
+
+== User registration 
+
+User registration is implementing `Workflow as a Function Flow` use case.
+
+Complete example description and instructions can be
+found link:examples/userregistration.html[User registration example].
