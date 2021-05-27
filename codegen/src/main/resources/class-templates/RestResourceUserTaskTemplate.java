@@ -214,16 +214,16 @@ public class $Type$Resource {
             @Parameter(description = "Groups that the tasks should be retrieved for", required = false) @QueryParam("group") final List<String> groups) {
         identitySupplier.buildIdentityProvider(user, groups);
         try {
-            ProcessInstance<$Type$> pi = process.instances().findById(id, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
-            WorkItem workItem = pi.workItem(workItemId, policies(user, groups));
-            if (workItem == null) {
-                return null;
-            }
-            return $TaskInput$.fromMap(workItem.getId(), workItem.getName(), workItem.getParameters());
+            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                ProcessInstance<$Type$> pi = process.instances().findById(id, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+                WorkItem workItem = pi.workItem(workItemId, policies(user, groups));
+                if (workItem == null) {
+                    return null;
+                }
+                return $TaskInput$.fromMap(workItem.getId(), workItem.getName(), workItem.getParameters());
+            });
         } catch (WorkItemNotFoundException e) {
             return null;
-        } finally {
-            IdentityProvider.set(null);
         }
     }
     

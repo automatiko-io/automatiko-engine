@@ -12,23 +12,25 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.automatiko.engine.api.Model;
 
-public abstract class JsonModel extends ObjectNode implements Model {
+public abstract class JsonModel implements Model {
 
     private static final long serialVersionUID = -801605831545725344L;
 
     protected static ObjectMapper MAPPER = new ObjectMapper();
 
+    private ObjectNode data;
+
     public JsonModel() {
-        super(JsonNodeFactory.withExactBigDecimals(false));
+        this.data = new ObjectNode(JsonNodeFactory.withExactBigDecimals(false));
     }
 
     public JsonModel(JsonNode json) {
-        super(JsonNodeFactory.withExactBigDecimals(false));
+        this.data = new ObjectNode(JsonNodeFactory.withExactBigDecimals(false));
         Iterator<Entry<String, JsonNode>> it = json.fields();
 
         while (it.hasNext()) {
             Entry<String, JsonNode> entry = (Entry<String, JsonNode>) it.next();
-            set(entry.getKey(), entry.getValue());
+            data.set(entry.getKey(), entry.getValue());
         }
     }
 
@@ -45,7 +47,7 @@ public abstract class JsonModel extends ObjectNode implements Model {
     @Override
     public Map<String, Object> toMap() {
         Map<String, Object> copy = new LinkedHashMap<>();
-        Iterator<Entry<String, JsonNode>> it = fields();
+        Iterator<Entry<String, JsonNode>> it = data.fields();
 
         while (it.hasNext()) {
             Entry<String, JsonNode> entry = (Entry<String, JsonNode>) it.next();
@@ -62,7 +64,7 @@ public abstract class JsonModel extends ObjectNode implements Model {
         }
 
         for (Entry<String, Object> entry : params.entrySet()) {
-            set(entry.getKey(), (JsonNode) entry.getValue());
+            data.set(entry.getKey(), (JsonNode) entry.getValue());
         }
 
     }
@@ -77,11 +79,11 @@ public abstract class JsonModel extends ObjectNode implements Model {
 
         while (it.hasNext()) {
             Entry<String, JsonNode> entry = (Entry<String, JsonNode>) it.next();
-            set(entry.getKey(), entry.getValue());
+            data.set(entry.getKey(), entry.getValue());
         }
     }
 
     public JsonNode getWorkflowdata() {
-        return this;
+        return data;
     }
 }

@@ -14,6 +14,7 @@ import io.automatiko.engine.codegen.ApplicationGenerator;
 import io.automatiko.engine.codegen.GeneratedFile;
 import io.automatiko.engine.codegen.Generator;
 import io.automatiko.engine.codegen.di.CDIDependencyInjectionAnnotator;
+import io.quarkus.bootstrap.model.PathsCollection;
 import io.quarkus.deployment.dev.JavaCompilationProvider;
 
 public abstract class AutomatikoCompilationProvider extends JavaCompilationProvider {
@@ -67,7 +68,7 @@ public abstract class AutomatikoCompilationProvider extends JavaCompilationProvi
     }
 
     @Override
-    public Path getSourcePath(Path classFilePath, Set<String> sourcePaths, String classesPath) {
+    public Path getSourcePath(Path classFilePath, PathsCollection sourcePaths, String classesPath) {
         try {
             return AutomatikoBuildData.get().getGenerationContext().getClassSource(classFilePath);
         } catch (IllegalStateException e) {

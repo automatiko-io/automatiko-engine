@@ -13,12 +13,15 @@ import io.automatiko.engine.workflow.http.HttpAuthorization;
 
 public class HttpAuthSupport {
 
-    private ObjectMapper mapper;
+    private ObjectMapper mapper = new ObjectMapper();
+
+    private Config config = ConfigProvider.getConfig();
 
     @SuppressWarnings("unchecked")
     public Map<String, String> produce(Map<String, String> incomingHeaders) {
-        Config config = ConfigProvider.getConfig();
+
         Map<String, String> map = new HashMap<>();
+
         String authType = config.getOptionalValue("quarkus.automatiko.async.callback.auth-type", String.class)
                 .orElse("not-set");
 
@@ -96,7 +99,6 @@ public class HttpAuthSupport {
                 map.put(name, incomingHeaders.get(name));
             }
         }
-
         return map;
     }
 }

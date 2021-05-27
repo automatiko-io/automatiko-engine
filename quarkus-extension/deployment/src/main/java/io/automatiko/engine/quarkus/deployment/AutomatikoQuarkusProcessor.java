@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -80,6 +81,9 @@ import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyIgnoreWarningBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
+import io.quarkus.deployment.dev.testing.TestListener;
+import io.quarkus.deployment.dev.testing.TestListenerBuildItem;
+import io.quarkus.deployment.dev.testing.TestRunListener;
 import io.quarkus.deployment.index.IndexingUtil;
 import io.quarkus.deployment.pkg.PackageConfig;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
@@ -204,8 +208,24 @@ public class AutomatikoQuarkusProcessor {
             BuildProducer<NativeImageResourceBuildItem> resource,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
             BuildProducer<GeneratedResourceBuildItem> resources,
-            BuildProducer<ServiceProviderBuildItem> providerProducer)
+            BuildProducer<ServiceProviderBuildItem> providerProducer,
+            BuildProducer<TestListenerBuildItem> testListenerProducer)
             throws Exception, BootstrapDependencyProcessingException {
+
+        testListenerProducer.produce(new TestListenerBuildItem(new TestListener() {
+
+            @Override
+            public void testsEnabled() {
+
+                System.setProperty("test.runs.enabled", "true");
+            }
+
+            @Override
+            public void testRunStarted(Consumer<TestRunListener> listenerConsumer) {
+                System.setProperty("test.runs.enabled", "true");
+            }
+
+        }));
 
         // prepare index
         List<IndexView> archiveIndexes = new ArrayList<>();
@@ -221,7 +241,8 @@ public class AutomatikoQuarkusProcessor {
         ApplicationGenerator appGen = createApplicationGenerator(config, appPaths, archivesIndex);
 
         if (liveReload.isLiveReload() || ConfigProvider.getConfig()
-                .getOptionalValue("quarkus.live-reload.url", String.class).isPresent()) {
+                .getOptionalValue("quarkus.live-reload.url", String.class).isPresent()
+                || "true".equals(System.getProperty("test.runs.enabled"))) {
             return;
         }
 
@@ -410,9 +431,7 @@ public class AutomatikoQuarkusProcessor {
                 additionalIndexClassProducer
                         .produce(new AdditionalIndexedClassesBuildItem(classesToIndex.toArray(String[]::new)));
 
-            } else
-
-            {
+            } else {
                 List<Diagnostic<? extends JavaFileObject>> diagnostics = diagnosticsCollector.getDiagnostics();
                 String errorMessage = diagnostics.stream().map(d -> d.toString()).collect(Collectors.joining(","));
 
