@@ -135,13 +135,15 @@ public class GeneratorContext {
 
     public void addClassToSourceMapping(Path clazz, Path source) {
         this.classToSource.put(clazz, source);
+
     }
 
     public Path getClassSource(Path classFilePath) {
         if (classToSource.containsKey(classFilePath)) {
             return classToSource.get(classFilePath);
         } else if (classFilePath.toString().contains("$")) {
-            Path toplevelClass = Paths.get(classFilePath.toString().replaceAll("\\$[0-9].*\\.", "."));
+            Path toplevelClass = Paths
+                    .get(classFilePath.toString().split("\\$")[0].replaceAll("\\$[0-9].*\\.", ".") + ".class");
 
             if (classToSource.containsKey(toplevelClass)) {
                 return classToSource.get(toplevelClass);

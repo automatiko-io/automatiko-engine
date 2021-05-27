@@ -9,7 +9,9 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.eclipse.microprofile.config.spi.Converter;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget.Kind;
@@ -134,6 +136,21 @@ public class AutomatikoFunctionProcessor {
             @Override
             public Iterable<ConfigSource> getConfigSources() {
                 return Collections.emptyList();
+            }
+
+            @Override
+            public ConfigValue getConfigValue(String propertyName) {
+                return null;
+            }
+
+            @Override
+            public <T> Optional<Converter<T>> getConverter(Class<T> forType) {
+                return Optional.empty();
+            }
+
+            @Override
+            public <T> T unwrap(Class<T> type) {
+                return null;
             }
         });
         AnnotationScannerContext ctx = new AnnotationScannerContext(index,

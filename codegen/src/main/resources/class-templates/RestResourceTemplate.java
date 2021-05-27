@@ -193,9 +193,9 @@ public class $Type$Resource {
             @Parameter(description = "Pagination - number of items to return", required = false) @QueryParam(value = "size") @DefaultValue("10") int size,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
-        try {
+        
             identitySupplier.buildIdentityProvider(user, groups);
-            
+            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             if (tags != null && !tags.isEmpty()) {
                 return process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, tags.toArray(String[]::new)).stream()
                         .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
@@ -205,9 +205,7 @@ public class $Type$Resource {
                     .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
                     .collect(Collectors.toList());
             }
-        } finally {
-            IdentityProvider.set(null);
-        }
+        });
     }
 
     @APIResponses(
@@ -237,16 +235,14 @@ public class $Type$Resource {
     public $Type$Output get_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
-        try {
+        
             identitySupplier.buildIdentityProvider(user, groups);
-            
-            return process.instances()
-                .findById(id, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
-                .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
-                .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
-        } finally {
-            IdentityProvider.set(null);
-        }
+            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                return process.instances()
+                    .findById(id, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
+                    .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
+                    .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+            });
     }
     
     @APIResponses(
@@ -276,9 +272,9 @@ public class $Type$Resource {
     public Response get_instance_image_$name$(@Context UriInfo uri, @PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
-        try {
-            identitySupplier.buildIdentityProvider(user, groups);
-            
+        
+        identitySupplier.buildIdentityProvider(user, groups);
+        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> instance = process.instances()
                 .findById(id, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
@@ -293,9 +289,7 @@ public class $Type$Resource {
             return builder
                     .header("Content-Type", "image/svg+xml")
                     .build();
-        } finally {
-            IdentityProvider.set(null);
-        }
+        });
     }
     
     @APIResponses(

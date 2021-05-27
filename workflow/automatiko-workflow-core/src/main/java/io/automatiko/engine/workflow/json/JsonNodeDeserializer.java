@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public abstract class JsonNodeDeserializer extends StdDeserializer<ObjectNode> {
+public abstract class JsonNodeDeserializer extends StdDeserializer<Object> {
     private static final long serialVersionUID = 1729289640418476544L;
 
     public JsonNodeDeserializer() {
@@ -21,7 +21,7 @@ public abstract class JsonNodeDeserializer extends StdDeserializer<ObjectNode> {
     }
 
     @Override
-    public ObjectNode deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 
         try {
 
@@ -32,5 +32,5 @@ public abstract class JsonNodeDeserializer extends StdDeserializer<ObjectNode> {
         }
     }
 
-    protected abstract ObjectNode build(JsonNode json);
+    protected abstract Object build(JsonNode json);
 }

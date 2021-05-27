@@ -1,9 +1,11 @@
 package io.automatiko.engine.quarkus.config;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -82,5 +84,15 @@ public class AutomatikoConfigSource implements ConfigSource {
             } catch (Throwable e) {
             }
         }
+    }
+
+    @Override
+    public Set<String> getPropertyNames() {
+        load();
+        if (found == null) {
+            return Collections.emptySet();
+        }
+
+        return found.stream().flatMap(c -> c.getProperties().keySet().stream()).collect(Collectors.toSet());
     }
 }

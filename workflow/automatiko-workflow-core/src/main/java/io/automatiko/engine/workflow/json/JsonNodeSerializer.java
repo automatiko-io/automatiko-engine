@@ -28,7 +28,7 @@ public class JsonNodeSerializer extends StdSerializer<JsonModel> {
     public void serialize(
             JsonModel value, JsonGenerator jgen, SerializerProvider provider)
             throws IOException, JsonProcessingException {
-        Iterator<Entry<String, JsonNode>> it = value.fields();
+        Iterator<Entry<String, JsonNode>> it = value.getWorkflowdata().fields();
         jgen.writeStartObject();
         while (it.hasNext()) {
             Entry<String, JsonNode> entry = (Entry<String, JsonNode>) it.next();

@@ -69,23 +69,21 @@ public class $Type$Resource {
     public List<$Type$Output> getAll_$name$(@PathParam("id") String id,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
-        
-        try {
+                
             identitySupplier.buildIdentityProvider(user, groups);
-        	ProcessInstance parent = $parentprocess$.instances()
-                    .findById($parentparentprocessid$$parentprocessid$, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
-                    .orElse(null);
-            if (parent != null) {
-        	
-            	return (List<$Type$Output>) parent.subprocesses().stream()
-                    .map(pi -> mapOutput(new $Type$Output(), ($Type$) ((ProcessInstance)pi).variables(), ((ProcessInstance)pi).businessKey()))
-                    .collect(java.util.stream.Collectors.toList());
-            } else {
-            	return java.util.Collections.emptyList();
-            }
-        } finally {
-            IdentityProvider.set(null);
-        }
+            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+            	ProcessInstance parent = $parentprocess$.instances()
+                        .findById($parentparentprocessid$$parentprocessid$, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
+                        .orElse(null);
+                if (parent != null) {
+            	
+                	return (List<$Type$Output>) parent.subprocesses().stream()
+                        .map(pi -> mapOutput(new $Type$Output(), ($Type$) ((ProcessInstance)pi).variables(), ((ProcessInstance)pi).businessKey()))
+                        .collect(java.util.stream.Collectors.toList());
+                } else {
+                	return java.util.Collections.emptyList();
+                }
+            });
     }
     
     @APIResponses(
@@ -142,15 +140,13 @@ public class $Type$Resource {
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         
-        try {
-            identitySupplier.buildIdentityProvider(user, groups);
+        identitySupplier.buildIdentityProvider(user, groups);
+        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             return subprocess_$name$.instances()
                 .findById($parentprocessid$ + ":" + id_$name$, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
                 .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
-        } finally {
-            IdentityProvider.set(null);
-        }
+        });
     }
     
     @APIResponses(
@@ -177,8 +173,9 @@ public class $Type$Resource {
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         
-        try {
-            identitySupplier.buildIdentityProvider(user, groups);
+        
+        identitySupplier.buildIdentityProvider(user, groups);
+        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> instance =  subprocess_$name$.instances()
                 .findById($parentprocessid$ + ":" + id_$name$, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
@@ -194,9 +191,7 @@ public class $Type$Resource {
             return builder
                     .header("Content-Type", "image/svg+xml")
                     .build();
-        } finally {
-            IdentityProvider.set(null);
-        }
+        });
     }
 
     @APIResponses(

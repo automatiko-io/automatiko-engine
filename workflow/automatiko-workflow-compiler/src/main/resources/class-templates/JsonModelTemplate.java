@@ -29,7 +29,7 @@ public class XXXModel extends io.automatiko.engine.workflow.JsonModel {
         }
         
         @Override
-        protected ObjectNode build(JsonNode json) {
+        protected Object build(JsonNode json) {
             return new $TYPE$(json);
         }
     }

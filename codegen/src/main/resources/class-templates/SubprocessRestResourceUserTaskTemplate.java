@@ -211,19 +211,21 @@ public class $Type$Resource {
     public $TaskInput$ getTask(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$, @PathParam("workItemId") String workItemId, @QueryParam("user") final String user, @QueryParam("group") final List<String> groups) {
         try {
             identitySupplier.buildIdentityProvider(user, groups);
-            String combinedId;
-            if (id_$name$.contains(":")) {
-                combinedId = id_$name$;
-            } else {
-                combinedId = $parentprocessid$ + ":" + id_$name$;
-            }
-            ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById(combinedId, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
-
-            WorkItem workItem = pi.workItem(workItemId, policies(user, groups));
-            if (workItem == null) {
-                return null;
-            }
-            return $TaskInput$.fromMap(workItem.getId(), workItem.getName(), workItem.getParameters());
+            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                String combinedId;
+                if (id_$name$.contains(":")) {
+                    combinedId = id_$name$;
+                } else {
+                    combinedId = $parentprocessid$ + ":" + id_$name$;
+                }
+                ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById(combinedId, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+    
+                WorkItem workItem = pi.workItem(workItemId, policies(user, groups));
+                if (workItem == null) {
+                    return null;
+                }
+                return $TaskInput$.fromMap(workItem.getId(), workItem.getName(), workItem.getParameters());
+            });
         } catch (WorkItemNotFoundException e) {
             return null;
         } finally {

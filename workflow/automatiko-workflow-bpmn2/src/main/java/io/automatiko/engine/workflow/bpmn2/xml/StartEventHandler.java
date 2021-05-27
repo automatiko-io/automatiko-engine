@@ -125,7 +125,11 @@ public class StartEventHandler extends AbstractNodeHandler {
                     Map<String, ItemDefinition> itemDefinitions = (Map<String, ItemDefinition>) buildData
                             .getMetaData("ItemDefinitions");
 
-                    startNode.setMetaData(TRIGGER_REF, itemDefinitions.get(eventType).getStructureRef());
+                    if (itemDefinitions != null && itemDefinitions.containsKey(eventType)) {
+                        startNode.setMetaData(TRIGGER_REF, itemDefinitions.get(eventType).getStructureRef());
+                    } else {
+                        startNode.setMetaData(TRIGGER_REF, type);
+                    }
                 } else {
                     startNode.setMetaData(TRIGGER_REF, type);
                 }
