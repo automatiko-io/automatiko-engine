@@ -14,4 +14,15 @@ public class JsonVariableScope extends VariableScope {
         this.internalVariables.add(new Variable("internal-workflowdata", WORKFLOWDATA_KEY, new ObjectDataType()));
     }
 
+    @Override
+    public Variable findVariable(String variableName) {
+        Variable found = super.findVariable(variableName);
+
+        if (found != null) {
+            return found;
+        }
+
+        return new Variable(variableName, variableName, new ObjectDataType());
+    }
+
 }

@@ -54,8 +54,13 @@ public class ServiceTaskDescriptor {
 
     private OpenAPIMetaData openapi;
 
+    private boolean isServerlessWorkflow;
+
+    private List<Class<?>> opTypes = Collections.emptyList();
+
     ServiceTaskDescriptor(WorkflowProcess process, WorkItemNode workItemNode, ClassLoader contextClassLoader) {
         this.workItemNode = workItemNode;
+        this.isServerlessWorkflow = process.getMetaData().containsKey("IsServerlessWorkflow");
         interfaceName = (String) workItemNode.getWork().getParameter("Interface");
         operationName = (String) workItemNode.getWork().getParameter("Operation");
 
@@ -66,6 +71,8 @@ public class ServiceTaskDescriptor {
 
             interfaceName = "io.automatiko.engine.app.rest." + StringUtils.capitalize(openapi.name());
             openapi.addOperation(operationName);
+
+            opTypes = openapi.parameters(operationName);
         }
 
         this.contextClassLoader = contextClassLoader;
@@ -165,11 +172,27 @@ public class ServiceTaskDescriptor {
 
         MethodCallExpr callService = new MethodCallExpr(new NameExpr("service"), operationName);
 
+        int counter = 0;
         for (Map.Entry<String, String> paramEntry : parameters.entrySet()) {
             MethodCallExpr getParamMethod = new MethodCallExpr(new NameExpr("workItem"), "getParameter")
                     .addArgument(new StringLiteralExpr(paramEntry.getKey()));
-            callService
-                    .addArgument(new CastExpr(new ClassOrInterfaceType(null, paramEntry.getValue()), getParamMethod));
+
+            if (isServerlessWorkflow) {
+                String paramType = opTypes.size() > counter ? opTypes.get(counter).getCanonicalName() : paramEntry.getValue();
+
+                MethodCallExpr extractValueMethod = new MethodCallExpr(
+                        new NameExpr("io.automatiko.engine.workflow.json.ValueExtractor"), "extract")
+                                .addArgument(getParamMethod)
+                                .addArgument(new NameExpr(paramType + ".class"));
+                callService
+                        .addArgument(
+                                new CastExpr(new ClassOrInterfaceType(null, paramType), extractValueMethod));
+
+            } else {
+                callService
+                        .addArgument(new CastExpr(new ClassOrInterfaceType(null, paramEntry.getValue()), getParamMethod));
+            }
+            counter++;
         }
         MethodCallExpr completeWorkItem = completeWorkItem(executeWorkItemBody, callService);
 

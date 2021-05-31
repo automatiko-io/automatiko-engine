@@ -177,6 +177,7 @@ public class ProcessCodegen extends AbstractGenerator {
         try {
             ServerlessWorkflowParser workflowParser = new ServerlessWorkflowParser(parser);
             Process p = workflowParser.parseWorkFlow(r.getReader());
+            ((WorkflowProcess) p).getMetaData().put("IsServerlessWorkflow", true);
             p.setResource(r);
             return p;
         } catch (IOException e) {
