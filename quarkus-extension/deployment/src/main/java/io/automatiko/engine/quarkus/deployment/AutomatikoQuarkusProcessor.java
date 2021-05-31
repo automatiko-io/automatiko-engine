@@ -343,78 +343,83 @@ public class AutomatikoQuarkusProcessor {
         DiagnosticCollector<JavaFileObject> diagnosticsCollector = new DiagnosticCollector<>();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnosticsCollector, null, null);
 
-        File buildDir = appPaths.getFirstClassesPath().toFile();
-        if (buildDir.isFile()) {
-            buildDir = new File(buildDir.getParentFile(), "classes");
-        }
-
-        fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singleton(buildDir));
-
-        for (GeneratedFile entry : generatedFiles) {
-            String generatedClassFile = entry.relativePath().replace("src/main/java/", "");
-            String fileName = toRuntimeSource(toClassName(generatedClassFile));
-
-            sources.add(new SourceCode(fileName, new String(entry.contents())));
-
-            String location = generatedClassesDir;
-            if (launchMode == LaunchMode.DEVELOPMENT || config.type.equals(PackageConfig.MUTABLE_JAR)) {
-                location = Paths.get(buildDir.toString()).toString();
-
+        try {
+            File buildDir = appPaths.getFirstClassesPath().toFile();
+            if (buildDir.isFile()) {
+                buildDir = new File(buildDir.getParentFile(), "classes");
             }
 
-            writeGeneratedFile(entry, location);
-        }
+            fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singleton(buildDir));
 
-        CompilationTask task = compiler.getTask(null, fileManager, diagnosticsCollector, options, null, sources);
-        boolean result = task.call();
+            for (GeneratedFile entry : generatedFiles) {
+                String generatedClassFile = entry.relativePath().replace("src/main/java/", "");
+                String fileName = toRuntimeSource(toClassName(generatedClassFile));
 
-        if (result) {
-            Map<String, byte[]> classes = new LinkedHashMap<String, byte[]>();
-            List<String> classesToIndex = new ArrayList<String>();
-            Iterable<JavaFileObject> compiledClasses = fileManager.list(StandardLocation.CLASS_OUTPUT, "",
-                    Collections.singleton(JavaFileObject.Kind.CLASS), true);
-            for (JavaFileObject jfo : compiledClasses) {
+                sources.add(new SourceCode(fileName, new String(entry.contents())));
 
-                String clazz = jfo.getName().replaceFirst(buildDir.toString() + "/", "");
-                clazz = toClassName(clazz);
-                byte[] content = IoUtils.readBytesFromInputStream(jfo.openInputStream());
-                generatedBeans.produce(bif.apply(clazz, content));
+                String location = generatedClassesDir;
+                if (launchMode == LaunchMode.DEVELOPMENT || config.type.equals(PackageConfig.MUTABLE_JAR)) {
+                    location = Paths.get(buildDir.toString()).toString();
 
-                classesToIndex.add(clazz);
-                classes.put(clazz, content);
-                classes.put(clazz.replaceAll("\\.", "/") + ".class", content);
+                }
+
+                writeGeneratedFile(entry, location);
             }
 
-            if (Thread.currentThread().getContextClassLoader() instanceof QuarkusClassLoader) {
-                QuarkusClassLoader cl = (QuarkusClassLoader) Thread.currentThread().getContextClassLoader();
+            CompilationTask task = compiler.getTask(null, fileManager, diagnosticsCollector, options, null, sources);
+            boolean result = task.call();
 
-                Field f = cl.getClass().getDeclaredField("elements");
-                f.setAccessible(true);
-                List<ClassPathElement> element = (List<ClassPathElement>) f.get(cl);
+            if (result) {
+                Map<String, byte[]> classes = new LinkedHashMap<String, byte[]>();
+                List<String> classesToIndex = new ArrayList<String>();
+                Iterable<JavaFileObject> compiledClasses = fileManager.list(StandardLocation.CLASS_OUTPUT, "",
+                        Collections.singleton(JavaFileObject.Kind.CLASS), true);
+                for (JavaFileObject jfo : compiledClasses) {
 
-                element.add(new MemoryClassPathElement(classes) {
+                    String clazz = jfo.getName().replaceFirst(buildDir.toString() + "/", "");
+                    clazz = toClassName(clazz);
+                    byte[] content = IoUtils.readBytesFromInputStream(jfo.openInputStream());
+                    generatedBeans.produce(bif.apply(clazz, content));
 
-                    @Override
-                    public Path getRoot() {
-                        return fileManager.getLocation(StandardLocation.CLASS_OUTPUT).iterator().next().toPath();
-                    }
+                    classesToIndex.add(clazz);
+                    classes.put(clazz, content);
+                    classes.put(clazz.replaceAll("\\.", "/") + ".class", content);
+                }
 
-                });
+                if (Thread.currentThread().getContextClassLoader() instanceof QuarkusClassLoader) {
+                    QuarkusClassLoader cl = (QuarkusClassLoader) Thread.currentThread().getContextClassLoader();
 
-                f = cl.getClass().getDeclaredField("state");
-                f.setAccessible(true);
-                f.set(cl, null);
+                    Field f = cl.getClass().getDeclaredField("elements");
+                    f.setAccessible(true);
+                    List<ClassPathElement> element = (List<ClassPathElement>) f.get(cl);
+
+                    element.add(new MemoryClassPathElement(classes) {
+
+                        @Override
+                        public Path getRoot() {
+                            return fileManager.getLocation(StandardLocation.CLASS_OUTPUT).iterator().next().toPath();
+                        }
+
+                    });
+
+                    f = cl.getClass().getDeclaredField("state");
+                    f.setAccessible(true);
+                    f.set(cl, null);
+                }
+
+                additionalIndexClassProducer
+                        .produce(new AdditionalIndexedClassesBuildItem(classesToIndex.toArray(String[]::new)));
+
+            } else
+
+            {
+                List<Diagnostic<? extends JavaFileObject>> diagnostics = diagnosticsCollector.getDiagnostics();
+                String errorMessage = diagnostics.stream().map(d -> d.toString()).collect(Collectors.joining(","));
+
+                throw new IllegalStateException(errorMessage);
             }
-
-            additionalIndexClassProducer.produce(new AdditionalIndexedClassesBuildItem(classesToIndex.toArray(String[]::new)));
-
-        } else
-
-        {
-            List<Diagnostic<? extends JavaFileObject>> diagnostics = diagnosticsCollector.getDiagnostics();
-            String errorMessage = diagnostics.stream().map(d -> d.toString()).collect(Collectors.joining(","));
-
-            throw new IllegalStateException(errorMessage);
+        } finally {
+            fileManager.close();
         }
     }
 
