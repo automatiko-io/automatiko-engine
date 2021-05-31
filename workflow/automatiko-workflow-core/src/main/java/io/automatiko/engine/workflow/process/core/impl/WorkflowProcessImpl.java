@@ -161,15 +161,19 @@ public class WorkflowProcessImpl extends ProcessImpl
         }
     }
 
-    protected Node getContainerNode(Node currentNode,
+    public Node getContainerNode(Node currentNode,
             io.automatiko.engine.workflow.process.core.NodeContainer nodeContainer, long nodeId) {
         for (Node node : nodeContainer.getNodes()) {
             if (nodeId == node.getId()) {
                 return currentNode;
             } else {
                 if (node instanceof io.automatiko.engine.workflow.process.core.NodeContainer) {
-                    return getContainerNode(node, (io.automatiko.engine.workflow.process.core.NodeContainer) node,
+                    Node found = getContainerNode(node, (io.automatiko.engine.workflow.process.core.NodeContainer) node,
                             nodeId);
+
+                    if (found != null) {
+                        return found;
+                    }
                 }
             }
         }

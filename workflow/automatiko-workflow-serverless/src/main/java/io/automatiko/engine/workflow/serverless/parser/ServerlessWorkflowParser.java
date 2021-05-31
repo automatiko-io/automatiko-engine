@@ -835,6 +835,9 @@ public class ServerlessWorkflowParser {
 
                                 String name = it.next();
                                 String value = params.get(name).asText();
+                                if (value.equals("$..*")) {
+                                    value = "workflowdata";
+                                }
                                 operation.append("context.getVariable(\"" + value + "\")");
                             }
                         }
@@ -843,13 +846,16 @@ public class ServerlessWorkflowParser {
                                 operation.toString(), embeddedSubProcess);
                     } else if (actionFunction.getType().equals(FunctionDefinition.Type.REST)) {
 
-                        current = factory.serviceNode(idCounter.getAndIncrement(), action.getName(),
+                        current = factory.serviceNode(idCounter.getAndIncrement(), action,
                                 actionFunction, embeddedSubProcess);
 
                     }
                     factory.connect(start.getId(), current.getId(), start.getId() + "_" + current.getId(),
                             embeddedSubProcess,
                             false);
+                    if (state.getMetadata() != null) {
+                        current.getMetaData().putAll(state.getMetadata());
+                    }
                     start = current;
                 } else {
                     LOGGER.error("Invalid action function reference: {}" + actionFunction);

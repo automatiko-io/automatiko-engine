@@ -23,6 +23,7 @@ import io.automatiko.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.compiler.canonical.ProcessToExecModelGenerator;
 import io.automatiko.engine.workflow.process.core.node.ActionNode;
+import io.automatiko.engine.workflow.process.core.node.BoundaryEventNode;
 import io.automatiko.engine.workflow.process.core.node.EventNode;
 import io.automatiko.engine.workflow.process.core.node.RuleSetNode;
 import io.automatiko.engine.workflow.process.core.node.StartNode;
@@ -168,9 +169,14 @@ public class FunctionFlowGenerator {
         if (node instanceof WorkItemNode || node instanceof ActionNode || node instanceof RuleSetNode
                 || node instanceof SubProcessNode || node instanceof EventNode) {
 
-            // ignore those that are attached to start node
-            if (node.getIncomingConnections().values().stream().flatMap(c -> c.stream())
-                    .anyMatch(c -> c.getFrom() instanceof StartNode)) {
+            if (node instanceof BoundaryEventNode) {
+                return false;
+            }
+
+            // ignore those that are attached to start node in the top level process
+            if (node.getParentContainer() instanceof WorkflowProcess
+                    && node.getIncomingConnections().values().stream().flatMap(c -> c.stream())
+                            .anyMatch(c -> c.getFrom() instanceof StartNode)) {
                 return false;
             }
             return true;

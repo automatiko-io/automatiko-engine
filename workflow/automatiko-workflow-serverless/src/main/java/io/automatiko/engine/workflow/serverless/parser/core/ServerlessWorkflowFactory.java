@@ -5,6 +5,7 @@ import static io.automatiko.engine.workflow.process.executable.core.Metadata.ACT
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -55,6 +56,7 @@ import io.automatiko.engine.workflow.process.executable.core.validation.Executab
 import io.automatiko.engine.workflow.serverless.parser.util.ServerlessWorkflowUtils;
 import io.automatiko.engine.workflow.serverless.parser.util.WorkflowAppContext;
 import io.serverlessworkflow.api.Workflow;
+import io.serverlessworkflow.api.actions.Action;
 import io.serverlessworkflow.api.end.End;
 import io.serverlessworkflow.api.error.Error;
 import io.serverlessworkflow.api.events.EventDefinition;
@@ -422,15 +424,16 @@ public class ServerlessWorkflowFactory {
         return workItemNode;
     }
 
-    public WorkItemNode serviceNode(long id, String name, FunctionDefinition function, NodeContainer nodeContainer) {
+    public WorkItemNode serviceNode(long id, Action action, FunctionDefinition function, NodeContainer nodeContainer) {
 
+        String actionName = action.getName();
         String[] operationParts = function.getOperation().split("#");
         String interfaceStr = operationParts[0];
         String operationStr = operationParts[1];
 
         WorkItemNode workItemNode = new WorkItemNode();
         workItemNode.setId(id);
-        workItemNode.setName(name);
+        workItemNode.setName(actionName);
         workItemNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
         workItemNode.setMetaData("Type", SERVICE_TASK_TYPE);
         workItemNode.setMetaData("Implementation", "##WebService");
@@ -453,8 +456,24 @@ public class ServerlessWorkflowFactory {
         //        }
         //        work.setParameter(SERVICE_IMPL_KEY, metaImpl);
 
-        workItemNode.addInMapping("Parameter", DEFAULT_WORKFLOW_VAR);
-        workItemNode.addOutMapping("Result", DEFAULT_WORKFLOW_VAR);
+        JsonNode params = action.getFunctionRef().getArguments();
+
+        if (params != null) {
+            Iterator<String> it = params.fieldNames();
+            while (it.hasNext()) {
+
+                String name = it.next();
+                String value = params.get(name).asText();
+                if (value.equals("$..*")) {
+                    value = "workflowdata";
+                }
+                workItemNode.addInMapping("Parameter", value);
+            }
+
+        } else {
+            workItemNode.addInMapping("Parameter", DEFAULT_WORKFLOW_VAR);
+            workItemNode.addOutMapping("Result", DEFAULT_WORKFLOW_VAR);
+        }
 
         nodeContainer.addNode(workItemNode);
 
