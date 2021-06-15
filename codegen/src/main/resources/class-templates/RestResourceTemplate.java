@@ -4,7 +4,11 @@ import java.io.OutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
@@ -30,6 +34,7 @@ import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.IdentitySupplier;
 import io.automatiko.engine.api.auth.SecurityPolicy;
+import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.Sig;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
@@ -41,6 +46,7 @@ import io.automatiko.engine.api.workflow.ProcessImageNotFoundException;
 import io.automatiko.engine.api.workflow.WorkItem;
 import io.automatiko.engine.api.workflow.workitem.Policy;
 import io.automatiko.engine.workflow.base.instance.TagInstance;
+import io.automatiko.engine.service.auth.HttpAuthSupport;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -59,6 +65,8 @@ public class $Type$Resource {
     Application application;
     
     IdentitySupplier identitySupplier;
+    
+    HttpAuthSupport httpAuth = new HttpAuthSupport();
 
     @APIResponses(
         value = {
@@ -82,7 +90,12 @@ public class $Type$Resource {
                 responseCode = "200",
                 description = "Successfully created instance",
                     content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = $Type$Output.class))) })
+                    schema = @Schema(implementation = $Type$Output.class))),            
+            @APIResponse(
+                    responseCode = "202",
+                    description = "Successfully accepted request to create instance (applies only to async execution mode)",
+                        content = @Content(mediaType = "application/json",
+                        schema = @Schema(implementation = $Type$Output.class))) })
     @Operation(
         summary = "Creates new instance of $name$")
     @POST()
@@ -91,7 +104,7 @@ public class $Type$Resource {
     @org.eclipse.microprofile.metrics.annotation.Counted(name = "create $name$", description = "Number of new instances of $name$")
     @org.eclipse.microprofile.metrics.annotation.Timed(name = "duration of creating $name$", description = "A measure of how long it takes to create new instance of $name$.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
     @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of instances of $name$", description="Rate of new instances of $name$")
-    public $Type$Output create_$name$(@Context HttpHeaders httpHeaders, @QueryParam("businessKey") @Parameter(description = "Alternative id to be assigned to the instance", required = false) String businessKey, 
+    public Response create_$name$(@Context HttpHeaders httpHeaders, @QueryParam("businessKey") @Parameter(description = "Alternative id to be assigned to the instance", required = false) String businessKey, 
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
             @Parameter(description = "The input model for $name$ instance") $Type$Input resource) {
@@ -99,20 +112,64 @@ public class $Type$Resource {
             resource = new $Type$Input();
         }
         final $Type$Input value = resource;
-        identitySupplier.buildIdentityProvider(user, groups);
-        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-            ProcessInstance<$Type$> pi = process.createInstance(businessKey, mapInput(value, new $Type$()));
-            String startFromNode = httpHeaders.getHeaderString("X-AUTOMATIK-StartFromNode");
+        
+        String execMode = httpHeaders.getHeaderString("X-ATK-Mode");
+
+        if ("async".equalsIgnoreCase(execMode)) {
+            String callbackUrl = httpHeaders.getHeaderString("X-ATK-Callback");
+            String startFromNode = httpHeaders.getHeaderString("X-ATK-StartFromNode");
             
-            if (startFromNode != null) {
-                pi.startFrom(startFromNode);
-            } else {
+            ProcessInstance<$Type$> pi = process.createInstance(businessKey,
+                    mapInput(value, new $Type$()));            
+            ((AbstractProcessInstance<$Type$>) pi).unlock(true);
+
+            $Type$Output output = mapOutput(new $Type$Output(), pi.variables(), businessKey);
             
-                pi.start();
-            }
-            tracing(pi);
-            return getModel(pi);
-        });
+            Map<String, String> headers = httpHeaders.getRequestHeaders().entrySet().stream()
+                    .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().get(0)));
+            IdentityProvider identity = identitySupplier.buildIdentityProvider(user, groups);
+            IdentityProvider.set(null);
+            CompletableFuture.runAsync(() -> {
+                IdentityProvider.set(identity);
+                io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(),
+                        () -> {
+                            
+                            if (startFromNode != null) {
+                                pi.startFrom(startFromNode);
+                            } else {
+                                pi.start();
+                            }
+                            tracing(pi);
+                            $Type$Output result = getModel(pi);
+
+                            io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, result, httpAuth.produce(headers), pi.status());
+
+                            return null;
+                        });
+            });
+               
+            ResponseBuilder builder = Response.accepted().entity(output);
+            
+            return builder.build();
+        } else {
+        
+            identitySupplier.buildIdentityProvider(user, groups);
+            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                ProcessInstance<$Type$> pi = process.createInstance(businessKey, mapInput(value, new $Type$()));
+                String startFromNode = httpHeaders.getHeaderString("X-ATK-StartFromNode");
+                
+                if (startFromNode != null) {
+                    pi.startFrom(startFromNode);
+                } else {
+                
+                    pi.start();
+                }
+                tracing(pi);                
+                ResponseBuilder builder = Response.ok().entity(getModel(pi));
+                
+                return builder.build();
+            });
+        }
     }
 
     @APIResponses(
@@ -338,19 +395,54 @@ public class $Type$Resource {
     @Path("/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public $Type$Output updateModel_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id, 
+    public Response updateModel_$name$(@Context HttpHeaders httpHeaders, @PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id, 
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
             @Parameter(description = "Updates to the data model for $name$ instance", required = true) $Type$ resource) {
-        identitySupplier.buildIdentityProvider(user, groups);
-        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-            ProcessInstance<$Type$> pi = process.instances()
-                    .findById(id)
-                    .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
-            tracing(pi);
-            pi.updateVariables(resource);
-            return mapOutput(new $Type$Output(), pi.variables(), pi.businessKey());
-        });
+        
+        String execMode = httpHeaders.getHeaderString("X-ATK-Mode");
+
+        if ("async".equalsIgnoreCase(execMode)) {
+            String callbackUrl = httpHeaders.getHeaderString("X-ATK-Callback");
+            
+            Map<String, String> headers = httpHeaders.getRequestHeaders().entrySet().stream()
+                    .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().get(0)));
+            IdentityProvider identity = identitySupplier.buildIdentityProvider(user, groups);
+            IdentityProvider.set(null);
+            CompletableFuture.runAsync(() -> {
+                IdentityProvider.set(identity);
+                io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                    ProcessInstance<$Type$> pi = process.instances()
+                            .findById(id)
+                            .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+                    tracing(pi);
+                    pi.updateVariables(resource);
+                    $Type$Output result = mapOutput(new $Type$Output(), pi.variables(), pi.businessKey());
+                    
+                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, result, httpAuth.produce(headers), pi.status());
+
+                    return null;
+                });
+  
+            });
+               
+            ResponseBuilder builder = Response.accepted().entity(Collections.singletonMap("id", id));
+            
+            return builder.build();
+        } else {
+            identitySupplier.buildIdentityProvider(user, groups);
+            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                ProcessInstance<$Type$> pi = process.instances()
+                        .findById(id)
+                        .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+                tracing(pi);
+                pi.updateVariables(resource);
+                
+                ResponseBuilder builder = Response.ok().entity(mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()));
+                
+                return builder.build();
+            });
+        }
     }
     
     @APIResponses(

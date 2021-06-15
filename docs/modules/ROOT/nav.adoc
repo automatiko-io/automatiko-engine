@@ -12,5 +12,6 @@
 ** xref:components/management.adoc[Process management]
 ** xref:components/event-publishers.adoc[Event publishers]
 ** xref:components/user-tasks.adoc[User tasks]
+** xref:components/async-execution.adoc[Async Execution]
 * xref:configuration.adoc[Configuration reference]
-* xref:faq.adoc[FAQ]
+

@@ -200,7 +200,7 @@ public abstract class AbstractResourceGenerator {
 
             signalsMap.entrySet().stream().filter(e -> Objects.nonNull(e.getKey())).forEach(entry -> {
                 String methodName = "signal_" + index.getAndIncrement();
-                String outputType = modelfqcn;
+
                 String signalName = entry.getKey();
                 String signalType = entry.getValue();
 
@@ -211,7 +211,7 @@ public abstract class AbstractResourceGenerator {
                         body.findAll(NameExpr.class, nameExpr -> "data".equals(nameExpr.getNameAsString()))
                                 .forEach(name -> name.replace(new NullLiteralExpr()));
                     }
-                    template.addMethod(methodName, Keyword.PUBLIC).setType(outputType)
+                    template.addMethod(methodName, Keyword.PUBLIC).setType("javax.ws.rs.core.Response")
                             // Remove data parameter ( payload ) if signalType is null
                             .setParameters(signalType == null ? removeLastParam(cloned)
                                     : cloned.getParameters())

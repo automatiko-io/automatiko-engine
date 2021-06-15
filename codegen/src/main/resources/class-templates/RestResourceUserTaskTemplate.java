@@ -1,6 +1,10 @@
 package com.myspace.demo;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -46,22 +50,52 @@ public class $Type$Resource {
     @org.eclipse.microprofile.metrics.annotation.Counted(name = "Creating new $taskName$ task", description = "Number of $taskName$ tasks created")
     @org.eclipse.microprofile.metrics.annotation.Timed(name = "Duration of creatingnew $taskName$ task", description = "A measure of how long it takes to create $taskName$ tasks.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
     @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of creating $taskName$ tasks", description="Rate of creating $taskName$ tasks")   
-    public javax.ws.rs.core.Response signal(@PathParam("id") @Parameter(description = "Unique identifier of the owning instance", required = true) final String id,
+    public javax.ws.rs.core.Response signal(@Context HttpHeaders httpHeaders, @PathParam("id") @Parameter(description = "Unique identifier of the owning instance", required = true) final String id,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
-        identitySupplier.buildIdentityProvider(user, groups);
-        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-            ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
-            tracing(pi);
-            pi.send(Sig.of("$taskNodeName$", java.util.Collections.emptyMap()));
-            java.util.Optional<WorkItem> task = pi.workItems().stream().filter(wi -> wi.getName().equals("$taskName$")).findFirst();
-            if(task.isPresent()) {
-                return javax.ws.rs.core.Response.ok(getModel(pi))
-                        .header("Link", "</" + id + "/$taskName$/" + task.get().getId() + ">; rel='instance'")
-                        .build();
-            }
-            return javax.ws.rs.core.Response.status(javax.ws.rs.core.Response.Status.NOT_FOUND).build();
-        });
+        String execMode = httpHeaders.getHeaderString("X-ATK-Mode");
+
+        if ("async".equalsIgnoreCase(execMode)) {
+            String callbackUrl = httpHeaders.getHeaderString("X-ATK-Callback");
+            Map<String, String> headers = httpHeaders.getRequestHeaders().entrySet().stream()
+                    .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().get(0)));
+            
+            IdentityProvider identity = identitySupplier.buildIdentityProvider(user, groups);
+            IdentityProvider.set(null);
+            
+            CompletableFuture.runAsync(() -> {
+                IdentityProvider.set(identity);
+                io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                    ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+                    tracing(pi);
+                    pi.send(Sig.of("$taskNodeName$", java.util.Collections.emptyMap()));
+                    
+                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, getModel(pi), httpAuth.produce(headers), pi.status());
+
+                    return null;
+                });
+  
+            });
+               
+            ResponseBuilder builder = Response.accepted().entity(Collections.singletonMap("id", id));
+            
+            return builder.build();
+        } else {
+        
+            identitySupplier.buildIdentityProvider(user, groups);
+            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+                tracing(pi);
+                pi.send(Sig.of("$taskNodeName$", java.util.Collections.emptyMap()));
+                java.util.Optional<WorkItem> task = pi.workItems().stream().filter(wi -> wi.getName().equals("$taskName$")).findFirst();
+                if(task.isPresent()) {
+                    return javax.ws.rs.core.Response.ok(getModel(pi))
+                            .header("Link", "</" + id + "/$taskName$/" + task.get().getId() + ">; rel='instance'")
+                            .build();
+                }
+                return javax.ws.rs.core.Response.status(javax.ws.rs.core.Response.Status.NOT_FOUND).build();
+            });
+        }
     }
 
     @APIResponses(
@@ -92,26 +126,61 @@ public class $Type$Resource {
     @org.eclipse.microprofile.metrics.annotation.Counted(name = "Completed $taskName$ tasks", description = "Number of $taskName$ tasks completed")
     @org.eclipse.microprofile.metrics.annotation.Timed(name = "Duration of completing $taskName$ task", description = "A measure of how long it takes to complete $taskName$ task.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
     @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of completing $taskName$ tasks", description="Rate of completing $taskName$ tasks")       
-    public $Type$Output completeTask(@PathParam("id") @Parameter(description = "Unique identifier of the owning instance", required = true) final String id, 
+    public Response completeTask(@Context HttpHeaders httpHeaders, @PathParam("id") @Parameter(description = "Unique identifier of the owning instance", required = true) final String id, 
             @Parameter(description = "Unique identifier of the task instance", required = true) @PathParam("workItemId") final String workItemId, 
             @Parameter(description = "Optional phase to be used when aborting", required = false) @QueryParam("phase") @DefaultValue("complete") final String phase, 
             @Parameter(description = "User identifier that the tasks should be completed with", required = false) @QueryParam("user") final String user, 
             @Parameter(description = "Groups that the tasks should be completed with", required = false) @QueryParam("group") final List<String> groups, final $TaskOutput$ model) {
-        try {
-            identitySupplier.buildIdentityProvider(user, groups);
-            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-                ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
-
-                tracing(pi);
-                io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, model.toMap(), io.automatiko.engine.api.auth.IdentityProvider.get());
-                pi.transitionWorkItem(workItemId, transition);
-
-                return getModel(pi);
-            });
-        } catch (WorkItemNotFoundException e) {
-            return null;
-        } finally {
+        
+        String execMode = httpHeaders.getHeaderString("X-ATK-Mode");
+        
+        if ("async".equalsIgnoreCase(execMode)) {
+            IdentityProvider identity = identitySupplier.buildIdentityProvider(user, groups);
             IdentityProvider.set(null);
+            
+            String callbackUrl = httpHeaders.getHeaderString("X-ATK-Callback");
+            Map<String, String> headers = httpHeaders.getRequestHeaders().entrySet().stream()
+                    .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().get(0)));
+
+            CompletableFuture.runAsync(() -> {
+                IdentityProvider.set(identity);
+                io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                    ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+                    
+                    tracing(pi);
+                    io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, model.toMap(), io.automatiko.engine.api.auth.IdentityProvider.get());
+                    pi.transitionWorkItem(workItemId, transition);
+                    
+                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, getModel(pi), httpAuth.produce(headers), pi.status());
+
+                    return null;
+                });
+  
+            });
+               
+            ResponseBuilder builder = Response.accepted().entity(Collections.singletonMap("id", id));
+            
+            return builder.build();
+        } else {
+        
+            try {
+                identitySupplier.buildIdentityProvider(user, groups);
+                return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                    ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+    
+                    tracing(pi);
+                    io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, model.toMap(), io.automatiko.engine.api.auth.IdentityProvider.get());
+                    pi.transitionWorkItem(workItemId, transition);
+    
+                    ResponseBuilder builder = Response.ok().entity(getModel(pi));
+                    
+                    return builder.build();
+                });
+            } catch (WorkItemNotFoundException e) {
+                return null;
+            } finally {
+                IdentityProvider.set(null);
+            }
         }
     }
     
@@ -185,24 +254,57 @@ public class $Type$Resource {
     @org.eclipse.microprofile.metrics.annotation.Counted(name = "Aborted $taskName$ tasks", description = "Number of $taskName$ tasks aborted")
     @org.eclipse.microprofile.metrics.annotation.Timed(name = "Duration of aborting $taskName$ task", description = "A measure of how long it takes to abort $taskName$ task.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
     @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of aborting $taskName$ tasks", description="Rate of aborting $taskName$ tasks")           
-    public $Type$Output abortTask(@PathParam("id") @Parameter(description = "Unique identifier of the owning instance", required = true) final String id, 
+    public Response abortTask(@Context HttpHeaders httpHeaders, @PathParam("id") @Parameter(description = "Unique identifier of the owning instance", required = true) final String id, 
             @Parameter(description = "Unique identifier of the task instance", required = true) @PathParam("workItemId") final String workItemId, 
             @Parameter(description = "Optional phase to be used when aborting", required = false) @QueryParam("phase") @DefaultValue("abort") final String phase, 
             @Parameter(description = "User identifier that the tasks should be aborted with", required = false) @QueryParam("user") final String user, 
             @Parameter(description = "Groups that the tasks should be aborted with", required = false) @QueryParam("group") final List<String> groups) {
         
-        try {
-            identitySupplier.buildIdentityProvider(user, groups);
-            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-                ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
-                tracing(pi);       
-                io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, null, io.automatiko.engine.api.auth.IdentityProvider.get());
-                pi.transitionWorkItem(workItemId, transition);
+        String execMode = httpHeaders.getHeaderString("X-ATK-Mode");
 
-                return getModel(pi);
+        if ("async".equalsIgnoreCase(execMode)) {
+            String callbackUrl = httpHeaders.getHeaderString("X-ATK-Callback");
+            Map<String, String> headers = httpHeaders.getRequestHeaders().entrySet().stream()
+                    .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().get(0)));
+            
+            IdentityProvider identity = identitySupplier.buildIdentityProvider(user, groups);
+            IdentityProvider.set(null);
+            
+            CompletableFuture.runAsync(() -> {
+                IdentityProvider.set(identity);
+                io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                    ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+                    tracing(pi);       
+                    io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, null, io.automatiko.engine.api.auth.IdentityProvider.get());
+                    pi.transitionWorkItem(workItemId, transition);
+                    
+                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, getModel(pi), httpAuth.produce(headers), pi.status());
+
+                    return null;
+                });
+  
             });
-        } catch (WorkItemNotFoundException e) {
-            return null;
+               
+            ResponseBuilder builder = Response.accepted().entity(Collections.singletonMap("id", id));
+            
+            return builder.build();
+        } else {
+        
+            try {
+                identitySupplier.buildIdentityProvider(user, groups);
+                return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                    ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+                    tracing(pi);       
+                    io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, null, io.automatiko.engine.api.auth.IdentityProvider.get());
+                    pi.transitionWorkItem(workItemId, transition);
+    
+                    ResponseBuilder builder = Response.ok().entity(getModel(pi));
+                    
+                    return builder.build();
+                });
+            } catch (WorkItemNotFoundException e) {
+                return null;
+            }
         }
     }
 }

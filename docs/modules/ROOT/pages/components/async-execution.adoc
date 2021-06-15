@@ -1,0 +1,134 @@
+:imagesdir: ../../images
+= Asynchronous execution
+
+## Async mode 
+
+In many situation awaiting response when interacting with workflow instances might not be desired behaviour. 
+It might be due to various reasons such as 
+
+- long running service invocation
+- poor network that can cause dropped connections
+- there is no need to wait for the response at all .e.g fire and forget kind of use cases
+
+With Automatiko you can take advantage of async execution very easily by deciding on the mode on request basis.
+That means workflow definition is not really aware of it and the responsibility how the invocation should 
+happen is on consumer side.
+
+TIP: It means that different consumers can chose to invoke the service either synchronously or asynchronously.
+Or even the same client can invoke it one time with async mode and another with sync mode.
+
+The asynchronous mode is given as HTTP header `X-ATK-Mode` and currently supports just single value (case insensitive) `async`.
+
+[source,plain]
+----
+curl -i -X 'POST' \                                                                                                                                                                                                                 
+  'http://localhost:8080/registrations' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'X-ATK-Mode: async' \
+  -d '{
+    "lastName": "doe",    
+    "name": "john"
+}'
+----
+
+The important part is ` -H 'X-ATK-Mode: async'` which instructs the service to execute the logic in background
+but return directly a response with `202 Accepted` response code and payload that includes identifier 
+of the instance being processed so it can be easily fetched later on.
+
+[source,plain]
+----
+HTTP/1.1 202 Accepted
+Content-Length: 98
+Content-Type: application/json
+
+{"id":"cf311eca-8f4e-4ea2-bc29-09cb531ffce8","lastName":"doe","name":"john"}
+----
+
+This applies to several operations of the service but the main rule here is whatever operation leads
+to workflow progression it can be executed in asynchronous way. This includes
+
+- start of new instance
+- update of variables (as it can trigger logic that listens to data changes e.g. conditional events)
+- completing of user tasks
+- canceling of user tasks
+- signals sent to workflow instance
+
+## Callbacks
+
+Sometimes having identifier of the workflow instance might not be sufficient. For example when given operation
+leads to an end of the workflow instance and by that instance is being removed from the system. In such 
+situation it won't be possible to be polled to get the results.
+To over come such limitations, when executing in async mode clients can provide a callback URL that the 
+service should invoke upon completion with complete payload of the instance as it would return when 
+invoked synchronously.
+
+To do that, additional header is expected to be given `X-ATK-Callback` and the value should be a valid HTTP URL.
+
+[source,plain]
+----
+curl -i -X 'POST' \                                                                                                                                                                                                                 
+  'http://localhost:8080/registrations' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'X-ATK-Mode: async' \
+  -H 'X-ATK-Callback: https://my.custom.server.endpoint/registrations' \  
+  -d '{
+    "lastName": "doe",    
+    "name": "john"
+}'
+----
+
+Upon completion Automatiko will `POST` a complete data model to the given URL. It will also set request header
+`X-ATK-Status` that will indicate what is the status of the workflow instance with one of the following values
+
+- Active - when instance is still active (meaning did not complete or was aborted)
+- Completed - when instance has reached an end state
+- Aborted - when instance was aborted due to business logic
+- Failed - when instance failed at execution and is now in error state
+
+NOTE: Keep in mind that security related exception that are also performed in background might 
+cause that a callback is not invoked. For instance when user task is about to be completed
+but a user who has no access to given task then callback won't be invoked as there is actually
+nothing to post back since instance was not modified at all. In general this should be an edge case
+as such user should not be able to even see the task or know its details.
+
+### Authentication on callbacks
+
+There might be a need to authenticate when calling back after async execution. For that Automatiko
+allows to configure a single authentication info for callbacks that can be defined 
+
+- via application.properties file
+- system properties
+- environment variables
+
+Several authentication modes are provided
+
+- none
+- basic
+- OAuth2
+- Custom HTTP header
+- on behalf - taking the header from the incoming call
+- query parameter on callback url
+
+Below is a table with all configuration options for authentication
+
+.Authentication configuration parameters
+|====
+|Property name|Environment variable|Description|BuildTime only
+
+|quarkus.automatiko.async.callback.auth-type|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_TYPE|Defines what type of authentication is to be used on callback when using async execution (expected values `basic`, `oauth`, `custom`, `on-behalf`)|No
+|quarkus.automatiko.async.callback.auth-basic|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_BASIC|Specifies basic authorization string, expected user name and password encrypted with Base64 but without `Basic ` prefix|No
+|quarkus.automatiko.async.callback.auth-user|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_USER|Specifies user name to be used for basic authentication|No
+|quarkus.automatiko.async.callback.auth-password|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_PASSWORD|Specifies password to be used for basic authentication|No
+|quarkus.automatiko.async.callback.auth-access-token|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_ACCESS_TOKEN|Specifies complete access token to be used as bearer token on the callback call|No
+|quarkus.automatiko.async.callback.auth-client-id|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_CLIENT_ID|Specifies client id to be used to obtain OAuth token|No
+|quarkus.automatiko.async.callback.auth-client-secret|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_CLIENT_SECRET|Specifies client secret to be used to obtain OAuth token|No
+|quarkus.automatiko.async.callback.auth-refresh-token|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_REFRESH_TOKEN|Specifies refresh token to be used to automatically refresh access token|No
+|quarkus.automatiko.async.callback.auth-refresh-url|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_REFRESH_URL|Specifies refresh token endpoint|No
+|quarkus.automatiko.async.callback.auth-scope|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_SCOPE|Specifies scopes to be set when obtaining token|No
+|quarkus.automatiko.async.callback.auth-custom-name|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_CUSTOM_NAME|Specifies name of HTTP header to be set on the callback call|No
+|quarkus.automatiko.async.callback.auth-custom-value|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_CUSTOM_VALUE|Specifies custom value to be set on the callback call|No
+|quarkus.automatiko.async.callback.auth-on-behalf-name|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_ON_BEHALF_NAME|Specifies name of the header to be taken from request headers that acts like the "on behalf" information|No
+
+|====
