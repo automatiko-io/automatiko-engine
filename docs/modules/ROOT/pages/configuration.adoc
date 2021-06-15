@@ -87,6 +87,27 @@ Following are set of configuration parameters that can be used to configure Auto
 
 |====
 
+.Async execution configuration parameters
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.automatiko.async.callback.auth-type|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_TYPE|Defines what type of authentication is to be used on callback when using async execution (expected values `basic`, `oauth`, `custom`, `on-behalf`)|No||No
+|quarkus.automatiko.async.callback.auth-basic|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_BASIC|Specifies basic authorization string, expected user name and password encrypted with Base64 but without `Basic ` prefix|No||No
+|quarkus.automatiko.async.callback.auth-user|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_USER|Specifies user name to be used for basic authentication|No||No
+|quarkus.automatiko.async.callback.auth-password|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_PASSWORD|Specifies password to be used for basic authentication|No||No
+|quarkus.automatiko.async.callback.auth-access-token|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_ACCESS_TOKEN|Specifies complete access token to be used as bearer token on the callback call|No||No
+|quarkus.automatiko.async.callback.auth-client-id|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_CLIENT_ID|Specifies client id to be used to obtain OAuth token|No||No
+|quarkus.automatiko.async.callback.auth-client-secret|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_CLIENT_SECRET|Specifies client secret to be used to obtain OAuth token|No||No
+|quarkus.automatiko.async.callback.auth-refresh-token|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_REFRESH_TOKEN|Specifies refresh token to be used to automatically refresh access token|No||No
+|quarkus.automatiko.async.callback.auth-refresh-url|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_REFRESH_URL|Specifies refresh token endpoint|No||No
+|quarkus.automatiko.async.callback.auth-scope|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_SCOPE|Specifies scopes to be set when obtaining token|No||No
+|quarkus.automatiko.async.callback.auth-custom-name|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_CUSTOM_NAME|Specifies name of HTTP header to be set on the callback call|No||No
+|quarkus.automatiko.async.callback.auth-custom-value|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_CUSTOM_VALUE|Specifies custom value to be set on the callback call|No||No
+|quarkus.automatiko.async.callback.auth-on-behalf-name|QUARKUS_AUTOMATIKO_ASYNC_CALLBACK_AUTH_ON_BEHALF_NAME|Specifies name of the header to be taken from request headers that acts like the "on behalf" information|No||No
+
+
+|====
+
 == Instructions during build
 
 NOTE: Automatiko also predefines several configuration to simplify use. These configuration options are logged as part of the build process

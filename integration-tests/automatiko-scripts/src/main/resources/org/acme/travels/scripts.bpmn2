@@ -40,7 +40,7 @@
       </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_4</bpmn2:outgoing>
-      <bpmn2:script>System.out.println(&quot;Automatik (no version) says &quot; + name.toUpperCase());</bpmn2:script>
+      <bpmn2:script>log(&quot;Automatik (no version) says {}&quot;, name.toUpperCase());</bpmn2:script>
     </bpmn2:scriptTask>
     <bpmn2:sequenceFlow id="SequenceFlow_1" tns:priority="1" sourceRef="StartEvent_1" targetRef="ScriptTask_1"/>
     <bpmn2:scriptTask id="ScriptTask_2" name="Update message" scriptFormat="http://www.java.com/java">

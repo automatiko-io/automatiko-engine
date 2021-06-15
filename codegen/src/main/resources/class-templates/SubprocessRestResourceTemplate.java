@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
@@ -256,20 +258,56 @@ public class $Type$Resource {
     @Path("$prefix$/$name$/{id_$name$}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public $Type$Output updateModel_$name$(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$, 
+    public Response updateModel_$name$(@Context HttpHeaders httpHeaders, @PathParam("id") String id, @PathParam("id_$name$") String id_$name$, 
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
             $Type$ resource) {
-        identitySupplier.buildIdentityProvider(user, groups);
-        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-            ProcessInstance<$Type$> pi = subprocess_$name$.instances()
-                    .findById($parentprocessid$ + ":" + id_$name$)
-                    .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
-            tracing(pi);
-            pi.updateVariables(resource);
-            return mapOutput(new $Type$Output(), pi.variables(), pi.businessKey());
+        String execMode = httpHeaders.getHeaderString("X-ATK-Mode");
 
-        });
+        if ("async".equalsIgnoreCase(execMode)) {
+            String callbackUrl = httpHeaders.getHeaderString("X-ATK-Callback");
+            Map<String, String> headers = httpHeaders.getRequestHeaders().entrySet().stream()
+                    .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().get(0)));
+            
+            IdentityProvider identity = identitySupplier.buildIdentityProvider(user, groups);
+            IdentityProvider.set(null);
+            
+            CompletableFuture.runAsync(() -> {
+                IdentityProvider.set(identity);
+                io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                    ProcessInstance<$Type$> pi = subprocess_$name$.instances()
+                            .findById($parentprocessid$ + ":" + id_$name$)
+                            .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+                    tracing(pi);
+                    pi.updateVariables(resource);
+                    $Type$Output result = mapOutput(new $Type$Output(), pi.variables(), pi.businessKey());
+                    
+                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, result, httpAuth.produce(headers), pi.status());
+
+                    return null;
+                });
+  
+            });
+               
+            ResponseBuilder builder = Response.accepted().entity(Collections.singletonMap("id", id));
+            
+            return builder.build();
+        } else {
+        
+            identitySupplier.buildIdentityProvider(user, groups);
+            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                ProcessInstance<$Type$> pi = subprocess_$name$.instances()
+                        .findById($parentprocessid$ + ":" + id_$name$)
+                        .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+                tracing(pi);
+                pi.updateVariables(resource);
+                
+                ResponseBuilder builder = Response.ok().entity(mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()));
+                
+                return builder.build();
+    
+            });
+        }
     }
     
     @APIResponses(

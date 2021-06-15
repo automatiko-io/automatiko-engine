@@ -2,6 +2,7 @@ package io.automatiko.engine.quarkus;
 
 import java.util.Optional;
 
+import io.automatiko.engine.api.config.AsyncConfig;
 import io.automatiko.engine.api.config.AutomatikoConfig;
 import io.automatiko.engine.api.config.JobsConfig;
 import io.automatiko.engine.api.config.MessagingConfig;
@@ -70,10 +71,16 @@ public class AutomatikoBuildTimeConfig extends AutomatikoConfig {
     public JobsBuildTimeConfig jobs;
 
     /**
-     * Configures jobs
+     * Configures security
      */
     @ConfigItem
     public SecurityBuildTimeConfig security;
+
+    /**
+     * Configures async subsystem
+     */
+    @ConfigItem
+    public AsyncBuildTimeConfig async;
 
     @Override
     public Optional<String> serviceUrl() {
@@ -123,6 +130,11 @@ public class AutomatikoBuildTimeConfig extends AutomatikoConfig {
     @Override
     public SecurityConfig security() {
         return security;
+    }
+
+    @Override
+    public AsyncConfig async() {
+        return async;
     }
 
 }

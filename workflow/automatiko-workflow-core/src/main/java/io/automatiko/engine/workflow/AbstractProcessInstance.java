@@ -129,6 +129,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         // started
         ((MutableProcessInstances<T>) process.instances()).create(id, this);
         this.versionTracker = 1;
+        unbind(variables, processInstance.getVariables());
     }
 
     /**
@@ -1014,7 +1015,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                 lock);
     }
 
-    protected void unlock(boolean remove) {
+    public void unlock(boolean remove) {
         if (lock == null) {
             return;
         }

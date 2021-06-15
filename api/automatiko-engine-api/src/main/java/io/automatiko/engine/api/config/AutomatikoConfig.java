@@ -43,4 +43,8 @@ public class AutomatikoConfig {
     public SecurityConfig security() {
         return new SecurityConfig();
     }
+
+    public AsyncConfig async() {
+        return new AsyncConfig();
+    }
 }
