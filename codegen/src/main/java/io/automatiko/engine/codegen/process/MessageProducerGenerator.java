@@ -8,6 +8,8 @@ import static io.automatiko.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.OUTGOING_PROP_PREFIX;
 import static io.automatiko.engine.codegen.CodegenUtils.interpolateTypes;
 
+import java.util.Map.Entry;
+
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -260,6 +262,64 @@ public class MessageProducerGenerator {
                     });
         }
 
+        template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("headers"))
+                .forEach(md -> {
+                    StringBuilder allHeaderValues = new StringBuilder();
+                    for (Entry<String, Object> entry : trigger.getContext().entrySet()) {
+
+                        if (entry.getKey().startsWith("Camel")) {
+                            allHeaderValues.append(entry.getValue().toString()).append(" ");
+                        }
+                    }
+                    String allHeaderValuesStr = allHeaderValues.toString();
+                    BlockStmt body = new BlockStmt();
+
+                    ClassOrInterfaceType stringType = new ClassOrInterfaceType(null, String.class.getCanonicalName());
+
+                    if (allHeaderValuesStr.contains("id")) {
+                        VariableDeclarationExpr idField = new VariableDeclarationExpr(stringType, "id");
+                        body.addStatement(new AssignExpr(idField,
+                                new MethodCallExpr(new NameExpr("pi"), "getId"), AssignExpr.Operator.ASSIGN));
+                    }
+
+                    if (allHeaderValuesStr.contains("businessKey")) {
+                        VariableDeclarationExpr businessKeyField = new VariableDeclarationExpr(stringType, "businessKey");
+                        body.addStatement(new AssignExpr(businessKeyField,
+                                new MethodCallExpr(new NameExpr("pi"), "getCorrelationKey"), AssignExpr.Operator.ASSIGN));
+                    }
+                    VariableScope variableScope = (VariableScope) ((io.automatiko.engine.workflow.process.core.WorkflowProcess) process)
+                            .getDefaultContext(VariableScope.VARIABLE_SCOPE);
+
+                    for (Variable var : variableScope.getVariables()) {
+
+                        if (allHeaderValuesStr.contains(var.getSanitizedName())) {
+                            ClassOrInterfaceType varType = new ClassOrInterfaceType(null, var.getType().getStringType());
+                            VariableDeclarationExpr v = new VariableDeclarationExpr(
+                                    varType,
+                                    var.getSanitizedName());
+                            body.addStatement(new AssignExpr(v,
+                                    new CastExpr(varType,
+                                            new MethodCallExpr(new MethodCallExpr(new NameExpr("pi"), "getVariables"),
+                                                    "get")
+                                                            .addArgument(new StringLiteralExpr(var.getName()))),
+                                    AssignExpr.Operator.ASSIGN));
+                        }
+                    }
+
+                    for (Entry<String, Object> entry : trigger.getContext().entrySet()) {
+
+                        if (entry.getKey().startsWith("Camel")) {
+                            body.addStatement(new MethodCallExpr(new NameExpr("metadata"), "putHeader")
+                                    .addArgument(new StringLiteralExpr(entry.getKey()))
+                                    .addArgument(new NameExpr(entry.getValue().toString())));
+                        }
+
+                    }
+
+                    body.addStatement(new ReturnStmt(new NameExpr("metadata")));
+                    md.setBody(body);
+                });
+
         if (useInjection()) {
             annotator.withApplicationComponent(template);
 
@@ -267,6 +327,13 @@ public class MessageProducerGenerator {
                     .filter(fd -> fd.getVariable(0).getNameAsString().equals("emitter")).get();
             annotator.withInjection(emitterField);
             annotator.withOutgoingMessage(emitterField, sanitizedName);
+
+            template.findAll(FieldDeclaration.class, fd -> fd.getVariables().get(0).getNameAsString().equals("converter"))
+                    .forEach(fd -> {
+                        annotator.withInjection(fd);
+                        fd.getVariable(0)
+                                .setType(fd.getVariable(0).getTypeAsString().replace("$DataType$", trigger.getDataType()));
+                    });
 
             template.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("useCloudEvents"))
                     .forEach(fd -> annotator.withConfigInjection(fd, "quarkus.automatiko.messaging.as-cloudevents"));

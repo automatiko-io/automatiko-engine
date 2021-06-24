@@ -5,6 +5,13 @@ import java.util.Optional;
 public class CassandraPersistenceConfig {
 
     /**
+     * Indicates if keyspace should be created during startup.
+     */
+    public Optional<Boolean> createKeyspace() {
+        return Optional.empty();
+    }
+
+    /**
      * Indicates if tables should be created during startup.
      */
     public Optional<Boolean> createTables() {

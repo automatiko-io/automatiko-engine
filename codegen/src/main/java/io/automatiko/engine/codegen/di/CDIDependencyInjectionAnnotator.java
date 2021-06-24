@@ -170,9 +170,16 @@ public class CDIDependencyInjectionAnnotator implements DependencyInjectionAnnot
     @Override
     public <T extends NodeWithAnnotations<?>> T withCloudEventMapping(T node, String trigger, String filter) {
         if (filter != null && !filter.isEmpty()) {
+            String[] filterElements = filter.split("=");
+
             node.addAnnotation(new NormalAnnotationExpr(new Name("io.quarkus.funqy.knative.events.CloudEventMapping"),
                     NodeList.nodeList(new MemberValuePair("trigger", new StringLiteralExpr(trigger)),
-                            new MemberValuePair("expression", new StringLiteralExpr(filter)))));
+                            new MemberValuePair("attributes",
+                                    new NormalAnnotationExpr(new Name("io.quarkus.funqy.knative.events.EventAttribute"),
+                                            NodeList.nodeList(
+                                                    new MemberValuePair("name", new StringLiteralExpr(filterElements[0])),
+                                                    new MemberValuePair("value",
+                                                            new StringLiteralExpr(filterElements[1]))))))));
         } else {
             node.addAnnotation(new NormalAnnotationExpr(new Name("io.quarkus.funqy.knative.events.CloudEventMapping"),
                     NodeList.nodeList(new MemberValuePair("trigger", new StringLiteralExpr(trigger)))));

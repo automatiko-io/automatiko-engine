@@ -12,6 +12,12 @@ import io.quarkus.runtime.annotations.ConfigItem;
 public class CassandraJobsBuildTimeConfig extends CassandraJobsConfig {
 
     /**
+     * Indicates if keyspace should be created during startup
+     */
+    @ConfigItem
+    public Optional<Boolean> createKeyspace;
+
+    /**
      * Indicates if tables should be created during startup
      */
     @ConfigItem
@@ -34,6 +40,11 @@ public class CassandraJobsBuildTimeConfig extends CassandraJobsConfig {
      */
     @ConfigItem
     public Optional<Integer> threads;
+
+    @Override
+    public Optional<Boolean> createKeyspace() {
+        return createKeyspace;
+    }
 
     @Override
     public Optional<Boolean> createTables() {

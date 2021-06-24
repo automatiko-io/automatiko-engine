@@ -29,9 +29,10 @@ public class MessageProducer {
     }
     
 	public void produce(ProcessInstance pi, $Type$ eventData) {
+	    io.smallrye.reactive.messaging.camel.OutgoingExchangeMetadata metadata = new io.smallrye.reactive.messaging.camel.OutgoingExchangeMetadata().putProperty("atkInstanceId", 
+                ((WorkflowProcessInstance) pi).getCorrelationKey() != null ? ((WorkflowProcessInstance) pi).getCorrelationKey() : ((WorkflowProcessInstance) pi).getId());
 	    emitter.send(CamelOutMessage.of(this.marshall(pi, eventData))
-	            .addMetadata(new io.smallrye.reactive.messaging.camel.OutgoingExchangeMetadata().putProperty("atkInstanceId", 
-	                    ((WorkflowProcessInstance) pi).getCorrelationKey() != null ? ((WorkflowProcessInstance) pi).getCorrelationKey() : ((WorkflowProcessInstance) pi).getId())));
+	            .addMetadata(headers(pi, metadata)));
     }
 	    
 	private Object marshall(ProcessInstance pi, $Type$ eventData) {
@@ -79,4 +80,9 @@ public class MessageProducer {
             };
         }
     }
+	
+	protected io.smallrye.reactive.messaging.camel.OutgoingExchangeMetadata headers(ProcessInstance pi, io.smallrye.reactive.messaging.camel.OutgoingExchangeMetadata metadata) {
+	    
+	    return metadata;
+	}
 }

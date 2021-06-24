@@ -268,10 +268,12 @@ Additional configuration should be placed in `application.properties`
 |Property name|Environment variable|Description|Required|Default value|BuildTime only
 
 |quarkus.automatiko.persistence.type||Specify what persistence should be used|No||Yes
+|quarkus.automatiko.persistence.cassandra.create-keyspace|QUARKUS_AUTOMATIKO_PERSISTENCE_CASSANDRA_CREATE_KEYSPACE|Specifies if keyspace should be automatically created|No|true|No
 |quarkus.automatiko.persistence.cassandra.create-tables|QUARKUS_AUTOMATIKO_PERSISTENCE_CASSANDRA_CREATE_TABLES|Specifies if tables should be automatically created|No|true|No
 |quarkus.automatiko.persistence.cassandra.keyspace|QUARKUS_AUTOMATIKO_PERSISTENCE_CASSANDRA_KEYSPACE|Specifies key space name to be used for tables|No|10|No
 
 ||||||
+|quarkus.automatiko.jobs.cassandra.create-keyspace|QUARKUS_AUTOMATIKO_JOBS_CASSANDRA_CREATE_KEYSPACE|Specifies if keyspace should be automatically created|No|true|No
 |quarkus.automatiko.jobs.cassandra.create-tables|QUARKUS_AUTOMATIKO_JOBS_CASSANDRA_CREATE_TABLES|Specifies if tables should be automatically created|No|true|No
 |quarkus.automatiko.jobs.cassandra.keyspace|QUARKUS_AUTOMATIKO_JOBS_CASSANDRA_KEYSPACE|Specifies key space name to be used for tables|No|10|No
 |quarkus.automatiko.jobs.cassandra.interval|QUARKUS_AUTOMATIKO_JOBS_CASSANDRA_INTERVAL|Specifies interval (in minutes) how often look for another chunk of jobs to execute|No|60|No
