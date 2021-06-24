@@ -8,7 +8,7 @@
     Complete Automation for Workflows and Decision
 </p>
 
-#Overview
+# Overview
 
 Automatiko is a toolkit that takes advantage of well established and known languages to build (but not limited to) self contained services. As the name might suggest its main goal is to enable users to automate their daily tasks, such as processing of emails, perform scheduled actions, collect and transform data and many more.
 
