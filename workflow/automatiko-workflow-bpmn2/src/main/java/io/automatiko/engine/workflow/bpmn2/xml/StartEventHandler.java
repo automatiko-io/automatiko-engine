@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
@@ -140,9 +141,10 @@ public class StartEventHandler extends AbstractNodeHandler {
                 startNode.setMetaData(TRIGGER_REF, message.getName());
                 startNode.setMetaData(TRIGGER_CORRELATION, message.getCorrelation());
                 startNode.setMetaData(TRIGGER_CORRELATION_EXPR, message.getCorrelationExpression());
-                startNode.setMetaData("connector",
-                        message.getMetaData().getOrDefault("connector", startNode.getMetaData("connector")));
-                startNode.setMetaData("topic", message.getMetaData().getOrDefault("topic", startNode.getMetaData("topic")));
+
+                for (Entry<String, Object> entry : message.getMetaData().entrySet()) {
+                    startNode.setMetaData(entry.getKey(), entry.getValue());
+                }
 
                 addTriggerWithInMappings(startNode, "Message-" + message.getName());
             } else if ("timerEventDefinition".equals(nodeName)) {

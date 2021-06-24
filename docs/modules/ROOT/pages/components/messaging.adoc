@@ -271,3 +271,27 @@ where
 - `D` for `InputConverter` is the actual data type expected by message.
 - `V` is the data type used in workflow and then `T` is the type to be sent out
  for `OutputConverter`
+
+ 
+== Apache Camel connector
+ 
+When using Apache Camel as the connector, in many cases there is a need to specify 
+additional information to be available to Camel component. These are usually set as 
+Message headers from Camel component point of view.
+ 
+Automatiko allows to specify any number of headers via custom attributes of the message.
+ 
+ 
+NOTE: Custom attributes that starts with `Camel` will be considered headers.
+
+For example when using Camel Dropbox component to upload files you can specify the target
+file name as custom attribute that will be set as header on Camel's message.
+
+image::messaging-camel-headers.png[]
+
+Headers can be set as
+
+- static value e.g. `"my value"`
+- reference to a workflow variable e.g. `myvariable`
+- reference to a function e.g. `buildFileName()` or `buildFileName(id)` where `id` is workflow 
+instance id

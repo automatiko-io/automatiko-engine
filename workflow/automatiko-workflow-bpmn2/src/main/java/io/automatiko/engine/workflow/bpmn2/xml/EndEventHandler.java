@@ -6,6 +6,7 @@ import static io.automatiko.engine.workflow.bpmn2.xml.ProcessHandler.createJavaA
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -176,10 +177,10 @@ public class EndEventHandler extends AbstractNodeHandler {
                 endNode.setMetaData("MessageType", message.getType());
                 endNode.setMetaData("TriggerType", "ProduceMessage");
                 endNode.setMetaData("TriggerRef", message.getName());
-                endNode.setMetaData("topicExpression", message.getMetaData().get("topicExpression"));
-                endNode.setMetaData("connector",
-                        message.getMetaData().getOrDefault("connector", endNode.getMetaData("connector")));
-                endNode.setMetaData("topic", message.getMetaData().getOrDefault("topic", endNode.getMetaData("topic")));
+
+                for (Entry<String, Object> entry : message.getMetaData().entrySet()) {
+                    endNode.setMetaData(entry.getKey(), entry.getValue());
+                }
                 List<ProcessAction> actions = new ArrayList<ProcessAction>();
 
                 ConsequenceAction action = createJavaAction(new HandleMessageAction(message.getType(), variable));

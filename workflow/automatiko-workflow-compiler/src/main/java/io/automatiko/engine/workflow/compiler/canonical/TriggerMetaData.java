@@ -194,6 +194,10 @@ public class TriggerMetaData {
         return value;
     }
 
+    public Map<String, Object> getContext() {
+        return context;
+    }
+
     public void addContext(Map<String, Object> data) {
         this.context.putAll(data);
     }

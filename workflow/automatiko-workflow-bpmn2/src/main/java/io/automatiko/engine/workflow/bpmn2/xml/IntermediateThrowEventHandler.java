@@ -6,6 +6,7 @@ import static io.automatiko.engine.workflow.bpmn2.xml.ProcessHandler.createJavaA
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -236,10 +237,10 @@ public class IntermediateThrowEventHandler extends AbstractNodeHandler {
                 actionNode.setMetaData("MessageType", message.getType());
                 actionNode.setMetaData("TriggerType", "ProduceMessage");
                 actionNode.setMetaData("TriggerRef", message.getName());
-                actionNode.setMetaData("topicExpression", message.getMetaData().get("topicExpression"));
-                actionNode.setMetaData("connector",
-                        message.getMetaData().getOrDefault("connector", actionNode.getMetaData("connector")));
-                actionNode.setMetaData("topic", message.getMetaData().getOrDefault("topic", actionNode.getMetaData("topic")));
+
+                for (Entry<String, Object> entry : message.getMetaData().entrySet()) {
+                    actionNode.setMetaData(entry.getKey(), entry.getValue());
+                }
 
                 ConsequenceAction action = createJavaAction(new HandleMessageAction(message.getType(), variable,
                         (Transformation) actionNode.getMetaData().get(TRANSFORMATION_KEY)));

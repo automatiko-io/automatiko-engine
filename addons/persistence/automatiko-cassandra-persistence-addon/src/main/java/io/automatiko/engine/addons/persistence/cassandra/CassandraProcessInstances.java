@@ -307,8 +307,12 @@ public class CassandraProcessInstances implements MutableProcessInstances {
     }
 
     protected void createTable() {
-        CreateKeyspace createKs = createKeyspace(config.keyspace().orElse("automatiko")).ifNotExists().withSimpleStrategy(1);
-        cqlSession.execute(createKs.build());
+
+        if (config.createKeyspace().orElse(true)) {
+            CreateKeyspace createKs = createKeyspace(config.keyspace().orElse("automatiko")).ifNotExists()
+                    .withSimpleStrategy(1);
+            cqlSession.execute(createKs.build());
+        }
 
         CreateTable createTable = SchemaBuilder.createTable(config.keyspace().orElse("automatiko"), tableName)
                 .ifNotExists()
