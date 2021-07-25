@@ -16,6 +16,7 @@ import static io.automatiko.engine.workflow.process.executable.core.factory.Star
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
 
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.IntegerLiteralExpr;
@@ -33,6 +34,7 @@ import io.automatiko.engine.workflow.process.core.node.ConstraintTrigger;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
 import io.automatiko.engine.workflow.process.core.node.StartNode;
 import io.automatiko.engine.workflow.process.executable.core.factory.StartNodeFactory;
+import io.automatiko.engine.workflow.util.PatternConstants;
 
 public class StartNodeVisitor extends AbstractNodeVisitor<StartNode> {
 
@@ -100,27 +102,34 @@ public class StartNodeVisitor extends AbstractNodeVisitor<StartNode> {
         if (EVENT_TYPE_SIGNAL.equalsIgnoreCase((String) startNode.getMetaData(TRIGGER_TYPE))) {
             Variable variable = null;
             Map<String, String> variableMapping = startNode.getOutMappings();
+            String variableType = null;
             if (variableMapping != null && !variableMapping.isEmpty()) {
                 Entry<String, String> varInfo = variableMapping.entrySet().iterator().next();
 
                 body.addStatement(getFactoryMethod(getNodeId(startNode), METHOD_TRIGGER,
                         new StringLiteralExpr((String) nodeMetaData.get(MESSAGE_TYPE)), getOrNullExpr(varInfo.getKey()),
                         getOrNullExpr(varInfo.getValue())));
-                variable = variableScope.findVariable(varInfo.getValue());
 
-                if (variable == null) {
-                    // check parent node container
-                    VariableScope vscope = (VariableScope) startNode.resolveContext(VariableScope.VARIABLE_SCOPE,
-                            varInfo.getKey());
-                    variable = vscope.findVariable(varInfo.getValue());
+                Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(varInfo.getValue());
+                if (matcher.find()) {
+                    variableType = (String) nodeMetaData.get(TRIGGER_REF);
+                } else {
+                    variable = variableScope.findVariable(varInfo.getValue());
+
+                    if (variable == null) {
+                        // check parent node container
+                        VariableScope vscope = (VariableScope) startNode.resolveContext(VariableScope.VARIABLE_SCOPE,
+                                varInfo.getKey());
+                        variable = vscope.findVariable(varInfo.getValue());
+                    }
+                    variableType = variable != null ? variable.getType().getStringType() : null;
                 }
             } else {
                 body.addStatement(getFactoryMethod(getNodeId(startNode), METHOD_TRIGGER,
                         new StringLiteralExpr((String) nodeMetaData.get(MESSAGE_TYPE)),
                         new StringLiteralExpr(getOrDefault((String) nodeMetaData.get(TRIGGER_MAPPING), ""))));
             }
-            metadata.addSignal((String) nodeMetaData.get(MESSAGE_TYPE),
-                    variable != null ? variable.getType().getStringType() : null);
+            metadata.addSignal((String) nodeMetaData.get(MESSAGE_TYPE), variableType);
         } else if (EVENT_TYPE_CONDITION.equalsIgnoreCase((String) startNode.getMetaData(TRIGGER_TYPE))) {
             ConstraintTrigger constraintTrigger = (ConstraintTrigger) startNode.getTriggers().get(0);
             body.addStatement(getFactoryMethod(getNodeId(startNode), METHOD_CONDITION,
