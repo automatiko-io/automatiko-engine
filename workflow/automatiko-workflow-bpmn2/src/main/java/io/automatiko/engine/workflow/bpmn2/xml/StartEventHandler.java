@@ -110,7 +110,7 @@ public class StartEventHandler extends AbstractNodeHandler {
                 break;
             } else if ("signalEventDefinition".equals(nodeName)) {
                 String type = ((Element) xmlNode).getAttribute("signalRef");
-
+                Signal signal = findSignalByName(parser, type);
                 type = checkSignalAndConvertToRealSignalNam(parser, type);
 
                 if (type != null && type.trim().length() > 0) {
@@ -118,10 +118,14 @@ public class StartEventHandler extends AbstractNodeHandler {
                 }
                 startNode.setMetaData(MESSAGE_TYPE, type);
                 startNode.setMetaData(TRIGGER_TYPE, "Signal");
-                Signal signal = findSignalByName(parser, type);
+
                 if (signal != null) {
                     String eventType = signal.getStructureRef();
-                    startNode.setMetaData(TRIGGER_REF, eventType);
+                    ProcessBuildData buildData = ((ProcessBuildData) parser.getData());
+                    Map<String, ItemDefinition> itemDefinitions = (Map<String, ItemDefinition>) buildData
+                            .getMetaData("ItemDefinitions");
+
+                    startNode.setMetaData(TRIGGER_REF, itemDefinitions.get(eventType).getStructureRef());
                 } else {
                     startNode.setMetaData(TRIGGER_REF, type);
                 }
