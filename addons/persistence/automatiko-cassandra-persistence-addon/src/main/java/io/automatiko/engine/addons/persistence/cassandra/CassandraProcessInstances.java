@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -180,7 +181,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
         Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName)
                 .countAll();
 
-        ResultSet rs = cqlSession.execute(select.build());
+        ResultSet rs = cqlSession.execute(select.build().setConsistencyLevel(ConsistencyLevel.LOCAL_ONE));
         Row row = rs.one();
 
         return row.getLong(0);
@@ -276,7 +277,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
                     .setColumn(TAGS_FIELD, bindMarker())
                     .setColumn(VERSION_FIELD, literal(((AbstractProcessInstance<?>) instance).getVersionTracker() + 1))
                     .whereColumn(INSTANCE_ID_FIELD).isEqualTo(literal(resolvedId))
-                    .whereColumn(VERSION_FIELD).isEqualTo(literal(((AbstractProcessInstance<?>) instance).getVersionTracker()))
+                    .ifColumn(VERSION_FIELD).isEqualTo(literal(((AbstractProcessInstance<?>) instance).getVersionTracker()))
                     .build();
 
             ResultSet rs = cqlSession.execute(cqlSession.prepare(statement)
