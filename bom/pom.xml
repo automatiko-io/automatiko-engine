@@ -252,6 +252,31 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
+      
+      <!--  addon services -->
+      <dependency>
+        <groupId>io.automatiko.addons.services</groupId>
+        <artifactId>automatiko-send-email-addon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.addons.services</groupId>
+        <artifactId>automatiko-send-email-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      
+      <dependency>
+        <groupId>io.automatiko.addons.services</groupId>
+        <artifactId>automatiko-archive-addon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.addons.services</groupId>
+        <artifactId>automatiko-archive-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
 
       <!-- workflow -->
       <dependency>
