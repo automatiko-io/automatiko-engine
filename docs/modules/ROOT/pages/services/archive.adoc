@@ -1,0 +1,90 @@
+:imagesdir: ../../images
+= Archive
+
+Archive addon service comes with support for working with file archives (`zip files`).
+It provides `io.automatiko.engine.addons.services.archive.ArchiveService` that comes with
+following operations
+
+- `zip` to build archives based on set of files
+- `unzip` to extract files from given archive and return as set of files 
+
+== Zip operation
+
+Zip operation allows to build an archive that is named and contains 
+given set of files. The files should be any type implementing 
+`io.automatiko.engine.api.workflow.files.File` interface with type of content of `byte[]` type.
+
+It also expects to have given a name that will be set on the archive.
+
+=== Data mapping
+
+When used via service task this service expects following data mapping
+
+* Inputs
+** name - name of the archive
+** file1 - file to be included in the archive
+** file..N - additional files to be included in the archive
+
+* Output
+** archive - variable where the produced archive should be set to
+
+=== On success
+Successful creation will return `io.automatiko.engine.addons.services.archive.Archive` instance.
+
+=== On failure
+Failure during creation of the archive will throw a `io.automatiko.engine.api.workflow.ServiceExecutionError`
+with error code `zipFailure` so it can be used within workflow definition to handle errors 
+
+== Unzip operation
+
+Unzip operation takes `io.automatiko.engine.addons.services.archive.Archive` instance and 
+extracts it to a set of `io.automatiko.engine.api.workflow.files.File` instances with type of content of `byte[]` type.
+
+=== Data mapping
+
+When used via service task this service expects following data mapping
+
+* Inputs
+** archive - archive to be extracted
+
+* Output
+** files - variable where the extracted files should be set 
+
+=== On success
+Successful extraction will return list of `io.automatiko.engine.api.workflow.files.File` instances.
+
+=== On failure
+Failure during creation of the archive will throw a `io.automatiko.engine.api.workflow.ServiceExecutionError`
+with error code `unzipFailure` so it can be used within workflow definition to handle errors 
+
+
+== Usage
+
+To be able to use this service addon a project must be given following dependency
+
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons.services</groupId>
+  <artifactId>automatiko-archive-addon</artifactId>
+</dependency>
+----
+
+There is no configuration required for this service and thus can be directly used within 
+workflow definitions via `Service Task`
+
+Declare service interface
+
+image::declare-interface.png[]
+
+Configure service task interface
+
+image::archive-1.png[]
+
+Configure parameters to invoke (in this case the `zip` operation)
+
+image::archive-2.png[]
+
+In this example, an archive is built with two files (`resume` and `coverLetter`) and named `documents.zip`.
+Once successfully built it will be assigned to `documents` variable in the workflow instance.

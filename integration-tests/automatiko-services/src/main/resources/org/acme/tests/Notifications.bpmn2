@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- origin at X=0.0 Y=0.0 -->
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:automatiko="https://automatiko.io" xmlns="https://automatiko.io" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:java="http://www.java.com/javaTypes" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatiko.io automatiko.xsd" id="Definition" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="2.0.0" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="https://automatiko.io" typeLanguage="http://www.java.com/javaTypes">
+  <bpmn2:itemDefinition id="ItemDefinition_91" isCollection="false" structureRef="org.acme.test.Person"/>
+  <bpmn2:itemDefinition id="ItemDefinition_230" isCollection="false" structureRef="java.lang.String"/>
+  <bpmn2:itemDefinition id="ItemDefinition_269" isCollection="false" structureRef="io.automatiko.engine.addons.services.email.SendEmailService"/>
+  <bpmn2:itemDefinition id="ItemDefinition_801" isCollection="false" structureRef="io.automatiko.engine.addons.services.email.Attachment"/>
+  <bpmn2:itemDefinition id="ItemDefinition_1424" isCollection="false" structureRef="io.automatiko.engine.addons.services.archive.ArchiveService"/>
+  <bpmn2:itemDefinition id="ItemDefinition_1938" isCollection="false" structureRef="io.automatiko.engine.addons.services.archive.Archive"/>
+  <bpmn2:itemDefinition id="ItemDefinition_2398" isCollection="false" structureRef="java.util.List&lt;io.automatiko.engine.api.workflow.files.File&gt;"/>
+  <bpmn2:interface id="Interface_1" implementationRef="io.automatiko.engine.addons.services.email.SendEmailService" name="EmailService">
+    <bpmn2:operation id="Operation_1" name="send"/>
+  </bpmn2:interface>
+  <bpmn2:interface id="Interface_2" implementationRef="io.automatiko.engine.addons.services.archive.ArchiveService" name="ArchiveService">
+    <bpmn2:operation id="Operation_2" name="zip"/>
+    <bpmn2:operation id="Operation_3" name="unzip"/>
+  </bpmn2:interface>
+  <bpmn2:process id="notifications" automatiko:packageName="com.sample" name="Notifications" isExecutable="true" processType="Public">
+    <bpmn2:documentation id="Documentation_64"><![CDATA[A sample showcasing use of email sending with archives as attachments]]></bpmn2:documentation>
+    <bpmn2:extensionElements>
+      <automatiko:import name="org.acme.test.Person"/>
+      <automatiko:import name="io.automatiko.engine.addons.services.email.SendEmailService"/>
+      <automatiko:import name="io.automatiko.engine.addons.services.email.Attachment"/>
+      <automatiko:import name="io.automatiko.engine.addons.services.archive.ArchiveService"/>
+      <automatiko:import name="io.automatiko.engine.addons.services.archive.Archive"/>
+      <automatiko:import name="java.util.List"/>
+    </bpmn2:extensionElements>
+    <bpmn2:startEvent id="StartEvent_1" name="StartProcess">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="elementname">
+          <automatiko:metaValue><![CDATA[StartProcess]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:outgoing>SequenceFlow_6</bpmn2:outgoing>
+    </bpmn2:startEvent>
+    <bpmn2:serviceTask id="ServiceTask_1" name="Send email notification" implementation="Java" operationRef="Operation_1">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="elementname">
+          <automatiko:metaValue><![CDATA[Send email notification]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_5</bpmn2:outgoing>
+      <bpmn2:ioSpecification id="InputOutputSpecification_6">
+        <bpmn2:dataInput id="DataInput_1" itemSubjectRef="ItemDefinition_230" name="to"/>
+        <bpmn2:dataInput id="DataInput_2" name="subject"/>
+        <bpmn2:dataInput id="DataInput_3" name="template"/>
+        <bpmn2:dataInput id="DataInput_4" itemSubjectRef="ItemDefinition_91" name="body"/>
+        <bpmn2:dataInput id="DataInput_5" itemSubjectRef="ItemDefinition_1938" name="attachment"/>
+        <bpmn2:inputSet id="InputSet_6" name="Input Set 6">
+          <bpmn2:dataInputRefs>DataInput_1</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_2</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_3</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_4</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_5</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet id="OutputSet_6" name="Output Set 6"/>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_1">
+        <bpmn2:sourceRef>email</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_1</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_2">
+        <bpmn2:targetRef>DataInput_2</bpmn2:targetRef>
+        <bpmn2:assignment id="Assignment_1">
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_3">Notification</bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_1">DataInput_2</bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_3">
+        <bpmn2:targetRef>DataInput_3</bpmn2:targetRef>
+        <bpmn2:assignment id="Assignment_2">
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_6">notification</bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_4">DataInput_3</bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_4">
+        <bpmn2:sourceRef>person</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_4</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_5">
+        <bpmn2:sourceRef>documents</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_5</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+    </bpmn2:serviceTask>
+    <bpmn2:sequenceFlow id="SequenceFlow_1" automatiko:priority="1" sourceRef="ServiceTask_2" targetRef="ServiceTask_1"/>
+    <bpmn2:endEvent id="EndEvent_1" name="Done">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="elementname">
+          <automatiko:metaValue><![CDATA[Done]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_2</bpmn2:incoming>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_2" automatiko:priority="1" sourceRef="ServiceTask_3" targetRef="EndEvent_1"/>
+    <bpmn2:dataObject id="person" name="person" itemSubjectRef="ItemDefinition_91">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="tags">
+          <automatiko:metaValue><![CDATA[input]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:dataObject>
+    <bpmn2:dataObject id="email" name="email" itemSubjectRef="ItemDefinition_230">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="tags">
+          <automatiko:metaValue><![CDATA[input]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:dataObject>
+    <bpmn2:dataObject id="resume" name="resume" itemSubjectRef="ItemDefinition_801">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="tags">
+          <automatiko:metaValue><![CDATA[input]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:dataObject>
+    <bpmn2:dataObject id="coverLetter" name="coverLetter" itemSubjectRef="ItemDefinition_801">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="tags">
+          <automatiko:metaValue><![CDATA[input]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:dataObject>
+    <bpmn2:serviceTask id="ServiceTask_2" name="Build archive" implementation="Java" operationRef="Operation_2">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="elementname">
+          <automatiko:metaValue><![CDATA[Build archive]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_6</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
+      <bpmn2:ioSpecification id="InputOutputSpecification_10">
+        <bpmn2:dataInput id="DataInput_7" name="name"/>
+        <bpmn2:dataInput id="DataInput_8" itemSubjectRef="ItemDefinition_801" name="resume"/>
+        <bpmn2:dataInput id="DataInput_9" itemSubjectRef="ItemDefinition_801" name="letter"/>
+        <bpmn2:dataOutput id="DataOutput_1" itemSubjectRef="ItemDefinition_1938" name="archive"/>
+        <bpmn2:inputSet id="InputSet_10" name="Input Set 10">
+          <bpmn2:dataInputRefs>DataInput_7</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_8</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_9</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet id="OutputSet_10" name="Output Set 10">
+          <bpmn2:dataOutputRefs>DataOutput_1</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_7">
+        <bpmn2:targetRef>DataInput_7</bpmn2:targetRef>
+        <bpmn2:assignment id="Assignment_3">
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_9">documents.zip</bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_7">DataInput_7</bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_8">
+        <bpmn2:sourceRef>resume</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_8</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_9">
+        <bpmn2:sourceRef>coverLetter</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_9</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataOutputAssociation id="DataOutputAssociation_1">
+        <bpmn2:sourceRef>DataOutput_1</bpmn2:sourceRef>
+        <bpmn2:targetRef>documents</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+    </bpmn2:serviceTask>
+    <bpmn2:dataObject id="documents" name="documents" itemSubjectRef="ItemDefinition_1938">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="tags">
+          <automatiko:metaValue><![CDATA[internal]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:dataObject>
+    <bpmn2:dataObject id="extracted" name="extracted" itemSubjectRef="ItemDefinition_2398">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="tags">
+          <automatiko:metaValue><![CDATA[output]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:dataObject>
+    <bpmn2:serviceTask id="ServiceTask_3" name="Extract archive" implementation="Java" operationRef="Operation_3">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="elementname">
+          <automatiko:metaValue><![CDATA[Extract archive]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_4</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+      <bpmn2:ioSpecification id="InputOutputSpecification_14">
+        <bpmn2:dataInput id="DataInput_10" itemSubjectRef="ItemDefinition_1938" name="archive"/>
+        <bpmn2:dataOutput id="DataOutput_2" itemSubjectRef="ItemDefinition_2398" name="extracted"/>
+        <bpmn2:inputSet id="InputSet_14" name="Input Set 14">
+          <bpmn2:dataInputRefs>DataInput_10</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet id="OutputSet_14" name="Output Set 14">
+          <bpmn2:dataOutputRefs>DataOutput_2</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_10">
+        <bpmn2:sourceRef>documents</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_10</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataOutputAssociation id="DataOutputAssociation_2">
+        <bpmn2:sourceRef>DataOutput_2</bpmn2:sourceRef>
+        <bpmn2:targetRef>extracted</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+    </bpmn2:serviceTask>
+    <bpmn2:sequenceFlow id="SequenceFlow_4" automatiko:priority="1" sourceRef="UserTask_1" targetRef="ServiceTask_3"/>
+    <bpmn2:userTask id="UserTask_1" name="Validate">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="elementname">
+          <automatiko:metaValue><![CDATA[Validate]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_5</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_4</bpmn2:outgoing>
+      <bpmn2:ioSpecification id="InputOutputSpecification_15">
+        <bpmn2:dataInput id="DataInput_11" name="TaskName"/>
+        <bpmn2:dataInput id="DataInput_12" name="Exluded users"/>
+        <bpmn2:dataInput id="DataInput_13" name="Groups"/>
+        <bpmn2:dataInput id="DataInput_14" itemSubjectRef="ItemDefinition_1938" name="docs"/>
+        <bpmn2:inputSet id="_InputSet_2">
+          <bpmn2:dataInputRefs>DataInput_11</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_12</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_13</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_14</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet id="OutputSet_15" name="Output Set"/>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_11">
+        <bpmn2:targetRef>DataInput_11</bpmn2:targetRef>
+        <bpmn2:assignment id="Assignment_4">
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_10">validate</bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_11">DataInput_11</bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_12">
+        <bpmn2:targetRef>DataInput_12</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_13">
+        <bpmn2:targetRef>DataInput_13</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_14">
+        <bpmn2:sourceRef>documents</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_14</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+    </bpmn2:userTask>
+    <bpmn2:sequenceFlow id="SequenceFlow_5" automatiko:priority="1" sourceRef="ServiceTask_1" targetRef="UserTask_1"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_6" automatiko:priority="1" sourceRef="StartEvent_1" targetRef="ServiceTask_2"/>
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_Process_1" bpmnElement="notifications">
+      <bpmndi:BPMNShape id="BPMNShape_StartEvent_1" bpmnElement="StartEvent_1">
+        <dc:Bounds height="36.0" width="36.0" x="40.0" y="143.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="52.0" x="32.0" y="179.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ServiceTask_1" bpmnElement="ServiceTask_1" isExpanded="true">
+        <dc:Bounds height="50.0" width="110.0" x="272.0" y="143.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="91.0" x="281.0" y="162.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_1" bpmnElement="EndEvent_1">
+        <dc:Bounds height="36.0" width="36.0" x="800.0" y="150.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="22.0" x="807.0" y="186.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_1" bpmnElement="person">
+        <dc:Bounds height="50.0" width="36.0" x="203.0" y="43.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="28.0" x="207.0" y="93.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_2" bpmnElement="email">
+        <dc:Bounds height="50.0" width="36.0" x="256.0" y="43.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="22.0" x="263.0" y="93.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_3" bpmnElement="resume">
+        <dc:Bounds height="50.0" width="36.0" x="83.0" y="220.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="31.0" x="85.0" y="270.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_4" bpmnElement="coverLetter">
+        <dc:Bounds height="50.0" width="36.0" x="150.0" y="43.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="46.0" x="145.0" y="93.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ServiceTask_2" bpmnElement="ServiceTask_2" isExpanded="true">
+        <dc:Bounds height="50.0" width="110.0" x="110.0" y="143.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="52.0" x="139.0" y="162.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_5" bpmnElement="documents">
+        <dc:Bounds height="50.0" width="36.0" x="445.0" y="50.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="45.0" x="441.0" y="100.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_6" bpmnElement="extracted">
+        <dc:Bounds height="50.0" width="36.0" x="620.0" y="280.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="38.0" x="619.0" y="330.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ServiceTask_3" bpmnElement="ServiceTask_3" isExpanded="true">
+        <dc:Bounds height="50.0" width="110.0" x="620.0" y="143.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="60.0" x="645.0" y="162.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_UserTask_1" bpmnElement="UserTask_1" isExpanded="true">
+        <dc:Bounds height="50.0" width="110.0" x="445.0" y="143.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="32.0" x="484.0" y="162.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_1" bpmnElement="SequenceFlow_1" sourceElement="BPMNShape_ServiceTask_2" targetElement="BPMNShape_ServiceTask_1">
+        <di:waypoint xsi:type="dc:Point" x="220.0" y="168.0"/>
+        <di:waypoint xsi:type="dc:Point" x="246.0" y="168.0"/>
+        <di:waypoint xsi:type="dc:Point" x="246.0" y="176.0"/>
+        <di:waypoint xsi:type="dc:Point" x="272.0" y="176.0"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_2" bpmnElement="SequenceFlow_2" sourceElement="BPMNShape_ServiceTask_3" targetElement="BPMNShape_EndEvent_1">
+        <di:waypoint xsi:type="dc:Point" x="730.0" y="168.0"/>
+        <di:waypoint xsi:type="dc:Point" x="765.0" y="168.0"/>
+        <di:waypoint xsi:type="dc:Point" x="800.0" y="168.0"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_1" bpmnElement="DataInputAssociation_1" sourceElement="BPMNShape_DataObject_2" targetElement="BPMNShape_ServiceTask_1">
+        <di:waypoint xsi:type="dc:Point" x="292.0" y="68.0"/>
+        <di:waypoint xsi:type="dc:Point" x="327.0" y="68.0"/>
+        <di:waypoint xsi:type="dc:Point" x="327.0" y="143.0"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_2" bpmnElement="DataInputAssociation_4" sourceElement="BPMNShape_DataObject_1" targetElement="BPMNShape_ServiceTask_1">
+        <di:waypoint xsi:type="dc:Point" x="221.0" y="93.0"/>
+        <di:waypoint xsi:type="dc:Point" x="221.0" y="159.0"/>
+        <di:waypoint xsi:type="dc:Point" x="272.0" y="159.0"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_3" bpmnElement="DataInputAssociation_5" sourceElement="BPMNShape_DataObject_5" targetElement="BPMNShape_ServiceTask_1">
+        <di:waypoint xsi:type="dc:Point" x="445.0" y="75.0"/>
+        <di:waypoint xsi:type="dc:Point" x="414.0" y="75.0"/>
+        <di:waypoint xsi:type="dc:Point" x="414.0" y="159.0"/>
+        <di:waypoint xsi:type="dc:Point" x="382.0" y="159.0"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_5" bpmnElement="DataInputAssociation_8" sourceElement="BPMNShape_DataObject_3" targetElement="BPMNShape_ServiceTask_2">
+        <di:waypoint xsi:type="dc:Point" x="101.0" y="220.0"/>
+        <di:waypoint xsi:type="dc:Point" x="101.0" y="176.0"/>
+        <di:waypoint xsi:type="dc:Point" x="110.0" y="176.0"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_6" bpmnElement="DataInputAssociation_9" sourceElement="BPMNShape_DataObject_4" targetElement="BPMNShape_ServiceTask_2">
+        <di:waypoint xsi:type="dc:Point" x="150.0" y="68.0"/>
+        <di:waypoint xsi:type="dc:Point" x="146.0" y="68.0"/>
+        <di:waypoint xsi:type="dc:Point" x="146.0" y="143.0"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataOutputAssociation_1" bpmnElement="DataOutputAssociation_1" sourceElement="BPMNShape_ServiceTask_2" targetElement="BPMNShape_DataObject_5">
+        <di:waypoint xsi:type="dc:Point" x="183.0" y="143.0"/>
+        <di:waypoint xsi:type="dc:Point" x="183.0" y="103.0"/>
+        <di:waypoint xsi:type="dc:Point" x="314.0" y="103.0"/>
+        <di:waypoint xsi:type="dc:Point" x="314.0" y="66.0"/>
+        <di:waypoint xsi:type="dc:Point" x="445.0" y="66.0"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_4" bpmnElement="SequenceFlow_4" sourceElement="BPMNShape_UserTask_1" targetElement="BPMNShape_ServiceTask_3">
+        <di:waypoint xsi:type="dc:Point" x="555.0" y="168.0"/>
+        <di:waypoint xsi:type="dc:Point" x="587.0" y="168.0"/>
+        <di:waypoint xsi:type="dc:Point" x="620.0" y="168.0"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_7" bpmnElement="DataInputAssociation_10" sourceElement="BPMNShape_DataObject_5" targetElement="BPMNShape_ServiceTask_3">
+        <di:waypoint xsi:type="dc:Point" x="481.0" y="75.0"/>
+        <di:waypoint xsi:type="dc:Point" x="675.0" y="75.0"/>
+        <di:waypoint xsi:type="dc:Point" x="675.0" y="143.0"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataOutputAssociation_2" bpmnElement="DataOutputAssociation_2" sourceElement="BPMNShape_ServiceTask_3" targetElement="BPMNShape_DataObject_6">
+        <di:waypoint xsi:type="dc:Point" x="675.0" y="193.0"/>
+        <di:waypoint xsi:type="dc:Point" x="675.0" y="305.0"/>
+        <di:waypoint xsi:type="dc:Point" x="656.0" y="305.0"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_5" bpmnElement="SequenceFlow_5" sourceElement="BPMNShape_ServiceTask_1" targetElement="BPMNShape_UserTask_1">
+        <di:waypoint xsi:type="dc:Point" x="382.0" y="176.0"/>
+        <di:waypoint xsi:type="dc:Point" x="413.0" y="176.0"/>
+        <di:waypoint xsi:type="dc:Point" x="445.0" y="176.0"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_8" bpmnElement="DataInputAssociation_14" sourceElement="BPMNShape_DataObject_5" targetElement="BPMNShape_UserTask_1">
+        <di:waypoint xsi:type="dc:Point" x="469.0" y="100.0"/>
+        <di:waypoint xsi:type="dc:Point" x="469.0" y="121.0"/>
+        <di:waypoint xsi:type="dc:Point" x="500.0" y="121.0"/>
+        <di:waypoint xsi:type="dc:Point" x="500.0" y="143.0"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_6" bpmnElement="SequenceFlow_6" sourceElement="BPMNShape_StartEvent_1" targetElement="BPMNShape_ServiceTask_2">
+        <di:waypoint xsi:type="dc:Point" x="76.0" y="161.0"/>
+        <di:waypoint xsi:type="dc:Point" x="93.0" y="161.0"/>
+        <di:waypoint xsi:type="dc:Point" x="93.0" y="159.0"/>
+        <di:waypoint xsi:type="dc:Point" x="110.0" y="159.0"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>

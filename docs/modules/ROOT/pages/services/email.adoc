@@ -1,0 +1,144 @@
+:imagesdir: ../../images
+= Send Email
+
+Send Email addon service comes with support for sending emails.
+It provides `io.automatiko.engine.addons.services.email.SendEmailService` that comes with
+following operations
+
+- `send` with given body
+- `send` with template based body
+
+NOTE: Regardless of the operation type, recipients (both `TO` and `CC`) can be given as list of comma
+separated addresses e.g. `john@email.com,mary@email.com` 
+
+== Send with given body operation
+
+Send email with given body is based on complete body to be given to the operation
+and thus it will not perform any modification to it. 
+
+There are two flavors of the operation that differs in the set of recipients
+- sending only to main recipients (TO)
+- sending to both main recipients and CC recipients
+
+
+=== Data mapping
+
+When used via service task this service expects following data mapping
+
+* Inputs
+** to - one or more email addresses of recipients
+** cc - one or more CC email recipients - this can be completely omitted
+** subject - subject of the email message
+** body - complete body of the email message
+
+Optionally as last inputs attachments can be given. There maybe 0 or more 
+attachments and they should be of type `io.automatiko.engine.api.workflow.files.File`
+
+There are no outputs to be defined.
+
+=== On success
+Successful operation will not produce any results
+
+=== On failure
+Failure during creation of the archive will throw a `io.automatiko.engine.api.workflow.ServiceExecutionError`
+with error code `sendEmailFailure` so it can be used within workflow definition to handle errors 
+
+== Send with template based body operation
+
+Send email with template based body is based on generating email body based on given template (identified
+by name) and the context object. Both must be given to properly produce and send email.
+
+There are two flavors of the operation that differs in the set of recipients
+- sending only to main recipients (TO)
+- sending to both main recipients and CC recipients
+
+When creating templates (usually html files) to refer to context object use `body` variable. 
+Following examples shows how to access name of the person that is given as context object:
+
+[source,html]
+----
+<html>
+  <body>
+
+	<h1>Hello {body.name}</h1>
+	
+	<p>Here is a bit of information for you!</p>
+  </body>
+</html>
+----
+
+All templates must be stored in `templates` folder under `src/main/resources` of your project.
+
+=== Data mapping
+
+When used via service task this service expects following data mapping
+
+* Inputs
+** to - one or more email addresses of recipients
+** cc - one or more CC email recipients - this can be completely omitted
+** subject - subject of the email message
+** template - name of the template to be used to generate email body
+** body - a context object that will be given as `body` into the template generation
+
+Optionally as last inputs attachments can be given. There maybe 0 or more 
+attachments and they should be of type `io.automatiko.engine.api.workflow.files.File`
+
+There are no outputs to be defined.
+
+=== On success
+Successful operation will not produce any results.
+
+=== On failure
+Failure during creation of the archive will throw a `io.automatiko.engine.api.workflow.ServiceExecutionError`
+with error code 
+
+- `sendEmailFailure` 
+- `emailTemplateNotFound`
+
+so it can be used within workflow definition to handle errors 
+
+
+== Usage
+
+To be able to use this service addon a project must be given following dependency
+
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons.services</groupId>
+  <artifactId>automatiko-send-email-addon</artifactId>
+</dependency>
+----
+
+There is a need to provide email server configuration via `application.properties` file
+
+[source,plain]
+----
+quarkus.mailer.auth-methods=DIGEST-MD5 CRAM-SHA256 CRAM-SHA1 CRAM-MD5 PLAIN LOGIN
+quarkus.mailer.from=YOUR_EMAIL@gmail.com
+quarkus.mailer.host=smtp.gmail.com
+quarkus.mailer.port=587
+quarkus.mailer.start-tls=REQUIRED
+quarkus.mailer.username=YOUR_EMAIL@gmail.com
+quarkus.mailer.password=PASSWORD
+----
+
+Declare service interface
+
+image::declare-interface.png[]
+
+Configure service task interface
+
+image::email-1.png[]
+
+Configure parameters to invoke (in this case the `send` operation with template names `notifications`)
+
+image::email-2.png[]
+
+In this example
+
+- email is sent to address taken from workflow instance variable called `email`
+- with subject set to `Notifications` 
+- body is generated based on template named `notifications` and the `person` workflow instance variable is given as context to template generation
+- `documents` workflow instance variable is used as attachment to the email (in this case a `zip` file) 

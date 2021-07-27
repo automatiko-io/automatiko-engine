@@ -21,6 +21,7 @@
     <module>predictions</module>
     <module>process-management</module>
     <module>user-tasks</module>
+    <module>services</module>
   </modules>
 
   <dependencyManagement>
