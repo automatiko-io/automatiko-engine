@@ -1,6 +1,7 @@
 package io.automatiko.engine.decision.dmn;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -88,5 +89,15 @@ public class DmnDecisionModel implements DecisionModel<DMNModel, DMNContext, DMN
     @Override
     public String getName() {
         return dmnModel.getName() + " (" + dmnModel.getNamespace() + ")";
+    }
+
+    @Override
+    public Map<String, Object> getErrorData(DMNResult result) {
+        Map<String, Object> errorData = new HashMap<>();
+
+        errorData.put("error", buildErrorMessage(result));
+        errorData.put("results", getResultData(result));
+
+        return errorData;
     }
 }

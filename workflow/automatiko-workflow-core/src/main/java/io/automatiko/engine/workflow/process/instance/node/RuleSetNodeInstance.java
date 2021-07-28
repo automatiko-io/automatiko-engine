@@ -91,9 +91,8 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
 
                 if (modelInstance.hasErrors(dmnResult)) {
 
-                    throw new WorkItemExecutionError("DMNEvaluationFailure", modelInstance.buildErrorMessage(dmnResult),
-                            new RuntimeException("Execution of DMN model " + modelInstance.getName()
-                                    + (dName != null ? " and decision " + dName : "") + " failed"));
+                    throw new WorkItemExecutionError("DecisionEvaluationFailure", modelInstance.buildErrorMessage(dmnResult),
+                            modelInstance.getErrorData(dmnResult));
                 }
                 processOutputs(inputs, modelInstance.getResultData(dmnResult));
                 triggerCompleted();
@@ -106,15 +105,29 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
     }
 
     private void handleException(Throwable e) {
-        ExceptionScopeInstance exceptionScopeInstance = getExceptionScopeInstance(e);
+        String exceptionName = e.getClass().getName();
+
+        Object param = e;
+        if (e instanceof WorkItemExecutionError) {
+            param = ((WorkItemExecutionError) e).getErrorData();
+            exceptionName = ((WorkItemExecutionError) e).getErrorCode();
+        }
+        ExceptionScopeInstance exceptionScopeInstance = getExceptionScopeInstance(exceptionName);
         if (exceptionScopeInstance != null) {
-            exceptionScopeInstance.handleException(this, e.getClass().getName(), e);
+
+            exceptionScopeInstance.handleException(this, exceptionName, param != null ? param : e);
         } else {
             Throwable rootCause = getRootException(e);
             if (rootCause != null) {
-                exceptionScopeInstance = getExceptionScopeInstance(rootCause);
+                exceptionName = rootCause.getClass().getName();
+                param = rootCause;
+                if (rootCause instanceof WorkItemExecutionError) {
+                    param = ((WorkItemExecutionError) rootCause).getErrorData();
+                    exceptionName = ((WorkItemExecutionError) rootCause).getErrorCode();
+                }
+                exceptionScopeInstance = getExceptionScopeInstance(exceptionName);
                 if (exceptionScopeInstance != null) {
-                    exceptionScopeInstance.handleException(this, rootCause.getClass().getName(), rootCause);
+                    exceptionScopeInstance.handleException(this, exceptionName, param != null ? param : e);
 
                     return;
                 }
@@ -128,8 +141,8 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
         }
     }
 
-    private ExceptionScopeInstance getExceptionScopeInstance(Throwable e) {
-        return (ExceptionScopeInstance) resolveContextInstance(ExceptionScope.EXCEPTION_SCOPE, e.getClass().getName());
+    private ExceptionScopeInstance getExceptionScopeInstance(String exceptionName) {
+        return (ExceptionScopeInstance) resolveContextInstance(ExceptionScope.EXCEPTION_SCOPE, exceptionName);
     }
 
     protected Throwable getRootException(Throwable exception) {

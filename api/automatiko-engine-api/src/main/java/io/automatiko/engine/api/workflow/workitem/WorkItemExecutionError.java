@@ -9,6 +9,8 @@ public class WorkItemExecutionError extends RuntimeException {
 
     private final String errorDetails;
 
+    private Object errorData;
+
     public WorkItemExecutionError(String errorCode) {
         super("WorkItem execution failed with error code " + errorCode);
         this.errorCode = errorCode;
@@ -25,6 +27,27 @@ public class WorkItemExecutionError extends RuntimeException {
         super(message);
         this.errorCode = errorCode;
         this.errorDetails = errorDetails;
+    }
+
+    public WorkItemExecutionError(String errorCode, Object errorData) {
+        super("WorkItem execution failed with error code " + errorCode);
+        this.errorCode = errorCode;
+        this.errorDetails = "";
+        this.errorData = errorData;
+    }
+
+    public WorkItemExecutionError(String errorCode, String errorDetails, Object errorData) {
+        super("WorkItem execution failed with error code " + errorCode);
+        this.errorCode = errorCode;
+        this.errorDetails = errorDetails;
+        this.errorData = errorData;
+    }
+
+    public WorkItemExecutionError(String message, String errorCode, String errorDetails, Object errorData) {
+        super(message);
+        this.errorCode = errorCode;
+        this.errorDetails = errorDetails;
+        this.errorData = errorData;
     }
 
     public WorkItemExecutionError(String errorCode, Throwable e) {
@@ -51,6 +74,10 @@ public class WorkItemExecutionError extends RuntimeException {
 
     public String getErrorDetails() {
         return errorDetails;
+    }
+
+    public Object getErrorData() {
+        return errorData;
     }
 
     @Override

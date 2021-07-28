@@ -202,10 +202,13 @@ public class ServiceTaskDescriptor {
             BlockStmt catchbody = new BlockStmt();
             catchbody.addStatement(new ThrowStmt(new ObjectCreationExpr(null,
                     new ClassOrInterfaceType(null, "io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError"),
-                    NodeList.nodeList(
+                    NodeList.nodeList(new MethodCallExpr(
+                            new NameExpr("wex"), "getMessage"),
                             new MethodCallExpr(new NameExpr("String"), "valueOf").addArgument(new MethodCallExpr(
                                     new MethodCallExpr(new NameExpr("wex"), "getResponse"), "getStatus")),
-                            new NameExpr("wex")))));
+                            new MethodCallExpr(new NameExpr("io.automatiko.engine.services.utils.IoUtils"), "valueOf")
+                                    .addArgument(new MethodCallExpr(
+                                            new MethodCallExpr(new NameExpr("wex"), "getResponse"), "getEntity"))))));
             CatchClause catchClause = new CatchClause(
                     new Parameter(new ClassOrInterfaceType(null, "javax.ws.rs.WebApplicationException"), "wex"),
                     catchbody);
@@ -215,6 +218,8 @@ public class ServiceTaskDescriptor {
                     new ClassOrInterfaceType(null, "io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError"),
                     NodeList.nodeList(
                             new StringLiteralExpr("503"),
+                            new MethodCallExpr(
+                                    new NameExpr("ex"), "getMessage"),
                             new NameExpr("ex")))));
             CatchClause unavailablecatchClause = new CatchClause(
                     new Parameter(new ClassOrInterfaceType(null, "javax.ws.rs.ProcessingException"), "ex"),

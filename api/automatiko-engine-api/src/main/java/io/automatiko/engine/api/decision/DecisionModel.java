@@ -23,6 +23,8 @@ public interface DecisionModel<M, C, R, F> {
 
     Map<String, Object> getResultData(R result);
 
+    Map<String, Object> getErrorData(R result);
+
     String buildErrorMessage(R result);
 
     String getName();
