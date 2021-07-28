@@ -184,7 +184,12 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         // workItemId must be set otherwise cancel activity will not find the right work
         // item
         this.workItemId = workItem.getId();
-        exceptionScopeInstance.handleException(this, exceptionName, e);
+        Object param = e;
+        if (e instanceof WorkItemExecutionError) {
+            param = ((WorkItemExecutionError) e).getErrorData();
+        }
+        exceptionScopeInstance.handleException(this, exceptionName, param != null ? param : e);
+
     }
 
     protected WorkItem newWorkItem() {
