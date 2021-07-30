@@ -24,6 +24,14 @@ public class AutomatikoConfig {
         return Optional.empty();
     };
 
+    public Optional<String> onInstanceEnd() {
+        return Optional.empty();
+    };
+
+    public Optional<String> archivePath() {
+        return Optional.empty();
+    };
+
     public MetricsConfig metrics() {
         return new MetricsConfig();
     }

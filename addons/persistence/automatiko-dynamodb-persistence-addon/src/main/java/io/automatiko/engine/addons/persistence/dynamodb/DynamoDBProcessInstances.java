@@ -61,6 +61,7 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
     private static final String CONTENT_FIELD = "Content";
     private static final String TAGS_FIELD = "Tags";
     private static final String VERSION_FIELD = "VersionTrack";
+    private static final String STATUS_FIELD = "PIStatus";
 
     private final Process<? extends Model> process;
     private final ProcessInstanceMarshaller marshaller;
@@ -87,7 +88,7 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
     }
 
     @Override
-    public Optional<? extends ProcessInstance> findById(String id, ProcessInstanceReadMode mode) {
+    public Optional<? extends ProcessInstance> findById(String id, int status, ProcessInstanceReadMode mode) {
         String resolvedId = resolveId(id);
         if (cachedInstances.containsKey(resolvedId)) {
             return Optional.of(cachedInstances.get(resolvedId));
@@ -104,7 +105,7 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
 
         Map<String, AttributeValue> returnedItem = dynamodb.getItem(request).item();
 
-        if (returnedItem != null) {
+        if (returnedItem != null && Integer.parseInt(returnedItem.get(STATUS_FIELD).n()) == status) {
             byte[] content = returnedItem.get(CONTENT_FIELD).b().asByteArray();
 
             return Optional.of(mode == MUTABLE
@@ -119,11 +120,17 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
     }
 
     @Override
-    public Collection values(ProcessInstanceReadMode mode, int page, int size) {
+    public Collection values(ProcessInstanceReadMode mode, int status, int page, int size) {
         LOGGER.debug("values() called");
+        Map<String, AttributeValue> attrValues = new HashMap<String, AttributeValue>();
+        StringBuilder condition = new StringBuilder();
+        attrValues.put(":status", AttributeValue.builder().n(String.valueOf(status)).build());
+        condition.append(STATUS_FIELD + " = :status ");
+
         ScanRequest request = ScanRequest.builder()
                 .tableName(tableName)
-                .attributesToGet(CONTENT_FIELD)
+                .filterExpression(condition.toString())
+                .expressionAttributeValues(attrValues)
                 .limit(page * size)
                 .build();
 
@@ -146,11 +153,13 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
     }
 
     @Override
-    public Collection findByIdOrTag(ProcessInstanceReadMode mode, String... values) {
+    public Collection findByIdOrTag(ProcessInstanceReadMode mode, int status, String... values) {
         LOGGER.debug("findByIdOrTag() called for values {}", values);
         Map<String, AttributeValue> attrValues = new HashMap<String, AttributeValue>();
         int counter = 0;
         StringBuilder condition = new StringBuilder();
+        attrValues.put(":status", AttributeValue.builder().n(String.valueOf(status)).build());
+        condition.append(STATUS_FIELD + "= :status AND ");
         for (String value : values) {
             attrValues.put(":value" + counter, AttributeValue.builder().s(value).build());
             condition.append("contains(" + TAGS_FIELD + ", :value" + counter + ") OR ");
@@ -220,6 +229,8 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
             itemValues.put(INSTANCE_ID_FIELD, AttributeValue.builder().s(resolvedId).build());
             itemValues.put(VERSION_FIELD, AttributeValue.builder()
                     .n(String.valueOf(((AbstractProcessInstance<?>) instance).getVersionTracker())).build());
+            itemValues.put(STATUS_FIELD, AttributeValue.builder()
+                    .n(String.valueOf(((AbstractProcessInstance<?>) instance).status())).build());
             itemValues.put(CONTENT_FIELD, AttributeValue.builder().b(SdkBytes.fromByteArray(data)).build());
 
             Collection<String> tags = new ArrayList(instance.tags().values());
@@ -280,6 +291,12 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
             updatedValues.put(VERSION_FIELD, AttributeValueUpdate.builder()
                     .value(AttributeValue.builder()
                             .n(String.valueOf(((AbstractProcessInstance<?>) instance).getVersionTracker() + 1)).build())
+                    .action(AttributeAction.PUT)
+                    .build());
+
+            updatedValues.put(STATUS_FIELD, AttributeValueUpdate.builder()
+                    .value(AttributeValue.builder()
+                            .n(String.valueOf(((AbstractProcessInstance<?>) instance).status())).build())
                     .action(AttributeAction.PUT)
                     .build());
 

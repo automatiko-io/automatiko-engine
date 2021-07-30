@@ -4,6 +4,7 @@ package io.automatiko.engine.addons.process.management;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -90,6 +91,7 @@ public class ProcessInstanceManagementResourceTest {
         lenient().when(processes.get(anyString())).thenReturn(process);
         lenient().when(process.instances()).thenReturn(instances);
         lenient().when(instances.findById(anyString())).thenReturn(Optional.of(processInstance));
+        lenient().when(instances.findById(anyString(), eq(5), any())).thenReturn(Optional.of(processInstance));
         lenient().when(processInstance.errors()).thenReturn(Optional.of(errors));
         lenient().when(processInstance.id()).thenReturn("abc-def");
         lenient().when(processInstance.status()).thenReturn(ProcessInstance.STATE_ACTIVE);

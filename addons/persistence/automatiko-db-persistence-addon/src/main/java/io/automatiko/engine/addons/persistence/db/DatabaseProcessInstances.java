@@ -50,7 +50,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
 
     @SuppressWarnings("unchecked")
     @Override
-    public Optional<ProcessInstance<ProcessInstanceEntity>> findById(String id, ProcessInstanceReadMode mode) {
+    public Optional<ProcessInstance<ProcessInstanceEntity>> findById(String id, int status, ProcessInstanceReadMode mode) {
         String resolvedId = resolveId(id);
 
         Optional<ProcessInstanceEntity> found = (Optional<ProcessInstanceEntity>) JpaOperations.INSTANCE.findByIdOptional(type,
@@ -60,13 +60,18 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
             return Optional.empty();
         }
         ProcessInstanceEntity entity = found.get();
-        return Optional.of(unmarshallInstance(mode, entity));
+        if (entity.state == status) {
+            return Optional.of(unmarshallInstance(mode, entity));
+        } else {
+            return Optional.empty();
+        }
     }
 
     @Override
     public Collection<? extends ProcessInstance<ProcessInstanceEntity>> findByIdOrTag(ProcessInstanceReadMode mode,
-            String... values) {
-        return JpaOperations.INSTANCE.stream(type, "id in (?1) or (?1) in elements(tags) ", Arrays.asList(values))
+            int status, String... values) {
+        return JpaOperations.INSTANCE
+                .stream(type, "state = ?1 and (id in (?2) or (?2) in elements(tags)) ", status, Arrays.asList(values))
                 .map(e -> {
                     try {
                         return unmarshallInstance(mode, ((ProcessInstanceEntity) e));
@@ -80,8 +85,10 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
     }
 
     @Override
-    public Collection<ProcessInstance<ProcessInstanceEntity>> values(ProcessInstanceReadMode mode, int page, int size) {
-        return JpaOperations.INSTANCE.findAll(type).page(calculatePage(page, size), size).stream()
+    public Collection<ProcessInstance<ProcessInstanceEntity>> values(ProcessInstanceReadMode mode, int status, int page,
+            int size) {
+        return JpaOperations.INSTANCE.find(type, "state = ?1 ", status).page(calculatePage(page, size), size)
+                .stream()
                 .map(e -> {
                     try {
                         return unmarshallInstance(mode, ((ProcessInstanceEntity) e));

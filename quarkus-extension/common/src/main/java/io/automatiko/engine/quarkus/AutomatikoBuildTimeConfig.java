@@ -47,6 +47,20 @@ public class AutomatikoBuildTimeConfig extends AutomatikoConfig {
     public Optional<String> targetDeployment;
 
     /**
+     * Specifies strategy to be applied on end of the workflow instance. Defaults to remove instance at the end of
+     * its life time. Alternatively it can be set to keep the instance or archive the instance.
+     */
+    @ConfigItem
+    public Optional<String> onInstanceEnd;
+
+    /**
+     * Specifies location on the file system where to store archived process instance when using
+     * <code>onInstanceEnd</code> set to <code>archive</code> with default file system based archive store
+     */
+    @ConfigItem
+    public Optional<String> archivePath;
+
+    /**
      * Configures metrics
      */
     @ConfigItem
@@ -105,6 +119,16 @@ public class AutomatikoBuildTimeConfig extends AutomatikoConfig {
     @Override
     public Optional<String> targetDeployment() {
         return targetDeployment;
+    }
+
+    @Override
+    public Optional<String> onInstanceEnd() {
+        return onInstanceEnd;
+    }
+
+    @Override
+    public Optional<String> archivePath() {
+        return archivePath;
     }
 
     @Override

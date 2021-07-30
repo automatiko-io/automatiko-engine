@@ -51,4 +51,6 @@ public interface Process<T> {
     ProcessInstance<T> importInstance(ExportedProcessInstance instance);
 
     ArchivedProcessInstance archiveInstance(String id, ArchiveBuilder builder);
+
+    EndOfInstanceStrategy endOfInstanceStrategy();
 }

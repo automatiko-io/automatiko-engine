@@ -189,6 +189,7 @@ public class $Type$Resource {
     @Produces(MediaType.APPLICATION_JSON)
     public List<$Type$Output> getAll_$name$(
             @Parameter(description = "Tags to filter when loading instances", required = false) @QueryParam("tags") final List<String> tags,
+            @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {"active", "completed", "aborted", "error"})) @QueryParam("status") @DefaultValue("active") final String status,
             @Parameter(description = "Pagination - page to start on", required = false) @QueryParam(value = "page") @DefaultValue("1") int page,
             @Parameter(description = "Pagination - number of items to return", required = false) @QueryParam(value = "size") @DefaultValue("10") int size,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
@@ -197,11 +198,11 @@ public class $Type$Resource {
             identitySupplier.buildIdentityProvider(user, groups);
             return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             if (tags != null && !tags.isEmpty()) {
-                return process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, tags.toArray(String[]::new)).stream()
+                return process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, mapStatus(status), tags.toArray(String[]::new)).stream()
                         .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
                         .collect(Collectors.toList());
             } else {
-                return process.instances().values(page, size).stream()
+                return process.instances().values(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, mapStatus(status), page, size).stream()
                     .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
                     .collect(Collectors.toList());
             }
@@ -233,13 +234,14 @@ public class $Type$Resource {
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public $Type$Output get_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id,
+            @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {"active", "completed", "aborted", "error"})) @QueryParam("status") @DefaultValue("active") final String status, 
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         
             identitySupplier.buildIdentityProvider(user, groups);
             return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 return process.instances()
-                    .findById(id, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
+                    .findById(id, mapStatus(status), io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
                     .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             });
@@ -270,13 +272,14 @@ public class $Type$Resource {
     @Path("/{id}/image")
     @Produces(MediaType.APPLICATION_SVG_XML)
     public Response get_instance_image_$name$(@Context UriInfo uri, @PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id,
+            @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {"active", "completed", "aborted", "error"})) @QueryParam("status") @DefaultValue("active") final String status,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         
         identitySupplier.buildIdentityProvider(user, groups);
         return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> instance = process.instances()
-                .findById(id, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
+                .findById(id, mapStatus(status), io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             String image = instance.image(extractImageBaseUri(uri.getRequestUri().toString()));
             
@@ -638,5 +641,26 @@ public class $Type$Resource {
     
     protected void tracing(ProcessInstance<?> intance) {
         
+    }
+    
+    protected int mapStatus(String status) {
+        int state = 1;
+        switch (status.toLowerCase()) {
+            case "active":
+                state = 1;
+                break;
+            case "completed":
+                state = 2;
+                break;
+            case "aborted":
+                state = 3;
+                break;
+            case "error":
+                state = 5;
+                break;                
+            default:
+                break;
+        }
+        return state;
     }
 }

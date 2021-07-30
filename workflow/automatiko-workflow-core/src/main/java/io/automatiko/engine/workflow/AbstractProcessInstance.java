@@ -316,7 +316,14 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         unbind(variables, processInstance().getVariables());
         this.getProcessRuntime().abortProcessInstance(pid);
         this.status = processInstance.getState();
-        addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi));
+        // apply end of instance strategy on completion
+        process.endOfInstanceStrategy().perform(this);
+        if (process.endOfInstanceStrategy().shouldInstanceBeUpdated()) {
+            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
+        }
+        if (process.endOfInstanceStrategy().shouldInstanceBeRemoved()) {
+            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi));
+        }
         unlock(true);
 
     }
@@ -746,7 +753,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public ArchivedProcessInstance archive(ArchiveBuilder builder) {
-        ArchivedProcessInstance archived = builder.instance(id,
+        ArchivedProcessInstance archived = builder.instance(id, process.id(),
                 ((MutableProcessInstances) process().instances()).exportInstance(this, false));
 
         Map<String, Object> variables = processInstance().getVariables();
@@ -784,7 +791,14 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
             removeCompletionListener();
             syncProcessInstance((WorkflowProcessInstance) processInstance);
             unbind(this.variables, processInstance().getVariables());
-            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi));
+            // apply end of instance strategy on completion
+            process.endOfInstanceStrategy().perform(this);
+            if (process.endOfInstanceStrategy().shouldInstanceBeUpdated()) {
+                addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
+            }
+            if (process.endOfInstanceStrategy().shouldInstanceBeRemoved()) {
+                addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi));
+            }
             unlock(true);
 
         } else {

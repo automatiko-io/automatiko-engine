@@ -45,6 +45,7 @@ import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.api.runtime.process.WorkItemHandler;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
+import io.automatiko.engine.api.workflow.EndOfInstanceStrategy;
 import io.automatiko.engine.api.workflow.ProcessInstancesFactory;
 import io.automatiko.engine.codegen.BodyDeclarationComparator;
 import io.automatiko.engine.codegen.CodegenUtils;
@@ -436,6 +437,24 @@ public class ProcessGenerator {
         return internalRegisterListeners;
     }
 
+    private MethodDeclaration createSetEndOfInstanceStrategyMethod() {
+
+        MethodDeclaration methodDeclaration = new MethodDeclaration();
+
+        methodDeclaration.setName("setEndOfInstanceStrategy").addModifier(Modifier.Keyword.PUBLIC)
+                .addParameter(EndOfInstanceStrategy.class.getCanonicalName(), "strategy")
+                .setType(void.class)
+                .setBody(new BlockStmt()
+                        .addStatement(new AssignExpr(new FieldAccessExpr(new ThisExpr(), "endOfInstanceStrategy"),
+                                new NameExpr("strategy"), Operator.ASSIGN)));
+
+        if (useInjection()) {
+            annotator.withInjection(methodDeclaration);
+        }
+
+        return methodDeclaration;
+    }
+
     public static ClassOrInterfaceType processType(String canonicalName) {
         return new ClassOrInterfaceType(null, canonicalName + "Process");
     }
@@ -503,6 +522,7 @@ public class ProcessGenerator {
                 .addMember(internalConfigure(processMetaData)).addMember(internalRegisterListeners(processMetaData))
                 .addMember(userTaskInputModels(processMetaData))
                 .addMember(userTaskOutputModels(processMetaData))
+                .addMember(createSetEndOfInstanceStrategyMethod())
                 .addMember(process(processMetaData));
 
         if (isServiceProject()) {

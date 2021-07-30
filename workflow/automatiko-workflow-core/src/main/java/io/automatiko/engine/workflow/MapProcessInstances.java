@@ -29,17 +29,23 @@ public class MapProcessInstances implements MutableProcessInstances {
     }
 
     @Override
-    public Optional<ProcessInstance> findById(String id, ProcessInstanceReadMode mode) {
+    public Optional<ProcessInstance> findById(String id, int status, ProcessInstanceReadMode mode) {
         ProcessInstance instance = instances.get(resolveId(id));
         if (instance != null) {
             instance.process().accessPolicy().canReadInstance(IdentityProvider.get(), instance);
+
+            if (instance.status() == status) {
+                return Optional.ofNullable(instance);
+            }
         }
-        return Optional.ofNullable(instance);
+        return Optional.empty();
     }
 
     @Override
-    public Collection<ProcessInstance> values(ProcessInstanceReadMode mode, int page, int size) {
-        return instances.values().stream().filter(pi -> pi.process().accessPolicy().canReadInstance(IdentityProvider.get(), pi))
+    public Collection<ProcessInstance> values(ProcessInstanceReadMode mode, int status, int page, int size) {
+        return instances.values().stream()
+                .filter(pi -> pi.status() == status)
+                .filter(pi -> pi.process().accessPolicy().canReadInstance(IdentityProvider.get(), pi))
                 .skip(calculatePage(page, size))
                 .limit(size)
                 .collect(Collectors.toList());
@@ -74,11 +80,13 @@ public class MapProcessInstances implements MutableProcessInstances {
     }
 
     @Override
-    public Collection<? extends ProcessInstance> findByIdOrTag(ProcessInstanceReadMode mode, String... values) {
+    public Collection<? extends ProcessInstance> findByIdOrTag(ProcessInstanceReadMode mode, int status, String... values) {
         List<ProcessInstance> collected = new ArrayList<>();
         for (String idOrTag : values) {
 
-            instances.values().stream().filter(pi -> pi.id().equals(resolveId(idOrTag)) || pi.tags().values().contains(idOrTag))
+            instances.values().stream()
+                    .filter(pi -> pi.id().equals(resolveId(idOrTag)) || pi.tags().values().contains(idOrTag))
+                    .filter(pi -> pi.status() == status)
                     .filter(pi -> pi.process().accessPolicy().canReadInstance(IdentityProvider.get(), pi))
                     .forEach(pi -> collected.add(pi));
         }

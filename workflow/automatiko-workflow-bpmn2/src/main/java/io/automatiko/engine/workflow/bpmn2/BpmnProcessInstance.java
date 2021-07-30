@@ -15,6 +15,7 @@ import io.automatiko.engine.api.runtime.process.ProcessRuntime;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatiko.engine.api.workflow.ArchiveBuilder;
 import io.automatiko.engine.api.workflow.ArchivedProcessInstance;
+import io.automatiko.engine.api.workflow.EndOfInstanceStrategy;
 import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
@@ -187,6 +188,11 @@ public class BpmnProcessInstance extends AbstractProcessInstance<BpmnVariables> 
 
                 @Override
                 public ArchivedProcessInstance archiveInstance(String id, ArchiveBuilder builder) {
+                    return null;
+                }
+
+                @Override
+                public EndOfInstanceStrategy endOfInstanceStrategy() {
                     return null;
                 }
             };
