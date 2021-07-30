@@ -11,14 +11,16 @@ import java.util.zip.ZipOutputStream;
 public class ArchivedProcessInstance {
 
     private final String id;
+    private final String processId;
     private final ExportedProcessInstance<?> export;
 
     private List<ArchivedVariable> variables = new ArrayList<>();
 
     private List<ArchivedProcessInstance> subInstances = new ArrayList<>();
 
-    public ArchivedProcessInstance(String id, ExportedProcessInstance<?> export) {
+    public ArchivedProcessInstance(String id, String processId, ExportedProcessInstance<?> export) {
         this.id = id;
+        this.processId = processId;
         this.export = export;
     }
 
@@ -48,6 +50,10 @@ public class ArchivedProcessInstance {
 
     public String getId() {
         return id;
+    }
+
+    public String getProcessId() {
+        return processId;
     }
 
     public ExportedProcessInstance<?> getExport() {

@@ -40,7 +40,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
-import io.automatiko.engine.addons.process.management.archive.JsonArchiveBuilder;
 import io.automatiko.engine.addons.process.management.export.ProcessInstanceExporter;
 import io.automatiko.engine.addons.process.management.model.ErrorInfoDTO;
 import io.automatiko.engine.addons.process.management.model.JsonExportedProcessInstance;
@@ -64,6 +63,7 @@ import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.base.core.ContextContainer;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
+import io.automatiko.engine.workflow.json.JsonArchiveBuilder;
 import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 
 @Tag(name = "Process Management", description = "Process management operations on top of the service", externalDocs = @ExternalDocumentation(description = "Manangement UI", url = "/management/processes/ui"))
@@ -167,6 +167,9 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @Produces(MediaType.APPLICATION_JSON)
     public List<ProcessInstanceDTO> getInstances(@Context UriInfo uriInfo,
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
+            @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {
+                    "active", "completed", "aborted",
+                    "error" })) @QueryParam("status") @DefaultValue("active") final String status,
             @Parameter(description = "Pagination - page to start on", required = false) @QueryParam(value = "page") @DefaultValue("1") int page,
             @Parameter(description = "Pagination - number of items to return", required = false) @QueryParam(value = "size") @DefaultValue("10") int size,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
@@ -176,7 +179,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             identitySupplier.buildIdentityProvider(user, groups);
             Process<?> process = processData.get(processId);
 
-            process.instances().values(page, size).forEach(pi -> collected
+            process.instances().values(ProcessInstanceReadMode.READ_ONLY, mapStatus(status), page, size).forEach(pi -> collected
                     .add(new ProcessInstanceDTO(pi.id(), pi.businessKey(), pi.description(), pi.tags().values(),
                             pi.errors().isPresent(), processId)));
 
@@ -197,6 +200,9 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     public ProcessInstanceDetailsDTO getInstance(@Context UriInfo uriInfo,
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("instanceId") String instanceId,
+            @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {
+                    "active", "completed", "aborted",
+                    "error" })) @QueryParam("status") @DefaultValue("active") final String status,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         try {
@@ -204,7 +210,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             Process<?> process = processData.get(processId);
 
             Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId,
-                    ProcessInstanceReadMode.READ_ONLY);
+                    mapStatus(status), ProcessInstanceReadMode.READ_ONLY);
 
             if (instance.isEmpty()) {
                 throw new ProcessInstanceNotFoundException(instanceId);
@@ -231,7 +237,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             }
             details.setImage(
                     uriInfo.getBaseUri().toString() + "management/processes/" + processId + "/instances/" + instanceId
-                            + "/image");
+                            + "/image?status=" + reverseMapStatus(pi.status()));
             details.setTags(pi.tags().values());
             details.setVariables(pi.variables());
             details.setSubprocesses(pi.subprocesses().stream()
@@ -261,6 +267,9 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     public List<Object> getInstanceVariableVersions(@Context UriInfo uriInfo,
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("instanceId") String instanceId,
+            @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {
+                    "active", "completed", "aborted",
+                    "error" })) @QueryParam("status") @DefaultValue("active") final String status,
             @Parameter(description = "Unique name of the process variable", required = true) @PathParam("name") String name,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
@@ -269,7 +278,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             Process<?> process = processData.get(processId);
 
             Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId,
-                    ProcessInstanceReadMode.READ_ONLY);
+                    mapStatus(status), ProcessInstanceReadMode.READ_ONLY);
 
             if (instance.isEmpty()) {
                 throw new ProcessInstanceNotFoundException(instanceId);
@@ -303,6 +312,9 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     public List<Object> restoreInstanceVariableVersions(@Context UriInfo uriInfo,
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("instanceId") String instanceId,
+            @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {
+                    "active", "completed", "aborted",
+                    "error" })) @QueryParam("status") @DefaultValue("active") final String status,
             @Parameter(description = "Unique name of the process variable", required = true) @PathParam("name") String name,
             @Parameter(description = "Version number of the process variable to be made as current", required = true) @PathParam("version") Integer version,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
@@ -314,7 +326,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             Process<?> process = processData.get(processId);
 
             Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId,
-                    ProcessInstanceReadMode.MUTABLE);
+                    mapStatus(status), ProcessInstanceReadMode.MUTABLE);
 
             if (instance.isEmpty()) {
                 throw new ProcessInstanceNotFoundException(instanceId);
@@ -357,6 +369,9 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     public Response getInstanceImage(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("instanceId") String instanceId,
+            @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {
+                    "active", "completed", "aborted",
+                    "error" })) @QueryParam("status") @DefaultValue("active") final String status,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         try {
@@ -368,7 +383,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             }
 
             Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId,
-                    ProcessInstanceReadMode.READ_ONLY);
+                    mapStatus(status), ProcessInstanceReadMode.READ_ONLY);
 
             if (instance.isEmpty()) {
                 throw new ProcessInstanceNotFoundException(instanceId);
@@ -585,6 +600,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     public JsonExportedProcessInstance exportInstance(@Context UriInfo uriInfo,
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("instanceId") String instanceId,
+            @Parameter(description = "Status of the process instance", required = false) @QueryParam("status") @DefaultValue("active") final String status,
             @Parameter(description = "Indicates if the instance should be aborted after export, defaults to false", required = false) @QueryParam("abort") @DefaultValue("false") final boolean abort,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
@@ -596,7 +612,8 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
                 throw new ProcessInstanceNotFoundException(instanceId);
             }
 
-            Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId);
+            Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId,
+                    mapStatus(status), ProcessInstanceReadMode.MUTABLE);
 
             if (instance.isEmpty()) {
                 throw new ProcessInstanceNotFoundException(instanceId);
@@ -716,6 +733,48 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
         public void write(OutputStream output) throws IOException, WebApplicationException {
             archived.writeAsZip(output);
         }
+    }
+
+    protected int mapStatus(String status) {
+        int state = 1;
+        switch (status.toLowerCase()) {
+            case "active":
+                state = 1;
+                break;
+            case "completed":
+                state = 2;
+                break;
+            case "aborted":
+                state = 3;
+                break;
+            case "error":
+                state = 5;
+                break;
+            default:
+                break;
+        }
+        return state;
+    }
+
+    protected String reverseMapStatus(int status) {
+        String state = "active";
+        switch (status) {
+            case 1:
+                state = "active";
+                break;
+            case 2:
+                state = "completed";
+                break;
+            case 3:
+                state = "aborted";
+                break;
+            case 5:
+                state = "error";
+                break;
+            default:
+                break;
+        }
+        return state;
     }
 
 }

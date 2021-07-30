@@ -133,11 +133,12 @@ public class MockCacheProcessInstancesTest {
 
         ProcessInstances<BpmnVariables> instances = process.instances();
         assertThat(instances.size()).isOne();
-        ProcessInstance<BpmnVariables> pi = instances.findById(mutablePi.id(), ProcessInstanceReadMode.READ_ONLY).get();
+        ProcessInstance<BpmnVariables> pi = instances
+                .findById(mutablePi.id(), ProcessInstance.STATE_ERROR, ProcessInstanceReadMode.READ_ONLY).get();
         assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> pi.abort());
 
         ProcessInstance<BpmnVariables> readOnlyPi = instances
-                .findById(mutablePi.id(), ProcessInstanceReadMode.READ_ONLY).get();
+                .findById(mutablePi.id(), ProcessInstance.STATE_ERROR, ProcessInstanceReadMode.READ_ONLY).get();
         assertThat(readOnlyPi.status()).isEqualTo(STATE_ERROR);
         assertThat(readOnlyPi.errors()).hasValueSatisfying(errors -> {
             assertThat(errors.errorMessages()).isEqualTo("");
@@ -146,7 +147,7 @@ public class MockCacheProcessInstancesTest {
         assertThat(readOnlyPi.variables().toMap()).containsExactly(entry("var", "value"));
         assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> readOnlyPi.abort());
 
-        instances.findById(mutablePi.id()).get().abort();
+        instances.findById(mutablePi.id(), ProcessInstance.STATE_ERROR, ProcessInstanceReadMode.MUTABLE).get().abort();
         assertThat(instances.size()).isZero();
     }
 

@@ -16,6 +16,7 @@ import io.automatiko.engine.api.workflow.ProcessError;
 import io.automatiko.engine.api.workflow.ProcessErrors;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceExecutionException;
+import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.api.workflow.WorkItem;
 import io.automatiko.engine.services.uow.UnitOfWorkExecutor;
 
@@ -198,7 +199,7 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
 
         return UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             Optional<? extends ProcessInstance<?>> processInstanceFound = process.instances()
-                    .findById(processInstanceId);
+                    .findById(processInstanceId, ProcessInstance.STATE_ERROR, ProcessInstanceReadMode.MUTABLE);
             if (processInstanceFound.isPresent()) {
                 ProcessInstance<?> processInstance = processInstanceFound.get();
 

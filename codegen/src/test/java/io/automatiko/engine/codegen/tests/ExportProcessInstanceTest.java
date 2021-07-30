@@ -109,8 +109,8 @@ public class ExportProcessInstanceTest extends AbstractCodegenTest {
             }
 
             @Override
-            public ArchivedProcessInstance instance(String id, ExportedProcessInstance<?> exported) {
-                return new ArchivedProcessInstance(id, exported);
+            public ArchivedProcessInstance instance(String id, String processId, ExportedProcessInstance<?> exported) {
+                return new ArchivedProcessInstance(id, processId, exported);
             }
         });
         assertThat(archived).isNotNull();
@@ -142,8 +142,8 @@ public class ExportProcessInstanceTest extends AbstractCodegenTest {
             }
 
             @Override
-            public ArchivedProcessInstance instance(String id, ExportedProcessInstance<?> exported) {
-                return new ArchivedProcessInstance(id, exported);
+            public ArchivedProcessInstance instance(String id, String processId, ExportedProcessInstance<?> exported) {
+                return new ArchivedProcessInstance(id, processId, exported);
             }
         });
         assertThat(archived).isNotNull();

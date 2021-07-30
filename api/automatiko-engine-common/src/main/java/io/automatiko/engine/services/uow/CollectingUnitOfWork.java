@@ -145,12 +145,12 @@ public class CollectingUnitOfWork implements UnitOfWork {
         }
 
         @Override
-        public Optional<?> findById(String id, ProcessInstanceReadMode mode) {
+        public Optional<?> findById(String id, int status, ProcessInstanceReadMode mode) {
             if (local.containsKey(id)) {
                 return Optional.of(local.get(id));
             }
 
-            Optional<?> found = delegate.findById(id, mode);
+            Optional<?> found = delegate.findById(id, status, mode);
 
             if (found.isPresent()) {
                 ProcessInstance<?> pi = (ProcessInstance<?>) found.get();
@@ -161,8 +161,8 @@ public class CollectingUnitOfWork implements UnitOfWork {
         }
 
         @Override
-        public Collection values(ProcessInstanceReadMode mode, int page, int size) {
-            return delegate.values(mode, page, size);
+        public Collection values(ProcessInstanceReadMode mode, int status, int page, int size) {
+            return delegate.values(mode, status, page, size);
         }
 
         @Override
@@ -200,8 +200,8 @@ public class CollectingUnitOfWork implements UnitOfWork {
         }
 
         @Override
-        public Collection findByIdOrTag(ProcessInstanceReadMode mode, String... values) {
-            Collection<?> collected = delegate.findByIdOrTag(mode, values);
+        public Collection findByIdOrTag(ProcessInstanceReadMode mode, int status, String... values) {
+            Collection<?> collected = delegate.findByIdOrTag(mode, status, values);
 
             if (mode.equals(ProcessInstanceReadMode.MUTABLE)) {
                 collected.forEach(pi -> addToCache(((ProcessInstance<?>) pi).id(), ((ProcessInstance<?>) pi)));

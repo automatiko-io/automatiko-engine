@@ -1,4 +1,4 @@
-package io.automatiko.engine.addons.process.management.archive;
+package io.automatiko.engine.workflow.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

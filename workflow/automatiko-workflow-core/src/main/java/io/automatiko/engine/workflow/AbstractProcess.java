@@ -20,6 +20,7 @@ import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatiko.engine.api.uow.UnitOfWork;
 import io.automatiko.engine.api.workflow.ArchiveBuilder;
 import io.automatiko.engine.api.workflow.ArchivedProcessInstance;
+import io.automatiko.engine.api.workflow.EndOfInstanceStrategy;
 import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
 import io.automatiko.engine.api.workflow.Process;
@@ -39,6 +40,7 @@ import io.automatiko.engine.workflow.base.instance.LightProcessRuntime;
 import io.automatiko.engine.workflow.base.instance.LightProcessRuntimeContext;
 import io.automatiko.engine.workflow.base.instance.LightProcessRuntimeServiceProvider;
 import io.automatiko.engine.workflow.base.instance.ProcessRuntimeServiceProvider;
+import io.automatiko.engine.workflow.base.instance.impl.end.RemoveEndOfInstanceStrategy;
 import io.automatiko.engine.workflow.lock.LockManager;
 import io.automatiko.engine.workflow.process.core.impl.WorkflowProcessImpl;
 import io.automatiko.engine.workflow.process.core.node.StartNode;
@@ -60,6 +62,8 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
     protected io.automatiko.engine.api.definition.process.Process process;
 
     protected LockManager locks = new LockManager();
+
+    protected EndOfInstanceStrategy endOfInstanceStrategy = new RemoveEndOfInstanceStrategy();
 
     protected AbstractProcess() {
         this(new LightProcessRuntimeServiceProvider());
@@ -258,6 +262,10 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
         return locks;
     }
 
+    public EndOfInstanceStrategy endOfInstanceStrategy() {
+        return endOfInstanceStrategy;
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public ExportedProcessInstance exportInstance(String id, boolean abort) {
@@ -276,7 +284,7 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
     public ArchivedProcessInstance archiveInstance(String id, ArchiveBuilder builder) {
         ExportedProcessInstance<?> exported = exportInstance(id, false);
 
-        ArchivedProcessInstance archived = builder.instance(id, exported);
+        ArchivedProcessInstance archived = builder.instance(id, this.id(), exported);
 
         ProcessInstance<?> instance = instances().findById(id, ProcessInstanceReadMode.READ_ONLY).get();
 

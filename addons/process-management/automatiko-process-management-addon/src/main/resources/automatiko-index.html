@@ -43,6 +43,7 @@
 	var currentPage = 1;
 	var currentProcess;
 	var currentPIDiv;
+	var status = 'active';
 	
 	
 	function prettifyJson(json, prettify) {
@@ -87,7 +88,7 @@
 		});
 	});
 
-	let loadInstances = function(id, divId) {
+	let loadInstances = function(id, divId, state) {
 		
 		if (id != currentProcess) {			
 			currentPage = 1;
@@ -98,6 +99,7 @@
 		}
 
 		if (!instancesCollapsed) {
+			status = state;
 			$(".collapse, .atk_inst").addClass('show');
 			currentProcess = id;
 			currentPIDiv = divId;
@@ -105,7 +107,7 @@
 			instancesCollapsed = true;
 			$("#" + divId).empty();
 			$.ajax({
-				url : '/management/processes/' + id + '/instances',
+				url : '/management/processes/' + id + '/instances?status=' + status,
 				type : 'GET',
 				dataType : 'json',
 				crossDomain : true,
@@ -116,6 +118,7 @@
 				},
 			});
 		} else {
+			status = 'active';
 			currentPage = 1;
 			instancesCollapsed = false;
 			$("#card_" + id).removeClass('active-card');
@@ -126,7 +129,7 @@
 	let loadInstance = function(id, instanceId) {
 
 		$.ajax({
-			url : '/management/processes/' + id + '/instances/' + instanceId,
+			url : '/management/processes/' + id + '/instances/' + instanceId + '?status=' + status,
 			type : 'GET',
 			dataType : 'json',
 			crossDomain : true,
@@ -141,7 +144,7 @@
 	let abortInstance = function(id, instanceId) {
 
 		$.ajax({
-			url : '/management/processes/' + id + '/instances/' + instanceId,
+			url : '/management/processes/' + id + '/instances/' + instanceId + '?status=' + status,
 			type : 'DELETE',
 			dataType : 'json',
 			crossDomain : true,
@@ -184,7 +187,7 @@
 	let variableVersion = function(id, instanceId, varName) {
 
 		$.ajax({
-			url : '/management/processes/' + id + '/instances/' + instanceId + '/variables/' + varName + "/versions",
+			url : '/management/processes/' + id + '/instances/' + instanceId + '/variables/' + varName + "/versions?status=" + status,
 			type : 'GET',
 			dataType : 'json',
 			crossDomain : true,
@@ -209,7 +212,7 @@
 	let restoreVariableVersion = function(id, instanceId, varName, index) {
 
 		$.ajax({
-			url : '/management/processes/' + id + '/instances/' + instanceId + '/variables/' + varName + "/versions/" + index,
+			url : '/management/processes/' + id + '/instances/' + instanceId + '/variables/' + varName + "/versions/" + index + "?status=" + status,
 			type : 'POST',
 			dataType : 'json',
 			crossDomain : true,
@@ -453,17 +456,62 @@
 
 									+ '</div>'
 									+ '<div class="card-footer d-flex flex-column">'
-									+ '<a class="btn btn-dark btn-sm mt-auto" onclick="loadInstances(\''
+									+ '<div class="dropdown">'
+									+ '  <button class="btn btn-dark btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">'
+									+ '    Instances'
+									+ '  </button>'
+									+ ' <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">'
+									
+									+ '<a class="dropdown-item" onclick="loadInstances(\''
 									+ item.id
 									+ '\', \'tableinstances_'
 									+ rowCount
-									+ '\');" href="#instances_'
+									+ '\', \'active\');" href="#instances_'
 									+ rowCount
 									+ '" role="button" aria-controls="instances_"'
 									+ item.id
 									+ '">'
-									+ 'Instances'
+									+ 'Active'
 									+ '</a>'
+									
+									+ '<a class="dropdown-item" onclick="loadInstances(\''
+									+ item.id
+									+ '\', \'tableinstances_'
+									+ rowCount
+									+ '\', \'completed\');" href="#instances_'
+									+ rowCount
+									+ '" role="button" aria-controls="instances_"'
+									+ item.id
+									+ '">'
+									+ 'Completed'
+									+ '</a>'
+									
+									+ '<a class="dropdown-item" onclick="loadInstances(\''
+									+ item.id
+									+ '\', \'tableinstances_'
+									+ rowCount
+									+ '\', \'aborted\');" href="#instances_'
+									+ rowCount
+									+ '" role="button" aria-controls="instances_"'
+									+ item.id
+									+ '">'
+									+ 'Aborted'
+									+ '</a>'
+									
+									+ '<a class="dropdown-item" onclick="loadInstances(\''
+									+ item.id
+									+ '\', \'tableinstances_'
+									+ rowCount
+									+ '\', \'error\');" href="#instances_'
+									+ rowCount
+									+ '" role="button" aria-controls="instances_"'
+									+ item.id
+									+ '">'
+									+ 'In error'
+									+ '</a>'
+									
+									+ '  </div>'
+									+ '</div>'									
 									+ '<div id="expanded_' + item.id +'"></div>'
 									+ '</div>');
 					if (index % 3 == 0) {
@@ -487,7 +535,7 @@
 			instancesCollapsed = true;
 			$("#" + divId).empty();
 			$.ajax({
-				url : '/management/processes/' + id + '/instances?page=' + currentPage,
+				url : '/management/processes/' + id + '/instances?page=' + currentPage + "&status=" + status,
 				type : 'GET',
 				dataType : 'json',
 				crossDomain : true,
@@ -505,7 +553,7 @@
 			instancesCollapsed = true;
 			$("#" + divId).empty();
 			$.ajax({
-				url : '/management/processes/' + id + '/instances?page=' + currentPage,
+				url : '/management/processes/' + id + '/instances?page=' + currentPage + "&status=" + status,
 				type : 'GET',
 				dataType : 'json',
 				crossDomain : true,

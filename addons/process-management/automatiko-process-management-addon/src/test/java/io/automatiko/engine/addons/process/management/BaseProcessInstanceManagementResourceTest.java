@@ -4,6 +4,7 @@ package io.automatiko.engine.addons.process.management;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.spy;
@@ -72,7 +73,7 @@ class BaseProcessInstanceManagementResourceTest {
         lenient().when(processes.get(anyString())).thenReturn(process);
 
         when(process.instances()).thenReturn(instances);
-        when(instances.findById(anyString())).thenReturn(Optional.of(processInstance));
+        lenient().when(instances.findById(anyString())).thenReturn(Optional.of(processInstance));
         lenient().when(processInstance.errors()).thenReturn(Optional.of(errors));
         lenient().when(processInstance.variables()).thenReturn(variables);
         lenient().when(processInstance.id()).thenReturn(PROCESS_INSTANCE_ID);
@@ -159,6 +160,7 @@ class BaseProcessInstanceManagementResourceTest {
 
     @Test
     void testDoGetInstanceInError() {
+        lenient().when(instances.findById(anyString(), eq(5), any())).thenReturn(Optional.of(processInstance));
         lenient().when(error.failedNodeId()).thenReturn(NODE_ID_ERROR);
         lenient().when(error.errorMessage()).thenReturn("Test error message");
         lenient().when(processInstance.errors()).thenReturn(Optional.of(new ProcessErrors(Arrays.asList(error))));
@@ -183,6 +185,7 @@ class BaseProcessInstanceManagementResourceTest {
 
     @Test
     void testDoRetriggerInstanceInError() {
+        lenient().when(instances.findById(anyString(), eq(5), any())).thenReturn(Optional.of(processInstance));
         mockProcessInstanceStatusActiveOnError().retrigger();
         Object response = tested.doRetriggerInstanceInError(PROCESS_ID, PROCESS_INSTANCE_ID);
         verify(processInstance, times(2)).errors();
@@ -193,6 +196,7 @@ class BaseProcessInstanceManagementResourceTest {
 
     @Test
     void testDoSkipInstanceInError() {
+        lenient().when(instances.findById(anyString(), eq(5), any())).thenReturn(Optional.of(processInstance));
         mockProcessInstanceStatusActiveOnError().skip();
         Object response = tested.doSkipInstanceInError(PROCESS_ID, PROCESS_INSTANCE_ID);
         verify(processInstance, times(2)).errors();

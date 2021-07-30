@@ -40,6 +40,7 @@ import io.automatiko.engine.api.workflow.WorkItem;
 import io.automatiko.engine.api.workflow.workitem.Policy;
 import io.automatiko.engine.workflow.Sig;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,13 +68,14 @@ public class $Type$Resource {
     @Path("$prefix$/$name$")
     @Produces(MediaType.APPLICATION_JSON)
     public List<$Type$Output> getAll_$name$(@PathParam("id") String id,
+            @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {"active", "completed", "aborted", "error"})) @QueryParam("status") @DefaultValue("active") final String status,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
                 
             identitySupplier.buildIdentityProvider(user, groups);
             return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             	ProcessInstance parent = $parentprocess$.instances()
-                        .findById($parentparentprocessid$$parentprocessid$, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
+                        .findById($parentparentprocessid$$parentprocessid$, mapStatus(status), io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
                         .orElse(null);
                 if (parent != null) {
             	
@@ -137,13 +139,14 @@ public class $Type$Resource {
     @Path("$prefix$/$name$/{id_$name$}")
     @Produces(MediaType.APPLICATION_JSON)
     public $Type$Output get_$name$(@PathParam("id") String id, @PathParam("id_$name$") String id_$name$,
+            @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {"active", "completed", "aborted", "error"})) @QueryParam("status") @DefaultValue("active") final String status,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         
         identitySupplier.buildIdentityProvider(user, groups);
         return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             return subprocess_$name$.instances()
-                .findById($parentprocessid$ + ":" + id_$name$, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
+                .findById($parentprocessid$ + ":" + id_$name$, mapStatus(status), io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
                 .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
         });
@@ -170,6 +173,7 @@ public class $Type$Resource {
     @Path("$prefix$/$name$/{id_$name$}/image")
     @Produces(MediaType.APPLICATION_JSON)
     public Response get_instance_image_$name$(@Context UriInfo uri, @PathParam("id") String id, @PathParam("id_$name$") String id_$name$,
+            @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {"active", "completed", "aborted", "error"})) @QueryParam("status") @DefaultValue("active") final String status,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         
@@ -177,7 +181,7 @@ public class $Type$Resource {
         identitySupplier.buildIdentityProvider(user, groups);
         return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> instance =  subprocess_$name$.instances()
-                .findById($parentprocessid$ + ":" + id_$name$, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
+                .findById($parentprocessid$ + ":" + id_$name$, mapStatus(status), io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
                 .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             
             String image = instance.image(extractImageBaseUri(uri.getRequestUri().toString()));

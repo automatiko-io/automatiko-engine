@@ -49,7 +49,7 @@ public class CacheProcessInstances implements MutableProcessInstances {
     }
 
     @Override
-    public Optional<? extends ProcessInstance> findById(String id, ProcessInstanceReadMode mode) {
+    public Optional<? extends ProcessInstance> findById(String id, int status, ProcessInstanceReadMode mode) {
         String resolvedId = resolveId(id);
         if (cachedInstances.containsKey(resolvedId)) {
             return Optional.of(cachedInstances.get(resolvedId));
@@ -59,13 +59,17 @@ public class CacheProcessInstances implements MutableProcessInstances {
         if (data == null) {
             return Optional.empty();
         }
+        ProcessInstance pi = mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process, 1)
+                : marshaller.unmarshallReadOnlyProcessInstance(data, process);
+        if (pi.status() == status) {
+            return Optional.of(pi);
+        }
 
-        return Optional.of(mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process, 1)
-                : marshaller.unmarshallReadOnlyProcessInstance(data, process));
+        return Optional.empty();
     }
 
     @Override
-    public Collection<? extends ProcessInstance> findByIdOrTag(ProcessInstanceReadMode mode, String... values) {
+    public Collection<? extends ProcessInstance> findByIdOrTag(ProcessInstanceReadMode mode, int status, String... values) {
         Set<ProcessInstance> collected = new LinkedHashSet<>();
         for (String idOrTag : values) {
 
@@ -79,6 +83,7 @@ public class CacheProcessInstances implements MutableProcessInstances {
                         }
                     })
                     .filter(pi -> pi != null)
+                    .filter(pi -> pi.status() == status)
                     .filter(pi -> {
                         if (pi.id().equals(resolveId(idOrTag)) || pi.tags().values().contains(idOrTag)) {
                             return true;
@@ -93,7 +98,7 @@ public class CacheProcessInstances implements MutableProcessInstances {
     }
 
     @Override
-    public Collection<? extends ProcessInstance> values(ProcessInstanceReadMode mode, int page, int size) {
+    public Collection<? extends ProcessInstance> values(ProcessInstanceReadMode mode, int status, int page, int size) {
         return cache.values().parallelStream()
                 .map(data -> {
                     try {
@@ -104,6 +109,7 @@ public class CacheProcessInstances implements MutableProcessInstances {
                     }
                 })
                 .filter(pi -> pi != null)
+                .filter(pi -> pi.status() == status)
                 .skip(calculatePage(page, size))
                 .limit(size)
                 .collect(Collectors.toList());

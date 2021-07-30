@@ -98,15 +98,21 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     }
 
     @Override
-    public Optional findById(String id, ProcessInstanceReadMode mode) {
+    public Optional findById(String id, int status, ProcessInstanceReadMode mode) {
         String resolvedId = resolveId(id);
         if (cachedInstances.containsKey(resolvedId)) {
-            return Optional.of(cachedInstances.get(resolvedId));
+            ProcessInstance pi = cachedInstances.get(resolvedId);
+            if (pi.status() == status) {
+                return Optional.of(pi);
+            } else {
+                return Optional.empty();
+            }
         }
 
         Path processInstanceStorage = Paths.get(storage.toString(), resolvedId);
 
-        if (Files.notExists(processInstanceStorage)) {
+        if (Files.notExists(processInstanceStorage)
+                || Integer.parseInt(getMetadata(processInstanceStorage, PI_STATUS)) != status) {
             return Optional.empty();
         }
         byte[] data = readBytesFromFile(processInstanceStorage);
@@ -118,14 +124,14 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Collection findByIdOrTag(ProcessInstanceReadMode mode, String... values) {
+    public Collection findByIdOrTag(ProcessInstanceReadMode mode, int status, String... values) {
         Set collected = new LinkedHashSet<>();
         for (String idOrTag : values) {
 
             findById(idOrTag, mode).ifPresent(pi -> collected.add(pi));
 
             try (Stream<Path> stream = Files.walk(storage)) {
-                stream.filter(file -> isValidProcessFile(file))
+                stream.filter(file -> isValidProcessFile(file, status))
                         .filter(file -> matchTag(getMetadata(file, PI_TAGS), idOrTag))
                         .map(file -> {
                             try {
@@ -147,9 +153,9 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     }
 
     @Override
-    public Collection values(ProcessInstanceReadMode mode, int page, int size) {
+    public Collection values(ProcessInstanceReadMode mode, int status, int page, int size) {
         try (Stream<Path> stream = Files.walk(storage)) {
-            return stream.filter(file -> isValidProcessFile(file))
+            return stream.filter(file -> isValidProcessFile(file, status))
                     .map(file -> {
                         try {
                             byte[] b = readBytesFromFile(file);
@@ -278,10 +284,29 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         }
     }
 
+    protected boolean isValidProcessFile(Path file, int status) {
+
+        try {
+            boolean valid = !Files.isDirectory(file) && !Files.isHidden(file);
+
+            if (!valid) {
+                return false;
+            }
+            String statusMetadata = getMetadata(file, PI_STATUS);
+            if (statusMetadata != null && Integer.parseInt(statusMetadata) == status) {
+                return true;
+            }
+            return false;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     protected boolean isValidProcessFile(Path file) {
 
         try {
             return !Files.isDirectory(file) && !Files.isHidden(file);
+
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

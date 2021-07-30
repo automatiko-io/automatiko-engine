@@ -241,7 +241,11 @@ public class ProcessInstanceMarshaller {
         Model model = ((AbstractProcess) process).createModel();
 
         model.fromMap(wpi.getVariables());
-        return ((AbstractProcess) process).createInstance(wpi, model, versionracker);
+        if (wpi.getState() == ProcessInstance.STATE_ACTIVE || wpi.getState() == ProcessInstance.STATE_ERROR) {
+            return ((AbstractProcess) process).createInstance(wpi, model, versionracker);
+        } else {
+            return ((AbstractProcess) process).createReadOnlyInstance(wpi, model);
+        }
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })

@@ -235,6 +235,84 @@ remain active. It is given as a ISO formatted duration `PT5H`, `P5D` (5 hours an
 
 TIP: To define it add `timeout` custom attribute on the workflow definition with desired duration  
 
+=== End of instance strategy
+
+When workflow instance reaches its end (either by completing successfully or by being aborted) there might be
+ situations that requires it be handled in one way or another. For this exact purpose, end of instance 
+ strategies are provided. These allow to have different behavior depending on your needs.
+ For example due to legal requirements instances must be kept for given amount of time, or they should 
+ be archived to another location for reference. 
+ 
+Automatiko provides three out of the box strategies:
+
+- remove
+- keep
+- archive
+
+==== Remove 
+
+Remove strategy is the default one that simply removes the workflow instance from the data store. That
+operation is permanent and by that means the information about the workflow instance (including
+its data) are gone.
+
+This strategy helps at keeping the storage to minimum size by holding only instances that are not yet finished.
+
+Configuration of this strategy
+
+|====
+|Property name|Environment variable|Value
+
+|quarkus.automatiko.on-instance-end|QUARKUS_AUTOMATIKO_ON_INSTANCE_END|remove
+
+|====
+
+==== Keep 
+
+Keep strategy is the opposite of remove, it will update the status and its content and keep the workflow
+instance in the data store. That will allow to access completed and aborted instances at any time,
+including their data and complete execution path that can also be visualized on the workflow definition
+image.
+
+IMPORTANT: Keep strategy comes with limitation that does not allow to reuse the same identifiers of workflow
+instances. In most of the cases this is not an issue as identifiers are generated. The situation when 
+this can manifest itself is when workflow instances uses business keys. These are considered alternative
+identifiers and by that cannot be reused.
+
+Configuration of this strategy
+
+|====
+|Property name|Environment variable|Value
+
+|quarkus.automatiko.on-instance-end|QUARKUS_AUTOMATIKO_ON_INSTANCE_END|keep
+
+|====
+
+==== Archive
+
+Archive strategy allows to automatically extract complete set of information about workflow instance
+at its completion. That data are then exported into an archive (zip file) that consists of
+
+- process instance export format
+- each variable as separate file (regular variables as json documents, files as dedicated files with proper extensions)
+
+Archives are by default stored on file system so extra configuration property is required. Although this 
+is also extensible and custom implementations of `io.automatiko.engine.api.workflow.ArchiveStore` 
+can be provided that will be used to store the produced archive.
+
+Archives will be stored in the given directory grouped in folders named based on workflow definition
+id and version. Each archive will be named like `{workflow-instance-id}.zip` where `{workflow-instance-id}`
+is going to be replaced with actual id of the workflow instance.
+
+Configuration of this strategy
+
+|====
+|Property name|Environment variable|Value
+
+|quarkus.automatiko.on-instance-end|QUARKUS_AUTOMATIKO_ON_INSTANCE_END|archive
+|quarkus.automatiko.archive-path|QUARKUS_AUTOMATIKO_ARCHIVE_PATH|/my/custom/archive/folder
+
+|====
+
 == Tags
 
 Similar to workflow data tags, a workflow itself can define tags. Tags allow you to put extra
