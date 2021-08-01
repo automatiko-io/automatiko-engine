@@ -6,6 +6,9 @@ import static io.automatiko.engine.codegen.CodegenUtils.interpolateTypes;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -31,6 +34,10 @@ import io.automatiko.engine.workflow.process.core.node.SubProcessNode;
 import io.automatiko.engine.workflow.process.core.node.WorkItemNode;
 
 public class FunctionFlowGenerator {
+
+    public static final Pattern PARAMETER_MATCHER = Pattern.compile("\\{([\\S|\\p{javaWhitespace}&&[^\\}]]+)\\}",
+            Pattern.DOTALL);
+
     private final String relativePath;
 
     private final GeneratorContext context;
@@ -100,6 +107,17 @@ public class FunctionFlowGenerator {
             if (useInjection()) {
                 String trigger = functionTrigger(process);
                 String filter = (String) process.getMetaData().get("functionFilter");
+                if (filter != null) {
+                    Matcher matcher = PARAMETER_MATCHER.matcher(filter);
+                    while (matcher.find()) {
+                        String paramName = matcher.group(1);
+
+                        Optional<String> value = context.getApplicationProperty(paramName);
+                        if (value.isPresent()) {
+                            filter = filter.replaceAll("\\{" + paramName + "\\}", value.get());
+                        }
+                    }
+                }
                 annotator.withCloudEventMapping(md, trigger, filter);
             }
         });
@@ -116,7 +134,17 @@ public class FunctionFlowGenerator {
                 if (useInjection()) {
                     String trigger = functionTrigger(node);
                     String filter = (String) node.getMetaData().get("functionFilter");
+                    if (filter != null) {
+                        Matcher matcher = PARAMETER_MATCHER.matcher(filter);
+                        while (matcher.find()) {
+                            String paramName = matcher.group(1);
 
+                            Optional<String> value = context.getApplicationProperty(paramName);
+                            if (value.isPresent()) {
+                                filter = filter.replaceAll("\\{" + paramName + "\\}", value.get());
+                            }
+                        }
+                    }
                     annotator.withCloudEventMapping(flowStepFunction, trigger, filter);
                 }
 
