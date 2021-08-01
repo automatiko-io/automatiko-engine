@@ -30,6 +30,12 @@
     <dependency>
       <groupId>org.kie</groupId>
       <artifactId>kie-api</artifactId>
+      <exclusions>
+              <exclusion>
+          <groupId>org.kie.soup</groupId>
+          <artifactId>kie-soup-maven-support</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.kie</groupId>
@@ -102,6 +108,10 @@
         <exclusion>
           <groupId>org.drools</groupId>
           <artifactId>drools-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.kie</groupId>
+          <artifactId>kie-memory-compiler</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
