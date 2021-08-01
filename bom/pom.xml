@@ -59,8 +59,8 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
-      
-      
+
+
       <dependency>
         <groupId>io.automatiko.addons</groupId>
         <artifactId>automatiko-common-persistence</artifactId>
@@ -228,7 +228,7 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
-      
+
       <dependency>
         <groupId>io.automatiko.addons</groupId>
         <artifactId>automatiko-user-tasks-email-addon</artifactId>
@@ -252,8 +252,8 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
-      
-      <!--  addon services -->
+
+      <!-- addon services -->
       <dependency>
         <groupId>io.automatiko.addons.services</groupId>
         <artifactId>automatiko-send-email-addon</artifactId>
@@ -265,7 +265,7 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
-      
+
       <dependency>
         <groupId>io.automatiko.addons.services</groupId>
         <artifactId>automatiko-archive-addon</artifactId>
@@ -274,6 +274,20 @@
       <dependency>
         <groupId>io.automatiko.addons.services</groupId>
         <artifactId>automatiko-archive-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+
+
+      <!-- extras -->
+      <dependency>
+        <groupId>io.automatiko.extras</groupId>
+        <artifactId>automatiko-gcp-pubsub-sink</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.extras</groupId>
+        <artifactId>automatiko-gcp-pubsub-sink</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
@@ -372,7 +386,7 @@
         <artifactId>automatiko-service-deployment</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
-      </dependency> 
+      </dependency>
       <dependency>
         <groupId>io.automatiko.quarkus</groupId>
         <artifactId>automatiko-common</artifactId>
@@ -383,7 +397,7 @@
         <artifactId>automatiko-common</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
-      </dependency>      
+      </dependency>
       <dependency>
         <groupId>io.automatiko.quarkus</groupId>
         <artifactId>automatiko-service</artifactId>

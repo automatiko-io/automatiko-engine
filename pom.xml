@@ -114,6 +114,10 @@
     <version.org.eclipse.microprofile.openapi>2.0.1-RC1</version.org.eclipse.microprofile.openapi>
 
     <version.io.javaoperatorsdk>2.0.0.Beta2</version.io.javaoperatorsdk>
+    <version.io.quarkiverse.googlecloudservices>0.9.0</version.io.quarkiverse.googlecloudservices>
+    <version.com.datastax.oss.quarkus>1.1.1</version.com.datastax.oss.quarkus>
+    <version.com.datastax.oss>4.13.0</version.com.datastax.oss>
+    <version.org.apache.camel.quarkus>2.1.0</version.org.apache.camel.quarkus>
 
     <version.com.cronutils>9.1.5</version.com.cronutils>
 
@@ -133,7 +137,7 @@
     <version.org.junit.vintage>${version.org.junit}</version.org.junit.vintage>
     <version.org.mockito>3.3.3</version.org.mockito>
     <version.org.mvel>2.4.7.Final</version.org.mvel>
-    <version.org.kie-dmn>7.41.0.Final</version.org.kie-dmn>
+    <version.org.kie-dmn>7.57.0.Final</version.org.kie-dmn>
     <version.org.reflections>0.9.11</version.org.reflections>
     <version.org.slf4j>1.7.30</version.org.slf4j>
     <version.testcontainers>1.15.3</version.testcontainers>
@@ -1122,4 +1126,7 @@
       </modules>
     </profile>
   </profiles>
+  <modules>
+    <module>extras</module>
+  </modules>
 </project>
