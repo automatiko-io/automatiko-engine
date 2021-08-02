@@ -115,6 +115,9 @@ public class FunctionFlowGenerator {
                         Optional<String> value = context.getApplicationProperty(paramName);
                         if (value.isPresent()) {
                             filter = filter.replaceAll("\\{" + paramName + "\\}", value.get());
+                        } else {
+                            throw new IllegalArgumentException("Missing argument declared in as function filter with name '"
+                                    + paramName + "'. Define it in application.properties file");
                         }
                     }
                 }
@@ -142,6 +145,9 @@ public class FunctionFlowGenerator {
                             Optional<String> value = context.getApplicationProperty(paramName);
                             if (value.isPresent()) {
                                 filter = filter.replaceAll("\\{" + paramName + "\\}", value.get());
+                            } else {
+                                throw new IllegalArgumentException("Missing argument declared in as function filter with name '"
+                                        + paramName + "'. Define it in application.properties file");
                             }
                         }
                     }
