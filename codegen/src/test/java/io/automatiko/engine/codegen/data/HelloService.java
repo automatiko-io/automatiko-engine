@@ -62,8 +62,14 @@ public class HelloService {
 
     public String helloFailing(String name) {
         System.out.println("Calling failing service .... " + new Date());
-        if (name.equals("john")) {
+        if (name == null) {
+            throw new WorkItemExecutionError("404");
+        } else if (name.equals("john")) {
             throw new WorkItemExecutionError("500");
+        } else if (name.equals("mike")) {
+            throw new WorkItemExecutionError("400");
+        } else if (name.equals("shorty")) {
+            throw new WorkItemExecutionError("410");
         }
 
         return hello(name);

@@ -585,4 +585,59 @@ public class ServiceTaskTest extends AbstractCodegenTest {
         Process<? extends Model> p = app.processes().processById("ServiceProcess");
     }
 
+    @Test
+    public void testBasicServiceProcessTaskWithMultipleErrorCodes() throws Exception {
+
+        Application app = generateCodeProcessesOnly("servicetask/ServiceProcessMultipleErrorCodes.bpmn2");
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+        // handled error 500
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("s", "john");
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        // handled error 400
+        m = p.createModel();
+        parameters = new HashMap<>();
+        parameters.put("s", "mike");
+        m.fromMap(parameters);
+
+        processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        // handled error 404
+        m = p.createModel();
+        parameters = new HashMap<>();
+        m.fromMap(parameters);
+
+        processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+
+        // unhandled error 410
+        m = p.createModel();
+        parameters = new HashMap<>();
+        parameters.put("s", "shorty");
+        m.fromMap(parameters);
+
+        processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ERROR);
+
+        processInstance.abort();
+    }
+
 }

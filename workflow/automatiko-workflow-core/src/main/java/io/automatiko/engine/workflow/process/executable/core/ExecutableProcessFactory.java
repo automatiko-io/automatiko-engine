@@ -431,7 +431,13 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
                             ((Number) node.getMetaData().get("ErrorRetryIncrementMultiplier")).floatValue());
         }
         exceptionHandler.setRetryLimit((Integer) node.getMetaData().get("ErrorRetryLimit"));
-        exceptionScope.setExceptionHandler(hasErrorCode ? errorCode : null, exceptionHandler);
+        if (hasErrorCode) {
+            for (String error : errorCode.split(",")) {
+                exceptionScope.setExceptionHandler(error, exceptionHandler);
+            }
+        } else {
+            exceptionScope.setExceptionHandler(null, exceptionHandler);
+        }
         if (errorStructureRef != null) {
             exceptionScope.setExceptionHandler(errorStructureRef, exceptionHandler);
         }
@@ -578,8 +584,10 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
                             exceptionHandler.setRetryLimit((Integer) subNode.getMetaData().get("ErrorRetryLimit"));
                             if (faultCode != null) {
                                 String trimmedType = type.replaceFirst(replaceRegExp, "");
-                                exceptionScope.setExceptionHandler(trimmedType, exceptionHandler);
-                                eventSubProcessHandlers.add(trimmedType);
+                                for (String error : trimmedType.split(",")) {
+                                    exceptionScope.setExceptionHandler(error, exceptionHandler);
+                                    eventSubProcessHandlers.add(error);
+                                }
                             } else {
                                 exceptionScope.setExceptionHandler(faultCode, exceptionHandler);
                             }
