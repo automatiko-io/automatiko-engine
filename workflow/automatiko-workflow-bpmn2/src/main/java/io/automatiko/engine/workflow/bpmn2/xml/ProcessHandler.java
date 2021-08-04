@@ -450,7 +450,13 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
                 "Error-" + attachedTo + "-" + errorCode, variable, SignalProcessInstanceAction.PROCESS_INSTANCE_SCOPE));
         exceptionHandler.setAction(action);
         exceptionHandler.setFaultVariable(variable);
-        exceptionScope.setExceptionHandler(hasErrorCode ? errorCode : null, exceptionHandler);
+        if (hasErrorCode) {
+            for (String error : errorCode.split(",")) {
+                exceptionScope.setExceptionHandler(error, exceptionHandler);
+            }
+        } else {
+            exceptionScope.setExceptionHandler(null, exceptionHandler);
+        }
         exceptionHandler.setRetryAfter((Integer) node.getMetaData().get("ErrorRetry"));
         exceptionHandler.setRetryLimit((Integer) node.getMetaData().get("ErrorRetryLimit"));
         exceptionHandler.setRetryIncrement((Integer) node.getMetaData().get("ErrorRetryIncrement"));
@@ -872,8 +878,10 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
                                                     .setRetryLimit((Integer) subNode.getMetaData().get("ErrorRetryLimit"));
                                             if (faultCode != null) {
                                                 String trimmedType = type.replaceFirst(replaceRegExp, "");
-                                                exceptionScope.setExceptionHandler(trimmedType, exceptionHandler);
-                                                eventSubProcessHandlers.add(trimmedType);
+                                                for (String error : trimmedType.split(",")) {
+                                                    exceptionScope.setExceptionHandler(error, exceptionHandler);
+                                                    eventSubProcessHandlers.add(error);
+                                                }
                                             } else {
                                                 exceptionScope.setExceptionHandler(faultCode, exceptionHandler);
                                             }
