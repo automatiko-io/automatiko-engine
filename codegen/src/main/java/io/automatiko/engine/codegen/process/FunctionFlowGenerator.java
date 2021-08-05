@@ -4,19 +4,30 @@ package io.automatiko.engine.codegen.process;
 import static com.github.javaparser.StaticJavaParser.parse;
 import static io.automatiko.engine.codegen.CodegenUtils.interpolateTypes;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.ArrayInitializerExpr;
+import com.github.javaparser.ast.expr.BooleanLiteralExpr;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.MemberValuePair;
+import com.github.javaparser.ast.expr.Name;
+import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
+import io.automatiko.engine.api.codegen.Generated;
 import io.automatiko.engine.api.definition.process.Node;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.codegen.BodyDeclarationComparator;
@@ -27,7 +38,9 @@ import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.compiler.canonical.ProcessToExecModelGenerator;
 import io.automatiko.engine.workflow.process.core.node.ActionNode;
 import io.automatiko.engine.workflow.process.core.node.BoundaryEventNode;
+import io.automatiko.engine.workflow.process.core.node.EndNode;
 import io.automatiko.engine.workflow.process.core.node.EventNode;
+import io.automatiko.engine.workflow.process.core.node.FaultNode;
 import io.automatiko.engine.workflow.process.core.node.RuleSetNode;
 import io.automatiko.engine.workflow.process.core.node.StartNode;
 import io.automatiko.engine.workflow.process.core.node.SubProcessNode;
@@ -97,6 +110,8 @@ public class FunctionFlowGenerator {
                 .orElseThrow(() -> new IllegalStateException("Cannot find the class in FunctionFlowTemplate"));
         template.setName(functionClazzName);
 
+        List<String> discoveredFunctions = new ArrayList<>();
+
         // first to initiate the function flow
 
         template.findFirst(MethodDeclaration.class, md -> md.getNameAsString().equals("startTemplate")).ifPresent(md -> {
@@ -128,10 +143,15 @@ public class FunctionFlowGenerator {
         MethodDeclaration callTemplate = template
                 .findFirst(MethodDeclaration.class, md -> md.getNameAsString().equals("callTemplate")).get();
 
+        discoveredFunctions.add(definedFunctionTrigger(process));
+
         // for each "execution" node add new function
         for (Node node : process.getNodesRecursively()) {
 
             if (isExecutionNode(node)) {
+
+                discoveredFunctions.add(definedFunctionTrigger(node));
+
                 MethodDeclaration flowStepFunction = callTemplate.clone();
 
                 if (useInjection()) {
@@ -164,6 +184,8 @@ public class FunctionFlowGenerator {
                 flowStepFunction.setName(sanitizeIdentifier(node.getName()).toLowerCase());
 
                 template.addMember(flowStepFunction);
+            } else if (node instanceof EndNode || node instanceof FaultNode) {
+                discoveredFunctions.add(definedFunctionTrigger(node));
             }
         }
         // remove the template method
@@ -189,6 +211,19 @@ public class FunctionFlowGenerator {
 
             template.findAll(MethodDeclaration.class, md -> md.isPublic()).forEach(md -> annotator.withFunction(md));
         }
+
+        NodeList<Expression> items = NodeList
+                .nodeList(discoveredFunctions.stream().map(s -> new StringLiteralExpr(s)).collect(Collectors.toList()));
+
+        template.addAnnotation(new NormalAnnotationExpr(new Name(Generated.class.getCanonicalName()),
+                NodeList.nodeList(new MemberValuePair("value", new ArrayInitializerExpr(items)),
+                        new MemberValuePair("reference",
+                                new StringLiteralExpr(
+                                        context.getApplicationProperty("quarkus.google.cloud.project-id").orElse("missing"))),
+                        new MemberValuePair("name",
+                                new StringLiteralExpr(StringUtils.capitalize(
+                                        ProcessToExecModelGenerator.extractProcessId(processId, version)))),
+                        new MemberValuePair("hidden", new BooleanLiteralExpr(false)))));
 
         template.getMembers().sort(new BodyDeclarationComparator());
         return clazz.toString();
@@ -238,6 +273,19 @@ public class FunctionFlowGenerator {
         if (context.getApplicationProperty("quarkus.automatiko.target-deployment").orElse("unknown").equals("gcp-pubsub")) {
             return "google.cloud.pubsub.topic.v1.messagePublished";
         }
+
+        return (String) process.getMetaData().getOrDefault("functionType",
+                process.getPackageName() + "." + processId);
+    }
+
+    private String definedFunctionTrigger(Node node) {
+
+        return (String) node.getMetaData().getOrDefault("functionType",
+                process.getPackageName() + "." + processId + "."
+                        + sanitizeIdentifier(node.getName()).toLowerCase());
+    }
+
+    private String definedFunctionTrigger(WorkflowProcess process) {
 
         return (String) process.getMetaData().getOrDefault("functionType",
                 process.getPackageName() + "." + processId);
