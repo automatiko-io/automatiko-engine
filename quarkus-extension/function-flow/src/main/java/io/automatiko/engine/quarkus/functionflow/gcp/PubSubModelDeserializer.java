@@ -39,16 +39,26 @@ public abstract class PubSubModelDeserializer extends StdDeserializer<Model> {
     public Model deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
         JsonNode node = p.getCodec().readTree(p);
 
-        String data = node.get("message").get("data").asText();
+        if (node.has("message")) {
+            String data = node.get("message").get("data").asText();
 
-        byte[] value = Base64.getDecoder().decode(data);
+            byte[] value = Base64.getDecoder().decode(data);
 
-        try {
-            Model d = (Model) mapper.readValue(value, type());
+            try {
+                Model d = (Model) mapper.readValue(value, type());
 
-            return d;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+                return d;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            try {
+                Model d = (Model) mapper.convertValue(node, type());
+
+                return d;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
