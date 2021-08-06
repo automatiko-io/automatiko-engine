@@ -64,6 +64,7 @@ public class DefaultGenerator implements Generator {
         Collection<AnnotationInstance> functions = index.getIndex()
                 .getAnnotations(AutomatikoFunctionFlowProcessor.createDotName("io.quarkus.funqy.Funq"));
         DotName mapping = AutomatikoFunctionFlowProcessor.createDotName("io.quarkus.funqy.knative.events.CloudEventMapping");
+        DotName generatedData = AutomatikoFunctionFlowProcessor.createDotName("io.automatiko.engine.api.codegen.Generated");
 
         LOGGER.info("************************************************************");
         LOGGER.info("***********Automatiko Function Flow Instructions************");
@@ -73,6 +74,10 @@ public class DefaultGenerator implements Generator {
         for (AnnotationInstance f : functions) {
             if (f.target().kind().equals(Kind.METHOD)) {
                 MethodInfo mi = f.target().asMethod();
+
+                if (mi.declaringClass().annotations().get(generatedData) == null) {
+                    continue;
+                }
 
                 // create function trigger descriptor for every found function
                 String triggerTemplate = StringUtils.readFileAsString(

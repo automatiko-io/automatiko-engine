@@ -51,8 +51,6 @@ public class GcpPubSubGenerator implements Generator {
         List<String> createCommands = new ArrayList<>();
         List<String> deleteCommands = new ArrayList<>();
 
-        StringBuilder descriptorFileContent = new StringBuilder();
-
         Collection<AnnotationInstance> functions = index.getIndex()
                 .getAnnotations(AutomatikoFunctionFlowProcessor.createDotName("io.quarkus.funqy.Funq"));
         DotName mapping = AutomatikoFunctionFlowProcessor.createDotName("io.quarkus.funqy.knative.events.CloudEventMapping");
@@ -69,13 +67,18 @@ public class GcpPubSubGenerator implements Generator {
             if (f.target().kind().equals(Kind.METHOD)) {
                 MethodInfo mi = f.target().asMethod();
 
+                if (mi.declaringClass().annotations().get(generatedData) == null) {
+                    continue;
+                }
+
                 functionClasses.add(mi.declaringClass());
                 String topic = ((AnnotationInstance) ((AnnotationValue[]) mi.annotation(mapping).value("attributes").value())[0]
                         .value()).value().asString();
                 createCommands.add("gcloud eventarc triggers create " + mi.name()
                         + " --event-filters=\"type=google.cloud.pubsub.topic.v1.messagePublished\" --destination-run-service="
                         + cob.getEffectiveModel().getAppArtifact().getArtifactId()
-                        + " --destination-run-path=/ --transport-topic=" + topic + " --location=us-central1");
+                        + " --destination-run-path=/ --transport-topic=" + topic.substring(topic.lastIndexOf("/") + 1)
+                        + " --location=us-central1");
 
                 deleteCommands.add("gcloud eventarc triggers delete " + mi.name() + " --location=us-central1");
 
@@ -99,12 +102,13 @@ public class GcpPubSubGenerator implements Generator {
             List<AnnotationInstance> genAnnotation = clz.annotations().get(generatedData);
 
             if (genAnnotation != null) {
+                googleProjectId = genAnnotation.get(0).value("reference").asString();
                 String[] functionIds = genAnnotation.get(0).value().asStringArray();
                 for (String functionId : functionIds) {
-                    createCommands.add("gcloud pubsub topics create " + functionId + " --location=us-central1");
-                    deleteCommands.add("gcloud pubsub topics delete " + functionId + " --location=us-central1");
+                    createCommands.add("gcloud pubsub topics create " + functionId + " --project=" + googleProjectId);
+                    deleteCommands.add("gcloud pubsub topics delete " + functionId + " --project=" + googleProjectId);
                 }
-                googleProjectId = genAnnotation.get(0).value("reference").asString();
+
             }
 
         }
