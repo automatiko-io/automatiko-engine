@@ -121,7 +121,7 @@ public class FunctionFlowGenerator {
 
             if (useInjection()) {
                 String trigger = functionTrigger(process);
-                String filter = (String) process.getMetaData().get("functionFilter");
+                String filter = functionFilter(process);
                 if (filter != null) {
                     Matcher matcher = PARAMETER_MATCHER.matcher(filter);
                     while (matcher.find()) {
@@ -156,14 +156,14 @@ public class FunctionFlowGenerator {
 
                 if (useInjection()) {
                     String trigger = functionTrigger(node);
-                    String filter = (String) node.getMetaData().get("functionFilter");
+                    String filter = functionFilter(node);
                     if (filter != null) {
                         Matcher matcher = PARAMETER_MATCHER.matcher(filter);
                         while (matcher.find()) {
                             String paramName = matcher.group(1);
 
                             Optional<String> value = context.getApplicationProperty(paramName);
-                            if (value.isPresent()) {
+                            if (value.isPresent() && !value.get().isEmpty()) {
                                 filter = filter.replaceAll("\\{" + paramName + "\\}", value.get());
                             } else {
                                 throw new IllegalArgumentException("Missing argument declared in as function filter with name '"
@@ -289,5 +289,31 @@ public class FunctionFlowGenerator {
 
         return (String) process.getMetaData().getOrDefault("functionType",
                 process.getPackageName() + "." + processId);
+    }
+
+    private String functionFilter(Node node) {
+
+        String filter = (String) node.getMetaData().get("functionFilter");
+
+        if (filter == null && context.getApplicationProperty("quarkus.automatiko.target-deployment").orElse("unknown")
+                .equals("gcp-pubsub")) {
+            return "source=//pubsub.googleapis.com/projects/{quarkus.google.cloud.project-id}/topics/"
+                    + definedFunctionTrigger(node);
+        }
+
+        return filter;
+    }
+
+    private String functionFilter(WorkflowProcess process) {
+
+        String filter = (String) process.getMetaData().get("functionFilter");
+
+        if (filter == null && context.getApplicationProperty("quarkus.automatiko.target-deployment").orElse("unknown")
+                .equals("gcp-pubsub")) {
+            return "source=//pubsub.googleapis.com/projects/{quarkus.google.cloud.project-id}/topics/"
+                    + definedFunctionTrigger(process);
+        }
+
+        return filter;
     }
 }
