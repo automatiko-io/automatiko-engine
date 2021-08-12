@@ -5,10 +5,102 @@ Send Email addon service comes with support for sending emails.
 It provides `io.automatiko.engine.addons.services.email.SendEmailService` that comes with
 following operations
 
-- `send` with given body
-- `send` with template based body
+- `sendSimple*` with given body
+- `send*` with template based body
 
-NOTE: Regardless of the operation type, recipients (both `TO` and `CC`) can be given as list of comma
+A complete set of methods available in this service
+
+[options="header",cols="1,3,2a"]
+|===
+|Method name   |Description   |Parameters   
+//----------------------
+|sendSimple   |Allows to send simple body email - given as parameter to main recipients only (one or more)|
+* String tos 
+* String subject 
+* String body
+*  File<byte[]>... attachments
+|sendSimpleWithCC   |Allows to send simple body email - given as parameter to main recipients and CC recipients (one or more)   |
+* String tos
+* String ccs  
+* String subject 
+* String body
+*  File<byte[]>... attachments   
+|sendSimpleWithBCC   |Allows to send simple body email - given as parameter to main recipients and BCC recipients (one or more)   |
+* String tos
+* String bccs  
+* String subject 
+* String body
+*  File<byte[]>... attachments   
+|sendSimpleCorrelated   |Allows to send simple body email - given as parameter to main recipients only (one or more) with correlation information of the workflow instance|
+* String correlation 
+* String tos 
+* String subject 
+* String body
+*  File<byte[]>... attachments   
+|sendSimpleCorrelatedWithCC   |Allows to send simple body email - given as parameter to main recipients and CC recipients (one or more) with correlation information of the workflow instance|
+* String correlation 
+* String tos 
+* String ccs  
+* String subject 
+* String body
+*  File<byte[]>... attachments  
+|sendSimpleCorrelatedWithBCC   |Allows to send simple body email - given as parameter to main recipients and BCC recipients (one or more) with correlation information of the workflow instance|
+* String correlation 
+* String tos 
+* String bccs  
+* String subject 
+* String body
+*  File<byte[]>... attachments 
+|send   |Allows to send generated body (based on template and data) email to main recipients only (one or more)|
+* String tos 
+* String subject 
+* String template
+* Object data
+*  File<byte[]>... attachments
+|sendWithCC   |Allows to send generated body (based on template and data) email to main recipients and CC recipients (one or more)|
+* String tos 
+* String ccs  
+* String subject 
+* String template
+* Object data
+*  File<byte[]>... attachments 
+|sendWithBCC   |Allows to send generated body (based on template and data) email to main recipients and BCC recipients (one or more)|
+* String tos 
+* String bccs  
+* String subject 
+* String template
+* Object data
+*  File<byte[]>... attachments 
+|sendCorrelated   |Allows to send generated body (based on template and data) email to main recipients only (one or more) with correlation information of the workflow instance|
+* String correlation 
+* String tos 
+* String subject 
+* String template
+* Object data
+*  File<byte[]>... attachments 
+|sendCorrelatedWithCC   |Allows to send generated body (based on template and data) email to main recipients and CC recipients (one or more) with correlation information of the workflow instance|
+* String correlation 
+* String tos 
+* String ccs  
+* String subject 
+* String template
+* Object data
+*  File<byte[]>... attachments  
+|sendCorrelatedWithBCC   |Allows to send generated body (based on template and data) email to main recipients and BCC recipients (one or more) with correlation information of the workflow instance|
+* String correlation 
+* String tos 
+* String bccs  
+* String subject 
+* String template
+* Object data
+*  File<byte[]>... attachments 
+|===
+
+TIP: When using correlated email send operations to pass in the correlation you can use `#{processInstanceId}` expression
+in the data mapping. You can also use values that match any of the tags of the workflow instance.
+
+
+NOTE: Regardless of the operation type, recipients (both `TO` and `CC` or `BCC`) can be given as list of comma
 separated addresses e.g. `john@email.com,mary@email.com` 
 
 == Send with given body operation
@@ -19,6 +111,7 @@ and thus it will not perform any modification to it.
 There are two flavors of the operation that differs in the set of recipients
 - sending only to main recipients (TO)
 - sending to both main recipients and CC recipients
+- sending to both main recipients and BCC recipients
 
 
 === Data mapping
@@ -51,6 +144,7 @@ by name) and the context object. Both must be given to properly produce and send
 There are two flavors of the operation that differs in the set of recipients
 - sending only to main recipients (TO)
 - sending to both main recipients and CC recipients
+- sending to both main recipients and BCC recipients
 
 When creating templates (usually html files) to refer to context object use `body` variable. 
 Following examples shows how to access name of the person that is given as context object:

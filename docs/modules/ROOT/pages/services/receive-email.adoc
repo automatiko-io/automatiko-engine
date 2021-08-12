@@ -1,0 +1,62 @@
+:imagesdir: ../../images
+= Receive Email
+
+
+Email message received can be automatically converted to an object of type `io.automatiko.engine.addons.services.receiveemail.EmailMessage`
+that has following properties
+
+- from - from address
+- replyTo - reply to address if found
+- to - list of TO recipients as string
+- cc - list of CC recipients as string
+- bcc - list of BCC recipients as string
+- subject - email subject
+- body - string representation of the email body
+- attachments - list of attachments if found any in the email (of type `io.automatiko.engine.api.workflow.files.File<byte[]>`
+
+
+NOTE: In case you can to extract more from the email message than what is provided out of the box
+then you should define new type and implement `io.automatiko.engine.api.io.InputConverter<T>` for that type.
+
+In addition to automatic email conversion to a java object, there is also a function (that will be made available
+to your workflow definition) that can be used for correlating emails to proper workflow instances.
+
+That function is `replyMessageId(message)` it takes the received message and extracts the correlation attribute that
+is actually based on the `In-Reply-To` header of the email. This goes hand in hand with sending correlated email
+that will attach proper information to be able to use it on both ends.
+
+Use of this function is via `corrrelationExpression` of the message within workflow definition. 
+See <<../../components/messaging.adoc#_correlation,correlation section in Messaging>> for more details.
+
+And here is an example how it can be used
+
+image::receive-email-1.png[]
+
+== Usage
+
+To be able to use this service addon a project must be given following dependency
+
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons.services</groupId>
+  <artifactId>automatiko-receive-email-addon</artifactId>
+</dependency>
+----
+
+There is a need to provide email server configuration via `application.properties` file
+
+[source,plain]
+----
+email.user=YOUR_EMAIL_USER@gmail.com
+email.password=YOUR_EMAIL_PASSWORD
+
+mp.messaging.incoming.email-received.endpoint-uri=imaps://imap.gmail.com?username=${email.user}&password=${email.password}&delete=false&unseen=true&delay=60000&closeFolder=false
+
+----
+
+where `email-received` is the name of the message within your workflow definition.
+
+A complete example of this service can be found 
+in https://github.com/automatiko-io/automatiko-engine/tree/main/integration-tests/automatiko-email[integration tests of the Automatiko project] 
