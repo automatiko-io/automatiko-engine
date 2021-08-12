@@ -16,5 +16,6 @@
   <modules>
     <module>automatiko-send-email-addon</module>
     <module>automatiko-archive-addon</module>
+    <module>automatiko-receive-email-addon</module>
   </modules>
 </project>
