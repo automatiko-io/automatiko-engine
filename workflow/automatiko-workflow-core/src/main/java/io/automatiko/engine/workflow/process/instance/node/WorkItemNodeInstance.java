@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.definition.process.Node;
+import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.runtime.process.DataTransformer;
 import io.automatiko.engine.api.runtime.process.EventListener;
 import io.automatiko.engine.api.runtime.process.HumanTaskWorkItem;
@@ -62,6 +63,7 @@ import io.automatiko.engine.workflow.base.instance.impl.util.VariableUtil;
 import io.automatiko.engine.workflow.base.instance.impl.workitem.DefaultWorkItemManager;
 import io.automatiko.engine.workflow.base.instance.impl.workitem.WorkItemHandlerNotFoundException;
 import io.automatiko.engine.workflow.base.instance.impl.workitem.WorkItemImpl;
+import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 import io.automatiko.engine.workflow.process.core.node.Assignment;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
 import io.automatiko.engine.workflow.process.core.node.Transformation;
@@ -196,6 +198,7 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         return new WorkItemImpl();
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected WorkItem createWorkItem(WorkItemNode workItemNode) {
         Work work = workItemNode.getWork();
         if (workItem == null) {
@@ -229,7 +232,10 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
                     parameterValue = variableScopeInstance.getVariable(association.getSources().get(0));
                 } else {
                     try {
-                        parameterValue = MVEL.eval(association.getSources().get(0),
+                        ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) getProcessInstance()
+                                .getProcess())
+                                        .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                        parameterValue = evaluator.evaluate(association.getSources().get(0),
                                 new NodeInstanceResolverFactory(this));
                     } catch (Throwable t) {
                         logger.error("Could not find variable scope for variable {}", association.getSources().get(0));
@@ -269,7 +275,10 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
                             replacements.put(replacementKey, variableValueString);
                         } else {
                             try {
-                                Object variableValue = MVEL.eval(paramName, new NodeInstanceResolverFactory(this));
+                                ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) getProcessInstance()
+                                        .getProcess())
+                                                .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                                Object variableValue = evaluator.evaluate(paramName, new NodeInstanceResolverFactory(this));
                                 String variableValueString = variableValue == null ? defaultValue : variableValue.toString();
                                 replacements.put(replacementKey, variableValueString);
                             } catch (Throwable t) {
@@ -305,6 +314,7 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void triggerCompleted(WorkItem workItem) {
         this.workItem = workItem;
         WorkItemNode workItemNode = getWorkItemNode();
@@ -361,7 +371,10 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
                         Object value = workItem.getResult(association.getSources().get(0));
                         if (value == null) {
                             try {
-                                value = MVEL.eval(association.getSources().get(0),
+                                ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) getProcessInstance()
+                                        .getProcess())
+                                                .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                                value = evaluator.evaluate(association.getSources().get(0),
                                         new WorkItemResolverFactory(workItem));
                             } catch (Throwable t) {
                                 // do nothing
@@ -563,6 +576,7 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         return getWorkItemNode();
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected Map<String, Object> getSourceParameters(DataAssociation association) {
         Map<String, Object> parameters = new HashMap<>();
         for (String sourceParam : association.getSources()) {
@@ -573,7 +587,10 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
                 parameterValue = variableScopeInstance.getVariable(sourceParam);
             } else {
                 try {
-                    parameterValue = MVEL.eval(sourceParam, new NodeInstanceResolverFactory(this));
+                    ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) getProcessInstance()
+                            .getProcess())
+                                    .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                    parameterValue = evaluator.evaluate(sourceParam, new NodeInstanceResolverFactory(this));
                 } catch (Throwable t) {
                     logger.warn("Could not find variable scope for variable {}", sourceParam);
                 }

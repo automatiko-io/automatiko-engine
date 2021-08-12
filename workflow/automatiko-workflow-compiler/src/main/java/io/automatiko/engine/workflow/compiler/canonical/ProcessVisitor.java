@@ -167,6 +167,14 @@ public class ProcessVisitor extends AbstractVisitor {
                                     new StringLiteralExpr(tag.getExpression()), new NullLiteralExpr()));
                 }
             }
+
+            if (((io.automatiko.engine.workflow.process.core.WorkflowProcess) process).getImports() != null
+                    && !((io.automatiko.engine.workflow.process.core.WorkflowProcess) process).getImports().isEmpty()) {
+                NodeList<Expression> items = NodeList
+                        .nodeList(((io.automatiko.engine.workflow.process.core.WorkflowProcess) process).getImports().stream()
+                                .map(s -> new StringLiteralExpr(s)).collect(Collectors.toList()));
+                body.addStatement(getFactoryMethod(FACTORY_FIELD_NAME, "imports", items.toArray(Expression[]::new)));
+            }
         }
 
         metadata.setDynamic(((io.automatiko.engine.workflow.process.core.WorkflowProcess) process).isDynamic());

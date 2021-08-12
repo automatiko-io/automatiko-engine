@@ -135,9 +135,8 @@ public class ProcessGenerator {
         compilationUnit.addImport("io.automatiko.engine.workflow.base.core.datatype.impl.type.ObjectDataType");
         compilationUnit.addImport("io.automatiko.engine.workflow.process.executable.core.ExecutableProcessFactory");
         compilationUnit.addImport(new ImportDeclaration(BaseFunctions.class.getCanonicalName(), true, true));
-
-        context.getBuildContext().classThatImplement(Functions.class.getCanonicalName())
-                .forEach(c -> compilationUnit.addImport(new ImportDeclaration(c, true, true)));
+        List<String> functions = context.getBuildContext().classThatImplement(Functions.class.getCanonicalName());
+        functions.forEach(c -> compilationUnit.addImport(new ImportDeclaration(c, true, true)));
 
         compilationUnit.getTypes().add(classDeclaration());
         return compilationUnit;

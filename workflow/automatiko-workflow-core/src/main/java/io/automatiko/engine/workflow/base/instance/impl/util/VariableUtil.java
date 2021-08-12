@@ -4,17 +4,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import org.mvel2.MVEL;
-
+import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.instance.context.variable.VariableScopeInstance;
+import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 import io.automatiko.engine.workflow.process.instance.impl.NodeInstanceResolverFactory;
 import io.automatiko.engine.workflow.util.PatternConstants;
 
 public class VariableUtil {
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static String resolveVariable(String s, NodeInstance nodeInstance) {
         if (s == null) {
             return null;
@@ -42,7 +43,11 @@ public class VariableUtil {
                     replacements.put(replacementKey, variableValueString);
                 } else {
                     try {
-                        Object variableValue = MVEL.eval(paramName, new NodeInstanceResolverFactory(
+                        ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) nodeInstance
+                                .getProcessInstance()
+                                .getProcess())
+                                        .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                        Object variableValue = evaluator.evaluate(paramName, new NodeInstanceResolverFactory(
                                 (io.automatiko.engine.workflow.process.instance.NodeInstance) nodeInstance));
                         String variableValueString = variableValue == null ? defaultValue : variableValue.toString();
                         replacements.put(replacementKey, variableValueString);

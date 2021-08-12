@@ -16,6 +16,7 @@ import org.mvel2.MVEL;
 
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.definition.process.Connection;
+import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.runtime.process.DataTransformer;
 import io.automatiko.engine.api.runtime.process.ProcessContext;
 import io.automatiko.engine.api.workflow.ProcessInstance;
@@ -31,6 +32,7 @@ import io.automatiko.engine.workflow.base.instance.context.variable.VariableScop
 import io.automatiko.engine.workflow.base.instance.impl.AssignmentAction;
 import io.automatiko.engine.workflow.base.instance.impl.util.VariableUtil;
 import io.automatiko.engine.workflow.base.instance.impl.workitem.WorkItemImpl;
+import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 import io.automatiko.engine.workflow.process.instance.NodeInstance;
 import io.automatiko.engine.workflow.process.instance.impl.NodeInstanceResolverFactory;
 import io.automatiko.engine.workflow.process.instance.node.CompositeContextNodeInstance;
@@ -292,6 +294,7 @@ public class SubProcessNode extends StateBasedNode implements Mappable, ContextC
         }
         this.subProcessFactory = new SubProcessFactory<Object>() {
 
+            @SuppressWarnings({ "unchecked", "rawtypes" })
             @Override
             public Map<String, Object> bind(ProcessContext ctx) {
                 Map<String, Object> parameters = new HashMap<String, Object>();
@@ -315,7 +318,11 @@ public class SubProcessNode extends StateBasedNode implements Mappable, ContextC
                             parameterValue = variableScopeInstance.getVariable(mapping.getSources().get(0));
                         } else {
                             try {
-                                parameterValue = MVEL.eval(mapping.getSources().get(0),
+                                ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) ctx
+                                        .getProcessInstance()
+                                        .getProcess())
+                                                .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                                parameterValue = evaluator.evaluate(mapping.getSources().get(0),
                                         new NodeInstanceResolverFactory((NodeInstance) ctx.getNodeInstance()));
                             } catch (Throwable t) {
                                 parameterValue = VariableUtil.resolveVariable(mapping.getSources().get(0),
@@ -434,6 +441,7 @@ public class SubProcessNode extends StateBasedNode implements Mappable, ContextC
         };
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected Map<String, Object> getSourceParameters(ProcessContext ctx, DataAssociation association) {
         Map<String, Object> parameters = new HashMap<String, Object>();
         for (String sourceParam : association.getSources()) {
@@ -444,7 +452,10 @@ public class SubProcessNode extends StateBasedNode implements Mappable, ContextC
                 parameterValue = variableScopeInstance.getVariable(sourceParam);
             } else {
                 try {
-                    parameterValue = MVEL.eval(sourceParam,
+                    ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) ctx.getProcessInstance()
+                            .getProcess())
+                                    .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                    parameterValue = evaluator.evaluate(sourceParam,
                             new NodeInstanceResolverFactory(((NodeInstance) ctx.getNodeInstance())));
                 } catch (Throwable t) {
 

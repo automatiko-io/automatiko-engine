@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.workflow.Variable;
 import io.automatiko.engine.workflow.base.instance.context.variable.DefaultVariableInitializer;
 
@@ -16,7 +17,7 @@ public class CustomVariableInitializer extends DefaultVariableInitializer {
     PersonRepository repository;
 
     @Override
-    protected Object defaultValue(String valueExpression, Variable definition, Map<String, Object> data) {
+    protected Object defaultValue(Process process, String valueExpression, Variable definition, Map<String, Object> data) {
 
         if (valueExpression.equals("load")) {
             List<Person> list = repository.findByName((String) data.get("name"));
@@ -28,7 +29,7 @@ public class CustomVariableInitializer extends DefaultVariableInitializer {
             return list.get(0);
         }
 
-        return super.defaultValue(valueExpression, definition, data);
+        return super.defaultValue(process, valueExpression, definition, data);
     }
 
 }

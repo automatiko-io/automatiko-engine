@@ -13,6 +13,8 @@ public class ProcessInstanceDetailsDTO {
 
     private String description;
 
+    private int state;
+
     private Collection<String> tags;
 
     private boolean failed;
@@ -49,6 +51,14 @@ public class ProcessInstanceDetailsDTO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public void setState(int state) {
+        this.state = state;
     }
 
     public Collection<String> getTags() {

@@ -7,11 +7,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
-import org.mvel2.MVEL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.definition.process.Process;
+import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.api.runtime.process.WorkItem;
 import io.automatiko.engine.services.correlation.CorrelationKey;
@@ -22,6 +22,7 @@ import io.automatiko.engine.workflow.base.instance.ProcessInstance;
 import io.automatiko.engine.workflow.base.instance.impl.ProcessInstanceImpl;
 import io.automatiko.engine.workflow.base.instance.impl.workitem.DefaultWorkItemManager;
 import io.automatiko.engine.workflow.base.instance.impl.workitem.WorkItemImpl;
+import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 import io.automatiko.engine.workflow.process.instance.WorkflowProcessInstance;
 import io.automatiko.engine.workflow.process.instance.impl.NodeInstanceImpl;
 import io.automatiko.engine.workflow.process.instance.impl.ProcessInstanceResolverFactory;
@@ -45,6 +46,7 @@ public class DynamicUtils {
                 parameters);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private static void internalAddDynamicWorkItem(final WorkflowProcessInstance processInstance,
             final DynamicNodeInstance dynamicContext, InternalProcessRuntime runtime, String workItemName,
             Map<String, Object> parameters) {
@@ -71,7 +73,10 @@ public class DynamicUtils {
                     variableValue = processInstance.getVariable(paramName);
                     if (variableValue == null) {
                         try {
-                            variableValue = MVEL.eval(paramName, new ProcessInstanceResolverFactory(processInstance));
+                            ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) processInstance
+                                    .getProcess())
+                                            .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                            variableValue = evaluator.evaluate(paramName, new ProcessInstanceResolverFactory(processInstance));
                         } catch (Throwable t) {
                             logger.error("Could not find variable scope for variable {}", paramName);
                             logger.error("when trying to replace variable in string for Dynamic Work Item {}",

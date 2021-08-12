@@ -6,11 +6,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.mvel2.MVEL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.definition.process.Node;
+import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.runtime.process.EventListener;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.services.utils.StringUtils;
@@ -28,6 +28,7 @@ import io.automatiko.engine.workflow.base.instance.context.variable.VariableScop
 import io.automatiko.engine.workflow.base.instance.impl.ContextInstanceFactory;
 import io.automatiko.engine.workflow.base.instance.impl.ContextInstanceFactoryRegistry;
 import io.automatiko.engine.workflow.base.instance.impl.ProcessInstanceImpl;
+import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
 import io.automatiko.engine.workflow.process.core.node.SubProcessFactory;
 import io.automatiko.engine.workflow.process.core.node.SubProcessNode;
@@ -67,6 +68,7 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
 
         ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
         context.setNodeInstance(this);
+        context.setProcessInstance(getProcessInstance());
         SubProcessFactory subProcessFactory = getSubProcessNode().getSubProcessFactory();
         Object o = subProcessFactory.bind(context);
         io.automatiko.engine.api.workflow.ProcessInstance<?> processInstance = subProcessFactory.createInstance(o);
@@ -210,6 +212,7 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
         SubProcessFactory subProcessFactory = getSubProcessNode().getSubProcessFactory();
         ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
         context.setNodeInstance(this);
+        context.setProcessInstance(getProcessInstance());
         io.automatiko.engine.api.workflow.ProcessInstance<?> pi = ((io.automatiko.engine.api.workflow.ProcessInstance<?>) processInstance
                 .getMetaData().get("AutomatikProcessInstance"));
         if (pi != null) {
@@ -280,6 +283,7 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
         return getSubProcessNode();
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected Map<String, Object> getSourceParameters(DataAssociation association) {
         Map<String, Object> parameters = new HashMap<String, Object>();
         for (String sourceParam : association.getSources()) {
@@ -290,7 +294,10 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
                 parameterValue = variableScopeInstance.getVariable(sourceParam);
             } else {
                 try {
-                    parameterValue = MVEL.eval(sourceParam, new NodeInstanceResolverFactory(this));
+                    ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) getProcessInstance()
+                            .getProcess())
+                                    .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                    parameterValue = evaluator.evaluate(sourceParam, new NodeInstanceResolverFactory(this));
                 } catch (Throwable t) {
                     logger.warn("Could not find variable scope for variable {}", sourceParam);
                 }

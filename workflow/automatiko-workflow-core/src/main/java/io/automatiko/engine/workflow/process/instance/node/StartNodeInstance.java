@@ -148,7 +148,8 @@ public class StartNodeInstance extends NodeInstanceImpl {
 
         for (Variable var : variableScope.getVariables()) {
             if (var.getMetaData(Variable.DEFAULT_VALUE) != null && variableScopeInstance.getVariable(var.getName()) == null) {
-                Object value = runtime.getVariableInitializer().initialize(var, variableScopeInstance.getVariables());
+                Object value = runtime.getVariableInitializer().initialize(getProcessInstance().getProcess(), var,
+                        variableScopeInstance.getVariables());
 
                 variableScope.validateVariable(getProcessInstance().getProcess().getName(), var.getName(), value);
                 variableScopeInstance.setVariable(var.getName(), value);

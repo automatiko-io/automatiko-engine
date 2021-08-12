@@ -56,6 +56,7 @@ import io.automatiko.engine.codegen.process.ProcessCodegen;
 import io.automatiko.engine.codegen.process.persistence.PersistenceGenerator;
 import io.automatiko.engine.quarkus.AutomatikoBuildTimeConfig;
 import io.automatiko.engine.services.utils.IoUtils;
+import io.automatiko.engine.workflow.BaseWorkItem;
 import io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
 import io.quarkus.bootstrap.BootstrapDependencyProcessingException;
@@ -145,6 +146,9 @@ public class AutomatikoQuarkusProcessor {
             resource.produce(new NativeImageResourceBuildItem("automatiko-types.proto"));
         }
 
+        resource.produce(new NativeImageResourceBuildItem("templates/default-usertask-email.html"));
+        resource.produce(new NativeImageResourceBuildItem("templates/default-task-template.html"));
+        resource.produce(new NativeImageResourceBuildItem("templates/not-found-template.html"));
         resource.produce(new NativeImageResourceBuildItem("automatiko-index.html"));
         resource.produce(new NativeImageResourceBuildItem("/META-INF/resources/js/automatiko-authorization.js"));
     }
@@ -300,6 +304,23 @@ public class AutomatikoQuarkusProcessor {
             reflectiveClass.produce(new ReflectiveClassBuildItem(false, false,
                     "org.mvel2.optimizers.impl.refl.ReflectiveAccessorOptimizer"));
             reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, ArrayList.class.getCanonicalName()));
+
+            // add functions classes found
+            reflectiveClass.produce(
+                    new ReflectiveClassBuildItem(true, false, "io.automatiko.engine.services.execution.BaseFunctions"));
+            List<String> functions = archivesIndex
+                    .getAllKnownImplementors(createDotName("io.automatiko.engine.api.Functions")).stream()
+                    .map(c -> c.name().toString())
+                    .collect(Collectors.toList());
+
+            functions.forEach(
+                    c -> reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, c)));
+
+            reflectiveClass.produce(
+                    new ReflectiveClassBuildItem(true, true, byte[].class.getName()));
+
+            reflectiveClass.produce(
+                    new ReflectiveClassBuildItem(true, false, BaseWorkItem.class));
 
             providerProducer.produce(new ServiceProviderBuildItem(AutomatikoConfigProperties.class.getCanonicalName(),
                     "io.automatiko.application.app.GeneratedAutomatikoConfigProperties"));

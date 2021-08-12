@@ -195,6 +195,9 @@
         <tns:metaData name="tags">
           <tns:metaValue><![CDATA[input]]></tns:metaValue>
         </tns:metaData>
+        <tns:metaData name="value">
+          <tns:metaValue><![CDATA[#{todayDate()}]]></tns:metaValue>
+        </tns:metaData>
       </bpmn2:extensionElements>
     </bpmn2:dataObject>
   </bpmn2:process>

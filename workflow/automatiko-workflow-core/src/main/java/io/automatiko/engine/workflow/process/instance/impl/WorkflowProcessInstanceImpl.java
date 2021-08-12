@@ -36,7 +36,6 @@ import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +45,7 @@ import io.automatiko.engine.api.auth.TrustedIdentityProvider;
 import io.automatiko.engine.api.definition.process.Node;
 import io.automatiko.engine.api.definition.process.NodeContainer;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
+import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.jobs.DurationExpirationTime;
 import io.automatiko.engine.api.jobs.ProcessInstanceJobDescription;
 import io.automatiko.engine.api.runtime.process.EventListener;
@@ -751,6 +751,7 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
         return resolveVariable(s, new ProcessInstanceResolverFactory(this));
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private String resolveVariable(String s, VariableResolverFactory factory) {
         Map<String, String> replacements = new HashMap<>();
         Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(s);
@@ -771,7 +772,9 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
                     replacements.put(replacementKey, variableValue.toString());
                 } else {
                     try {
-                        variableValue = MVEL.eval(paramName, factory);
+                        ExpressionEvaluator evaluator = (ExpressionEvaluator) ((io.automatiko.engine.workflow.process.core.WorkflowProcess) getProcess())
+                                .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                        variableValue = evaluator.evaluate(paramName, factory);
                         String variableValueString = variableValue == null ? defaultValue : variableValue.toString();
                         replacements.put(replacementKey, variableValueString);
                     } catch (Throwable t) {

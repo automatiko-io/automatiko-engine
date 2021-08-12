@@ -1,7 +1,10 @@
 package io.automatiko.engine.workflow.base.instance.context.variable;
 
 import java.lang.reflect.InvocationTargetException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -9,16 +12,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 
-import org.mvel2.MVEL;
-
+import io.automatiko.engine.api.definition.process.Process;
+import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.workflow.Variable;
 import io.automatiko.engine.api.workflow.VariableInitializer;
+import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 import io.automatiko.engine.workflow.util.PatternConstants;
 
 public class DefaultVariableInitializer implements VariableInitializer {
 
     @Override
-    public Object initialize(Variable definition, Map<String, Object> data) {
+    public Object initialize(Process process, Variable definition, Map<String, Object> data) {
 
         String valueExpression = (String) definition
                 .getMetaData(io.automatiko.engine.workflow.base.core.context.variable.Variable.DEFAULT_VALUE);
@@ -43,6 +47,12 @@ public class DefaultVariableInitializer implements VariableInitializer {
                 return Double.valueOf(0);
             } else if (Float.class.isAssignableFrom(clazz)) {
                 return Float.valueOf(0);
+            } else if (Date.class.isAssignableFrom(clazz)) {
+                return new Date();
+            } else if (LocalDate.class.isAssignableFrom(clazz)) {
+                return LocalDate.now();
+            } else if (LocalDateTime.class.isAssignableFrom(clazz)) {
+                return LocalDateTime.now();
             } else {
                 try {
                     return clazz.getConstructor().newInstance();
@@ -53,10 +63,10 @@ public class DefaultVariableInitializer implements VariableInitializer {
             }
         }
 
-        return defaultValue(valueExpression, definition, data);
+        return defaultValue(process, valueExpression, definition, data);
     }
 
-    protected Object defaultValue(String valueExpression, Variable definition, Map<String, Object> data) {
+    protected Object defaultValue(Process process, String valueExpression, Variable definition, Map<String, Object> data) {
         try {
             Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(valueExpression);
 
@@ -69,8 +79,9 @@ public class DefaultVariableInitializer implements VariableInitializer {
                     paramName = items[0];
                     defaultValue = items[1];
                 }
-
-                Object result = MVEL.eval(paramName, data);
+                ExpressionEvaluator<?> evaluator = (ExpressionEvaluator<?>) ((WorkflowProcess) process)
+                        .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                Object result = evaluator.evaluate(paramName, data);
 
                 return result == null ? defaultValue : result;
 
