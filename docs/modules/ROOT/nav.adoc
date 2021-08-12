@@ -15,5 +15,6 @@
 ** xref:components/async-execution.adoc[Async Execution]
 * Services
 ** xref:services/archive.adoc[Archive]
-** xref:services/email.adoc[Email]
+** xref:services/email.adoc[Send Email]
+** xref:services/receive-email.adoc[Receive Email]
 
