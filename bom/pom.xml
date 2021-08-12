@@ -265,6 +265,18 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
+      
+      <dependency>
+        <groupId>io.automatiko.addons.services</groupId>
+        <artifactId>automatiko-receive-email-addon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.addons.services</groupId>
+        <artifactId>automatiko-receive-email-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
 
       <dependency>
         <groupId>io.automatiko.addons.services</groupId>

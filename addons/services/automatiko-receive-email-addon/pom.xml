@@ -1,0 +1,64 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.automatiko.addons.services</groupId>
+    <artifactId>services</artifactId>
+    <version>0.0.0-SNAPSHOT</version>
+  </parent>
+  
+  <groupId>io.automatiko.addons.services</groupId>
+  <artifactId>automatiko-receive-email-addon</artifactId>
+
+  <name>Automatiko Engine :: Add-Ons :: Receive Email Services</name>
+
+  <description>Receive Email Services Addon for Automatiko Engine</description>
+
+
+  <properties>
+    <java.module.name>io.automatiko.addons.services.receiveemail</java.module.name>
+  </properties>
+  
+  <dependencies>
+    <dependency>
+      <groupId>io.automatiko.engine</groupId>
+      <artifactId>automatiko-engine-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.automatiko.engine</groupId>
+      <artifactId>automatiko-engine-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.camel.quarkus</groupId>
+      <artifactId>camel-quarkus-smallrye-reactive-messaging</artifactId>
+      <version>${version.org.apache.camel.quarkus}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel.quarkus</groupId>
+      <artifactId>camel-quarkus-mail</artifactId>
+      <version>${version.org.apache.camel.quarkus}</version>
+    </dependency>
+    
+    <!-- test -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  
+</project>
