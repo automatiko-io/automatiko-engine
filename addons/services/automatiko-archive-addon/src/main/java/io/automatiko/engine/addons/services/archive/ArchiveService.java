@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -17,6 +18,22 @@ import io.automatiko.engine.api.workflow.files.File;
 
 @ApplicationScoped
 public class ArchiveService {
+
+    /**
+     * Builds an archive with given files. built archive will be named based on the given
+     * name so it should include the extension as well.
+     * 
+     * In case of error a <code>ServiceExecutionError</code> will be thrown with error code set to <code>zipFailure</code>
+     * so it can be used within workflow definition to handle it
+     * 
+     * @param name name of the archive
+     * @param files files to be included in the archive
+     * @return built archive with given files
+     */
+    @SuppressWarnings("unchecked")
+    public Archive zip(String name, Collection<File<byte[]>> files) {
+        return zip(name, files.toArray(File[]::new));
+    }
 
     /**
      * Builds an archive with given files. built archive will be named based on the given
