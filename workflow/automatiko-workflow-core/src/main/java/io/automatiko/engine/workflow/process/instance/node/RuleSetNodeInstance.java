@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.decision.DecisionModel;
+import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.runtime.process.DataTransformer;
 import io.automatiko.engine.api.runtime.process.EventListener;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
@@ -33,6 +34,7 @@ import io.automatiko.engine.workflow.base.instance.context.variable.VariableScop
 import io.automatiko.engine.workflow.base.instance.impl.ContextInstanceFactory;
 import io.automatiko.engine.workflow.base.instance.impl.ContextInstanceFactoryRegistry;
 import io.automatiko.engine.workflow.base.instance.impl.util.VariableUtil;
+import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
 import io.automatiko.engine.workflow.process.core.node.RuleSetNode;
 import io.automatiko.engine.workflow.process.core.node.Transformation;
@@ -158,6 +160,7 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
         super.cancel();
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void processOutputs(Map<String, Object> inputs, Map<String, Object> objects) {
         logger.debug("Rules evaluation results {}", objects);
         RuleSetNode ruleSetNode = getRuleSetNode();
@@ -199,7 +202,10 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
                         Object value = objects.get(association.getSources().get(0));
                         if (value == null) {
                             try {
-                                value = MVEL.eval(association.getSources().get(0),
+                                ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) getProcessInstance()
+                                        .getProcess())
+                                                .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                                value = evaluator.evaluate(association.getSources().get(0),
                                         new MapVariableResolverFactory(objects));
                             } catch (Throwable t) {
                                 // do nothing
@@ -235,6 +241,7 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected Map<String, Object> evaluateParameters(RuleSetNode ruleSetNode) {
         Map<String, Object> replacements = new HashMap<>();
 
@@ -257,7 +264,10 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
                     parameterValue = variableScopeInstance.getVariable(association.getSources().get(0));
                 } else {
                     try {
-                        parameterValue = MVEL.eval(association.getSources().get(0),
+                        ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) getProcessInstance()
+                                .getProcess())
+                                        .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                        parameterValue = evaluator.evaluate(association.getSources().get(0),
                                 new NodeInstanceResolverFactory(this));
                     } catch (Throwable t) {
                         logger.error("Could not find variable scope for variable {}", association.getSources().get(0));
@@ -282,6 +292,7 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
         return replacements;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private Object resolveVariable(Object s) {
 
         if (s instanceof String) {
@@ -307,7 +318,10 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
                     }
                 } else {
                     try {
-                        Object variableValue = MVEL.eval(paramName, new NodeInstanceResolverFactory(this));
+                        ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) getProcessInstance()
+                                .getProcess())
+                                        .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                        Object variableValue = evaluator.evaluate(paramName, new NodeInstanceResolverFactory(this));
                         if (variableValue != null) {
                             return variableValue;
                         } else {
@@ -323,6 +337,7 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
         return s;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected Map<String, Object> getSourceParameters(DataAssociation association) {
         Map<String, Object> parameters = new HashMap<>();
         for (String sourceParam : association.getSources()) {
@@ -333,7 +348,10 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
                 parameterValue = variableScopeInstance.getVariable(sourceParam);
             } else {
                 try {
-                    parameterValue = MVEL.eval(sourceParam, new NodeInstanceResolverFactory(this));
+                    ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) getProcessInstance()
+                            .getProcess())
+                                    .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                    parameterValue = evaluator.evaluate(sourceParam, new NodeInstanceResolverFactory(this));
                 } catch (Throwable t) {
                     logger.warn("Could not find variable scope for variable {}", sourceParam);
                 }

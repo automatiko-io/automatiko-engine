@@ -5,12 +5,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import org.mvel2.MVEL;
-
+import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.runtime.process.ProcessContext;
 import io.automatiko.engine.workflow.base.core.VariableExpression;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.instance.context.variable.VariableScopeInstance;
+import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 import io.automatiko.engine.workflow.process.instance.NodeInstance;
 import io.automatiko.engine.workflow.process.instance.impl.NodeInstanceResolverFactory;
 import io.automatiko.engine.workflow.util.PatternConstants;
@@ -19,6 +19,7 @@ public class MvelNodeInstanceVariableExpression implements VariableExpression, S
 
     private static final long serialVersionUID = 3100263402644609014L;
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public <T> T evaluate(String expression, ProcessContext context, Class<T> clazz) {
 
@@ -43,7 +44,10 @@ public class MvelNodeInstanceVariableExpression implements VariableExpression, S
                     replacements.put(replacementKey, variableValueString);
                 } else {
                     try {
-                        Object variableValue = MVEL.eval(paramName,
+                        ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) context.getProcessInstance()
+                                .getProcess())
+                                        .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                        Object variableValue = evaluator.evaluate(paramName,
                                 resolverFactory((NodeInstance) context.getNodeInstance()));
 
                         replacements.put(replacementKey, variableValue == null ? defaultValue : variableValue);

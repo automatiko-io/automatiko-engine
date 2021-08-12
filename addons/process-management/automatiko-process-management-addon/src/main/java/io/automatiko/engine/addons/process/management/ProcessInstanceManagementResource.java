@@ -180,8 +180,9 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             Process<?> process = processData.get(processId);
 
             process.instances().values(ProcessInstanceReadMode.READ_ONLY, mapStatus(status), page, size).forEach(pi -> collected
-                    .add(new ProcessInstanceDTO(pi.id(), pi.businessKey(), pi.description(), pi.tags().values(),
-                            pi.errors().isPresent(), processId)));
+                    .add(new ProcessInstanceDTO(pi.id(), pi.businessKey() == null ? "" : pi.businessKey(), pi.description(),
+                            pi.tags().values(),
+                            pi.errors().isPresent(), processId, pi.status())));
 
             return collected;
         } finally {
@@ -226,8 +227,9 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
 
             details.setId(id);
             details.setProcessId(processId);
-            details.setBusinessKey(pi.businessKey());
+            details.setBusinessKey(pi.businessKey() == null ? "" : pi.businessKey());
             details.setDescription(pi.description());
+            details.setState(pi.status());
             details.setFailed(pi.errors().isPresent());
             if (pi.errors().isPresent()) {
 
@@ -242,7 +244,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             details.setVariables(pi.variables());
             details.setSubprocesses(pi.subprocesses().stream()
                     .map(spi -> new ProcessInstanceDTO(spi.id(), spi.businessKey(), spi.description(), spi.tags().values(),
-                            spi.errors().isPresent(), spi.process().id()))
+                            spi.errors().isPresent(), spi.process().id(), spi.status()))
                     .collect(Collectors.toList()));
 
             VariableScope variableScope = (VariableScope) ((ContextContainer) ((AbstractProcess<?>) process).process())

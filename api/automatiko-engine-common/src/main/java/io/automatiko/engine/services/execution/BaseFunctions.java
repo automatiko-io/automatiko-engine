@@ -1,6 +1,10 @@
 package io.automatiko.engine.services.execution;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -85,5 +89,25 @@ public class BaseFunctions {
 
     public static void logError(String template, Object... items) {
         LOGGER.error(template, items);
+    }
+
+    public static String todayDate() {
+        return LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+    }
+
+    public static String todayYearAndMonth() {
+        LocalDate now = LocalDate.now();
+
+        return now.getYear() + "-" + now.getMonthValue();
+    }
+
+    public static String todayMonth() {
+
+        return LocalDate.now().getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault());
+    }
+
+    public static String todayDay() {
+
+        return LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
     }
 }

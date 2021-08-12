@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
+import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.io.Resource;
 import io.automatiko.engine.workflow.base.core.Context;
 import io.automatiko.engine.workflow.base.core.ContextContainer;
@@ -175,10 +176,16 @@ public class ProcessImpl implements Process, Serializable, ContextResolver {
 
     public void setImports(Set<String> imports) {
         this.imports = imports;
+
+        ExpressionEvaluator evaluator = (ExpressionEvaluator) getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+        evaluator.addImports(imports);
     }
 
     public void addImports(Collection<String> imports) {
         this.imports.addAll(imports);
+
+        ExpressionEvaluator evaluator = (ExpressionEvaluator) getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+        evaluator.addImports(imports);
     }
 
     public List<String> getFunctionImports() {

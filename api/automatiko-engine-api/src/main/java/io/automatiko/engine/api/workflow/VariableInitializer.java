@@ -2,6 +2,8 @@ package io.automatiko.engine.api.workflow;
 
 import java.util.Map;
 
+import io.automatiko.engine.api.definition.process.Process;
+
 public interface VariableInitializer {
 
     /**
@@ -12,6 +14,6 @@ public interface VariableInitializer {
      * @param data current set of variables that can be used to compute the value
      * @return new instance of given class
      */
-    Object initialize(Variable definition, Map<String, Object> data);
+    Object initialize(Process process, Variable definition, Map<String, Object> data);
 
 }

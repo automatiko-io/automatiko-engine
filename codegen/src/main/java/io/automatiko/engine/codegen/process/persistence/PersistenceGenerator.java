@@ -182,7 +182,7 @@ public class PersistenceGenerator extends AbstractGenerator {
                 .setName("ProcessInstancesFactoryImpl").setModifiers(Modifier.Keyword.PUBLIC)
                 .addExtendedType("io.automatiko.engine.addons.persistence.AbstractProcessInstancesFactory");
 
-        CompilationUnit compilationUnit = new CompilationUnit("io.automatiko.engine.addons.persistence");
+        CompilationUnit compilationUnit = new CompilationUnit("io.automatiko.engine.addons.persistence.impl");
         compilationUnit.getTypes().add(persistenceProviderClazz);
 
         persistenceProviderClazz.addConstructor(Keyword.PUBLIC).setBody(new BlockStmt().addStatement(
@@ -306,7 +306,7 @@ public class PersistenceGenerator extends AbstractGenerator {
                 .setName("ProcessInstancesFactoryImpl").setModifiers(Modifier.Keyword.PUBLIC)
                 .addExtendedType("io.automatiko.engine.addons.persistence.AbstractProcessInstancesFactory");
 
-        CompilationUnit compilationUnit = new CompilationUnit("io.automatiko.engine.addons.persistence");
+        CompilationUnit compilationUnit = new CompilationUnit("io.automatiko.engine.addons.persistence.impl");
         compilationUnit.getTypes().add(persistenceProviderClazz);
 
         if (useInjection()) {
@@ -348,7 +348,7 @@ public class PersistenceGenerator extends AbstractGenerator {
                 .setName("ProcessInstancesFactoryImpl").setModifiers(Modifier.Keyword.PUBLIC)
                 .addExtendedType("io.automatiko.engine.addons.persistence.AbstractProcessInstancesFactory");
 
-        CompilationUnit compilationUnit = new CompilationUnit("io.automatiko.engine.addons.persistence");
+        CompilationUnit compilationUnit = new CompilationUnit("io.automatiko.engine.addons.persistence.impl");
         compilationUnit.getTypes().add(persistenceProviderClazz);
 
         if (useInjection()) {
@@ -370,7 +370,7 @@ public class PersistenceGenerator extends AbstractGenerator {
                 .setName("ProcessInstancesFactoryImpl").setModifiers(Modifier.Keyword.PUBLIC)
                 .addExtendedType("io.automatiko.engine.addons.persistence.AbstractProcessInstancesFactory");
 
-        CompilationUnit compilationUnit = new CompilationUnit("io.automatiko.engine.addons.persistence");
+        CompilationUnit compilationUnit = new CompilationUnit("io.automatiko.engine.addons.persistence.impl");
         compilationUnit.getTypes().add(persistenceProviderClazz);
 
         persistenceProviderClazz.addConstructor(Keyword.PUBLIC);
@@ -406,7 +406,7 @@ public class PersistenceGenerator extends AbstractGenerator {
                 .setName("ProcessInstancesFactoryImpl").setModifiers(Modifier.Keyword.PUBLIC)
                 .addExtendedType("io.automatiko.engine.addons.persistence.AbstractProcessInstancesFactory");
 
-        CompilationUnit compilationUnit = new CompilationUnit("io.automatiko.engine.addons.persistence");
+        CompilationUnit compilationUnit = new CompilationUnit("io.automatiko.engine.addons.persistence.impl");
         compilationUnit.getTypes().add(persistenceProviderClazz);
 
         persistenceProviderClazz.addConstructor(Keyword.PUBLIC);

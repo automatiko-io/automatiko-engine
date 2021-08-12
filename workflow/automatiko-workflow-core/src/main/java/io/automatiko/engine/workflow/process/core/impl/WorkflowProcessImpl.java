@@ -8,14 +8,15 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 
-import org.mvel2.MVEL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.definition.process.Node;
 import io.automatiko.engine.api.definition.process.NodeContainer;
+import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.workflow.base.core.impl.ProcessImpl;
 import io.automatiko.engine.workflow.base.instance.ProcessInstance;
+import io.automatiko.engine.workflow.file.MvelExpressionEvaluator;
 import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 import io.automatiko.engine.workflow.process.core.node.StartNode;
 import io.automatiko.engine.workflow.process.instance.WorkflowProcessInstance;
@@ -37,6 +38,7 @@ public class WorkflowProcessImpl extends ProcessImpl
     private boolean executable = false;
     private io.automatiko.engine.workflow.process.core.NodeContainer nodeContainer;
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private transient BiFunction<String, ProcessInstance, String> expressionEvaluator = (expression, p) -> {
 
         String evaluatedValue = expression;
@@ -54,7 +56,10 @@ public class WorkflowProcessImpl extends ProcessImpl
             }
             if (replacements.get(paramName) == null) {
                 try {
-                    String value = (String) MVEL.eval(paramName,
+                    ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) p
+                            .getProcess())
+                                    .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                    String value = (String) evaluator.evaluate(paramName,
                             new ProcessInstanceResolverFactory(((WorkflowProcessInstance) p)));
                     replacements.put(replacementKey, value == null ? defaultValue : value);
                 } catch (Throwable t) {
@@ -73,6 +78,7 @@ public class WorkflowProcessImpl extends ProcessImpl
 
     public WorkflowProcessImpl() {
         nodeContainer = (io.automatiko.engine.workflow.process.core.NodeContainer) createNodeContainer();
+        setDefaultContext(new MvelExpressionEvaluator(this));
     }
 
     protected NodeContainer createNodeContainer() {

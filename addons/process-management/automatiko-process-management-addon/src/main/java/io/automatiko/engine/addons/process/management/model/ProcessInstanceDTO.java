@@ -10,6 +10,8 @@ public class ProcessInstanceDTO {
 
     private String description;
 
+    private int state;
+
     private Collection<String> tags;
 
     private boolean failed;
@@ -21,13 +23,14 @@ public class ProcessInstanceDTO {
     }
 
     public ProcessInstanceDTO(String id, String businessKey, String description, Collection<String> tags, boolean failed,
-            String processId) {
+            String processId, int state) {
         this.id = id;
         this.businessKey = businessKey;
         this.description = description;
         this.tags = tags;
         this.failed = failed;
         this.processId = processId;
+        this.state = state;
     }
 
     public String getId() {
@@ -44,6 +47,14 @@ public class ProcessInstanceDTO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public void setState(int state) {
+        this.state = state;
     }
 
     public Collection<String> getTags() {

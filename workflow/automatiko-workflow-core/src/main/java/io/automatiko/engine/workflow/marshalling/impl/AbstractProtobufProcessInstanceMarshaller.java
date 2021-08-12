@@ -742,19 +742,21 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
             context.parameterObject = _node;
             readNodeInstance(context, processInstance, processInstance);
         }
-
-        for (AutomatikoMessages.ProcessInstance.ExclusiveGroupInstance _excl : _instance.getExclusiveGroupList()) {
-            ExclusiveGroupInstance exclusiveGroupInstance = new ExclusiveGroupInstance();
-            processInstance.addContextInstance(ExclusiveGroup.EXCLUSIVE_GROUP, exclusiveGroupInstance);
-            for (String nodeInstanceId : _excl.getGroupNodeInstanceIdList()) {
-                NodeInstance nodeInstance = ((io.automatiko.engine.workflow.process.instance.NodeInstanceContainer) processInstance)
-                        .getNodeInstance(nodeInstanceId, true);
-                if (nodeInstance == null) {
-                    throw new IllegalArgumentException(
-                            "Could not find node instance when deserializing exclusive group instance: "
-                                    + nodeInstanceId);
+        if (processInstance.getState() == ProcessInstance.STATE_ACTIVE
+                || processInstance.getState() == ProcessInstance.STATE_ERROR) {
+            for (AutomatikoMessages.ProcessInstance.ExclusiveGroupInstance _excl : _instance.getExclusiveGroupList()) {
+                ExclusiveGroupInstance exclusiveGroupInstance = new ExclusiveGroupInstance();
+                processInstance.addContextInstance(ExclusiveGroup.EXCLUSIVE_GROUP, exclusiveGroupInstance);
+                for (String nodeInstanceId : _excl.getGroupNodeInstanceIdList()) {
+                    NodeInstance nodeInstance = ((io.automatiko.engine.workflow.process.instance.NodeInstanceContainer) processInstance)
+                            .getNodeInstance(nodeInstanceId, true);
+                    if (nodeInstance == null) {
+                        throw new IllegalArgumentException(
+                                "Could not find node instance when deserializing exclusive group instance: "
+                                        + nodeInstanceId);
+                    }
+                    exclusiveGroupInstance.addNodeInstance(nodeInstance);
                 }
-                exclusiveGroupInstance.addNodeInstance(nodeInstance);
             }
         }
         readVariableScope(context, process, processInstance, _instance);

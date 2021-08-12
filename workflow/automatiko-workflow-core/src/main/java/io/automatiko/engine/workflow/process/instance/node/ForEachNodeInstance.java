@@ -18,6 +18,7 @@ import org.mvel2.integration.impl.SimpleValueResolver;
 
 import io.automatiko.engine.api.definition.process.Connection;
 import io.automatiko.engine.api.definition.process.Node;
+import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.runtime.process.DataTransformer;
 import io.automatiko.engine.api.workflow.datatype.DataType;
 import io.automatiko.engine.workflow.base.core.ContextContainer;
@@ -27,12 +28,13 @@ import io.automatiko.engine.workflow.base.core.impl.DataTransformerRegistry;
 import io.automatiko.engine.workflow.base.instance.ContextInstance;
 import io.automatiko.engine.workflow.base.instance.context.variable.VariableScopeInstance;
 import io.automatiko.engine.workflow.process.core.ExpressionCondition;
+import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 import io.automatiko.engine.workflow.process.core.impl.NodeImpl;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
 import io.automatiko.engine.workflow.process.core.node.ForEachNode;
-import io.automatiko.engine.workflow.process.core.node.Transformation;
 import io.automatiko.engine.workflow.process.core.node.ForEachNode.ForEachJoinNode;
 import io.automatiko.engine.workflow.process.core.node.ForEachNode.ForEachSplitNode;
+import io.automatiko.engine.workflow.process.core.node.Transformation;
 import io.automatiko.engine.workflow.process.instance.NodeInstance;
 import io.automatiko.engine.workflow.process.instance.NodeInstanceContainer;
 import io.automatiko.engine.workflow.process.instance.WorkflowProcessInstance;
@@ -93,6 +95,7 @@ public class ForEachNodeInstance extends CompositeContextNodeInstance {
         return getForEachNode().getCompositeNode();
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private Collection<?> evaluateCollectionExpression(String collectionExpression) {
         Object collection;
         VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
@@ -101,7 +104,10 @@ public class ForEachNodeInstance extends CompositeContextNodeInstance {
             collection = variableScopeInstance.getVariable(collectionExpression);
         } else {
             try {
-                collection = MVEL.eval(collectionExpression, new NodeInstanceResolverFactory(this));
+                ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) getProcessInstance()
+                        .getProcess())
+                                .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                collection = evaluator.evaluate(collectionExpression, new NodeInstanceResolverFactory(this));
             } catch (Throwable t) {
                 throw new IllegalArgumentException("Could not find collection " + collectionExpression);
             }
@@ -174,6 +180,7 @@ public class ForEachNodeInstance extends CompositeContextNodeInstance {
             return (ForEachJoinNode) getNode();
         }
 
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         public void internalTrigger(io.automatiko.engine.api.runtime.process.NodeInstance from, String type) {
             triggerTime = new Date();
             Map<String, Object> tempVariables = new HashMap<>();
@@ -292,7 +299,10 @@ public class ForEachNodeInstance extends CompositeContextNodeInstance {
                                     Object value = tempVariables.get(association.getSources().get(0));
                                     if (value == null) {
                                         try {
-                                            value = MVEL.eval(association.getSources().get(0),
+                                            ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) getProcessInstance()
+                                                    .getProcess())
+                                                            .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                                            value = evaluator.evaluate(association.getSources().get(0),
                                                     new ForEachNodeInstanceResolverFactory(this, tempVariables));
                                         } catch (Throwable t) {
                                             // do nothing
@@ -351,6 +361,7 @@ public class ForEachNodeInstance extends CompositeContextNodeInstance {
             }
         }
 
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         private boolean evaluateCompletionCondition(Map<String, Object> tempVariables) {
             String expression = getForEachNode().getCompletionConditionExpression();
 
@@ -363,8 +374,10 @@ public class ForEachNodeInstance extends CompositeContextNodeInstance {
                 if (expressionCondition != null) {
                     result = expressionCondition.isValid(tempVariables);
                 } else {
-
-                    result = MVEL.eval(expression,
+                    ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) getProcessInstance()
+                            .getProcess())
+                                    .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                    result = evaluator.evaluate(expression,
                             new ForEachNodeInstanceResolverFactory(this, tempVariables));
                 }
 

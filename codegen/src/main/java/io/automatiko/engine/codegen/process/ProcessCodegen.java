@@ -36,6 +36,7 @@ import org.xml.sax.SAXException;
 
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
+import io.automatiko.engine.api.Functions;
 import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.api.io.Resource;
@@ -50,6 +51,7 @@ import io.automatiko.engine.codegen.GeneratedFile.Type;
 import io.automatiko.engine.codegen.ResourceGeneratorFactory;
 import io.automatiko.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatiko.engine.codegen.process.config.ProcessConfigGenerator;
+import io.automatiko.engine.services.execution.BaseFunctions;
 import io.automatiko.engine.services.io.ByteArrayResource;
 import io.automatiko.engine.services.io.FileSystemResource;
 import io.automatiko.engine.services.io.InternalResource;
@@ -315,6 +317,8 @@ public class ProcessCodegen extends AbstractGenerator {
         // with the data classes that we have already resolved
         ProcessToExecModelGenerator execModelGenerator = new ProcessToExecModelGenerator(contextClassLoader, workflowType);
 
+        List<String> functions = context.getBuildContext().classThatImplement(Functions.class.getCanonicalName());
+
         // collect all process descriptors (exec model)
         for (Entry<String, WorkflowProcess> entry : processes.entrySet()) {
             ProcessExecutableModelGenerator execModelGen = new ProcessExecutableModelGenerator(entry.getValue(),
@@ -326,6 +330,16 @@ public class ProcessCodegen extends AbstractGenerator {
             if (context.getBuildContext().isUserTaskMgmtSupported()) {
                 entry.getValue().getMetaData().put("UserTaskMgmt", "true");
             }
+
+            Set<String> classImports = ((io.automatiko.engine.workflow.process.core.WorkflowProcess) entry.getValue())
+                    .getImports();
+            if (classImports != null) {
+                classImports = new HashSet<>();
+                ((io.automatiko.engine.workflow.process.core.WorkflowProcess) entry.getValue()).setImports(classImports);
+            }
+            classImports.add(BaseFunctions.class.getCanonicalName());
+            classImports.addAll(functions);
+
             try {
                 ProcessMetaData generate = execModelGen.generate();
                 processIdToMetadata.put(id, generate);

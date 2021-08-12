@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.definition.process.Node;
 import io.automatiko.engine.api.definition.process.Process;
+import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.runtime.process.DataTransformer;
 import io.automatiko.engine.api.runtime.process.EventListener;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
@@ -39,6 +40,7 @@ import io.automatiko.engine.workflow.base.instance.impl.ContextInstanceFactory;
 import io.automatiko.engine.workflow.base.instance.impl.ContextInstanceFactoryRegistry;
 import io.automatiko.engine.workflow.base.instance.impl.ProcessInstanceImpl;
 import io.automatiko.engine.workflow.base.instance.impl.util.VariableUtil;
+import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
 import io.automatiko.engine.workflow.process.core.node.SubProcessNode;
 import io.automatiko.engine.workflow.process.core.node.Transformation;
@@ -67,6 +69,7 @@ public class SubProcessNodeInstance extends StateBasedNodeInstance implements Ev
         return (SubProcessNode) getNode();
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void internalTrigger(final NodeInstance from, String type) {
         super.internalTrigger(from, type);
@@ -98,7 +101,10 @@ public class SubProcessNodeInstance extends StateBasedNodeInstance implements Ev
                     parameterValue = variableScopeInstance.getVariable(mapping.getSources().get(0));
                 } else {
                     try {
-                        parameterValue = MVEL.eval(mapping.getSources().get(0), new NodeInstanceResolverFactory(this));
+                        ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) getProcessInstance()
+                                .getProcess())
+                                        .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                        parameterValue = evaluator.evaluate(mapping.getSources().get(0), new NodeInstanceResolverFactory(this));
                     } catch (Throwable t) {
                         parameterValue = VariableUtil.resolveVariable(mapping.getSources().get(0), this);
                         if (parameterValue != null) {
@@ -142,7 +148,10 @@ public class SubProcessNodeInstance extends StateBasedNodeInstance implements Ev
                     replacements.put(replacementKey, variableValueString);
                 } else {
                     try {
-                        Object variableValue = MVEL.eval(paramName, new NodeInstanceResolverFactory(this));
+                        ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) getProcessInstance()
+                                .getProcess())
+                                        .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                        Object variableValue = evaluator.evaluate(paramName, new NodeInstanceResolverFactory(this));
                         String variableValueString = variableValue == null ? defaultValue : variableValue.toString();
                         replacements.put(replacementKey, variableValueString);
                     } catch (Throwable t) {
@@ -302,6 +311,7 @@ public class SubProcessNodeInstance extends StateBasedNodeInstance implements Ev
 
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void handleOutMappings(ProcessInstance processInstance) {
         VariableScopeInstance subProcessVariableScopeInstance = (VariableScopeInstance) processInstance
                 .getContextInstance(VariableScope.VARIABLE_SCOPE);
@@ -342,7 +352,10 @@ public class SubProcessNodeInstance extends StateBasedNodeInstance implements Ev
                         Object value = subProcessVariableScopeInstance.getVariable(mapping.getSources().get(0));
                         if (value == null) {
                             try {
-                                value = MVEL.eval(mapping.getSources().get(0),
+                                ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) getProcessInstance()
+                                        .getProcess())
+                                                .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                                value = evaluator.evaluate(mapping.getSources().get(0),
                                         new VariableScopeResolverFactory(subProcessVariableScopeInstance));
                             } catch (Throwable t) {
                                 // do nothing
@@ -441,6 +454,7 @@ public class SubProcessNodeInstance extends StateBasedNodeInstance implements Ev
         return getSubProcessNode();
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected Map<String, Object> getSourceParameters(DataAssociation association) {
         Map<String, Object> parameters = new HashMap<String, Object>();
         for (String sourceParam : association.getSources()) {
@@ -451,7 +465,10 @@ public class SubProcessNodeInstance extends StateBasedNodeInstance implements Ev
                 parameterValue = variableScopeInstance.getVariable(sourceParam);
             } else {
                 try {
-                    parameterValue = MVEL.eval(sourceParam, new NodeInstanceResolverFactory(this));
+                    ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) getProcessInstance()
+                            .getProcess())
+                                    .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                    parameterValue = evaluator.evaluate(sourceParam, new NodeInstanceResolverFactory(this));
                 } catch (Throwable t) {
                     logger.warn("Could not find variable scope for variable {}", sourceParam);
                 }

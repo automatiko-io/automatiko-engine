@@ -250,10 +250,15 @@
 				'<object id="piImage" data="' + instanceData.image
 						+ '" height="400" width="90%"></object>');
 		
+		if (instanceData.state === 1 || instanceData.state === 5) { 
 		$("#piActions-abort").attr('onclick', 'abortInstance(\''
 				+ instanceData.processId + '\', \''
 				+ instanceData.id
 				+ '\')');
+			$("#piActions-abort").show();
+		} else {
+			$("#piActions-abort").hide();
+		}
 
 		let tags = '';
 		instanceData.tags
@@ -385,32 +390,35 @@
 						tags += '<span class="badge badge-light">' + item
 								+ '</span> &nbsp;';
 					});
-					$('#' + divId)
-							.append(
-									'<tr'
-									+ (item.failed ? ' class="bg-danger"' : '')
-									+ '>'
-											+ ' <th scope="row">'
-											+ (++index + ((currentPage - 1) * 10))
-											+ '</th>'
-											+ ' <td>'
-											+ item.id
-											+ '</td>'
-											+ ' <td>'
-											+ item.businessKey
-											+ '</td>'
-											+ ' <td>'
-											+ item.description
-											+ '</td>'
-											+ ' <td>'
-											+ tags
-											+ '</td>'
-											+ ' <td><button type="button" class="btn btn-sm btn-light" onclick="loadInstance(\''
-											+ processId + '\', \'' + item.id
-											+ '\')"><i class="fa fa-info-circle"></i></button>&nbsp;&nbsp;<button type="button" class="btn btn-sm btn-danger" onclick="abortInstance(\''
-											+ processId + '\', \'' + item.id
-											+ '\')"><i class="fa fa-trash"></i></button></td>'
-											+ '</tr>');
+					
+					var data = '<tr'
+					+ (item.failed ? ' class="bg-danger"' : '')
+					+ '>'
+							+ ' <th scope="row">'
+							+ (++index + ((currentPage - 1) * 10))
+							+ '</th>'
+							+ ' <td>'
+							+ item.id
+							+ '</td>'
+							+ ' <td>'
+							+ item.businessKey
+							+ '</td>'
+							+ ' <td>'
+							+ item.description
+							+ '</td>'
+							+ ' <td>'
+							+ tags
+							+ '</td>'
+							+ ' <td><button type="button" class="btn btn-sm btn-light" onclick="loadInstance(\''
+							+ processId + '\', \'' + item.id
+							+ '\')"><i class="fa fa-info-circle"></i></button>';
+							if (item.state === 1 || item.state === 5) {
+								data += '&nbsp;&nbsp;<button type="button" class="btn btn-sm btn-danger" onclick="abortInstance(\''
+								+ processId + '\', \'' + item.id
+								+ '\')"><i class="fa fa-trash"></i></button></td>';
+							}
+							data += '</td></tr>'
+					$('#' + divId).append(data);
 				});
 				
 				$('#' + divId)

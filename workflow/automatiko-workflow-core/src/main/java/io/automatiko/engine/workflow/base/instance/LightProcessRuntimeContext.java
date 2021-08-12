@@ -77,7 +77,7 @@ public class LightProcessRuntimeContext implements ProcessRuntimeContext {
         for (Variable var : variableScope.getVariables()) {
             if ((var.hasTag(Variable.AUTO_INITIALIZED_TAG) || var.getMetaData(Variable.DEFAULT_VALUE) != null)
                     && variableScopeInstance.getVariable(var.getName()) == null) {
-                Object value = variableInitializer.initialize(var, variableScopeInstance.getVariables());
+                Object value = variableInitializer.initialize(process, var, variableScopeInstance.getVariables());
 
                 variableScope.validateVariable(process.getName(), var.getName(), value);
                 variableScopeInstance.setVariable(var.getName(), value);
