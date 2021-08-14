@@ -46,7 +46,6 @@ import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.api.runtime.process.WorkItemHandler;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatiko.engine.api.workflow.EndOfInstanceStrategy;
-import io.automatiko.engine.api.workflow.ProcessInstancesFactory;
 import io.automatiko.engine.codegen.BodyDeclarationComparator;
 import io.automatiko.engine.codegen.CodegenUtils;
 import io.automatiko.engine.codegen.GeneratorContext;
@@ -436,24 +435,6 @@ public class ProcessGenerator {
         return internalRegisterListeners;
     }
 
-    private MethodDeclaration createSetEndOfInstanceStrategyMethod() {
-
-        MethodDeclaration methodDeclaration = new MethodDeclaration();
-
-        methodDeclaration.setName("setEndOfInstanceStrategy").addModifier(Modifier.Keyword.PUBLIC)
-                .addParameter(EndOfInstanceStrategy.class.getCanonicalName(), "strategy")
-                .setType(void.class)
-                .setBody(new BlockStmt()
-                        .addStatement(new AssignExpr(new FieldAccessExpr(new ThisExpr(), "endOfInstanceStrategy"),
-                                new NameExpr("strategy"), Operator.ASSIGN)));
-
-        if (useInjection()) {
-            annotator.withInjection(methodDeclaration);
-        }
-
-        return methodDeclaration;
-    }
-
     public static ClassOrInterfaceType processType(String canonicalName) {
         return new ClassOrInterfaceType(null, canonicalName + "Process");
     }
@@ -475,7 +456,6 @@ public class ProcessGenerator {
                             NodeList.nodeList(
                                     new ClassOrInterfaceType(null, WorkItemHandler.class.getCanonicalName()))),
                     "handlers"));
-            annotator.withOptionalInjection(handlersInjectFieldDeclaration);
 
             cls.addMember(handlersInjectFieldDeclaration);
         }
@@ -485,16 +465,105 @@ public class ProcessGenerator {
         FieldDeclaration fieldDeclaration = new FieldDeclaration()
                 .addVariable(new VariableDeclarator(new ClassOrInterfaceType(null, appCanonicalName), "app"));
 
-        ConstructorDeclaration constructorDeclaration = new ConstructorDeclaration().setName(targetTypeName)
-                .addModifier(Modifier.Keyword.PUBLIC).addParameter(appCanonicalName, "app").setBody(new BlockStmt()
+        ConstructorDeclaration emptyConstructorDeclaration = new ConstructorDeclaration().setName(targetTypeName)
+                .addModifier(Modifier.Keyword.PUBLIC);
+
+        ConstructorDeclaration baseConstructorDeclaration = new ConstructorDeclaration().setName(targetTypeName)
+                .addModifier(Modifier.Keyword.PUBLIC).addParameter(appCanonicalName, "app")
+                .setBody(new BlockStmt()
                         // super(module.config().process())
                         .addStatement(new MethodCallExpr(null, "super").addArgument(
                                 new MethodCallExpr(new MethodCallExpr(new NameExpr("app"), "config"), "process")))
                         .addStatement(new AssignExpr(new FieldAccessExpr(new ThisExpr(), "app"), new NameExpr("app"),
                                 AssignExpr.Operator.ASSIGN)));
 
-        ConstructorDeclaration emptyConstructorDeclaration = new ConstructorDeclaration().setName(targetTypeName)
-                .addModifier(Modifier.Keyword.PUBLIC);
+        ConstructorDeclaration constructorDeclaration;
+        if (useInjection()) {
+
+            constructorDeclaration = new ConstructorDeclaration().setName(targetTypeName)
+                    .addModifier(Modifier.Keyword.PUBLIC).addParameter(appCanonicalName, "app")
+                    .addParameter(
+                            new ClassOrInterfaceType(null, new SimpleName(annotator.multiInstanceInjectionType()),
+                                    NodeList.nodeList(
+                                            new ClassOrInterfaceType(null, WorkItemHandler.class.getCanonicalName()))),
+                            "handlers")
+                    .addParameter(EndOfInstanceStrategy.class.getCanonicalName(), "strategy")
+
+                    .setBody(new BlockStmt()
+                            // super(module.config().process())
+                            .addStatement(new MethodCallExpr(null, "super").addArgument(
+                                    new MethodCallExpr(new MethodCallExpr(new NameExpr("app"), "config"), "process")))
+                            .addStatement(new AssignExpr(new FieldAccessExpr(new ThisExpr(), "app"), new NameExpr("app"),
+                                    AssignExpr.Operator.ASSIGN))
+                            .addStatement(
+                                    new AssignExpr(new FieldAccessExpr(new ThisExpr(), "handlers"), new NameExpr("handlers"),
+                                            AssignExpr.Operator.ASSIGN))
+                            .addStatement(
+                                    new AssignExpr(new FieldAccessExpr(new ThisExpr(), "endOfInstanceStrategy"),
+                                            new NameExpr("strategy"),
+                                            AssignExpr.Operator.ASSIGN)));
+
+        } else {
+            constructorDeclaration = new ConstructorDeclaration().setName(targetTypeName)
+                    .addModifier(Modifier.Keyword.PUBLIC).addParameter(appCanonicalName, "app")
+                    .addParameter(EndOfInstanceStrategy.class.getCanonicalName(), "strategy")
+
+                    .setBody(new BlockStmt()
+                            // super(module.config().process())
+                            .addStatement(new MethodCallExpr(null, "super").addArgument(
+                                    new MethodCallExpr(new MethodCallExpr(new NameExpr("app"), "config"), "process")))
+                            .addStatement(new AssignExpr(new FieldAccessExpr(new ThisExpr(), "app"), new NameExpr("app"),
+                                    AssignExpr.Operator.ASSIGN))
+                            .addStatement(
+                                    new AssignExpr(new FieldAccessExpr(new ThisExpr(), "endOfInstanceStrategy"),
+                                            new NameExpr("strategy"),
+                                            AssignExpr.Operator.ASSIGN)));
+
+        }
+
+        ProcessMetaData processMetaData = processGenerator.generate();
+
+        if (!processMetaData.getSubProcesses().isEmpty()) {
+
+            for (Entry<String, String> subProcess : processMetaData.getSubProcesses().entrySet()) {
+                FieldDeclaration subprocessFieldDeclaration = new FieldDeclaration();
+
+                String fieldName = "process" + subProcess.getKey();
+                ClassOrInterfaceType modelType = new ClassOrInterfaceType(null,
+                        new SimpleName(io.automatiko.engine.api.workflow.Process.class.getCanonicalName()),
+                        NodeList.nodeList(
+                                new ClassOrInterfaceType(null, StringUtils.capitalize(subProcess.getKey() + "Model"))));
+                if (useInjection()) {
+                    subprocessFieldDeclaration.addVariable(new VariableDeclarator(modelType, fieldName));
+
+                    constructorDeclaration.addParameter(
+                            annotator.withNamed(new Parameter(modelType, fieldName), subProcess.getKey()));
+
+                    constructorDeclaration.getBody().addStatement(
+                            new AssignExpr(new FieldAccessExpr(new ThisExpr(), fieldName), new NameExpr(fieldName),
+                                    AssignExpr.Operator.ASSIGN));
+                } else {
+                    // app.processes().processById()
+                    MethodCallExpr initSubProcessField = new MethodCallExpr(
+                            new MethodCallExpr(new NameExpr("app"), "processes"), "processById")
+                                    .addArgument(new StringLiteralExpr(subProcess.getKey()));
+
+                    subprocessFieldDeclaration.addVariable(new VariableDeclarator(modelType, fieldName));
+
+                    baseConstructorDeclaration.getBody()
+                            .addStatement(new AssignExpr(new FieldAccessExpr(new ThisExpr(), fieldName),
+                                    new CastExpr(modelType, initSubProcessField), Operator.ASSIGN));
+
+                    constructorDeclaration.getBody()
+                            .addStatement(new AssignExpr(new FieldAccessExpr(new ThisExpr(), fieldName),
+                                    new CastExpr(modelType, initSubProcessField), Operator.ASSIGN));
+
+                }
+
+                cls.addMember(subprocessFieldDeclaration);
+                subprocessFieldDeclaration.createGetter();
+            }
+        }
 
         if (useInjection()) {
             annotator.withInjection(constructorDeclaration);
@@ -508,10 +577,10 @@ public class ProcessGenerator {
                 .setType(modelTypeName).setBody(new BlockStmt().addStatement(new ReturnStmt(new ObjectCreationExpr(null,
                         new ClassOrInterfaceType(null, modelTypeName), NodeList.nodeList()))));
 
-        ProcessMetaData processMetaData = processGenerator.generate();
-
         cls.addExtendedType(abstractProcessType(modelTypeName)).addMember(fieldDeclaration)
-                .addMember(emptyConstructorDeclaration).addMember(constructorDeclaration)
+                .addMember(emptyConstructorDeclaration)
+                .addMember(baseConstructorDeclaration)
+                .addMember(constructorDeclaration)
                 .addMember(createInstanceMethod(processInstanceFQCN))
                 .addMember(createInstanceWithBusinessKeyMethod(processInstanceFQCN)).addMember(createModelMethod)
                 .addMember(createInstanceGenericMethod(processInstanceFQCN))
@@ -521,7 +590,6 @@ public class ProcessGenerator {
                 .addMember(internalConfigure(processMetaData)).addMember(internalRegisterListeners(processMetaData))
                 .addMember(userTaskInputModels(processMetaData))
                 .addMember(userTaskOutputModels(processMetaData))
-                .addMember(createSetEndOfInstanceStrategyMethod())
                 .addMember(process(processMetaData));
 
         if (isServiceProject()) {
@@ -537,70 +605,11 @@ public class ProcessGenerator {
             }
         }
 
-        if (persistence) {
-
-            if (useInjection()) {
-
-                MethodDeclaration injectProcessInstancesFactoryMethod = new MethodDeclaration()
-                        .addModifier(Keyword.PUBLIC).setName("setProcessInstancesFactory").setType(void.class)
-                        .addParameter(ProcessInstancesFactory.class.getCanonicalName(), "processInstancesFactory")
-                        .setBody(new BlockStmt()
-                                .addStatement(new MethodCallExpr(new SuperExpr(), "setProcessInstancesFactory")
-                                        .addArgument(new NameExpr("processInstancesFactory"))));
-                annotator.withInjection(injectProcessInstancesFactoryMethod);
-                cls.addMember(injectProcessInstancesFactoryMethod);
-            } else {
-                MethodDeclaration injectProcessInstancesFactoryMethod = new MethodDeclaration()
-                        .addModifier(Keyword.PUBLIC).setName("setProcessInstancesFactory").setType(void.class)
-                        .addParameter(ProcessInstancesFactory.class.getCanonicalName(), "processInstancesFactory")
-                        .setBody(new BlockStmt()
-                                .addStatement(new MethodCallExpr(new SuperExpr(), "setProcessInstancesFactory")
-                                        .addArgument(new ObjectCreationExpr(null, new ClassOrInterfaceType(null,
-                                                "io.automatiko.engine.addons.persistence.ProcessInstancesFactoryImpl"),
-                                                NodeList.nodeList()))));
-
-                cls.addMember(injectProcessInstancesFactoryMethod);
-            }
-
-        }
-
         if (useInjection()) {
 
             MethodDeclaration initMethod = annotator.withInitMethod(new MethodCallExpr(new ThisExpr(), "activate"));
 
             cls.addMember(initMethod);
-        }
-
-        if (!processMetaData.getSubProcesses().isEmpty()) {
-
-            for (Entry<String, String> subProcess : processMetaData.getSubProcesses().entrySet()) {
-                FieldDeclaration subprocessFieldDeclaration = new FieldDeclaration();
-
-                String fieldName = "process" + subProcess.getKey();
-                ClassOrInterfaceType modelType = new ClassOrInterfaceType(null,
-                        new SimpleName(io.automatiko.engine.api.workflow.Process.class.getCanonicalName()),
-                        NodeList.nodeList(
-                                new ClassOrInterfaceType(null, StringUtils.capitalize(subProcess.getKey() + "Model"))));
-                if (useInjection()) {
-                    subprocessFieldDeclaration.addVariable(new VariableDeclarator(modelType, fieldName));
-                    annotator.withNamedInjection(subprocessFieldDeclaration, subProcess.getKey());
-                } else {
-                    // app.processes().processById()
-                    MethodCallExpr initSubProcessField = new MethodCallExpr(
-                            new MethodCallExpr(new NameExpr("app"), "processes"), "processById")
-                                    .addArgument(new StringLiteralExpr(subProcess.getKey()));
-
-                    subprocessFieldDeclaration.addVariable(new VariableDeclarator(modelType, fieldName));
-
-                    constructorDeclaration.getBody()
-                            .addStatement(new AssignExpr(new FieldAccessExpr(new ThisExpr(), fieldName),
-                                    new CastExpr(modelType, initSubProcessField), Operator.ASSIGN));
-
-                }
-
-                cls.addMember(subprocessFieldDeclaration);
-                subprocessFieldDeclaration.createGetter();
-            }
         }
 
         if (!processMetaData.getTriggers().isEmpty()) {

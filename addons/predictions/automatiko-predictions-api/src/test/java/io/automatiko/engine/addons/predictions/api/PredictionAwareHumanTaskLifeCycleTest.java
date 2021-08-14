@@ -14,9 +14,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import io.automatiko.engine.addons.predictions.api.PredictionAwareHumanTaskLifeCycle;
-import io.automatiko.engine.addons.predictions.api.PredictionOutcome;
-import io.automatiko.engine.addons.predictions.api.PredictionService;
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.SecurityPolicy;
 import io.automatiko.engine.api.workflow.ProcessConfig;
@@ -37,100 +34,100 @@ import io.automatiko.engine.workflow.bpmn2.BpmnVariables;
 
 public class PredictionAwareHumanTaskLifeCycleTest {
 
-	private Policy<?> securityPolicy = SecurityPolicy.of(new StaticIdentityProvider("john"));
+    private Policy<?> securityPolicy = SecurityPolicy.of(new StaticIdentityProvider("john"));
 
-	private AtomicBoolean predictNow;
-	private List<String> trainedTasks;
+    private AtomicBoolean predictNow;
+    private List<String> trainedTasks;
 
-	private PredictionService predictionService;
+    private PredictionService predictionService;
 
-	private ProcessConfig config;
+    private ProcessConfig config;
 
-	@BeforeEach
-	public void configure() {
+    @BeforeEach
+    public void configure() {
 
-		predictNow = new AtomicBoolean(false);
-		trainedTasks = new ArrayList<>();
+        predictNow = new AtomicBoolean(false);
+        trainedTasks = new ArrayList<>();
 
-		predictionService = new PredictionService() {
+        predictionService = new PredictionService() {
 
-			@Override
-			public void train(io.automatiko.engine.api.runtime.process.WorkItem task, Map<String, Object> inputData,
-					Map<String, Object> outputData) {
-				trainedTasks.add(task.getId());
-			}
+            @Override
+            public void train(io.automatiko.engine.api.runtime.process.WorkItem task, Map<String, Object> inputData,
+                    Map<String, Object> outputData) {
+                trainedTasks.add(task.getId());
+            }
 
-			@Override
-			public PredictionOutcome predict(io.automatiko.engine.api.runtime.process.WorkItem task,
-					Map<String, Object> inputData) {
-				if (predictNow.get()) {
-					return new PredictionOutcome(95, 75, Collections.singletonMap("output", "predicted value"));
-				}
+            @Override
+            public PredictionOutcome predict(io.automatiko.engine.api.runtime.process.WorkItem task,
+                    Map<String, Object> inputData) {
+                if (predictNow.get()) {
+                    return new PredictionOutcome(95, 75, Collections.singletonMap("output", "predicted value"));
+                }
 
-				return new PredictionOutcome();
-			}
+                return new PredictionOutcome();
+            }
 
-			@Override
-			public String getIdentifier() {
-				return "test";
-			}
-		};
+            @Override
+            public String getIdentifier() {
+                return "test";
+            }
+        };
 
-		CachedWorkItemHandlerConfig wiConfig = new CachedWorkItemHandlerConfig();
-		wiConfig.register("Human Task",
-				new HumanTaskWorkItemHandler(new PredictionAwareHumanTaskLifeCycle(predictionService)));
-		config = new StaticProcessConfig(wiConfig, new DefaultProcessEventListenerConfig(),
-				new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory()), null,
-				new DefaultVariableInitializer());
-	}
+        CachedWorkItemHandlerConfig wiConfig = new CachedWorkItemHandlerConfig();
+        wiConfig.register("Human Task",
+                new HumanTaskWorkItemHandler(new PredictionAwareHumanTaskLifeCycle(predictionService)));
+        config = new StaticProcessConfig(wiConfig, new DefaultProcessEventListenerConfig(),
+                new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory()), null,
+                new DefaultVariableInitializer(), null);
+    }
 
-	@Test
-	public void testUserTaskWithPredictionService() {
-		predictNow.set(true);
+    @Test
+    public void testUserTaskWithPredictionService() {
+        predictNow.set(true);
 
-		BpmnProcess process = (BpmnProcess) BpmnProcess.from(config, new ClassPathResource("BPMN2-UserTask.bpmn2"))
-				.get(0);
-		process.configure();
+        BpmnProcess process = (BpmnProcess) BpmnProcess.from(config, new ClassPathResource("BPMN2-UserTask.bpmn2"))
+                .get(0);
+        process.configure();
 
-		ProcessInstance<BpmnVariables> processInstance = process
-				.createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
+        ProcessInstance<BpmnVariables> processInstance = process
+                .createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
 
-		processInstance.start();
-		assertEquals(STATE_COMPLETED, processInstance.status());
+        processInstance.start();
+        assertEquals(STATE_COMPLETED, processInstance.status());
 
-		Model result = (Model) processInstance.variables();
-		assertEquals(2, result.toMap().size());
-		assertEquals("predicted value", result.toMap().get("s"));
+        Model result = (Model) processInstance.variables();
+        assertEquals(2, result.toMap().size());
+        assertEquals("predicted value", result.toMap().get("s"));
 
-		assertEquals(0, trainedTasks.size());
+        assertEquals(0, trainedTasks.size());
 
-	}
+    }
 
-	@Test
-	public void testUserTaskWithoutPredictionService() {
+    @Test
+    public void testUserTaskWithoutPredictionService() {
 
-		BpmnProcess process = (BpmnProcess) BpmnProcess.from(config, new ClassPathResource("BPMN2-UserTask.bpmn2"))
-				.get(0);
-		process.configure();
+        BpmnProcess process = (BpmnProcess) BpmnProcess.from(config, new ClassPathResource("BPMN2-UserTask.bpmn2"))
+                .get(0);
+        process.configure();
 
-		ProcessInstance<BpmnVariables> processInstance = process
-				.createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
+        ProcessInstance<BpmnVariables> processInstance = process
+                .createInstance(BpmnVariables.create(Collections.singletonMap("test", "test")));
 
-		processInstance.start();
-		assertEquals(STATE_ACTIVE, processInstance.status());
+        processInstance.start();
+        assertEquals(STATE_ACTIVE, processInstance.status());
 
-		WorkItem workItem = processInstance.workItems(securityPolicy).get(0);
-		assertNotNull(workItem);
-		assertEquals("john", workItem.getParameters().get("ActorId"));
-		processInstance.completeWorkItem(workItem.getId(), Collections.singletonMap("output", "given value"),
-				securityPolicy);
-		assertEquals(STATE_COMPLETED, processInstance.status());
+        WorkItem workItem = processInstance.workItems(securityPolicy).get(0);
+        assertNotNull(workItem);
+        assertEquals("john", workItem.getParameters().get("ActorId"));
+        processInstance.completeWorkItem(workItem.getId(), Collections.singletonMap("output", "given value"),
+                securityPolicy);
+        assertEquals(STATE_COMPLETED, processInstance.status());
 
-		Model result = (Model) processInstance.variables();
-		assertEquals(2, result.toMap().size());
-		assertEquals("given value", result.toMap().get("s"));
+        Model result = (Model) processInstance.variables();
+        assertEquals(2, result.toMap().size());
+        assertEquals("given value", result.toMap().get("s"));
 
-		assertEquals(1, trainedTasks.size());
+        assertEquals(1, trainedTasks.size());
 
-	}
+    }
 }
