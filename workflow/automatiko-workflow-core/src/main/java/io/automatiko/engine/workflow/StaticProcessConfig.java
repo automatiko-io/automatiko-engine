@@ -48,12 +48,13 @@ public class StaticProcessConfig implements ProcessConfig {
 
     public StaticProcessConfig(WorkItemHandlerConfig workItemHandlerConfig,
             ProcessEventListenerConfig processEventListenerConfig, UnitOfWorkManager unitOfWorkManager, JobsService jobsService,
-            VariableInitializer variableInitializer) {
+            VariableInitializer variableInitializer, ProcessInstancesFactory processInstancesFactory) {
         this.unitOfWorkManager = unitOfWorkManager;
         this.workItemHandlerConfig = workItemHandlerConfig;
         this.processEventListenerConfig = processEventListenerConfig;
         this.signalManager = new DefaultSignalManagerHub();
         this.jobsService = jobsService;
+        this.processInstancesFactory = processInstancesFactory;
         this.variableInitializer = variableInitializer;
     }
 

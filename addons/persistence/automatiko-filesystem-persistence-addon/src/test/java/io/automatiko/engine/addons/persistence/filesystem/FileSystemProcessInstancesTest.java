@@ -220,9 +220,9 @@ public class FileSystemProcessInstancesTest {
 
         UnitOfWorkManager uowManager = new DefaultUnitOfWorkManager(new CollectingUnitOfWorkFactory());
         ProcessConfig config = new StaticProcessConfig(new DefaultWorkItemHandlerConfig(),
-                new DefaultProcessEventListenerConfig(), uowManager, null, new DefaultVariableInitializer());
+                new DefaultProcessEventListenerConfig(), uowManager, null, new DefaultVariableInitializer(),
+                new FileSystemProcessInstancesFactory());
         BpmnProcess process = createProcess(config, "BPMN2-UserTask.bpmn2");
-        process.setProcessInstancesFactory(new FileSystemProcessInstancesFactory());
         process.configure();
 
         ProcessInstance<BpmnVariables> processInstance = process

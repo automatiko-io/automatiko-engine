@@ -106,7 +106,7 @@ public class AutomatikoQuarkusProcessor {
 
     @BuildStep
     CapabilityBuildItem capability() {
-        return new CapabilityBuildItem("automatiko");
+        return new CapabilityBuildItem("workflow", "automatiko");
     }
 
     @BuildStep
@@ -114,94 +114,8 @@ public class AutomatikoQuarkusProcessor {
         return new FeatureBuildItem("automatiko");
     }
 
-    private void generatePersistenceInfo(AutomatikoBuildTimeConfig config, PackageConfig pconfig, AppPaths appPaths,
-            BuildProducer<GeneratedBeanBuildItem> generatedBeans,
-            BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexClass,
-            IndexView index, LaunchModeBuildItem launchMode,
-            BuildProducer<NativeImageResourceBuildItem> resource, CurateOutcomeBuildItem curateOutcomeBuildItem)
-            throws Exception, BootstrapDependencyProcessingException {
-
-        ClassInfo persistenceClass = index.getClassByName(createDotName(persistenceFactoryClass));
-        boolean usePersistence = persistenceClass != null;
-        List<String> parameters = new ArrayList<>();
-        if (usePersistence) {
-            for (MethodInfo mi : persistenceClass.methods()) {
-                if (mi.name().equals("<init>") && !mi.parameters().isEmpty()) {
-                    parameters = mi.parameters().stream().map(p -> p.name().toString()).collect(Collectors.toList());
-                    break;
-                }
-            }
-        }
-
-        Collection<GeneratedFile> generatedFiles = getGeneratedPersistenceFiles(config, appPaths, index, usePersistence,
-                parameters);
-
-        if (!generatedFiles.isEmpty()) {
-
-            compile(appPaths, curateOutcomeBuildItem.getEffectiveModel(), generatedFiles, launchMode.getLaunchMode(),
-                    generatedBeans, additionalIndexClass, GeneratedBeanBuildItem::new, pconfig);
-        }
-
-        if (usePersistence) {
-            resource.produce(new NativeImageResourceBuildItem("automatiko-types.proto"));
-        }
-
-        resource.produce(new NativeImageResourceBuildItem("templates/default-usertask-email.html"));
-        resource.produce(new NativeImageResourceBuildItem("templates/default-task-template.html"));
-        resource.produce(new NativeImageResourceBuildItem("templates/not-found-template.html"));
-        resource.produce(new NativeImageResourceBuildItem("automatiko-index.html"));
-        resource.produce(new NativeImageResourceBuildItem("/META-INF/resources/js/automatiko-authorization.js"));
-    }
-
-    private Collection<GeneratedFile> getGeneratedPersistenceFiles(AutomatikoBuildTimeConfig config, AppPaths appPaths,
-            IndexView index, boolean usePersistence, List<String> parameters) {
-
-        Collection<ClassInfo> modelClasses = index
-                .getAllKnownImplementors(createDotName(Model.class.getCanonicalName()));
-
-        Collection<GeneratedFile> generatedFiles = new ArrayList<>();
-
-        for (Path projectPath : appPaths.projectPaths) {
-            PersistenceGenerator persistenceGenerator = new PersistenceGenerator(
-                    new File(projectPath.toFile(), "target"), modelClasses, usePersistence,
-                    new JandexProtoGenerator(index, createDotName(Generated.class.getCanonicalName()),
-                            createDotName(VariableInfo.class.getCanonicalName())),
-                    parameters);
-            persistenceGenerator.setDependencyInjection(new CDIDependencyInjectionAnnotator());
-            persistenceGenerator.setPackageName(config.packageName.orElse(DEFAULT_PACKAGE_NAME));
-            persistenceGenerator.setContext(AutomatikoBuildData.get().getGenerationContext());
-
-            generatedFiles.addAll(persistenceGenerator.generate());
-        }
-        return generatedFiles;
-    }
-
     @BuildStep
-    public List<ReflectiveHierarchyIgnoreWarningBuildItem> reflectiveDMNREST() {
-        List<ReflectiveHierarchyIgnoreWarningBuildItem> result = new ArrayList<>();
-        result.add(new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.api.builder.Message$Level")));
-        result.add(new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.dmn.api.core.DMNContext")));
-        result.add(
-                new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.dmn.api.core.DMNDecisionResult")));
-        result.add(new ReflectiveHierarchyIgnoreWarningBuildItem(
-                createDotName("org.kie.dmn.api.core.DMNDecisionResult$DecisionEvaluationStatus")));
-        result.add(new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.dmn.api.core.DMNMessage")));
-        result.add(new ReflectiveHierarchyIgnoreWarningBuildItem(
-                createDotName("org.kie.dmn.api.core.DMNMessage$Severity")));
-        result.add(new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.dmn.api.core.DMNMessageType")));
-        result.add(new ReflectiveHierarchyIgnoreWarningBuildItem(
-                createDotName("org.kie.dmn.api.feel.runtime.events.FEELEvent")));
-        return result;
-    }
-
-    @BuildStep
-    public RuntimeInitializedClassBuildItem runtimeInitialization() {
-
-        return new RuntimeInitializedClassBuildItem(AutomatikoMessages.class.getCanonicalName());
-    }
-
-    @BuildStep
-    public void generateModel(AutomatikoBuildTimeConfig config, PackageConfig pconfig,
+    public void generateClassesFromResourcesStep(AutomatikoBuildTimeConfig config, PackageConfig pconfig,
             ArchiveRootBuildItem root,
             ApplicationArchivesBuildItem archives,
             LaunchModeBuildItem launchMode,
@@ -231,6 +145,11 @@ public class AutomatikoQuarkusProcessor {
 
         }));
 
+        if (liveReload.isLiveReload() || ConfigProvider.getConfig()
+                .getOptionalValue("quarkus.live-reload.url", String.class).isPresent()
+                || "true".equals(System.getProperty("test.runs.enabled"))) {
+            return;
+        }
         // prepare index
         List<IndexView> archiveIndexes = new ArrayList<>();
 
@@ -244,12 +163,6 @@ public class AutomatikoQuarkusProcessor {
 
         ApplicationGenerator appGen = createApplicationGenerator(config, appPaths, archivesIndex);
 
-        if (liveReload.isLiveReload() || ConfigProvider.getConfig()
-                .getOptionalValue("quarkus.live-reload.url", String.class).isPresent()
-                || "true".equals(System.getProperty("test.runs.enabled"))) {
-            return;
-        }
-
         Collection<GeneratedFile> generatedFiles = appGen.generate();
 
         Collection<GeneratedFile> javaFiles = generatedFiles.stream().filter(f -> f.relativePath().endsWith(".java"))
@@ -258,73 +171,180 @@ public class AutomatikoQuarkusProcessor {
 
         if (!javaFiles.isEmpty()) {
 
-            Indexer automatikIndexer = new Indexer();
-            Set<DotName> automatikIndex = new HashSet<>();
+            Indexer automatikoIndexer = new Indexer();
+            Set<DotName> automatikoIndex = new HashSet<>();
 
             compile(appPaths, curateOutcomeBuildItem.getEffectiveModel(), javaFiles, launchMode.getLaunchMode(),
                     generatedBeans, additionalIndexClass, (className, data) -> {
-                        return generateBeanBuildItem(archivesIndex, automatikIndexer, automatikIndex, className, data);
+                        return generateBeanBuildItem(archivesIndex, automatikoIndexer, automatikoIndex, className, data);
                     }, pconfig);
 
-            Index index = automatikIndexer.complete();
+            Index index = automatikoIndexer.complete();
 
             generatePersistenceInfo(config, pconfig, appPaths, generatedBeans, additionalIndexClass,
                     CompositeIndex.create(archivesIndex, index), launchMode, resource,
                     curateOutcomeBuildItem);
 
-            reflectiveClass.produce(
-                    new ReflectiveClassBuildItem(true, true, "io.automatiko.engine.api.event.AbstractDataEvent"));
-            reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                    "io.automatiko.engine.services.event.AbstractProcessDataEvent"));
-            reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                    "io.automatiko.engine.services.event.ProcessInstanceDataEvent"));
-            reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                    "io.automatiko.engine.services.event.UserTaskInstanceDataEvent"));
-            reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                    "io.automatiko.engine.services.event.VariableInstanceDataEvent"));
-            reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                    "io.automatiko.engine.services.event.impl.ProcessInstanceEventBody"));
-            reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                    "io.automatiko.engine.services.event.impl.NodeInstanceEventBody"));
-            reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                    "io.automatiko.engine.services.event.impl.ProcessErrorEventBody"));
-            reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                    "io.automatiko.engine.services.event.impl.VariableInstanceEventBody"));
-            reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                    "io.automatiko.engine.services.event.impl.UserTaskInstanceEventBody"));
-
-            Collection<ClassInfo> dataEvents = index
-                    .getAllKnownSubclasses(createDotName("io.automatiko.engine.api.event.AbstractDataEvent"));
-
-            dataEvents.forEach(
-                    c -> reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, c.name().toString())));
-
-            reflectiveClass.produce(
-                    new ReflectiveClassBuildItem(false, false, "org.mvel2.optimizers.dynamic.DynamicOptimizer"));
-            reflectiveClass.produce(new ReflectiveClassBuildItem(false, false,
-                    "org.mvel2.optimizers.impl.refl.ReflectiveAccessorOptimizer"));
-            reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, ArrayList.class.getCanonicalName()));
-
-            // add functions classes found
-            reflectiveClass.produce(
-                    new ReflectiveClassBuildItem(true, false, "io.automatiko.engine.services.execution.BaseFunctions"));
-            List<String> functions = archivesIndex
-                    .getAllKnownImplementors(createDotName("io.automatiko.engine.api.Functions")).stream()
-                    .map(c -> c.name().toString())
-                    .collect(Collectors.toList());
-
-            functions.forEach(
-                    c -> reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, c)));
-
-            reflectiveClass.produce(
-                    new ReflectiveClassBuildItem(true, true, byte[].class.getName()));
-
-            reflectiveClass.produce(
-                    new ReflectiveClassBuildItem(true, false, BaseWorkItem.class));
-
-            providerProducer.produce(new ServiceProviderBuildItem(AutomatikoConfigProperties.class.getCanonicalName(),
-                    "io.automatiko.application.app.GeneratedAutomatikoConfigProperties"));
         }
+    }
+
+    @BuildStep
+    public void reflectiveClassesRegistrationStep(ApplicationArchivesBuildItem archives,
+            BuildProducer<ReflectiveHierarchyIgnoreWarningBuildItem> reflectiveHierarchy,
+            BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
+
+        // DMN related
+        reflectiveHierarchy
+                .produce(new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.api.builder.Message$Level")));
+        reflectiveHierarchy
+                .produce(new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.dmn.api.core.DMNContext")));
+        reflectiveHierarchy.produce(
+                new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.dmn.api.core.DMNDecisionResult")));
+        reflectiveHierarchy.produce(new ReflectiveHierarchyIgnoreWarningBuildItem(
+                createDotName("org.kie.dmn.api.core.DMNDecisionResult$DecisionEvaluationStatus")));
+        reflectiveHierarchy
+                .produce(new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.dmn.api.core.DMNMessage")));
+        reflectiveHierarchy.produce(new ReflectiveHierarchyIgnoreWarningBuildItem(
+                createDotName("org.kie.dmn.api.core.DMNMessage$Severity")));
+        reflectiveHierarchy
+                .produce(new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.dmn.api.core.DMNMessageType")));
+        reflectiveHierarchy.produce(new ReflectiveHierarchyIgnoreWarningBuildItem(
+                createDotName("org.kie.dmn.api.feel.runtime.events.FEELEvent")));
+
+        reflectiveClass.produce(
+                new ReflectiveClassBuildItem(true, true, "io.automatiko.engine.api.event.AbstractDataEvent"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "io.automatiko.engine.services.event.AbstractProcessDataEvent"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "io.automatiko.engine.services.event.ProcessInstanceDataEvent"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "io.automatiko.engine.services.event.UserTaskInstanceDataEvent"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "io.automatiko.engine.services.event.VariableInstanceDataEvent"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "io.automatiko.engine.services.event.impl.ProcessInstanceEventBody"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "io.automatiko.engine.services.event.impl.NodeInstanceEventBody"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "io.automatiko.engine.services.event.impl.ProcessErrorEventBody"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "io.automatiko.engine.services.event.impl.VariableInstanceEventBody"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "io.automatiko.engine.services.event.impl.UserTaskInstanceEventBody"));
+
+        reflectiveClass.produce(
+                new ReflectiveClassBuildItem(false, false, "org.mvel2.optimizers.dynamic.DynamicOptimizer"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(false, false,
+                "org.mvel2.optimizers.impl.refl.ReflectiveAccessorOptimizer"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, ArrayList.class.getCanonicalName()));
+
+        reflectiveClass.produce(
+                new ReflectiveClassBuildItem(true, true, byte[].class.getName()));
+
+        reflectiveClass.produce(
+                new ReflectiveClassBuildItem(true, false, BaseWorkItem.class));
+
+        List<IndexView> archiveIndexes = new ArrayList<>();
+
+        for (ApplicationArchive i : archives.getAllApplicationArchives()) {
+            archiveIndexes.add(i.getIndex());
+        }
+
+        CompositeIndex archivesIndex = CompositeIndex.create(archiveIndexes);
+
+        Collection<ClassInfo> dataEvents = archivesIndex
+                .getAllKnownSubclasses(createDotName("io.automatiko.engine.api.event.AbstractDataEvent"));
+
+        dataEvents.forEach(
+                c -> reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, c.name().toString())));
+
+        // add functions classes found
+        reflectiveClass.produce(
+                new ReflectiveClassBuildItem(true, false, "io.automatiko.engine.services.execution.BaseFunctions"));
+        archivesIndex
+                .getAllKnownImplementors(createDotName("io.automatiko.engine.api.Functions")).stream()
+                .map(c -> c.name().toString())
+                .forEach(
+                        c -> reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, c)));
+
+    }
+
+    @BuildStep
+    public void runtimeInitializationRegistrationStep(BuildProducer<RuntimeInitializedClassBuildItem> producer) {
+
+        producer.produce(new RuntimeInitializedClassBuildItem(AutomatikoMessages.class.getCanonicalName()));
+    }
+
+    @BuildStep
+    public void serviceProviderRegistrationStep(BuildProducer<ServiceProviderBuildItem> providerProducer) {
+
+        providerProducer.produce(new ServiceProviderBuildItem(AutomatikoConfigProperties.class.getCanonicalName(),
+                "io.automatiko.application.app.GeneratedAutomatikoConfigProperties"));
+    }
+
+    @BuildStep
+    public void resourceFileRegistrationStep(BuildProducer<NativeImageResourceBuildItem> resource) {
+
+        resource.produce(new NativeImageResourceBuildItem("templates/default-usertask-email.html"));
+        resource.produce(new NativeImageResourceBuildItem("templates/default-task-template.html"));
+        resource.produce(new NativeImageResourceBuildItem("templates/not-found-template.html"));
+        resource.produce(new NativeImageResourceBuildItem("automatiko-index.html"));
+        resource.produce(new NativeImageResourceBuildItem("/META-INF/resources/js/automatiko-authorization.js"));
+    }
+
+    private void generatePersistenceInfo(AutomatikoBuildTimeConfig config, PackageConfig pconfig, AppPaths appPaths,
+            BuildProducer<GeneratedBeanBuildItem> generatedBeans,
+            BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexClass,
+            IndexView index, LaunchModeBuildItem launchMode,
+            BuildProducer<NativeImageResourceBuildItem> resource, CurateOutcomeBuildItem curateOutcomeBuildItem)
+            throws Exception, BootstrapDependencyProcessingException {
+
+        ClassInfo persistenceClass = index.getClassByName(createDotName(persistenceFactoryClass));
+        boolean usePersistence = persistenceClass != null;
+        List<String> parameters = new ArrayList<>();
+        if (usePersistence) {
+            for (MethodInfo mi : persistenceClass.methods()) {
+                if (mi.name().equals("<init>") && !mi.parameters().isEmpty()) {
+                    parameters = mi.parameters().stream().map(p -> p.name().toString()).collect(Collectors.toList());
+                    break;
+                }
+            }
+        }
+
+        Collection<GeneratedFile> generatedFiles = getGeneratedPersistenceFiles(config, appPaths, index, usePersistence,
+                parameters);
+
+        if (!generatedFiles.isEmpty()) {
+
+            writeGeneratedFiles(appPaths, generatedFiles);
+
+            compile(appPaths, curateOutcomeBuildItem.getEffectiveModel(), generatedFiles, launchMode.getLaunchMode(),
+                    generatedBeans, additionalIndexClass, GeneratedBeanBuildItem::new, pconfig);
+        }
+
+    }
+
+    private Collection<GeneratedFile> getGeneratedPersistenceFiles(AutomatikoBuildTimeConfig config, AppPaths appPaths,
+            IndexView index, boolean usePersistence, List<String> parameters) {
+
+        Collection<ClassInfo> modelClasses = index
+                .getAllKnownImplementors(createDotName(Model.class.getCanonicalName()));
+
+        Collection<GeneratedFile> generatedFiles = new ArrayList<>();
+
+        for (Path projectPath : appPaths.projectPaths) {
+            PersistenceGenerator persistenceGenerator = new PersistenceGenerator(
+                    new File(projectPath.toFile(), "target"), modelClasses, usePersistence,
+                    new JandexProtoGenerator(index, createDotName(Generated.class.getCanonicalName()),
+                            createDotName(VariableInfo.class.getCanonicalName())),
+                    parameters);
+            persistenceGenerator.setDependencyInjection(new CDIDependencyInjectionAnnotator());
+            persistenceGenerator.setPackageName(config.packageName.orElse(DEFAULT_PACKAGE_NAME));
+            persistenceGenerator.setContext(AutomatikoBuildData.get().getGenerationContext());
+
+            generatedFiles.addAll(persistenceGenerator.generate());
+        }
+        return generatedFiles;
     }
 
     private void writeGeneratedFiles(AppPaths appPaths, Collection<GeneratedFile> resourceFiles) {
@@ -359,6 +379,7 @@ public class AutomatikoQuarkusProcessor {
         return new GeneratedBeanBuildItem(className, data);
     }
 
+    @SuppressWarnings("unchecked")
     private void compile(AppPaths appPaths, AppModel appModel, Collection<GeneratedFile> generatedFiles,
             LaunchMode launchMode, BuildProducer<GeneratedBeanBuildItem> generatedBeans,
             BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexClassProducer,
@@ -643,10 +664,6 @@ public class AutomatikoQuarkusProcessor {
             return transformPaths(projectPaths, p -> p.resolve("src/main/resources"));
         }
 
-        public Path[] getSourcePaths() {
-            return transformPaths(projectPaths, p -> p.resolve("src"));
-        }
-
         public Path[] getProjectPaths() {
             return transformPaths(projectPaths, Function.identity());
         }
@@ -663,11 +680,6 @@ public class AutomatikoQuarkusProcessor {
             if (path.endsWith("target" + File.separator + "test-classes")) {
                 return PathType.TEST_CLASSES;
             }
-            // Quarkus generates a file with extension .jar.original when doing a native
-            // compilation of a uberjar
-            // TODO replace ".jar.original" with constant
-            // JarResultBuildStep.RENAMED_JAR_EXTENSION when it will be avialable in Quakrus
-            // 1.7
             if (path.endsWith(".jar") || path.endsWith(".jar.original")) {
                 return PathType.JAR;
             }
