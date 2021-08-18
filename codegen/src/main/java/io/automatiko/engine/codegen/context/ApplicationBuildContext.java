@@ -29,4 +29,8 @@ public interface ApplicationBuildContext {
     default boolean isUserTaskMgmtSupported() {
         return hasClassAvailable(CodeGenConstants.USERTASK_MGMT_DATA_CLASS);
     }
+
+    default boolean isGraphQLSupported() {
+        return hasClassAvailable(CodeGenConstants.GRAPHQL_CLASS);
+    }
 }

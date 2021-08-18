@@ -20,35 +20,40 @@ import io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskWorkI
  */
 public class Release implements LifeCyclePhase {
 
-	public static final String ID = "release";
-	public static final String STATUS = "Ready";
+    public static final String ID = "release";
+    public static final String STATUS = "Ready";
 
-	private List<String> allowedTransitions = Arrays.asList(Claim.ID);
+    private List<String> allowedTransitions = Arrays.asList(Claim.ID);
 
-	@Override
-	public String id() {
-		return ID;
-	}
+    @Override
+    public String id() {
+        return ID;
+    }
 
-	@Override
-	public String status() {
-		return STATUS;
-	}
+    @Override
+    public String status() {
+        return STATUS;
+    }
 
-	@Override
-	public boolean isTerminating() {
-		return false;
-	}
+    @Override
+    public boolean isTerminating() {
+        return false;
+    }
 
-	@Override
-	public boolean canTransition(LifeCyclePhase phase) {
-		return allowedTransitions.contains(phase.id());
-	}
+    @Override
+    public boolean isCompleting() {
+        return false;
+    }
 
-	@Override
-	public void apply(WorkItem workitem, Transition<?> transition) {
+    @Override
+    public boolean canTransition(LifeCyclePhase phase) {
+        return allowedTransitions.contains(phase.id());
+    }
 
-		((HumanTaskWorkItemImpl) workitem).setActualOwner(null);
+    @Override
+    public void apply(WorkItem workitem, Transition<?> transition) {
 
-	}
+        ((HumanTaskWorkItemImpl) workitem).setActualOwner(null);
+
+    }
 }

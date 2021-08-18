@@ -157,6 +157,22 @@ public class LightWorkItemManager extends DefaultWorkItemManager {
 
     }
 
+    public void internalAbortWorkItem(WorkItem workItem) {
+        ProcessInstance processInstance = workItem.getProcessInstance();
+        if (processInstance == null) {
+            processInstance = processInstanceManager.getProcessInstance(workItem.getProcessInstanceId());
+        }
+
+        ((WorkItemImpl) workItem).setState(ABORTED);
+
+        // process instance may have finished already
+        if (processInstance != null) {
+            processInstance.signalEvent("workItemAborted", workItem);
+        }
+        workItems.remove(workItem.getId());
+
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public void transitionWorkItem(String id, Transition<?> transition) {

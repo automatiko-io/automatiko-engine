@@ -16,8 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.automatiko.engine.api.Model;
-
 public class HttpCallbacks {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpCallbacks.class);
@@ -31,7 +29,7 @@ public class HttpCallbacks {
         this.httpcClient = HttpClient.newBuilder().version(Version.HTTP_2).followRedirects(Redirect.NORMAL).build();
     }
 
-    public void post(String url, Model model, Map<String, String> headers, int status) {
+    public void post(String url, Object model, Map<String, String> headers, int status) {
         if (url == null || model == null) {
             return;
         }

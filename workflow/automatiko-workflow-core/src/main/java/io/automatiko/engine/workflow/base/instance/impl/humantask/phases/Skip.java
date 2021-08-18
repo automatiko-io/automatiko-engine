@@ -28,42 +28,47 @@ import io.automatiko.engine.workflow.base.instance.impl.workitem.Active;
  */
 public class Skip implements LifeCyclePhase {
 
-	public static final String ID = "skip";
-	public static final String STATUS = "Skipped";
+    public static final String ID = "skip";
+    public static final String STATUS = "Skipped";
 
-	private List<String> allowedTransitions = Arrays.asList(Active.ID, Claim.ID, Release.ID);
+    private List<String> allowedTransitions = Arrays.asList(Active.ID, Claim.ID, Release.ID);
 
-	@Override
-	public String id() {
-		return ID;
-	}
+    @Override
+    public String id() {
+        return ID;
+    }
 
-	@Override
-	public String status() {
-		return STATUS;
-	}
+    @Override
+    public String status() {
+        return STATUS;
+    }
 
-	@Override
-	public boolean isTerminating() {
-		return true;
-	}
+    @Override
+    public boolean isTerminating() {
+        return false;
+    }
 
-	@Override
-	public boolean canTransition(LifeCyclePhase phase) {
-		return allowedTransitions.contains(phase.id());
-	}
+    @Override
+    public boolean isCompleting() {
+        return true;
+    }
 
-	@Override
-	public void apply(WorkItem workitem, Transition<?> transition) {
+    @Override
+    public boolean canTransition(LifeCyclePhase phase) {
+        return allowedTransitions.contains(phase.id());
+    }
 
-		if (transition.policies() != null) {
-			for (Policy<?> policy : transition.policies()) {
-				if (policy instanceof SecurityPolicy) {
-					((HumanTaskWorkItemImpl) workitem).setActualOwner(((SecurityPolicy) policy).value().getName());
-					break;
-				}
-			}
-		}
-		workitem.getResults().put("ActorId", ((HumanTaskWorkItem) workitem).getActualOwner());
-	}
+    @Override
+    public void apply(WorkItem workitem, Transition<?> transition) {
+
+        if (transition.policies() != null) {
+            for (Policy<?> policy : transition.policies()) {
+                if (policy instanceof SecurityPolicy) {
+                    ((HumanTaskWorkItemImpl) workitem).setActualOwner(((SecurityPolicy) policy).value().getName());
+                    break;
+                }
+            }
+        }
+        workitem.getResults().put("ActorId", ((HumanTaskWorkItem) workitem).getActualOwner());
+    }
 }
