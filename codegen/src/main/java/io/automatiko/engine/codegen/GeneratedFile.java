@@ -12,6 +12,7 @@ public class GeneratedFile {
         PROCESS(false),
         PROCESS_INSTANCE(false),
         REST(true),
+        GRAPHQL(true),
         FUNCTION(true),
         FUNCTION_FLOW(true),
         MODEL(true),

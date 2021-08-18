@@ -4,6 +4,7 @@ package io.automatiko.engine.codegen.process;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.codegen.CodegenUtils;
 import io.automatiko.engine.codegen.GeneratorContext;
+import io.automatiko.engine.codegen.process.augmentors.GraphQLModelAugmentor;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.compiler.canonical.ModelMetaData;
@@ -47,6 +48,10 @@ public class OutputModelClassGenerator {
         modelFileName = modelMetaData.getModelClassName().replace('.', '/') + ".java";
         modelMetaData.setSupportsValidation(context.getBuildContext().isValidationSupported());
         modelMetaData.setSupportsOpenApi(context.getBuildContext().isOpenApiSupported());
+
+        if (context.getBuildContext().isGraphQLSupported()) {
+            modelMetaData.addAugmentor(new GraphQLModelAugmentor());
+        }
 
         return modelMetaData;
     }

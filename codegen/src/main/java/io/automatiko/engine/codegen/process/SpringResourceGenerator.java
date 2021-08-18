@@ -16,30 +16,30 @@ import io.automatiko.engine.codegen.GeneratorContext;
  */
 public class SpringResourceGenerator extends AbstractResourceGenerator {
 
-	private static final String RESOURCE_TEMPLATE = "/class-templates/spring/SpringRestResourceTemplate.java";
+    private static final String RESOURCE_TEMPLATE = "/class-templates/spring/SpringRestResourceTemplate.java";
 
-	public SpringResourceGenerator(GeneratorContext context, WorkflowProcess process, String modelfqcn,
-			String processfqcn, String appCanonicalName) {
-		super(context, process, modelfqcn, processfqcn, appCanonicalName);
-	}
+    public SpringResourceGenerator(GeneratorContext context, WorkflowProcess process, String modelfqcn,
+            String processfqcn, String appCanonicalName) {
+        super(context, process, modelfqcn, processfqcn, appCanonicalName, "Resource");
+    }
 
-	@Override
-	protected String getResourceTemplate() {
-		return RESOURCE_TEMPLATE;
-	}
+    @Override
+    protected String getResourceTemplate() {
+        return RESOURCE_TEMPLATE;
+    }
 
-	@Override
-	public String getUserTaskResourceTemplate() {
-		return "/class-templates/spring/SpringRestResourceUserTaskTemplate.java";
-	}
+    @Override
+    public String getUserTaskResourceTemplate() {
+        return "/class-templates/spring/SpringRestResourceUserTaskTemplate.java";
+    }
 
-	@Override
-	protected String getSignalResourceTemplate() {
-		return "/class-templates/spring/SpringRestResourceSignalTemplate.java";
-	}
+    @Override
+    protected String getSignalResourceTemplate() {
+        return "/class-templates/spring/SpringRestResourceSignalTemplate.java";
+    }
 
-	@Override
-	public List<String> getRestAnnotations() {
-		return Arrays.asList("PostMapping", "GetMapping", "PutMapping", "DeleteMapping");
-	}
+    @Override
+    public List<String> getRestAnnotations() {
+        return Arrays.asList("PostMapping", "GetMapping", "PutMapping", "DeleteMapping");
+    }
 }

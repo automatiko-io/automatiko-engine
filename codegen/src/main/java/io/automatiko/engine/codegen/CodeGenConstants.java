@@ -15,6 +15,8 @@ public class CodeGenConstants {
 
     public static final String ENTITY_CLASS = "io.automatiko.engine.addons.persistence.db.model.ProcessInstanceEntity";
 
+    public static final String GRAPHQL_CLASS = "io.smallrye.graphql.cdi.producer.GraphQLProducer";
+
     public static final String INCOMING_PROP_PREFIX = "mp.messaging.incoming.";
     public static final String OUTGOING_PROP_PREFIX = "mp.messaging.outgoing.";
     public static final String MQTT_CONNECTOR = "smallrye-mqtt";

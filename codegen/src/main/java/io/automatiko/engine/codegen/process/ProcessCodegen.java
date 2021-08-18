@@ -44,6 +44,7 @@ import io.automatiko.engine.api.io.ResourceType;
 import io.automatiko.engine.codegen.AbstractGenerator;
 import io.automatiko.engine.codegen.ApplicationGenerator;
 import io.automatiko.engine.codegen.ApplicationSection;
+import io.automatiko.engine.codegen.CodegenUtils;
 import io.automatiko.engine.codegen.ConfigGenerator;
 import io.automatiko.engine.codegen.DefaultResourceGeneratorFactory;
 import io.automatiko.engine.codegen.GeneratedFile;
@@ -270,6 +271,7 @@ public class ProcessCodegen extends AbstractGenerator {
         List<ProcessInstanceGenerator> pis = new ArrayList<>();
         List<ProcessExecutableModelGenerator> processExecutableModelGenerators = new ArrayList<>();
         List<AbstractResourceGenerator> rgs = new ArrayList<>(); // REST resources
+        List<AbstractResourceGenerator> grapggs = new ArrayList<>(); // GraphQL resources
         List<FunctionGenerator> fgs = new ArrayList<>(); // Function resources
         List<FunctionFlowGenerator> ffgs = new ArrayList<>(); // Function flow resources
         List<MessageDataEventGenerator> mdegs = new ArrayList<>(); // message data events
@@ -392,6 +394,24 @@ public class ProcessCodegen extends AbstractGenerator {
                                             processIdToModelGenerator, processExecutableModelGenerators,
                                             processIdToUserTaskModel)))
                             .ifPresent(rgs::add);
+
+                    if (context.getBuildContext().isGraphQLSupported()) {
+                        GraphQLResourceGenerator graphqlGenerator = new GraphQLResourceGenerator(context(), workFlowProcess,
+                                modelClassGenerator.className(), execModelGen.className(),
+                                applicationCanonicalName);
+
+                        graphqlGenerator.withDependencyInjection(annotator).withParentProcess(null).withPersistence(persistence)
+                                .withUserTasks(processIdToUserTaskModel.get(execModelGen.getProcessId()))
+                                .withPathPrefix(CodegenUtils.version(workFlowProcess.getVersion()))
+                                .withSignals(metaData.getSignals())
+                                .withTriggers(metaData.isStartable(), metaData.isDynamic())
+                                .withSubProcesses(populateSubprocesses(workFlowProcess,
+                                        processIdToMetadata.get(execModelGen.getProcessId()), processIdToMetadata,
+                                        processIdToModelGenerator, processExecutableModelGenerators,
+                                        processIdToUserTaskModel));
+
+                        grapggs.add(graphqlGenerator);
+                    }
                 }
                 if (metaData.getTriggers() != null) {
 
@@ -473,6 +493,10 @@ public class ProcessCodegen extends AbstractGenerator {
 
         for (AbstractResourceGenerator resourceGenerator : rgs) {
             storeFile(Type.REST, resourceGenerator.generatedFilePath(), resourceGenerator.generate());
+        }
+
+        for (AbstractResourceGenerator resourceGenerator : grapggs) {
+            storeFile(Type.GRAPHQL, resourceGenerator.generatedFilePath(), resourceGenerator.generate());
         }
 
         for (FunctionGenerator functionGenerator : fgs) {

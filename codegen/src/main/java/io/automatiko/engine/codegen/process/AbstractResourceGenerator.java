@@ -83,7 +83,7 @@ public abstract class AbstractResourceGenerator {
     private boolean persistence;
 
     public AbstractResourceGenerator(GeneratorContext context, WorkflowProcess process, String modelfqcn,
-            String processfqcn, String appCanonicalName) {
+            String processfqcn, String appCanonicalName, String type) {
         this.context = context;
         this.process = process;
         this.processId = process.getId();
@@ -93,7 +93,7 @@ public abstract class AbstractResourceGenerator {
         }
         this.appCanonicalName = appCanonicalName;
         String classPrefix = StringUtils.capitalize(processName);
-        this.resourceClazzName = classPrefix + "Resource" + version;
+        this.resourceClazzName = classPrefix + type + version;
         this.relativePath = process.getPackageName().replace(".", "/") + "/" + resourceClazzName + ".java";
         this.modelfqcn = modelfqcn + "Output";
         this.dataClazzName = modelfqcn.substring(modelfqcn.lastIndexOf('.') + 1);
@@ -455,11 +455,12 @@ public abstract class AbstractResourceGenerator {
 
     private void interpolateMethods(MethodDeclaration m) {
         SimpleName methodName = m.getName();
-        String interpolated = methodName.asString().replace("$name$", processName);
+        String interpolated = methodName.asString().replace("$name$", processName).replace("$prefix$", pathPrefix);
         m.setName(interpolated);
 
         m.getParameters().forEach(p -> p.setName(
-                p.getNameAsString().replace("$name$", processName).replace("$parentprocessid$", parentProcessId)));
+                p.getNameAsString().replace("$name$", processName).replace("$prefix$", pathPrefix).replace("$parentprocessid$",
+                        parentProcessId)));
     }
 
     private void interpolateMethodParams(MethodDeclaration m) {
