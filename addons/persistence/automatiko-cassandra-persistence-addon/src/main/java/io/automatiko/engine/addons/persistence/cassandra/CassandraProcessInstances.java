@@ -95,6 +95,16 @@ public class CassandraProcessInstances implements MutableProcessInstances {
         if (cachedInstances.containsKey(resolvedId)) {
             return Optional.of(cachedInstances.get(resolvedId));
         }
+        if (resolvedId.contains(":")) {
+            if (cachedInstances.containsKey(resolvedId.split(":")[1])) {
+                ProcessInstance pi = cachedInstances.get(resolvedId.split(":")[1]);
+                if (pi.status() == status) {
+                    return Optional.of(pi);
+                } else {
+                    return Optional.empty();
+                }
+            }
+        }
         LOGGER.debug("findById() called for instance {}", resolvedId);
 
         Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName).column(CONTENT_FIELD)

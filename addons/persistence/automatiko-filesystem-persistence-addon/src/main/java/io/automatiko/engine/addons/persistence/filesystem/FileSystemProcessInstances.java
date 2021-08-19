@@ -108,6 +108,16 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
                 return Optional.empty();
             }
         }
+        if (resolvedId.contains(":")) {
+            if (cachedInstances.containsKey(resolvedId.split(":")[1])) {
+                ProcessInstance pi = cachedInstances.get(resolvedId.split(":")[1]);
+                if (pi.status() == status) {
+                    return Optional.of(pi);
+                } else {
+                    return Optional.empty();
+                }
+            }
+        }
 
         Path processInstanceStorage = Paths.get(storage.toString(), resolvedId);
 

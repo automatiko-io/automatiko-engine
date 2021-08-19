@@ -67,6 +67,7 @@ public abstract class AbstractResourceGenerator {
     private String dataClazzName;
     private String modelfqcn;
     private final String processName;
+    private String parentProcessPrefix = "";
     private String parentProcessName = "process";
     private String parentProcessId = "id";
     private final String appCanonicalName;
@@ -103,11 +104,16 @@ public abstract class AbstractResourceGenerator {
 
     public AbstractResourceGenerator withParentProcess(WorkflowProcess parentProcess) {
         this.parentProcess = parentProcess;
+
         if (this.parentProcess != null && !isParentPublic()) {
             String processInfo = parentProcess.getId().substring(parentProcess.getId().lastIndexOf('.') + 1);
 
             this.parentProcessName = "subprocess_" + processInfo;
             this.parentProcessId = "id_" + processInfo;
+        }
+
+        if (this.parentProcess != null) {
+            this.parentProcessPrefix = parentProcess.getId() + CodegenUtils.version(parentProcess.getVersion());
         }
         return this;
     }
@@ -199,7 +205,7 @@ public abstract class AbstractResourceGenerator {
                     .orElseThrow(() -> new NoSuchElementException("SignalResourceTemplate class not found!"));
 
             signalsMap.entrySet().stream().filter(e -> Objects.nonNull(e.getKey())).forEach(entry -> {
-                String methodName = "signal_" + index.getAndIncrement();
+                String methodName = "_" + index.getAndIncrement();
 
                 String signalName = entry.getKey();
                 String signalType = entry.getValue();
@@ -211,7 +217,7 @@ public abstract class AbstractResourceGenerator {
                         body.findAll(NameExpr.class, nameExpr -> "data".equals(nameExpr.getNameAsString()))
                                 .forEach(name -> name.replace(new NullLiteralExpr()));
                     }
-                    template.addMethod(methodName, Keyword.PUBLIC).setType("javax.ws.rs.core.Response")
+                    template.addMethod(cloned.getNameAsString() + "_" + methodName, Keyword.PUBLIC).setType(cloned.getType())
                             // Remove data parameter ( payload ) if signalType is null
                             .setParameters(signalType == null ? removeLastParam(cloned)
                                     : cloned.getParameters())
@@ -369,6 +375,8 @@ public abstract class AbstractResourceGenerator {
             });
         }
 
+        collectSubProcessModels(modelfqcn.substring(modelfqcn.lastIndexOf('.') + 1), template, subprocesses);
+
         enableValidation(template);
         removeMetricsIfNotEnabled(template);
         securityAnnotated(template);
@@ -396,6 +404,11 @@ public abstract class AbstractResourceGenerator {
     }
 
     public abstract List<String> getRestAnnotations();
+
+    public void collectSubProcessModels(String dataClassName, ClassOrInterfaceDeclaration template,
+            List<AbstractResourceGenerator> subprocessGenerators) {
+
+    }
 
     private void enableValidation(ClassOrInterfaceDeclaration template) {
         Optional.ofNullable(context).map(GeneratorContext::getBuildContext)
@@ -455,12 +468,13 @@ public abstract class AbstractResourceGenerator {
 
     private void interpolateMethods(MethodDeclaration m) {
         SimpleName methodName = m.getName();
-        String interpolated = methodName.asString().replace("$name$", processName).replace("$prefix$", pathPrefix);
+        String interpolated = methodName.asString().replace("$name$", processName).replace("$prefix$", pathPrefix).replace(
+                "$parentprocessprefix$", parentProcessPrefix);
         m.setName(interpolated);
 
         m.getParameters().forEach(p -> p.setName(
-                p.getNameAsString().replace("$name$", processName).replace("$prefix$", pathPrefix).replace("$parentprocessid$",
-                        parentProcessId)));
+                p.getNameAsString().replace("$name$", processName).replace("$prefix$", pathPrefix).replace(
+                        "$parentprocess$", parentProcessName)));
     }
 
     private void interpolateMethodParams(MethodDeclaration m) {
@@ -548,5 +562,13 @@ public abstract class AbstractResourceGenerator {
         cloned.getParameters().remove(cloned.getParameters().size() - 1);
 
         return cloned.getParameters();
+    }
+
+    public String processId() {
+        return this.processId;
+    }
+
+    public String generatorModelClass() {
+        return this.dataClazzName;
     }
 }

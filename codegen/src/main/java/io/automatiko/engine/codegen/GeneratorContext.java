@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -64,6 +65,8 @@ public class GeneratorContext {
     private Map<String, String> modifiedApplicationProperties = new LinkedHashMap<String, String>();
 
     private Map<String, ProcessMetaData> processes = new ConcurrentHashMap<String, ProcessMetaData>();
+
+    private Map<String, Map<String, Object>> generators = new ConcurrentHashMap<>();
 
     private Map<Path, Path> classToSource = new HashMap<>();
 
@@ -155,6 +158,25 @@ public class GeneratorContext {
 
     public void addProcess(String processId, ProcessMetaData processMetadata) {
         this.processes.put(processId, processMetadata);
+    }
+
+    public ProcessMetaData getProcess(String processId) {
+        return this.processes.get(processId);
+    }
+
+    public void addGenerator(String name, String id, Object generator) {
+        this.generators.compute(name, (k, v) -> {
+            if (v == null) {
+                v = new HashMap<>();
+            }
+            v.put(id, generator);
+
+            return v;
+        });
+    }
+
+    public Object getGenerator(String name, String id) {
+        return this.generators.getOrDefault(name, Collections.emptyMap()).get(id);
     }
 
     public Set<File> collectConnectedFiles(Set<File> inputs) {

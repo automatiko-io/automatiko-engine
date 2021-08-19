@@ -50,7 +50,12 @@ public class OutputModelClassGenerator {
         modelMetaData.setSupportsOpenApi(context.getBuildContext().isOpenApiSupported());
 
         if (context.getBuildContext().isGraphQLSupported()) {
-            modelMetaData.addAugmentor(new GraphQLModelAugmentor());
+            String processId = workFlowProcess.getId();
+            if (workFlowProcess.getVersion() != null) {
+                processId += "_" + workFlowProcess.getVersion();
+            }
+
+            modelMetaData.addAugmentor(new GraphQLModelAugmentor(false, context.getProcess(processId), context));
         }
 
         return modelMetaData;

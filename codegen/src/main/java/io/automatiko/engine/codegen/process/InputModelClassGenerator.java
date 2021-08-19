@@ -53,7 +53,7 @@ public class InputModelClassGenerator {
             modelMetaData.addAugmentor(new GcpPubSubModelAugmentor());
         }
         if (context.getBuildContext().isGraphQLSupported()) {
-            modelMetaData.addAugmentor(new GraphQLModelAugmentor());
+            modelMetaData.addAugmentor(new GraphQLModelAugmentor(true, null, context));
         }
 
         modelFileName = modelMetaData.getModelClassName().replace('.', '/') + ".java";

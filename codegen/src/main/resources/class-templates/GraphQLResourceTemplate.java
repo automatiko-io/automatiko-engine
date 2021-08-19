@@ -15,6 +15,7 @@ import org.eclipse.microprofile.graphql.GraphQLApi;
 import org.eclipse.microprofile.graphql.Description;
 import org.eclipse.microprofile.graphql.Mutation;
 import org.eclipse.microprofile.graphql.Query;
+import org.acme.travels.ScriptsModel;
 import org.eclipse.microprofile.graphql.DefaultValue;
 import org.eclipse.microprofile.graphql.Name;
 
@@ -71,8 +72,7 @@ public class $Type$GraphQLResource {
             resource = new $Type$Input();
         }
         final $Type$Input value = resource;
-        
-        
+                
             identitySupplier.buildIdentityProvider(user, groups);
             return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 ProcessInstance<$Type$> pi = process.createInstance(businessKey.isEmpty() ? null : businessKey, mapInput(value, new $Type$()));
@@ -99,11 +99,11 @@ public class $Type$GraphQLResource {
             return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             if (tags != null && !tags.isEmpty()) {
                 return process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, mapStatus(status), tags.toArray(String[]::new)).stream()
-                        .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
+                        .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), pi))
                         .collect(Collectors.toList());
             } else {
                 return process.instances().values(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, mapStatus(status), page, size).stream()
-                    .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
+                    .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), pi))
                     .collect(Collectors.toList());
             }
         });
@@ -120,7 +120,7 @@ public class $Type$GraphQLResource {
             return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 return process.instances()
                     .findById(id, mapStatus(status), io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
-                    .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
+                    .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), pi))
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             });
     }
@@ -199,14 +199,15 @@ public class $Type$GraphQLResource {
         return inErrorProcessor; 
     }
     
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected $Type$Output getModel(ProcessInstance<$Type$> pi) {
-        $Type$Output model = mapOutput(new $Type$Output(), pi.variables(), pi.businessKey());
+        $Type$Output model = mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), pi);
         if (pi.status() == ProcessInstance.STATE_ERROR && pi.errors().isPresent()) {
             
             inErrorProcessor.onNext(model);
             
             throw new ProcessInstanceExecutionException(pi.id(), pi.errors().get().failedNodeIds(), pi.errors().get().errorMessages());
-        }
+        }        
         
         if (pi.status() == ProcessInstance.STATE_COMPLETED) {
             completedProcessor.onNext(model);
@@ -227,7 +228,7 @@ public class $Type$GraphQLResource {
         return resource;
     }
     
-    protected $Type$Output mapOutput($Type$Output output, $Type$ resource, String businessKey) {
+    protected $Type$Output mapOutput($Type$Output output, $Type$ resource, String businessKey, ProcessInstance<$Type$> pi) {
         output.fromMap(businessKey != null ? businessKey: resource.getId(), resource.toMap());
         
         return output;
@@ -236,6 +237,7 @@ public class $Type$GraphQLResource {
     protected void tracing(ProcessInstance<?> intance) {
         
     }
+   
     
     protected int mapStatus(String status) {
         int state = 1;

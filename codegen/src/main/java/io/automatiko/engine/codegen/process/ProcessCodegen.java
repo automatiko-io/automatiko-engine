@@ -301,6 +301,10 @@ public class ProcessCodegen extends AbstractGenerator {
 
             OutputModelClassGenerator omcg = new OutputModelClassGenerator(context(), entry.getValue());
             processIdToOutputModelGenerator.put(entry.getKey(), omcg);
+
+            context.addGenerator("ModelClassGenerator", entry.getKey(), mcg);
+            context.addGenerator("InputModelClassGenerator", entry.getKey(), imcg);
+            context.addGenerator("OutputModelClassGenerator", entry.getKey(), omcg);
         }
 
         // then we generate user task inputs and outputs if any
@@ -405,7 +409,7 @@ public class ProcessCodegen extends AbstractGenerator {
                                 .withPathPrefix(CodegenUtils.version(workFlowProcess.getVersion()))
                                 .withSignals(metaData.getSignals())
                                 .withTriggers(metaData.isStartable(), metaData.isDynamic())
-                                .withSubProcesses(populateSubprocesses(workFlowProcess,
+                                .withSubProcesses(populateSubprocessesGraphQL(workFlowProcess,
                                         processIdToMetadata.get(execModelGen.getProcessId()), processIdToMetadata,
                                         processIdToModelGenerator, processExecutableModelGenerators,
                                         processIdToUserTaskModel));
@@ -609,6 +613,40 @@ public class ProcessCodegen extends AbstractGenerator {
                                 .withTriggers(processIdToMetadata.get(execModelGen.getProcessId()).isStartable(),
                                         processIdToMetadata.get(execModelGen.getProcessId()).isDynamic())
                                 .withSubProcesses(populateSubprocesses(workFlowProcess,
+                                        processIdToMetadata.get(execModelGen.getProcessId()), processIdToMetadata,
+                                        processIdToModelGenerator, processExecutableModelGenerators,
+                                        processIdToUserTaskModel)))
+                        .ifPresent(subprocesses::add);
+            }
+        }
+
+        return subprocesses;
+    }
+
+    protected List<AbstractResourceGenerator> populateSubprocessesGraphQL(WorkflowProcess parentProcess,
+            ProcessMetaData metaData, Map<String, ProcessMetaData> processIdToMetadata,
+            Map<String, ModelClassGenerator> processIdToModelGenerator,
+            List<ProcessExecutableModelGenerator> processExecutableModelGenerators,
+            Map<String, List<UserTaskModelMetaData>> processIdToUserTaskModel) {
+        List<AbstractResourceGenerator> subprocesses = new ArrayList<AbstractResourceGenerator>();
+
+        for (Entry<String, String> entry : metaData.getSubProcesses().entrySet()) {
+
+            ProcessExecutableModelGenerator execModelGen = processExecutableModelGenerators.stream()
+                    .filter(p -> p.getProcessId().equals(entry.getValue())).findFirst().orElse(null);
+
+            if (execModelGen != null) {
+                WorkflowProcess workFlowProcess = execModelGen.process();
+                ModelClassGenerator modelClassGenerator = processIdToModelGenerator.get(entry.getValue());
+
+                Optional.of(new SubprocessGraphQLResourceGenerator(context(), workFlowProcess, modelClassGenerator.className(),
+                        execModelGen.className(), applicationCanonicalName))
+                        .map(r -> r.withDependencyInjection(annotator).withParentProcess(parentProcess)
+                                .withUserTasks(processIdToUserTaskModel.get(execModelGen.getProcessId()))
+                                .withSignals(processIdToMetadata.get(execModelGen.getProcessId()).getSignals())
+                                .withTriggers(processIdToMetadata.get(execModelGen.getProcessId()).isStartable(),
+                                        processIdToMetadata.get(execModelGen.getProcessId()).isDynamic())
+                                .withSubProcesses(populateSubprocessesGraphQL(workFlowProcess,
                                         processIdToMetadata.get(execModelGen.getProcessId()), processIdToMetadata,
                                         processIdToModelGenerator, processExecutableModelGenerators,
                                         processIdToUserTaskModel)))
