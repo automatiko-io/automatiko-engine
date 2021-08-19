@@ -30,12 +30,21 @@ public class MapProcessInstances implements MutableProcessInstances {
 
     @Override
     public Optional<ProcessInstance> findById(String id, int status, ProcessInstanceReadMode mode) {
-        ProcessInstance instance = instances.get(resolveId(id));
+        String resolvedId = resolveId(id);
+        ProcessInstance instance = instances.get(resolvedId);
         if (instance != null) {
             instance.process().accessPolicy().canReadInstance(IdentityProvider.get(), instance);
 
             if (instance.status() == status) {
                 return Optional.ofNullable(instance);
+            }
+        }
+        if (resolvedId.contains(":")) {
+            if (instances.containsKey(resolvedId.split(":")[1])) {
+                ProcessInstance pi = instances.get(resolvedId.split(":")[1]);
+                if (pi.status() == status) {
+                    return Optional.of(pi);
+                }
             }
         }
         return Optional.empty();
