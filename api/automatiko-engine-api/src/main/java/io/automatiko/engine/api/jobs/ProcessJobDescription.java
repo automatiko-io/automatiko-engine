@@ -38,6 +38,7 @@ public class ProcessJobDescription implements JobDescription {
         this.expirationTime = requireNonNull(expirationTime);
         this.priority = requireNonNull(priority);
         this.process = requireNonNull(process);
+        this.processId = requireNonNull(process.id());
         this.processVersion = process.version();
     }
 
