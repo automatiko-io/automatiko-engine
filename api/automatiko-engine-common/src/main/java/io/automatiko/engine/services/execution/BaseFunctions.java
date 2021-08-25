@@ -106,8 +106,28 @@ public class BaseFunctions {
         return LocalDate.now().getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault());
     }
 
+    public static String previousMonth() {
+
+        return LocalDate.now().minusMonths(1).getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault());
+    }
+
+    public static String nextMonth() {
+
+        return LocalDate.now().plusMonths(1).getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault());
+    }
+
     public static String todayDay() {
 
         return LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
+    }
+
+    public static String yesterdayDay() {
+
+        return LocalDate.now().minusDays(1).getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
+    }
+
+    public static String tomorrowDay() {
+
+        return LocalDate.now().plusDays(1).getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
     }
 }
