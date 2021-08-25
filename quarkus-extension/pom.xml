@@ -50,6 +50,7 @@
     <module>function-flow-deployment</module>
     <module>operator-deployment</module>
     <module>integration-test</module>
+    <module>automatiko-test-support</module>
   </modules>
 
   <build>
