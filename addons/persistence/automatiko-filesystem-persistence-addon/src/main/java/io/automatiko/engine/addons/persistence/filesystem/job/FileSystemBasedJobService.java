@@ -91,6 +91,11 @@ public class FileSystemBasedJobService implements JobsService {
     @Override
     public String scheduleProcessJob(ProcessJobDescription description) {
         LOGGER.debug("ScheduleProcessJob: {}", description);
+        if (scheduledJobs.containsKey(description.id())) {
+            LOGGER.debug("Already scheduled: {}", description);
+            return description.id();
+        }
+
         ScheduledFuture<?> future = null;
         ScheduledJob scheduledJob = null;
         if (description.expirationTime().repeatInterval() != null) {
@@ -200,6 +205,10 @@ public class FileSystemBasedJobService implements JobsService {
                 return;
             }
             ScheduledJob job = mapper.readValue(Files.readAllBytes(path), ScheduledJob.class);
+            if (scheduledJobs.containsKey(job.getId())) {
+                LOGGER.debug("Already scheduled: {}", job);
+                return;
+            }
             ScheduledFuture<?> future = null;
             if (job.getProcessInstanceId() != null) {
                 ProcessInstanceJobDescription description = ProcessInstanceJobDescription.of(job.getId(), job.getTriggerType(),
@@ -218,7 +227,7 @@ public class FileSystemBasedJobService implements JobsService {
                 }
 
             } else {
-                ProcessJobDescription description = ProcessJobDescription.of(build(job), null, job.getProcessId());
+                ProcessJobDescription description = ProcessJobDescription.of(build(job), job.getProcessId(), null);
 
                 if (job.getReapeatInterval() != null) {
                     future = scheduler.scheduleAtFixedRate(
@@ -282,7 +291,7 @@ public class FileSystemBasedJobService implements JobsService {
     }
 
     protected long log(ZonedDateTime dt, long delay) {
-        LOGGER.debug("Timer scheduled for date {} will expire in {}", dt, delay);
+        LOGGER.info("Timer scheduled for date {} will expire in {}", dt, delay);
         return delay;
     }
 
@@ -343,6 +352,7 @@ public class FileSystemBasedJobService implements JobsService {
                 LOGGER.debug("Job {} completed", id);
             } finally {
                 if (description.expirationTime().next() != null) {
+                    scheduledJobs.remove(id);
                     scheduleProcessInstanceJob(description);
                 } else if (removeAtExecution) {
                     scheduledJobs.remove(id);
@@ -400,6 +410,7 @@ public class FileSystemBasedJobService implements JobsService {
                 LOGGER.debug("Job {} completed", id);
             } finally {
                 if (description.expirationTime().next() != null) {
+                    scheduledJobs.remove(id);
                     scheduleProcessJob(description);
                 } else if (removeAtExecution) {
                     scheduledJobs.remove(id);
