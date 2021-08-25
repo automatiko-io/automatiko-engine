@@ -23,8 +23,6 @@ public class EmailAttachmentInputConverter implements InputConverter<File> {
 
             MailMessage mailMessage = (MailMessage) input;
 
-            mailMessage.getMessageId();
-
             Map<String, Attachment> attachments = mailMessage.getExchange().getProperty("CamelAttachmentObjects",
                     Map.class);
             if (attachments != null && attachments.size() > 0) {
