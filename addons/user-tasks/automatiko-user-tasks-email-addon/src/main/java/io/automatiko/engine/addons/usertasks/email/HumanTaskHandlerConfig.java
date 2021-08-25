@@ -17,7 +17,7 @@ public class HumanTaskHandlerConfig extends DefaultWorkItemHandlerConfig {
 
     @Inject
     public HumanTaskHandlerConfig(Mailer mailer, EmailAddressResolver emailAddressResolver, Engine engine,
-            @ConfigProperty(name = "quarkus.automatiko.serviceUrl") Optional<String> serviceUrl) {
+            @ConfigProperty(name = "quarkus.automatiko.service-url") Optional<String> serviceUrl) {
         register("Human Task",
                 new HumanTaskWorkItemHandler(
                         new HumanTaskLifeCycleWithEmail(mailer, emailAddressResolver, engine, serviceUrl)));
