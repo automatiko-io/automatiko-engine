@@ -26,6 +26,7 @@ import io.automatiko.engine.api.workflow.Tag;
 import io.automatiko.engine.workflow.base.core.Context;
 import io.automatiko.engine.workflow.base.core.context.exclusive.ExclusiveGroup;
 import io.automatiko.engine.workflow.base.core.context.swimlane.SwimlaneContext;
+import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.instance.ContextInstance;
 import io.automatiko.engine.workflow.base.instance.context.exclusive.ExclusiveGroupInstance;
@@ -1082,6 +1083,11 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
 
         for (Map.Entry<String, Object> variable : variables) {
             if (variable.getValue() != null) {
+
+                Variable v = variableScopeInstance.getVariableScope().findVariable(variable.getKey());
+                if (v != null && v.hasTag(Variable.TRANSIENT_TAG)) {
+                    continue;
+                }
                 _instance.addVariable(
                         ProtobufProcessMarshaller.marshallVariable(context, variable.getKey(), variable.getValue()));
             }

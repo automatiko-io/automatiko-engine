@@ -351,6 +351,38 @@ public class FileSystemProcessInstancesTest {
         assertThat(fileSystemBasedStorage.size()).isZero();
     }
 
+    @Test
+    void testBasicFlowWithTransientVariable() {
+        BpmnProcess process = createProcess(null, "BPMN2-UserTask.bpmn2");
+        ProcessInstance<BpmnVariables> processInstance = process
+                .createInstance(BpmnVariables.create(Collections.singletonMap("temp", "test")));
+
+        processInstance.start();
+
+        assertThat(processInstance.variables().get("temp")).isEqualTo("test");
+
+        assertThat(processInstance.status()).isEqualTo(STATE_ACTIVE);
+        assertThat(processInstance.description()).isEqualTo("User Task");
+
+        FileSystemProcessInstances fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
+        assertThat(fileSystemBasedStorage.size()).isOne();
+
+        ProcessInstance<BpmnVariables> processInstanceLoaded = (ProcessInstance<BpmnVariables>) fileSystemBasedStorage
+                .findById(processInstance.id()).get();
+        assertThat(processInstanceLoaded.variables().get("temp")).isNull();
+
+        WorkItem workItem = processInstance.workItems(securityPolicy).get(0);
+        assertThat(workItem).isNotNull();
+        assertThat(workItem.getParameters().get("ActorId")).isEqualTo("john");
+        processInstance.completeWorkItem(workItem.getId(), null, securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(STATE_COMPLETED);
+
+        fileSystemBasedStorage = (FileSystemProcessInstances) process.instances();
+        verify(fileSystemBasedStorage, times(2)).remove(any(), any());
+
+        assertThat(fileSystemBasedStorage.size()).isZero();
+    }
+
     private class FileSystemProcessInstancesFactory extends AbstractProcessInstancesFactory {
 
         @Override
