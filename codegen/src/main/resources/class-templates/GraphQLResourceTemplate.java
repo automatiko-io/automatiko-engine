@@ -135,9 +135,11 @@ public class $Type$GraphQLResource {
             @Name("groups") final List<String> groups) {
         identitySupplier.buildIdentityProvider(user, groups);
         return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-            ProcessInstance<$Type$> pi = process.instances()
-                    .findById(id)
-                    .orElseThrow(() -> new ProcessInstanceNotFoundException(id));            
+             
+            ProcessInstance<$Type$> pi = process.instances().findById(id, ProcessInstance.STATE_ACTIVE, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE).orElse(null);
+            if (pi == null) {
+                pi = process.instances().findById(id, ProcessInstance.STATE_ERROR, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+            }
             tracing(pi);
             pi.abort();            
             return getModel(pi);

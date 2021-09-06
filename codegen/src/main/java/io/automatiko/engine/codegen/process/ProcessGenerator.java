@@ -340,19 +340,6 @@ public class ProcessGenerator {
 
                     }
                     annotator.withApplicationComponent(clazz);
-                    BlockStmt actionBody = new BlockStmt();
-                    LambdaExpr forachBody = new LambdaExpr(new Parameter(new UnknownType(), "h"), actionBody);
-                    MethodCallExpr forachHandler = new MethodCallExpr(new NameExpr("handlers"), "forEach");
-                    forachHandler.addArgument(forachBody);
-
-                    MethodCallExpr workItemManager = new MethodCallExpr(new NameExpr("services"), "getWorkItemManager");
-                    MethodCallExpr registerHandler = new MethodCallExpr(workItemManager, "registerWorkItemHandler")
-                            .addArgument(new MethodCallExpr(new NameExpr("h"), "getName"))
-                            .addArgument(new NameExpr("h"));
-
-                    actionBody.addStatement(registerHandler);
-
-                    body.addStatement(forachHandler);
                 } else {
 
                     String packageName = handler.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
@@ -390,6 +377,23 @@ public class ProcessGenerator {
 
                 additionalClasses.add(handler);
             });
+
+            if (useInjection()) {
+
+                BlockStmt actionBody = new BlockStmt();
+                LambdaExpr forachBody = new LambdaExpr(new Parameter(new UnknownType(), "h"), actionBody);
+                MethodCallExpr forachHandler = new MethodCallExpr(new NameExpr("handlers"), "forEach");
+                forachHandler.addArgument(forachBody);
+
+                MethodCallExpr workItemManager = new MethodCallExpr(new NameExpr("services"), "getWorkItemManager");
+                MethodCallExpr registerHandler = new MethodCallExpr(workItemManager, "registerWorkItemHandler")
+                        .addArgument(new MethodCallExpr(new NameExpr("h"), "getName"))
+                        .addArgument(new NameExpr("h"));
+
+                actionBody.addStatement(registerHandler);
+
+                body.addStatement(forachHandler);
+            }
         }
         if (!processMetaData.getGeneratedListeners().isEmpty()) {
 
