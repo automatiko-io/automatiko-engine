@@ -2,10 +2,12 @@ package io.automatiko.quarkus.tests.jobs;
 
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
@@ -82,6 +84,28 @@ public class TestJobService implements JobsService {
 
     public Set<String> jobIds() {
         return jobs.keySet();
+    }
+
+    public List<ProcessJobDescription> processJobs() {
+        return jobs.values().stream().filter(job -> job instanceof ProcessJobDescription).map(ProcessJobDescription.class::cast)
+                .collect(Collectors.toList());
+    }
+
+    public List<ProcessJobDescription> processJobs(String processId) {
+        return jobs.values().stream().filter(job -> job instanceof ProcessJobDescription).map(ProcessJobDescription.class::cast)
+                .filter(pjob -> pjob.processId().equals(processId)).collect(Collectors.toList());
+    }
+
+    public List<ProcessInstanceJobDescription> processInstanceJobs() {
+        return jobs.values().stream().filter(job -> job instanceof ProcessInstanceJobDescription)
+                .map(ProcessInstanceJobDescription.class::cast)
+                .collect(Collectors.toList());
+    }
+
+    public List<ProcessInstanceJobDescription> processInstanceJobs(String processId) {
+        return jobs.values().stream().filter(job -> job instanceof ProcessInstanceJobDescription)
+                .map(ProcessInstanceJobDescription.class::cast)
+                .filter(pjob -> pjob.processId().equals(processId)).collect(Collectors.toList());
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
