@@ -198,6 +198,8 @@ relying on security context
 to be fetched with construct `variablename$VERSION` for example `person$3` will get the version 3 of the person variable. 
 Note that versions start at 0. `person$` will return list of all versions of the variable and `person$-1` will return the 
 last version.
+|transient | Marks a given data object as transient meaning it will never be persisted and by that will not retain the value (will always 
+have null value on reload of the instance from data store)
 |===
 
 WARNING: Serverless Workflow does not define data objects explicitly and allows to have data pushed on demand and thus
