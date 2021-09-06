@@ -82,7 +82,8 @@ public class ServiceTaskDescriptor {
 
         parameters = serviceTaskParameters();
 
-        mangledName = mangledHandlerName(interfaceName, operationName, String.valueOf(workItemNode.getId()));
+        mangledName = mangledHandlerName(process.getId() + ModelMetaData.version(process.getVersion()), interfaceName,
+                operationName, String.valueOf(workItemNode.getId()));
     }
 
     public String mangledName() {
@@ -146,8 +147,8 @@ public class ServiceTaskDescriptor {
         return type.equals("java.lang.Object") || type.equals("Object");
     }
 
-    private String mangledHandlerName(String interfaceName, String operationName, String nodeName) {
-        return String.format("%s_%s_%s_Handler", interfaceName, operationName, nodeName);
+    private String mangledHandlerName(String processId, String interfaceName, String operationName, String nodeName) {
+        return String.format("%s_%s_%s_%s_Handler", interfaceName, operationName, processId, nodeName);
     }
 
     public CompilationUnit generateHandlerClassForService() {

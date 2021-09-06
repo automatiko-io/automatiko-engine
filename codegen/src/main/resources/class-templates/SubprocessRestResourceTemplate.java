@@ -225,10 +225,11 @@ public class $Type$Resource {
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         identitySupplier.buildIdentityProvider(user, groups);
-        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-            ProcessInstance<$Type$> pi = subprocess_$name$.instances()
-                    .findById($parentprocessid$ + ":" + id_$name$)
-                    .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {       
+            ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$, ProcessInstance.STATE_ACTIVE, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE).orElse(null);
+            if (pi == null) {
+                pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$, ProcessInstance.STATE_ERROR, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+            }
             tracing(pi);
             pi.abort();
             return getSubModel_$name$(pi);
