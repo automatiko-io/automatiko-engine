@@ -56,6 +56,9 @@ public class SendEmailService {
                 Mail mail = Mail.withHtml(to, subject, body);
 
                 for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
                     mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
 
@@ -86,6 +89,9 @@ public class SendEmailService {
                 Mail mail = Mail.withHtml(to, subject, body);
 
                 for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
                     mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
 
@@ -121,6 +127,9 @@ public class SendEmailService {
                 }
 
                 for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
                     mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
 
@@ -154,6 +163,9 @@ public class SendEmailService {
                 }
 
                 for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
                     mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
 
@@ -189,6 +201,9 @@ public class SendEmailService {
                 }
 
                 for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
                     mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
 
@@ -226,6 +241,9 @@ public class SendEmailService {
                 }
 
                 for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
                     mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
 
@@ -264,6 +282,9 @@ public class SendEmailService {
             for (String to : tos.split(",")) {
                 Mail mail = Mail.withHtml(to, subject, content);
                 for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
                     mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
                 mailer.send(mail);
@@ -301,6 +322,9 @@ public class SendEmailService {
             for (String to : tos.split(",")) {
                 Mail mail = Mail.withHtml(to, subject, content);
                 for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
                     mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
 
@@ -347,6 +371,9 @@ public class SendEmailService {
                 }
 
                 for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
                     mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
                 mailer.send(mail);
@@ -390,6 +417,9 @@ public class SendEmailService {
                 }
 
                 for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
                     mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
                 mailer.send(mail);
@@ -435,6 +465,9 @@ public class SendEmailService {
                 }
 
                 for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
                     mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
 
@@ -483,6 +516,9 @@ public class SendEmailService {
                 }
 
                 for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
                     mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
 

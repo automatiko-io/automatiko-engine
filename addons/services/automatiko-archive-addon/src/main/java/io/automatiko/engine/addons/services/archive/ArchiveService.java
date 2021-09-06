@@ -30,8 +30,8 @@ public class ArchiveService {
      * @param files files to be included in the archive
      * @return built archive with given files
      */
-    @SuppressWarnings("unchecked")
-    public Archive zip(String name, Collection<File<byte[]>> files) {
+    @SuppressWarnings("rawtypes")
+    public Archive zip(String name, Collection<File> files) {
         return zip(name, files.toArray(File[]::new));
     }
 
@@ -46,13 +46,17 @@ public class ArchiveService {
      * @param files files to be included in the archive
      * @return built archive with given files
      */
-    @SuppressWarnings("unchecked")
-    public Archive zip(String name, File<byte[]>... files) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public Archive zip(String name, File... files) {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         List<String> entries = new ArrayList<>();
         try (ZipOutputStream zipOut = new ZipOutputStream(output)) {
 
             for (File<byte[]> file : files) {
+                if (file == null || file.content() == null) {
+                    continue;
+                }
+
                 ZipEntry zipEntry = new ZipEntry(file.name());
                 zipOut.putNextEntry(zipEntry);
                 zipOut.write(file.content());
