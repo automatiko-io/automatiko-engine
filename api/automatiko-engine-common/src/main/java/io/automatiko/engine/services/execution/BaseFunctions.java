@@ -3,6 +3,7 @@ package io.automatiko.engine.services.execution;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
+import java.time.temporal.IsoFields;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -129,5 +130,76 @@ public class BaseFunctions {
     public static String tomorrowDay() {
 
         return LocalDate.now().plusDays(1).getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
+    }
+
+    public static String todayQuarter() {
+
+        int current = LocalDate.now().get(IsoFields.QUARTER_OF_YEAR);
+        String value = null;
+        switch (current) {
+            case 1:
+                value = "I";
+                break;
+            case 2:
+                value = "II";
+                break;
+            case 3:
+                value = "III";
+                break;
+            case 4:
+                value = "IV";
+                break;
+
+            default:
+                break;
+        }
+        return value;
+    }
+
+    public static String previousQuarter() {
+        int current = LocalDate.now().get(IsoFields.QUARTER_OF_YEAR);
+        String previous = null;
+        switch (current) {
+            case 1:
+                previous = "IV";
+                break;
+            case 2:
+                previous = "I";
+                break;
+            case 3:
+                previous = "II";
+                break;
+            case 4:
+                previous = "III";
+                break;
+
+            default:
+                break;
+        }
+        return previous;
+    }
+
+    public static String nextQuarter() {
+
+        int current = LocalDate.now().get(IsoFields.QUARTER_OF_YEAR);
+        String next = null;
+        switch (current) {
+            case 1:
+                next = "II";
+                break;
+            case 2:
+                next = "III";
+                break;
+            case 3:
+                next = "IV";
+                break;
+            case 4:
+                next = "I";
+                break;
+
+            default:
+                break;
+        }
+        return next;
     }
 }
