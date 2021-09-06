@@ -1,7 +1,10 @@
 package io.automatiko.engine.addons.services.archive;
 
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -64,6 +67,16 @@ public class Archive implements File<byte[]> {
     @Override
     public String toString() {
         return "Archive [name=" + name + ", content (entries)=" + attributes.get(ENTRIES_ATTR) + "]";
+    }
+
+    public List<String> entries() {
+        String entries = attributes.get(ENTRIES_ATTR);
+
+        if (entries == null) {
+            return Collections.emptyList();
+        }
+
+        return Arrays.asList(entries.split(","));
     }
 
 }
