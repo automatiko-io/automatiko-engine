@@ -15,6 +15,7 @@ import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -339,6 +340,17 @@ public class MessageProducerGenerator {
                     .forEach(fd -> annotator.withConfigInjection(fd, "quarkus.automatiko.messaging.as-cloudevents"));
 
         }
+        // add connector and message name as static fields of the class
+        FieldDeclaration connectorField = new FieldDeclaration().setStatic(true).setFinal(true)
+                .addVariable(new VariableDeclarator(new ClassOrInterfaceType(null, "String"), "CONNECTOR",
+                        new StringLiteralExpr(connector)));
+        template.addMember(connectorField);
+
+        FieldDeclaration messageNameField = new FieldDeclaration().setStatic(true).setFinal(true)
+                .addVariable(new VariableDeclarator(new ClassOrInterfaceType(null, "String"), "MESSAGE",
+                        new StringLiteralExpr(trigger.getName())));
+        template.addMember(messageNameField);
+
         template.getMembers().sort(new BodyDeclarationComparator());
         return clazz.toString();
     }

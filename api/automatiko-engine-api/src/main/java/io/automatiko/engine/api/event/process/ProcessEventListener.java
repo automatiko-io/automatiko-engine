@@ -136,4 +136,19 @@ public interface ProcessEventListener extends EventListener {
 
     }
 
+    /**
+     * This listener method is invoked right before a signal is delivered to process instance.
+     * 
+     * @param event
+     */
+    default void beforeProcessSignaled(ProcessSignaledEvent event) {
+    };
+
+    /**
+     * This listener method is invoked right after signal is delivered to process instance.
+     * 
+     * @param event
+     */
+    default void afterProcessSignaled(ProcessSignaledEvent event) {
+    }
 }

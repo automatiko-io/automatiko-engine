@@ -20,6 +20,7 @@ import com.github.javaparser.ast.Modifier.Keyword;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -337,6 +338,17 @@ public class MessageConsumerGenerator {
         template.addMember(
                 new MethodDeclaration().setName("canStartInstance").setType(Boolean.class).setModifiers(Keyword.PROTECTED)
                         .setBody(new BlockStmt().addStatement(new ReturnStmt(new BooleanLiteralExpr(trigger.isStart())))));
+
+        // add connector and message name as static fields of the class
+        FieldDeclaration connectorField = new FieldDeclaration().setStatic(true).setFinal(true)
+                .addVariable(new VariableDeclarator(new ClassOrInterfaceType(null, "String"), "CONNECTOR",
+                        new StringLiteralExpr(connector)));
+        template.addMember(connectorField);
+
+        FieldDeclaration messageNameField = new FieldDeclaration().setStatic(true).setFinal(true)
+                .addVariable(new VariableDeclarator(new ClassOrInterfaceType(null, "String"), "MESSAGE",
+                        new StringLiteralExpr(trigger.getName())));
+        template.addMember(messageNameField);
 
         template.getMembers().sort(new BodyDeclarationComparator());
         return clazz.toString().replaceAll("\\$DataType\\$", trigger.getDataType())

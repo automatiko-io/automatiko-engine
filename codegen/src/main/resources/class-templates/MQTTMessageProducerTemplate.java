@@ -23,12 +23,17 @@ public class MessageProducer {
     
     @javax.inject.Inject
     ObjectMapper json;
+    
+    @javax.inject.Inject
+    io.automatiko.engine.service.metrics.ProcessMessagingMetrics metrics;
 
     public void configure() {
 		
     }
     
 	public void produce(ProcessInstance pi, $Type$ eventData) {
+	    metrics.messageProduced(CONNECTOR, MESSAGE, pi.getProcess(), pi.getId(), pi.getCorrelationKey() == null ? "" : pi.getCorrelationKey());
+	    
 	    emitter.send(io.smallrye.reactive.messaging.mqtt.MqttMessage.of(topic(pi), this.marshall(pi, eventData), io.netty.handler.codec.mqtt.MqttQoS.AT_LEAST_ONCE, true));
     }
 	    
