@@ -23,12 +23,17 @@ public class MessageProducer {
     
     @javax.inject.Inject
     ObjectMapper json;
+    
+    @javax.inject.Inject
+    io.automatiko.engine.service.metrics.ProcessMessagingMetrics metrics;
 
     public void configure() {
 		
     }
     
 	public void produce(ProcessInstance pi, $Type$ eventData) {
+	    metrics.messageProduced(CONNECTOR, MESSAGE, pi.getProcess(), pi.getId(), pi.getCorrelationKey() == null ? "" : pi.getCorrelationKey());
+	    
 	    io.smallrye.reactive.messaging.camel.OutgoingExchangeMetadata metadata = new io.smallrye.reactive.messaging.camel.OutgoingExchangeMetadata().putProperty("atkInstanceId", 
                 ((WorkflowProcessInstance) pi).getCorrelationKey() != null ? ((WorkflowProcessInstance) pi).getCorrelationKey() : ((WorkflowProcessInstance) pi).getId());
 	    emitter.send(CamelOutMessage.of(this.marshall(pi, eventData))

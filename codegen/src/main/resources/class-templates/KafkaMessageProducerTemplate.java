@@ -24,12 +24,17 @@ public class MessageProducer {
     
     @javax.inject.Inject
     ObjectMapper json;
+    
+    @javax.inject.Inject
+    io.automatiko.engine.service.metrics.ProcessMessagingMetrics metrics;
 
     public void configure() {
 		
     }
     
 	public void produce(ProcessInstance pi, $Type$ eventData) {
+	    metrics.messageProduced(CONNECTOR, MESSAGE, pi.getProcess(), pi.getId(), pi.getCorrelationKey() == null ? "" : pi.getCorrelationKey());
+	    
 	    emitter.send(io.smallrye.reactive.messaging.kafka.KafkaRecord.of(((WorkflowProcessInstance) pi).getCorrelationKey(), this.marshall(pi, eventData)));
     }
 	    

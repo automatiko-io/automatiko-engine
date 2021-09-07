@@ -33,12 +33,17 @@ public class $Type$MessageConsumer {
     Optional<Boolean> useCloudEvents = Optional.of(false);
     
     javax.enterprise.inject.Instance<io.automatiko.engine.api.io.InputConverter<$DataType$>> converter;
+    
+    @javax.inject.Inject
+    io.automatiko.engine.service.metrics.ProcessMessagingMetrics metrics;
 
     public void configure() {
 
     }
     
 	public CompletionStage<Void> consume(Message<?> msg) {
+	    
+	    metrics.messageReceived(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
 	    final String trigger = "$Trigger$";
         try {
                         
@@ -51,7 +56,7 @@ public class $Type$MessageConsumer {
             		LOGGER.debug("Correlation ({}) is set, attempting to find if there is matching instance already active", correlation);
             		Collection possiblyFound = process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE, correlation);
             		if (!possiblyFound.isEmpty()) {
-            		    
+            		    metrics.messageConsumed(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
             		    possiblyFound.forEach(pi -> {
                 			ProcessInstance pInstance = (ProcessInstance) pi;
                 			LOGGER.debug("Found process instance {} matching correlation {}, signaling instead of starting new instance", pInstance.id(), correlation);
@@ -62,7 +67,8 @@ public class $Type$MessageConsumer {
             		
                 }
             	if (canStartInstance()) {
-                    LOGGER.debug("Received message without reference id and no correlation is set/matched, staring new process instance with trigger '{}'", trigger);
+            	    metrics.messageConsumed(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
+            	    LOGGER.debug("Received message without reference id and no correlation is set/matched, staring new process instance with trigger '{}'", trigger);
                     try {
                     	ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
                     
@@ -72,6 +78,7 @@ public class $Type$MessageConsumer {
                     	pi.send(Sig.of(trigger, eventData));
                     }
             	} else {
+            	    metrics.messageMissed(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
             	    LOGGER.warn("Received message without reference id and no correlation is set/matched, for trigger not capable of starting new instance '{}'", trigger);
             	}
                 return null;
@@ -80,6 +87,7 @@ public class $Type$MessageConsumer {
             
             return msg.ack();
         } catch (Exception e) {
+            metrics.messageFailed(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
         	LOGGER.error("Error when consuming message for process {}", process.id(), e);
         	return msg.nack(e);            
         }                

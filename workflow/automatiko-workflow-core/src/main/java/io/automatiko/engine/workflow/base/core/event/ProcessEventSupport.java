@@ -10,6 +10,7 @@ import io.automatiko.engine.api.event.process.ProcessEventListener;
 import io.automatiko.engine.api.event.process.ProcessNodeInstanceFailedEvent;
 import io.automatiko.engine.api.event.process.ProcessNodeLeftEvent;
 import io.automatiko.engine.api.event.process.ProcessNodeTriggeredEvent;
+import io.automatiko.engine.api.event.process.ProcessSignaledEvent;
 import io.automatiko.engine.api.event.process.ProcessStartedEvent;
 import io.automatiko.engine.api.event.process.ProcessVariableChangedEvent;
 import io.automatiko.engine.api.event.process.ProcessWorkItemTransitionEvent;
@@ -378,6 +379,45 @@ public class ProcessEventSupport extends AbstractEventSupport<ProcessEventListen
         }
         unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, (e) -> {
             delayedListeners.forEach(l -> l.afterNodeInstanceFailed(e));
+        }));
+    }
+
+    public void fireBeforeProcessSignaled(String signal, Object data, final ProcessInstance instance, ProcessRuntime runtime) {
+        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
+        final List<ProcessEventListener> delayedListeners = new ArrayList<ProcessEventListener>();
+        final ProcessSignaledEvent event = new ProcessSignaledEventImpl(signal, data, instance, runtime);
+        if (iter.hasNext()) {
+            do {
+                ProcessEventListener listener = iter.next();
+                if (listener instanceof DelayedExecution) {
+                    delayedListeners.add(listener);
+                } else {
+                    listener.beforeProcessSignaled(event);
+                }
+            } while (iter.hasNext());
+        }
+        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, (e) -> {
+            delayedListeners.forEach(l -> l.beforeProcessSignaled(e));
+        }));
+    }
+
+    public void fireAfterProcessSignaled(String signal, Object data, final ProcessInstance instance,
+            ProcessRuntime runtime) {
+        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
+        final List<ProcessEventListener> delayedListeners = new ArrayList<ProcessEventListener>();
+        final ProcessSignaledEvent event = new ProcessSignaledEventImpl(signal, data, instance, runtime);
+        if (iter.hasNext()) {
+            do {
+                ProcessEventListener listener = iter.next();
+                if (listener instanceof DelayedExecution) {
+                    delayedListeners.add(listener);
+                } else {
+                    listener.afterProcessSignaled(event);
+                }
+            } while (iter.hasNext());
+        }
+        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, (e) -> {
+            delayedListeners.forEach(l -> l.afterProcessSignaled(e));
         }));
     }
 

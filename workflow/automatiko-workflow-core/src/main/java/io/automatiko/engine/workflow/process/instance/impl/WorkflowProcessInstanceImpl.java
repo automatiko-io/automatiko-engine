@@ -612,7 +612,8 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
                 return;
 
             }
-
+            InternalProcessRuntime processRuntime = getProcessRuntime();
+            processRuntime.getProcessEventSupport().fireBeforeProcessSignaled(type, event, this, processRuntime);
             if ("timerTriggered".equals(type)) {
                 TimerInstance timer = (TimerInstance) event;
                 if (timer.getId().equals(slaTimerId)) {
@@ -708,9 +709,9 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
 
                     }
                 }
-            } finally
+            } finally {
+                processRuntime.getProcessEventSupport().fireAfterProcessSignaled(type, event, this, processRuntime);
 
-            {
                 if (this.activatingNodeIds != null) {
                     this.activatingNodeIds.clear();
                     this.activatingNodeIds = null;

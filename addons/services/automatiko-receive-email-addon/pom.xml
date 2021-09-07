@@ -28,6 +28,10 @@
       <artifactId>automatiko-engine-common</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.automatiko.workflow</groupId>
+      <artifactId>automatiko-workflow-core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
     </dependency>

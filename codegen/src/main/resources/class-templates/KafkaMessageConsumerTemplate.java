@@ -37,11 +37,15 @@ public class $Type$MessageConsumer {
     @javax.inject.Inject
     ObjectMapper json;
 
+    @javax.inject.Inject
+    io.automatiko.engine.service.metrics.ProcessMessagingMetrics metrics;
+    
     public void configure() {
 
     }
     
 	public CompletionStage<Void> consume(Message<?> msg) {
+	    metrics.messageReceived(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
 	    final String trigger = "$Trigger$";
         try {
             io.smallrye.reactive.messaging.kafka.KafkaRecord<?, ?> record = (io.smallrye.reactive.messaging.kafka.KafkaRecord<?, ?>) msg;
@@ -60,7 +64,7 @@ public class $Type$MessageConsumer {
             		LOGGER.debug("Correlation ({}) is set, attempting to find if there is matching instance already active", correlation);
             		Collection possiblyFound = process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE, correlation);
                     if (!possiblyFound.isEmpty()) {
-                        
+                        metrics.messageConsumed(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
                         possiblyFound.forEach(pi -> {
                             ProcessInstance pInstance = (ProcessInstance) pi;
                             LOGGER.debug("Found process instance {} matching correlation {}, signaling instead of starting new instance", pInstance.id(), correlation);
@@ -72,6 +76,7 @@ public class $Type$MessageConsumer {
                 }
             	if (canStartInstance()) {
                     LOGGER.debug("Received message without reference id and no correlation is set/matched, staring new process instance with trigger '{}'", trigger);
+                    metrics.messageConsumed(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
                     try {
                     	ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
                     
@@ -81,6 +86,7 @@ public class $Type$MessageConsumer {
                     	pi.send(Sig.of(trigger, eventData));
                     }
                 } else {
+                    metrics.messageMissed(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
                     LOGGER.warn("Received message without reference id and no correlation is set/matched, for trigger not capable of starting new instance '{}'", trigger);
                 }
                 
@@ -90,6 +96,7 @@ public class $Type$MessageConsumer {
             
             return msg.ack();
         } catch (Exception e) {
+            metrics.messageFailed(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
         	LOGGER.error("Error when consuming message for process {}", process.id(), e);
         	return msg.nack(e);            
         }                

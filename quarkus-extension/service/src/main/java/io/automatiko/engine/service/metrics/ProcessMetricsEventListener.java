@@ -18,6 +18,7 @@ import org.eclipse.microprofile.metrics.Tag;
 import io.automatiko.engine.api.event.process.DefaultProcessEventListener;
 import io.automatiko.engine.api.event.process.ProcessCompletedEvent;
 import io.automatiko.engine.api.event.process.ProcessNodeInstanceFailedEvent;
+import io.automatiko.engine.api.event.process.ProcessSignaledEvent;
 import io.automatiko.engine.api.event.process.ProcessStartedEvent;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
@@ -153,6 +154,27 @@ public class ProcessMetricsEventListener extends DefaultProcessEventListener {
                 new Tag("businessKey",
                         processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()),
                 new Tag("nodeName", event.getNodeInstance().getNodeName()));
+        counter.inc();
+    }
+
+    @Override
+    public void afterProcessSignaled(ProcessSignaledEvent event) {
+        final WorkflowProcessInstanceImpl processInstance = (WorkflowProcessInstanceImpl) event.getProcessInstance();
+
+        Metadata signalMetadata = Metadata.builder().withName("automatiko.process.signals.count").withDescription(
+                "Displays total count of process instance's signals")
+                .withType(MetricType.COUNTER).build();
+
+        Counter counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter(signalMetadata,
+                new Tag("application", application.orElse("")), new Tag("version", version.orElse("")),
+                new Tag("processId", processInstance.getProcessId()),
+                new Tag("processInstanceId", processInstance.getId()),
+                new Tag("processVersion",
+                        processInstance.getProcess().getVersion() == null ? "unknown"
+                                : processInstance.getProcess().getVersion()),
+                new Tag("businessKey",
+                        processInstance.getCorrelationKey() == null ? "" : processInstance.getCorrelationKey()),
+                new Tag("signal", event.getSignal()));
         counter.inc();
     }
 
