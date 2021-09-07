@@ -11,14 +11,14 @@ import org.apache.camel.attachment.Attachment;
 import org.apache.camel.component.mail.MailMessage;
 
 import io.automatiko.engine.api.io.InputConverter;
-import io.automatiko.engine.api.workflow.files.File;
+import io.automatiko.engine.workflow.file.ByteArrayFile;
 
-@SuppressWarnings({ "unchecked", "rawtypes" })
+@SuppressWarnings({ "unchecked" })
 @ApplicationScoped
-public class EmailAttachmentInputConverter implements InputConverter<File> {
+public class EmailAttachmentInputConverter implements InputConverter<ByteArrayFile> {
 
     @Override
-    public File convert(Object input) {
+    public ByteArrayFile convert(Object input) {
         if (input instanceof MailMessage) {
 
             MailMessage mailMessage = (MailMessage) input;
