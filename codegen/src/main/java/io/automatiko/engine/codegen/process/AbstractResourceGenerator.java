@@ -205,10 +205,11 @@ public abstract class AbstractResourceGenerator {
                     .orElseThrow(() -> new NoSuchElementException("SignalResourceTemplate class not found!"));
 
             signalsMap.entrySet().stream().filter(e -> Objects.nonNull(e.getKey())).forEach(entry -> {
-                String methodName = "_" + index.getAndIncrement();
 
                 String signalName = entry.getKey();
                 String signalType = entry.getValue();
+
+                String methodName = sanitizeName(signalName) + "_" + index.getAndIncrement();
 
                 signalTemplate.findAll(MethodDeclaration.class).forEach(md -> {
                     MethodDeclaration cloned = md.clone();
