@@ -178,13 +178,16 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
         try {
             identitySupplier.buildIdentityProvider(user, groups);
             Process<?> process = processData.get(processId);
+            return UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                process.instances().values(ProcessInstanceReadMode.READ_ONLY, mapStatus(status), page, size)
+                        .forEach(pi -> collected
+                                .add(new ProcessInstanceDTO(pi.id(), pi.businessKey() == null ? "" : pi.businessKey(),
+                                        pi.description(),
+                                        pi.tags().values(),
+                                        pi.errors().isPresent(), processId, pi.status())));
 
-            process.instances().values(ProcessInstanceReadMode.READ_ONLY, mapStatus(status), page, size).forEach(pi -> collected
-                    .add(new ProcessInstanceDTO(pi.id(), pi.businessKey() == null ? "" : pi.businessKey(), pi.description(),
-                            pi.tags().values(),
-                            pi.errors().isPresent(), processId, pi.status())));
-
-            return collected;
+                return collected;
+            });
         } finally {
             IdentityProvider.set(null);
         }
@@ -208,51 +211,54 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         try {
             identitySupplier.buildIdentityProvider(user, groups);
-            Process<?> process = processData.get(processId);
+            return UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                Process<?> process = processData.get(processId);
 
-            Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId,
-                    mapStatus(status), ProcessInstanceReadMode.READ_ONLY);
+                Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId,
+                        mapStatus(status), ProcessInstanceReadMode.READ_ONLY);
 
-            if (instance.isEmpty()) {
-                throw new ProcessInstanceNotFoundException(instanceId);
-            }
+                if (instance.isEmpty()) {
+                    throw new ProcessInstanceNotFoundException(instanceId);
+                }
 
-            ProcessInstance<?> pi = instance.get();
-            ProcessInstanceDetailsDTO details = new ProcessInstanceDetailsDTO();
+                ProcessInstance<?> pi = instance.get();
+                ProcessInstanceDetailsDTO details = new ProcessInstanceDetailsDTO();
 
-            String id = pi.id();
-            if (pi.parentProcessInstanceId() != null) {
-                id = pi.parentProcessInstanceId() + ":" + id;
-            }
+                String id = pi.id();
+                if (pi.parentProcessInstanceId() != null) {
+                    id = pi.parentProcessInstanceId() + ":" + id;
+                }
 
-            details.setId(id);
-            details.setProcessId(processId);
-            details.setBusinessKey(pi.businessKey() == null ? "" : pi.businessKey());
-            details.setDescription(pi.description());
-            details.setState(pi.status());
-            details.setFailed(pi.errors().isPresent());
-            if (pi.errors().isPresent()) {
+                details.setId(id);
+                details.setProcessId(processId);
+                details.setBusinessKey(pi.businessKey() == null ? "" : pi.businessKey());
+                details.setDescription(pi.description());
+                details.setState(pi.status());
+                details.setFailed(pi.errors().isPresent());
+                if (pi.errors().isPresent()) {
 
-                details.setErrors(pi.errors().get().errors().stream()
-                        .map(e -> new ErrorInfoDTO(e.failedNodeId(), e.errorId(), e.errorMessage(), e.errorDetails()))
+                    details.setErrors(pi.errors().get().errors().stream()
+                            .map(e -> new ErrorInfoDTO(e.failedNodeId(), e.errorId(), e.errorMessage(), e.errorDetails()))
+                            .collect(Collectors.toList()));
+                }
+                details.setImage(
+                        uriInfo.getBaseUri().toString() + "management/processes/" + processId + "/instances/" + instanceId
+                                + "/image?status=" + reverseMapStatus(pi.status()));
+                details.setTags(pi.tags().values());
+                details.setVariables(pi.variables());
+                details.setSubprocesses(pi.subprocesses().stream()
+                        .map(spi -> new ProcessInstanceDTO(spi.id(), spi.businessKey(), spi.description(), spi.tags().values(),
+                                spi.errors().isPresent(), spi.process().id(), spi.status()))
                         .collect(Collectors.toList()));
-            }
-            details.setImage(
-                    uriInfo.getBaseUri().toString() + "management/processes/" + processId + "/instances/" + instanceId
-                            + "/image?status=" + reverseMapStatus(pi.status()));
-            details.setTags(pi.tags().values());
-            details.setVariables(pi.variables());
-            details.setSubprocesses(pi.subprocesses().stream()
-                    .map(spi -> new ProcessInstanceDTO(spi.id(), spi.businessKey(), spi.description(), spi.tags().values(),
-                            spi.errors().isPresent(), spi.process().id(), spi.status()))
-                    .collect(Collectors.toList()));
 
-            VariableScope variableScope = (VariableScope) ((ContextContainer) ((AbstractProcess<?>) process).process())
-                    .getDefaultContext(VariableScope.VARIABLE_SCOPE);
+                VariableScope variableScope = (VariableScope) ((ContextContainer) ((AbstractProcess<?>) process).process())
+                        .getDefaultContext(VariableScope.VARIABLE_SCOPE);
 
-            details.setVersionedVariables(variableScope.getVariables().stream().filter(v -> v.hasTag(Variable.VERSIONED_TAG))
-                    .map(v -> v.getName()).collect(Collectors.toList()));
-            return details;
+                details.setVersionedVariables(
+                        variableScope.getVariables().stream().filter(v -> v.hasTag(Variable.VERSIONED_TAG))
+                                .map(v -> v.getName()).collect(Collectors.toList()));
+                return details;
+            });
         } finally {
             IdentityProvider.set(null);
         }
@@ -277,27 +283,29 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         try {
             identitySupplier.buildIdentityProvider(user, groups);
-            Process<?> process = processData.get(processId);
+            return UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                Process<?> process = processData.get(processId);
 
-            Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId,
-                    mapStatus(status), ProcessInstanceReadMode.READ_ONLY);
+                Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId,
+                        mapStatus(status), ProcessInstanceReadMode.READ_ONLY);
 
-            if (instance.isEmpty()) {
-                throw new ProcessInstanceNotFoundException(instanceId);
-            }
+                if (instance.isEmpty()) {
+                    throw new ProcessInstanceNotFoundException(instanceId);
+                }
 
-            ProcessInstance<?> pi = instance.get();
+                ProcessInstance<?> pi = instance.get();
 
-            Map<String, List<Object>> versions = (Map<String, List<Object>>) ((AbstractProcessInstance<?>) pi)
-                    .processInstance().getVariable(VariableScope.VERSIONED_VARIABLES);
+                Map<String, List<Object>> versions = (Map<String, List<Object>>) ((AbstractProcessInstance<?>) pi)
+                        .processInstance().getVariable(VariableScope.VERSIONED_VARIABLES);
 
-            List<Object> varVersions = (List<Object>) versions.get(name);
+                List<Object> varVersions = (List<Object>) versions.get(name);
 
-            if (varVersions == null) {
-                throw new VariableNotFoundException(instanceId, name);
-            }
+                if (varVersions == null) {
+                    throw new VariableNotFoundException(instanceId, name);
+                }
 
-            return varVersions;
+                return varVersions;
+            });
         } finally {
             IdentityProvider.set(null);
         }
@@ -378,25 +386,27 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         try {
             identitySupplier.buildIdentityProvider(user, groups);
-            Process<?> process = processData.get(processId);
-            String image = process.image();
-            if (image == null) {
-                throw new ProcessImageNotFoundException(process.id());
-            }
+            return UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                Process<?> process = processData.get(processId);
+                String image = process.image();
+                if (image == null) {
+                    throw new ProcessImageNotFoundException(process.id());
+                }
 
-            Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId,
-                    mapStatus(status), ProcessInstanceReadMode.READ_ONLY);
+                Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId,
+                        mapStatus(status), ProcessInstanceReadMode.READ_ONLY);
 
-            if (instance.isEmpty()) {
-                throw new ProcessInstanceNotFoundException(instanceId);
-            }
-            String path = ((AbstractProcess<?>) process).process().getId() + "/" + instanceId;
-            if (process.version() != null) {
-                path = "/v" + process.version().replaceAll("\\.", "_") + "/" + path;
-            }
-            StreamingOutput entity = new ImageStreamingOutput(instance.get().image(path));
-            ResponseBuilder builder = Response.ok().entity(entity);
-            return builder.header("Content-Type", "image/svg+xml").build();
+                if (instance.isEmpty()) {
+                    throw new ProcessInstanceNotFoundException(instanceId);
+                }
+                String path = ((AbstractProcess<?>) process).process().getId() + "/" + instanceId;
+                if (process.version() != null) {
+                    path = "/v" + process.version().replaceAll("\\.", "_") + "/" + path;
+                }
+                StreamingOutput entity = new ImageStreamingOutput(instance.get().image(path));
+                ResponseBuilder builder = Response.ok().entity(entity);
+                return builder.header("Content-Type", "image/svg+xml").build();
+            });
         } finally {
             IdentityProvider.set(null);
         }
