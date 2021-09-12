@@ -44,7 +44,6 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import $Type$Resource.ImageStreamingOutput;
 
 
 public class $Type$Resource {

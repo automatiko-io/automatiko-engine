@@ -286,8 +286,7 @@ public class $Type$Resource {
             if (image == null) {
                 throw new ProcessImageNotFoundException(process.id());
             }
-            StreamingOutput entity = new ImageStreamingOutput(image);     
-            ResponseBuilder builder = Response.ok().entity(entity);
+            ResponseBuilder builder = Response.ok().entity(image);
             
             return builder
                     .header("Content-Type", "image/svg+xml")
@@ -316,9 +315,8 @@ public class $Type$Resource {
         
         if (image == null) {
             throw new ProcessImageNotFoundException(process.id());
-        }
-        StreamingOutput entity = new ImageStreamingOutput(image);    
-        ResponseBuilder builder = Response.ok().entity(entity);
+        } 
+        ResponseBuilder builder = Response.ok().entity(image);
         
         return builder
                 .header("Content-Type", "image/svg+xml")
@@ -623,21 +621,6 @@ public class $Type$Resource {
     
     protected String extractImageBaseUri(String requestUri) {
         return requestUri.substring(0, requestUri.indexOf("/image"));
-    }
-    
-    protected class ImageStreamingOutput implements StreamingOutput {
-        
-        private String image;
-        
-        public ImageStreamingOutput(String image) {
-            this.image = image;
-        }
-        
-        @Override
-        public void write(OutputStream output) throws IOException, WebApplicationException {
-            
-            output.write(image.getBytes(StandardCharsets.UTF_8));                
-        }
     }
     
     protected void tracing(ProcessInstance<?> intance) {

@@ -44,8 +44,6 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import $Type$Resource.ImageStreamingOutput;
-
 
 public class $Type$Resource {
 
@@ -109,9 +107,8 @@ public class $Type$Resource {
         
         if (image == null) {
             throw new ProcessImageNotFoundException(process.id());
-        }
-        StreamingOutput entity = new ImageStreamingOutput(image);    
-        ResponseBuilder builder = Response.ok().entity(entity);
+        } 
+        ResponseBuilder builder = Response.ok().entity(image);
         
         return builder
                 .header("Content-Type", "image/svg+xml")
@@ -188,9 +185,8 @@ public class $Type$Resource {
             
             if (image == null) {
                 throw new ProcessImageNotFoundException(subprocess_$name$.id());
-            }
-            StreamingOutput entity = new ImageStreamingOutput(image);     
-            ResponseBuilder builder = Response.ok().entity(entity);
+            }  
+            ResponseBuilder builder = Response.ok().entity(image);
             
             return builder
                     .header("Content-Type", "image/svg+xml")

@@ -31,23 +31,7 @@
     <dependency>
       <groupId>io.automatiko.quarkus</groupId>
       <artifactId>automatiko-service</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy-jackson</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-smallrye-openapi</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-arc</artifactId>
-    </dependency>
+    </dependency>    
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-metrics</artifactId>
@@ -81,19 +65,16 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>elasticsearch</artifactId>
-      <version>1.15.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
-      <version>1.15.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>1.15.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
