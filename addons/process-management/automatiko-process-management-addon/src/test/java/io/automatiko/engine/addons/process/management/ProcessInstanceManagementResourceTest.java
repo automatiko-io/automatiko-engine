@@ -184,8 +184,8 @@ public class ProcessInstanceManagementResourceTest {
 
     @Test
     public void testCancelProcessInstanceId() {
-        resource.cancelProcessInstanceId(PROCESS_ID, PROCESS_INSTANCE_ID, null, Collections.emptyList());
-        verify(resource).doCancelProcessInstanceId(PROCESS_ID, PROCESS_INSTANCE_ID);
+        resource.cancelProcessInstanceId(PROCESS_ID, PROCESS_INSTANCE_ID, "active", null, Collections.emptyList());
+        verify(resource).doCancelProcessInstanceId(PROCESS_ID, PROCESS_INSTANCE_ID, "active");
     }
 
     @Test

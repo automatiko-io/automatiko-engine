@@ -58,7 +58,7 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
 
     public T doGetWorkItemsInProcessInstance(String processId, String processInstanceId) {
 
-        return executeOnInstance(processId, processInstanceId, processInstance -> {
+        return executeOnInstance(processId, processInstanceId, "active", processInstance -> {
             // use special security policy to bypass auth check as this is management
             // operation
             List<WorkItem> workItems = processInstance.workItems(new SecurityPolicy(null) {
@@ -128,7 +128,7 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
 
     public T doTriggerNodeInstanceId(String processId, String processInstanceId, String nodeId) {
 
-        return executeOnInstance(processId, processInstanceId, processInstance -> {
+        return executeOnInstance(processId, processInstanceId, "active", processInstance -> {
             processInstance.triggerNode(nodeId);
 
             if (processInstance.status() == ProcessInstance.STATE_ERROR) {
@@ -142,7 +142,7 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
 
     public T doRetriggerNodeInstanceId(String processId, String processInstanceId, String nodeInstanceId) {
 
-        return executeOnInstance(processId, processInstanceId, processInstance -> {
+        return executeOnInstance(processId, processInstanceId, "active", processInstance -> {
             processInstance.retriggerNodeInstance(nodeInstanceId);
 
             if (processInstance.status() == ProcessInstance.STATE_ERROR) {
@@ -156,7 +156,7 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
 
     public T doCancelNodeInstanceId(String processId, String processInstanceId, String nodeInstanceId) {
 
-        return executeOnInstance(processId, processInstanceId, processInstance -> {
+        return executeOnInstance(processId, processInstanceId, "active", processInstance -> {
             processInstance.cancelNodeInstance(nodeInstanceId);
 
             if (processInstance.status() == ProcessInstance.STATE_ERROR) {
@@ -168,9 +168,9 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
         });
     }
 
-    public T doCancelProcessInstanceId(String processId, String processInstanceId) {
+    public T doCancelProcessInstanceId(String processId, String processInstanceId, String status) {
 
-        return executeOnInstance(processId, processInstanceId, processInstance -> {
+        return executeOnInstance(processId, processInstanceId, status, processInstance -> {
             processInstance.abort();
 
             if (processInstance.status() == ProcessInstance.STATE_ERROR) {
@@ -214,7 +214,8 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
         });
     }
 
-    private T executeOnInstance(String processId, String processInstanceId, Function<ProcessInstance<?>, T> supplier) {
+    private T executeOnInstance(String processId, String processInstanceId, String status,
+            Function<ProcessInstance<?>, T> supplier) {
         if (processId == null || processInstanceId == null) {
             return badRequestResponse(PROCESS_AND_INSTANCE_REQUIRED);
         }
@@ -225,7 +226,7 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
         }
         return UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             Optional<? extends ProcessInstance<?>> processInstanceFound = process.instances()
-                    .findById(processInstanceId);
+                    .findById(processInstanceId, mapStatus(status), ProcessInstanceReadMode.MUTABLE);
             if (processInstanceFound.isPresent()) {
                 ProcessInstance<?> processInstance = processInstanceFound.get();
 
@@ -241,4 +242,46 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
     protected abstract T badRequestResponse(String message);
 
     protected abstract T notFoundResponse(String message);
+
+    protected int mapStatus(String status) {
+        int state = 1;
+        switch (status.toLowerCase()) {
+            case "active":
+                state = 1;
+                break;
+            case "completed":
+                state = 2;
+                break;
+            case "aborted":
+                state = 3;
+                break;
+            case "error":
+                state = 5;
+                break;
+            default:
+                break;
+        }
+        return state;
+    }
+
+    protected String reverseMapStatus(int status) {
+        String state = "active";
+        switch (status) {
+            case 1:
+                state = "active";
+                break;
+            case 2:
+                state = "completed";
+                break;
+            case 3:
+                state = "aborted";
+                break;
+            case 5:
+                state = "error";
+                break;
+            default:
+                break;
+        }
+        return state;
+    }
 }

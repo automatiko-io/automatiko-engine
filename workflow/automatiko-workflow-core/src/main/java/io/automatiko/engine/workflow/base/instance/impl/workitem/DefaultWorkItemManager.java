@@ -2,6 +2,7 @@ package io.automatiko.engine.workflow.base.instance.impl.workitem;
 
 import static io.automatiko.engine.api.runtime.process.WorkItem.ABORTED;
 import static io.automatiko.engine.api.runtime.process.WorkItem.COMPLETED;
+import static io.automatiko.engine.api.runtime.process.WorkItem.FAILED;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -114,6 +115,22 @@ public class DefaultWorkItemManager implements InternalWorkItemManager {
             // process instance may have finished already
             if (processInstance != null) {
                 processInstance.signalEvent("workItemAborted", workItem);
+            }
+            workItems.remove(id);
+        }
+    }
+
+    @Override
+    public void failWorkItem(String id, Throwable error) {
+        WorkItemImpl workItem = (WorkItemImpl) workItems.get(id);
+        // work item may have been aborted
+        if (workItem != null) {
+            ProcessInstance processInstance = runtime.getProcessInstance(workItem.getProcessInstanceId());
+            workItem.setState(FAILED);
+            // process instance may have finished already
+            if (processInstance != null) {
+                workItem.setResult("Error", error);
+                processInstance.signalEvent("workItemFailed", workItem);
             }
             workItems.remove(id);
         }

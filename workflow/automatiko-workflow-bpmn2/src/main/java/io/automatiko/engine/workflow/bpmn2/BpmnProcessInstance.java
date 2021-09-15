@@ -256,6 +256,11 @@ public class BpmnProcessInstance extends AbstractProcessInstance<BpmnVariables> 
         }
 
         @Override
+        public void failWorkItem(String id, Throwable error) {
+
+        }
+
+        @Override
         public void transitionWorkItem(String id, Transition transition) {
 
         }

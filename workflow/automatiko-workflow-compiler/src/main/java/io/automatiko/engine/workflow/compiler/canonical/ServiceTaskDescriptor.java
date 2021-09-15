@@ -4,6 +4,7 @@ package io.automatiko.engine.workflow.compiler.canonical;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -27,6 +29,7 @@ import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.CatchClause;
+import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
@@ -36,6 +39,7 @@ import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.api.runtime.process.WorkItem;
 import io.automatiko.engine.api.runtime.process.WorkItemHandler;
 import io.automatiko.engine.api.runtime.process.WorkItemManager;
+import io.automatiko.engine.api.workflow.workitem.WorkItemExecutionManager;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.base.core.ParameterDefinition;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
@@ -70,7 +74,9 @@ public class ServiceTaskDescriptor {
             openapi = OpenAPIMetaData.of((String) workItemNode.getWork().getParameter("interfaceImplementationRef"));
 
             interfaceName = "io.automatiko.engine.app.rest." + StringUtils.capitalize(openapi.name());
-            openapi.addOperation(operationName);
+
+            Map<String, String> params = extractParams();
+            openapi.addOperation(operationName, params);
 
             opTypes = openapi.parameters(operationName);
         }
@@ -96,6 +102,30 @@ public class ServiceTaskDescriptor {
 
     public OpenAPIMetaData openapi() {
         return openapi;
+    }
+
+    private Map<String, String> extractParams() {
+        if (this.operationName.contains("?")) {
+            String[] elements = operationName.split("\\?");
+
+            this.operationName = elements[0];
+
+            String paramString = elements[1];
+
+            Map<String, String> params = new HashMap<>();
+
+            String[] parameters = paramString.split("&");
+
+            for (String param : parameters) {
+                String[] pair = param.split("=");
+
+                params.put(pair[0], pair[1]);
+            }
+
+            return params;
+        }
+
+        return Collections.emptyMap();
     }
 
     private Map<String, String> serviceTaskParameters() {
@@ -168,6 +198,12 @@ public class ServiceTaskDescriptor {
                 .addVariable(new VariableDeclarator(serviceType, "service"));
         cls.addMember(serviceField);
 
+        ClassOrInterfaceType completionHandlerType = new ClassOrInterfaceType(null,
+                WorkItemExecutionManager.class.getCanonicalName());
+        FieldDeclaration completionHandlerField = new FieldDeclaration()
+                .addVariable(new VariableDeclarator(completionHandlerType, "completionHandler"));
+        cls.addMember(completionHandlerField);
+
         // executeWorkItem method
         BlockStmt executeWorkItemBody = new BlockStmt();
 
@@ -197,7 +233,13 @@ public class ServiceTaskDescriptor {
         }
         MethodCallExpr completeWorkItem = completeWorkItem(executeWorkItemBody, callService);
 
-        executeWorkItemBody.addStatement(completeWorkItem);
+        MethodCallExpr completionHandlerCompleteMethod = completeWorkItemViaHandler();
+
+        IfStmt handleCompletion = new IfStmt(
+                new BinaryExpr(new NameExpr("completionHandler"), new NullLiteralExpr(), BinaryExpr.Operator.EQUALS),
+                new BlockStmt().addStatement(completeWorkItem), new BlockStmt().addStatement(completionHandlerCompleteMethod));
+
+        executeWorkItemBody.addStatement(handleCompletion);
 
         if (implementation.equalsIgnoreCase("##webservice")) {
             BlockStmt catchbody = new BlockStmt();
@@ -255,8 +297,22 @@ public class ServiceTaskDescriptor {
     private MethodCallExpr completeWorkItem(BlockStmt executeWorkItemBody, MethodCallExpr callService) {
         Expression results = null;
         List<DataAssociation> outAssociations = workItemNode.getOutAssociations();
-        if (outAssociations.isEmpty()) {
+
+        if (hasReturn()) {
+            VariableDeclarationExpr resultField = new VariableDeclarationExpr().addVariable(new VariableDeclarator(
+                    new ClassOrInterfaceType(null, Object.class.getCanonicalName()), "result", callService));
+
+            executeWorkItemBody.addStatement(resultField);
+            if (outAssociations.isEmpty()) {
+                results = new NullLiteralExpr();
+            } else {
+                results = new MethodCallExpr(new NameExpr("java.util.Collections"), "singletonMap")
+                        .addArgument(new StringLiteralExpr(outAssociations.get(0).getSources().get(0)))
+                        .addArgument(new NameExpr("result"));
+            }
+        } else if (outAssociations.isEmpty()) {
             executeWorkItemBody.addStatement(callService);
+
             results = new NullLiteralExpr();
         } else {
             VariableDeclarationExpr resultField = new VariableDeclarationExpr().addVariable(new VariableDeclarator(
@@ -271,7 +327,58 @@ public class ServiceTaskDescriptor {
 
         MethodCallExpr completeWorkItem = new MethodCallExpr(new NameExpr("workItemManager"), "completeWorkItem")
                 .addArgument(new MethodCallExpr(new NameExpr("workItem"), "getId")).addArgument(results);
+
         return completeWorkItem;
+    }
+
+    private MethodCallExpr completeWorkItemViaHandler() {
+        ClassOrInterfaceType errorMapper = new ClassOrInterfaceType(null,
+                implementation.equalsIgnoreCase("##webservice") ? "io.automatiko.engine.service.rest.WebErrorMapper"
+                        : "io.automatiko.engine.workflow.ErrorMapper");
+
+        Expression name = null;
+        Expression source = null;
+        List<DataAssociation> outAssociations = workItemNode.getOutAssociations();
+        if (hasReturn()) {
+            if (outAssociations.isEmpty()) {
+                name = new NullLiteralExpr();
+            } else {
+                name = new StringLiteralExpr(outAssociations.get(0).getSources().get(0));
+            }
+            source = new NameExpr("result");
+        } else if (outAssociations.isEmpty()) {
+            name = new NullLiteralExpr();
+            source = new NullLiteralExpr();
+        } else {
+            name = new StringLiteralExpr(outAssociations.get(0).getSources().get(0));
+            source = new NameExpr("result");
+        }
+
+        MethodCallExpr complitionHandlerCompleteMethod = new MethodCallExpr(new NameExpr("completionHandler"), "complete")
+                .addArgument(new MethodCallExpr(new NameExpr("workItem"), "getProcessId"))
+                .addArgument(name)
+                .addArgument(new NameExpr("workItem"))
+                .addArgument(new NameExpr("workItemManager"))
+                .addArgument(source)
+                .addArgument(new ObjectCreationExpr(null, errorMapper, NodeList.nodeList()));
+        return complitionHandlerCompleteMethod;
+    }
+
+    protected boolean hasReturn() {
+        if (implementation.equalsIgnoreCase("##webservice")) {
+
+            return openapi.hasParameter(operationName, "mode", "async");
+        }
+
+        loadClass();
+
+        for (Method method : cls.getMethods()) {
+            if (method.getName().equals(operationName)) {
+                return method.getReturnType() != void.class;
+            }
+        }
+
+        return false;
     }
 
 }

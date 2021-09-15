@@ -132,6 +132,16 @@ public interface ProcessInstance<T> {
     void abortWorkItem(String id, Policy<?>... policies);
 
     /**
+     * Marks work item as failure to allow triggering of error handling routines if any
+     * 
+     * @param id id of the work item to complete
+     * @param error actual error that happened during execution
+     * @throws WorkItemNotFoundException in case work item with given id does not
+     *         exist
+     */
+    void failWorkItem(String id, Throwable error);
+
+    /**
      * Transition work item belonging to this process instance not another life
      * cycle phase
      *

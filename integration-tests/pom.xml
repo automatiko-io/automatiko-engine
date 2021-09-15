@@ -36,6 +36,7 @@
     <module>automatiko-cassandra</module>
     <module>automatiko-services</module>
     <module>automatiko-graphql</module>
+    <module>automatiko-async</module>
   </modules>
 
   <build>

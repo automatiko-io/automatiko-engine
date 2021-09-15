@@ -1,9 +1,7 @@
 
 package io.automatiko.engine.addons.process.management;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,13 +19,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import org.eclipse.microprofile.openapi.annotations.ExternalDocumentation;
@@ -39,6 +35,8 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.addons.process.management.export.ProcessInstanceExporter;
 import io.automatiko.engine.addons.process.management.model.ErrorInfoDTO;
@@ -69,6 +67,8 @@ import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 @Tag(name = "Process Management", description = "Process management operations on top of the service", externalDocs = @ExternalDocumentation(description = "Manangement UI", url = "/management/processes/ui"))
 @Path("/management/processes")
 public class ProcessInstanceManagementResource extends BaseProcessInstanceManagementResource<Response> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessInstanceManagementResource.class);
 
     private IdentitySupplier identitySupplier;
     private ProcessInstanceExporter exporter;
@@ -403,8 +403,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
                 if (process.version() != null) {
                     path = "/v" + process.version().replaceAll("\\.", "_") + "/" + path;
                 }
-                StreamingOutput entity = new ImageStreamingOutput(instance.get().image(path));
-                ResponseBuilder builder = Response.ok().entity(entity);
+                ResponseBuilder builder = Response.ok().entity(instance.get().image(path));
                 return builder.header("Content-Type", "image/svg+xml").build();
             });
         } finally {
@@ -581,24 +580,13 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     public Response cancelProcessInstanceId(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("processInstanceId") String processInstanceId,
+            @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {
+                    "active", "completed", "aborted",
+                    "error" })) @QueryParam("status") @DefaultValue("active") final String status,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         identitySupplier.buildIdentityProvider(user, groups);
-        return doCancelProcessInstanceId(processId, processInstanceId);
-    }
-
-    protected class ImageStreamingOutput implements StreamingOutput {
-
-        private String image;
-
-        public ImageStreamingOutput(String image) {
-            this.image = image;
-        }
-
-        @Override
-        public void write(OutputStream output) throws IOException, WebApplicationException {
-            output.write(image.getBytes(StandardCharsets.UTF_8));
-        }
+        return doCancelProcessInstanceId(processId, processInstanceId, status);
     }
 
     @APIResponses(value = {
@@ -637,7 +625,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
         });
 
         if (abort) {
-            cancelProcessInstanceId(processId, instanceId, user, groups);
+            cancelProcessInstanceId(processId, instanceId, status, user, groups);
         }
 
         return exported;
@@ -722,71 +710,21 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             return pi.archive(new JsonArchiveBuilder());
 
         });
-        StreamingOutput entity = new ZipStreamingOutput(archived);
-        ResponseBuilder builder = Response.ok().entity(entity);
-
-        if (abort) {
-            cancelProcessInstanceId(processId, instanceId, user, groups);
-        }
-
-        return builder.header("Content-Type", "application/zip").header("Content-Disposition",
-                "attachment; filename=" + archived.getId() + ".zip").build();
-    }
-
-    protected class ZipStreamingOutput implements StreamingOutput {
-
-        private ArchivedProcessInstance archived;
-
-        public ZipStreamingOutput(ArchivedProcessInstance archived) {
-            this.archived = archived;
-        }
-
-        @Override
-        public void write(OutputStream output) throws IOException, WebApplicationException {
+        try {
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
             archived.writeAsZip(output);
-        }
-    }
+            ResponseBuilder builder = Response.ok().entity(output.toByteArray());
 
-    protected int mapStatus(String status) {
-        int state = 1;
-        switch (status.toLowerCase()) {
-            case "active":
-                state = 1;
-                break;
-            case "completed":
-                state = 2;
-                break;
-            case "aborted":
-                state = 3;
-                break;
-            case "error":
-                state = 5;
-                break;
-            default:
-                break;
-        }
-        return state;
-    }
+            if (abort) {
+                cancelProcessInstanceId(processId, instanceId, "active", user, groups);
+            }
 
-    protected String reverseMapStatus(int status) {
-        String state = "active";
-        switch (status) {
-            case 1:
-                state = "active";
-                break;
-            case 2:
-                state = "completed";
-                break;
-            case 3:
-                state = "aborted";
-                break;
-            case 5:
-                state = "error";
-                break;
-            default:
-                break;
+            return builder.header("Content-Type", "application/zip").header("Content-Disposition",
+                    "attachment; filename=" + archived.getId() + ".zip").build();
+        } catch (Exception e) {
+            LOGGER.error("Error generating process instance archive", e);
+            return Response.serverError().entity("Error generating process instance archive").build();
         }
-        return state;
     }
 
 }
