@@ -360,10 +360,12 @@ public class ProcessGenerator {
                             if (useInjection()) {
                                 annotator.withInjection(fd);
                             }
-                            if (descriptor.implementation().equalsIgnoreCase("##webservice") && annotator != null) {
+                            if (descriptor.implementation().equalsIgnoreCase("##webservice")
+                                    && !fd.getVariable(0).getNameAsString().equals("completionHandler") && annotator != null) {
                                 annotator.withRestClientInjection(fd);
 
-                            } else if (!descriptor.implementation().equalsIgnoreCase("##webservice")) {
+                            } else if (!descriptor.implementation().equalsIgnoreCase("##webservice")
+                                    && !fd.getVariable(0).getNameAsString().equals("completionHandler")) {
                                 BlockStmt constructorBody = new BlockStmt();
                                 AssignExpr assignExpr = new AssignExpr(
                                         new FieldAccessExpr(new ThisExpr(), fd.getVariable(0).getNameAsString()),

@@ -53,6 +53,7 @@ public class DynamicUtils {
         final WorkItemImpl workItem = new WorkItemImpl();
         workItem.setState(WorkItem.ACTIVE);
         workItem.setProcessInstanceId(processInstance.getId());
+        workItem.setProcessInstanceId(processInstance.getParentProcessInstanceId());
         workItem.setName(workItemName);
         workItem.setParameters(parameters);
 
@@ -92,11 +93,11 @@ public class DynamicUtils {
         }
 
         final WorkItemNodeInstance workItemNodeInstance = new WorkItemNodeInstance();
+        workItemNodeInstance.setProcessInstance(processInstance);
         workItemNodeInstance.internalSetWorkItem(workItem);
         workItemNodeInstance.setMetaData("NodeType", workItemName);
         workItem.setNodeInstanceId(workItemNodeInstance.getId());
 
-        workItemNodeInstance.setProcessInstance(processInstance);
         workItemNodeInstance.setNodeInstanceContainer(dynamicContext == null ? processInstance : dynamicContext);
         workItemNodeInstance.addEventListeners();
         executeWorkItem(runtime, workItem, workItemNodeInstance);

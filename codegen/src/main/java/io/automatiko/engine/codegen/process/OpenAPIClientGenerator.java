@@ -118,6 +118,14 @@ public class OpenAPIClientGenerator {
                                 .hasClassAvailable("io.automatiko.engine.app.rest.model." + codegenOperation.returnType)) {
                             usedTypes.add("io.automatiko.engine.app.rest.model." + codegenOperation.returnType);
                         }
+                        if (openApiMetadata.hasParameter(codegenOperation.operationId, "mode", "async")) {
+                            if (codegenOperation.returnType != null && !codegenOperation.returnType.equalsIgnoreCase("void")) {
+                                codegenOperation.returnType = "io.smallrye.mutiny.Uni<" + codegenOperation.returnType + ">";
+                            } else if (codegenOperation.returnType != null
+                                    && codegenOperation.returnType.equalsIgnoreCase("void")) {
+                                codegenOperation.returnType = "io.smallrye.mutiny.Uni<Void>";
+                            }
+                        }
                     }
                 }
             }

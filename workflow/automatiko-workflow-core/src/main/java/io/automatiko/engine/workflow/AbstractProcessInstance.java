@@ -620,6 +620,24 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     }
 
     @Override
+    public void failWorkItem(String id, Throwable error) {
+        lock();
+        processInstance();
+        String[] fragments = id.split("/");
+
+        if (fragments.length > 1) {
+            // comes from subprocess
+            subprocesses().stream()
+                    .filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
+                    .findFirst().ifPresent(pi -> pi.failWorkItem(fragments[3], error));
+        } else {
+
+            this.getProcessRuntime().getWorkItemManager().failWorkItem(id, error);
+            removeOnFinish();
+        }
+    }
+
+    @Override
     public void transitionWorkItem(String id, Transition<?> transition) {
         lock();
         processInstance();

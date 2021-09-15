@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,8 @@ public class OpenAPIMetaData {
 
     private final Set<String> operations = new LinkedHashSet<String>();
 
+    private final Map<String, Map<String, String>> operationsParameters = new HashMap<>();
+
     private OpenAPIMetaData(String name, OpenAPI api) {
         this.name = name;
         this.api = api;
@@ -48,7 +51,7 @@ public class OpenAPIMetaData {
         return this.operations;
     }
 
-    public void addOperation(String operation) {
+    public void addOperation(String operation, Map<String, String> params) {
         AtomicBoolean foundInApi = new AtomicBoolean(false);
 
         api.getPaths().values().forEach(path -> {
@@ -72,6 +75,7 @@ public class OpenAPIMetaData {
         }
 
         this.operations.add(operation);
+        this.operationsParameters.put(operation, params);
     }
 
     public List<Class<?>> parameters(String operation) {
@@ -112,6 +116,14 @@ public class OpenAPIMetaData {
 
         }
         return Collections.emptyList();
+    }
+
+    public boolean hasParameter(String operation, String param) {
+        return operationsParameters.getOrDefault(operation, Collections.emptyMap()).containsKey(param);
+    }
+
+    public boolean hasParameter(String operation, String param, String value) {
+        return value.equalsIgnoreCase(operationsParameters.getOrDefault(operation, Collections.emptyMap()).get(param));
     }
 
     private boolean checkOperationById(Operation op, String operation) {

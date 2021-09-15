@@ -35,6 +35,7 @@ public interface WorkItem {
     int COMPLETED = 2;
     int ABORTED = 3;
     int RETRYING = 4;
+    int FAILED = 5;
 
     /**
      * The unique id of this work item
@@ -104,6 +105,20 @@ public interface WorkItem {
     String getProcessInstanceId();
 
     /**
+     * The id of the parent process instance that requested the execution of this work item
+     *
+     * @return the id of the related parent process instance or null if there is no parent process instance
+     */
+    String getParentProcessInstanceId();
+
+    /**
+     * The id of the process that requested the execution of this work item
+     *
+     * @return the id of the related process
+     */
+    String getProcessId();
+
+    /**
      * Returns optional life cycle phase id associated with this work item
      * 
      * @return optional life cycle phase id
@@ -168,5 +183,7 @@ public interface WorkItem {
     default boolean enforce(Policy<?>... policies) {
         return true;
     }
+
+    void setProcessId(String id);
 
 }

@@ -19,7 +19,9 @@ public class WorkItemImpl implements WorkItem, Serializable {
     private int state = 0;
     private Map<String, Object> parameters = new HashMap<>();
     private Map<String, Object> results = new HashMap<>();
+    private String processId;
     private String processInstanceId;
+    private String parentProcessInstanceId;
     private String deploymentId;
     private String nodeInstanceId;
     private long nodeId;
@@ -101,6 +103,14 @@ public class WorkItemImpl implements WorkItem, Serializable {
         return processInstanceId;
     }
 
+    public String getParentProcessInstanceId() {
+        return parentProcessInstanceId;
+    }
+
+    public void setParentProcessInstanceId(String parentProcessInstanceId) {
+        this.parentProcessInstanceId = parentProcessInstanceId;
+    }
+
     public String getDeploymentId() {
         return deploymentId;
     }
@@ -179,6 +189,15 @@ public class WorkItemImpl implements WorkItem, Serializable {
     @Override
     public void setProcessInstance(ProcessInstance processInstance) {
         this.processInstance = processInstance;
+    }
+
+    public void setProcessId(String processId) {
+        this.processId = processId;
+    }
+
+    @Override
+    public String getProcessId() {
+        return this.processId;
     }
 
     public String toString() {

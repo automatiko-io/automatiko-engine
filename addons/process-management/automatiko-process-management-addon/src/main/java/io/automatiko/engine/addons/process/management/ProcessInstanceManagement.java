@@ -26,5 +26,5 @@ public interface ProcessInstanceManagement<T> {
 
     T cancelNodeInstanceId(String processId, String processInstanceId, String nodeInstanceId, String user, List<String> groups);
 
-    T cancelProcessInstanceId(String processId, String processInstanceId, String user, List<String> groups);
+    T cancelProcessInstanceId(String processId, String processInstanceId, String status, String user, List<String> groups);
 }

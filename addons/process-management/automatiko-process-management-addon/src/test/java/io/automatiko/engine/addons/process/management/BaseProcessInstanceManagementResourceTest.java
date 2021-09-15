@@ -3,6 +3,7 @@ package io.automatiko.engine.addons.process.management;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -72,8 +73,10 @@ class BaseProcessInstanceManagementResourceTest {
         Map<String, Process<?>> processes = Mockito.mock(Map.class);
         lenient().when(processes.get(anyString())).thenReturn(process);
 
-        when(process.instances()).thenReturn(instances);
+        lenient().when(process.instances()).thenReturn(instances);
         lenient().when(instances.findById(anyString())).thenReturn(Optional.of(processInstance));
+        lenient().when(instances.findById(anyString(), anyInt(), any()))
+                .thenReturn(Optional.of(processInstance));
         lenient().when(processInstance.errors()).thenReturn(Optional.of(errors));
         lenient().when(processInstance.variables()).thenReturn(variables);
         lenient().when(processInstance.id()).thenReturn(PROCESS_INSTANCE_ID);
@@ -139,7 +142,8 @@ class BaseProcessInstanceManagementResourceTest {
             }
 
             @Override
-            public Object cancelProcessInstanceId(String processId, String processInstanceId, String user, List groups) {
+            public Object cancelProcessInstanceId(String processId, String processInstanceId, String status, String user,
+                    List groups) {
                 return null;
             }
 
@@ -254,7 +258,7 @@ class BaseProcessInstanceManagementResourceTest {
     @Test
     void testDoCancelProcessInstanceId() {
         mockProcessInstanceStatusActive().abort();
-        Object response = tested.doCancelProcessInstanceId(PROCESS_ID, PROCESS_INSTANCE_ID);
+        Object response = tested.doCancelProcessInstanceId(PROCESS_ID, PROCESS_INSTANCE_ID, "active");
         verify(processInstance, times(0)).errors();
         verify(processInstance, times(1)).abort();
         assertResultOk(response);

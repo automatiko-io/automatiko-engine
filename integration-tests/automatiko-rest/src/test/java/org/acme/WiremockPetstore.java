@@ -7,7 +7,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -75,8 +75,12 @@ public class WiremockPetstore implements QuarkusTestResourceLifecycleManager {
                         .withStatus(400)));
 
         stubFor(get(urlMatching(".*")).atPriority(10).willReturn(aResponse().proxiedFrom("https://petstore.swagger.io/v2")));
+        Map<String, String> urls = new HashMap<>();
 
-        return Collections.singletonMap("swaggerpetstore/mp-rest/url", wireMockServer.baseUrl() + "/v2");
+        urls.put("swaggerpetstore/mp-rest/url", wireMockServer.baseUrl() + "/v2");
+
+        urls.put("swaggerasyncpetstore/mp-rest/url", wireMockServer.baseUrl() + "/v2");
+        return urls;
     }
 
     @Override

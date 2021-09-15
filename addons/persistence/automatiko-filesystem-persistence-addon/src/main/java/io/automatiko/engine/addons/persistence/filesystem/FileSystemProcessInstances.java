@@ -200,9 +200,11 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             if (Files.exists(processInstanceStorage)) {
                 throw new ProcessInstanceDuplicatedException(id);
             }
-            storeProcessInstance(processInstanceStorage, instance);
+
             cachedInstances.remove(resolvedId);
             cachedInstances.remove(id);
+
+            storeProcessInstance(processInstanceStorage, instance);
         } else if (isPending(instance)) {
             if (cachedInstances.putIfAbsent(resolvedId, instance) != null) {
                 throw new ProcessInstanceDuplicatedException(id);
@@ -217,6 +219,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     @Override
     public void update(String id, ProcessInstance instance) {
         String resolvedId = resolveId(id, instance);
+        cachedInstances.remove(resolvedId);
         if (isActive(instance)) {
 
             Path processInstanceStorage = Paths.get(storage.toString(), resolvedId);
@@ -225,7 +228,6 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
                 storeProcessInstance(processInstanceStorage, instance);
             }
         }
-        cachedInstances.remove(resolvedId);
     }
 
     @SuppressWarnings("unchecked")

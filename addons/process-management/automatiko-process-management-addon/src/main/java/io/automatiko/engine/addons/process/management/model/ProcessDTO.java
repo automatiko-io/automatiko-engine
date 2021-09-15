@@ -22,7 +22,7 @@ public class ProcessDTO {
         this.id = id;
         this.version = version == null ? "" : version;
         this.name = name;
-        this.description = description;
+        this.description = description == null ? "" : description;
         this.image = image;
         this.activeInstances = activeInstances;
     }

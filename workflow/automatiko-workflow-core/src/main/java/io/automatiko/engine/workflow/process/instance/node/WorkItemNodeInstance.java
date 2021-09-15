@@ -127,6 +127,26 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
     public void internalRegisterWorkItem() {
         ((DefaultWorkItemManager) getProcessInstance().getProcessRuntime().getWorkItemManager())
                 .internalAddWorkItem(workItem);
+
+        setProcessId();
+    }
+
+    protected void setProcessId() {
+        if (getProcessInstance().getMetaData().containsKey("AutomatikProcessInstance")) {
+            io.automatiko.engine.api.workflow.ProcessInstance<?> instance = (io.automatiko.engine.api.workflow.ProcessInstance<?>) getProcessInstance()
+                    .getMetaData().get("AutomatikProcessInstance");
+
+            this.workItem.setProcessId(instance.process().id());
+        } else {
+            this.workItem.setProcessId(getProcessInstance().getProcessId());
+        }
+        ((WorkItemImpl) this.workItem).setParentProcessInstanceId(getProcessInstance().getParentProcessInstanceId());
+    }
+
+    @Override
+    public void setProcessInstance(WorkflowProcessInstance processInstance) {
+        super.setProcessInstance(processInstance);
+
     }
 
     @Override
@@ -146,6 +166,7 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         ((WorkItemImpl) workItem).setNodeId(getNodeId());
         workItem.setNodeInstance(this);
         workItem.setProcessInstance(getProcessInstance());
+        setProcessId();
 
         try {
             ((DefaultWorkItemManager) getProcessInstance().getProcessRuntime().getWorkItemManager())
@@ -205,6 +226,7 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
             workItem = newWorkItem();
             ((WorkItemImpl) workItem).setName(work.getName());
             ((WorkItemImpl) workItem).setProcessInstanceId(getProcessInstance().getId());
+            ((WorkItemImpl) workItem).setParentProcessInstanceId(getProcessInstance().getParentProcessInstanceId());
             ((WorkItemImpl) workItem).setParameters(new HashMap<>(work.getParameters()));
             workItem.setStartDate(new Date());
         }
@@ -462,6 +484,7 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
     private void addWorkItemListener() {
         getProcessInstance().addEventListener("workItemCompleted", this, false);
         getProcessInstance().addEventListener("workItemAborted", this, false);
+        getProcessInstance().addEventListener("workItemFailed", this, false);
     }
 
     @Override
@@ -469,6 +492,7 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         super.removeEventListeners();
         getProcessInstance().removeEventListener("workItemCompleted", this, false);
         getProcessInstance().removeEventListener("workItemAborted", this, false);
+        getProcessInstance().removeEventListener("workItemFailed", this, false);
     }
 
     @Override
@@ -477,6 +501,10 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
             workItemCompleted((WorkItem) event);
         } else if ("workItemAborted".equals(type)) {
             workItemAborted((WorkItem) event);
+        } else if ("workItemFailed".equals(type)) {
+
+            workItemFailed((WorkItem) event);
+
         } else if (("processInstanceCompleted:" + exceptionHandlingProcessInstanceId).equals(type)) {
             exceptionHandlingCompleted((ProcessInstance) event, null);
         } else if (type.equals("RuleFlow-Activate" + getProcessInstance().getProcessId() + "-"
@@ -510,6 +538,26 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
                 || (workItemId == null && getWorkItem().getId().equals(workItem.getId()))) {
             removeEventListeners();
             triggerCompleted(workItem);
+        }
+    }
+
+    public void workItemFailed(WorkItem workItem) {
+        if (workItem.getId().equals(workItemId)
+                || (workItemId == null && getWorkItem().getId().equals(workItem.getId()))) {
+            Throwable error = (Throwable) workItem.getResult("Error");
+
+            if (error instanceof ProcessWorkItemHandlerException) {
+                this.workItemId = workItem.getId();
+                removeEventListeners();
+                handleWorkItemHandlerException((ProcessWorkItemHandlerException) error, workItem);
+            } else if (error instanceof WorkItemExecutionError) {
+                removeEventListeners();
+                handleException(((WorkItemExecutionError) error).getErrorCode(), (Exception) error);
+            } else if (error instanceof Exception) {
+                removeEventListeners();
+                String exceptionName = error.getClass().getName();
+                handleException(exceptionName, (Exception) error);
+            }
         }
     }
 
