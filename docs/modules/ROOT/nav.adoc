@@ -8,6 +8,7 @@
 ** xref:components/security.adoc[Security]
 ** xref:components/messaging.adoc[Messaging]
 ** xref:components/persistence.adoc[Persistence]
+** xref:components/service-invocation.adoc[Service invocation]
 ** xref:components/errors.adoc[Error handling]
 ** xref:components/management.adoc[Process management]
 ** xref:components/event-publishers.adoc[Event publishers]

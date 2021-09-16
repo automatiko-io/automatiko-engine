@@ -1,0 +1,155 @@
+:imagesdir: ../../images
+= Service invocation
+
+One of the most common tasks in workflows is *service task*. This task is responsible for invoking an operation. 
+There might be various types of operations such as
+
+* java method in one of the service classes of the project itself
+* ReST call to remote service
+
+These operations are configured as a service tasks and invoked by the workflow engine. 
+
+Service tasks can also be equipped with error handling by the use of boundary events, 
+<<../../components/errors.adoc#_defining_errors,see details here>>.
+
+== Invoking local service
+
+Services can be implemented as part of the project itself. That means they reside in the same code base and usually 
+are represented as CDI bean that enables additional dependent services and/or classes to be automatically injected.
+
+As an example, one can fetch information from the data base and thus the service responsible for connecting to a data base
+will need to get hold of data source to be able to obtain connections.
+
+[source,java]
+----
+@ApplicationScoped
+public class PersonDataLoader {
+
+	@Inject
+	DataSource dataSource;
+	
+	
+	public List<Person> load() {
+		// implementation of the loading logic
+	
+	}
+
+}
+----
+
+On the workflow side, such service is declared as interface where there are following information required
+
+* Interface name - that will be used to reference it from service tasks
+* Interface implementation - fully classified class name
+* Operations - list of operation names that match the method names of the service class
+
+These are declared on the workflow level, via properties panel.
+
+image:local-service-declaration.png[]
+
+Once interfaces and their operations are defined, service tasks can reference them.
+
+image:local-service-def.png[]
+
+Lastly service operations can require inputs and might produce outputs. These 
+can be mapped to and from workflow instance variables via `IO parameters` of
+the service task
+
+image:local-service-io.png[]
+
+Where
+
+* Input Data Mapping corresponds to operation arguments
+* Output Data Mapping corresponds to returned value from the operation
+
+This is all that it takes to invoke a local service operation from within workflow.
+
+
+=== Asynchronous service invocation
+
+Sometimes there might be a service call that might take more time and thus shall be invoked
+asynchronously. Or it simply blocks on IO and thus can be inefficient to block threads and thus
+become a bottleneck in the service as a whole.
+
+To address that, service implementation can be made reactive and thus follow the continuation pattern.
+In other words this will release the thread whenever it is about to block and schedule IO operation to 
+continue as soon as it produces results.
+
+The implementation is based on https://smallrye.io/smallrye-mutiny/index.html[SmallRye Mutiny] that 
+implements efficient layer for reactive programming.
+
+[source,java]
+----
+@ApplicationScoped
+public class PersonDataLoader {
+
+	@Inject
+	DataSource dataSource;
+	
+	
+	public Uni<List<Person>> load() {
+		// implementation of the loading logic
+	
+	}
+
+}
+----
+
+As can be noted, the only thing here is the return type that returns `Uni` (a reactive type of Mutiny)
+and based on that information, workflow engine will apply the continuation pattern freeing the thread and the workflow instance
+from being blocked.
+
+There is no need to make any modifications on the workflow definition to make use of asynchronous invocation.
+
+== Invoking REST service
+
+As opposed to local services, workflows in many cases need to interact with outside world. Especially 
+common when implementing orchestration based service where coordination of various external systems is a key.
+
+To make this possible, service tasks allow to invoke ReST services based on OpenAPI service description.
+
+Main part required for this use case is the OpenAPI service description that is either locally 
+(inside the project's resource folder `src/main/resources`) or remotely (accessible over the http(s) protocol).
+
+On the workflow side, such service is declared as interface where there are following information required
+
+* Interface name - that will be used to reference it from service tasks
+* Interface implementation - location of the OpenAPI service description (`/api/swagger-petstore.json` or
+ `https://petstore.swagger.io/v2/swagger.json`)
+* Operations - list of operations that match the `operationId` from OpenAPI service description 
+
+These are declared on the workflow level, via properties panel.
+
+image:rest-service-declaration.png[]
+
+Once interfaces and their operations are defined, service tasks can reference them.
+
+image:rest-service-def.png[]
+
+IMPORTANT: Note that ReST service when being referenced needs to select the `webservice` as implementation
+
+Lastly service operations can require inputs and might produce outputs. These 
+can be mapped to and from workflow instance variables via `IO parameters` of
+the service task
+
+image:local-service-io.png[]
+
+Where
+
+* Input Data Mapping corresponds to operation arguments
+* Output Data Mapping corresponds to returned value from the operation
+
+This is all that it takes to invoke a ReST service operation from within workflow.
+
+=== Asynchronous service invocation
+
+Similar to local service calls, ReST service invocation can also be made asynchronous. Here it is 
+even more important as going to remote ReST service over the network is certainly a blocking operation
+with no clear information how fast or how slow it can be.
+
+To make the ReST operation asynchronous, workflow definition must declare that on the interface operation level
+as additional parameter on top of the operation name e.g. `createUser?mode=async`
+
+image:rest-async-service-declaration.png[]
+
+And this is the only required change to make the service run in asynchronous manner.
