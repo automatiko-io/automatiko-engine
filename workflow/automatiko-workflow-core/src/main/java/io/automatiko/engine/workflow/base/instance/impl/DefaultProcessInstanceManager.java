@@ -54,7 +54,7 @@ public class DefaultProcessInstanceManager implements ProcessInstanceManager {
     }
 
     public void removeProcessInstance(ProcessInstance processInstance) {
-        //internalRemoveProcessInstance(processInstance);
+        internalRemoveProcessInstance(processInstance);
     }
 
     public void internalRemoveProcessInstance(ProcessInstance processInstance) {

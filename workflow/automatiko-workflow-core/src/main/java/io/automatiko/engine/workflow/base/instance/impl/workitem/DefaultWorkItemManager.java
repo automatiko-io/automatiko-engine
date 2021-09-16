@@ -181,4 +181,9 @@ public class DefaultWorkItemManager implements InternalWorkItemManager {
     public void internalAbortWorkItem(WorkItem workItem) {
 
     }
+
+    public void internalRemoveWorkItem(WorkItem workItem) {
+        this.workItems.remove(workItem.getId());
+
+    }
 }
