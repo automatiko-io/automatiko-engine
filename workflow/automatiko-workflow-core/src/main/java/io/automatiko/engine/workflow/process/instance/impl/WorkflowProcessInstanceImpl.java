@@ -468,6 +468,7 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
                 ((EventBasedNodeInstanceInterface) nodeInstance).removeEventListeners();
             }
         }
+
         super.disconnect();
     }
 

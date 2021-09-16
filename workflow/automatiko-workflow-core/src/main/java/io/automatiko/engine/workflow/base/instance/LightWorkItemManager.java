@@ -78,6 +78,11 @@ public class LightWorkItemManager extends DefaultWorkItemManager {
         workItems.put(workItem.getId(), workItem);
     }
 
+    public void internalRemoveWorkItem(WorkItem workItem) {
+        super.internalRemoveWorkItem(workItem);
+        workItems.remove(workItem.getId());
+    }
+
     public void internalAbortWorkItem(String id) {
         WorkItemImpl workItem = (WorkItemImpl) workItems.get(id);
         // work item may have been aborted

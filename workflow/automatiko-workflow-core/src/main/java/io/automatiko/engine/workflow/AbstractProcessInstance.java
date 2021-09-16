@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -25,6 +26,7 @@ import io.automatiko.engine.api.auth.AccessDeniedException;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.definition.process.Node;
 import io.automatiko.engine.api.runtime.process.EventListener;
+import io.automatiko.engine.api.runtime.process.HumanTaskWorkItem;
 import io.automatiko.engine.api.runtime.process.NodeInstanceState;
 import io.automatiko.engine.api.runtime.process.ProcessRuntime;
 import io.automatiko.engine.api.runtime.process.WorkItemNotFoundException;
@@ -65,6 +67,7 @@ import io.automatiko.engine.workflow.process.instance.NodeInstanceContainer;
 import io.automatiko.engine.workflow.process.instance.impl.NodeInstanceImpl;
 import io.automatiko.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
 import io.automatiko.engine.workflow.process.instance.node.EventSubProcessNodeInstance;
+import io.automatiko.engine.workflow.process.instance.node.HumanTaskNodeInstance;
 import io.automatiko.engine.workflow.process.instance.node.LambdaSubProcessNodeInstance;
 import io.automatiko.engine.workflow.process.instance.node.WorkItemNodeInstance;
 
@@ -98,6 +101,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     protected ReentrantLock lock;
 
     protected long versionTracker;
+
+    protected Set<String> visibleTo;
 
     public AbstractProcessInstance(AbstractProcess<T> process, T variables, ProcessRuntime rt) {
         this(process, variables, null, rt);
@@ -241,6 +246,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         initiator = "".equals(((WorkflowProcessInstanceImpl) wpi).getInitiator()) ? null
                 : ((WorkflowProcessInstanceImpl) wpi).getInitiator();
         tags = buildTags();
+        visibleTo = setVisibleTo();
 
         setCorrelationKey(wpi.getCorrelationKey());
     }
@@ -257,15 +263,19 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     public void internalRemoveProcessInstance(
             Supplier<io.automatiko.engine.api.runtime.process.ProcessInstance> reloadSupplier) {
+        if (processInstance == null) {
+            return;
+        }
+
         this.reloadSupplier = reloadSupplier;
         this.status = processInstance.getState();
         if (this.status == STATE_ERROR) {
             this.processErrors = buildProcessErrors();
         }
         removeCompletionListener();
-        if (((WorkflowProcessInstanceImpl) processInstance).getProcessRuntime() != null) {
-            disconnect();
-        }
+
+        disconnect();
+
         processInstance = null;
     }
 
@@ -316,6 +326,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         unbind(variables, processInstance().getVariables());
         this.getProcessRuntime().abortProcessInstance(pid);
         this.status = processInstance.getState();
+        this.visibleTo = setVisibleTo();
         // apply end of instance strategy on completion
         process.endOfInstanceStrategy().perform(this);
         if (process.endOfInstanceStrategy().shouldInstanceBeUpdated()) {
@@ -799,8 +810,48 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         return versionTracker;
     }
 
+    public Set<String> visibleTo() {
+        return visibleTo;
+    }
+
+    protected Set<String> setVisibleTo() {
+
+        Set<String> visibleTo = new HashSet<>();
+        io.automatiko.engine.workflow.process.instance.WorkflowProcessInstance pi = (io.automatiko.engine.workflow.process.instance.WorkflowProcessInstance) processInstance();
+
+        if (pi.getInitiator() != null && !pi.getInitiator().isEmpty()) {
+            visibleTo.add(pi.getInitiator());
+        }
+        ((WorkflowProcessInstanceImpl) pi).getNodeInstances(true).stream()
+                .filter(ni -> ni instanceof HumanTaskNodeInstance).forEach(ni -> {
+                    if (((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getPotentialUsers() != null) {
+                        visibleTo.addAll(
+                                ((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getPotentialUsers());
+                    }
+                    if (((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getPotentialGroups() != null) {
+                        visibleTo.addAll(
+                                ((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getPotentialGroups());
+                    }
+                    if (((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getAdminUsers() != null) {
+                        visibleTo.addAll(((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getAdminUsers());
+                    }
+                    if (((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getAdminGroups() != null) {
+                        visibleTo.addAll(((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getAdminUsers());
+                    }
+                    // remove any defined excluded owners                    
+                    if (((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem()).getExcludedUsers() != null) {
+                        visibleTo
+                                .removeAll(((HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem())
+                                        .getExcludedUsers());
+                    }
+                });
+
+        return visibleTo;
+    }
+
     protected void removeOnFinish() {
         io.automatiko.engine.api.runtime.process.ProcessInstance processInstance = processInstance();
+        this.visibleTo = setVisibleTo();
         if (processInstance.getState() != ProcessInstance.STATE_ACTIVE
                 && processInstance.getState() != ProcessInstance.STATE_ERROR) {
             ((WorkflowProcessInstanceImpl) processInstance).removeEventListener(

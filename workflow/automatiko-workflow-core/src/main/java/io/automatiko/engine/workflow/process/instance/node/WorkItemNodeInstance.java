@@ -131,6 +131,13 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         setProcessId();
     }
 
+    public void internalUnregisterWorkItem() {
+        if (getProcessInstance() != null && getProcessInstance().getProcessRuntime() != null) {
+            ((DefaultWorkItemManager) getProcessInstance().getProcessRuntime().getWorkItemManager())
+                    .internalRemoveWorkItem(workItem);
+        }
+    }
+
     protected void setProcessId() {
         if (getProcessInstance().getMetaData().containsKey("AutomatikProcessInstance")) {
             io.automatiko.engine.api.workflow.ProcessInstance<?> instance = (io.automatiko.engine.api.workflow.ProcessInstance<?>) getProcessInstance()
@@ -493,6 +500,12 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         getProcessInstance().removeEventListener("workItemCompleted", this, false);
         getProcessInstance().removeEventListener("workItemAborted", this, false);
         getProcessInstance().removeEventListener("workItemFailed", this, false);
+
+        if (this.workItem != null) {
+            this.workItem.setProcessInstance(null);
+            this.workItem.setNodeInstance(null);
+            internalUnregisterWorkItem();
+        }
     }
 
     @Override
