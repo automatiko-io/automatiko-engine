@@ -61,9 +61,6 @@ public class $Type$GraphQLResource {
 
     @Mutation("create_$name$$prefix$")
     @Description("Creates new instance of $name$ $prefix$")
-    @org.eclipse.microprofile.metrics.annotation.Counted(name = "create $name$", description = "Number of new instances of $name$")
-    @org.eclipse.microprofile.metrics.annotation.Timed(name = "duration of creating $name$", description = "A measure of how long it takes to create new instance of $name$.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
-    @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of instances of $name$", description="Rate of new instances of $name$")
     public $Type$Output create_$name$(@Name("key") @DefaultValue("") final String businessKey, @Name("data") $Type$Input resource, 
             @Name("user") final String user, 
             @Name("groups") final List<String> groups) {
@@ -126,9 +123,6 @@ public class $Type$GraphQLResource {
     
     @Mutation("delete_$name$$prefix$")
     @Description("Deletes $name$ $prefix$ instance with given id")
-    @org.eclipse.microprofile.metrics.annotation.Counted(name = "delete $name$", description = "Number of instances of $name$ deleted/aborted")
-    @org.eclipse.microprofile.metrics.annotation.Timed(name = "duration of deleting $name$", description = "A measure of how long it takes to delete instance of $name$.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
-    @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of deleted instances of $name$", description="Rate of deleted instances of $name$")    
     public $Type$Output delete_$name$(@Name("id") final String id, 
             @Name("user") final String user, 
             @Name("groups") final List<String> groups) {

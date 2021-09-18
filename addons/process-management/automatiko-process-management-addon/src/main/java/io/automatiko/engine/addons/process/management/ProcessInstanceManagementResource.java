@@ -2,6 +2,7 @@
 package io.automatiko.engine.addons.process.management;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -56,6 +57,7 @@ import io.automatiko.engine.api.workflow.ProcessInstanceNotFoundException;
 import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.api.workflow.VariableNotFoundException;
 import io.automatiko.engine.services.uow.UnitOfWorkExecutor;
+import io.automatiko.engine.services.utils.IoUtils;
 import io.automatiko.engine.workflow.AbstractProcess;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.base.core.ContextContainer;
@@ -115,9 +117,9 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @GET
     @Path("/ui")
     @Produces(MediaType.TEXT_HTML)
-    public Response ui() {
-        ResponseBuilder builder = Response.ok().entity(getClass().getResourceAsStream("/automatiko-index.html"));
-        return builder.header("Content-Type", "text/html").build();
+    public String ui() throws IOException {
+
+        return new String(IoUtils.readBytesFromInputStream(getClass().getResourceAsStream("/automatiko-index.html")));
     }
 
     @APIResponses(value = {

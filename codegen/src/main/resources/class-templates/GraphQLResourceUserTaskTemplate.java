@@ -24,9 +24,6 @@ public class $Type$Resource {
   
     @Mutation
     @Description("Adds new $taskName$ task instance")
-    @org.eclipse.microprofile.metrics.annotation.Counted(name = "Creating new $taskName$ task", description = "Number of $taskName$ tasks created")
-    @org.eclipse.microprofile.metrics.annotation.Timed(name = "Duration of creatingnew $taskName$ task", description = "A measure of how long it takes to create $taskName$ tasks.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
-    @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of creating $taskName$ tasks", description="Rate of creating $taskName$ tasks")   
     public $Type$Output signal(@Name("id") final String id,
             @Name("user") final String user, 
             @Name("groups") final List<String> groups) {
@@ -44,9 +41,6 @@ public class $Type$Resource {
  
     @Mutation
     @Description("Completes $taskName$ task instance with given id")
-    @org.eclipse.microprofile.metrics.annotation.Counted(name = "Completed $taskName$ tasks", description = "Number of $taskName$ tasks completed")
-    @org.eclipse.microprofile.metrics.annotation.Timed(name = "Duration of completing $taskName$ task", description = "A measure of how long it takes to complete $taskName$ task.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
-    @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of completing $taskName$ tasks", description="Rate of completing $taskName$ tasks")       
     public $Type$Output completeTask(@Name("id") final String id, @Name("workItemId") final String workItemId, @Name("phase") @DefaultValue("complete") final String phase, @Name("data") final $TaskOutput$ model,
             @Name("user") final String user, 
             @Name("groups") final List<String> groups) {
@@ -94,9 +88,6 @@ public class $Type$Resource {
      
     @Mutation
     @Description("Aborts $taskName$ task instance with given id")
-    @org.eclipse.microprofile.metrics.annotation.Counted(name = "Aborted $taskName$ tasks", description = "Number of $taskName$ tasks aborted")
-    @org.eclipse.microprofile.metrics.annotation.Timed(name = "Duration of aborting $taskName$ task", description = "A measure of how long it takes to abort $taskName$ task.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
-    @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of aborting $taskName$ tasks", description="Rate of aborting $taskName$ tasks")           
     public $Type$Output abortTask(@Name("id") final String id, @Name("workItemId") final String workItemId, @Name("phase") @DefaultValue("abort") final String phase,
             @Name("user") final String user, 
             @Name("groups") final List<String> groups) {

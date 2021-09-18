@@ -1,18 +1,18 @@
 package io.automatiko.engine.service.metrics;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.metrics.Counter;
-import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricType;
-import org.eclipse.microprofile.metrics.Tag;
 
 import io.automatiko.engine.api.definition.process.Process;
-import io.smallrye.metrics.MetricRegistries;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 
 @ApplicationScoped
 public class ProcessMessagingMetrics {
@@ -26,97 +26,87 @@ public class ProcessMessagingMetrics {
     @ConfigProperty(name = "quarkus.automatiko.metrics.enabled")
     Optional<Boolean> enabled;
 
+    @Inject
+    Instance<MeterRegistry> registry;
+
     public void messageReceived(String connector, String message, Process process) {
         if (!enabled.orElse(false)) {
             return;
         }
 
-        Metadata messageMetadata = Metadata.builder().withName("automatiko.process.messages.received.count").withDescription(
-                "Displays total count of received messages on given process")
-                .withType(MetricType.COUNTER).build();
-
-        Counter counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter(messageMetadata,
-                new Tag("application", application.orElse("")), new Tag("version", version.orElse("")),
-                new Tag("processId", process.getId()),
-                new Tag("processName", nonNull(process.getName())),
-                new Tag("processVersion", nonNull(process.getVersion())),
-                new Tag("message", message),
-                new Tag("connector", connector));
-        counter.inc();
+        //"Displays total count of received messages on given process"
+        Counter counter = registry.get().counter("automatiko.process.messages.received.count",
+                Arrays.asList(Tag.of("application", application.orElse("")), Tag.of("version", version.orElse("")),
+                        Tag.of("processId", process.getId()),
+                        Tag.of("processName", nonNull(process.getName())),
+                        Tag.of("processVersion", nonNull(process.getVersion())),
+                        Tag.of("message", message),
+                        Tag.of("connector", connector)));
+        counter.increment();
     }
 
     public void messageConsumed(String connector, String message, Process process) {
         if (!enabled.orElse(false)) {
             return;
         }
-        Metadata messageMetadata = Metadata.builder().withName("automatiko.process.messages.consumed.count").withDescription(
-                "Displays total count of consumed messages on given process")
-                .withType(MetricType.COUNTER).build();
 
-        Counter counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter(messageMetadata,
-                new Tag("application", application.orElse("")), new Tag("version", version.orElse("")),
-                new Tag("processId", process.getId()),
-                new Tag("processName", nonNull(process.getName())),
-                new Tag("processVersion", nonNull(process.getVersion())),
-                new Tag("message", message),
-                new Tag("connector", connector));
-        counter.inc();
+        //"Displays total count of consumed messages on given process"
+        Counter counter = registry.get().counter("automatiko.process.messages.consumed.count",
+                Arrays.asList(Tag.of("application", application.orElse("")), Tag.of("version", version.orElse("")),
+                        Tag.of("processId", process.getId()),
+                        Tag.of("processName", nonNull(process.getName())),
+                        Tag.of("processVersion", nonNull(process.getVersion())),
+                        Tag.of("message", message),
+                        Tag.of("connector", connector)));
+        counter.increment();
     }
 
     public void messageMissed(String connector, String message, Process process) {
         if (!enabled.orElse(false)) {
             return;
         }
-        Metadata messageMetadata = Metadata.builder().withName("automatiko.process.messages.missed.count").withDescription(
-                "Displays total count of missed (received but not consumed) messages on given process")
-                .withType(MetricType.COUNTER).build();
 
-        Counter counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter(messageMetadata,
-                new Tag("application", application.orElse("")), new Tag("version", version.orElse("")),
-                new Tag("processId", process.getId()),
-                new Tag("processName", nonNull(process.getName())),
-                new Tag("processVersion", nonNull(process.getVersion())),
-                new Tag("message", message),
-                new Tag("connector", connector));
-        counter.inc();
+        // "Displays total count of missed (received but not consumed) messages on given process"
+        Counter counter = registry.get().counter("automatiko.process.messages.missed.count",
+                Arrays.asList(Tag.of("application", application.orElse("")), Tag.of("version", version.orElse("")),
+                        Tag.of("processId", process.getId()),
+                        Tag.of("processName", nonNull(process.getName())),
+                        Tag.of("processVersion", nonNull(process.getVersion())),
+                        Tag.of("message", message),
+                        Tag.of("connector", connector)));
+        counter.increment();
     }
 
     public void messageFailed(String connector, String message, Process process) {
         if (!enabled.orElse(false)) {
             return;
         }
-        Metadata messageMetadata = Metadata.builder().withName("automatiko.process.messages.failed.count").withDescription(
-                "Displays total count of failed (received but failed at consuming) messages on given process")
-                .withType(MetricType.COUNTER).build();
 
-        Counter counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter(messageMetadata,
-                new Tag("application", application.orElse("")), new Tag("version", version.orElse("")),
-                new Tag("processId", process.getId()),
-                new Tag("processName", nonNull(process.getName())),
-                new Tag("processVersion", nonNull(process.getVersion())),
-                new Tag("message", message),
-                new Tag("connector", connector));
-        counter.inc();
+        //"Displays total count of failed (received but failed at consuming) messages on given process"
+        Counter counter = registry.get().counter("automatiko.process.messages.failed.count",
+                Arrays.asList(Tag.of("application", application.orElse("")), Tag.of("version", version.orElse("")),
+                        Tag.of("processId", process.getId()),
+                        Tag.of("processName", nonNull(process.getName())),
+                        Tag.of("processVersion", nonNull(process.getVersion())),
+                        Tag.of("message", message),
+                        Tag.of("connector", connector)));
+        counter.increment();
     }
 
-    public void messageProduced(String connector, String message, Process process, String processInstance, String businessKey) {
+    public void messageProduced(String connector, String message, Process process) {
         if (!enabled.orElse(false)) {
             return;
         }
-        Metadata messageMetadata = Metadata.builder().withName("automatiko.process.messages.produced.count").withDescription(
-                "Displays total count of produced messages from given process")
-                .withType(MetricType.COUNTER).build();
 
-        Counter counter = MetricRegistries.get(MetricRegistry.Type.VENDOR).counter(messageMetadata,
-                new Tag("application", application.orElse("")), new Tag("version", version.orElse("")),
-                new Tag("processId", process.getId()),
-                new Tag("processName", nonNull(process.getName())),
-                new Tag("processVersion", nonNull(process.getVersion())),
-                new Tag("processInstance", processInstance),
-                new Tag("businessKey", businessKey),
-                new Tag("message", message),
-                new Tag("connector", connector));
-        counter.inc();
+        //"Displays total count of produced messages from given process"
+        Counter counter = registry.get().counter("automatiko.process.messages.produced.count",
+                Arrays.asList(Tag.of("application", application.orElse("")), Tag.of("version", version.orElse("")),
+                        Tag.of("processId", process.getId()),
+                        Tag.of("processName", nonNull(process.getName())),
+                        Tag.of("processVersion", nonNull(process.getVersion())),
+                        Tag.of("message", message),
+                        Tag.of("connector", connector)));
+        counter.increment();
     }
 
     private String nonNull(String value) {

@@ -19,9 +19,6 @@ public class $Type$Resource {
 
     @Mutation
     @Description("Completes $taskName$ task instance with given id")
-    @org.eclipse.microprofile.metrics.annotation.Counted(name = "Completed $taskName$ tasks", description = "Number of $taskName$ tasks completed")
-    @org.eclipse.microprofile.metrics.annotation.Timed(name = "Duration of completing $taskName$ task", description = "A measure of how long it takes to complete $taskName$ task.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
-    @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of completing $taskName$ tasks", description="Rate of completing $taskName$ tasks")       
     public $Type$Output $parentprocessprefix$_completeTask(@Name("parentId") String id,
             @Name("id") String id_$name$, 
             @Name("workItemId") final String workItemId, 
@@ -87,9 +84,6 @@ public class $Type$Resource {
 
     @Mutation
     @Description("Aborts $taskName$ task instance with given id")
-    @org.eclipse.microprofile.metrics.annotation.Counted(name = "Aborted $taskName$ tasks", description = "Number of $taskName$ tasks aborted")
-    @org.eclipse.microprofile.metrics.annotation.Timed(name = "Duration of aborting $taskName$ task", description = "A measure of how long it takes to abort $taskName$ task.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
-    @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of aborting $taskName$ tasks", description="Rate of aborting $taskName$ tasks")           
     public $Type$Output $parentprocessprefix$_abortTask(@Name("parentId") String id,
             @Name("id") String id_$name$, 
             @Name("workItemId") final String workItemId, 

@@ -33,7 +33,7 @@ public class MessageProducer {
     }
     
 	public void produce(ProcessInstance pi, $Type$ eventData) {
-	    metrics.messageProduced(CONNECTOR, MESSAGE, pi.getProcess(), pi.getId(), pi.getCorrelationKey() == null ? "" : pi.getCorrelationKey());
+	    metrics.messageProduced(CONNECTOR, MESSAGE, pi.getProcess());
 	    
 	    emitter.send(io.smallrye.reactive.messaging.kafka.KafkaRecord.of(((WorkflowProcessInstance) pi).getCorrelationKey(), this.marshall(pi, eventData)));
     }

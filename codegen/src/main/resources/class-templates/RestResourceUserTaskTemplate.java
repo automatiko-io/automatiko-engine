@@ -47,9 +47,6 @@ public class $Type$Resource {
     @Path("/{id}/$taskName$")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @org.eclipse.microprofile.metrics.annotation.Counted(name = "Creating new $taskName$ task", description = "Number of $taskName$ tasks created")
-    @org.eclipse.microprofile.metrics.annotation.Timed(name = "Duration of creatingnew $taskName$ task", description = "A measure of how long it takes to create $taskName$ tasks.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
-    @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of creating $taskName$ tasks", description="Rate of creating $taskName$ tasks")   
     public javax.ws.rs.core.Response signal(@Context HttpHeaders httpHeaders, @PathParam("id") @Parameter(description = "Unique identifier of the owning instance", required = true) final String id,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
@@ -123,9 +120,6 @@ public class $Type$Resource {
     @Path("/{id}/$taskName$/{workItemId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @org.eclipse.microprofile.metrics.annotation.Counted(name = "Completed $taskName$ tasks", description = "Number of $taskName$ tasks completed")
-    @org.eclipse.microprofile.metrics.annotation.Timed(name = "Duration of completing $taskName$ task", description = "A measure of how long it takes to complete $taskName$ task.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
-    @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of completing $taskName$ tasks", description="Rate of completing $taskName$ tasks")       
     public Response completeTask(@Context HttpHeaders httpHeaders, @PathParam("id") @Parameter(description = "Unique identifier of the owning instance", required = true) final String id, 
             @Parameter(description = "Unique identifier of the task instance", required = true) @PathParam("workItemId") final String workItemId, 
             @Parameter(description = "Optional phase to be used when aborting", required = false) @QueryParam("phase") @DefaultValue("complete") final String phase, 
@@ -251,9 +245,6 @@ public class $Type$Resource {
     @DELETE()
     @Path("/{id}/$taskName$/{workItemId}")
     @Produces(MediaType.APPLICATION_JSON)
-    @org.eclipse.microprofile.metrics.annotation.Counted(name = "Aborted $taskName$ tasks", description = "Number of $taskName$ tasks aborted")
-    @org.eclipse.microprofile.metrics.annotation.Timed(name = "Duration of aborting $taskName$ task", description = "A measure of how long it takes to abort $taskName$ task.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
-    @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of aborting $taskName$ tasks", description="Rate of aborting $taskName$ tasks")           
     public Response abortTask(@Context HttpHeaders httpHeaders, @PathParam("id") @Parameter(description = "Unique identifier of the owning instance", required = true) final String id, 
             @Parameter(description = "Unique identifier of the task instance", required = true) @PathParam("workItemId") final String workItemId, 
             @Parameter(description = "Optional phase to be used when aborting", required = false) @QueryParam("phase") @DefaultValue("abort") final String phase, 
