@@ -41,15 +41,13 @@
     <!-- metrics -->
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-smallrye-metrics-spi</artifactId>
-      <version>${version.io.quarkus}</version>
+      <artifactId>quarkus-micrometer-deployment</artifactId>
     </dependency>
     
         <!-- test -->
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5-internal</artifactId>
-      <version>${version.io.quarkus}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

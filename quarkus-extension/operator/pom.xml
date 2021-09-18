@@ -84,7 +84,7 @@
     <!-- metrics -->
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-smallrye-metrics</artifactId>
+      <artifactId>quarkus-micrometer</artifactId>
       <optional>true</optional>
     </dependency>
     <!-- openapi -->

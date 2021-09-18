@@ -323,10 +323,6 @@ public abstract class AbstractResourceGenerator {
             createResourceMethod.ifPresent(template::remove);
         }
 
-        if (useInjection()) {
-            annotator.withApplicationComponent(template);
-        }
-
         for (AbstractResourceGenerator resourceGenerator : subprocesses) {
 
             resourceGenerator.withPathPrefix(
@@ -379,7 +375,6 @@ public abstract class AbstractResourceGenerator {
         collectSubProcessModels(modelfqcn.substring(modelfqcn.lastIndexOf('.') + 1), template, subprocesses);
 
         enableValidation(template);
-        removeMetricsIfNotEnabled(template);
         securityAnnotated(template);
 
         template.getMembers().sort(new BodyDeclarationComparator());
@@ -417,16 +412,6 @@ public abstract class AbstractResourceGenerator {
                 .ifPresent(c -> template.findAll(Parameter.class).stream()
                         .filter(param -> param.getTypeAsString().equals(dataClazzName + "Input"))
                         .forEach(this::insertValidationAnnotations));
-    }
-
-    private void removeMetricsIfNotEnabled(ClassOrInterfaceDeclaration template) {
-        Optional.ofNullable(context).map(GeneratorContext::getBuildContext)
-                .filter(bc -> !bc.config().metrics().enabled())
-                .ifPresent(c -> template.findAll(MethodDeclaration.class).stream().forEach(md -> {
-                    md.getAnnotationByName("Counted").ifPresent(a -> a.remove());
-                    md.getAnnotationByName("Metered").ifPresent(a -> a.remove());
-                    md.getAnnotationByName("Timed").ifPresent(a -> a.remove());
-                }));
     }
 
     private void insertValidationAnnotations(Parameter param) {

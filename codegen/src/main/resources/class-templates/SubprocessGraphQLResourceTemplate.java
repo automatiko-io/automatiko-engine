@@ -54,9 +54,6 @@ public class $Type$Resource {
  
     @Mutation
     @Description("Deletes $name$ instance with given id")
-    @org.eclipse.microprofile.metrics.annotation.Counted(name = "delete $name$", description = "Number of instances of $name$ deleted/aborted")
-    @org.eclipse.microprofile.metrics.annotation.Timed(name = "duration of deleting $name$", description = "A measure of how long it takes to delete instance of $name$.", unit = org.eclipse.microprofile.metrics.MetricUnits.MILLISECONDS)
-    @org.eclipse.microprofile.metrics.annotation.Metered(name="Rate of deleted instances of $name$", description="Rate of deleted instances of $name$")    
     public $Type$Output $parentprocessprefix$_delete_$name$(@Name("parentId") String id,
             @Name("id") final String id_$name$,
             @Name("user") final String user, 
