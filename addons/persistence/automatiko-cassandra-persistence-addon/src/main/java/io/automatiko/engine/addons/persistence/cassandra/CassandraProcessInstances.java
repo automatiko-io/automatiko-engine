@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -159,19 +160,28 @@ public class CassandraProcessInstances implements MutableProcessInstances {
 
         List<Row> collected = new ArrayList<Row>();
         Set<String> distinct = new HashSet<String>();
-        for (String value : values) {
 
-            Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName).column(INSTANCE_ID_FIELD)
-                    .column(CONTENT_FIELD)
-                    .column(VERSION_FIELD)
-                    .whereColumn(TAGS_FIELD).contains(literal(value)).whereColumn(STATUS_FIELD).isEqualTo(literal(status));
+        Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName).column(INSTANCE_ID_FIELD)
+                .column(CONTENT_FIELD)
+                .column(VERSION_FIELD)
+                .column(TAGS_FIELD)
+                .whereColumn(STATUS_FIELD).isEqualTo(literal(status));
 
-            ResultSet rs = cqlSession.execute(select.build());
-            rs.all().stream().filter(r -> !distinct.contains(r.getString(INSTANCE_ID_FIELD))).forEach(r -> {
-                distinct.add(r.getString(INSTANCE_ID_FIELD));
-                collected.add(r);
-            });
-        }
+        ResultSet rs = cqlSession.execute(select.build());
+        rs.all().stream().filter(r -> !distinct.contains(r.getString(INSTANCE_ID_FIELD)))
+                .filter(r -> {
+                    if (values == null || values.length == 0) {
+                        return true;
+                    }
+
+                    Set<String> tags = r.getSet(TAGS_FIELD, String.class);
+                    return Stream.of(values).anyMatch(v -> tags.contains(v));
+                })
+                .forEach(r -> {
+                    distinct.add(r.getString(INSTANCE_ID_FIELD));
+                    collected.add(r);
+                });
+
         return collected.stream().map(item -> {
             try {
                 byte[] content = ByteUtils.getArray(item.getByteBuffer(CONTENT_FIELD));
@@ -330,18 +340,14 @@ public class CassandraProcessInstances implements MutableProcessInstances {
         CreateTable createTable = SchemaBuilder.createTable(config.keyspace().orElse("automatiko"), tableName)
                 .ifNotExists()
                 .withPartitionKey(INSTANCE_ID_FIELD, DataTypes.TEXT)
+                .withColumn(STATUS_FIELD, DataTypes.INT)
                 .withColumn(CONTENT_FIELD, DataTypes.BLOB)
                 .withColumn(TAGS_FIELD, DataTypes.setOf(DataTypes.TEXT))
-                .withColumn(VERSION_FIELD, DataTypes.BIGINT)
-                .withColumn(STATUS_FIELD, DataTypes.INT);
+                .withColumn(VERSION_FIELD, DataTypes.BIGINT);
 
         cqlSession.execute(createTable.build());
 
-        CreateIndex index = SchemaBuilder.createIndex(tableName + "_IDX").ifNotExists()
-                .onTable(config.keyspace().orElse("automatiko"), tableName).andColumn(TAGS_FIELD);
-        cqlSession.execute(index.build());
-
-        index = SchemaBuilder.createIndex(tableName + "_STATUS_IDX").ifNotExists()
+        CreateIndex index = SchemaBuilder.createIndex(tableName + "_STATUS_IDX").ifNotExists()
                 .onTable(config.keyspace().orElse("automatiko"), tableName).andColumn(STATUS_FIELD);
         cqlSession.execute(index.build());
     }
