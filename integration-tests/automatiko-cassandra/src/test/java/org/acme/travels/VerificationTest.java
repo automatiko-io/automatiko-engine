@@ -93,6 +93,20 @@ public class VerificationTest {
         given()
             .accept(ContentType.JSON)
         .when()
+            .get("/scripts?tags="+id)
+        .then().statusCode(200)
+            .body("$.size()", is(1));
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/scripts?tags=wrong")
+        .then().statusCode(200)
+            .body("$.size()", is(0));        
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
             .delete("/scripts/" + id)
         .then().statusCode(200);
         
