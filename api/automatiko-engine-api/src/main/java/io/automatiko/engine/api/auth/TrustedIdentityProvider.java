@@ -46,7 +46,7 @@ public class TrustedIdentityProvider implements IdentityProvider {
     }
 
     @Override
-    public Map<String, Map<String, String>> properties() {
+    public Map<String, Object> properties() {
         return Collections.emptyMap();
     }
 

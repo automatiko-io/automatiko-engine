@@ -51,7 +51,7 @@ public interface IdentityProvider {
      * 
      * @return non null map of properties
      */
-    Map<String, Map<String, String>> properties();
+    Map<String, Object> properties();
 
     /**
      * Returns currently associated IdentityProvider
@@ -80,7 +80,7 @@ public interface IdentityProvider {
                 }
 
                 @Override
-                public Map<String, Map<String, String>> properties() {
+                public Map<String, Object> properties() {
                     return Collections.emptyMap();
                 }
             };
