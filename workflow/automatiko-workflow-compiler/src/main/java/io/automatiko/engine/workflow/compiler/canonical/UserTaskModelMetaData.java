@@ -247,8 +247,9 @@ public class UserTaskModelMetaData {
                 continue;
             }
 
+            Map<String, String> dataInputs = (Map<String, String>) humanTaskNode.getMetaData(DATA_INPUTS);
             FieldDeclaration fd = new FieldDeclaration().addVariable(new VariableDeclarator()
-                    .setType(entry.getValue().getClass().getCanonicalName()).setName(entry.getKey()))
+                    .setType(dataInputs.get(entry.getKey())).setName(entry.getKey()))
                     .addModifier(Modifier.Keyword.PUBLIC);
             modelClass.addMember(fd);
             addUserTaskParamAnnotation(fd, UserTaskParam.ParamType.INPUT);
@@ -259,7 +260,7 @@ public class UserTaskModelMetaData {
             // fromMap static method body
             FieldAccessExpr field = new FieldAccessExpr(item, entry.getKey());
 
-            ClassOrInterfaceType type = parseClassOrInterfaceType(entry.getValue().getClass().getCanonicalName());
+            ClassOrInterfaceType type = parseClassOrInterfaceType(fd.getVariable(0).getType().asString());
             staticFromMap
                     .addStatement(new AssignExpr(field,
                             new CastExpr(type,

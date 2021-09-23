@@ -283,7 +283,7 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         for (Map.Entry<String, Object> entry : workItem.getParameters().entrySet()) {
             if (entry.getValue() instanceof String) {
                 String s = (String) entry.getValue();
-                Map<String, String> replacements = new HashMap<>();
+                Map<String, Object> replacements = new HashMap<>();
                 Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(s);
                 while (matcher.find()) {
                     String paramName = matcher.group(1);
@@ -300,7 +300,7 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
                                 VARIABLE_SCOPE, paramName);
                         if (variableScopeInstance != null) {
                             Object variableValue = variableScopeInstance.getVariable(paramName);
-                            String variableValueString = variableValue == null ? defaultValue : variableValue.toString();
+                            Object variableValueString = variableValue == null ? defaultValue : variableValue;
                             replacements.put(replacementKey, variableValueString);
                         } else {
                             try {
@@ -308,7 +308,7 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
                                         .getProcess())
                                                 .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
                                 Object variableValue = evaluator.evaluate(paramName, new NodeInstanceResolverFactory(this));
-                                String variableValueString = variableValue == null ? defaultValue : variableValue.toString();
+                                Object variableValueString = variableValue == null ? defaultValue : variableValue;
                                 replacements.put(replacementKey, variableValueString);
                             } catch (Throwable t) {
                                 logger.error("Could not find variable scope for variable {}", paramName);
@@ -319,11 +319,14 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
                         }
                     }
                 }
-
-                for (Map.Entry<String, String> replacement : replacements.entrySet()) {
-                    s = s.replace("#{" + replacement.getKey() + "}", replacement.getValue());
+                if (replacements.size() > 1) {
+                    for (Map.Entry<String, Object> replacement : replacements.entrySet()) {
+                        s = s.replace("#{" + replacement.getKey() + "}", replacement.getValue().toString());
+                    }
+                    ((WorkItemImpl) workItem).setParameter(entry.getKey(), s);
+                } else if (replacements.size() == 1) {
+                    ((WorkItemImpl) workItem).setParameter(entry.getKey(), replacements.values().iterator().next());
                 }
-                ((WorkItemImpl) workItem).setParameter(entry.getKey(), s);
 
             }
         }

@@ -19,7 +19,7 @@ public class StaticIdentityProvider implements IdentityProvider {
 
     private String name;
     private List<String> roles;
-    private Map<String, Map<String, String>> properties;
+    private Map<String, Object> properties;
 
     public StaticIdentityProvider(String name) {
         this(name, Collections.emptyList());
@@ -29,7 +29,7 @@ public class StaticIdentityProvider implements IdentityProvider {
         this(name, roles, Collections.emptyMap());
     }
 
-    public StaticIdentityProvider(String name, List<String> roles, Map<String, Map<String, String>> properties) {
+    public StaticIdentityProvider(String name, List<String> roles, Map<String, Object> properties) {
         this.name = name;
         this.roles = roles == null ? Collections.emptyList() : roles;
         this.properties = properties;
@@ -44,7 +44,7 @@ public class StaticIdentityProvider implements IdentityProvider {
     }
 
     public StaticIdentityProvider(String adminRoleName, String name, List<String> roles,
-            Map<String, Map<String, String>> properties) {
+            Map<String, Object> properties) {
         this.adminRoleName = adminRoleName;
         this.name = name;
         this.roles = roles == null ? Collections.emptyList() : roles;
@@ -66,12 +66,12 @@ public class StaticIdentityProvider implements IdentityProvider {
         return roles.contains(role);
     }
 
-    public void addProperties(Map<String, Map<String, String>> props) {
+    public void addProperties(Map<String, Object> props) {
         this.properties.putAll(props);
     }
 
     @Override
-    public Map<String, Map<String, String>> properties() {
+    public Map<String, Object> properties() {
         return properties;
     }
 

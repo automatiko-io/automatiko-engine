@@ -47,7 +47,7 @@ public class SecuredIdentitySupplier implements IdentitySupplier {
             principalName = user;
         }
         StaticIdentityProvider current = new StaticIdentityProvider(adminRoleName.orElse("admin"), principalName,
-                mergeRoles(securityInstance.get(), roles));
+                mergeRoles(securityInstance.get(), roles), securityInstance.get().getAttributes());
 
         IdentityProvider.set(current);
         return current;

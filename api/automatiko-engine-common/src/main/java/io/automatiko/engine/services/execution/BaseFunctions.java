@@ -7,9 +7,12 @@ import java.time.temporal.IsoFields;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.automatiko.engine.api.auth.IdentityProvider;
 
 public class BaseFunctions {
 
@@ -201,5 +204,110 @@ public class BaseFunctions {
                 break;
         }
         return next;
+    }
+
+    /*
+     * Identity related properties
+     */
+
+    /**
+     * Retrieves current user name if available otherwise null
+     * 
+     * @return name of the user who is currently performing operation
+     */
+    public static String identityName() {
+        if (IdentityProvider.isSet()) {
+            return IdentityProvider.get().getName();
+        }
+
+        return null;
+    }
+
+    /**
+     * Retrieves current user name if available otherwise <code>whenNotFound</code> as fallback
+     * 
+     * @param whenNotFound default name to be returned in case there is no user information available
+     * @return name of the user who is currently performing operation
+     */
+    public static String identityName(String whenNotFound) {
+        String name = null;
+        if (IdentityProvider.isSet()) {
+            name = IdentityProvider.get().getName();
+        }
+        if (name != null) {
+            return name;
+        }
+
+        return whenNotFound;
+    }
+
+    /**
+     * Retrieves property associated with user information e.g. email address etc
+     * 
+     * @param name name of the property to fetch
+     * @return returns value of the property or null if not found
+     */
+    public static Object identityProperty(String name) {
+        return identityProperty(name, null);
+    }
+
+    /**
+     * Retrieves property associated with user information e.g. email address etc in case of missing property it returns default
+     * value
+     * 
+     * @param name name of the property to fetch
+     * @param default value to be returned in case property is not found
+     * @return returns value of the property or default value given if not found
+     */
+    public static Object identityProperty(String name, String defaultValue) {
+        if (IdentityProvider.isSet()) {
+            return IdentityProvider.get().properties().getOrDefault(name, defaultValue);
+        }
+
+        return defaultValue;
+    }
+
+    /**
+     * Verifies if user performing current operation has given role
+     * 
+     * @param role name of the role user information should have
+     * @return true if user information has the role otherwise false (also when there is no user information available)
+     */
+    public static boolean identityHasRole(String role) {
+        if (IdentityProvider.isSet()) {
+            return IdentityProvider.get().hasRole(role);
+        }
+
+        return false;
+    }
+
+    /**
+     * Verifies if user performing current operation has any of the given roles
+     * 
+     * @param roles roles to be checked
+     * @return true if any of the given roles exists in user information
+     */
+    public static boolean identityHasAnyRole(String... roles) {
+        if (IdentityProvider.isSet()) {
+
+            return Stream.of(roles).anyMatch(role -> IdentityProvider.get().hasRole(role));
+        }
+
+        return false;
+    }
+
+    /**
+     * Verifies if user performing current operation has all of the given roles
+     * 
+     * @param roles roles to be checked
+     * @return true if all of the given roles exists in user information
+     */
+    public static boolean identityHasAllRoles(String... roles) {
+        if (IdentityProvider.isSet()) {
+
+            return Stream.of(roles).allMatch(role -> IdentityProvider.get().hasRole(role));
+        }
+
+        return false;
     }
 }
