@@ -282,13 +282,14 @@ public abstract class AbstractResourceGenerator {
 
         if (useInjection()) {
 
-            template.findAll(FieldDeclaration.class, CodegenUtils::isProcessField)
+            template.findAll(FieldDeclaration.class, CodegenUtils::isProcessField).stream()
+                    .filter(fd -> fd.getVariable(0).getNameAsString().startsWith("subprocess_"))
                     .forEach(fd -> annotator.withNamedInjection(fd, processId + version));
-
-            template.findAll(FieldDeclaration.class, CodegenUtils::isApplicationField)
-                    .forEach(fd -> annotator.withInjection(fd));
-            template.findAll(FieldDeclaration.class, CodegenUtils::isIdentitySupplierField)
-                    .forEach(fd -> annotator.withInjection(fd));
+            //
+            //            template.findAll(FieldDeclaration.class, CodegenUtils::isApplicationField)
+            //                    .forEach(fd -> annotator.withInjection(fd));
+            //            template.findAll(FieldDeclaration.class, CodegenUtils::isIdentitySupplierField)
+            //                    .forEach(fd -> annotator.withInjection(fd));
 
             boolean tracingAvailable = context.getBuildContext()
                     .hasClassAvailable("org.eclipse.microprofile.opentracing.Traced");
@@ -430,7 +431,7 @@ public abstract class AbstractResourceGenerator {
     private void interpolateStrings(StringLiteralExpr vv) {
         String s = vv.getValue();
         String documentation = process.getMetaData().getOrDefault("Documentation", processName).toString();
-        String interpolated = s.replace("$name$", processName).replace("$id$", processId)
+        String interpolated = s.replace("$name$", processName).replace("$id$", processId).replace("$version$", version)
                 .replace("$processdocumentation$", documentation).replace("$prefix$", pathPrefix)
                 .replace("$processname$", process.getName());
         vv.setString(interpolated);
