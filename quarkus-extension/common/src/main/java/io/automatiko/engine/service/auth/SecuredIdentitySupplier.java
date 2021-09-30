@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.ContextNotActiveException;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
@@ -71,7 +72,7 @@ public class SecuredIdentitySupplier implements IdentitySupplier {
         }
         try {
             return securityInstance.get().getPrincipal();
-        } catch (IllegalStateException e) {
+        } catch (IllegalStateException | ContextNotActiveException e) {
             return null;
         }
     }

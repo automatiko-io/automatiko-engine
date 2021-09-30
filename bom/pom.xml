@@ -252,6 +252,18 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
+      
+      <dependency>
+        <groupId>io.automatiko.addons</groupId>
+        <artifactId>automatiko-graphql-addon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.addons</groupId>
+        <artifactId>automatiko-graphql-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
 
       <!-- addon services -->
       <dependency>

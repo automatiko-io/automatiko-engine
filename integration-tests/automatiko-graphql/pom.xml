@@ -48,8 +48,8 @@
     </dependency>
 
     <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-smallrye-graphql</artifactId>
+      <groupId>io.automatiko.addons</groupId>
+      <artifactId>automatiko-graphql-addon</artifactId>
     </dependency>
 
     <dependency>

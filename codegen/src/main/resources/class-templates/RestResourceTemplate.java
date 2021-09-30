@@ -56,6 +56,7 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 
+@SuppressWarnings({ "rawtypes", "unchecked" })
 @org.eclipse.microprofile.openapi.annotations.tags.Tag(name="$processname$", description="$processdocumentation$")
 @Path("/$name$")
 public class $Type$Resource {
@@ -67,6 +68,13 @@ public class $Type$Resource {
     IdentitySupplier identitySupplier;
     
     HttpAuthSupport httpAuth = new HttpAuthSupport();
+    
+    @javax.inject.Inject
+    public void $Type$GraphQLResource(Application application, @javax.inject.Named("$id$$version$") Process<$Type$> process, IdentitySupplier identitySupplier) {
+        this.application = application;
+        this.process = process;
+        this.identitySupplier = identitySupplier;    
+    }
 
     @APIResponses(
         value = {

@@ -20,7 +20,6 @@ import org.eclipse.microprofile.graphql.Name;
 
 import io.smallrye.mutiny.Multi;
 import io.smallrye.graphql.api.Subscription;
-import io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor;
 
 import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.auth.IdentityProvider;
@@ -39,26 +38,34 @@ import io.automatiko.engine.api.workflow.WorkItem;
 import io.automatiko.engine.api.workflow.workitem.Policy;
 import io.automatiko.engine.workflow.base.instance.TagInstance;
 import io.automatiko.engine.service.auth.HttpAuthSupport;
+import io.automatiko.addons.graphql.GraphQLSubscriptionEventPublisher;
 
-
+@javax.enterprise.context.ApplicationScoped
+@SuppressWarnings({ "rawtypes", "unchecked" })
 @Description("$processdocumentation$")
 @GraphQLApi
 public class $Type$GraphQLResource {
     
-    BroadcastProcessor<$Type$Output> createdProcessor = BroadcastProcessor.create();
     
-    BroadcastProcessor<$Type$Output> completedProcessor = BroadcastProcessor.create();
-    
-    BroadcastProcessor<$Type$Output> abortedProcessor = BroadcastProcessor.create();
-    
-    BroadcastProcessor<$Type$Output> inErrorProcessor = BroadcastProcessor.create();
+    GraphQLSubscriptionEventPublisher subscriptionPublisher;
 
     Process<$Type$> process;
     
     Application application;
     
     IdentitySupplier identitySupplier;
+    
+    
+    @javax.inject.Inject
+    public void $Type$GraphQLResource(Application application, @javax.inject.Named("$id$$version$") Process<$Type$> process, IdentitySupplier identitySupplier, GraphQLSubscriptionEventPublisher subscriptionPublisher) {
+        this.application = application;
+        this.process = process;
+        this.identitySupplier = identitySupplier;
+        this.subscriptionPublisher = subscriptionPublisher;
+        this.subscriptionPublisher.configure(process.id(), pi -> mapOutput(new $Type$Output(), ((ProcessInstance<$Type$>) pi).variables(), ((ProcessInstance<$Type$>) pi).businessKey(), ((ProcessInstance<$Type$>) pi)));
+    }
 
+    
     @Mutation("create_$name$$prefix$")
     @Description("Creates new instance of $name$ $prefix$")
     public $Type$Output create_$name$(@Name("key") @DefaultValue("") final String businessKey, @Name("data") $Type$Input resource, 
@@ -76,7 +83,7 @@ public class $Type$GraphQLResource {
                 
                 $Type$Output model = getModel(pi);
                 
-                createdProcessor.onNext(model);
+                subscriptionPublisher.created($Type$Output.class).onNext(model, ((AbstractProcessInstance<?>) pi).visibleTo());
                 
                 tracing(pi);                
  
@@ -85,6 +92,7 @@ public class $Type$GraphQLResource {
        
     }
 
+    
     @Query("get_all_$name$$prefix$")
     @Description("Retrieves instances of $name$ $prefix$")
     public List<$Type$Output> getAll_$name$(@Name("tags") final List<String> tags, @Name("status") @DefaultValue("active") final String status, @Name("page") @DefaultValue("1") int page, @Name("size") @DefaultValue("10") int size, 
@@ -105,7 +113,7 @@ public class $Type$GraphQLResource {
         });
     }
 
-       
+    
     @Query("get_$name$$prefix$")
     @Description("Retrieves $name$ $prefix$ instance with given id")
     public $Type$Output get_$name$(@Name("id") String id, @Name("status") @DefaultValue("active") final String status, 
@@ -120,6 +128,7 @@ public class $Type$GraphQLResource {
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             });
     }
+    
     
     @Mutation("delete_$name$$prefix$")
     @Description("Deletes $name$ $prefix$ instance with given id")
@@ -174,41 +183,62 @@ public class $Type$GraphQLResource {
             });
     }
     
-    @Subscription
-    public Multi<$Type$Output> $name$$prefix$_created(){
-        return createdProcessor; 
-    }
     
     @Subscription
-    public Multi<$Type$Output> $name$$prefix$_completed(){
-        return completedProcessor; 
+    @Description("Emits on every new $name$ $prefix$ instance being created")
+    public Multi<$Type$Output> $name$$prefix$_created(@Name("user") @DefaultValue("") final String user, 
+            @Name("groups")  @DefaultValue("[]") final List<String> groups) {
+        
+        identitySupplier.buildIdentityProvider(user, groups);
+        return subscriptionPublisher.created($Type$Output.class).onSubscribe().invoke(() -> IdentityProvider.set(null));
+        
     }
+    
     
     @Subscription
-    public Multi<$Type$Output> $name$$prefix$_aborted(){
-        return abortedProcessor; 
+    @Description("Emits on every new $name$ $prefix$ instance being completed")
+    public Multi<$Type$Output> $name$$prefix$_completed(@Name("user") @DefaultValue("") final String user, 
+            @Name("groups") final List<String> groups) {
+        
+        identitySupplier.buildIdentityProvider(user, groups);
+        return subscriptionPublisher.completed($Type$Output.class).onSubscribe().invoke(() -> IdentityProvider.set(null)); 
     }
+    
     
     @Subscription
-    public Multi<$Type$Output> $name$$prefix$_in_error(){
-        return inErrorProcessor; 
+    @Description("Emits on every new $name$ $prefix$ instance being aborted")
+    public Multi<$Type$Output> $name$$prefix$_aborted(@Name("user") @DefaultValue("") final String user, 
+            @Name("groups") final List<String> groups) {
+        
+        identitySupplier.buildIdentityProvider(user, groups);
+        return subscriptionPublisher.aborted($Type$Output.class).onSubscribe().invoke(() -> IdentityProvider.set(null)); 
     }
     
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    
+    @Subscription
+    @Description("Emits on every new $name$ $prefix$ instance failing on node execution")
+    public Multi<$Type$Output> $name$$prefix$_in_error(@Name("user") @DefaultValue("") final String user, 
+            @Name("groups") final List<String> groups) {
+        
+        identitySupplier.buildIdentityProvider(user, groups);
+        return subscriptionPublisher.inError($Type$Output.class).onSubscribe().invoke(() -> IdentityProvider.set(null)); 
+    }
+    
+    
+    @Subscription
+    @Description("Emits on every new $name$ $prefix$ instance being changed (resumed by signal, user task completion etc)")
+    public Multi<$Type$Output> $name$$prefix$_changed(@Name("user") @DefaultValue("") final String user, 
+            @Name("groups") final List<String> groups) {
+        
+        identitySupplier.buildIdentityProvider(user, groups);
+        return subscriptionPublisher.changed($Type$Output.class).onSubscribe().invoke(() -> IdentityProvider.set(null)); 
+    }
+    
     protected $Type$Output getModel(ProcessInstance<$Type$> pi) {
         $Type$Output model = mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), pi);
-        if (pi.status() == ProcessInstance.STATE_ERROR && pi.errors().isPresent()) {
-            
-            inErrorProcessor.onNext(model);
-            
+        if (pi.status() == ProcessInstance.STATE_ERROR && pi.errors().isPresent()) {           
             throw new ProcessInstanceExecutionException(pi.id(), pi.errors().get().failedNodeIds(), pi.errors().get().errorMessages());
         }        
-        
-        if (pi.status() == ProcessInstance.STATE_COMPLETED) {
-            completedProcessor.onNext(model);
-        } else if (pi.status() == ProcessInstance.STATE_ABORTED) {
-            abortedProcessor.onNext(model);
-        }
         
         return model;
     }

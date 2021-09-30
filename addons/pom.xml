@@ -22,6 +22,7 @@
     <module>process-management</module>
     <module>user-tasks</module>
     <module>services</module>
+    <module>automatiko-graphql-addon</module>
   </modules>
 
   <dependencyManagement>

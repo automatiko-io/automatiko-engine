@@ -21,7 +21,7 @@
 
 			ws.onopen = function() {
 
-				ws.send('{ "query" : "subscription {scripts_created {id, name, message}}"}');
+				ws.send('{ "query" : "subscription {scripts_created(user:\\\"john\\\", groups:[]) {id, name, message}}"}');
 				console.log("Message is sent...");
 			};
 
