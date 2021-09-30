@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class WorkflowFunction {
     
     private static final Logger LOGGER = LoggerFactory.getLogger("WorkflowFunctionFlow");

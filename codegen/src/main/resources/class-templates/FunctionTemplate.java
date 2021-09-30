@@ -9,7 +9,7 @@ import io.automatiko.engine.api.workflow.workitem.Policy;
 import java.util.Collections;
 import java.util.List;
 
-
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class WorkflowFunction {
 
     Process<$Type$> process;

@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.util.StdDateFormat;
 
 import org.eclipse.microprofile.reactive.messaging.Message;
 
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class MessageProducer {
     
     @io.smallrye.reactive.messaging.annotations.Broadcast(0)
