@@ -41,6 +41,7 @@ import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.codegen.BodyDeclarationComparator;
 import io.automatiko.engine.codegen.CodegenUtils;
 import io.automatiko.engine.codegen.GeneratorContext;
+import io.automatiko.engine.codegen.ImportsOrganizer;
 import io.automatiko.engine.codegen.context.ApplicationBuildContext;
 import io.automatiko.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatiko.engine.services.utils.StringUtils;
@@ -182,7 +183,7 @@ public abstract class AbstractResourceGenerator {
 
                     });
         }
-
+        ImportsOrganizer.organize(clazz);
         return clazz.toString();
     }
 

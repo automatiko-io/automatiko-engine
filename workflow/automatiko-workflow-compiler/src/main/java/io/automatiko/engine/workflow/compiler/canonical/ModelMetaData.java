@@ -26,10 +26,8 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.CastExpr;
-import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
@@ -38,7 +36,6 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
-import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
@@ -114,10 +111,6 @@ public class ModelMetaData {
     }
 
     public MethodCallExpr fromMap(String variableName, String mapVarName) {
-        BinaryExpr condition = new BinaryExpr(new MethodCallExpr(new ThisExpr(), "businessKey"), new NullLiteralExpr(),
-                BinaryExpr.Operator.NOT_EQUALS);
-        ConditionalExpr businessKeyOrId = new ConditionalExpr(condition, new MethodCallExpr(new ThisExpr(), "businessKey"),
-                new MethodCallExpr(new ThisExpr(), "id"));
 
         return new MethodCallExpr(new NameExpr(variableName), "fromMap")
                 .addArgument(new MethodCallExpr(new ThisExpr(), "id")).addArgument(mapVarName);
@@ -226,7 +219,10 @@ public class ModelMetaData {
         toMapBody
                 .addStatement(new AssignExpr(
                         paramsField, new ObjectCreationExpr(null,
-                                new ClassOrInterfaceType(null, HashMap.class.getSimpleName()), NodeList.nodeList()),
+                                new ClassOrInterfaceType(null, new SimpleName(HashMap.class.getSimpleName()),
+                                        NodeList.nodeList(new ClassOrInterfaceType(null, String.class.getSimpleName()),
+                                                new ClassOrInterfaceType(null, Object.class.getSimpleName()))),
+                                NodeList.nodeList()),
                         AssignExpr.Operator.ASSIGN));
 
         // setup of static fromMap method body

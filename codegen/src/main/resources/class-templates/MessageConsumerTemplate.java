@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.util.StdDateFormat;
 
 import org.eclipse.microprofile.reactive.messaging.Message;
 
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class $Type$MessageConsumer {
     
     private static final Logger LOGGER = LoggerFactory.getLogger("MessageConsumer");

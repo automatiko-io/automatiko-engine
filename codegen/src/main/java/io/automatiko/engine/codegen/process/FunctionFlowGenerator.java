@@ -33,6 +33,7 @@ import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.codegen.BodyDeclarationComparator;
 import io.automatiko.engine.codegen.CodegenUtils;
 import io.automatiko.engine.codegen.GeneratorContext;
+import io.automatiko.engine.codegen.ImportsOrganizer;
 import io.automatiko.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.compiler.canonical.ProcessToExecModelGenerator;
@@ -226,6 +227,7 @@ public class FunctionFlowGenerator {
                         new MemberValuePair("hidden", new BooleanLiteralExpr(false)))));
 
         template.getMembers().sort(new BodyDeclarationComparator());
+        ImportsOrganizer.organize(clazz);
         return clazz.toString();
     }
 
