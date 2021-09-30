@@ -320,8 +320,8 @@ public abstract class AbstractResourceGenerator {
         // if triggers are not empty remove createResource method as there is another
         // trigger to start process instances
         if (!startable || !isPublic()) {
-            Optional<MethodDeclaration> createResourceMethod = template.findFirst(MethodDeclaration.class)
-                    .filter(md -> md.getNameAsString().equals("create_" + processName));
+            Optional<MethodDeclaration> createResourceMethod = template.findAll(MethodDeclaration.class).stream()
+                    .filter(md -> md.getNameAsString().equals("create_" + processName)).findFirst();
             createResourceMethod.ifPresent(template::remove);
         }
 
