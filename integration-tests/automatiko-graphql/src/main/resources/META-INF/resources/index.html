@@ -21,7 +21,7 @@
 
 			ws.onopen = function() {
 
-				ws.send('{ "query" : "subscription {scripts_created(user:\\\"john\\\", groups:[]) {id, name, message}}"}');
+				ws.send('{ "query" : "subscription {scripts_completed(user:\\\"john\\\", groups:[]) {id, name, message}}"}');
 				console.log("Message is sent...");
 			};
 
@@ -53,10 +53,10 @@
 
 	function appendDataRow(key, val) {
 
-		var html = "<tr id=\"" + val.data.scripts_created.id + "\">" + "<td>"
-				+ val.data.scripts_created.id + "</td>" + "<td>"
-				+ val.data.scripts_created.name + "</td>" + "<td>"
-				+ val.data.scripts_created.message + "</td>" + "</tr>";
+		var html = "<tr id=\"" + val.data.scripts_completed.id + "\">" + "<td>"
+				+ val.data.scripts_completed.id + "</td>" + "<td>"
+				+ val.data.scripts_completed.name + "</td>" + "<td>"
+				+ val.data.scripts_completed.message + "</td>" + "</tr>";
 		$(html).appendTo("#content");
 
 	}
