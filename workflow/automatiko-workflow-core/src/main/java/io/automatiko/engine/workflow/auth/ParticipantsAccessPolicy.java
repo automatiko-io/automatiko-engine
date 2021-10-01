@@ -40,6 +40,7 @@ public class ParticipantsAccessPolicy<T> implements AccessPolicy<ProcessInstance
         return whenInitiatorNotSetOrAsIdentity(identityProvider, instance);
     }
 
+    @SuppressWarnings("unchecked")
     protected boolean whenInitiatorNotSetOrAsIdentity(IdentityProvider identityProvider, ProcessInstance<T> instance) {
         if (identityProvider.isAdmin()) {
             return true;
@@ -53,13 +54,19 @@ public class ParticipantsAccessPolicy<T> implements AccessPolicy<ProcessInstance
 
         // next check if the user/group is assigned to any of the active user tasks that
         // can make it eligible to access the instance
-        return ((WorkflowProcessInstanceImpl) pi).getNodeInstances(true).stream()
+        boolean result = ((WorkflowProcessInstanceImpl) pi).getNodeInstances(true).stream()
                 .filter(ni -> ni instanceof HumanTaskNodeInstance).anyMatch(ni -> {
                     HumanTaskWorkItem workitem = (HumanTaskWorkItem) ((HumanTaskNodeInstance) ni).getWorkItem();
 
                     return workitem.enforce(SecurityPolicy.of(identityProvider));
                 });
 
+        if (!result) {
+            result = instance.subprocesses().stream()
+                    .anyMatch(spi -> whenInitiatorNotSetOrAsIdentity(identityProvider, (ProcessInstance<T>) spi));
+        }
+
+        return result;
     }
 
     @Override
