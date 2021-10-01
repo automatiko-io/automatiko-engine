@@ -22,9 +22,11 @@ public class $Type$Resource {
 
     @Mutation
     @Description("Signals '$signalName$' on instance with given id")
-    public $Type$Output signal(@Name("id") final String id, @Name("model") final $signalType$ data) {
+    public $Type$Output signal(@Name("id") final String id, 
+            @Name("user") final String user, 
+            @Name("groups") final List<String> groups, @Name("model") final $signalType$ data) {
         
-        identitySupplier.buildIdentityProvider(null, null);
+        identitySupplier.buildIdentityProvider(user, groups);
         return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             tracing(pi);
