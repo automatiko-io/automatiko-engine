@@ -12,7 +12,6 @@ public class ArchiveServiceTest {
 
     private ArchiveService service = new ArchiveService();
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testZipAndUnzipOperation() {
 
@@ -29,6 +28,22 @@ public class ArchiveServiceTest {
 
         List<File<byte[]>> files = service.unzip(archive);
         assertThat(files).isNotNull().hasSize(3);
+
+    }
+
+    @Test
+    public void testZipWithDuplicatedEntries() {
+
+        ArchiveFile file1 = new ArchiveFile("hello.txt", "this is my content 1".getBytes());
+        ArchiveFile file2 = new ArchiveFile("hi.txt", "this is my content 2".getBytes());
+        ArchiveFile file3 = new ArchiveFile("hello.txt", "this is my content 3".getBytes());
+
+        Archive archive = service.zip("archive.zip", file1, file2, file3);
+        assertThat(archive).isNotNull();
+        assertThat(archive.name()).isEqualTo("archive.zip");
+        assertThat(archive.type()).isEqualTo("application/zip");
+        assertThat(archive.content()).isNotNull();
+        assertThat(archive.attributes()).hasSize(1).containsEntry("entries", "hello.txt,hi.txt");
 
     }
 }

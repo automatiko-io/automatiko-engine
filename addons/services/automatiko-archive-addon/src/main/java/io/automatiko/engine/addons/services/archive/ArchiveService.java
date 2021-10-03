@@ -13,11 +13,16 @@ import java.util.zip.ZipOutputStream;
 
 import javax.enterprise.context.ApplicationScoped;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.automatiko.engine.api.workflow.ServiceExecutionError;
 import io.automatiko.engine.api.workflow.files.File;
 
 @ApplicationScoped
 public class ArchiveService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ArchiveService.class);
 
     /**
      * Builds an archive with given files. built archive will be named based on the given
@@ -54,6 +59,11 @@ public class ArchiveService {
 
             for (File<byte[]> file : files) {
                 if (file == null || file.content() == null) {
+                    continue;
+                }
+
+                if (entries.contains(file.name())) {
+                    LOGGER.warn("Duplicated archive entry with name '{}', will be ignored", file.name());
                     continue;
                 }
 
