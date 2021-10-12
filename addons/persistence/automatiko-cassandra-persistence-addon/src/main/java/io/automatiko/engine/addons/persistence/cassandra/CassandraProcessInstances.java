@@ -198,6 +198,34 @@ public class CassandraProcessInstances implements MutableProcessInstances {
     }
 
     @Override
+    public Collection locateByIdOrTag(int status, String... values) {
+        LOGGER.debug("locateByIdOrTag() called for values {}", values);
+
+        Set<String> distinct = new HashSet<String>();
+
+        Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName).column(INSTANCE_ID_FIELD)
+                .column(TAGS_FIELD)
+                .whereColumn(STATUS_FIELD).isEqualTo(literal(status));
+
+        ResultSet rs = cqlSession.execute(select.build());
+        rs.all().stream().filter(r -> !distinct.contains(r.getString(INSTANCE_ID_FIELD)))
+                .filter(r -> {
+                    if (values == null || values.length == 0) {
+                        return true;
+                    }
+
+                    Set<String> tags = r.getSet(TAGS_FIELD, String.class);
+                    return Stream.of(values).anyMatch(v -> tags.contains(v));
+                })
+                .forEach(r -> {
+                    distinct.add(r.getString(INSTANCE_ID_FIELD));
+
+                });
+
+        return distinct;
+    }
+
+    @Override
     public Long size() {
         LOGGER.debug("size() called");
         Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName)
@@ -401,4 +429,5 @@ public class CassandraProcessInstances implements MutableProcessInstances {
         create(imported.id(), imported);
         return imported;
     }
+
 }

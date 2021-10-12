@@ -114,7 +114,7 @@ public class GeneratorContext {
         String includeAutomatikApi = applicationProperties.getProperty("quarkus.automatiko.include-automatiko-api");
         if (!"true".equalsIgnoreCase(includeAutomatikApi)) {
             modifiedApplicationProperties.put("mp.openapi.scan.exclude.classes",
-                    "io.automatiko.engine.addons.process.management.ProcessInstanceManagementResource,io.automatiko.engine.addons.usertasks.management.UserTaskManagementResource");
+                    "io.automatiko.engine.addons.process.management.ProcessInstanceManagementResource,io.automatiko.engine.addons.usertasks.management.UserTaskManagementResource,io.automatiko.addons.fault.tolerance.CircuitBreakerResource");
         }
 
         for (Entry<String, String> entry : modifiedApplicationProperties.entrySet()) {

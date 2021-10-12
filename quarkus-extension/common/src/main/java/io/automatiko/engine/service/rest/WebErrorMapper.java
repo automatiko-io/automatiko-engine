@@ -1,11 +1,29 @@
 package io.automatiko.engine.service.rest;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Stream;
+
+import io.automatiko.engine.api.workflow.HandledServiceExecutionError;
+import io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError;
 
 public class WebErrorMapper implements Function<Throwable, Throwable> {
 
+    private Set<String> handledCodes = new HashSet<>();
+
+    public WebErrorMapper(String... codes) {
+        Stream.of(codes).forEach(code -> handledCodes.add(code));
+    }
+
     public Throwable apply(Throwable error) {
-        if (error instanceof javax.ws.rs.WebApplicationException) {
+        if (error instanceof WorkItemExecutionError) {
+            String errorCode = ((WorkItemExecutionError) error).getErrorCode();
+
+            if (handledCodes.contains(errorCode)) {
+                return new HandledServiceExecutionError((WorkItemExecutionError) error);
+            }
+        } else if (error instanceof javax.ws.rs.WebApplicationException) {
             javax.ws.rs.WebApplicationException wex = (javax.ws.rs.WebApplicationException) error;
             return new io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError(wex.getMessage(),
                     String.valueOf(wex.getResponse().getStatus()),

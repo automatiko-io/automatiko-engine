@@ -198,6 +198,31 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
     }
 
     @Override
+    public Collection locateByIdOrTag(int status, String... values) {
+        Map<String, AttributeValue> attrValues = new HashMap<String, AttributeValue>();
+        int counter = 0;
+        StringBuilder condition = new StringBuilder();
+        attrValues.put(":status", AttributeValue.builder().n(String.valueOf(status)).build());
+        condition.append(STATUS_FIELD + "= :status AND ");
+        for (String value : values) {
+            attrValues.put(":value" + counter, AttributeValue.builder().s(value).build());
+            condition.append("contains(" + TAGS_FIELD + ", :value" + counter + ") OR ");
+            counter++;
+        }
+        condition.delete(condition.length() - 4, condition.length());
+
+        ScanRequest query = ScanRequest.builder().tableName(tableName)
+                .filterExpression(condition.toString())
+                .expressionAttributeValues(attrValues).build();
+
+        return dynamodb.scan(query).items().stream().map(item -> {
+            return item.get(INSTANCE_ID_FIELD).s();
+
+        })
+                .collect(Collectors.toSet());
+    }
+
+    @Override
     public Long size() {
         LOGGER.debug("size() called");
         ScanRequest query = ScanRequest.builder().tableName(tableName).select(Select.COUNT).build();
@@ -457,4 +482,5 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
         create(imported.id(), imported);
         return imported;
     }
+
 }
