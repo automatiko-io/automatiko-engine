@@ -23,6 +23,7 @@
     <module>user-tasks</module>
     <module>services</module>
     <module>automatiko-graphql-addon</module>
+    <module>automatiko-fault-tolerance-addon</module>
   </modules>
 
   <dependencyManagement>

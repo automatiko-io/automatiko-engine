@@ -127,4 +127,11 @@ public class MapProcessInstances implements MutableProcessInstances {
         return imported;
     }
 
+    @Override
+    public Collection locateByIdOrTag(int status, String... values) {
+
+        return findByIdOrTag(ProcessInstanceReadMode.READ_ONLY, status, values).stream().map(pi -> pi.id())
+                .collect(Collectors.toSet());
+    }
+
 }

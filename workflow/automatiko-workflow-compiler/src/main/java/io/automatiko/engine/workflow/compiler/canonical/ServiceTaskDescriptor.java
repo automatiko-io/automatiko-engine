@@ -5,9 +5,11 @@ import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
@@ -35,6 +37,8 @@ import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
+import io.automatiko.engine.api.definition.process.Node;
+import io.automatiko.engine.api.definition.process.NodeContainer;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.api.runtime.process.WorkItem;
 import io.automatiko.engine.api.runtime.process.WorkItemHandler;
@@ -42,7 +46,14 @@ import io.automatiko.engine.api.runtime.process.WorkItemManager;
 import io.automatiko.engine.api.workflow.workitem.WorkItemExecutionManager;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.base.core.ParameterDefinition;
+import io.automatiko.engine.workflow.base.core.event.EventFilter;
+import io.automatiko.engine.workflow.base.core.event.EventTypeFilter;
+import io.automatiko.engine.workflow.process.core.node.BoundaryEventNode;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
+import io.automatiko.engine.workflow.process.core.node.EventSubProcessNode;
+import io.automatiko.engine.workflow.process.core.node.EventTrigger;
+import io.automatiko.engine.workflow.process.core.node.StartNode;
+import io.automatiko.engine.workflow.process.core.node.Trigger;
 import io.automatiko.engine.workflow.process.core.node.WorkItemNode;
 
 public class ServiceTaskDescriptor {
@@ -102,6 +113,16 @@ public class ServiceTaskDescriptor {
 
     public OpenAPIMetaData openapi() {
         return openapi;
+    }
+
+    public Object metadata(String name, Object defaultValue) {
+        Object value = workItemNode.getMetaData(name);
+
+        if (value == null) {
+            value = defaultValue;
+        }
+
+        return value;
     }
 
     private Map<String, String> extractParams() {
@@ -272,6 +293,26 @@ public class ServiceTaskDescriptor {
 
             executeWorkItemBody = new BlockStmt().addStatement(trystmt);
         }
+        Set<String> handledErrorCodes = collectHandledErrorCodes();
+        if (!handledErrorCodes.isEmpty()) {
+            // add exception wrapper to handle errors that have error handlers attached
+            BlockStmt runtimeCatchBody = new BlockStmt();
+            MethodCallExpr wrapMethodCall = new MethodCallExpr(new NameExpr("io.automatiko.engine.workflow.ErrorMapper"),
+                    "wrap")
+                            .addArgument(new NameExpr("rex"));
+
+            for (String errorCode : handledErrorCodes) {
+                wrapMethodCall.addArgument(new StringLiteralExpr(errorCode));
+            }
+
+            runtimeCatchBody.addStatement(
+                    new ThrowStmt(wrapMethodCall));
+            CatchClause runtimeCatchClause = new CatchClause(
+                    new Parameter(new ClassOrInterfaceType(null, RuntimeException.class.getCanonicalName()), "rex"),
+                    runtimeCatchBody);
+            TryStmt wrapperTryCatch = new TryStmt(executeWorkItemBody, NodeList.nodeList(runtimeCatchClause), null);
+            executeWorkItemBody = new BlockStmt().addStatement(wrapperTryCatch);
+        }
 
         MethodDeclaration executeWorkItem = new MethodDeclaration().setModifiers(Modifier.Keyword.PUBLIC)
                 .setType(void.class).setName("executeWorkItem").setBody(executeWorkItemBody)
@@ -292,6 +333,62 @@ public class ServiceTaskDescriptor {
         cls.addMember(executeWorkItem).addMember(abortWorkItem).addMember(getName);
 
         return cls;
+    }
+
+    private Set<String> collectHandledErrorCodes() {
+        Set<String> errorCodes = new HashSet<>();
+        NodeContainer container = workItemNode.getParentContainer();
+        String thisNodeId = (String) workItemNode.getMetaData("UniqueId");
+        for (Node node : container.getNodes()) {
+            if (node instanceof BoundaryEventNode) {
+                String errorCode = (String) node.getMetaData().get("ErrorEvent");
+                boolean hasErrorCode = (Boolean) node.getMetaData().get("HasErrorEvent");
+
+                if (hasErrorCode && ((BoundaryEventNode) node).getAttachedToNodeId().equals(thisNodeId)) {
+                    errorCodes.add(errorCode);
+                }
+            }
+        }
+
+        // next collect event subprocess node with error start event from this level and to all parents
+        String replaceRegExp = "Error-|Escalation-";
+        for (Node node : container.getNodes()) {
+            if (node instanceof EventSubProcessNode) {
+                EventSubProcessNode eventSubProcessNode = (EventSubProcessNode) node;
+
+                Node[] nodes = eventSubProcessNode.getNodes();
+                for (Node subNode : nodes) {
+                    // avoids cyclomatic complexity
+                    if (subNode == null || !(subNode instanceof StartNode)) {
+                        continue;
+                    }
+                    List<Trigger> triggers = ((StartNode) subNode).getTriggers();
+                    if (triggers == null) {
+                        continue;
+                    }
+                    for (Trigger trigger : triggers) {
+                        if (trigger instanceof EventTrigger) {
+                            final List<EventFilter> filters = ((EventTrigger) trigger).getEventFilters();
+
+                            for (EventFilter filter : filters) {
+                                if (filter instanceof EventTypeFilter) {
+                                    eventSubProcessNode.addEvent((EventTypeFilter) filter);
+
+                                    String type = ((EventTypeFilter) filter).getType();
+                                    if (type.startsWith("Error-")) {
+                                        String trimmedType = type.replaceFirst(replaceRegExp, "");
+                                        for (String error : trimmedType.split(",")) {
+                                            errorCodes.add(error);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return errorCodes;
     }
 
     private MethodCallExpr completeWorkItem(BlockStmt executeWorkItemBody, MethodCallExpr callService) {

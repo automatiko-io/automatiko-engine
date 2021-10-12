@@ -5,11 +5,10 @@ public class WorkItemExecutionError extends RuntimeException {
 
     private static final long serialVersionUID = 4739415822214766299L;
 
-    private final String errorCode;
+    protected final String errorCode;
 
-    private final String errorDetails;
-
-    private Object errorData;
+    protected final String errorDetails;
+    protected Object errorData;
 
     public WorkItemExecutionError(String errorCode) {
         super("WorkItem execution failed with error code " + errorCode);
@@ -63,7 +62,7 @@ public class WorkItemExecutionError extends RuntimeException {
     }
 
     public WorkItemExecutionError(String message, String errorCode, String errorDetails, Throwable e) {
-        super(message);
+        super(message, e);
         this.errorCode = errorCode;
         this.errorDetails = errorDetails;
     }

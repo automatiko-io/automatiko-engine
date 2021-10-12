@@ -108,6 +108,33 @@ public class CacheProcessInstances implements MutableProcessInstances {
     }
 
     @Override
+    public Collection locateByIdOrTag(int status, String... values) {
+        Set<String> collected = new LinkedHashSet<>();
+        for (String idOrTag : values) {
+
+            cache.values().parallelStream()
+                    .map(data -> {
+                        try {
+                            return marshaller.unmarshallReadOnlyProcessInstance(data, process);
+                        } catch (AccessDeniedException e) {
+                            return null;
+                        }
+                    })
+                    .filter(pi -> pi != null)
+                    .filter(pi -> pi.status() == status)
+                    .filter(pi -> {
+                        if (pi.id().equals(resolveId(idOrTag)) || pi.tags().values().contains(idOrTag)) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    })
+                    .forEach(pi -> collected.add(pi.id()));
+        }
+        return collected;
+    }
+
+    @Override
     public Collection<? extends ProcessInstance> values(ProcessInstanceReadMode mode, int status, int page, int size) {
         return cache.values().parallelStream()
                 .map(data -> {
@@ -219,4 +246,5 @@ public class CacheProcessInstances implements MutableProcessInstances {
         create(imported.id(), imported);
         return imported;
     }
+
 }

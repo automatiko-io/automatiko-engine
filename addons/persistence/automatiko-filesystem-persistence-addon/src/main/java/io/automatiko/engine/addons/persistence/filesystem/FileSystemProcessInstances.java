@@ -163,6 +163,22 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     }
 
     @Override
+    public Collection locateByIdOrTag(int status, String... values) {
+        Set<String> collected = new LinkedHashSet<>();
+        for (String idOrTag : values) {
+
+            try (Stream<Path> stream = Files.walk(storage)) {
+                stream.filter(file -> isValidProcessFile(file, status))
+                        .filter(file -> matchTag(getMetadata(file, PI_TAGS), idOrTag))
+                        .forEach(file -> collected.add(file.getName(file.getNameCount() - 1).toString()));
+            } catch (IOException e) {
+                throw new RuntimeException("Unable to read process instances ", e);
+            }
+        }
+        return collected;
+    }
+
+    @Override
     public Collection values(ProcessInstanceReadMode mode, int status, int page, int size) {
         try (Stream<Path> stream = Files.walk(storage)) {
             return stream.filter(file -> isValidProcessFile(file, status))

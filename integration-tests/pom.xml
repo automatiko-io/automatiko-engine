@@ -37,6 +37,7 @@
     <module>automatiko-services</module>
     <module>automatiko-graphql</module>
     <module>automatiko-async</module>
+    <module>automatiko-fault-tolerance</module>
   </modules>
 
   <build>

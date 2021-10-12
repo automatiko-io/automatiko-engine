@@ -1206,6 +1206,8 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
         String errorDetails = null;
         if (e instanceof WorkItemExecutionError) {
             errorDetails = ((WorkItemExecutionError) e).getErrorDetails();
+
+            addTag(errorDetails);
         } else {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
@@ -1361,7 +1363,12 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
 
     public void resetErrorForNode(String nodeInError) {
         this.errors.stream().filter(e -> e.getFailedNodeId().equals(nodeInError)).findFirst()
-                .ifPresent(e -> this.errors.remove(e));
+                .ifPresent(e -> {
+                    this.errors.remove(e);
+                    if (e.getErrorDetails() != null) {
+                        removedTag(e.getErrorDetails());
+                    }
+                });
     }
 
     public List<ExecutionsErrorInfo> errors() {

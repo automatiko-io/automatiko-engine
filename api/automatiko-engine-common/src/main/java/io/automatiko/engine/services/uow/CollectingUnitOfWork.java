@@ -242,9 +242,15 @@ public class CollectingUnitOfWork implements UnitOfWork {
             return delegate.exportInstance(instance, abort);
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public ProcessInstance importInstance(ExportedProcessInstance instance, Process process) {
             return delegate.importInstance(instance, process);
+        }
+
+        @Override
+        public Collection locateByIdOrTag(int status, String... values) {
+            return delegate.locateByIdOrTag(status, values);
         }
     }
 

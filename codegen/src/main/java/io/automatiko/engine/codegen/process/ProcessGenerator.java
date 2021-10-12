@@ -23,10 +23,16 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.AssignExpr.Operator;
 import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.DoubleLiteralExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.IntegerLiteralExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
+import com.github.javaparser.ast.expr.LongLiteralExpr;
+import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
@@ -339,6 +345,56 @@ public class ProcessGenerator {
                                 });
 
                     }
+
+                    boolean faultToleranceAvailable = context.getBuildContext()
+                            .hasClassAvailable("io.automatiko.addons.fault.tolerance.CircuitClosedEvent");
+
+                    if (faultToleranceAvailable) {
+
+                        Boolean disabled = Boolean
+                                .parseBoolean(descriptor.metadata("faultToleranceDisabled", "false").toString());
+                        if (!disabled) {
+
+                            Long timeout = Long.valueOf(descriptor.metadata("timeout", "-1").toString());
+
+                            Long delay = Long.valueOf(descriptor.metadata("delay", "5000").toString());
+                            Integer threshold = Integer.valueOf(descriptor.metadata("requestThreshold", "20").toString());
+                            Double ratio = Double.valueOf(descriptor.metadata("failureRatio", ".50").toString());
+
+                            NormalAnnotationExpr circuitBrakerAnnotation = new NormalAnnotationExpr(
+                                    new Name("org.eclipse.microprofile.faulttolerance.CircuitBreaker"),
+                                    NodeList.nodeList(new MemberValuePair("delay", new LongLiteralExpr(delay)),
+                                            new MemberValuePair("requestVolumeThreshold", new IntegerLiteralExpr(threshold)),
+                                            new MemberValuePair("failureRatio", new DoubleLiteralExpr(ratio)),
+                                            new MemberValuePair("skipOn", new NameExpr(
+                                                    "io.automatiko.engine.api.workflow.HandledServiceExecutionError.class"))));
+
+                            clazz.findAll(MethodDeclaration.class).stream()
+                                    .filter(md -> md.getNameAsString().equals("executeWorkItem"))
+                                    .forEach(md -> {
+                                        // add CircuitBreaker annotation on method level
+                                        md.addAnnotation(circuitBrakerAnnotation);
+                                        md.addSingleMemberAnnotation("io.smallrye.faulttolerance.api.CircuitBreakerName",
+                                                new StringLiteralExpr(name));
+
+                                        if (timeout > 0) {
+                                            md.addSingleMemberAnnotation("org.eclipse.microprofile.faulttolerance.Timeout",
+                                                    new LongLiteralExpr(timeout));
+                                        }
+
+                                    });
+
+                            context.setApplicationProperty("quarkus.arc.selected-alternatives",
+                                    context.getApplicationProperty("quarkus.arc.selected-alternatives")
+                                            .filter(s -> !s
+                                                    .contains(
+                                                            "io.automatiko.addons.fault.tolerance.internal.AutomatikoStrategyCache"))
+                                            .map(s -> s
+                                                    + ",io.automatiko.addons.fault.tolerance.internal.AutomatikoStrategyCache")
+                                            .orElse("io.automatiko.addons.fault.tolerance.internal.AutomatikoStrategyCache"));
+                        }
+                    }
+
                     annotator.withApplicationComponent(clazz);
                 } else {
 

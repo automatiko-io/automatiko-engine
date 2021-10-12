@@ -36,6 +36,12 @@ public interface ProcessInstances<T> {
 
     Collection<? extends ProcessInstance<T>> findByIdOrTag(ProcessInstanceReadMode mode, int status, String... values);
 
+    default Collection<String> locateByIdOrTag(String... values) {
+        return locateByIdOrTag(ProcessInstance.STATE_ACTIVE, values);
+    }
+
+    Collection<String> locateByIdOrTag(int status, String... values);
+
     Long size();
 
 }

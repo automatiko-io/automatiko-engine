@@ -85,6 +85,16 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
     }
 
     @Override
+    public Collection<String> locateByIdOrTag(int status, String... values) {
+        return JpaOperations.INSTANCE
+                .stream(type, "state = ?1 and (id in (?2) or (?2) in elements(tags)) ", status, Arrays.asList(values))
+                .map(e -> {
+                    return ((ProcessInstanceEntity) e).entityId;
+                })
+                .collect(Collectors.toSet());
+    }
+
+    @Override
     public Collection<ProcessInstance<ProcessInstanceEntity>> values(ProcessInstanceReadMode mode, int status, int page,
             int size) {
         return JpaOperations.INSTANCE.find(type, "state = ?1 ", status).page(calculatePage(page, size), size)
