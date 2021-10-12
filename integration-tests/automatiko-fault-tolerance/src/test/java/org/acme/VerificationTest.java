@@ -198,12 +198,24 @@ public class VerificationTest {
             .statusCode(200)
             .body("id", notNullValue(), "result", notNullValue());
         
-        given()
-            .accept(ContentType.JSON)
-        .when()
-            .get("/fragile?status=error")
-        .then().statusCode(200)
-            .body("$.size()", is(0));
+
+        
+        long elapsed = 5000;
+        
+        while(elapsed >= 0) {
+            elapsed -= 1000;
+            Thread.sleep(1000);
+            int size =  given()
+                    .accept(ContentType.JSON)
+                    .when()
+                        .get("/fragile?status=error")
+                    .then().statusCode(200)
+                .extract().path("$.size()");
+            
+            if (size == 0) {
+                break;
+            }
+        }
         
         given()
             .accept(ContentType.JSON)
