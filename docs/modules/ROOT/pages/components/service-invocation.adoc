@@ -153,3 +153,88 @@ as additional parameter on top of the operation name e.g. `createUser?mode=async
 image:rest-async-service-declaration.png[]
 
 And this is the only required change to make the service run in asynchronous manner.
+
+== Fault tolerance
+
+One important aspect of service invocation is to be able to deal with failures. Failures are to be expected so being able 
+to deal with them in various ways is important, even more important when working with workflows that allow to
+easily take advantage of various features of fault tolerance.
+
+One obvious way of dealing with failures is error handling that is already covered 
+<<../../components/errors.adoc#_defining_errors,here>>. Error handling allows us to cover a retry or taking another 
+path of the workflow in case of a failure. But error handling is not the only way to become more fault 
+tolerant on service invocation. Another approaches are
+
+- circuit breakers
+- timeouts
+
+=== Circuit breakers
+
+Circuit breakers allow to guard the service from being constantly invoked in case it is already failing.
+This is mainly to reduce the stress put on the service as it might be as simple as service is overloaded.
+Circuit breaker can be opened based on defined threshold to avoid service from being invoked at all if it is already
+ known to be the failing. That in turn will make the worklfow instance to be in error state but reduce
+ calls to the actual service. 
+ 
+In addition to that, workflows actually track these errors and observes state of the circuit breakers to be able
+to easily resume work on failed instances as soon as the circuit is closed again, meaning that service is now
+working correctly and can process incoming requests. 
+
+IMPORTANT: When circuit is closed (service is now operational) all failing instance of that type will be automatically resumed.
+Resume is done in sequence and reacts in case of repeated circuit being opened and directly stop resume procedure.
+
+This capability is defined on each service task of the workflow definition. The reason why it is done on the 
+service task and not the interface operation itself is to have better control over how service is invoked 
+from within the workflow. 
+
+Following is a list of custom attributes that configure circuit breaker on service task
+
+.Circuit breaker configuration parameters
+|====
+|Property name|Description|Default value
+
+|requestThreshold|The number of consecutive requests in a rolling window|20
+|failureRatio|The ratio of failures within the rolling window that will trip the circuit to open|0.5
+|delay|The delay after which an open circuit will transitions to half-open state (when the service will be probed)|5000
+
+|====
+
+IMPORTANT: Circuit breaker and error handling - all errors defined for given service task (boundary event and event subprocesses)
+will by pass circuit breaker as they are considered with higher priority as they were defined in the workflow.
+
+=== Timeout
+
+Timeout allows to guard the workflow instance from waiting too long on service call to return. If set then the service
+invocation will be interrupted and exception will be thrown with error code set to `408`. Then error handling can be applied on
+it in the same way as for any other errors.
+
+.Timeout configuration parameters
+|====
+|Property name|Description|Default value
+
+|timeout|Timeout (in milliseconds) before service invocation is interrupted and exception is thrown (error code 408)|-1 (meaning won\t be used)
+|====
+
+=== Use it
+
+First of all, a dependency to `automatiko-fault-tolerance-addon` needs to be added to the project.
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-fault-tolerance-addon</artifactId>
+</dependency>
+----
+
+Then each service task can have timeout and circuit breaker custom attributes set based on the needs. 
+Lastly, in case fault tolerance features are not needed on given task following custom attribute can be
+specified to disable it.
+
+
+.Fault tolerance configuration parameters
+|====
+|Property name|Description|Default value
+
+|faultToleranceDisabled|Disables fault tolerance on given service task|false
+|====
