@@ -156,6 +156,24 @@
 
 	}
 	
+	let exportInstance = function(id, instanceId) {
+
+		$.ajax({
+			url : '/management/processes/' + id + '/instances/' + instanceId + '/export?status=' + status,
+			type : 'GET',
+			dataType : 'json',
+			crossDomain : true,
+			success : function(data) {
+				var blob=new Blob([JSON.stringify(data)], {type: "application/json"});
+			    var link=document.createElement('a');
+			    link.href=window.URL.createObjectURL(blob);
+			    link.download=instanceId + ".json";
+			    link.click();
+			},
+		});
+
+	}
+	
 	let retryInstance = function(id, instanceId, errorId) {
 
 		$.ajax({
@@ -259,6 +277,11 @@
 		} else {
 			$("#piActions-abort").hide();
 		}
+		$("#piActions-export").attr('onclick', 'exportInstance(\''
+				+ instanceData.processId + '\', \''
+				+ instanceData.id
+				+ '\')');
+		
 
 		let tags = '';
 		instanceData.tags
@@ -448,11 +471,11 @@
 				.forEach(function(item, index) {
 					lastRow = true;
 					if (index++ % 3 == 0) {
-						$newRow = $('<div class="row">').appendTo($cards);
+						$newRow = $('<div class="row row-cols-1 row-cols-md-3">').appendTo($cards);
 						rowCount++;
 					}
 					$newRow
-							.append('<div class="col-4 d-flex align-items-stretch"><div id="card_' + item.id +'" class="card" style="width:400"><span class="notify-badge">' + item.activeInstances +'</span>'
+							.append('<div class="col mb-4"><div id="card_' + item.id +'" class="card h-100"><span class="notify-badge">' + item.activeInstances +'</span>'
 									+ '<img class="card-img-top" src="' + item.image +'" alt="Missing process image" height="200">'
 									+ '<div class="card-body">'
 									+ '  <h5 class="card-title">'
@@ -606,6 +629,7 @@
 						<div class="row">
 							<div class="col-12">
 								<div id="piActions" class="float-right">
+									<button id="piActions-export" type="button" class="btn btn-sm btn-secondary">Export</button>
 									<button id="piActions-abort" type="button" class="btn btn-sm btn-danger">Abort</button>
 								</div>
 							</div>
