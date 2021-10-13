@@ -7,15 +7,21 @@ public class WorkflowFunctionFlowInfo {
     private String binaryInstructions;
     private String structuredInstructions;
 
+    private String curlBinary;
+    private String curlStructure;
+
     public WorkflowFunctionFlowInfo() {
 
     }
 
-    public WorkflowFunctionFlowInfo(String name, String endpoint, String binaryInstructions, String structuredInstructions) {
+    public WorkflowFunctionFlowInfo(String name, String endpoint, String binaryInstructions, String curlBinary,
+            String structuredInstructions, String curlStructure) {
         this.name = name;
         this.endpoint = endpoint;
         this.binaryInstructions = binaryInstructions;
+        this.curlBinary = curlBinary;
         this.structuredInstructions = structuredInstructions;
+        this.curlStructure = curlStructure;
     }
 
     public String getName() {
@@ -48,6 +54,22 @@ public class WorkflowFunctionFlowInfo {
 
     public void setStructuredInstructions(String structuredInstructions) {
         this.structuredInstructions = structuredInstructions;
+    }
+
+    public String getCurlBinary() {
+        return curlBinary;
+    }
+
+    public void setCurlBinary(String curlBinary) {
+        this.curlBinary = curlBinary;
+    }
+
+    public String getCurlStructure() {
+        return curlStructure;
+    }
+
+    public void setCurlStructure(String curlStructure) {
+        this.curlStructure = curlStructure;
     }
 
     @Override

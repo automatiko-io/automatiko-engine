@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.models.media.Schema;
@@ -31,6 +32,9 @@ public class DevConsoleProcessor {
 
     @BuildStep(onlyIf = IsDevelopment.class)
     public DevConsoleTemplateInfoBuildItem collectWorkflowInfo(CombinedIndexBuildItem index) throws Exception {
+
+        Optional<String> host = Optional.of("localhost");
+        Optional<Integer> port = Optional.of(8080);
         List<WorkflowFunctionFlowInfo> infos = new ArrayList<WorkflowFunctionFlowInfo>();
         Collection<AnnotationInstance> functions = index.getIndex()
                 .getAnnotations(AutomatikoFunctionFlowProcessor.createDotName("io.quarkus.funqy.Funq"));
@@ -68,19 +72,53 @@ public class DevConsoleProcessor {
                 filterAttributes.remove("source");
                 filterAttributes.remove("data");
 
+                StringBuilder curlBinary = new StringBuilder("curl -X POST http://").append(host.get()).append(":")
+                        .append(port.get())
+                        .append("/ ");
+                curlBinary.append("-H \"Content-Type:application/json; charset=UTF-8\" ");
+                curlBinary.append("-H \"ce-id:").append(id).append("\" ");
+                curlBinary.append("-H \"ce-specversion:").append(specversion).append("\" ");
+                curlBinary.append("-H \"ce-type:").append(type).append("\" ");
+                curlBinary.append("-H \"ce-source:").append(source).append("\" ");
+
                 StringBuilder binaryInstructions = new StringBuilder();
                 binaryInstructions.append("HTTP headers:").append("\n");
-                binaryInstructions.append("ce-id=").append(id).append("\n");
-                binaryInstructions.append("ce-specversion=").append(specversion).append("\n");
-                binaryInstructions.append("ce-type=").append(type).append("\n");
-                binaryInstructions.append("ce-source=").append(source).append("\n");
+                binaryInstructions.append("Content-Type:application/json; charset=UTF-8").append("\n");
+                binaryInstructions.append("ce-id:").append(id).append("\n");
+                binaryInstructions.append("ce-specversion:").append(specversion).append("\n");
+                binaryInstructions.append("ce-type:").append(type).append("\n");
+                binaryInstructions.append("ce-source:").append(source).append("\n");
 
                 for (Entry<String, String> entry : filterAttributes.entrySet()) {
-                    binaryInstructions.append("ce-").append(entry.getKey()).append("=").append(entry.getValue()).append("\n");
+                    curlBinary.append("-H 'ce-").append(entry.getKey()).append(":").append(entry.getValue()).append("\" ");
+                    binaryInstructions.append("ce-").append(entry.getKey()).append(":").append(entry.getValue()).append("\n");
                 }
 
                 binaryInstructions.append("\nPOST payload:").append("\n");
                 binaryInstructions.append(payload).append("\n");
+                curlBinary.append("-d \"").append(payload.replaceAll("\"", "\\\\\\\\\"").replaceAll("\\s+", "")).append("\"");
+
+                StringBuilder curlStructured = new StringBuilder("curl -X POST http://").append(host.get()).append(":")
+                        .append(port.get())
+                        .append("/ ");
+                curlStructured.append("-H \"Content-Type:application/cloudevents+json; charset=UTF-8\" -d \"");
+                StringBuilder structuredPayload = new StringBuilder(" {");
+                structuredPayload.append("  \"id\": \"").append(id).append("\",");
+                structuredPayload.append("  \"specversion\": \"").append(specversion).append("\",");
+                structuredPayload.append("  \"type\": \"").append(type).append("\",");
+                structuredPayload.append("  \"source\": \"").append(source).append("\",");
+                structuredPayload.append("  \"datacontenttype\": \"application/json; charset=UTF-8\",");
+
+                for (Entry<String, String> entry : filterAttributes.entrySet()) {
+                    structuredPayload.append("  \"" + entry.getKey() + "\": \"").append(entry.getValue()).append("\",");
+                }
+
+                structuredPayload.append("  \"data\": ");
+                structuredPayload.append(payload);
+                structuredPayload.append("}");
+
+                curlStructured.append(structuredPayload.toString().replaceAll("\"", "\\\\\\\\\"").replaceAll("\\s+", ""));
+                curlStructured.append("\"");
 
                 StringBuilder structuredInstructions = new StringBuilder();
                 structuredInstructions.append("{").append("\n");
@@ -88,18 +126,20 @@ public class DevConsoleProcessor {
                 structuredInstructions.append("  \"specversion\": \"").append(specversion).append("\",\n");
                 structuredInstructions.append("  \"type\": \"").append(type).append("\",\n");
                 structuredInstructions.append("  \"source\": \"").append(source).append("\",\n");
+                structuredInstructions.append("  \"datacontenttype\": \"application/json; charset=UTF-8\",\n");
 
                 for (Entry<String, String> entry : filterAttributes.entrySet()) {
-                    binaryInstructions.append("  \"" + entry.getKey() + "\": \"").append(entry.getValue()).append("\",\n");
+                    structuredInstructions.append("  \"" + entry.getKey() + "\": \"").append(entry.getValue()).append("\",\n");
                 }
 
-                structuredInstructions.append("  \"data\":").append("\n");
+                structuredInstructions.append("  \"data\":");
                 structuredInstructions.append(payload).append("\n");
                 structuredInstructions.append("}").append("\n");
 
                 infos.add(new WorkflowFunctionFlowInfo(mi.name(), "/",
-                        binaryInstructions.toString(),
-                        structuredInstructions.toString()));
+                        binaryInstructions.toString(), curlBinary.toString(),
+                        structuredInstructions.toString(),
+                        curlStructured.toString()));
             }
         }
         SchemaRegistry.remove();
