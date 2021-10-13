@@ -17,12 +17,12 @@ public class $Type$Resource {
 
 
     @Mutation
-    @Description("Signals '$signalName$' on instance with given id")
-    public $Type$Output parentprocessprefix$_signal(@Name("parentId") String id,
+    @Description("Signals '$signalName$' on instance with given id and parent id")
+    public $Type$Output $parentprocessprefix$_signal(@Name("parentId") String id,
             @Name("id") String id_$name$, 
             @Name("user") final String user, 
             @Name("groups") final List<String> groups,
-            final $signalType$ data) {
+            @Name("model") final $signalType$ data) {
 
         
         identitySupplier.buildIdentityProvider(user, groups);
