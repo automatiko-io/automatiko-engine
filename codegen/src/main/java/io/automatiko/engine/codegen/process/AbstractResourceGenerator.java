@@ -197,6 +197,7 @@ public abstract class AbstractResourceGenerator {
 
         template.setName(resourceClazzName);
         AtomicInteger index = new AtomicInteger(0);
+        AtomicInteger uindex = new AtomicInteger(0);
         // Generate signals endpoints
         Optional.ofNullable(signals).ifPresent(signalsMap -> {
             // using template class to the endpoints generation
@@ -250,7 +251,7 @@ public abstract class AbstractResourceGenerator {
                     .orElseThrow(() -> new NoSuchElementException(
                             "Compilation unit doesn't contain a class or interface declaration!"));
             for (UserTaskModelMetaData userTask : userTasks) {
-                String methodSuffix = sanitizeName(userTask.getName()) + "_" + index.getAndIncrement();
+                String methodSuffix = sanitizeName(userTask.getName()) + "_" + uindex.getAndIncrement();
                 userTaskTemplate.findAll(MethodDeclaration.class).forEach(md -> {
 
                     MethodDeclaration cloned = md.clone();

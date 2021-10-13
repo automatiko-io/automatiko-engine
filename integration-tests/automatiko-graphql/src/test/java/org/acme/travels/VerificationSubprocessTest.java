@@ -297,6 +297,84 @@ public class VerificationSubprocessTest {
             .body("data.get_all_scripts.size()", is(0));
     }
     
+    @Test
+    public void testProcessCompleteViaSignal() {
+
+        String addPayload = "{\"query\":\"mutation {create_collects(key: \\\"test\\\", data: {name: \\\"mike\\\"}) {id,name, scripts {id,name}}}\\n\",\"variables\":null}";
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(addPayload)
+            .when()
+                .post("/graphql")
+            .then()
+                //.log().all(true)
+                .statusCode(200)
+                .body("data.create_collects.id", notNullValue(), "data.create_collects.name", equalTo("mike"), "data.create_collects.scripts[0].id", notNullValue());
+        
+       String getInstances = "{\"query\":\"query {get_all_collects {id,name,scripts{id}}}\\n\",\"variables\":null}";
+        
+       String parentId = given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_collects.size()", is(1))
+            .extract().path("data.get_all_collects[0].id");
+        
+       String getChildInstances = "{\"query\":\"query {get_all_scripts {id,name}}\\n\",\"variables\":null}";
+        
+        String childId = given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getChildInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_scripts.size()", is(1))
+            .extract().path("data.get_all_scripts[0].id");
+        
+ 
+        String signalPayload = "{\"query\":\"mutation {collects_signal_update_0(parentId: \\\"" + parentId + "\\\", id: \\\"" + childId +"\\\", user:\\\"john\\\", model: \\\"updated message\\\") {id,name,message}}\\n\",\"variables\":null}";
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(signalPayload)
+            .when()
+                .post("/graphql")
+            .then()
+                //.log().all(true)
+                .statusCode(200)
+                .body("data.collects_signal_update_0.id", notNullValue(), "data.collects_signal_update_0.name", equalTo("mike"), "data.collects_signal_update_0.message", equalTo("updated message"));
+        given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_collects.size()", is(0));
+    
+        given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getChildInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_scripts.size()", is(0));
+    }
+    
     
  // @formatter:on
 }

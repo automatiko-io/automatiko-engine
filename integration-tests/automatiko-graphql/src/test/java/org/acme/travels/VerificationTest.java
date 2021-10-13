@@ -250,5 +250,60 @@ public class VerificationTest {
             .body("data.get_all_scripts.size()", is(0));
          
     }
+    
+    @Test
+    public void testProcessNotVersionedCompleteViaSignal() {
+
+        String addPayload = "{\"query\":\"mutation {create_scripts(key: \\\"test\\\", data: {name: \\\"mike\\\"}) {id,name}}\\n\",\"variables\":null}";
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(addPayload)
+            .when()
+                .post("/graphql")
+            .then()
+                //.log().all(true)
+                .statusCode(200)
+                .body("data.create_scripts.id", notNullValue(), "data.create_scripts.name", equalTo("mike"), "data.create_scripts.message", nullValue());
+        
+       
+        String getInstances = "{\"query\":\"query {get_all_scripts(user: \\\"john\\\") {id,name,message}}\\n\",\"variables\":null}";
+        
+        given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_scripts.size()", is(1));
+        
+        String signalPayload = "{\"query\":\"mutation {signal_update_0(id: \\\"test\\\", user:\\\"john\\\", model: \\\"updated message\\\") {id,name,message}}\\n\",\"variables\":null}";
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(signalPayload)
+            .when()
+                .post("/graphql")
+            .then()
+                //.log().all(true)
+                .statusCode(200)
+                .body("data.signal_update_0.id", notNullValue(), "data.signal_update_0.name", equalTo("mike"), "data.signal_update_0.message", equalTo("updated message"));
+     
+        
+        given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_scripts.size()", is(0));
+         
+    }
  // @formatter:on
 }
