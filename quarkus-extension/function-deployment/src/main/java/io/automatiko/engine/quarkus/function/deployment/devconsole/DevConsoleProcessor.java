@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.jboss.jandex.AnnotationInstance;
@@ -28,6 +29,9 @@ public class DevConsoleProcessor {
 
     @BuildStep(onlyIf = IsDevelopment.class)
     public DevConsoleTemplateInfoBuildItem collectWorkflowInfo(CombinedIndexBuildItem index) throws Exception {
+        Optional<String> host = Optional.of("localhost");
+        Optional<Integer> port = Optional.of(8080);
+
         List<WorkflowFunctionInfo> infos = new ArrayList<WorkflowFunctionInfo>();
         Collection<AnnotationInstance> functions = index.getIndex()
                 .getAnnotations(AutomatikoFunctionProcessor.createDotName("io.quarkus.funqy.Funq"));
@@ -41,6 +45,14 @@ public class DevConsoleProcessor {
                 MethodInfo mi = f.target().asMethod();
                 // create function trigger descriptor for every found function
 
+                StringBuilder curlGet = new StringBuilder("curl -X GET http://").append(host.get()).append(":")
+                        .append(port.get())
+                        .append("/").append(mi.name()).append("?");
+
+                StringBuilder curlPost = new StringBuilder("curl -X POST http://").append(host.get()).append(":")
+                        .append(port.get())
+                        .append("/").append(mi.name()).append(" ");
+
                 SchemaFactory.typeToSchema(ctx,
                         mi.parameters().get(0), Collections.emptyList());
                 Schema fSchema = ctx.getOpenApi().getComponents().getSchemas().get(mi.parameters().get(0).name().local());
@@ -52,9 +64,16 @@ public class DevConsoleProcessor {
                 StringBuilder getInstructions = new StringBuilder();
                 AutomatikoFunctionProcessor.flatMap(null, example).entrySet()
                         .forEach(e -> getInstructions.append(e.getKey() + "=" + e.getValue() + "&"));
+
+                curlGet.append(getInstructions.deleteCharAt(getInstructions.length() - 1).toString());
+
+                curlPost.append("-d \"")
+                        .append(putInstructions.toString().replaceAll("\"", "\\\\\\\\\"").replaceAll("\\s+", "")).append("\"");
                 infos.add(new WorkflowFunctionInfo(mi.name(), "/" + mi.name(),
                         getInstructions.deleteCharAt(getInstructions.length() - 1).toString(),
-                        putInstructions));
+                        curlGet.toString(),
+                        putInstructions,
+                        curlPost.toString()));
             }
         }
         SchemaRegistry.remove();

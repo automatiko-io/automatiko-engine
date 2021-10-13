@@ -10,6 +10,16 @@ code {
   font-size: 105%;
 }
 {/style}
+{#script} 
+function textToClipboard (text) {
+    var dummy = document.createElement("textarea");
+    document.body.appendChild(dummy);
+    dummy.value = text;
+    dummy.select();
+    document.execCommand("copy");
+    document.body.removeChild(dummy);
+}
+{/script}
 {#title}Functions{/title}
 {#body}
 <table class="table table-striped">
@@ -32,11 +42,13 @@ code {
         </td>
         <td class="col-4">
         	<div class="table-responsive"> 
-            <pre style="width:400px">{{workflowInfo.getInstructions}</pre>
+        	<button  class="btn btn-outline-dark btn-sm btn-block" onclick="textToClipboard('{workflowInfo.curlGet}')">Copy cURL</button>
+            <pre style="width:400px">{workflowInfo.getInstructions}</pre>
             </div>
         </td>
         <td class="col-4">
         	<div class="table-responsive">
+        	<button  class="btn btn-outline-dark btn-sm btn-block" onclick="textToClipboard('{workflowInfo.curlPost}')">Copy cURL</button>
         	<pre>{workflowInfo.postInstructions}</pre>
             </div>
         </td>
