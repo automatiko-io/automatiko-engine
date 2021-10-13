@@ -342,9 +342,8 @@ public class ServiceTaskDescriptor {
         for (Node node : container.getNodes()) {
             if (node instanceof BoundaryEventNode) {
                 String errorCode = (String) node.getMetaData().get("ErrorEvent");
-                boolean hasErrorCode = (Boolean) node.getMetaData().get("HasErrorEvent");
 
-                if (hasErrorCode && ((BoundaryEventNode) node).getAttachedToNodeId().equals(thisNodeId)) {
+                if (errorCode != null && ((BoundaryEventNode) node).getAttachedToNodeId().equals(thisNodeId)) {
                     errorCodes.add(errorCode);
                 }
             }
