@@ -35,6 +35,17 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 
+import io.automatiko.engine.api.auth.AccessDeniedException;
+import io.automatiko.engine.api.workflow.NodeInstanceNotFoundException;
+import io.automatiko.engine.api.workflow.NodeNotFoundException;
+import io.automatiko.engine.api.workflow.ProcessInstanceDuplicatedException;
+import io.automatiko.engine.api.workflow.ProcessInstanceExecutionException;
+import io.automatiko.engine.api.workflow.ProcessInstanceNotFoundException;
+import io.automatiko.engine.api.workflow.VariableNotFoundException;
+import io.automatiko.engine.api.workflow.VariableViolationException;
+import io.automatiko.engine.api.workflow.workitem.InvalidLifeCyclePhaseException;
+import io.automatiko.engine.api.workflow.workitem.InvalidTransitionException;
+import io.automatiko.engine.api.workflow.workitem.NotAuthorizedException;
 import io.automatiko.engine.codegen.context.ApplicationBuildContext;
 import io.automatiko.engine.workflow.compiler.canonical.ProcessMetaData;
 
@@ -115,6 +126,27 @@ public class GeneratorContext {
         if (!"true".equalsIgnoreCase(includeAutomatikApi)) {
             modifiedApplicationProperties.put("mp.openapi.scan.exclude.classes",
                     "io.automatiko.engine.addons.process.management.ProcessInstanceManagementResource,io.automatiko.engine.addons.usertasks.management.UserTaskManagementResource,io.automatiko.addons.fault.tolerance.CircuitBreakerResource");
+        }
+
+        if (getBuildContext().isGraphQLSupported()) {
+            String existingExceptionWhitelist = applicationProperties.getProperty("mp.graphql.exceptionsWhiteList");
+            StringBuilder whitelist = new StringBuilder();
+            if (existingExceptionWhitelist != null) {
+                whitelist.append(existingExceptionWhitelist).append(",");
+            }
+            whitelist.append(AccessDeniedException.class.getCanonicalName()).append(",");
+            whitelist.append(InvalidLifeCyclePhaseException.class.getCanonicalName()).append(",");
+            whitelist.append(InvalidTransitionException.class.getCanonicalName()).append(",");
+            whitelist.append(NodeInstanceNotFoundException.class.getCanonicalName()).append(",");
+            whitelist.append(NodeNotFoundException.class.getCanonicalName()).append(",");
+            whitelist.append(NotAuthorizedException.class.getCanonicalName()).append(",");
+            whitelist.append(ProcessInstanceDuplicatedException.class.getCanonicalName()).append(",");
+            whitelist.append(ProcessInstanceExecutionException.class.getCanonicalName()).append(",");
+            whitelist.append(ProcessInstanceNotFoundException.class.getCanonicalName()).append(",");
+            whitelist.append(VariableNotFoundException.class.getCanonicalName()).append(",");
+            whitelist.append(VariableViolationException.class.getCanonicalName());
+
+            modifiedApplicationProperties.put("mp.graphql.exceptionsWhiteList", whitelist.toString());
         }
 
         for (Entry<String, String> entry : modifiedApplicationProperties.entrySet()) {
