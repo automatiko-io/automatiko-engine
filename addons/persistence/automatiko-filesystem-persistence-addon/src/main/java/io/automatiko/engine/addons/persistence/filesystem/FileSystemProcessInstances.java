@@ -37,6 +37,7 @@ import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceDuplicatedException;
 import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
+import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.marshalling.ProcessInstanceMarshaller;
 
@@ -59,27 +60,32 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 
     private ProcessInstanceMarshaller marshaller;
 
+    private StoredDataCodec codec;
+
     private Map<String, ProcessInstance> cachedInstances = new ConcurrentHashMap<>();
 
-    public FileSystemProcessInstances(Process<?> process, Path storage) {
-        this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy()));
+    public FileSystemProcessInstances(Process<?> process, Path storage, StoredDataCodec codec) {
+        this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy()), codec);
     }
 
-    public FileSystemProcessInstances(Process<?> process, Path storage, boolean useCompositeIdForSubprocess) {
+    public FileSystemProcessInstances(Process<?> process, Path storage, boolean useCompositeIdForSubprocess,
+            StoredDataCodec codec) {
         this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy()),
-                useCompositeIdForSubprocess);
-    }
-
-    public FileSystemProcessInstances(Process<?> process, Path storage, ProcessInstanceMarshaller marshaller) {
-        this(process, storage, marshaller, true);
+                useCompositeIdForSubprocess, codec);
     }
 
     public FileSystemProcessInstances(Process<?> process, Path storage, ProcessInstanceMarshaller marshaller,
-            boolean useCompositeIdForSubprocess) {
+            StoredDataCodec codec) {
+        this(process, storage, marshaller, true, codec);
+    }
+
+    public FileSystemProcessInstances(Process<?> process, Path storage, ProcessInstanceMarshaller marshaller,
+            boolean useCompositeIdForSubprocess, StoredDataCodec codec) {
         this.process = process;
         this.storage = Paths.get(storage.toString(), process.id());
         this.marshaller = marshaller;
         this.useCompositeIdForSubprocess = useCompositeIdForSubprocess;
+        this.codec = codec;
 
         try {
             Files.createDirectories(this.storage);
@@ -272,7 +278,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 
     protected void storeProcessInstance(Path processInstanceStorage, ProcessInstance<?> instance) {
         try {
-            byte[] data = marshaller.marhsallProcessInstance(instance);
+            byte[] data = codec.encode(marshaller.marhsallProcessInstance(instance));
             if (data == null) {
                 return;
             }
@@ -306,7 +312,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 
     protected byte[] readBytesFromFile(Path processInstanceStorage) {
         try {
-            return Files.readAllBytes(processInstanceStorage);
+            return codec.decode(Files.readAllBytes(processInstanceStorage));
         } catch (IOException e) {
             throw new RuntimeException("Unable to read process instance from " + processInstanceStorage, e);
         }

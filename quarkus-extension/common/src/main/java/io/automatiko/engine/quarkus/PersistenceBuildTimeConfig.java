@@ -21,6 +21,12 @@ public class PersistenceBuildTimeConfig extends PersistenceConfig {
     public Optional<String> type;
 
     /**
+     * Determines the type of encryption to be used
+     */
+    @ConfigItem
+    public Optional<String> encryption;
+
+    /**
      * Configures file system based persistence
      */
     @ConfigItem
@@ -53,6 +59,11 @@ public class PersistenceBuildTimeConfig extends PersistenceConfig {
     @Override
     public Optional<String> type() {
         return type;
+    }
+
+    @Override
+    public Optional<String> encryption() {
+        return encryption;
     }
 
     @Override

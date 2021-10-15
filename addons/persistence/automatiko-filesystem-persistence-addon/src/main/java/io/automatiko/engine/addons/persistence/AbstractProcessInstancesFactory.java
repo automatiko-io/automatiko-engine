@@ -14,10 +14,10 @@ import io.automatiko.engine.api.workflow.ProcessInstancesFactory;
  */
 public abstract class AbstractProcessInstancesFactory implements ProcessInstancesFactory {
 
-	public FileSystemProcessInstances createProcessInstances(Process<?> process) {
-		return new FileSystemProcessInstances(process, Paths.get(path()));
-	}
+    public FileSystemProcessInstances createProcessInstances(Process<?> process) {
+        return new FileSystemProcessInstances(process, Paths.get(path()), codec());
+    }
 
-	public abstract String path();
+    public abstract String path();
 
 }

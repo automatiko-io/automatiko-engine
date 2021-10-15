@@ -7,11 +7,16 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.junit.jupiter.api.Test;
 
+import io.automatiko.engine.api.workflow.Process;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
@@ -20,6 +25,10 @@ import io.restassured.http.ContentType;
 @QuarkusTestResource(CassandraContainer.class)
 public class VerificationTest {
  // @formatter:off
+    
+    @Inject
+    @Named("scripts")
+    Process<?> process;
     
     @Test
     public void testProcessCompleteViaTimer() throws InterruptedException {
@@ -102,7 +111,10 @@ public class VerificationTest {
         .when()
             .get("/scripts?tags=wrong")
         .then().statusCode(200)
-            .body("$.size()", is(0));        
+            .body("$.size()", is(0));   
+        
+        Collection<String> ids = process.instances().locateByIdOrTag(id);
+        assertEquals(1, ids.size());
         
         given()
             .accept(ContentType.JSON)

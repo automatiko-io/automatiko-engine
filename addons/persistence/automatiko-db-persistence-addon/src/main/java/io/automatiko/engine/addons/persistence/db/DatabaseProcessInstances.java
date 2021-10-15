@@ -24,6 +24,7 @@ import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceDuplicatedException;
 import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
+import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 import io.automatiko.engine.workflow.AbstractProcess;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
@@ -37,13 +38,15 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
     private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseProcessInstances.class);
 
     private final Process<? extends ProcessInstanceEntity> process;
-    private ProcessInstanceMarshaller marshaller;
+    private final ProcessInstanceMarshaller marshaller;
+    private final StoredDataCodec codec;
 
     private Class<? extends ProcessInstanceEntity> type;
 
-    public DatabaseProcessInstances(Process<? extends ProcessInstanceEntity> process) {
+    public DatabaseProcessInstances(Process<? extends ProcessInstanceEntity> process, StoredDataCodec codec) {
         this.process = process;
         this.marshaller = new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy());
+        this.codec = codec;
 
         this.type = process.createModel().getClass();
     }
@@ -147,7 +150,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
         String resolvedId = resolveId(id, instance);
         if (isActive(instance)) {
             ProcessInstanceEntity entity = instance.variables();
-            byte[] data = marshaller.marhsallProcessInstance(instance);
+            byte[] data = codec.encode(marshaller.marhsallProcessInstance(instance));
 
             if (data == null) {
                 return;
@@ -181,7 +184,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
             try {
                 ProcessInstanceEntity entity = (ProcessInstanceEntity) JpaOperations.INSTANCE.findById(type,
                         resolveId(instance.id(), instance));
-                byte[] reloaded = entity.content;
+                byte[] reloaded = codec.decode(entity.content);
 
                 WorkflowProcessInstance wpi = marshaller.unmarshallWorkflowProcessInstance(reloaded, process);
                 entity.toMap().forEach((k, v) -> {
@@ -206,7 +209,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
             ProcessInstanceEntity entity) {
         ProcessInstance<ProcessInstanceEntity> pi;
         if (mode == MUTABLE) {
-            WorkflowProcessInstance wpi = marshaller.unmarshallWorkflowProcessInstance(entity.content, process);
+            WorkflowProcessInstance wpi = marshaller.unmarshallWorkflowProcessInstance(codec.decode(entity.content), process);
             entity.toMap().forEach((k, v) -> {
                 if (v != null) {
                     v.toString();
@@ -218,7 +221,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
             pi = ((AbstractProcess<ProcessInstanceEntity>) process).createInstance(wpi, entity, entity.version);
 
         } else {
-            WorkflowProcessInstance wpi = marshaller.unmarshallWorkflowProcessInstance(entity.content, process);
+            WorkflowProcessInstance wpi = marshaller.unmarshallWorkflowProcessInstance(codec.decode(entity.content), process);
             entity.toMap().forEach((k, v) -> {
                 if (v != null) {
                     v.toString();

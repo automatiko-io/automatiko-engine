@@ -18,27 +18,27 @@ import io.automatiko.engine.api.workflow.ProcessInstancesFactory;
  */
 public abstract class AbstractProcessInstancesFactory implements ProcessInstancesFactory {
 
-	protected RemoteCacheManager cacheManager;
+    protected RemoteCacheManager cacheManager;
 
-	public AbstractProcessInstancesFactory(RemoteCacheManager cacheManager) {
-		this.cacheManager = cacheManager;
-	}
+    public AbstractProcessInstancesFactory(RemoteCacheManager cacheManager) {
+        this.cacheManager = cacheManager;
+    }
 
-	public CacheProcessInstances createProcessInstances(Process<?> process) {
-		List<?> marshallers = marshallers();
-		return new CacheProcessInstances(process, cacheManager, template(), proto(),
-				marshallers.toArray(new MessageMarshaller<?>[marshallers.size()]));
-	}
+    public CacheProcessInstances createProcessInstances(Process<?> process) {
+        List<?> marshallers = marshallers();
+        return new CacheProcessInstances(process, cacheManager, template(), proto(), codec(),
+                marshallers.toArray(new MessageMarshaller<?>[marshallers.size()]));
+    }
 
-	public String proto() {
-		return null;
-	}
+    public String proto() {
+        return null;
+    }
 
-	public List<?> marshallers() {
-		return Collections.emptyList();
-	}
+    public List<?> marshallers() {
+        return Collections.emptyList();
+    }
 
-	public String template() {
-		return null;
-	}
+    public String template() {
+        return null;
+    }
 }

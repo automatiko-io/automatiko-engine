@@ -24,6 +24,7 @@ import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceDuplicatedException;
 import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
+import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.marshalling.ProcessInstanceMarshaller;
 import software.amazon.awssdk.core.SdkBytes;
@@ -65,6 +66,7 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
 
     private final Process<? extends Model> process;
     private final ProcessInstanceMarshaller marshaller;
+    private final StoredDataCodec codec;
 
     private final DynamoDBPersistenceConfig config;
 
@@ -75,12 +77,13 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
     private Map<String, ProcessInstance> cachedInstances = new ConcurrentHashMap<>();
 
     public DynamoDBProcessInstances(Process<? extends Model> process, DynamoDbClient dynamodb,
-            DynamoDBPersistenceConfig config) {
+            DynamoDBPersistenceConfig config, StoredDataCodec codec) {
         this.process = process;
         this.marshaller = new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy());
         this.config = config;
         this.dynamodb = dynamodb;
         this.tableName = process.id().toUpperCase();
+        this.codec = codec;
 
         if (config.createTables().orElse(Boolean.TRUE)) {
             createTable();
@@ -119,9 +122,9 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
             byte[] content = returnedItem.get(CONTENT_FIELD).b().asByteArray();
 
             return Optional.of(mode == MUTABLE
-                    ? marshaller.unmarshallProcessInstance(content, process,
+                    ? marshaller.unmarshallProcessInstance(codec.decode(content), process,
                             Long.parseLong(returnedItem.get(VERSION_FIELD).n()))
-                    : marshaller.unmarshallReadOnlyProcessInstance(content, process));
+                    : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process));
 
         } else {
             return Optional.empty();
@@ -148,9 +151,9 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
             try {
                 byte[] content = item.get(CONTENT_FIELD).b().asByteArray();
 
-                return mode == MUTABLE ? marshaller.unmarshallProcessInstance(content, process,
+                return mode == MUTABLE ? marshaller.unmarshallProcessInstance(codec.decode(content), process,
                         Long.parseLong(item.get(VERSION_FIELD).n()))
-                        : marshaller.unmarshallReadOnlyProcessInstance(content, process);
+                        : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process);
             } catch (AccessDeniedException e) {
                 return null;
             }
@@ -185,9 +188,9 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
             try {
                 byte[] content = item.get(CONTENT_FIELD).b().asByteArray();
 
-                return mode == MUTABLE ? marshaller.unmarshallProcessInstance(content, process,
+                return mode == MUTABLE ? marshaller.unmarshallProcessInstance(codec.decode(content), process,
                         Long.parseLong(item.get(VERSION_FIELD).n()))
-                        : marshaller.unmarshallReadOnlyProcessInstance(content, process);
+                        : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process);
             } catch (AccessDeniedException e) {
                 return null;
             }
@@ -255,7 +258,7 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
 
         if (isActive(instance)) {
             LOGGER.debug("create() called for instance {}", resolvedId);
-            byte[] data = marshaller.marhsallProcessInstance(instance);
+            byte[] data = codec.encode(marshaller.marhsallProcessInstance(instance));
             if (data == null) {
                 return;
             }
@@ -309,7 +312,7 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
 
         if (isActive(instance)) {
             LOGGER.debug("update() called for instance {}", resolvedId);
-            byte[] data = marshaller.marhsallProcessInstance(instance);
+            byte[] data = codec.encode(marshaller.marhsallProcessInstance(instance));
             if (data == null) {
                 return;
             }
@@ -446,7 +449,7 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
                 if (returnedItem != null) {
                     byte[] reloaded = returnedItem.get(CONTENT_FIELD).b().asByteArray();
 
-                    return marshaller.unmarshallWorkflowProcessInstance(reloaded, process);
+                    return marshaller.unmarshallWorkflowProcessInstance(codec.decode(reloaded), process);
                 } else {
                     return null;
                 }

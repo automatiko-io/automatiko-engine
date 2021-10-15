@@ -44,6 +44,9 @@ public class ApiVerificationTest {
         instances = process.instances().findByIdOrTag(ProcessInstanceReadMode.READ_ONLY, "important");
         assertEquals(1, instances.size());
         
+        Collection<String> ids = process.instances().locateByIdOrTag("important");
+        assertEquals(1, ids.size());
+        
         processinstance.tags().remove("important");
         
         instances = process.instances().findByIdOrTag(ProcessInstanceReadMode.READ_ONLY, "important");

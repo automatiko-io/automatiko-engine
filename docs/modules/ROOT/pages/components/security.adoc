@@ -89,3 +89,60 @@ TIP: Initiator is assigned based on authenticated user but it can also be assign
 `initiator` tag. This allows to create instances on behalf of someone or in case user info is not directly available e.g. messaging.
 
 An example that uses instance level security is link:../examples/vacations.html[Vacation requests]
+
+
+== Encryption of data at rest
+
+Another important part of security is that data stored (workflow instance data) in (whatever) data store might require 
+additional encryption at rest. This means that in case someone gains access to the raw data stored won't be able to
+easily read and extract information out if it.
+
+Encryption at rest is available for any kind of data store supported by Automatiko. It requires enabling the codec that will
+intercept the data to be stored and encode it based on internal implementation details.
+
+Automatiko comes with two out of the box codec implementation
+
+- AES
+- Base64
+
+NOTE: Base64 is only for test purpose to ensure that data can be easily encrypted and should not be used for production
+
+=== Use it
+
+
+==== AES
+
+To use out of the box AES codec implementation it requires following properties to be set inside `application.properties` file
+
+[source, plain]
+----
+quarkus.automatiko.persistence.encryption=aes
+
+automatiko.encryption.aes.key=XXXXXXXXXXXXX
+---- 
+
+where `XXXXXXXXXXXXX` is your AES key.
+
+==== Base64
+
+To use out of the box Base64 codec implementation it requires following property to be set inside `application.properties` file
+
+[source, plain]
+----
+quarkus.automatiko.persistence.encryption=base64
+---- 
+
+=== Implement custom codec
+
+Codecs are implemented in pluggable way so there is a way to provide your own implementation with whatever algorithm needed.
+
+To do so, create a class that implements `io.automatiko.engine.api.workflow.encrypt.StoredDataCodec` and implement both methods
+
+- encode
+- decode
+
+Any exceptions thrown that prevents it from successful encryption should be propagated up to the caller.
+
+The codec implementation must be a CDI bean so is discovered and made available to the persistence layer.
+
+NOTE: Only one implementation is allowed for given project.
