@@ -22,6 +22,7 @@ import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceDuplicatedException;
 import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
+import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.marshalling.ProcessInstanceMarshaller;
 
@@ -30,16 +31,18 @@ public class CacheProcessInstances implements MutableProcessInstances {
 
     private final RemoteCache<String, byte[]> cache;
     private ProcessInstanceMarshaller marshaller;
+    private StoredDataCodec codec;
 
     private io.automatiko.engine.api.workflow.Process<?> process;
 
     private Map<String, ProcessInstance> cachedInstances = new ConcurrentHashMap<>();
 
     public CacheProcessInstances(Process<?> process, RemoteCacheManager cacheManager, String templateName, String proto,
-            MessageMarshaller<?>... marshallers) {
+            StoredDataCodec codec, MessageMarshaller<?>... marshallers) {
         this.process = process;
         this.cache = cacheManager.administration().getOrCreateCache(process.id() + "_store",
                 ignoreNullOrEmpty(templateName));
+        this.codec = codec;
 
         this.marshaller = new ProcessInstanceMarshaller(new ProtoStreamObjectMarshallingStrategy(proto, marshallers));
     }
@@ -69,8 +72,8 @@ public class CacheProcessInstances implements MutableProcessInstances {
         if (data == null) {
             return Optional.empty();
         }
-        ProcessInstance pi = mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process, 1)
-                : marshaller.unmarshallReadOnlyProcessInstance(data, process);
+        ProcessInstance pi = mode == MUTABLE ? marshaller.unmarshallProcessInstance(codec.decode(data), process, 1)
+                : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(data), process);
         if (pi.status() == status) {
             return Optional.of(pi);
         }
@@ -86,8 +89,8 @@ public class CacheProcessInstances implements MutableProcessInstances {
             cache.values().parallelStream()
                     .map(data -> {
                         try {
-                            return mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process, 1)
-                                    : marshaller.unmarshallReadOnlyProcessInstance(data, process);
+                            return mode == MUTABLE ? marshaller.unmarshallProcessInstance(codec.decode(data), process, 1)
+                                    : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(data), process);
                         } catch (AccessDeniedException e) {
                             return null;
                         }
@@ -115,7 +118,7 @@ public class CacheProcessInstances implements MutableProcessInstances {
             cache.values().parallelStream()
                     .map(data -> {
                         try {
-                            return marshaller.unmarshallReadOnlyProcessInstance(data, process);
+                            return marshaller.unmarshallReadOnlyProcessInstance(codec.decode(data), process);
                         } catch (AccessDeniedException e) {
                             return null;
                         }
@@ -139,8 +142,8 @@ public class CacheProcessInstances implements MutableProcessInstances {
         return cache.values().parallelStream()
                 .map(data -> {
                     try {
-                        return mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process, 1)
-                                : marshaller.unmarshallReadOnlyProcessInstance(data, process);
+                        return mode == MUTABLE ? marshaller.unmarshallProcessInstance(codec.decode(data), process, 1)
+                                : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(data), process);
                     } catch (AccessDeniedException e) {
                         return null;
                     }
@@ -185,7 +188,7 @@ public class CacheProcessInstances implements MutableProcessInstances {
         String resolvedId = resolveId(id, instance);
         if (isActive(instance)) {
 
-            byte[] data = marshaller.marhsallProcessInstance(instance);
+            byte[] data = codec.encode(marshaller.marhsallProcessInstance(instance));
             if (data != null) {
                 if (checkDuplicates) {
                     byte[] existing = cache.putIfAbsent(resolvedId, data);
@@ -197,7 +200,7 @@ public class CacheProcessInstances implements MutableProcessInstances {
                 }
 
                 ((AbstractProcessInstance<?>) instance).internalRemoveProcessInstance(() -> {
-                    byte[] reloaded = cache.get(resolvedId);
+                    byte[] reloaded = codec.decode(cache.get(resolvedId));
                     if (reloaded != null) {
                         return marshaller.unmarshallWorkflowProcessInstance(reloaded, process);
                     }

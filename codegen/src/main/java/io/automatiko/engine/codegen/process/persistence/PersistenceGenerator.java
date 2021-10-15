@@ -34,6 +34,7 @@ import com.github.javaparser.ast.stmt.ExplicitConstructorInvocationStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
+import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 import io.automatiko.engine.codegen.AbstractGenerator;
 import io.automatiko.engine.codegen.ApplicationSection;
 import io.automatiko.engine.codegen.BodyDeclarationComparator;
@@ -57,6 +58,8 @@ public class PersistenceGenerator extends AbstractGenerator {
 
     private static final String TEMPLATE_NAME = "templateName";
     private static final String PATH_NAME = "path";
+
+    private static final String CODEC_NAME = "codec";
 
     private static final String APPLICATION_PROTO = "automatik-application.proto";
     private static final String PERSISTENCE_FS_PATH_PROP = "quarkus.automatiko.persistence.filesystem.path";
@@ -226,6 +229,8 @@ public class PersistenceGenerator extends AbstractGenerator {
 
             persistenceProviderClazz.addMember(templateNameField);
             persistenceProviderClazz.addMember(templateNameMethod);
+
+            addCodecComponents(persistenceProviderClazz);
         }
         List<String> variableMarshallers = new ArrayList<>();
         // handler process variable marshallers
@@ -331,6 +336,8 @@ public class PersistenceGenerator extends AbstractGenerator {
 
             persistenceProviderClazz.addMember(pathField);
             persistenceProviderClazz.addMember(pathMethod);
+
+            addCodecComponents(persistenceProviderClazz);
         }
 
         String packageName = compilationUnit.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
@@ -353,6 +360,8 @@ public class PersistenceGenerator extends AbstractGenerator {
 
         if (useInjection()) {
             annotator.withApplicationComponent(persistenceProviderClazz);
+
+            addCodecComponents(persistenceProviderClazz);
         }
 
         String packageName = compilationUnit.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
@@ -389,6 +398,8 @@ public class PersistenceGenerator extends AbstractGenerator {
         if (useInjection()) {
             annotator.withApplicationComponent(persistenceProviderClazz);
             annotator.withInjection(constructor);
+
+            addCodecComponents(persistenceProviderClazz);
         }
 
         String packageName = compilationUnit.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
@@ -425,6 +436,8 @@ public class PersistenceGenerator extends AbstractGenerator {
         if (useInjection()) {
             annotator.withApplicationComponent(persistenceProviderClazz);
             annotator.withInjection(constructor);
+
+            addCodecComponents(persistenceProviderClazz);
         }
 
         String packageName = compilationUnit.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
@@ -435,5 +448,25 @@ public class PersistenceGenerator extends AbstractGenerator {
                 compilationUnit.toString().getBytes(StandardCharsets.UTF_8)));
 
         persistenceProviderClazz.getMembers().sort(new BodyDeclarationComparator());
+    }
+
+    private void addCodecComponents(ClassOrInterfaceDeclaration persistenceProviderClazz) {
+
+        // allow to inject codec implementation
+        FieldDeclaration codecField = new FieldDeclaration()
+                .addVariable(
+                        new VariableDeclarator()
+                                .setType(new ClassOrInterfaceType(null, StoredDataCodec.class.getCanonicalName()))
+                                .setName(CODEC_NAME));
+        BlockStmt codecMethodBody = new BlockStmt();
+        codecMethodBody.addStatement(new ReturnStmt(new NameExpr(CODEC_NAME)));
+
+        MethodDeclaration codecMethod = new MethodDeclaration().addModifier(Keyword.PUBLIC).setName(CODEC_NAME)
+                .setType(StoredDataCodec.class.getCanonicalName()).setBody(codecMethodBody);
+
+        annotator.withInjection(codecField);
+
+        persistenceProviderClazz.addMember(codecField);
+        persistenceProviderClazz.addMember(codecMethod);
     }
 }

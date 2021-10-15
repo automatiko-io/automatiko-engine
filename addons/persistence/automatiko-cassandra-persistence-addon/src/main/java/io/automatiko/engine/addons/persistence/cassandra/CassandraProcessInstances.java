@@ -52,6 +52,7 @@ import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceDuplicatedException;
 import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
+import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.marshalling.ProcessInstanceMarshaller;
 
@@ -68,6 +69,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
 
     private final Process<? extends Model> process;
     private final ProcessInstanceMarshaller marshaller;
+    private final StoredDataCodec codec;
 
     private final CassandraPersistenceConfig config;
 
@@ -78,12 +80,13 @@ public class CassandraProcessInstances implements MutableProcessInstances {
     private Map<String, ProcessInstance> cachedInstances = new ConcurrentHashMap<>();
 
     public CassandraProcessInstances(Process<? extends Model> process, CqlSession cqlSession,
-            CassandraPersistenceConfig config) {
+            CassandraPersistenceConfig config, StoredDataCodec codec) {
         this.process = process;
         this.marshaller = new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy());
         this.config = config;
         this.cqlSession = cqlSession;
         this.tableName = process.id().toUpperCase();
+        this.codec = codec;
 
         if (config.createTables().orElse(Boolean.TRUE)) {
             createTable();
@@ -120,8 +123,9 @@ public class CassandraProcessInstances implements MutableProcessInstances {
             byte[] content = ByteUtils.getArray(row.getByteBuffer(CONTENT_FIELD));
 
             return Optional
-                    .of(mode == MUTABLE ? marshaller.unmarshallProcessInstance(content, process, row.getLong(VERSION_FIELD))
-                            : marshaller.unmarshallReadOnlyProcessInstance(content, process));
+                    .of(mode == MUTABLE
+                            ? marshaller.unmarshallProcessInstance(codec.decode(content), process, row.getLong(VERSION_FIELD))
+                            : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process));
 
         } else {
             return Optional.empty();
@@ -141,8 +145,9 @@ public class CassandraProcessInstances implements MutableProcessInstances {
             try {
                 byte[] content = ByteUtils.getArray(item.getByteBuffer(CONTENT_FIELD));
 
-                return mode == MUTABLE ? marshaller.unmarshallProcessInstance(content, process, item.getLong(VERSION_FIELD))
-                        : marshaller.unmarshallReadOnlyProcessInstance(content, process);
+                return mode == MUTABLE
+                        ? marshaller.unmarshallProcessInstance(codec.decode(content), process, item.getLong(VERSION_FIELD))
+                        : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process);
             } catch (AccessDeniedException e) {
                 return null;
             }
@@ -186,8 +191,9 @@ public class CassandraProcessInstances implements MutableProcessInstances {
             try {
                 byte[] content = ByteUtils.getArray(item.getByteBuffer(CONTENT_FIELD));
 
-                return mode == MUTABLE ? marshaller.unmarshallProcessInstance(content, process, item.getLong(VERSION_FIELD))
-                        : marshaller.unmarshallReadOnlyProcessInstance(content, process);
+                return mode == MUTABLE
+                        ? marshaller.unmarshallProcessInstance(codec.decode(content), process, item.getLong(VERSION_FIELD))
+                        : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process);
             } catch (AccessDeniedException e) {
                 return null;
             }
@@ -263,7 +269,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
 
         if (isActive(instance)) {
             LOGGER.debug("create() called for instance {}", resolvedId);
-            byte[] data = marshaller.marhsallProcessInstance(instance);
+            byte[] data = codec.encode(marshaller.marhsallProcessInstance(instance));
             if (data == null) {
                 return;
             }
@@ -311,7 +317,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
         String resolvedId = resolveId(id, instance);
 
         LOGGER.debug("update() called for instance {}", resolvedId);
-        byte[] data = marshaller.marhsallProcessInstance(instance);
+        byte[] data = codec.encode(marshaller.marhsallProcessInstance(instance));
         if (data == null) {
             return;
         }
@@ -391,7 +397,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
                 Row row = rs.one();
                 if (row != null) {
 
-                    byte[] reloaded = row.getByteBuffer(1).array();
+                    byte[] reloaded = codec.decode(row.getByteBuffer(1).array());
 
                     return marshaller.unmarshallWorkflowProcessInstance(reloaded, process);
                 } else {

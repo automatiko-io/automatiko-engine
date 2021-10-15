@@ -12,6 +12,13 @@ public class PersistenceConfig {
     }
 
     /**
+     * Determines the type of encryption to be used
+     */
+    public Optional<String> encryption() {
+        return Optional.empty();
+    }
+
+    /**
      * Configures file system based persistence
      */
     public FileSystemPersistenceConfig filesystem() {

@@ -12,7 +12,8 @@ import io.automatiko.engine.api.workflow.ProcessInstancesFactory;
  */
 public abstract class AbstractProcessInstancesFactory implements ProcessInstancesFactory {
 
+    @SuppressWarnings("unchecked")
     public DatabaseProcessInstances createProcessInstances(Process<?> process) {
-        return new DatabaseProcessInstances((Process<? extends ProcessInstanceEntity>) process);
+        return new DatabaseProcessInstances((Process<? extends ProcessInstanceEntity>) process, codec());
     }
 }
