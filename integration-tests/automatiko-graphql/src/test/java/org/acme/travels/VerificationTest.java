@@ -359,5 +359,81 @@ public class VerificationTest {
             .body("data.get_all_scripts.size()", is(0));
        
     }
+    
+    @Test
+    public void testProcessWithUpdateModel() {
+
+        String addPayload = "{\"query\":\"mutation {create_scripts(key: \\\"test\\\", data: {name: \\\"mary\\\"}) {id,name}}\\n\",\"variables\":null}";
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(addPayload)
+            .when()
+                .post("/graphql")
+            .then()
+                //.log().all(true)
+                .statusCode(200)
+                .body("data.create_scripts.id", notNullValue(), "data.create_scripts.name", equalTo("mary"), "data.create_scripts.message", nullValue());
+        
+       
+        String getInstances = "{\"query\":\"query {get_all_scripts(user: \\\"john\\\") {id,name,message}}\\n\",\"variables\":null}";
+        
+        given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_scripts.size()", is(1), "data.get_all_scripts[0].message", nullValue());
+        
+        String updatePayload = "{\"query\":\"mutation {update_model_scripts(id: \\\"test\\\", data: {message: \\\"hello\\\"}) {id,name,message}}\\n\",\"variables\":null}";
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(updatePayload)
+            .when()
+                .post("/graphql")
+            .then()
+                //.log().all(true)
+                .statusCode(200)
+                .body("data.update_model_scripts.id", notNullValue(), "data.update_model_scripts.name", equalTo("mary"), "data.update_model_scripts.message", equalTo("hello"));
+ 
+        given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_scripts.size()", is(1), "data.get_all_scripts[0].message", equalTo("hello"));
+        
+        String removePayload = "{\"query\":\"mutation {delete_scripts(id: \\\"test\\\") {id,name}}\\n\",\"variables\":null}";
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(removePayload)
+            .when()
+                .post("/graphql")
+            .then()
+                //.log().all(true)
+                .statusCode(200)
+                .body("data.delete_scripts.id", notNullValue(), "data.delete_scripts.name", equalTo("mary"), "data.delete_scripts.message", nullValue());
+        given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_scripts.size()", is(0));
+         
+    }
  // @formatter:on
 }

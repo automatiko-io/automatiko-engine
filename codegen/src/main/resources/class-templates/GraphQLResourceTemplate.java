@@ -149,23 +149,25 @@ public class $Type$GraphQLResource {
         });
     }
      
-//    @Mutation("update_model_$name$")
-//    @Description("Updates data of $name$ instance with given id")
-//    public $Type$Output update_model_$name$(@Name("data") $Type$ resource) {
-//        
-//       
-//        identitySupplier.buildIdentityProvider(null, null);
-//        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-//            ProcessInstance<$Type$> pi = process.instances()
-//                    .findById(resource.getId())
-//                    .orElseThrow(() -> new ProcessInstanceNotFoundException(resource.getId()));
-//            tracing(pi);
-//            pi.updateVariables(resource);
-//  
-//            return mapOutput(new $Type$Output(), pi.variables(), pi.businessKey());
-//        });
-//        
-//    }
+    @Mutation("update_model_$name$")
+    @Description("Updates data of $name$ instance with given id")
+    public $Type$Output update_model_$name$(@Name("id")  String id, 
+            @Name("user") final String user, 
+            @Name("groups") final List<String> groups, @Name("data") $Type$ resource) {
+        
+       
+        identitySupplier.buildIdentityProvider(null, null);
+        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+            ProcessInstance<$Type$> pi = process.instances()
+                    .findById(id)
+                    .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+            tracing(pi);
+            pi.updateVariables(resource);
+  
+            return mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), pi);
+        });
+        
+    }
     
     @Query("get_$name$$prefix$_tasks")
     @Description("Retrieves tasks currently active in $name$ $prefix$ instance with given id")
