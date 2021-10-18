@@ -4,6 +4,7 @@
 * xref:examples.adoc[Examples]
 * xref:getting-started.adoc[Getting started]
 * xref:best-practice.adoc[Best practice]
+* xref:service-interfaces.adoc[Service interface]
 * Components
 ** xref:components/security.adoc[Security]
 ** xref:components/messaging.adoc[Messaging]

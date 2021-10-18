@@ -1,0 +1,105 @@
+= Service interfaces
+
+As described in the concepts chapter, Automatiko exposes workflows as services. These services can be 
+directly used by consumers meaning they act as entry points of the API. Depending on the workflow design
+there might be various ways how to interact with these services:
+
+* REsT interface
+* GraphQL interface
+* Message based interface (limited to trigger)
+
+== REsT interface
+
+REsT interface is the default and always present service interface. That means each public workflow definition
+will have dedicated endpoint created for it and named based on workflow definition id.
+
+So when there is a workflow definition that processes orders with following 
+
+* workflow definition id - `orders`
+* workflow definition name - `Process incoming orders`
+* version - `1.0`
+
+Then the REsT service interface will be created with following path `/v1_0/orders`
+
+It will have number of additional endpoints (under the main path `/v1_0/orders`) created to expose additional
+capabilities of the service based on workflow definition. To name some 
+
+* user tasks - each user task will have three endpoints to 
+** get task inputs
+** complete task
+** abort task
+* signals - each signal event will have dedicated endpoint 
+* subprocesses - each subprocess will have dedicated endpoints based on sub workflow definition
+* workflow definition image and workflow instance image
+
+== GraphQL interface
+
+In addition to REsT interface users can enhance their service with GraphQL interface. That is to allow more advanced 
+operation to be performed that take advantage of under-fetching and over-fetching principles promoted by GraphQL.
+
+It follows the same principle as REsT interfaces, each public workflow definition will have dedicated GraphQL
+operations created, including
+
+* user tasks
+* signal events
+* subprocesses
+
+To enable GraphQL interface add following dependency to your project
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-graphql-addon</artifactId>
+</dependency>
+---- 
+
+Once that is added, service will be equipped with following capabilities of GraphQL that are based on workflow
+definition:
+
+* mutations - each operation that manipulates workflow instance will have dedicated mutation (e.g. start new instance, abort, etc)
+* queries - each operation that allows to retrieve workflow instance information will have dedicated query (e.g. list instances, get instance details, etc)
+* subscription - each workflow definition will have set of subscriptions available to get notifications when:
+** new instance is created
+** instance is completed
+** instance is aborted
+** instance fails (ends with error status)
+** instance is updated
+
+In addition to above subscriptions there is also a generic `userTasks` subscriptions that allows to get access to 
+user tasks managed by this service.
+
+IMPORTANT: All subscriptions are security context aware meaning notifications are sent based on access rights of the
+caller who created subscription
+
+Subscriptions are based on websocket protocol so to create subscription from client side following code can be used
+
+[source,javascript]
+----
+let ws = new WebSocket("ws://localhost:8080/graphql");
+				
+ws.onopen = function() {
+            	                     
+	ws.send('{ "query" : "subscription {userTasks(user:\\\"john\\\", groups:[]) {id, taskName, state, formLink}}"}');
+};
+----
+
+This will subscribe to `userTasks` as user `john` so only user tasks that `john` is allowed to work on will be delivered.
+
+== Message based interface
+
+Last but not least, service can also be equipped with message based interface such as
+
+* Apache Kafka
+* MQTT
+* Apache Camel components
+
+The main difference for this interface (compared to REsT and GraphQL) is that it is tailored for just one 
+type of workflow constructs - `message events`
+
+Message based interface is both inbound and outbound so it can consume and produce messages depending on the type of 
+message event used within workflow definition (catching or throwing respectively).
+
+To enable it one (or more) of the messaging providers must be added to your project. The easiest way is to
+use Automatiko archetypes to bootstrap project with defined dependencies. 
+See <<../../getting-started.adoc#_create_project,Getting started guide>> for details.
