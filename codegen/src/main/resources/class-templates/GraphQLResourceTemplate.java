@@ -38,7 +38,7 @@ import io.automatiko.engine.api.workflow.WorkItem;
 import io.automatiko.engine.api.workflow.workitem.Policy;
 import io.automatiko.engine.workflow.base.instance.TagInstance;
 import io.automatiko.engine.service.auth.HttpAuthSupport;
-import io.automatiko.addons.graphql.GraphQLSubscriptionEventPublisher;
+import io.automatiko.addons.graphql.GraphQLProcessSubscriptionEventPublisher;
 
 @javax.enterprise.context.ApplicationScoped
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -47,7 +47,7 @@ import io.automatiko.addons.graphql.GraphQLSubscriptionEventPublisher;
 public class $Type$GraphQLResource {
     
     
-    GraphQLSubscriptionEventPublisher subscriptionPublisher;
+    GraphQLProcessSubscriptionEventPublisher subscriptionPublisher;
 
     Process<$Type$> process;
     
@@ -57,7 +57,7 @@ public class $Type$GraphQLResource {
     
     
     @javax.inject.Inject
-    public void $Type$GraphQLResource(Application application, @javax.inject.Named("$id$$version$") Process<$Type$> process, IdentitySupplier identitySupplier, GraphQLSubscriptionEventPublisher subscriptionPublisher) {
+    public void $Type$GraphQLResource(Application application, @javax.inject.Named("$id$$version$") Process<$Type$> process, IdentitySupplier identitySupplier, GraphQLProcessSubscriptionEventPublisher subscriptionPublisher) {
         this.application = application;
         this.process = process;
         this.identitySupplier = identitySupplier;
