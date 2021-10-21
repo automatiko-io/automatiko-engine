@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.api.runtime.process.ProcessInstance;
+import io.automatiko.engine.api.workflow.VariableAugmentor;
 import io.automatiko.engine.api.workflow.VariableViolationException;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
@@ -150,6 +151,23 @@ public class VariableScopeInstance extends AbstractContextInstance {
                 // and remove the oldest if exceeding
                 if (varVersions.size() > versionLimit) {
                     varVersions.remove(0);
+                }
+            }
+        }
+
+        for (VariableAugmentor augmentor : getProcessInstance().getProcessRuntime().getVariableInitializer().augmentors()) {
+
+            if (augmentor.accept(var, value)) {
+                // run any of the available augmentors on the value
+                if (oldValue != null) {
+                    value = augmentor.augmentOnUpdate(getProcessInstance().getProcess().getId(),
+                            getProcessInstance().getProcess().getVersion(), getProcessInstance().getId(), var, value);
+                } else if (value == null) {
+                    augmentor.augmentOnDelete(getProcessInstance().getProcess().getId(),
+                            getProcessInstance().getProcess().getVersion(), getProcessInstance().getId(), var, oldValue);
+                } else {
+                    value = augmentor.augmentOnCreate(getProcessInstance().getProcess().getId(),
+                            getProcessInstance().getProcess().getVersion(), getProcessInstance().getId(), var, value);
                 }
             }
         }

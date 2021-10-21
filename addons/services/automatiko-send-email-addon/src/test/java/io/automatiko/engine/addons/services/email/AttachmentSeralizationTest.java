@@ -19,7 +19,7 @@ public class AttachmentSeralizationTest {
         ObjectMapper mapper = new ObjectMapper();
 
         String value = mapper.writeValueAsString(attachment);
-
+        System.out.println(value);
         assertThat(value).isNotNull();
 
         Attachment object = mapper.readValue(value, Attachment.class);

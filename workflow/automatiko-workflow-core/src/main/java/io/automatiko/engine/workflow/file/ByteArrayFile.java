@@ -14,11 +14,11 @@ import io.automatiko.engine.api.workflow.files.File;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY)
 public class ByteArrayFile implements File<byte[]> {
 
-    private final String name;
+    protected final String name;
 
-    private final byte[] content;
+    protected byte[] content;
 
-    private final Map<String, String> attributes;
+    protected final Map<String, String> attributes;
 
     public ByteArrayFile(String name, byte[] content) {
         this.name = name;
