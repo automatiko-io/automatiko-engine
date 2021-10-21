@@ -39,6 +39,7 @@ import io.automatiko.engine.workflow.base.core.timer.CronExpirationTime;
 import io.automatiko.engine.workflow.base.core.timer.DateTimeUtils;
 import io.automatiko.engine.workflow.base.core.timer.TimeUtils;
 import io.automatiko.engine.workflow.base.core.timer.Timer;
+import io.automatiko.engine.workflow.base.instance.context.variable.VariableScopeInstance;
 import io.automatiko.engine.workflow.process.core.node.EventTrigger;
 import io.automatiko.engine.workflow.process.core.node.StartNode;
 import io.automatiko.engine.workflow.process.core.node.Trigger;
@@ -169,6 +170,12 @@ public class LightProcessRuntime implements InternalProcessRuntime {
 
         pi.setProcessRuntime(this);
         runtimeContext.setupParameters(pi, parameters, variableInitializer);
+
+        Map<String, Object> temp = new HashMap<>();
+        if (parameters != null) {
+            temp.putAll(parameters);
+        }
+        temp.putAll(pi.getVariables());
         String uuid;
         if (correlationKey != null) {
             uuid = UUID.nameUUIDFromBytes(correlationKey.toExternalForm().getBytes(StandardCharsets.UTF_8)).toString();
@@ -179,7 +186,7 @@ public class LightProcessRuntime implements InternalProcessRuntime {
                     .getDefaultContext(VariableScope.VARIABLE_SCOPE);
 
             Optional<Object> businessKeyVar = variableScope.getVariables().stream()
-                    .filter(var -> var.hasTag(Variable.BUSINESS_KEY_TAG)).map(v -> pi.getVariables().get(v.getName()))
+                    .filter(var -> var.hasTag(Variable.BUSINESS_KEY_TAG)).map(v -> temp.get(v.getName()))
                     .filter(var -> var != null)
                     .findAny();
 
@@ -194,6 +201,23 @@ public class LightProcessRuntime implements InternalProcessRuntime {
         }
 
         pi.setId(uuid);
+        VariableScope variableScope = (VariableScope) ((ContextContainer) process)
+                .getDefaultContext(VariableScope.VARIABLE_SCOPE);
+        VariableScopeInstance variableScopeInstance = (VariableScopeInstance) pi
+                .getContextInstance(VariableScope.VARIABLE_SCOPE);
+        // set input parameters
+        if (parameters != null) {
+            if (variableScope != null) {
+                for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+
+                    variableScope.validateVariable(process.getName(), entry.getKey(), entry.getValue());
+                    variableScopeInstance.setVariable(entry.getKey(), entry.getValue());
+                }
+            } else {
+                throw new IllegalArgumentException("This process does not support parameters!");
+            }
+        }
+        variableScopeInstance.enforceRequiredVariables();
         return pi;
     }
 

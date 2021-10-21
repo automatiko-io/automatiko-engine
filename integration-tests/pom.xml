@@ -38,6 +38,7 @@
     <module>automatiko-graphql</module>
     <module>automatiko-async</module>
     <module>automatiko-fault-tolerance</module>
+    <module>automatiko-files</module>
   </modules>
 
   <build>

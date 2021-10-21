@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<link rel="stylesheet"
+	href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet"
+	href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<script
+	src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+	var ws;
+	function WebSocketConnect() {
+
+		if ("WebSocket" in window) {
+			console.log("WebSocket is supported by your Browser!");
+
+			// Let us open a web socket
+			ws = new WebSocket("ws://localhost:8080/graphql");
+
+			ws.onopen = function() {
+
+				ws.send('{ "query" : "subscription {scripts_completed(user:\\\"john\\\", groups:[]) {id, name, message}}"}');
+				console.log("Message is sent...");
+			};
+
+			ws.onmessage = function(evt) {
+				var val = JSON.parse(evt.data);
+				console.log("Message is received " + evt.data);
+
+				appendDataRow(null, val);
+
+			};
+
+			ws.onclose = function() {
+
+				// websocket is closed.
+				console.log("Connection is closed...");
+			};
+		} else {
+
+			// The browser doesn't support WebSocket
+			console.log("WebSocket NOT supported by your Browser!");
+		}
+	}
+
+	function WebSocketDisconnect() {
+		if (ws !== null) {
+			ws.close();
+		}
+	}
+
+	function appendDataRow(key, val) {
+
+		var html = "<tr id=\"" + val.data.scripts_completed.id + "\">" + "<td>"
+				+ val.data.scripts_completed.id + "</td>" + "<td>"
+				+ val.data.scripts_completed.name + "</td>" + "<td>"
+				+ val.data.scripts_completed.message + "</td>" + "</tr>";
+		$(html).appendTo("#content");
+
+	}
+</script>
+
+</head>
+
+<body>
+	<div id="sse"></div>
+	<div class="container" role="main">
+		<br /> <a href="javascript:WebSocketConnect()">Connect</a>&nbsp;&nbsp;&nbsp;&nbsp;
+		<a href="javascript:WebSocketDisconnect()">Disconnect</a> <br />
+		<hr />
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Instance ID</th>
+					<th>Name</th>
+					<th>Message</th>
+				</tr>
+			</thead>
+			<tbody id="content">
+				<!-- filled using Ajax -->
+			</tbody>
+		</table>
+
+	</div>
+</body>
+
+</html>

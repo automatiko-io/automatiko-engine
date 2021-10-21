@@ -55,4 +55,8 @@ public class AutomatikoConfig {
     public AsyncConfig async() {
         return new AsyncConfig();
     }
+
+    public FilesConfig files() {
+        return new FilesConfig();
+    }
 }

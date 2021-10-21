@@ -23,15 +23,7 @@ public interface File<T> {
      * @return MIME type that represents this file
      */
     default String type() {
-        try {
-            String contentType = Files.probeContentType(Paths.get(name()));
-            if (contentType == null) {
-                contentType = DEFAULT_CONTENT_TYPE;
-            }
-            return contentType;
-        } catch (IOException e) {
-            return DEFAULT_CONTENT_TYPE;
-        }
+        return discoverType(name());
     }
 
     /**
@@ -55,4 +47,16 @@ public interface File<T> {
      * @return url of the file
      */
     String url();
+
+    public static String discoverType(String name) {
+        try {
+            String contentType = Files.probeContentType(Paths.get(name));
+            if (contentType == null) {
+                contentType = DEFAULT_CONTENT_TYPE;
+            }
+            return contentType;
+        } catch (IOException e) {
+            return DEFAULT_CONTENT_TYPE;
+        }
+    }
 }

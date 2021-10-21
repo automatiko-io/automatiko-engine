@@ -41,11 +41,9 @@ import io.quarkus.qute.Engine;
 import io.quarkus.qute.RawString;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
-import io.quarkus.security.Authenticated;
 
 @Tag(name = "User task Management", description = "Process management operations on top of the service", externalDocs = @ExternalDocumentation(description = "Manangement UI", url = "/management/processes/ui"))
 @Path("/management/tasks")
-@Authenticated
 public class UserTaskManagementResource {
 
     private static final String PROCESS_INSTANCE_NOT_FOUND = "not-found-template";

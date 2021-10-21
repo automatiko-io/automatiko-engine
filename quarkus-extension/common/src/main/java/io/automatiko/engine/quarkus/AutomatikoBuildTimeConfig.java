@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import io.automatiko.engine.api.config.AsyncConfig;
 import io.automatiko.engine.api.config.AutomatikoConfig;
+import io.automatiko.engine.api.config.FilesConfig;
 import io.automatiko.engine.api.config.JobsConfig;
 import io.automatiko.engine.api.config.MessagingConfig;
 import io.automatiko.engine.api.config.MetricsConfig;
@@ -96,6 +97,12 @@ public class AutomatikoBuildTimeConfig extends AutomatikoConfig {
     @ConfigItem
     public AsyncBuildTimeConfig async;
 
+    /**
+     * Configures async subsystem
+     */
+    @ConfigItem
+    public FilesBuildTimeConfig files;
+
     @Override
     public Optional<String> serviceUrl() {
         return serviceUrl;
@@ -159,6 +166,11 @@ public class AutomatikoBuildTimeConfig extends AutomatikoConfig {
     @Override
     public AsyncConfig async() {
         return async;
+    }
+
+    @Override
+    public FilesConfig files() {
+        return files;
     }
 
 }

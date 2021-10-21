@@ -2,6 +2,7 @@
 package io.automatiko.engine.workflow.base.instance;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -54,9 +55,9 @@ public class LightProcessRuntimeContext implements ProcessRuntimeContext {
     @Override
     public void setupParameters(ProcessInstance processInstance, Map<String, Object> parameters,
             VariableInitializer variableInitializer) {
+        Map<String, Object> variables = new HashMap<>();
+
         Process process = processInstance.getProcess();
-        // set variable default values
-        // TODO: should be part of processInstanceImpl?
         VariableScope variableScope = (VariableScope) ((ContextContainer) process)
                 .getDefaultContext(VariableScope.VARIABLE_SCOPE);
         VariableScopeInstance variableScopeInstance = (VariableScopeInstance) processInstance
@@ -67,7 +68,7 @@ public class LightProcessRuntimeContext implements ProcessRuntimeContext {
                 for (Map.Entry<String, Object> entry : parameters.entrySet()) {
 
                     variableScope.validateVariable(process.getName(), entry.getKey(), entry.getValue());
-                    variableScopeInstance.setVariable(entry.getKey(), entry.getValue());
+                    variables.put(entry.getKey(), entry.getValue());
                 }
             } else {
                 throw new IllegalArgumentException("This process does not support parameters!");
@@ -76,17 +77,16 @@ public class LightProcessRuntimeContext implements ProcessRuntimeContext {
 
         for (Variable var : variableScope.getVariables()) {
             if ((var.hasTag(Variable.AUTO_INITIALIZED_TAG) || var.getMetaData(Variable.DEFAULT_VALUE) != null)
-                    && variableScopeInstance.getVariable(var.getName()) == null) {
-                Object value = variableInitializer.initialize(process, var, variableScopeInstance.getVariables());
+                    && variables.get(var.getName()) == null) {
+                Object value = variableInitializer.initialize(process, var, variables);
 
                 variableScope.validateVariable(process.getName(), var.getName(), value);
                 variableScopeInstance.setVariable(var.getName(), value);
             }
-            if (var.hasTag(Variable.INITIATOR_TAG) && variableScopeInstance.getVariable(var.getName()) != null) {
-                processInstance.setInitiator(variableScopeInstance.getVariable(var.getName()).toString());
+            if (var.hasTag(Variable.INITIATOR_TAG) && variables.get(var.getName()) != null) {
+                processInstance.setInitiator(variables.get(var.getName()).toString());
             }
         }
 
-        variableScopeInstance.enforceRequiredVariables();
     }
 }
