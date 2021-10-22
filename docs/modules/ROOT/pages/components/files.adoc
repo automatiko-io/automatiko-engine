@@ -1,0 +1,162 @@
+= Handling files
+
+One of common requirements when working with workflows is the ability to handle files or documents. These can be of
+various types such as
+
+- documents (word, excel, pdf, etc)
+- images 
+- text files
+
+Regardless of the type of file there will be a need to store it as part of execution of a workflow instance.
+
+Automatiko comes with following types of file that abstract the concept of binary data
+
+- *Content based file* - a file that contains its data 
+- *Location based file* - a file that reference data using a location usually represented as URL
+
+These two file types are provided as following implementation classes that should be used within workflow definition
+as types of data objects (aka variables).
+
+- *Content based file* - `io.automatiko.engine.workflow.file.ByteArrayFile`
+- *Location based file* - `io.automatiko.engine.workflow.file.UrlFile`
+
+NOTE: These types are properly configured so they can be used as API types and these will only expose relevant information.
+
+By default, file types are treated exactly the same way as other type and thus will be stored together with 
+other data objects of the workflow instance. That might cause certain issues depending on type of persistence store used
+and the size of the files being managed.
+
+To address this, there are addons that bring in various back ends that can store files in reliable and secure way.
+Currently there are following addons 
+
+- File System
+- link:https://aws.amazon.com/s3/[Amazon S3]
+- link:https://cloud.google.com/storage[Google Storage]
+
+Depending on the selected file addon there will be additional configuration needed. Though regardless of the type used they work 
+in the same way - intercept use of Content based files (`ByteArrayFile`) and replace it with its dedicated flavor
+that extends the `ByteArrayFile`.
+
+Most important role of the addon is to offload the workflow from the content of the file and instead provide link to
+get the content on demand. At the same time, call to the `content` method of the `ByteArrayFile` will automatically load the 
+content so when content is actually needed within the workflow instance execution it can be easily retrieved. 
+An example of that is when such file needs to be sent as email attachment where the content is mandatory.
+
+All files that are content based (with `ByteArrayFile`) will be intercepted and replaced with flavor of that type provided by addon.
+At the time it is stored, content is removed and stored externally and an url to fetch this file will be set.
+
+So in a case where service receives a content based file through the service interface in following format
+
+[source,json]
+----
+{
+  "file": {
+    "content": "Y29udGVudA==",
+    "name": "test.txt"
+  }
+}
+----
+
+it will be replaced with addon specific file that will look like
+
+[source,json]
+----
+{
+  "file": {
+    "name": "test.txt",
+    "attributes": null,
+    "url": "http://localhost:8080/management/files/download/files/1.0/5184aa18-0b93-4ba0-abba-636d95ce91e0/file/test.txt"
+  }
+----
+
+As can be seen, content of the file is no longer shipped but the url is set with location where the content can be easily fetched.
+
+NOTE: The host and port of the url is set based on `quarkus.automatiko.service-url` property.
+
+== File System AddOn
+
+File System AddOn allows to put file content on local file system. The data will not be persisted with workflow instance
+itself but externalized. In addition to that a dedicated endpoint to download the file is also provided.
+
+To enable this addon add following dependency to the project
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-files-filesystem-addon</artifactId>
+</dependency>
+----  
+
+In addition to that, add following property to `application.properties`
+
+[source,plain]
+----
+quarkus.automatiko.files.fs.location=ABSOLUTE_PATH
+----
+
+IMPORTANT: Replace `ABSOLUTE_PATH` with the actual path where files should be stored.
+
+== Amazon S3 AddOn
+
+Amazon S3 AddOn allows to put file content in to Amazon S3 bucket. The data will not be persisted with workflow instance
+itself but externalized. In addition to that a dedicated endpoint to download the file is also provided.
+
+To enable this addon add following dependency to the project
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-files-s3-addon</artifactId>
+</dependency>
+----  
+
+In addition to that, add following property to `application.properties`
+
+[source,plain]
+----
+quarkus.automatiko.files.s3.bucket=BUCKET_NAME
+quarkus.s3.aws.region=YOUR_REGION
+quarkus.s3.aws.credentials.type=default
+----
+
+IMPORTANT: Replace `BUCKET_NAME` with the actual name of the bucket where files should be stored and 
+`YOUR_REGION` with the region where your S3 bucket was created
+
+`quarkus.s3.aws.credentials.type` - use the `default` credentials provider chain that looks for credentials in this order:
+
+- Java System Properties - `aws.accessKeyId` and `aws.secretAccessKey`
+- Environment Variables - `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+- Credential profiles file at the default location (`~/.aws/credentials`) shared by all AWS SDKs and the AWS CLI
+- Credentials delivered through the Amazon ECS if the `AWS_CONTAINER_CREDENTIALS_RELATIVE_URI` environment variable is set and the security manager has permission to access the variable,
+- Instance profile credentials delivered through the Amazon EC2 metadata service
+
+
+== Google Storage AddOn
+
+Google Storage AddOn allows to put file content in to Google Storage bucket. The data will not be persisted with workflow instance
+itself but externalized. In addition to that a dedicated endpoint to download the file is also provided.
+
+To enable this addon add following dependency to the project
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-files-google-storage-addon</artifactId>
+</dependency>
+----  
+
+In addition to that, add following property to `application.properties`
+
+[source,plain]
+----
+quarkus.automatiko.files.google-storage.bucket=BUCKET_NAME
+quarkus.google.cloud.project-id=PROJECT_ID
+quarkus.google.cloud.service-account-location=/path/service-account-key.json
+----
+
+IMPORTANT: Replace `BUCKET_NAME` with the actual name of the bucket where files should be stored and 
+`PROJECT_ID` with the Google Cloud project to be used. Lastly, point to service account key to 
+authorize access to the Google Cloud Storage service
