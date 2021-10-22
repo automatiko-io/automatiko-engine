@@ -57,25 +57,30 @@ public class FileSystemFileVariableAugmentor implements VariableAugmentor {
 
         if (value instanceof ByteArrayFile) {
             ByteArrayFile file = (ByteArrayFile) value;
+            if (file.content() != null) {
+                FileSystemFile fsFile = new FileSystemFile(file.name(), null, file.attributes());
+                fsFile.url(url.toString() + "/" + file.name());
 
-            FileSystemFile fsFile = new FileSystemFile(file.name(), null, file.attributes());
-            fsFile.url(url.toString() + "/" + file.name());
-
-            // store file on file system
-            store.save(file.content(), processId, processVersion, processInstanceId, variable.getName(), file.name());
-            value = fsFile;
+                // store file on file system
+                store.save(file.content(), processId, processVersion, processInstanceId, variable.getName(), file.name());
+                value = fsFile;
+            }
         } else if (value instanceof Collection) {
-            Collection<FileSystemFile> fsFiles = new ArrayList<>();
+            Collection<ByteArrayFile> fsFiles = new ArrayList<>();
             for (Object potentialFile : (Collection<?>) value) {
                 if (potentialFile instanceof ByteArrayFile) {
                     ByteArrayFile file = (ByteArrayFile) potentialFile;
-                    FileSystemFile fsFile = new FileSystemFile(file.name(), null, file.attributes());
-                    fsFile.url(url.toString() + "/" + file.name());
+                    if (file.content() != null) {
+                        FileSystemFile fsFile = new FileSystemFile(file.name(), null, file.attributes());
+                        fsFile.url(url.toString() + "/" + file.name());
 
-                    // store file on file system
-                    store.save(file.content(), processId, processVersion, processInstanceId, variable.getName(),
-                            file.name());
-                    fsFiles.add(fsFile);
+                        // store file on file system
+                        store.save(file.content(), processId, processVersion, processInstanceId, variable.getName(),
+                                file.name());
+                        fsFiles.add(fsFile);
+                    } else {
+                        fsFiles.add(file);
+                    }
                 }
             }
             return fsFiles;
@@ -99,25 +104,31 @@ public class FileSystemFileVariableAugmentor implements VariableAugmentor {
 
         if (value instanceof ByteArrayFile) {
             ByteArrayFile file = (ByteArrayFile) value;
-            FileSystemFile fsFile = new FileSystemFile(file.name(), null, file.attributes());
-            fsFile.url(url.toString() + "/" + file.name());
+            if (file.content() != null) {
+                FileSystemFile fsFile = new FileSystemFile(file.name(), null, file.attributes());
+                fsFile.url(url.toString() + "/" + file.name());
 
-            // replace file on file system
-            store.replace(file.content(), processId, processVersion, processInstanceId, variable.getName(),
-                    file.name());
-            value = fsFile;
+                // replace file on file system
+                store.replace(file.content(), processId, processVersion, processInstanceId, variable.getName(),
+                        file.name());
+                value = fsFile;
+            }
         } else if (value instanceof Collection) {
-            Collection<FileSystemFile> fsFiles = new ArrayList<>();
+            Collection<ByteArrayFile> fsFiles = new ArrayList<>();
             for (Object potentialFile : (Collection<?>) value) {
                 if (potentialFile instanceof ByteArrayFile) {
                     ByteArrayFile file = (ByteArrayFile) potentialFile;
-                    FileSystemFile fsFile = new FileSystemFile(file.name(), null, file.attributes());
-                    fsFile.url(url.toString() + "/" + file.name());
+                    if (file.content() != null) {
+                        FileSystemFile fsFile = new FileSystemFile(file.name(), null, file.attributes());
+                        fsFile.url(url.toString() + "/" + file.name());
 
-                    // replace file on file system
-                    store.replace(file.content(), processId, processVersion, processInstanceId, variable.getName(),
-                            file.name());
-                    fsFiles.add(fsFile);
+                        // replace file on file system
+                        store.replace(file.content(), processId, processVersion, processInstanceId, variable.getName(),
+                                file.name());
+                        fsFiles.add(fsFile);
+                    } else {
+                        fsFiles.add(file);
+                    }
                 }
             }
             return fsFiles;

@@ -57,26 +57,31 @@ public class GoogleStorageFileVariableAugmentor implements VariableAugmentor {
 
         if (value instanceof ByteArrayFile) {
             ByteArrayFile file = (ByteArrayFile) value;
+            if (file.content() != null) {
+                GoogleStorageFile fsFile = new GoogleStorageFile(file.name(), null, file.attributes());
+                fsFile.url(url.toString() + "/" + file.name());
 
-            GoogleStorageFile fsFile = new GoogleStorageFile(file.name(), null, file.attributes());
-            fsFile.url(url.toString() + "/" + file.name());
-
-            // store file on file system
-            store.save(file, processId, processVersion, processInstanceId, variable.getName(),
-                    file.name());
-            value = fsFile;
+                // store file on file system
+                store.save(file, processId, processVersion, processInstanceId, variable.getName(),
+                        file.name());
+                value = fsFile;
+            }
         } else if (value instanceof Collection) {
-            Collection<GoogleStorageFile> fsFiles = new ArrayList<>();
+            Collection<ByteArrayFile> fsFiles = new ArrayList<>();
             for (Object potentialFile : (Collection<?>) value) {
                 if (potentialFile instanceof ByteArrayFile) {
                     ByteArrayFile file = (ByteArrayFile) potentialFile;
-                    GoogleStorageFile fsFile = new GoogleStorageFile(file.name(), null, file.attributes());
-                    fsFile.url(url.toString() + "/" + file.name());
+                    if (file.content() != null) {
+                        GoogleStorageFile fsFile = new GoogleStorageFile(file.name(), null, file.attributes());
+                        fsFile.url(url.toString() + "/" + file.name());
 
-                    // store file on file system
-                    store.save(file, processId, processVersion, processInstanceId, variable.getName(),
-                            file.name());
-                    fsFiles.add(fsFile);
+                        // store file on file system
+                        store.save(file, processId, processVersion, processInstanceId, variable.getName(),
+                                file.name());
+                        fsFiles.add(fsFile);
+                    } else {
+                        fsFiles.add(file);
+                    }
                 }
             }
             return fsFiles;
@@ -100,25 +105,31 @@ public class GoogleStorageFileVariableAugmentor implements VariableAugmentor {
 
         if (value instanceof ByteArrayFile) {
             ByteArrayFile file = (ByteArrayFile) value;
-            GoogleStorageFile fsFile = new GoogleStorageFile(file.name(), null, file.attributes());
-            fsFile.url(url.toString() + "/" + file.name());
+            if (file.content() != null) {
+                GoogleStorageFile fsFile = new GoogleStorageFile(file.name(), null, file.attributes());
+                fsFile.url(url.toString() + "/" + file.name());
 
-            // replace file on file system
-            store.replace(file, processId, processVersion, processInstanceId, variable.getName(),
-                    file.name());
-            value = fsFile;
+                // replace file on file system
+                store.replace(file, processId, processVersion, processInstanceId, variable.getName(),
+                        file.name());
+                value = fsFile;
+            }
         } else if (value instanceof Collection) {
-            Collection<GoogleStorageFile> fsFiles = new ArrayList<>();
+            Collection<ByteArrayFile> fsFiles = new ArrayList<>();
             for (Object potentialFile : (Collection<?>) value) {
                 if (potentialFile instanceof ByteArrayFile) {
                     ByteArrayFile file = (ByteArrayFile) potentialFile;
-                    GoogleStorageFile fsFile = new GoogleStorageFile(file.name(), null, file.attributes());
-                    fsFile.url(url.toString() + "/" + file.name());
+                    if (file.content() != null) {
+                        GoogleStorageFile fsFile = new GoogleStorageFile(file.name(), null, file.attributes());
+                        fsFile.url(url.toString() + "/" + file.name());
 
-                    // replace file on file system
-                    store.replace(file, processId, processVersion, processInstanceId, variable.getName(),
-                            file.name());
-                    fsFiles.add(fsFile);
+                        // replace file on file system
+                        store.replace(file, processId, processVersion, processInstanceId, variable.getName(),
+                                file.name());
+                        fsFiles.add(fsFile);
+                    } else {
+                        fsFiles.add(file);
+                    }
                 }
             }
             return fsFiles;

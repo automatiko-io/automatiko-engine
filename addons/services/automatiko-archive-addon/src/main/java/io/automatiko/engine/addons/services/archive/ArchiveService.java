@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.workflow.ServiceExecutionError;
 import io.automatiko.engine.api.workflow.files.File;
+import io.automatiko.engine.workflow.file.ByteArrayFile;
 
 @ApplicationScoped
 public class ArchiveService {
@@ -113,7 +114,7 @@ public class ArchiveService {
                     }
                     baos.close();
 
-                    files.add(new ArchiveFile(entry.getName(), baos.toByteArray()));
+                    files.add(new ByteArrayFile(entry.getName(), baos.toByteArray()));
 
                     entry = zipIn.getNextEntry();
                 }
