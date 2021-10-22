@@ -15,6 +15,7 @@
 ** xref:components/event-publishers.adoc[Event publishers]
 ** xref:components/user-tasks.adoc[User tasks]
 ** xref:components/async-execution.adoc[Async Execution]
+** xref:components/files.adoc[Handling files]
 * xref:configuration.adoc[Configuration reference]
 * Services
 ** xref:services/archive.adoc[Archive]
