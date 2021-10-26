@@ -160,3 +160,19 @@ quarkus.google.cloud.service-account-location=/path/service-account-key.json
 IMPORTANT: Replace `BUCKET_NAME` with the actual name of the bucket where files should be stored and 
 `PROJECT_ID` with the Google Cloud project to be used. Lastly, point to service account key to 
 authorize access to the Google Cloud Storage service
+
+
+== Using files as part of data objects (POJOs)
+
+Files are usually used as type of data objects but sometimes there is a need to have files embedded into 
+other types. Like an email message can consist of both body and attachments and this requires to have files included in the 
+object representing these properties.
+
+To make this happen such object needs to implement `io.automatiko.engine.api.workflow.files.HasFiles<T>` interface.
+This interface provides access to files managed by the instance and allows to accept the augmented versions of the files
+that are changed by the storage mechanism used.
+
+`io.automatiko.engine.api.workflow.files.HasFiles<T>` uses a parametrized type which can be one of the following
+
+- single file represented by `io.automatiko.engine.api.workflow.files.File<T>`
+- collection of files represented by `Collection<io.automatiko.engine.api.workflow.files.File<T>>`

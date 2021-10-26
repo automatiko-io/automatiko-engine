@@ -3,10 +3,12 @@ package io.automatiko.engine.addons.services.receiveemail;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.automatiko.engine.api.workflow.files.HasFiles;
+import io.automatiko.engine.workflow.file.ByteArrayFile;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public class EmailMessage {
+public class EmailMessage implements HasFiles<List<ByteArrayFile>> {
 
     private String from;
 
@@ -22,7 +24,7 @@ public class EmailMessage {
 
     private String body;
 
-    private List<Attachment> attachments;
+    private List<ByteArrayFile> attachments;
 
     public List<String> getTo() {
         return to;
@@ -80,11 +82,11 @@ public class EmailMessage {
         this.body = body;
     }
 
-    public List<Attachment> getAttachments() {
+    public List<ByteArrayFile> getAttachments() {
         return attachments;
     }
 
-    public void setAttachments(List<Attachment> attachments) {
+    public void setAttachments(List<ByteArrayFile> attachments) {
         this.attachments = attachments;
     }
 
@@ -93,6 +95,17 @@ public class EmailMessage {
             this.attachments = new ArrayList<>();
         }
         this.attachments.add(attachment);
+    }
+
+    @Override
+    public List<ByteArrayFile> files() {
+        return attachments;
+    }
+
+    @Override
+    public void augmentFiles(List<ByteArrayFile> augmented) {
+        this.attachments = augmented;
+
     }
 
     @Override
