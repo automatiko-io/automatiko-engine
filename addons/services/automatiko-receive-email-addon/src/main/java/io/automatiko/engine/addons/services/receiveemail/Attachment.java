@@ -11,7 +11,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 public class Attachment extends ByteArrayFile {
 
     public Attachment(String name, byte[] content) {
-        super(name, content);
+        super(name, content == null ? new byte[0] : content);
     }
 
     public Attachment(@JsonProperty("name") String name, @JsonProperty("content") byte[] content,

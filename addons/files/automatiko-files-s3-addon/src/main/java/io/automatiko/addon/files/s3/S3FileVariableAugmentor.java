@@ -8,6 +8,7 @@ import javax.inject.Inject;
 
 import io.automatiko.engine.api.workflow.Variable;
 import io.automatiko.engine.api.workflow.VariableAugmentor;
+import io.automatiko.engine.api.workflow.files.HasFiles;
 import io.automatiko.engine.workflow.file.ByteArrayFile;
 
 @ApplicationScoped
@@ -30,6 +31,11 @@ public class S3FileVariableAugmentor implements VariableAugmentor {
             if (variable.getType().getClassType() != null) {
                 return ByteArrayFile.class.isAssignableFrom(variable.getType().getClassType());
             }
+            return false;
+        }
+
+        if (value instanceof HasFiles) {
+            value = ((HasFiles<?>) value).files();
         }
 
         if (value instanceof ByteArrayFile) {
@@ -45,6 +51,8 @@ public class S3FileVariableAugmentor implements VariableAugmentor {
     @Override
     public Object augmentOnCreate(String processId, String processVersion, String processInstanceId, Variable variable,
             Object value) {
+        Object originalValue = value;
+        value = retrieveValue(value);
         if (value == null) {
             return value;
         }
@@ -64,7 +72,7 @@ public class S3FileVariableAugmentor implements VariableAugmentor {
                 // store file on file system
                 store.save(file, processId, processVersion, processInstanceId, variable.getName(),
                         file.name());
-                value = fsFile;
+                value = updateValue(originalValue, fsFile);
             }
         } else if (value instanceof Collection) {
             Collection<ByteArrayFile> fsFiles = new ArrayList<>();
@@ -84,7 +92,7 @@ public class S3FileVariableAugmentor implements VariableAugmentor {
                     }
                 }
             }
-            return fsFiles;
+            return updateValue(originalValue, fsFiles);
         }
 
         return value;
@@ -93,6 +101,8 @@ public class S3FileVariableAugmentor implements VariableAugmentor {
     @Override
     public Object augmentOnUpdate(String processId, String processVersion, String processInstanceId, Variable variable,
             Object value) {
+        Object originalValue = value;
+        value = retrieveValue(value);
         if (value == null) {
             return value;
         }
@@ -112,7 +122,7 @@ public class S3FileVariableAugmentor implements VariableAugmentor {
                 // replace file on file system
                 store.replace(file, processId, processVersion, processInstanceId, variable.getName(),
                         file.name());
-                value = fsFile;
+                value = updateValue(originalValue, fsFile);
             }
         } else if (value instanceof Collection) {
             Collection<ByteArrayFile> fsFiles = new ArrayList<>();
@@ -132,7 +142,7 @@ public class S3FileVariableAugmentor implements VariableAugmentor {
                     }
                 }
             }
-            return fsFiles;
+            return updateValue(originalValue, fsFiles);
         }
 
         return value;
@@ -141,7 +151,7 @@ public class S3FileVariableAugmentor implements VariableAugmentor {
     @Override
     public void augmentOnDelete(String processId, String processVersion, String processInstanceId, Variable variable,
             Object value) {
-
+        value = retrieveValue(value);
         if (value instanceof ByteArrayFile) {
             ByteArrayFile file = (ByteArrayFile) value;
             store.remove(processId, processVersion, processInstanceId, variable.getName(), file.name());
@@ -155,6 +165,25 @@ public class S3FileVariableAugmentor implements VariableAugmentor {
 
         }
 
+    }
+
+    protected Object retrieveValue(Object value) {
+        if (value instanceof HasFiles) {
+            return ((HasFiles<?>) value).files();
+        }
+
+        return value;
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    protected Object updateValue(Object variable, Object value) {
+        if (variable instanceof HasFiles) {
+            ((HasFiles) variable).augmentFiles(value);
+
+            return variable;
+        }
+
+        return value;
     }
 
 }
