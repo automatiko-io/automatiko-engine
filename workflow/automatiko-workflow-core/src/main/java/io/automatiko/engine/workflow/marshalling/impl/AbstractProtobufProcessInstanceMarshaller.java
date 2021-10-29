@@ -23,12 +23,15 @@ import io.automatiko.engine.api.runtime.process.WorkItem;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatiko.engine.api.workflow.ExecutionsErrorInfo;
 import io.automatiko.engine.api.workflow.Tag;
+import io.automatiko.engine.api.workflow.VariableAugmentor;
+import io.automatiko.engine.api.workflow.VariableInitializer;
 import io.automatiko.engine.workflow.base.core.Context;
 import io.automatiko.engine.workflow.base.core.context.exclusive.ExclusiveGroup;
 import io.automatiko.engine.workflow.base.core.context.swimlane.SwimlaneContext;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.instance.ContextInstance;
+import io.automatiko.engine.workflow.base.instance.ProcessRuntimeServiceProvider;
 import io.automatiko.engine.workflow.base.instance.context.exclusive.ExclusiveGroupInstance;
 import io.automatiko.engine.workflow.base.instance.context.swimlane.SwimlaneContextInstance;
 import io.automatiko.engine.workflow.base.instance.context.variable.VariableScopeInstance;
@@ -370,7 +373,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                 for (Map.Entry<String, Object> variable : variables) {
 
                     _foreach.addVariable(ProtobufProcessMarshaller.marshallVariable(context, variable.getKey(),
-                            variable.getValue()));
+                            variable.getValue(), false));
                 }
             }
 
@@ -423,7 +426,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                 for (Map.Entry<String, Object> variable : variables) {
 
                     _composite.addVariable(ProtobufProcessMarshaller.marshallVariable(context, variable.getKey(),
-                            variable.getValue()));
+                            variable.getValue(), true));
                 }
             }
 
@@ -501,7 +504,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         Map<String, Object> parameters = workItem.getParameters();
         for (Map.Entry<String, Object> entry : parameters.entrySet()) {
             _workItem
-                    .addVariable(ProtobufProcessMarshaller.marshallVariable(context, entry.getKey(), entry.getValue()));
+                    .addVariable(ProtobufProcessMarshaller.marshallVariable(context, entry.getKey(), entry.getValue(), false));
         }
 
         return _workItem.build();
@@ -582,7 +585,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         Map<String, Object> parameters = workItem.getParameters();
         for (Map.Entry<String, Object> entry : parameters.entrySet()) {
             _workItem
-                    .addVariable(ProtobufProcessMarshaller.marshallVariable(context, entry.getKey(), entry.getValue()));
+                    .addVariable(ProtobufProcessMarshaller.marshallVariable(context, entry.getKey(), entry.getValue(), false));
         }
 
         return _workItem.build();
@@ -775,13 +778,29 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
             WorkflowProcessInstanceImpl processInstance, AutomatikoMessages.ProcessInstance _instance) throws IOException {
 
         if (_instance.getVariableCount() > 0) {
-            Context variableScope = ((io.automatiko.engine.workflow.base.core.Process) process)
+            VariableScope variableScope = (VariableScope) ((io.automatiko.engine.workflow.base.core.Process) process)
                     .getDefaultContext(VariableScope.VARIABLE_SCOPE);
             VariableScopeInstance variableScopeInstance = (VariableScopeInstance) processInstance
                     .getContextInstance(variableScope);
             for (AutomatikoMessages.Variable _variable : _instance.getVariableList()) {
                 try {
                     Object _value = ProtobufProcessMarshaller.unmarshallVariableValue(context, _variable);
+
+                    if ((boolean) context.env.getOrDefault("_import_", false)) {
+                        VariableInitializer initializer = ((ProcessRuntimeServiceProvider) context.env.get("_services_"))
+                                .getVariableInitializer();
+
+                        for (VariableAugmentor augmentor : initializer.augmentors()) {
+                            Variable var = variableScope.findVariable(_variable.getName());
+                            if (augmentor.accept(var, _value)) {
+
+                                _value = augmentor.augmentOnCreate(process.getId(),
+                                        process.getVersion(), _instance.getId(), var, _value);
+
+                            }
+                        }
+                    }
+
                     variableScopeInstance.internalSetVariable(_variable.getName(), _value);
                 } catch (ClassNotFoundException e) {
                     throw new IllegalArgumentException("Could not reload variable " + _variable.getName());
@@ -1089,7 +1108,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                     continue;
                 }
                 _instance.addVariable(
-                        ProtobufProcessMarshaller.marshallVariable(context, variable.getKey(), variable.getValue()));
+                        ProtobufProcessMarshaller.marshallVariable(context, variable.getKey(), variable.getValue(), true));
             }
         }
     }

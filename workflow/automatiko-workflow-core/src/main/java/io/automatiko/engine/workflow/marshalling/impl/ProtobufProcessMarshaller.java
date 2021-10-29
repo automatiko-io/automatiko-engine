@@ -18,6 +18,7 @@ import io.automatiko.engine.api.runtime.process.WorkItem;
 import io.automatiko.engine.workflow.base.instance.InternalProcessRuntime;
 import io.automatiko.engine.workflow.base.instance.impl.workitem.DefaultWorkItemManager;
 import io.automatiko.engine.workflow.base.instance.impl.workitem.WorkItemImpl;
+import io.automatiko.engine.workflow.file.ByteArrayFile;
 import io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.Header;
 import io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.Variable;
 import io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.VariableContainer;
@@ -110,7 +111,7 @@ public class ProtobufProcessMarshaller implements ProcessMarshaller {
         if (includeVariables) {
             Map<String, Object> parameters = workItem.getParameters();
             for (Map.Entry<String, Object> entry : parameters.entrySet()) {
-                _workItem.addVariable(marshallVariable(context, entry.getKey(), entry.getValue()));
+                _workItem.addVariable(marshallVariable(context, entry.getKey(), entry.getValue(), false));
             }
         }
         return _workItem.build();
@@ -146,10 +147,18 @@ public class ProtobufProcessMarshaller implements ProcessMarshaller {
         return workItem;
     }
 
-    public static Variable marshallVariable(MarshallerWriteContext context, String name, Object value)
+    public static Variable marshallVariable(MarshallerWriteContext context, String name, Object value, boolean extractFiles)
             throws IOException {
         AutomatikoMessages.Variable.Builder builder = AutomatikoMessages.Variable.newBuilder().setName(name);
         if (value != null) {
+
+            if (extractFiles && (boolean) context.env.getOrDefault("_export_", false)) {
+                if (value instanceof ByteArrayFile) {
+                    ByteArrayFile file = ((ByteArrayFile) value);
+                    value = new ByteArrayFile(file.name(), file.content(), file.attributes());
+                }
+            }
+
             ObjectMarshallingStrategy strategy = context.objectMarshallingStrategyStore.getStrategyObject(value);
             Integer index = context.getStrategyIndex(strategy);
             builder.setStrategyIndex(index).setDataType(strategy.getType(value.getClass())).setValue(
@@ -158,7 +167,8 @@ public class ProtobufProcessMarshaller implements ProcessMarshaller {
         return builder.build();
     }
 
-    public static Variable marshallVariablesMap(MarshallerWriteContext context, Map<String, Object> variables)
+    public static Variable marshallVariablesMap(MarshallerWriteContext context, Map<String, Object> variables,
+            boolean extractFiles)
             throws IOException {
         Map<String, Variable> marshalledVariables = new HashMap<String, Variable>();
         for (String key : variables.keySet()) {
@@ -175,7 +185,7 @@ public class ProtobufProcessMarshaller implements ProcessMarshaller {
             marshalledVariables.put(key, builder.build());
         }
 
-        return marshallVariable(context, "variablesMap", marshalledVariables);
+        return marshallVariable(context, "variablesMap", marshalledVariables, extractFiles);
     }
 
     public static VariableContainer marshallVariablesContainer(MarshallerWriteContext context,
