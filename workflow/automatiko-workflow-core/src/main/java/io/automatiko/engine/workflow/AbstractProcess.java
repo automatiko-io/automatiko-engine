@@ -262,6 +262,10 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
         return locks;
     }
 
+    public ProcessRuntimeServiceProvider services() {
+        return services;
+    }
+
     public EndOfInstanceStrategy endOfInstanceStrategy() {
         return endOfInstanceStrategy;
     }

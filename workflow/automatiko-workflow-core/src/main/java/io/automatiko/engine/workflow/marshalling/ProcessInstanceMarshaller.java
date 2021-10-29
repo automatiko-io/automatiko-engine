@@ -109,9 +109,10 @@ public class ProcessInstanceMarshaller {
             return null;
         }
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-
+            Map<String, Object> localEnv = new HashMap<String, Object>(env);
+            localEnv.put("_export_", true);
             ProcessMarshallerWriteContext context = new ProcessMarshallerWriteContext(baos,
-                    ((io.automatiko.engine.workflow.base.instance.ProcessInstance) pi).getProcessRuntime(), null, env);
+                    ((io.automatiko.engine.workflow.base.instance.ProcessInstance) pi).getProcessRuntime(), null, localEnv);
             context.setProcessInstanceId(pi.getId());
             context.setState(pi.getState());
 
@@ -183,12 +184,16 @@ public class ProcessInstanceMarshaller {
         processes.put(process.id(), p);// this can include version number in the id
         processes.put(p.getId(), p);// this is raw process id as defined in bpmn or so
         try (ByteArrayInputStream bais = new ByteArrayInputStream(new byte[0])) {
+            Map<String, Object> localEnv = new HashMap<String, Object>(env);
+            localEnv.put("_import_", true);
+            localEnv.put("_services_", ((AbstractProcess<?>) process).services());
+
             AutomatikoMessages.ProcessInstance.Builder builder = AutomatikoMessages.ProcessInstance.newBuilder();
             JsonFormat.parser().merge(data, builder);
 
             AutomatikoMessages.Header.Builder headerBuilder = AutomatikoMessages.Header.newBuilder();
             JsonFormat.parser().merge(header, headerBuilder);
-            MarshallerReaderContext context = new MarshallerReaderContext(bais, null, processes, this.env) {
+            MarshallerReaderContext context = new MarshallerReaderContext(bais, null, processes, localEnv) {
 
                 @Override
                 protected void readStreamHeader() throws IOException, StreamCorruptedException {
