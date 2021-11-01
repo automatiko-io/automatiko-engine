@@ -20,6 +20,12 @@
       <tns:metaData name="accessPolicy">
         <tns:metaValue><![CDATA[participants]]></tns:metaValue>
       </tns:metaData>
+      <tns:metaData name="description">
+        <tns:metaValue><![CDATA[Simple script handling workflow for #{name}]]></tns:metaValue>
+      </tns:metaData>
+      <tns:metaData name="tags">
+        <tns:metaValue><![CDATA[#{name}]]></tns:metaValue>
+      </tns:metaData>
     </bpmn2:extensionElements>
     <bpmn2:property id="name" itemSubjectRef="ItemDefinition_9" name="name"/>
     <bpmn2:property id="lastName" itemSubjectRef="ItemDefinition_9" name="lastName"/>

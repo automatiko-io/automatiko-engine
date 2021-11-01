@@ -201,5 +201,102 @@ public class VerificationTest {
         .then().statusCode(200)
             .body("$.size()", is(0));  
     }
+    
+    @Test
+    public void testProcessNotVersionedWithMetadata() {
+
+        String addPayload = "{\"name\" : \"john\"}";
+        given()
+                    .contentType(ContentType.JSON)
+                    .accept(ContentType.JSON)
+                    .body(addPayload)
+                    .when()
+                        .post("/scripts?metadata=true")
+                    .then()
+                        //.log().body(true)
+                        .statusCode(200)
+                        .body("id", notNullValue(), "name", equalTo("john"), "message", equalTo("Hello john"), "lastName", nullValue(),
+                                "metadata.description", equalTo("Simple script handling workflow for john"),
+                                "metadata.state", equalTo(2),
+                                "metadata.id", notNullValue(),
+                                "metadata.businessKey", nullValue(),
+                                "metadata.tags.size()", is(1),
+                                "metadata.tags[0]", equalTo("john"));
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/scripts")
+        .then().statusCode(200)
+            .body("$.size()", is(0));
+    }
+    @Test
+    public void testProcessNotVersionedWithInitiatorWithMetadata() {
+
+        String addPayload = "{\"name\" : \"mary\"}";
+        String id = given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(addPayload)
+            .when()
+                .post("/scripts?user=mary&metadata=true")
+            .then()
+                //.log().body(true)
+                .statusCode(200)
+                .body("id", notNullValue(), "name", equalTo("mary"), "message", nullValue(), "lastName", nullValue(),
+                        "metadata.description", equalTo("Simple script handling workflow for mary"),
+                        "metadata.state", equalTo(1),
+                        "metadata.id", notNullValue(),
+                        "metadata.businessKey", nullValue(),
+                        "metadata.tags.size()", is(1),
+                        "metadata.tags[0]", equalTo("mary"))
+                .extract().path("id");
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/scripts")
+        .then().statusCode(200)
+            .body("$.size()", is(0));
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/scripts?user=mary&metadata=true")
+        .then().statusCode(200)
+            .body("$.size()", is(1),
+                    "[0].metadata.description", equalTo("Simple script handling workflow for mary"),
+                    "[0].metadata.state", equalTo(1),
+                    "[0].metadata.id", notNullValue(),
+                    "[0].metadata.businessKey", nullValue(),
+                    "[0].metadata.tags.size()", is(1),
+                    "[0].metadata.tags[0]", equalTo("mary"));
+ 
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .delete("/scripts/" + id)
+        .then().statusCode(403);        
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .delete("/scripts/" + id + "?user=mary&metadata=true")
+        .then().statusCode(200)
+            .body("id", notNullValue(), "name", equalTo("mary"), "message", nullValue(), "lastName", nullValue(),
+                "metadata.description", equalTo("Simple script handling workflow for mary"),
+                "metadata.state", equalTo(3),
+                "metadata.id", notNullValue(),
+                "metadata.businessKey", nullValue(),
+                "metadata.tags.size()", is(1),
+                "metadata.tags[0]", equalTo("mary"));
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/scripts?user=mary")
+        .then().statusCode(200)
+            .body("$.size()", is(0));        
+    }
  // @formatter:on
 }

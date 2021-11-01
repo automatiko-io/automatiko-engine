@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.automatiko.engine.api.Model;
+import io.automatiko.engine.api.workflow.InstanceMetadata;
 
 public abstract class JsonModel implements Model {
 
@@ -18,7 +19,7 @@ public abstract class JsonModel implements Model {
 
     protected static ObjectMapper MAPPER = new ObjectMapper();
 
-    private ObjectNode data;
+    protected ObjectNode data;
 
     public JsonModel() {
         this.data = new ObjectNode(JsonNodeFactory.withExactBigDecimals(false));
@@ -85,5 +86,9 @@ public abstract class JsonModel implements Model {
 
     public JsonNode getWorkflowdata() {
         return data;
+    }
+
+    public void setMetadata(InstanceMetadata metadata) {
+        data.set("metadata", MAPPER.valueToTree(metadata));
     }
 }

@@ -90,6 +90,8 @@ public class $Type$Resource {
     protected $Type$Output mapOutput($Type$Output output, $Type$ resource, String businessKey, ProcessInstance<$Type$> pi) {
         output.fromMap(businessKey != null ? businessKey: resource.getId(), resource.toMap());
         
+        output.setMetadata(pi.metadata());
+        
         return output;
     }
 }

@@ -40,6 +40,7 @@ public class $Type$Resource {
     public Response signal(@Context HttpHeaders httpHeaders, @PathParam("id") String id, @PathParam("id_$name$") String id_$name$, 
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
+            @Parameter(description = "Indicates if instance metadata should be included", required = false) @QueryParam("metadata") @DefaultValue("false") final boolean metadata,
             final $signalType$ data) {
         String execMode = httpHeaders.getHeaderString("X-ATK-Mode");
 
@@ -58,7 +59,7 @@ public class $Type$Resource {
                     tracing(pi);
                     pi.send(Sig.of("$signalName$", data));
                     
-                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, getSubModel_$name$(pi), httpAuth.produce(headers), pi.status());
+                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, getSubModel_$name$(pi, metadata), httpAuth.produce(headers), pi.status());
 
                     return null;
                 });
@@ -76,7 +77,7 @@ public class $Type$Resource {
                 tracing(pi);
                 pi.send(Sig.of("$signalName$", data));
 
-                ResponseBuilder builder = Response.ok().entity(getSubModel_$name$(pi));
+                ResponseBuilder builder = Response.ok().entity(getSubModel_$name$(pi, metadata));
                 
                 return builder.build();
             });

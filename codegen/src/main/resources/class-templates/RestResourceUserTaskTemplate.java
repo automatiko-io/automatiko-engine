@@ -49,7 +49,8 @@ public class $Type$Resource {
     @Produces(MediaType.APPLICATION_JSON)
     public javax.ws.rs.core.Response signal(@Context HttpHeaders httpHeaders, @PathParam("id") @Parameter(description = "Unique identifier of the owning instance", required = true) final String id,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
-            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
+            @Parameter(description = "Indicates if instance metadata should be included", required = false) @QueryParam("metadata") @DefaultValue("false") final boolean metadata) {
         String execMode = httpHeaders.getHeaderString("X-ATK-Mode");
 
         if ("async".equalsIgnoreCase(execMode)) {
@@ -67,7 +68,7 @@ public class $Type$Resource {
                     tracing(pi);
                     pi.send(Sig.of("$taskNodeName$", java.util.Collections.emptyMap()));
                     
-                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, getModel(pi), httpAuth.produce(headers), pi.status());
+                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, getModel(pi, metadata), httpAuth.produce(headers), pi.status());
 
                     return null;
                 });
@@ -86,7 +87,7 @@ public class $Type$Resource {
                 pi.send(Sig.of("$taskNodeName$", java.util.Collections.emptyMap()));
                 java.util.Optional<WorkItem> task = pi.workItems().stream().filter(wi -> wi.getName().equals("$taskName$")).findFirst();
                 if(task.isPresent()) {
-                    return javax.ws.rs.core.Response.ok(getModel(pi))
+                    return javax.ws.rs.core.Response.ok(getModel(pi, metadata))
                             .header("Link", "</" + id + "/$taskName$/" + task.get().getId() + ">; rel='instance'")
                             .build();
                 }
@@ -124,7 +125,9 @@ public class $Type$Resource {
             @Parameter(description = "Unique identifier of the task instance", required = true) @PathParam("workItemId") final String workItemId, 
             @Parameter(description = "Optional phase to be used when aborting", required = false) @QueryParam("phase") @DefaultValue("complete") final String phase, 
             @Parameter(description = "User identifier that the tasks should be completed with", required = false) @QueryParam("user") final String user, 
-            @Parameter(description = "Groups that the tasks should be completed with", required = false) @QueryParam("group") final List<String> groups, final $TaskOutput$ model) {
+            @Parameter(description = "Groups that the tasks should be completed with", required = false) @QueryParam("group") final List<String> groups, 
+            @Parameter(description = "Indicates if instance metadata should be included", required = false) @QueryParam("metadata") @DefaultValue("false") final boolean metadata,
+            final $TaskOutput$ model) {
         
         String execMode = httpHeaders.getHeaderString("X-ATK-Mode");
         
@@ -145,7 +148,7 @@ public class $Type$Resource {
                     io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, model.toMap(), io.automatiko.engine.api.auth.IdentityProvider.get());
                     pi.transitionWorkItem(workItemId, transition);
                     
-                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, getModel(pi), httpAuth.produce(headers), pi.status());
+                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, getModel(pi, metadata), httpAuth.produce(headers), pi.status());
 
                     return null;
                 });
@@ -166,7 +169,7 @@ public class $Type$Resource {
                     io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, model.toMap(), io.automatiko.engine.api.auth.IdentityProvider.get());
                     pi.transitionWorkItem(workItemId, transition);
     
-                    ResponseBuilder builder = Response.ok().entity(getModel(pi));
+                    ResponseBuilder builder = Response.ok().entity(getModel(pi, metadata));
                     
                     return builder.build();
                 });
@@ -249,7 +252,8 @@ public class $Type$Resource {
             @Parameter(description = "Unique identifier of the task instance", required = true) @PathParam("workItemId") final String workItemId, 
             @Parameter(description = "Optional phase to be used when aborting", required = false) @QueryParam("phase") @DefaultValue("abort") final String phase, 
             @Parameter(description = "User identifier that the tasks should be aborted with", required = false) @QueryParam("user") final String user, 
-            @Parameter(description = "Groups that the tasks should be aborted with", required = false) @QueryParam("group") final List<String> groups) {
+            @Parameter(description = "Groups that the tasks should be aborted with", required = false) @QueryParam("group") final List<String> groups,
+            @Parameter(description = "Indicates if instance metadata should be included", required = false) @QueryParam("metadata") @DefaultValue("false") final boolean metadata) {
         
         String execMode = httpHeaders.getHeaderString("X-ATK-Mode");
 
@@ -269,7 +273,7 @@ public class $Type$Resource {
                     io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, null, io.automatiko.engine.api.auth.IdentityProvider.get());
                     pi.transitionWorkItem(workItemId, transition);
                     
-                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, getModel(pi), httpAuth.produce(headers), pi.status());
+                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, getModel(pi, metadata), httpAuth.produce(headers), pi.status());
 
                     return null;
                 });
@@ -289,7 +293,7 @@ public class $Type$Resource {
                     io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, null, io.automatiko.engine.api.auth.IdentityProvider.get());
                     pi.transitionWorkItem(workItemId, transition);
     
-                    ResponseBuilder builder = Response.ok().entity(getModel(pi));
+                    ResponseBuilder builder = Response.ok().entity(getModel(pi, metadata));
                     
                     return builder.build();
                 });
