@@ -242,6 +242,15 @@ public interface ProcessInstance<T> {
     Tags tags();
 
     /**
+     * Returns instance metadata information
+     * 
+     * @return metadata information about this instance
+     */
+    default InstanceMetadata metadata() {
+        return InstanceMetadata.of(this);
+    }
+
+    /**
      * Triggers a node with given id to perform its associated logic
      * 
      * @param nodeId unique id of the node to trigger

@@ -435,5 +435,127 @@ public class VerificationTest {
             .body("data.get_all_scripts.size()", is(0));
          
     }
+    
+    @Test
+    public void testProcessNotVersionedPassThroughWitMetadata() {
+
+        String addPayload = "{\"query\":\"mutation {create_scripts(data: {name: \\\"john\\\"}) {id,name,metadata {id,businessKey,state,tags,description}}}\\n\",\"variables\":null}";
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(addPayload)
+            .when()
+                .post("/graphql")
+            .then()
+                //.log().all(true)
+                .statusCode(200)
+                .body("data.create_scripts.id", notNullValue(), "data.create_scripts.name", equalTo("john"), "data.create_scripts.message", nullValue(),
+                        "data.create_scripts.metadata.description", equalTo("Simple script handling workflow for john"),
+                        "data.create_scripts.metadata.state", equalTo(2),
+                        "data.create_scripts.metadata.id", notNullValue(),
+                        "data.create_scripts.metadata.businessKey", nullValue(),
+                        "data.create_scripts.metadata.tags.size()", is(1),
+                        "data.create_scripts.metadata.tags[0]", equalTo("john"));
+        
+        String getInstances = "{\"query\":\"query {get_all_scripts {id,name,message}}\\n\",\"variables\":null}";
+        
+        given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_scripts.size()", is(0));
+    
+    }
+    
+    @Test
+    public void testProcessNotVersionedAbortViaTaskWithMetadata() {
+
+        String addPayload = "{\"query\":\"mutation {create_scripts(key: \\\"test\\\", data: {name: \\\"mary\\\"}) {id,name,metadata {id,businessKey,state,tags,description}}}\\n\",\"variables\":null}";
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(addPayload)
+            .when()
+                .post("/graphql")
+            .then()
+                //.log().all(true)
+                .statusCode(200)
+                .body("data.create_scripts.id", notNullValue(), "data.create_scripts.name", equalTo("mary"), "data.create_scripts.message", nullValue(),
+                        "data.create_scripts.metadata.description", equalTo("Simple script handling workflow for mary"),
+                        "data.create_scripts.metadata.state", equalTo(1),
+                        "data.create_scripts.metadata.id", notNullValue(),
+                        "data.create_scripts.metadata.businessKey", equalTo("test"),
+                        "data.create_scripts.metadata.tags.size()", is(1),
+                        "data.create_scripts.metadata.tags[0]", equalTo("mary"));
+        
+       
+        String getInstances = "{\"query\":\"query {get_all_scripts(user: \\\"john\\\") {id,name,message,metadata {id,businessKey,state,tags,description}}}\\n\",\"variables\":null}";
+        
+        given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_scripts.size()", is(1),
+                    "data.get_all_scripts[0].metadata.description", equalTo("Simple script handling workflow for mary"),
+                    "data.get_all_scripts[0].metadata.state", equalTo(1),
+                    "data.get_all_scripts[0].metadata.id", notNullValue(),
+                    "data.get_all_scripts[0].metadata.businessKey", equalTo("test"),
+                    "data.get_all_scripts[0].metadata.tags.size()", is(1),
+                    "data.get_all_scripts[0].metadata.tags[0]", equalTo("mary"));
+        
+        String getTasks = "{\"query\":\"query {get_scripts_tasks(id: \\\"test\\\", user: \\\"john\\\") {id,name}}\\n\",\"variables\":null}";
+        
+        String taskId = given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getTasks)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_scripts_tasks.size()", is(1))
+            .extract().path("data.get_scripts_tasks[0].id");
+ 
+        String abortTaskPayload = "{\"query\":\"mutation {abortTask_approval_0(id: \\\"test\\\", workItemId: \\\"" + taskId +"\\\", user:\\\"john\\\", phase: \\\"skip\\\") {id,name,metadata {id,businessKey,state,tags,description}}}\\n\",\"variables\":null}";
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(abortTaskPayload)
+            .when()
+                .post("/graphql")
+            .then()
+                //.log().all(true)
+                .statusCode(200)
+                .body("data.abortTask_approval_0.id", notNullValue(), "data.abortTask_approval_0.name", equalTo("mary"), "data.abortTask_approval_0.message", nullValue(),
+                        "data.abortTask_approval_0.metadata.description", equalTo("Simple script handling workflow for mary"),
+                        "data.abortTask_approval_0.metadata.state", equalTo(2),
+                        "data.abortTask_approval_0.metadata.id", notNullValue(),
+                        "data.abortTask_approval_0.metadata.businessKey", equalTo("test"),
+                        "data.abortTask_approval_0.metadata.tags.size()", is(1),
+                        "data.abortTask_approval_0.metadata.tags[0]", equalTo("mary"));
+      
+        given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_scripts.size()", is(0));
+         
+    }
  // @formatter:on
 }

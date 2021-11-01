@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import io.automatiko.engine.api.workflow.InstanceMetadata;
 import io.automatiko.engine.workflow.json.JsonNodeDeserializer;
 
 @JsonSerialize(using = io.automatiko.engine.workflow.json.JsonNodeSerializer.class)

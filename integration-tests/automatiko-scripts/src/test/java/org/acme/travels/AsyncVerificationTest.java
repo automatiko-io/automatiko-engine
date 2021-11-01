@@ -75,7 +75,7 @@ public class AsyncVerificationTest {
             }
         }
         
-        verify(1, postRequestedFor(urlEqualTo("/callback")).withRequestBody(equalToJson("{\"id\":\"test\",\"lastName\": null,\"name\":\"john\",\"message\":\"Hello john\"}")));
+        verify(1, postRequestedFor(urlEqualTo("/callback")).withRequestBody(equalToJson("{\"id\":\"test\",\"metadata\" : null,\"lastName\": null,\"name\":\"john\",\"message\":\"Hello john\"}")));
     }
     
     @Test
@@ -149,7 +149,7 @@ public class AsyncVerificationTest {
             }
         }
         
-        verify(1, postRequestedFor(urlEqualTo("/callback")).withRequestBody(equalToJson("{\"id\":\"test\",\"lastName\": null,\"name\":\"mary\",\"message\":null}")));
+        verify(1, postRequestedFor(urlEqualTo("/callback")).withRequestBody(equalToJson("{\"id\":\"test\",\"metadata\" : null,\"lastName\": null,\"name\":\"mary\",\"message\":null}")));
         
         
         List<Map<String, String>> taskInfo = given()

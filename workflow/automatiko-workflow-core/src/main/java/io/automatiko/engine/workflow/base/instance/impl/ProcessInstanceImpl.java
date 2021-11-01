@@ -287,7 +287,7 @@ public abstract class ProcessInstanceImpl implements ProcessInstance, Serializab
 
         description = process.getName();
         if (process != null) {
-            Object metaData = process.getMetaData().get("customDescription");
+            Object metaData = process.getMetaData().getOrDefault("description", process.getMetaData().get("customDescription"));
             if (metaData instanceof String) {
                 description = ((WorkflowProcess) process).evaluateExpression((String) metaData, this);
             }

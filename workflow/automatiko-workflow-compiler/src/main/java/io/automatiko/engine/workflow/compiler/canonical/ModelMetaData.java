@@ -175,6 +175,9 @@ public class ModelMetaData {
             modelClass.addAnnotation(new NormalAnnotationExpr(new Name("javax.persistence.Entity"),
                     NodeList.nodeList(new MemberValuePair("name",
                             new StringLiteralExpr(camelToSnake(processId.toUpperCase() + version(version).toUpperCase()))))));
+
+            modelClass.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("metadata"))
+                    .forEach(fd -> fd.addAnnotation("javax.persistence.Transient"));
         }
 
         if (supportsOpenApi) {

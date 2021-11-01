@@ -50,6 +50,7 @@ public class $Type$Resource {
     public Response signal(@Context HttpHeaders httpHeaders, @PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) final String id, 
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
+            @Parameter(description = "Indicates if instance metadata should be included", required = false) @QueryParam("metadata") @DefaultValue("false") final boolean metadata,
             final $signalType$ data) {
         String execMode = httpHeaders.getHeaderString("X-ATK-Mode");
 
@@ -67,7 +68,7 @@ public class $Type$Resource {
                     ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
                     tracing(pi);
                     pi.send(Sig.of("$signalName$", data));
-                    $Type$Output result = getModel(pi);
+                    $Type$Output result = getModel(pi, metadata);
                     
                     io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, result, httpAuth.produce(headers), pi.status());
 
@@ -87,7 +88,7 @@ public class $Type$Resource {
                 tracing(pi);
                 pi.send(Sig.of("$signalName$", data));
 
-                ResponseBuilder builder = Response.ok().entity(getModel(pi));
+                ResponseBuilder builder = Response.ok().entity(getModel(pi, metadata));
                 
                 return builder.build();
             });

@@ -36,6 +36,7 @@ import io.automatiko.engine.api.auth.IdentitySupplier;
 import io.automatiko.engine.api.auth.SecurityPolicy;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.Sig;
+import io.automatiko.engine.api.workflow.InstanceMetadata;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceExecutionException;
@@ -112,6 +113,7 @@ public class $Type$Resource {
     public Response create_$name$(@Context HttpHeaders httpHeaders, @QueryParam("businessKey") @Parameter(description = "Alternative id to be assigned to the instance", required = false) String businessKey, 
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
+            @Parameter(description = "Indicates if instance metadata should be included", required = false) @QueryParam("metadata") @DefaultValue("false") final boolean metadata,
             @Parameter(description = "The input model for $name$ instance") $Type$Input resource) {
         if (resource == null) {
             resource = new $Type$Input();
@@ -128,7 +130,7 @@ public class $Type$Resource {
                     mapInput(value, new $Type$()));            
             ((AbstractProcessInstance<$Type$>) pi).unlock(true);
 
-            $Type$Output output = mapOutput(new $Type$Output(), pi.variables(), businessKey);
+            $Type$Output output = mapOutput(new $Type$Output(), pi.variables(), businessKey, pi.metadata());
             
             Map<String, String> headers = httpHeaders.getRequestHeaders().entrySet().stream()
                     .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().get(0)));
@@ -145,7 +147,7 @@ public class $Type$Resource {
                                 pi.start();
                             }
                             tracing(pi);
-                            $Type$Output result = getModel(pi);
+                            $Type$Output result = getModel(pi, metadata);
 
                             io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, result, httpAuth.produce(headers), pi.status());
 
@@ -170,7 +172,7 @@ public class $Type$Resource {
                     pi.start();
                 }
                 tracing(pi);                
-                ResponseBuilder builder = Response.ok().entity(getModel(pi));
+                ResponseBuilder builder = Response.ok().entity(getModel(pi, metadata));
                 
                 return builder.build();
             });
@@ -198,17 +200,18 @@ public class $Type$Resource {
             @Parameter(description = "Pagination - page to start on", required = false) @QueryParam(value = "page") @DefaultValue("1") int page,
             @Parameter(description = "Pagination - number of items to return", required = false) @QueryParam(value = "size") @DefaultValue("10") int size,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
-            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
+            @Parameter(description = "Indicates if instance metadata should be included", required = false) @QueryParam("metadata") @DefaultValue("false") final boolean metadata) {
         
             identitySupplier.buildIdentityProvider(user, groups);
             return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             if (tags != null && !tags.isEmpty()) {
                 return process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, mapStatus(status), tags.toArray(String[]::new)).stream()
-                        .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
+                        .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), metadata ? pi.metadata() : null))
                         .collect(Collectors.toList());
             } else {
                 return process.instances().values(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, mapStatus(status), page, size).stream()
-                    .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
+                    .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), metadata ? pi.metadata() : null))
                     .collect(Collectors.toList());
             }
         });
@@ -241,13 +244,14 @@ public class $Type$Resource {
     public $Type$Output get_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id,
             @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {"active", "completed", "aborted", "error"})) @QueryParam("status") @DefaultValue("active") final String status, 
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
-            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
+            @Parameter(description = "Indicates if instance metadata should be included", required = false) @QueryParam("metadata") @DefaultValue("false") final boolean metadata) {
         
             identitySupplier.buildIdentityProvider(user, groups);
             return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 return process.instances()
                     .findById(id, mapStatus(status), io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY)
-                    .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()))
+                    .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), metadata ? pi.metadata() : null))
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             });
     }
@@ -354,7 +358,8 @@ public class $Type$Resource {
     @Produces(MediaType.APPLICATION_JSON)
     public $Type$Output delete_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) final String id,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
-            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
+            @Parameter(description = "Indicates if instance metadata should be included", required = false) @QueryParam("metadata") @DefaultValue("false") final boolean metadata) {
         identitySupplier.buildIdentityProvider(user, groups);
         return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {  
             ProcessInstance<$Type$> pi = process.instances().findById(id, ProcessInstance.STATE_ACTIVE, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE).orElse(null);
@@ -363,7 +368,7 @@ public class $Type$Resource {
             }
             tracing(pi);
             pi.abort();            
-            return getModel(pi);
+            return getModel(pi, metadata);
             
         });
     }
@@ -396,6 +401,7 @@ public class $Type$Resource {
     public Response updateModel_$name$(@Context HttpHeaders httpHeaders, @PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id, 
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
+            @Parameter(description = "Indicates if instance metadata should be included", required = false) @QueryParam("metadata") @DefaultValue("false") final boolean metadata,
             @Parameter(description = "Updates to the data model for $name$ instance", required = true) $Type$ resource) {
         
         String execMode = httpHeaders.getHeaderString("X-ATK-Mode");
@@ -415,7 +421,7 @@ public class $Type$Resource {
                             .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
                     tracing(pi);
                     pi.updateVariables(resource);
-                    $Type$Output result = mapOutput(new $Type$Output(), pi.variables(), pi.businessKey());
+                    $Type$Output result = mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), metadata ? pi.metadata() : null);
                     
                     io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, result, httpAuth.produce(headers), pi.status());
 
@@ -436,7 +442,7 @@ public class $Type$Resource {
                 tracing(pi);
                 pi.updateVariables(resource);
                 
-                ResponseBuilder builder = Response.ok().entity(mapOutput(new $Type$Output(), pi.variables(), pi.businessKey()));
+                ResponseBuilder builder = Response.ok().entity(mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), metadata ? pi.metadata() : null));
                 
                 return builder.build();
             });
@@ -597,12 +603,12 @@ public class $Type$Resource {
         });
     }
     
-    protected $Type$Output getModel(ProcessInstance<$Type$> pi) {
+    protected $Type$Output getModel(ProcessInstance<$Type$> pi, boolean metadata) {
         if (pi.status() == ProcessInstance.STATE_ERROR && pi.errors().isPresent()) {
             throw new ProcessInstanceExecutionException(pi.id(), pi.errors().get().failedNodeIds(), pi.errors().get().errorMessages());
         }
         
-        return mapOutput(new $Type$Output(), pi.variables(), pi.businessKey());
+        return mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), metadata ? pi.metadata() : null);
     }
     
     protected Policy[] policies(String user, List<String> groups) {         
@@ -615,9 +621,12 @@ public class $Type$Resource {
         return resource;
     }
     
-    protected $Type$Output mapOutput($Type$Output output, $Type$ resource, String businessKey) {
+    protected $Type$Output mapOutput($Type$Output output, $Type$ resource, String businessKey, InstanceMetadata metadata) {
         output.fromMap(businessKey != null ? businessKey: resource.getId(), resource.toMap());
         
+        if (metadata != null) {
+            output.setMetadata(metadata);
+        }
         return output;
     }
     
