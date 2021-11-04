@@ -3,6 +3,7 @@ package io.automatiko.engine.quarkus.functionflow.deployment;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,6 +61,28 @@ public class ExampleGenerator {
         }
     }
 
+    public Object innerGenerate(Schema property, OpenAPI openApi) {
+        LOGGER.debug("debugging generate in ExampleGenerator");
+        try {
+            Set<String> processedModels = new HashSet<>();
+
+            Map<String, Object> kv = new LinkedHashMap<>();
+
+            for (Entry<String, Schema> prop : property.getProperties().entrySet()) {
+
+                Object example = resolvePropertyToExample(prop.getKey(), prop.getValue(), processedModels, openApi);
+                if (example != null) {
+
+                    kv.put(prop.getKey(), example);
+
+                }
+            }
+            return kv;
+        } catch (Exception e) {
+            return Collections.emptyMap();
+        }
+    }
+
     private Object resolvePropertyToExample(String propertyName, Schema property,
             Set<String> processedModels, OpenAPI openApi) {
         LOGGER.debug("Resolving example for property {}...", property);
@@ -87,6 +110,12 @@ public class ExampleGenerator {
                 }
                 return objectProperties;
             }
+        } else if (property.getType().equals(SchemaType.INTEGER)) {
+            Double min = getPropertyValue(property.getMinimum());
+            Double max = getPropertyValue(property.getMaximum());
+
+            return randomIntNumber(min, max);
+
         } else if (property.getType().equals(SchemaType.NUMBER)) {
             Double min = getPropertyValue(property.getMinimum());
             Double max = getPropertyValue(property.getMaximum());
@@ -113,7 +142,7 @@ public class ExampleGenerator {
             LOGGER.debug("No values found, using property name " + propertyName + " as example");
             return "string";
         } else if (property.getType().equals(SchemaType.OBJECT)) {
-            return generate(property, openApi);
+            return innerGenerate(property, openApi);
         }
 
         return "";
@@ -133,6 +162,19 @@ public class ExampleGenerator {
             return random.nextDouble() * max;
         } else {
             return random.nextDouble() * 10;
+        }
+    }
+
+    private int randomIntNumber(Double min, Double max) {
+        if (min != null && max != null) {
+            int range = max.intValue() - min.intValue();
+            return random.nextInt() * range + min.intValue();
+        } else if (min != null) {
+            return random.nextInt() + min.intValue();
+        } else if (max != null) {
+            return random.nextInt() * max.intValue();
+        } else {
+            return random.nextInt() * 10;
         }
     }
 

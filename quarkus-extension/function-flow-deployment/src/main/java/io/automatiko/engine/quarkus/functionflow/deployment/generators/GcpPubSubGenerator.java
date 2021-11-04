@@ -21,6 +21,8 @@ import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
+import org.jboss.jandex.ParameterizedType;
+import org.jboss.jandex.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,15 +84,25 @@ public class GcpPubSubGenerator implements Generator {
 
                 deleteCommands.add("gcloud eventarc triggers delete " + mi.name() + " --location=us-central1");
 
+                boolean includeSubjectAttribute = false;
+                Type param = mi.parameters().get(0);
+                if (param instanceof ParameterizedType) {
+                    param = ((ParameterizedType) param).arguments().get(0);
+                    includeSubjectAttribute = true;
+                }
+
                 SchemaFactory.typeToSchema(ctx,
                         mi.parameters().get(0), Collections.emptyList());
-                Schema fSchema = ctx.getOpenApi().getComponents().getSchemas().get(mi.parameters().get(0).name().local());
+                Schema fSchema = ctx.getOpenApi().getComponents().getSchemas().get(param.name().local());
                 LOGGER.info(
                         "Function \"{}\" will accept POST requests on / endpoint with following payload ",
                         mi.name());
                 Stream.of(generator.generate(fSchema, ctx.getOpenApi()).split("\\r?\\n")).forEach(LOGGER::info);
                 LOGGER.info("(as either binary or structured cloud event of type \"{}\") ",
                         mi.annotation(mapping).value("trigger").asString());
+                if (includeSubjectAttribute) {
+                    LOGGER.info("IMPORTANT: include 'subject' attribute of cloud event that points to workflow instance id");
+                }
                 LOGGER.info("*****************************************");
             }
         }

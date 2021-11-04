@@ -55,7 +55,7 @@ public abstract class AbstractNodeVisitor<T extends Node> extends AbstractVisito
         visitNode(process, FACTORY_FIELD_NAME, node, body, variableScope, metadata);
         if (isAdHocNode(node) && !(node instanceof HumanTaskNode) && !(node instanceof BoundaryEventNode)
                 && !(node instanceof EventSubProcessNode)) {
-            metadata.addSignal(node.getName(), null);
+            metadata.addSignal(node.getName(), null, node);
         }
     }
 

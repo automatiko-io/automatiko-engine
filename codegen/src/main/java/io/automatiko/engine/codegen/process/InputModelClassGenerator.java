@@ -21,8 +21,11 @@ public class InputModelClassGenerator {
     private ModelMetaData modelMetaData;
     private String modelClassName;
 
-    public InputModelClassGenerator(GeneratorContext context, WorkflowProcess workFlowProcess) {
+    private String workflowType;
+
+    public InputModelClassGenerator(GeneratorContext context, WorkflowProcess workFlowProcess, String workflowType) {
         String pid = workFlowProcess.getId();
+        this.workflowType = workflowType;
         className = StringUtils.capitalize(
                 ProcessToExecModelGenerator.extractProcessId(pid, CodegenUtils.version(workFlowProcess.getVersion()))
                         + "ModelInput");
@@ -36,7 +39,8 @@ public class InputModelClassGenerator {
         // create model class for all variables
         String packageName = workFlowProcess.getPackageName();
 
-        modelMetaData = new ModelMetaData(workFlowProcess.getId(), CodegenUtils.version(workFlowProcess.getVersion()),
+        modelMetaData = new ModelMetaData(workflowType, workFlowProcess.getId(),
+                CodegenUtils.version(workFlowProcess.getVersion()),
                 packageName, className, workFlowProcess.getVisibility(),
                 VariableDeclarations
                         .ofInput((VariableScope) ((io.automatiko.engine.workflow.base.core.Process) workFlowProcess)

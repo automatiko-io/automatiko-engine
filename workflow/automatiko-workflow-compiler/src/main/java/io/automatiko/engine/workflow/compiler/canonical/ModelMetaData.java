@@ -48,6 +48,7 @@ import com.github.javaparser.ast.type.Type;
 
 import io.automatiko.engine.api.codegen.Generated;
 import io.automatiko.engine.api.codegen.VariableInfo;
+import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.api.workflow.datatype.DataType;
 import io.automatiko.engine.services.utils.StringUtils;
@@ -55,6 +56,7 @@ import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 
 public class ModelMetaData {
 
+    private final String workflowType;
     private final String processId;
     private final String version;
     private final String packageName;
@@ -77,15 +79,16 @@ public class ModelMetaData {
 
     private List<Consumer<CompilationUnit>> augmentors = new ArrayList<>();
 
-    public ModelMetaData(String processId, String version, String packageName, String modelClassSimpleName,
+    public ModelMetaData(String workflowType, String processId, String version, String packageName, String modelClassSimpleName,
             String visibility, VariableDeclarations variableScope, boolean hidden, String name, String description) {
-        this(processId, version, packageName, modelClassSimpleName, visibility, variableScope, hidden,
+        this(workflowType, processId, version, packageName, modelClassSimpleName, visibility, variableScope, hidden,
                 "/class-templates/ModelTemplate.java", name, description);
     }
 
-    public ModelMetaData(String processId, String version, String packageName, String modelClassSimpleName,
+    public ModelMetaData(String workflowType, String processId, String version, String packageName, String modelClassSimpleName,
             String visibility, VariableDeclarations variableScope, boolean hidden, String templateName,
             String name, String description) {
+        this.workflowType = workflowType;
         this.processId = processId;
         this.version = version;
         this.packageName = packageName;
@@ -301,6 +304,16 @@ public class ModelMetaData {
 
         for (Consumer<CompilationUnit> augmentor : augmentors) {
             augmentor.accept(compilationUnit);
+        }
+
+        if (!workflowType.equals(Process.WORKFLOW_TYPE)) {
+            // remove metadata field and it's getters/setters
+            modelClass.findFirst(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("metadata"))
+                    .ifPresent(fd -> fd.removeForced());
+            modelClass
+                    .findAll(MethodDeclaration.class,
+                            md -> md.getNameAsString().equals("getMetadata") || md.getNameAsString().equals("setMetadata"))
+                    .forEach(md -> md.removeForced());
         }
 
         return compilationUnit;

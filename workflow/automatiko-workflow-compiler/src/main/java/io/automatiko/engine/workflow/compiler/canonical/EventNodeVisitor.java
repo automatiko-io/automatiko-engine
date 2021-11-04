@@ -13,6 +13,7 @@ import static io.automatiko.engine.workflow.process.executable.core.factory.Even
 import static io.automatiko.engine.workflow.process.executable.core.factory.EventNodeFactory.METHOD_VARIABLE_NAME;
 
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.Map;
 
 import com.github.javaparser.ast.expr.LongLiteralExpr;
@@ -46,7 +47,7 @@ public class EventNodeVisitor extends AbstractNodeVisitor<EventNode> {
             variable = variableScope.findVariable(node.getVariableName());
         }
         if (EVENT_TYPE_SIGNAL.equals(node.getMetaData(EVENT_TYPE))) {
-            metadata.addSignal(node.getType(), variable != null ? variable.getType().getStringType() : null);
+            metadata.addSignal(node.getType(), variable != null ? variable.getType().getStringType() : null, node);
         } else if (EVENT_TYPE_MESSAGE.equals(node.getMetaData(EVENT_TYPE))) {
             Map<String, Object> nodeMetaData = node.getMetaData();
             try {
@@ -56,6 +57,7 @@ public class EventNodeVisitor extends AbstractNodeVisitor<EventNode> {
                         (String) nodeMetaData.get(TRIGGER_CORRELATION),
                         (String) nodeMetaData.get(TRIGGER_CORRELATION_EXPR)).validate();
                 triggerMetaData.addContext(node.getMetaData());
+                triggerMetaData.addContext(Collections.singletonMap("_node_", node));
                 metadata.addTrigger(triggerMetaData);
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException(MessageFormat

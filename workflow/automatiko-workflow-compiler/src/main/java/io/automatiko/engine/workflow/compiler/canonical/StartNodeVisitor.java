@@ -14,6 +14,7 @@ import static io.automatiko.engine.workflow.process.executable.core.factory.Star
 import static io.automatiko.engine.workflow.process.executable.core.factory.StartNodeFactory.METHOD_TIMER;
 import static io.automatiko.engine.workflow.process.executable.core.factory.StartNodeFactory.METHOD_TRIGGER;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -83,6 +84,7 @@ public class StartNodeVisitor extends AbstractNodeVisitor<StartNode> {
                     String.valueOf(node.getId()), node.getName(), (String) nodeMetaData.get(TRIGGER_CORRELATION),
                     (String) nodeMetaData.get(TRIGGER_CORRELATION_EXPR)).validate();
             trigger.addContext(node.getMetaData());
+            trigger.addContext(Collections.singletonMap("_node_", node));
             // mark the trigger as capable of starting new instance only if this is top level start node
             if (node.getParentContainer() instanceof WorkflowProcess) {
                 trigger.setStart(true);
@@ -129,7 +131,7 @@ public class StartNodeVisitor extends AbstractNodeVisitor<StartNode> {
                         new StringLiteralExpr((String) nodeMetaData.get(MESSAGE_TYPE)),
                         new StringLiteralExpr(getOrDefault((String) nodeMetaData.get(TRIGGER_MAPPING), ""))));
             }
-            metadata.addSignal((String) nodeMetaData.get(MESSAGE_TYPE), variableType);
+            metadata.addSignal((String) nodeMetaData.get(MESSAGE_TYPE), variableType, startNode);
         } else if (EVENT_TYPE_CONDITION.equalsIgnoreCase((String) startNode.getMetaData(TRIGGER_TYPE))) {
             ConstraintTrigger constraintTrigger = (ConstraintTrigger) startNode.getTriggers().get(0);
             body.addStatement(getFactoryMethod(getNodeId(startNode), METHOD_CONDITION,

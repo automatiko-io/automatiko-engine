@@ -54,11 +54,14 @@ public class EndEventHandler extends AbstractNodeHandler {
             if ("terminateEventDefinition".equals(nodeName)) {
                 // reuse already created EndNode
                 handleTerminateNode(node, element, uri, localName, parser);
+                node.setMetaData("functionFlowContinue", "true");
                 break;
             } else if ("signalEventDefinition".equals(nodeName)) {
                 handleSignalNode(node, element, uri, localName, parser);
+                node.setMetaData("functionFlowContinue", "true");
             } else if ("messageEventDefinition".equals(nodeName)) {
                 handleMessageNode(node, element, uri, localName, parser);
+                node.setMetaData("functionFlowContinue", "true");
             } else if ("errorEventDefinition".equals(nodeName)) {
                 // create new faultNode
                 FaultNode faultNode = new FaultNode();
@@ -69,6 +72,7 @@ public class EndEventHandler extends AbstractNodeHandler {
                 node = faultNode;
                 super.handleNode(node, element, uri, localName, parser);
                 handleErrorNode(node, element, uri, localName, parser);
+                node.setMetaData("functionFlowContinue", "true");
                 break;
             } else if ("escalationEventDefinition".equals(nodeName)) {
                 // create new faultNode
@@ -79,10 +83,12 @@ public class EndEventHandler extends AbstractNodeHandler {
                 node = faultNode;
                 super.handleNode(node, element, uri, localName, parser);
                 handleEscalationNode(node, element, uri, localName, parser);
+                node.setMetaData("functionFlowContinue", "true");
                 break;
             } else if ("compensateEventDefinition".equals(nodeName)) {
                 // reuse already created ActionNode
                 handleThrowCompensationEventNode(node, element, uri, localName, parser);
+                node.setMetaData("functionFlowContinue", "true");
                 break;
             }
             xmlNode = xmlNode.getNextSibling();

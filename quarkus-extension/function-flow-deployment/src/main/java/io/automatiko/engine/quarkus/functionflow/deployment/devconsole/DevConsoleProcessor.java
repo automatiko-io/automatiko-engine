@@ -16,7 +16,10 @@ import org.jboss.jandex.AnnotationTarget.Kind;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
+import org.jboss.jandex.ParameterizedType;
+import org.jboss.jandex.Type;
 
+import io.automatiko.engine.api.codegen.Generated;
 import io.automatiko.engine.quarkus.functionflow.deployment.AutomatikoFunctionFlowProcessor;
 import io.automatiko.engine.quarkus.functionflow.deployment.ExampleGenerator;
 import io.automatiko.engine.quarkus.functionflow.dev.WorkflowFunctionFlowInfo;
@@ -47,6 +50,12 @@ public class DevConsoleProcessor {
         for (AnnotationInstance f : functions) {
             if (f.target().kind().equals(Kind.METHOD)) {
                 MethodInfo mi = f.target().asMethod();
+
+                if (mi.declaringClass().classAnnotation(
+                        AutomatikoFunctionFlowProcessor.createDotName(Generated.class.getCanonicalName())) == null) {
+                    continue;
+                }
+
                 // create function trigger descriptor for every found function
 
                 Map<String, String> filterAttributes = new HashMap<>();
@@ -56,10 +65,15 @@ public class DevConsoleProcessor {
                         filterAttributes.put(attribute.value("name").asString(), attribute.value().asString());
                     }
                 }
-
+                boolean includeSubjectAttribute = false;
+                Type param = mi.parameters().get(0);
+                if (param instanceof ParameterizedType) {
+                    param = ((ParameterizedType) param).arguments().get(0);
+                    includeSubjectAttribute = true;
+                }
                 SchemaFactory.typeToSchema(ctx,
                         mi.parameters().get(0), Collections.emptyList());
-                Schema fSchema = ctx.getOpenApi().getComponents().getSchemas().get(mi.parameters().get(0).name().local());
+                Schema fSchema = ctx.getOpenApi().getComponents().getSchemas().get(param.name().local());
 
                 String payload = generator.generate(fSchema, ctx.getOpenApi());
                 String type = mi.annotation(mapping).value("trigger").asString();
@@ -80,6 +94,9 @@ public class DevConsoleProcessor {
                 curlBinary.append("-H \"ce-specversion:").append(specversion).append("\" ");
                 curlBinary.append("-H \"ce-type:").append(type).append("\" ");
                 curlBinary.append("-H \"ce-source:").append(source).append("\" ");
+                if (includeSubjectAttribute) {
+                    curlBinary.append("-H \"ce-subject:workflow-instance-id\" ");
+                }
 
                 StringBuilder binaryInstructions = new StringBuilder();
                 binaryInstructions.append("HTTP headers:").append("\n");
@@ -88,6 +105,9 @@ public class DevConsoleProcessor {
                 binaryInstructions.append("ce-specversion:").append(specversion).append("\n");
                 binaryInstructions.append("ce-type:").append(type).append("\n");
                 binaryInstructions.append("ce-source:").append(source).append("\n");
+                if (includeSubjectAttribute) {
+                    binaryInstructions.append("ce-subject:workflow-instance-id\n");
+                }
 
                 for (Entry<String, String> entry : filterAttributes.entrySet()) {
                     curlBinary.append("-H 'ce-").append(entry.getKey()).append(":").append(entry.getValue()).append("\" ");
@@ -108,6 +128,9 @@ public class DevConsoleProcessor {
                 structuredPayload.append("  \"type\": \"").append(type).append("\",");
                 structuredPayload.append("  \"source\": \"").append(source).append("\",");
                 structuredPayload.append("  \"datacontenttype\": \"application/json; charset=UTF-8\",");
+                if (includeSubjectAttribute) {
+                    structuredPayload.append("  \"subject\": \"workflow-instance-id\",");
+                }
 
                 for (Entry<String, String> entry : filterAttributes.entrySet()) {
                     structuredPayload.append("  \"" + entry.getKey() + "\": \"").append(entry.getValue()).append("\",");
@@ -127,6 +150,9 @@ public class DevConsoleProcessor {
                 structuredInstructions.append("  \"type\": \"").append(type).append("\",\n");
                 structuredInstructions.append("  \"source\": \"").append(source).append("\",\n");
                 structuredInstructions.append("  \"datacontenttype\": \"application/json; charset=UTF-8\",\n");
+                if (includeSubjectAttribute) {
+                    structuredInstructions.append("  \"subject\": \"workflow-instance-id\",\n");
+                }
 
                 for (Entry<String, String> entry : filterAttributes.entrySet()) {
                     structuredInstructions.append("  \"" + entry.getKey() + "\": \"").append(entry.getValue()).append("\",\n");

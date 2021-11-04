@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -37,6 +39,7 @@ import io.automatiko.engine.codegen.ImportsOrganizer;
 import io.automatiko.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.compiler.canonical.ProcessToExecModelGenerator;
+import io.automatiko.engine.workflow.compiler.canonical.TriggerMetaData;
 import io.automatiko.engine.workflow.process.core.node.ActionNode;
 import io.automatiko.engine.workflow.process.core.node.BoundaryEventNode;
 import io.automatiko.engine.workflow.process.core.node.EndNode;
@@ -66,6 +69,11 @@ public class FunctionFlowGenerator {
     private final String processClazzName;
     private DependencyInjectionAnnotator annotator;
 
+    private Map<String, String> signals;
+    private Map<String, Node> signalNodes;
+
+    private List<TriggerMetaData> triggers;
+
     public FunctionFlowGenerator(GeneratorContext context, WorkflowProcess process, String modelfqcn,
             String processfqcn, String appCanonicalName) {
         this.context = context;
@@ -86,6 +94,17 @@ public class FunctionFlowGenerator {
 
     public FunctionFlowGenerator withDependencyInjection(DependencyInjectionAnnotator annotator) {
         this.annotator = annotator;
+        return this;
+    }
+
+    public FunctionFlowGenerator withSignals(Map<String, String> signals, Map<String, Node> signalNodes) {
+        this.signals = signals;
+        this.signalNodes = signalNodes;
+        return this;
+    }
+
+    public FunctionFlowGenerator withTriggers(List<TriggerMetaData> triggers) {
+        this.triggers = triggers;
         return this;
     }
 
@@ -191,6 +210,41 @@ public class FunctionFlowGenerator {
         }
         // remove the template method
         callTemplate.removeForced();
+
+        // process signals
+
+        MethodDeclaration signalTemplate = template
+                .findFirst(MethodDeclaration.class, md -> md.getNameAsString().equals("signalTemplate")).get();
+        Optional.ofNullable(signals).ifPresent(signalsMap -> {
+            AtomicInteger index = new AtomicInteger(0);
+            signalsMap.entrySet().stream().filter(e -> Objects.nonNull(e.getKey())).forEach(entry -> {
+                String signalName = entry.getKey();
+                String signalType = entry.getValue();
+                MethodDeclaration flowSignalFunction = produceSignalFunction("", signalName, signalType, signalTemplate, index,
+                        signalNodes.get(signalName));
+                template.addMember(flowSignalFunction);
+            });
+        });
+
+        // process triggers (consume messages)
+
+        if (triggers != null && !triggers.isEmpty()) {
+            AtomicInteger index = new AtomicInteger(0);
+            for (TriggerMetaData trigger : triggers) {
+                if (trigger.getType().equals(TriggerMetaData.TriggerType.ConsumeMessage)) {
+                    String signalName = trigger.getName();
+                    String signalType = trigger.getDataType();
+
+                    MethodDeclaration flowSignalFunction = produceSignalFunction("Message-", signalName, signalType,
+                            signalTemplate, index,
+                            (Node) trigger.getContext("_node_"));
+                    template.addMember(flowSignalFunction);
+                }
+            }
+        }
+
+        // remove the template method
+        signalTemplate.removeForced();
 
         Map<String, String> typeInterpolations = new HashMap<>();
         typeInterpolations.put("$Clazz$", functionClazzName);
@@ -318,4 +372,61 @@ public class FunctionFlowGenerator {
 
         return filter;
     }
+
+    private MethodDeclaration produceSignalFunction(String signalNamePrefix, String signalName, String signalType,
+            MethodDeclaration signalTemplate,
+            AtomicInteger index, Node node) {
+
+        if (signalType == null) {
+            throw new IllegalStateException(
+                    "Workflow as Function Flow with signals requires to have event data associated with signal");
+        }
+
+        String methodName = sanitizeIdentifier(signalName) + "_" + index.getAndIncrement();
+
+        MethodDeclaration flowSignalFunction = signalTemplate.clone();
+
+        if (signalType != null) {
+            flowSignalFunction.findAll(ClassOrInterfaceType.class).forEach(name -> {
+                String identifier = name.getNameAsString();
+                name.setName(identifier.replace("$signalType$", signalType));
+            });
+        }
+
+        flowSignalFunction.findAll(StringLiteralExpr.class).forEach(vv -> {
+            String s = vv.getValue();
+            String interpolated = s.replace("$signalName$", signalNamePrefix + signalName);
+            vv.setString(interpolated);
+        });
+
+        if (useInjection()) {
+            String trigger = functionTrigger(node);
+            String filter = functionFilter(node);
+            if (filter != null) {
+                Matcher matcher = PARAMETER_MATCHER.matcher(filter);
+                while (matcher.find()) {
+                    String paramName = matcher.group(1);
+
+                    Optional<String> value = context.getApplicationProperty(paramName);
+                    if (value.isPresent() && !value.get().isEmpty()) {
+                        filter = filter.replaceAll("\\{" + paramName + "\\}", value.get());
+                    } else {
+                        throw new IllegalArgumentException("Missing argument declared in as function filter with name '"
+                                + paramName + "'. Define it in application.properties file");
+                    }
+                }
+            }
+            annotator.withCloudEventMapping(flowSignalFunction, trigger, filter);
+        }
+
+        flowSignalFunction.getBody().get().findFirst(StringLiteralExpr.class, s -> s.getValue().equals("$TypePrefix$"))
+                .ifPresent(s -> s.setValue(process.getPackageName() + "." + processId + "."));
+        flowSignalFunction.getBody().get().findFirst(StringLiteralExpr.class, s -> s.getValue().equals("$ThisNode$"))
+                .ifPresent(s -> s.setValue(methodName));
+
+        flowSignalFunction.setName(methodName);
+
+        return flowSignalFunction;
+    }
+
 }

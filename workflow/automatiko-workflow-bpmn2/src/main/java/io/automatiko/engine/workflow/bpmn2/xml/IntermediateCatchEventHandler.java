@@ -22,6 +22,7 @@ import io.automatiko.engine.workflow.base.core.timer.Timer;
 import io.automatiko.engine.workflow.bpmn2.core.IntermediateLink;
 import io.automatiko.engine.workflow.bpmn2.core.ItemDefinition;
 import io.automatiko.engine.workflow.bpmn2.core.Message;
+import io.automatiko.engine.workflow.bpmn2.core.Signal;
 import io.automatiko.engine.workflow.compiler.xml.ExtensibleXmlParser;
 import io.automatiko.engine.workflow.compiler.xml.ProcessBuildData;
 import io.automatiko.engine.workflow.process.core.Node;
@@ -61,11 +62,13 @@ public class IntermediateCatchEventHandler extends AbstractNodeHandler {
                 // reuse already created EventNode
                 handleSignalNode(node, element, uri, localName, parser);
                 node.setMetaData(EVENT_TYPE, "signal");
+                node.setMetaData("functionFlowContinue", "true");
                 break;
             } else if ("messageEventDefinition".equals(nodeName)) {
                 // reuse already created EventNode
                 handleMessageNode(node, element, uri, localName, parser);
                 node.setMetaData(EVENT_TYPE, "message");
+                node.setMetaData("functionFlowContinue", "true");
                 break;
             } else if ("timerEventDefinition".equals(nodeName)) {
                 // create new timerNode
@@ -76,6 +79,7 @@ public class IntermediateCatchEventHandler extends AbstractNodeHandler {
                 node = timerNode;
                 node.setMetaData(EVENT_TYPE, "timer");
                 handleTimerNode(node, element, uri, localName, parser);
+                node.setMetaData("functionFlowContinue", "true");
                 break;
             } else if ("conditionalEventDefinition".equals(nodeName)) {
                 // create new stateNode
@@ -86,6 +90,7 @@ public class IntermediateCatchEventHandler extends AbstractNodeHandler {
                 node = stateNode;
                 node.setMetaData(EVENT_TYPE, "conditional");
                 handleStateNode(node, element, uri, localName, parser);
+                node.setMetaData("functionFlowContinue", "true");
                 break;
             } else if ("linkEventDefinition".equals(nodeName)) {
                 CatchLinkNode linkNode = new CatchLinkNode();
@@ -158,7 +163,6 @@ public class IntermediateCatchEventHandler extends AbstractNodeHandler {
         }
     }
 
-    @SuppressWarnings("unchecked")
     protected void handleSignalNode(final Node node, final Element element, final String uri, final String localName,
             final ExtensibleXmlParser parser) throws SAXException {
         super.handleNode(node, element, uri, localName, parser);
@@ -177,7 +181,10 @@ public class IntermediateCatchEventHandler extends AbstractNodeHandler {
             } else if ("signalEventDefinition".equals(nodeName)) {
                 String type = ((Element) xmlNode).getAttribute("signalRef");
                 if (type != null && type.trim().length() > 0) {
-
+                    Signal signal = findSignalByName(parser, type);
+                    if (signal != null) {
+                        eventNode.setMetaData("MessageType", retrieveDataType(signal.getStructureRef(), null, parser));
+                    }
                     type = checkSignalAndConvertToRealSignalNam(parser, type);
 
                     List<EventFilter> eventFilters = new ArrayList<EventFilter>();

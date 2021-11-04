@@ -5,6 +5,7 @@ import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceExecutionException;
+import io.automatiko.engine.workflow.Sig;
 import io.automatiko.engine.api.workflow.workitem.Policy;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
@@ -44,14 +45,14 @@ public class WorkflowFunction {
 
             pi.start();
             ((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_COUNTER");
-            return new FunctionContext((List<String>)((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_NEXT"), getModel(pi));
+            return new FunctionContext(pi.id(), (List<String>)((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_NEXT"), getModel(pi));
         });
         if (ctx.nextNodes != null && eventSource != null) {
             
             for (String nextNode : ctx.nextNodes) {
         
                 LOGGER.debug("Next function to trigger {}", sanitizeIdentifier(nextNode));
-                eventSource.produce(sanitizeIdentifier(nextNode), typePrefix, ctx.model);
+                eventSource.produce(sanitizeIdentifier(nextNode), typePrefix + ctx.id, ctx.model);
             }
         }
     }
@@ -79,14 +80,41 @@ public class WorkflowFunction {
                 pi.startFrom(startFromNode);
             }
             ((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_COUNTER");
-            return new FunctionContext((List<String>)((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_NEXT"), getModel(pi));
+            return new FunctionContext(pi.id(), (List<String>)((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_NEXT"), getModel(pi));
         });
         if (ctx.nextNodes != null && eventSource != null) {
             
             for (String nextNode : ctx.nextNodes) {
         
                 LOGGER.debug("Next function to trigger {}", sanitizeIdentifier(nextNode));
-                eventSource.produce(sanitizeIdentifier(nextNode), typePrefix + sanitizeIdentifier("$ThisNode$".toLowerCase()), ctx.model);
+                eventSource.produce(sanitizeIdentifier(nextNode), typePrefix + sanitizeIdentifier("$ThisNode$".toLowerCase()) + ctx.id, ctx.model);
+            }
+        }  
+    }
+    
+    public void signalTemplate(io.quarkus.funqy.knative.events.CloudEvent<$signalType$> event) {        
+        String id = event.extensions().getOrDefault("atkInstanceId", event.subject());
+        String typePrefix = "$TypePrefix$";
+        final $signalType$ value = event.data();
+        identitySupplier.buildIdentityProvider(null, Collections.emptyList());
+        FunctionContext ctx = io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {            
+           
+            ProcessInstance<$Type$> pi = process.instances().findById(id).orElse(null); 
+            if (pi != null) {
+                pi.send(Sig.of("$signalName$", value, getReferenceId(event)));
+            
+                ((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_COUNTER");
+                return new FunctionContext(pi.id(), (List<String>)((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_NEXT"), getModel(pi));
+            }
+            
+            throw new io.automatiko.engine.api.workflow.ProcessInstanceNotFoundException(id);
+        });
+        if (ctx.nextNodes != null && eventSource != null) {
+            
+            for (String nextNode : ctx.nextNodes) {
+        
+                LOGGER.debug("Next function to trigger {}", sanitizeIdentifier(nextNode));
+                eventSource.produce(sanitizeIdentifier(nextNode), typePrefix + sanitizeIdentifier("$ThisNode$".toLowerCase()) + ctx.id, ctx.model);
             }
         }  
     }
@@ -109,12 +137,22 @@ public class WorkflowFunction {
         return name.replaceAll("\\s", "");
     }
     
+    private String getReferenceId(io.quarkus.funqy.knative.events.CloudEvent<?> event) {
+        if (event.source() != null && event.source().contains("/")) {
+            String referenceId = event.source().split("/")[1];
+            return referenceId;
+        }
+        return null;
+    }
+    
     private class FunctionContext {
         
         List<String> nextNodes;
         $Type$ model;
+        String id;
         
-        public FunctionContext(List<String> nextNodes, $Type$ model) {
+        public FunctionContext(String id, List<String> nextNodes, $Type$ model) {
+            this.id = "/" + id;
             this.nextNodes = nextNodes;
             this.model = model;
         }

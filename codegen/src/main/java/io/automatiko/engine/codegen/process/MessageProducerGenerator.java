@@ -27,6 +27,7 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import io.automatiko.engine.api.Functions;
+import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.codegen.BodyDeclarationComparator;
 import io.automatiko.engine.codegen.CodegenUtils;
@@ -48,6 +49,7 @@ public class MessageProducerGenerator {
     private GeneratorContext context;
 
     private WorkflowProcess process;
+    private String workflowType;
     private final String packageName;
     private final String resourceClazzName;
     private final String modelClazzName;
@@ -59,8 +61,9 @@ public class MessageProducerGenerator {
 
     private TriggerMetaData trigger;
 
-    public MessageProducerGenerator(GeneratorContext context, WorkflowProcess process, String modelfqcn,
+    public MessageProducerGenerator(String workflowType, GeneratorContext context, WorkflowProcess process, String modelfqcn,
             String processfqcn, String messageDataEventClassName, TriggerMetaData trigger) {
+        this.workflowType = workflowType;
         this.context = context;
         this.process = process;
         this.trigger = trigger;
@@ -155,7 +158,9 @@ public class MessageProducerGenerator {
     }
 
     protected String producerTemplate(String connector) {
-        if (connector.equals(MQTT_CONNECTOR)) {
+        if (connector.equals("unknown") && workflowType.equals(Process.FUNCTION_FLOW_TYPE)) {
+            return "/class-templates/FunctionFlowMessageProducerTemplate.java";
+        } else if (connector.equals(MQTT_CONNECTOR)) {
             return "/class-templates/MQTTMessageProducerTemplate.java";
         } else if (connector.equals(CAMEL_CONNECTOR)) {
             return "/class-templates/CamelMessageProducerTemplate.java";
@@ -222,6 +227,7 @@ public class MessageProducerGenerator {
 
                 });
 
+        // used by MQTT to get topic name based on expression
         String topicExpression = (String) trigger.getContext("topicExpression");
         if (topicExpression != null) {
             template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("topic"))
@@ -260,6 +266,54 @@ public class MessageProducerGenerator {
                             }
                         }
                         body.addStatement(new ReturnStmt(new NameExpr(topicExpression)));
+                        md.setBody(body);
+                    });
+        }
+
+        // used by FunctionFlow to set subject (used by reply to)
+        String subjectExpression = (String) trigger.getContext("subjectExpression");
+        if (subjectExpression != null) {
+            template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("subject"))
+                    .forEach(md -> {
+                        BlockStmt body = new BlockStmt();
+
+                        ClassOrInterfaceType stringType = new ClassOrInterfaceType(null, String.class.getCanonicalName());
+
+                        if (subjectExpression.contains("id")) {
+                            VariableDeclarationExpr idField = new VariableDeclarationExpr(stringType, "id");
+                            body.addStatement(new AssignExpr(idField,
+                                    new MethodCallExpr(new NameExpr("pi"), "getId"), AssignExpr.Operator.ASSIGN));
+                        }
+
+                        if (subjectExpression.contains("businessKey")) {
+                            VariableDeclarationExpr businessKeyField = new VariableDeclarationExpr(stringType, "businessKey");
+                            body.addStatement(new AssignExpr(businessKeyField,
+                                    new MethodCallExpr(new NameExpr("pi"), "getCorrelationKey"), AssignExpr.Operator.ASSIGN));
+                        }
+                        if (subjectExpression.contains("referenceId")) {
+                            VariableDeclarationExpr idField = new VariableDeclarationExpr(stringType, "referenceId");
+                            body.addStatement(new AssignExpr(idField,
+                                    new MethodCallExpr(new NameExpr("pi"), "getReferenceId"), AssignExpr.Operator.ASSIGN));
+                        }
+                        VariableScope variableScope = (VariableScope) ((io.automatiko.engine.workflow.process.core.WorkflowProcess) process)
+                                .getDefaultContext(VariableScope.VARIABLE_SCOPE);
+
+                        for (Variable var : variableScope.getVariables()) {
+
+                            if (subjectExpression.contains(var.getSanitizedName())) {
+                                ClassOrInterfaceType varType = new ClassOrInterfaceType(null, var.getType().getStringType());
+                                VariableDeclarationExpr v = new VariableDeclarationExpr(
+                                        varType,
+                                        var.getSanitizedName());
+                                body.addStatement(new AssignExpr(v,
+                                        new CastExpr(varType,
+                                                new MethodCallExpr(new MethodCallExpr(new NameExpr("pi"), "getVariables"),
+                                                        "get")
+                                                                .addArgument(new StringLiteralExpr(var.getName()))),
+                                        AssignExpr.Operator.ASSIGN));
+                            }
+                        }
+                        body.addStatement(new ReturnStmt(new NameExpr(subjectExpression)));
                         md.setBody(body);
                     });
         }
@@ -325,11 +379,11 @@ public class MessageProducerGenerator {
         if (useInjection()) {
             annotator.withApplicationComponent(template);
 
-            FieldDeclaration emitterField = template.findFirst(FieldDeclaration.class)
-                    .filter(fd -> fd.getVariable(0).getNameAsString().equals("emitter")).get();
-            annotator.withInjection(emitterField);
-            annotator.withOutgoingMessage(emitterField, sanitizedName);
-
+            template.findFirst(FieldDeclaration.class)
+                    .filter(fd -> fd.getVariable(0).getNameAsString().equals("emitter")).ifPresent(emitterField -> {
+                        annotator.withInjection(emitterField);
+                        annotator.withOutgoingMessage(emitterField, sanitizedName);
+                    });
             template.findAll(FieldDeclaration.class, fd -> fd.getVariables().get(0).getNameAsString().equals("converter"))
                     .forEach(fd -> {
                         annotator.withInjection(fd);
@@ -351,6 +405,18 @@ public class MessageProducerGenerator {
                 .addVariable(new VariableDeclarator(new ClassOrInterfaceType(null, "String"), "MESSAGE",
                         new StringLiteralExpr(trigger.getName())));
         template.addMember(messageNameField);
+
+        if (workflowType.equals(Process.FUNCTION_FLOW_TYPE)) {
+            String destination = (String) trigger.getContext("functionType", sanitizedName);
+            String sourcePrefix = process.getPackageName() + "." + processId + "." + sanitizedName;
+
+            template.findAll(StringLiteralExpr.class).forEach(vv -> {
+                String s = vv.getValue();
+                String interpolated = s.replace("$destination$", destination);
+                interpolated = interpolated.replace("$sourcePrefix$", sourcePrefix);
+                vv.setString(interpolated);
+            });
+        }
 
         template.getMembers().sort(new BodyDeclarationComparator());
         ImportsOrganizer.organize(clazz);

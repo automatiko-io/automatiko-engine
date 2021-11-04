@@ -47,6 +47,11 @@ public class HttpEventSource implements EventSource {
 
     @Override
     public void produce(String type, String source, Object data) {
+        produce(type, source, data, null);
+    }
+
+    @Override
+    public void produce(String type, String source, Object data, String subject) {
         if (url == null) {
             LOGGER.warn("No broker url is given, returning without publishing an event");
             return;
@@ -61,6 +66,7 @@ public class HttpEventSource implements EventSource {
                     .header("ce-type", type)
                     .header("ce-source", source)
                     .header("ce-id", UUID.randomUUID().toString())
+                    .header("ce-subject", subject == null ? "" : subject)
                     .POST(BodyPublishers.ofByteArray(mapper.writeValueAsBytes(data))).build();
 
             httpClient.sendAsync(request, BodyHandlers.ofString()).handle((res, t) -> {

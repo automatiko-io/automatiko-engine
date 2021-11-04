@@ -40,11 +40,11 @@ public class GreetingsTest {
         assertEquals(2, events.size());
         
         EventData data = events.get(0);
-        assertEquals("org.acme.travels.greetings", data.source);
+        assertEquals("org.acme.travels.greetings", data.source.split("/")[0]);
         assertEquals("org.acme.travels.greetings.updatemessage", data.type);
         
         data = events.get(1);
-        assertEquals("org.acme.travels.greetings", data.source);
+        assertEquals("org.acme.travels.greetings", data.source.split("/")[0]);
         assertEquals("custom", data.type);
         
         given()
@@ -64,7 +64,7 @@ public class GreetingsTest {
         assertEquals(1, events.size());
         
         data = events.get(0);
-        assertEquals("org.acme.travels.greetings.updatemessage", data.source);
+        assertEquals("org.acme.travels.greetings.updatemessage", data.source.split("/")[0]);
         assertEquals("org.acme.travels.greetings.end", data.type);       
     }
     
@@ -86,11 +86,11 @@ public class GreetingsTest {
         assertEquals(2, events.size());
         
         EventData data = events.get(0);
-        assertEquals("org.acme.travels.greetings", data.source);
+        assertEquals("org.acme.travels.greetings", data.source.split("/")[0]);
         assertEquals("org.acme.travels.greetings.spanishname", data.type);
         
         data = events.get(1);
-        assertEquals("org.acme.travels.greetings", data.source);
+        assertEquals("org.acme.travels.greetings", data.source.split("/")[0]);
         assertEquals("custom", data.type);
         
         given()
@@ -109,7 +109,7 @@ public class GreetingsTest {
         assertEquals(1, events.size());
         
         data = events.get(0);
-        assertEquals("org.acme.travels.greetings.spanishname", data.source);
+        assertEquals("org.acme.travels.greetings.spanishname", data.source.split("/")[0]);
         assertEquals("org.acme.travels.greetings.endevent2", data.type); 
     }
     
@@ -136,11 +136,11 @@ public class GreetingsTest {
         assertEquals(2, events.size());
         
         EventData data = events.get(0);
-        assertEquals("org.acme.travels.greetings", data.source);
+        assertEquals("org.acme.travels.greetings", data.source.split("/")[0]);
         assertEquals("org.acme.travels.greetings.spanishname", data.type);
         
         data = events.get(1);
-        assertEquals("org.acme.travels.greetings", data.source);
+        assertEquals("org.acme.travels.greetings", data.source.split("/")[0]);
         assertEquals("custom", data.type);
           
         given()
@@ -164,7 +164,7 @@ public class GreetingsTest {
         assertEquals(1, events.size());
         
         data = events.get(0);
-        assertEquals("org.acme.travels.greetings.spanishname", data.source);
+        assertEquals("org.acme.travels.greetings.spanishname", data.source.split("/")[0]);
         assertEquals("org.acme.travels.greetings.endevent2", data.type); 
     }
     
@@ -187,7 +187,7 @@ public class GreetingsTest {
         assertEquals(1, events.size());
         
         EventData data = events.get(0);
-        assertEquals("org.acme.travels.greetingssingle", data.source);
+        assertEquals("org.acme.travels.greetingssingle", data.source.split("/")[0]);
         assertEquals("org.acme.travels.greetingssingle.end", data.type);       
     }
     // @formatter:on

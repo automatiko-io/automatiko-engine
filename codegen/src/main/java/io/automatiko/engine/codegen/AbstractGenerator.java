@@ -61,8 +61,8 @@ public abstract class AbstractGenerator implements Generator {
     }
 
     public boolean isFunctionFlowProject() {
-        return context.getBuildContext().hasClassAvailable("io.quarkus.funqy.knative.events.CloudEvent")
-                || onClasspath("io.quarkus.funqy.knative.events.CloudEvent");
+        return context.getBuildContext().hasClassAvailable("io.quarkus.funqy.knative.events.CloudEventMapping")
+                || onClasspath("io.quarkus.funqy.knative.events.CloudEventMapping");
     }
 
     protected boolean onClasspath(String clazz) {
