@@ -10,6 +10,8 @@ import java.util.Set;
 
 import com.github.javaparser.ast.CompilationUnit;
 
+import io.automatiko.engine.api.definition.process.Node;
+
 public class ProcessMetaData {
 
     private final String processPackageName;
@@ -32,6 +34,7 @@ public class ProcessMetaData {
     private Map<String, String> subProcesses = new HashMap<>();
 
     private Map<String, String> signals = new HashMap<>();
+    private Map<String, Node> signalNodess = new HashMap<>();
 
     private List<TriggerMetaData> triggers = new ArrayList<>();
 
@@ -147,9 +150,14 @@ public class ProcessMetaData {
         return signals;
     }
 
-    public ProcessMetaData addSignal(String name, String value) {
+    public ProcessMetaData addSignal(String name, String value, Node node) {
         signals.put(name, value);
+        signalNodess.put(name, node);
         return this;
+    }
+
+    public Map<String, Node> getSignalNodes() {
+        return signalNodess;
     }
 
     public List<TriggerMetaData> getTriggers() {

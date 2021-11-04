@@ -91,7 +91,7 @@ public class ProcessToExecModelGenerator {
         String packageName = process.getPackageName();
         String name = extractModelClassName(process.getId(), ModelMetaData.version(process.getVersion()));
 
-        return new ModelMetaData(process.getId(), ModelMetaData.version(process.getVersion()), packageName, name,
+        return new ModelMetaData(workflowType, process.getId(), ModelMetaData.version(process.getVersion()), packageName, name,
                 process.getVisibility(),
                 VariableDeclarations.of((VariableScope) ((io.automatiko.engine.workflow.base.core.Process) process)
                         .getDefaultContext(VariableScope.VARIABLE_SCOPE)),
@@ -106,7 +106,7 @@ public class ProcessToExecModelGenerator {
         String packageName = process.getPackageName();
         String name = extractModelClassName(process.getId(), process.getVersion()) + "Input";
 
-        return new ModelMetaData(process.getId(), ModelMetaData.version(process.getVersion()), packageName, name,
+        return new ModelMetaData(workflowType, process.getId(), ModelMetaData.version(process.getVersion()), packageName, name,
                 process.getVisibility(),
                 VariableDeclarations.ofInput((VariableScope) ((io.automatiko.engine.workflow.base.core.Process) process)
                         .getDefaultContext(VariableScope.VARIABLE_SCOPE)),
@@ -121,7 +121,7 @@ public class ProcessToExecModelGenerator {
         String packageName = process.getPackageName();
         String name = extractModelClassName(process.getId(), process.getVersion()) + "Output";
 
-        return new ModelMetaData(process.getId(), ModelMetaData.version(process.getVersion()), packageName, name,
+        return new ModelMetaData(workflowType, process.getId(), ModelMetaData.version(process.getVersion()), packageName, name,
                 process.getVisibility(),
                 VariableDeclarations.ofOutput((VariableScope) ((io.automatiko.engine.workflow.base.core.Process) process)
                         .getDefaultContext(VariableScope.VARIABLE_SCOPE)),

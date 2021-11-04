@@ -87,6 +87,12 @@ public class ExampleGenerator {
 
             return randomNumber(min, max);
 
+        } else if (property.getType().equals(SchemaType.INTEGER)) {
+            Double min = getPropertyValue(property.getMinimum());
+            Double max = getPropertyValue(property.getMaximum());
+
+            return randomIntNumber(min, max);
+
         } else if (property.getType().equals(SchemaType.STRING)) {
             LOGGER.debug("String property");
             String defaultValue = (String) property.getDefaultValue();
@@ -127,6 +133,19 @@ public class ExampleGenerator {
             return random.nextDouble() * max;
         } else {
             return random.nextDouble() * 10;
+        }
+    }
+
+    private int randomIntNumber(Double min, Double max) {
+        if (min != null && max != null) {
+            int range = max.intValue() - min.intValue();
+            return random.nextInt() * range + min.intValue();
+        } else if (min != null) {
+            return random.nextInt() + min.intValue();
+        } else if (max != null) {
+            return random.nextInt() * max.intValue();
+        } else {
+            return random.nextInt() * 10;
         }
     }
 

@@ -171,7 +171,7 @@ public class AbstractCodegenTest {
         if (className.equals("io.quarkus.funqy.Funq") && testFunction) {
             return true;
         }
-        if (className.equals("io.quarkus.funqy.knative.events.CloudEvent") && testFunctionFlow) {
+        if (className.equals("io.quarkus.funqy.knative.events.CloudEventMapping") && testFunctionFlow) {
             return true;
         }
         return false;

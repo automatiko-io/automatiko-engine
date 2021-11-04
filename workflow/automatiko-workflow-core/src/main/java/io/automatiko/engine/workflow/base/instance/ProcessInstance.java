@@ -85,8 +85,21 @@ public interface ProcessInstance
             return false;
         }
         // if node has "functionFlowContinue" set then it should not create new function but continue with workflow execution in the same call
-        return !Boolean.parseBoolean(
+        boolean functionFlowContinue = Boolean.parseBoolean(
                 (String) ((NodeInstance) nodeInstance).getNode().getMetaData().getOrDefault("functionFlowContinue", "false"));
+
+        if (functionFlowContinue) {
+            return false;
+        }
+        // if following node is marked as function flow wait state then it should not generate automatic transition to it
+        // aka function invocation
+        boolean functionFlowWaitState = Boolean.parseBoolean(
+                (String) ((NodeInstance) nodeInstance).getNode().getMetaData().getOrDefault("functionFlowWaitState", "false"));
+        if (functionFlowWaitState) {
+            return false;
+        }
+
+        return true;
     }
 
     default boolean isExecutionNode(Node node) {

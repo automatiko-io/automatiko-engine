@@ -66,18 +66,22 @@ public class IntermediateThrowEventHandler extends AbstractNodeHandler {
             if ("signalEventDefinition".equals(nodeName)) {
                 // reuse already created ActionNode
                 handleSignalNode(node, element, uri, localName, parser);
+                node.setMetaData("functionFlowContinue", "true");
                 break;
             } else if ("messageEventDefinition".equals(nodeName)) {
                 // reuse already created ActionNode
                 handleMessageNode(node, element, uri, localName, parser);
+                node.setMetaData("functionFlowContinue", "true");
                 break;
             } else if ("escalationEventDefinition".equals(nodeName)) {
                 // reuse already created ActionNode
                 handleEscalationNode(node, element, uri, localName, parser);
+                node.setMetaData("functionFlowContinue", "true");
                 break;
             } else if ("compensateEventDefinition".equals(nodeName)) {
                 // reuse already created ActionNode
                 handleThrowCompensationEventNode(node, element, uri, localName, parser);
+                node.setMetaData("functionFlowContinue", "true");
                 break;
             } else if ("linkEventDefinition".equals(nodeName)) {
                 ThrowLinkNode linkNode = new ThrowLinkNode();

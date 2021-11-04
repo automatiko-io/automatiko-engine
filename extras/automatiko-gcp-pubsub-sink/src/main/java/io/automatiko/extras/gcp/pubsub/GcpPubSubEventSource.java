@@ -60,6 +60,12 @@ public class GcpPubSubEventSource implements EventSource {
 
     @Override
     public void produce(String type, String source, Object data) {
+        produce(type, source, data, null);
+
+    }
+
+    @Override
+    public void produce(String type, String source, Object data, String subject) {
         LOGGER.debug("GCP: publishing event with type {}", type);
         if (!runsInGoogleEnvironment()) {
             LOGGER.warn(
@@ -76,6 +82,7 @@ public class GcpPubSubEventSource implements EventSource {
                         .header("ce-type", "google.cloud.pubsub.topic.v1.messagePublished")
                         .header("ce-source", "//pubsub.googleapis.com/projects/" + project + "/topics/" + type)
                         .header("ce-id", UUID.randomUUID().toString())
+                        .header("ce-subject", subject == null ? "" : subject)
                         .POST(BodyPublishers.ofByteArray(mapper.writeValueAsBytes(data))).build();
 
                 httpClient.sendAsync(request, BodyHandlers.ofString()).handle((res, t) -> {

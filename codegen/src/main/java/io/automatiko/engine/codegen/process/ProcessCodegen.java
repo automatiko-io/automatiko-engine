@@ -290,16 +290,27 @@ public class ProcessCodegen extends AbstractGenerator {
         Map<String, List<UserTaskModelMetaData>> processIdToUserTaskModel = new HashMap<>();
         Map<String, ProcessMetaData> processIdToMetadata = new HashMap<>();
 
+        String workflowType = Process.WORKFLOW_TYPE;
+        if (isFunctionFlowProject()) {
+            workflowType = Process.FUNCTION_FLOW_TYPE;
+        } else if (isFunctionProject()) {
+            workflowType = Process.FUNCTION_TYPE;
+        }
+
+        // then we can instantiate the exec model generator
+        // with the data classes that we have already resolved
+        ProcessToExecModelGenerator execModelGenerator = new ProcessToExecModelGenerator(contextClassLoader, workflowType);
+
         // first we generate all the data classes from variable declarations
         for (Entry<String, WorkflowProcess> entry : processes.entrySet()) {
-            ModelClassGenerator mcg = new ModelClassGenerator(context(), entry.getValue());
+            ModelClassGenerator mcg = new ModelClassGenerator(execModelGenerator, context(), entry.getValue());
             processIdToModelGenerator.put(entry.getKey(), mcg);
             processIdToModel.put(entry.getKey(), mcg.generate());
 
-            InputModelClassGenerator imcg = new InputModelClassGenerator(context(), entry.getValue());
+            InputModelClassGenerator imcg = new InputModelClassGenerator(context(), entry.getValue(), workflowType);
             processIdToInputModelGenerator.put(entry.getKey(), imcg);
 
-            OutputModelClassGenerator omcg = new OutputModelClassGenerator(context(), entry.getValue());
+            OutputModelClassGenerator omcg = new OutputModelClassGenerator(context(), entry.getValue(), workflowType);
             processIdToOutputModelGenerator.put(entry.getKey(), omcg);
 
             context.addGenerator("ModelClassGenerator", entry.getKey(), mcg);
@@ -312,16 +323,6 @@ public class ProcessCodegen extends AbstractGenerator {
             UserTasksModelClassGenerator utcg = new UserTasksModelClassGenerator(entry.getValue(), context);
             processIdToUserTaskModel.put(entry.getKey(), utcg.generate());
         }
-        String workflowType = Process.WORKFLOW_TYPE;
-        if (isFunctionFlowProject()) {
-            workflowType = Process.FUNCTION_FLOW_TYPE;
-        } else if (isFunctionProject()) {
-            workflowType = Process.FUNCTION_TYPE;
-        }
-
-        // then we can instantiate the exec model generator
-        // with the data classes that we have already resolved
-        ProcessToExecModelGenerator execModelGenerator = new ProcessToExecModelGenerator(contextClassLoader, workflowType);
 
         List<String> functions = context.getBuildContext().classThatImplement(Functions.class.getCanonicalName());
 
@@ -377,7 +378,25 @@ public class ProcessCodegen extends AbstractGenerator {
             if (isFunctionFlowProject()) {
                 ffgs.add(new FunctionFlowGenerator(context(), workFlowProcess, modelClassGenerator.className(),
                         execModelGen.className(),
-                        applicationCanonicalName).withDependencyInjection(annotator));
+                        applicationCanonicalName).withDependencyInjection(annotator).withSignals(metaData.getSignals(),
+                                metaData.getSignalNodes()).withTriggers(metaData.getTriggers()));
+
+                if (metaData.getTriggers() != null) {
+
+                    for (TriggerMetaData trigger : metaData.getTriggers()) {
+
+                        if (trigger.getType().equals(TriggerMetaData.TriggerType.ProduceMessage)) {
+
+                            MessageDataEventGenerator msgDataEventGenerator = new MessageDataEventGenerator(workFlowProcess,
+                                    trigger).withDependencyInjection(annotator);
+                            mdegs.add(msgDataEventGenerator);
+
+                            mpgs.add(new MessageProducerGenerator(workflowType, context(), workFlowProcess,
+                                    modelClassGenerator.className(), execModelGen.className(),
+                                    msgDataEventGenerator.className(), trigger).withDependencyInjection(annotator));
+                        }
+                    }
+                }
             } else if (isFunctionProject()) {
                 fgs.add(new FunctionGenerator(context(), workFlowProcess, modelClassGenerator.className(),
                         execModelGen.className(),
@@ -421,7 +440,7 @@ public class ProcessCodegen extends AbstractGenerator {
 
                     for (TriggerMetaData trigger : metaData.getTriggers()) {
 
-                        // generate message consumers for processes with message start events
+                        // generate message consumers for processes with message events
                         if (isPublic(workFlowProcess)
                                 && trigger.getType().equals(TriggerMetaData.TriggerType.ConsumeMessage)) {
 
@@ -439,7 +458,7 @@ public class ProcessCodegen extends AbstractGenerator {
                                     trigger).withDependencyInjection(annotator);
                             mdegs.add(msgDataEventGenerator);
 
-                            mpgs.add(new MessageProducerGenerator(context(), workFlowProcess,
+                            mpgs.add(new MessageProducerGenerator(workflowType, context(), workFlowProcess,
                                     modelClassGenerator.className(), execModelGen.className(),
                                     msgDataEventGenerator.className(), trigger).withDependencyInjection(annotator));
                         }

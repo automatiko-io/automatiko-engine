@@ -15,6 +15,12 @@ public class MockEventSource implements EventSource {
     private static List<EventData> events = new ArrayList<EventData>();
 
     @Override
+    public void produce(String type, String source, Object data, String subject) {
+        produce(type, source, data);
+
+    }
+
+    @Override
     public void produce(String type, String source, Object data) {
         System.out.println("Sending event with type " + type + " source " + source + " and data " + data);
         events.add(new EventData(type, source, data));
@@ -51,4 +57,5 @@ public class MockEventSource implements EventSource {
         }
 
     }
+
 }

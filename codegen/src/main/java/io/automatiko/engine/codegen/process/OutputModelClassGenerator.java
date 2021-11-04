@@ -20,7 +20,10 @@ public class OutputModelClassGenerator {
     private ModelMetaData modelMetaData;
     private String modelClassName;
 
-    public OutputModelClassGenerator(GeneratorContext context, WorkflowProcess workFlowProcess) {
+    private String workflowType;
+
+    public OutputModelClassGenerator(GeneratorContext context, WorkflowProcess workFlowProcess, String workflowType) {
+        this.workflowType = workflowType;
         String pid = workFlowProcess.getId();
         className = StringUtils.capitalize(
                 ProcessToExecModelGenerator.extractProcessId(pid, CodegenUtils.version(workFlowProcess.getVersion()))
@@ -35,7 +38,8 @@ public class OutputModelClassGenerator {
         // create model class for all variables
         String packageName = workFlowProcess.getPackageName();
 
-        modelMetaData = new ModelMetaData(workFlowProcess.getId(), CodegenUtils.version(workFlowProcess.getVersion()),
+        modelMetaData = new ModelMetaData(workflowType, workFlowProcess.getId(),
+                CodegenUtils.version(workFlowProcess.getVersion()),
                 packageName, className, workFlowProcess.getVisibility(),
                 VariableDeclarations
                         .ofOutput((VariableScope) ((io.automatiko.engine.workflow.base.core.Process) workFlowProcess)

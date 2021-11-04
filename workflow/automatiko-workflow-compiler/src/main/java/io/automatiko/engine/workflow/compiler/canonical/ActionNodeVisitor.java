@@ -12,6 +12,7 @@ import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -50,11 +51,21 @@ public class ActionNodeVisitor extends AbstractNodeVisitor<ActionNode> {
                     new ObjectCreationExpr(null, new ClassOrInterfaceType(null,
                             "io.automatiko.engine.workflow.base.instance.impl.actions.ProcessInstanceCompensationAction"),
                             NodeList.nodeList(new StringLiteralExpr((String) node.getMetaData("CompensationEvent"))))));
+        } else if (node.getMetaData(TRIGGER_TYPE) != null && node.getMetaData(TRIGGER_TYPE).equals("Signal")) {
+            // throw signal
+
+            body.addStatement(getFactoryMethod(getNodeId(node), METHOD_ACTION,
+                    new ObjectCreationExpr(null, new ClassOrInterfaceType(null,
+                            "io.automatiko.engine.workflow.base.instance.impl.actions.SignalProcessInstanceAction"),
+                            NodeList.nodeList(new StringLiteralExpr((String) node.getMetaData("Ref")),
+                                    node.getMetaData("Variable") != null
+                                            ? new StringLiteralExpr((String) node.getMetaData("Variable"))
+                                            : new NullLiteralExpr()))));
         } else {
             String consequence = getActionConsequence(node.getAction());
             if (consequence == null || consequence.trim().isEmpty()) {
                 throw new IllegalStateException(
-                        "Action node " + node.getId() + " name " + node.getName() + " has no action defined");
+                        "Action node " + node.getId() + " name '" + node.getName() + "' has no action defined");
             }
             BlockStmt actionBody = new BlockStmt();
             List<Variable> variables = variableScope.getVariables();

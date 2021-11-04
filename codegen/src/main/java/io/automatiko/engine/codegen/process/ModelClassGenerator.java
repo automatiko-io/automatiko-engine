@@ -17,7 +17,10 @@ public class ModelClassGenerator {
     private ModelMetaData modelMetaData;
     private String modelClassName;
 
-    public ModelClassGenerator(GeneratorContext context, WorkflowProcess workFlowProcess) {
+    private ProcessToExecModelGenerator execModelGenerator;
+
+    public ModelClassGenerator(ProcessToExecModelGenerator execModelGenerator, GeneratorContext context,
+            WorkflowProcess workFlowProcess) {
         String pid = workFlowProcess.getId();
         String name = ProcessToExecModelGenerator.extractProcessId(pid,
                 CodegenUtils.version(workFlowProcess.getVersion()));
@@ -25,11 +28,12 @@ public class ModelClassGenerator {
 
         this.context = context;
         this.workFlowProcess = workFlowProcess;
+        this.execModelGenerator = execModelGenerator;
     }
 
     public ModelMetaData generate() {
         // create model class for all variables
-        modelMetaData = ProcessToExecModelGenerator.INSTANCE.generateModel(workFlowProcess);
+        modelMetaData = execModelGenerator.generateModel(workFlowProcess);
         modelFileName = modelMetaData.getModelClassName().replace('.', '/') + ".java";
 
         modelMetaData.setSupportsValidation(context.getBuildContext().isValidationSupported());

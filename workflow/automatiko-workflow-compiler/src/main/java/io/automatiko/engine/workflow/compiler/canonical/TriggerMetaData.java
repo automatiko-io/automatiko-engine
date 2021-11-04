@@ -7,6 +7,7 @@ import static io.automatiko.engine.workflow.process.executable.core.Metadata.MES
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.TRIGGER_REF;
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.TRIGGER_TYPE;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -167,6 +168,7 @@ public class TriggerMetaData {
                 (String) nodeMetaData.get(TRIGGER_TYPE), (String) nodeMetaData.get(MESSAGE_TYPE),
                 (String) nodeMetaData.get(MAPPING_VARIABLE), String.valueOf(node.getId()), node.getName()).validate();
         triggerMetaData.addContext(node.getMetaData());
+        triggerMetaData.addContext(Collections.singletonMap("_node_", node));
         metadata.addTrigger(triggerMetaData);
 
         // and add trigger action

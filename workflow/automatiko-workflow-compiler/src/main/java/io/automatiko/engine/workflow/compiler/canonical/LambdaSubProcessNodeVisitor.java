@@ -74,7 +74,8 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
 
         String subProcessModelClassName = ProcessToExecModelGenerator.extractModelClassName(subProcessId,
                 subProcessVersion);
-        ModelMetaData subProcessModel = new ModelMetaData(subProcessId, subProcessVersion, metadata.getPackageName(),
+        ModelMetaData subProcessModel = new ModelMetaData(process.getType(), subProcessId, subProcessVersion,
+                metadata.getPackageName(),
                 subProcessModelClassName, WorkflowProcess.PRIVATE_VISIBILITY,
                 VariableDeclarations.ofRawInfo(inputTypes), false, "Data model for " + name,
                 "A complete data model for " + name);
