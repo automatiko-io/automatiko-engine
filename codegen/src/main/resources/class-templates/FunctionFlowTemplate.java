@@ -11,8 +11,10 @@ import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
 import io.automatiko.engine.api.event.EventSource;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
@@ -103,32 +105,55 @@ public class WorkflowFunction {
     
     public void signalTemplate(io.quarkus.funqy.knative.events.CloudEvent<$signalType$> event) {        
         String id = event.extensions().getOrDefault("atkInstanceId", event.subject());
+        String correlation = null;
         String typePrefix = "$TypePrefix$";
         final $signalType$ value = event.data();
         identitySupplier.buildIdentityProvider(null, Collections.emptyList());
-        FunctionContext ctx = io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {            
-           
-            ProcessInstance<$Type$> pi = process.instances().findById(id).orElse(null); 
-            if (pi != null) {
-                pi.send(Sig.of("$signalName$", value, getReferenceId(event)));
-                String pid = (String)((WorkflowProcessInstanceImpl) ((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_ID");
-                if (pid == null) {
-                    pid = id(pi);
+        Collection<FunctionContext> contexts = io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {            
+            List<FunctionContext> executed = new ArrayList<>();
+            if (id != null) {
+                ProcessInstance<$Type$> pi = process.instances().findById(id).orElse(null);
+                if (pi != null) {
+                    pi.send(Sig.of("$signalName$", value, getReferenceId(event)));
+                    String pid = (String)((WorkflowProcessInstanceImpl) ((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_ID");
+                    if (pid == null) {
+                        pid = id(pi);
+                    }
+                    ((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_COUNTER");
+                    executed.add(new FunctionContext(pid, (List<String>)((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_NEXT"), getModel(pi)));
                 }
-                ((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_COUNTER");
-                return new FunctionContext(pid, (List<String>)((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_NEXT"), getModel(pi));
+                return executed;
+            } else if (correlation != null) {
+                Collection possiblyFound = process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE, correlation);
+                if (!possiblyFound.isEmpty()) {
+                    
+                    possiblyFound.forEach(pi -> {
+                        ProcessInstance pInstance = (ProcessInstance) pi;
+                        LOGGER.debug("Found process instance {} matching correlation {}, signaling it", pInstance.id(), correlation);
+                        pInstance.send(Sig.of("$signalName$", value, getReferenceId(event)));
+                        String pid = (String)((WorkflowProcessInstanceImpl) ((AbstractProcessInstance<$Type$>) pInstance).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_ID");
+                        if (pid == null) {
+                            pid = id(pInstance);
+                        }
+                        ((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_COUNTER");
+                        executed.add(new FunctionContext(pid, (List<String>)((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pInstance).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_NEXT"), getModel(pInstance)));
+                    });
+                }
+                return executed;
             }
             
             throw new io.automatiko.engine.api.workflow.ProcessInstanceNotFoundException(id);
         });
-        if (ctx.nextNodes != null && eventSource != null) {
+        for (FunctionContext ctx : contexts) {
+            if (ctx.nextNodes != null && eventSource != null) {
+                
+                for (String nextNode : ctx.nextNodes) {
             
-            for (String nextNode : ctx.nextNodes) {
-        
-                LOGGER.debug("Next function to trigger {}", sanitizeIdentifier(nextNode));
-                eventSource.produce(sanitizeIdentifier(nextNode), typePrefix + sanitizeIdentifier("$ThisNode$".toLowerCase()) + ctx.id, ctx.model);
-            }
-        }  
+                    LOGGER.debug("Next function to trigger {}", sanitizeIdentifier(nextNode));
+                    eventSource.produce(sanitizeIdentifier(nextNode), typePrefix + sanitizeIdentifier("$ThisNode$".toLowerCase()) + ctx.id, ctx.model);
+                }
+            }  
+        }
     }
     
     protected $Type$ getModel(ProcessInstance<$Type$> pi) {

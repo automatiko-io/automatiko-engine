@@ -25,8 +25,10 @@ import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.Name;
+import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import io.automatiko.engine.api.codegen.Generated;
@@ -238,6 +240,14 @@ public class FunctionFlowGenerator {
                     MethodDeclaration flowSignalFunction = produceSignalFunction("Message-", signalName, signalType,
                             signalTemplate, index,
                             (Node) trigger.getContext("_node_"));
+                    VariableDeclarationExpr correlationVar = flowSignalFunction.findFirst(VariableDeclarationExpr.class,
+                            vd -> vd.getVariable(0).getNameAsString().equals("correlation")).get();
+                    if (trigger.getCorrelation() != null) {
+                        correlationVar.getVariable(0).setInitializer(new StringLiteralExpr(trigger.getCorrelation()));
+                    } else if (trigger.getCorrelationExpression() != null) {
+                        correlationVar.getVariable(0).setInitializer(new NameExpr(trigger.getCorrelationExpression()));
+                    }
+
                     template.addMember(flowSignalFunction);
                 }
             }
