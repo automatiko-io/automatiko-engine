@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class WorkflowFunction {
     
@@ -44,8 +45,12 @@ public class WorkflowFunction {
             ProcessInstance<$Type$> pi = process.createInstance(null, mapInput(value, new $Type$()));
 
             pi.start();
+            String pid = (String)((WorkflowProcessInstanceImpl) ((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_ID");
+            if (pid == null) {
+                pid = id(pi);
+            }
             ((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_COUNTER");
-            return new FunctionContext(pi.id(), (List<String>)((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_NEXT"), getModel(pi));
+            return new FunctionContext(pid, (List<String>)((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_NEXT"), getModel(pi));
         });
         if (ctx.nextNodes != null && eventSource != null) {
             
@@ -79,8 +84,12 @@ public class WorkflowFunction {
                 pi = process.createInstance(value.getId(), value);                
                 pi.startFrom(startFromNode);
             }
+            String pid = (String)((WorkflowProcessInstanceImpl) ((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_ID");
+            if (pid == null) {
+                pid = id(pi);
+            }
             ((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_COUNTER");
-            return new FunctionContext(pi.id(), (List<String>)((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_NEXT"), getModel(pi));
+            return new FunctionContext(pid, (List<String>)((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_NEXT"), getModel(pi));
         });
         if (ctx.nextNodes != null && eventSource != null) {
             
@@ -102,9 +111,12 @@ public class WorkflowFunction {
             ProcessInstance<$Type$> pi = process.instances().findById(id).orElse(null); 
             if (pi != null) {
                 pi.send(Sig.of("$signalName$", value, getReferenceId(event)));
-            
+                String pid = (String)((WorkflowProcessInstanceImpl) ((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_ID");
+                if (pid == null) {
+                    pid = id(pi);
+                }
                 ((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_COUNTER");
-                return new FunctionContext(pi.id(), (List<String>)((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_NEXT"), getModel(pi));
+                return new FunctionContext(pid, (List<String>)((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_NEXT"), getModel(pi));
             }
             
             throw new io.automatiko.engine.api.workflow.ProcessInstanceNotFoundException(id);
@@ -124,7 +136,10 @@ public class WorkflowFunction {
             throw new ProcessInstanceExecutionException(pi.id(), pi.errors().get().failedNodeIds(), pi.errors().get().errorMessages());
         }
         
-        return pi.variables();
+        $Type$ model =  pi.variables();
+        model.setId(id(pi));
+        
+        return model;
     }
     
     protected $Type$ mapInput($Type$Input input, $Type$ resource) {
@@ -143,6 +158,13 @@ public class WorkflowFunction {
             return referenceId;
         }
         return null;
+    }
+    
+    private java.lang.String id(ProcessInstance<$Type$> pi) {
+        if (pi.parentProcessInstanceId() != null)
+            return pi.parentProcessInstanceId() + ":" + pi.id();
+        else
+            return pi.id();
     }
     
     private class FunctionContext {

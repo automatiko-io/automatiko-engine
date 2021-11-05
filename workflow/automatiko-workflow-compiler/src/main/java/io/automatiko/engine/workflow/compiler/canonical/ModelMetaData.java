@@ -108,7 +108,7 @@ public class ModelMetaData {
     }
 
     public AssignExpr newInstance(String assignVarName) {
-        ClassOrInterfaceType type = new ClassOrInterfaceType(null, modelClassName);
+        ClassOrInterfaceType type = new ClassOrInterfaceType(null, modelClassSimpleName);
         return new AssignExpr(new VariableDeclarationExpr(type, assignVarName), new ObjectCreationExpr().setType(type),
                 AssignExpr.Operator.ASSIGN);
     }

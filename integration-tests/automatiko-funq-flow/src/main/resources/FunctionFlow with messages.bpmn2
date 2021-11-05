@@ -113,43 +113,43 @@
     <bpmndi:BPMNPlane id="BPMNPlane_Process_1" bpmnElement="messages">
       <bpmndi:BPMNShape id="BPMNShape_StartEvent_1" bpmnElement="StartEvent_1">
         <dc:Bounds height="36.0" width="36.0" x="72.0" y="122.0"/>
-        <bpmndi:BPMNLabel>
+        <bpmndi:BPMNLabel id="BPMNLabel_1">
           <dc:Bounds height="11.0" width="52.0" x="64.0" y="158.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_ScriptTask_1" bpmnElement="ScriptTask_1" isExpanded="true">
         <dc:Bounds height="50.0" width="110.0" x="155.0" y="115.0"/>
-        <bpmndi:BPMNLabel>
+        <bpmndi:BPMNLabel id="BPMNLabel_2">
           <dc:Bounds height="11.0" width="66.0" x="177.0" y="134.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_IntermediateThrowEvent_1" bpmnElement="IntermediateThrowEvent_1">
         <dc:Bounds height="36.0" width="36.0" x="333.0" y="122.0"/>
-        <bpmndi:BPMNLabel>
+        <bpmndi:BPMNLabel id="BPMNLabel_3">
           <dc:Bounds height="11.0" width="44.0" x="329.0" y="158.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_IntermediateCatchEvent_1" bpmnElement="IntermediateCatchEvent_1">
         <dc:Bounds height="36.0" width="36.0" x="437.0" y="122.0"/>
-        <bpmndi:BPMNLabel>
+        <bpmndi:BPMNLabel id="BPMNLabel_4">
           <dc:Bounds height="11.0" width="46.0" x="432.0" y="158.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_ScriptTask_2" bpmnElement="ScriptTask_2" isExpanded="true">
         <dc:Bounds height="50.0" width="110.0" x="578.0" y="115.0"/>
-        <bpmndi:BPMNLabel>
+        <bpmndi:BPMNLabel id="BPMNLabel_5">
           <dc:Bounds height="11.0" width="65.0" x="600.0" y="134.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_EndEvent_1" bpmnElement="EndEvent_1">
         <dc:Bounds height="36.0" width="36.0" x="756.0" y="122.0"/>
-        <bpmndi:BPMNLabel>
+        <bpmndi:BPMNLabel id="BPMNLabel_6">
           <dc:Bounds height="11.0" width="65.0" x="742.0" y="158.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_DataObject_1" bpmnElement="ticket">
         <dc:Bounds height="50.0" width="36.0" x="298.0" y="271.0"/>
-        <bpmndi:BPMNLabel>
+        <bpmndi:BPMNLabel id="BPMNLabel_7">
           <dc:Bounds height="11.0" width="22.0" x="305.0" y="321.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
@@ -157,50 +157,50 @@
         <di:waypoint xsi:type="dc:Point" x="265.0" y="140.0"/>
         <di:waypoint xsi:type="dc:Point" x="299.0" y="140.0"/>
         <di:waypoint xsi:type="dc:Point" x="333.0" y="140.0"/>
-        <bpmndi:BPMNLabel/>
+        <bpmndi:BPMNLabel id="BPMNLabel_8"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_2" bpmnElement="SequenceFlow_2" sourceElement="BPMNShape_IntermediateThrowEvent_1" targetElement="BPMNShape_IntermediateCatchEvent_1">
         <di:waypoint xsi:type="dc:Point" x="369.0" y="140.0"/>
         <di:waypoint xsi:type="dc:Point" x="403.0" y="140.0"/>
         <di:waypoint xsi:type="dc:Point" x="437.0" y="140.0"/>
-        <bpmndi:BPMNLabel/>
+        <bpmndi:BPMNLabel id="BPMNLabel_9"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_3" bpmnElement="SequenceFlow_3" sourceElement="BPMNShape_IntermediateCatchEvent_1" targetElement="BPMNShape_ScriptTask_2">
         <di:waypoint xsi:type="dc:Point" x="473.0" y="140.0"/>
         <di:waypoint xsi:type="dc:Point" x="525.0" y="140.0"/>
         <di:waypoint xsi:type="dc:Point" x="578.0" y="140.0"/>
-        <bpmndi:BPMNLabel/>
+        <bpmndi:BPMNLabel id="BPMNLabel_10"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_4" bpmnElement="SequenceFlow_4" sourceElement="BPMNShape_ScriptTask_2" targetElement="BPMNShape_EndEvent_1">
         <di:waypoint xsi:type="dc:Point" x="688.0" y="140.0"/>
         <di:waypoint xsi:type="dc:Point" x="722.0" y="140.0"/>
         <di:waypoint xsi:type="dc:Point" x="756.0" y="140.0"/>
-        <bpmndi:BPMNLabel/>
+        <bpmndi:BPMNLabel id="BPMNLabel_11"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_5" bpmnElement="SequenceFlow_5" sourceElement="BPMNShape_StartEvent_1" targetElement="BPMNShape_ScriptTask_1">
         <di:waypoint xsi:type="dc:Point" x="108.0" y="140.0"/>
         <di:waypoint xsi:type="dc:Point" x="131.0" y="140.0"/>
         <di:waypoint xsi:type="dc:Point" x="155.0" y="140.0"/>
-        <bpmndi:BPMNLabel/>
+        <bpmndi:BPMNLabel id="BPMNLabel_12"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_1" bpmnElement="DataInputAssociation_1" sourceElement="BPMNShape_DataObject_1" targetElement="BPMNShape_IntermediateThrowEvent_1">
         <di:waypoint xsi:type="dc:Point" x="334.0" y="287.0"/>
         <di:waypoint xsi:type="dc:Point" x="351.0" y="287.0"/>
         <di:waypoint xsi:type="dc:Point" x="351.0" y="158.0"/>
-        <bpmndi:BPMNLabel/>
+        <bpmndi:BPMNLabel id="BPMNLabel_13"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_DataOutputAssociation_1" bpmnElement="DataOutputAssociation_1" sourceElement="BPMNShape_IntermediateCatchEvent_1" targetElement="BPMNShape_DataObject_1">
         <di:waypoint xsi:type="dc:Point" x="455.0" y="158.0"/>
         <di:waypoint xsi:type="dc:Point" x="455.0" y="296.0"/>
         <di:waypoint xsi:type="dc:Point" x="334.0" y="296.0"/>
-        <bpmndi:BPMNLabel/>
+        <bpmndi:BPMNLabel id="BPMNLabel_14"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_2" bpmnElement="DataInputAssociation_2" sourceElement="BPMNShape_DataObject_1" targetElement="BPMNShape_EndEvent_1">
         <di:waypoint xsi:type="dc:Point" x="316.0" y="321.0"/>
         <di:waypoint xsi:type="dc:Point" x="316.0" y="331.0"/>
         <di:waypoint xsi:type="dc:Point" x="774.0" y="331.0"/>
         <di:waypoint xsi:type="dc:Point" x="774.0" y="158.0"/>
-        <bpmndi:BPMNLabel/>
+        <bpmndi:BPMNLabel id="BPMNLabel_15"/>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.definition.process.Node;
+import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.runtime.process.EventListener;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
@@ -203,6 +204,12 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
         }
         // if there were no exception proceed normally
         triggerCompleted();
+
+        if (getProcessInstance().getProcess().getType().equals(Process.FUNCTION_FLOW_TYPE)) {
+            processInstance.getMetaData().put("ATK_FUNC_FLOW_NEXT",
+                    getProcessInstance().getMetaData().get("ATK_FUNC_FLOW_NEXT"));
+            processInstance.getMetaData().put("ATK_FUNC_FLOW_ID", getProcessInstance().getId());
+        }
 
     }
 

@@ -151,9 +151,9 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_DataObject_3" bpmnElement="key">
-        <dc:Bounds height="50.0" width="36.0" x="270.0" y="290.0"/>
+        <dc:Bounds height="50.0" width="36.0" x="30.0" y="230.0"/>
         <bpmndi:BPMNLabel>
-          <dc:Bounds height="11.0" width="15.0" x="280.0" y="340.0"/>
+          <dc:Bounds height="11.0" width="15.0" x="40.0" y="280.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_1" bpmnElement="SequenceFlow_1" sourceElement="BPMNShape_StartEvent_1" targetElement="BPMNShape_ScriptTask_1">
