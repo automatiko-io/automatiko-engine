@@ -13,15 +13,21 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.BinaryExpr;
+import com.github.javaparser.ast.expr.BinaryExpr.Operator;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.expr.SuperExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.VoidType;
@@ -56,6 +62,8 @@ public class ProcessInstanceGenerator {
     private final String generatedFilePath;
     private final String completePath;
 
+    private final String workflowType;
+
     private final ProcessExecutableModelGenerator processGenerator;
 
     private final GeneratorContext generatorContext;
@@ -64,9 +72,11 @@ public class ProcessInstanceGenerator {
         return packageName + "." + typeName + "ProcessInstance";
     }
 
-    public ProcessInstanceGenerator(GeneratorContext generatorContext, ProcessExecutableModelGenerator processGenerator,
+    public ProcessInstanceGenerator(String workflowType, GeneratorContext generatorContext,
+            ProcessExecutableModelGenerator processGenerator,
             String packageName,
             String typeName, ModelMetaData model) {
+        this.workflowType = workflowType;
         this.generatorContext = generatorContext;
         this.processGenerator = processGenerator;
         this.packageName = packageName;
@@ -114,6 +124,21 @@ public class ProcessInstanceGenerator {
 
         classDecl.getMembers().sort(new BodyDeclarationComparator());
         return classDecl;
+    }
+
+    private MethodDeclaration id() {
+        BinaryExpr concatenate = new BinaryExpr(new MethodCallExpr(new ThisExpr(), "parentProcessInstanceId"),
+                new BinaryExpr(new StringLiteralExpr(":"), new MethodCallExpr(new SuperExpr(), "id"), BinaryExpr.Operator.PLUS),
+                BinaryExpr.Operator.PLUS);
+        IfStmt ppiExists = new IfStmt(
+                new BinaryExpr(new MethodCallExpr(new ThisExpr(), "parentProcessInstanceId"), new NullLiteralExpr(),
+                        Operator.NOT_EQUALS),
+                new ReturnStmt(concatenate), new ReturnStmt(new MethodCallExpr(new SuperExpr(), "id")));
+        BlockStmt body = new BlockStmt().addStatement(ppiExists);
+        return new MethodDeclaration().setModifiers(Modifier.Keyword.PUBLIC).setName("id")
+                .setType(new ClassOrInterfaceType().setName("java.lang.String"))
+                .setBody(body);
+
     }
 
     private MethodDeclaration bind() {

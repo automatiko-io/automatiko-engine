@@ -21,7 +21,7 @@ public class MessageProducer {
     
     public void produce(ProcessInstance pi, $Type$ eventData) {
         
-        eventSource.produce("$destination$", "$sourcePrefix$" + "/" + pi.getId(), marshall(pi, eventData), subject(pi));
+        eventSource.produce("$destination$", "$sourcePrefix$" + "/" + id(pi), marshall(pi, eventData), subject(pi));
     }
         
     private Object marshall(ProcessInstance pi, $Type$ eventData) {
@@ -41,4 +41,11 @@ public class MessageProducer {
         return null;
     }
     
+    public String id(ProcessInstance pi) {
+        if (pi.getParentProcessInstanceId() != null) {
+            return pi.getParentProcessInstanceId() + ":" + pi.getId();
+        } else {
+            return pi.getId();
+        }
+    }
 }

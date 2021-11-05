@@ -97,11 +97,15 @@ public class ProcessGenerator {
 
     private List<UserTaskModelMetaData> userTasks;
 
+    private Map<String, ProcessMetaData> processIdToMetadata;
+
     public ProcessGenerator(GeneratorContext context, WorkflowProcess process, ProcessExecutableModelGenerator processGenerator,
             String typeName,
-            String modelTypeName, String appCanonicalName, List<UserTaskModelMetaData> userTasks) {
+            String modelTypeName, String appCanonicalName, List<UserTaskModelMetaData> userTasks,
+            Map<String, ProcessMetaData> processIdToMetadata) {
         this.context = context;
         this.appCanonicalName = appCanonicalName;
+        this.processIdToMetadata = processIdToMetadata;
 
         this.packageName = process.getPackageName();
         this.process = process;
@@ -143,7 +147,7 @@ public class ProcessGenerator {
         List<String> functions = context.getBuildContext().classThatImplement(Functions.class.getCanonicalName());
         functions.forEach(c -> compilationUnit.addImport(new ImportDeclaration(c, true, true)));
 
-        compilationUnit.getTypes().add(classDeclaration());
+        compilationUnit.getTypes().add(classDeclaration(compilationUnit));
         return compilationUnit;
     }
 
@@ -506,7 +510,7 @@ public class ProcessGenerator {
                 .setTypeArguments(new ClassOrInterfaceType(null, canonicalName));
     }
 
-    public ClassOrInterfaceDeclaration classDeclaration() {
+    public ClassOrInterfaceDeclaration classDeclaration(CompilationUnit compilationUnit) {
         ClassOrInterfaceDeclaration cls = new ClassOrInterfaceDeclaration().setName(targetTypeName)
                 .setModifiers(Modifier.Keyword.PUBLIC);
 
@@ -590,11 +594,20 @@ public class ProcessGenerator {
             for (Entry<String, String> subProcess : processMetaData.getSubProcesses().entrySet()) {
                 FieldDeclaration subprocessFieldDeclaration = new FieldDeclaration();
 
+                if (processIdToMetadata.get(subProcess.getKey()) != null) {
+                    String subProcessPackage = processIdToMetadata.get(subProcess.getKey()).getPackageName();
+                    if (subProcessPackage != null && !subProcessPackage.isEmpty()) {
+                        compilationUnit
+                                .addImport(subProcessPackage + "." + StringUtils.capitalize(subProcess.getKey() + "Model"));
+                    }
+                }
+
                 String fieldName = "process" + subProcess.getKey();
                 ClassOrInterfaceType modelType = new ClassOrInterfaceType(null,
                         new SimpleName(io.automatiko.engine.api.workflow.Process.class.getCanonicalName()),
                         NodeList.nodeList(
-                                new ClassOrInterfaceType(null, StringUtils.capitalize(subProcess.getKey() + "Model"))));
+                                new ClassOrInterfaceType(null,
+                                        StringUtils.capitalize(subProcess.getKey() + "Model"))));
                 if (useInjection()) {
                     subprocessFieldDeclaration.addVariable(new VariableDeclarator(modelType, fieldName));
 

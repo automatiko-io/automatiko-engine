@@ -367,10 +367,11 @@ public class ProcessCodegen extends AbstractGenerator {
 
             ProcessGenerator p = new ProcessGenerator(context, workFlowProcess, execModelGen, classPrefix,
                     modelClassGenerator.className(), applicationCanonicalName,
-                    processIdToUserTaskModel.get(execModelGen.getProcessId())).withDependencyInjection(annotator)
+                    processIdToUserTaskModel.get(execModelGen.getProcessId()), processIdToMetadata)
+                            .withDependencyInjection(annotator)
                             .withPersistence(persistence);
 
-            ProcessInstanceGenerator pi = new ProcessInstanceGenerator(context(), execModelGen,
+            ProcessInstanceGenerator pi = new ProcessInstanceGenerator(workflowType, context(), execModelGen,
                     workFlowProcess.getPackageName(),
                     classPrefix, modelClassGenerator.generate());
 
