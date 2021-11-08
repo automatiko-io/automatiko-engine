@@ -89,6 +89,9 @@
               <version>${version.io.quarkus}</version>
             </path>
           </annotationProcessorPaths>
+          <capabilities>
+            <provides>io.automatiko.workflow</provides>
+          </capabilities>
         </configuration>
         <executions>
           <execution>
