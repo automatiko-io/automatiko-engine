@@ -72,8 +72,6 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.AdditionalIndexedClassesBuildItem;
 import io.quarkus.deployment.builditem.ApplicationArchivesBuildItem;
 import io.quarkus.deployment.builditem.ArchiveRootBuildItem;
-import io.quarkus.deployment.builditem.CapabilityBuildItem;
-import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.builditem.LiveReloadBuildItem;
@@ -103,16 +101,6 @@ public class AutomatikoQuarkusProcessor {
     private static final Logger logger = LoggerFactory.getLogger(AutomatikoQuarkusProcessor.class);
     private final transient String generatedClassesDir = System.getProperty("quarkus.debug.generated-classes-dir");
     private final transient String persistenceFactoryClass = "io.automatiko.engine.addons.persistence.AbstractProcessInstancesFactory";
-
-    @BuildStep
-    CapabilityBuildItem capability() {
-        return new CapabilityBuildItem("workflow", "automatiko");
-    }
-
-    @BuildStep
-    FeatureBuildItem featureBuildItem() {
-        return new FeatureBuildItem("automatiko");
-    }
 
     @BuildStep
     public void generateClassesFromResourcesStep(AutomatikoBuildTimeConfig config, PackageConfig pconfig,
