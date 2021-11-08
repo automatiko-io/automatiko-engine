@@ -3,6 +3,7 @@ package io.automatiko.engine.codegen.process;
 
 import static com.github.javaparser.StaticJavaParser.parse;
 import static io.automatiko.engine.codegen.CodeGenConstants.CAMEL_CONNECTOR;
+import static io.automatiko.engine.codegen.CodeGenConstants.FUNCTION_FLOW_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.OUTGOING_PROP_PREFIX;
@@ -158,7 +159,8 @@ public class MessageProducerGenerator {
     }
 
     protected String producerTemplate(String connector) {
-        if (connector.equals("unknown") && workflowType.equals(Process.FUNCTION_FLOW_TYPE)) {
+        if ((connector.equals("unknown") || connector.equals(FUNCTION_FLOW_CONNECTOR))
+                && workflowType.equals(Process.FUNCTION_FLOW_TYPE)) {
             return "/class-templates/FunctionFlowMessageProducerTemplate.java";
         } else if (connector.equals(MQTT_CONNECTOR)) {
             return "/class-templates/MQTTMessageProducerTemplate.java";

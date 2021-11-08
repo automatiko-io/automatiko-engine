@@ -178,8 +178,13 @@ public class CodegenUtils {
     }
 
     public static String version(String version) {
+        return version(version, "_");
+
+    }
+
+    public static String version(String version, String prefix) {
         if (version != null && !version.trim().isEmpty()) {
-            return "_" + version.replaceAll("\\.", "_");
+            return prefix + version.replaceAll("\\.", "_");
         }
         return "";
 
