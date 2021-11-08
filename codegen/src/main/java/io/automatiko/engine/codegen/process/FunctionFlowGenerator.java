@@ -65,6 +65,7 @@ public class FunctionFlowGenerator {
     private String processId;
     private final String processName;
     private String version = "";
+    private String fversion = "";
     private String dataClazzName;
     private String modelfqcn;
     private final String appCanonicalName;
@@ -84,6 +85,7 @@ public class FunctionFlowGenerator {
         this.processName = processId.substring(processId.lastIndexOf('.') + 1);
         if (process.getVersion() != null && !process.getVersion().trim().isEmpty()) {
             this.version = CodegenUtils.version(process.getVersion());
+            this.fversion = CodegenUtils.version(process.getVersion(), ".v");
         }
         this.appCanonicalName = appCanonicalName;
         String classPrefix = StringUtils.capitalize(processName);
@@ -137,9 +139,9 @@ public class FunctionFlowGenerator {
         // first to initiate the function flow
 
         template.findFirst(MethodDeclaration.class, md -> md.getNameAsString().equals("startTemplate")).ifPresent(md -> {
-            md.setName(processId.toLowerCase());
+            md.setName(processId.toLowerCase() + version);
             md.getBody().get().findFirst(StringLiteralExpr.class, s -> s.getValue().equals("$TypePrefix$"))
-                    .ifPresent(s -> s.setValue(process.getPackageName() + "." + processId));
+                    .ifPresent(s -> s.setValue(process.getPackageName() + "." + processId + fversion));
 
             if (useInjection()) {
                 String trigger = functionTrigger(process);
@@ -199,11 +201,11 @@ public class FunctionFlowGenerator {
                 flowStepFunction.getBody().get().findFirst(StringLiteralExpr.class, s -> s.getValue().equals("$StartFromNode$"))
                         .ifPresent(s -> s.setValue((String) node.getMetaData().get("UniqueId")));
                 flowStepFunction.getBody().get().findFirst(StringLiteralExpr.class, s -> s.getValue().equals("$TypePrefix$"))
-                        .ifPresent(s -> s.setValue(process.getPackageName() + "." + processId + "."));
+                        .ifPresent(s -> s.setValue(process.getPackageName() + "." + processId + fversion + "."));
                 flowStepFunction.getBody().get().findFirst(StringLiteralExpr.class, s -> s.getValue().equals("$ThisNode$"))
                         .ifPresent(s -> s.setValue(node.getName()));
 
-                flowStepFunction.setName(sanitizeIdentifier(node.getName()).toLowerCase());
+                flowStepFunction.setName(sanitizeIdentifier(node.getName() + version).toLowerCase());
 
                 template.addMember(flowStepFunction);
             } else if (node instanceof EndNode || node instanceof FaultNode) {
@@ -330,7 +332,7 @@ public class FunctionFlowGenerator {
         }
 
         return (String) node.getMetaData().getOrDefault("functionType",
-                process.getPackageName() + "." + processId + "."
+                process.getPackageName() + "." + processId + fversion + "."
                         + sanitizeIdentifier(node.getName()).toLowerCase());
     }
 
@@ -341,20 +343,20 @@ public class FunctionFlowGenerator {
         }
 
         return (String) process.getMetaData().getOrDefault("functionType",
-                process.getPackageName() + "." + processId);
+                process.getPackageName() + "." + processId + fversion);
     }
 
     private String definedFunctionTrigger(Node node) {
 
         return (String) node.getMetaData().getOrDefault("functionType",
-                process.getPackageName() + "." + processId + "."
+                process.getPackageName() + "." + processId + fversion + "."
                         + sanitizeIdentifier(node.getName()).toLowerCase());
     }
 
     private String definedFunctionTrigger(WorkflowProcess process) {
 
         return (String) process.getMetaData().getOrDefault("functionType",
-                process.getPackageName() + "." + processId);
+                process.getPackageName() + "." + processId + fversion);
     }
 
     private String functionFilter(Node node) {
@@ -392,7 +394,7 @@ public class FunctionFlowGenerator {
                     "Workflow as Function Flow with signals requires to have event data associated with signal");
         }
 
-        String methodName = sanitizeIdentifier(signalName) + "_" + index.getAndIncrement();
+        String methodName = sanitizeIdentifier(signalName + version) + "_" + index.getAndIncrement();
 
         MethodDeclaration flowSignalFunction = signalTemplate.clone();
 
@@ -430,7 +432,7 @@ public class FunctionFlowGenerator {
         }
 
         flowSignalFunction.getBody().get().findFirst(StringLiteralExpr.class, s -> s.getValue().equals("$TypePrefix$"))
-                .ifPresent(s -> s.setValue(process.getPackageName() + "." + processId + "."));
+                .ifPresent(s -> s.setValue(process.getPackageName() + "." + processId + fversion + "."));
         flowSignalFunction.getBody().get().findFirst(StringLiteralExpr.class, s -> s.getValue().equals("$ThisNode$"))
                 .ifPresent(s -> s.setValue(methodName));
 

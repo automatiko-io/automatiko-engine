@@ -51,7 +51,12 @@ public class EndNodeInstance extends ExtendedNodeInstanceImpl {
                     v = new ArrayList<String>();
                 }
                 Process process = getProcessInstance().getProcess();
-                String defaultNextNode = process.getPackageName() + "." + process.getId() + "." + getNodeName().toLowerCase();
+                String version = "";
+                if (process.getVersion() != null && !process.getVersion().trim().isEmpty()) {
+                    version = ".v" + process.getVersion().replaceAll("\\.", "_");
+                }
+                String defaultNextNode = process.getPackageName() + "." + process.getId() + version + "."
+                        + getNodeName().toLowerCase();
 
                 ((List<String>) v).add((String) getNode().getMetaData().getOrDefault("functionType", defaultNextNode));
 
