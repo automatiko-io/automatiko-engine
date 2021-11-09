@@ -290,4 +290,8 @@ public class GeneratorContext {
             LOGGER.info("***************************************************************");
         }
     }
+
+    public File getClassesPath() {
+        return classesPath;
+    }
 }

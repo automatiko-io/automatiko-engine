@@ -373,6 +373,13 @@ public abstract class AbstractResourceGenerator {
                 FieldDeclaration cloned = fd.clone();
                 template.addMember(cloned);
             });
+
+            if (subunit.getPackageDeclaration().isPresent() && !subunit.getPackageDeclaration().get().getNameAsString()
+                    .equals(clazz.getPackageDeclaration().get().getNameAsString())) {
+
+                clazz.addImport(subunit.getPackageDeclaration().get().getNameAsString(), false, true);
+
+            }
         }
 
         collectSubProcessModels(modelfqcn.substring(modelfqcn.lastIndexOf('.') + 1), template, subprocesses);
