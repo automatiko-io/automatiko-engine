@@ -39,6 +39,7 @@
     <module>automatiko-async</module>
     <module>automatiko-fault-tolerance</module>
     <module>automatiko-files</module>
+    <module>automatiko-include-models</module>
   </modules>
 
   <build>

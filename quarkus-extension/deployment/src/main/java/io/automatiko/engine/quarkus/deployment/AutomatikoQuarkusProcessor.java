@@ -63,8 +63,7 @@ import io.quarkus.bootstrap.BootstrapDependencyProcessingException;
 import io.quarkus.bootstrap.classloading.ClassPathElement;
 import io.quarkus.bootstrap.classloading.MemoryClassPathElement;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
-import io.quarkus.bootstrap.model.AppDependency;
-import io.quarkus.bootstrap.model.AppModel;
+import io.quarkus.bootstrap.model.ApplicationModel;
 import io.quarkus.bootstrap.model.PathsCollection;
 import io.quarkus.deployment.ApplicationArchive;
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -86,6 +85,7 @@ import io.quarkus.deployment.dev.testing.TestRunListener;
 import io.quarkus.deployment.index.IndexingUtil;
 import io.quarkus.deployment.pkg.PackageConfig;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
+import io.quarkus.maven.dependency.ResolvedDependency;
 import io.quarkus.runtime.LaunchMode;
 
 public class AutomatikoQuarkusProcessor {
@@ -149,7 +149,8 @@ public class AutomatikoQuarkusProcessor {
 
         AppPaths appPaths = new AppPaths(root.getPaths());
 
-        ApplicationGenerator appGen = createApplicationGenerator(config, appPaths, archivesIndex);
+        ApplicationGenerator appGen = createApplicationGenerator(config, appPaths, archivesIndex,
+                curateOutcomeBuildItem.getApplicationModel());
 
         Collection<GeneratedFile> generatedFiles = appGen.generate();
 
@@ -162,7 +163,7 @@ public class AutomatikoQuarkusProcessor {
             Indexer automatikoIndexer = new Indexer();
             Set<DotName> automatikoIndex = new HashSet<>();
 
-            compile(appPaths, curateOutcomeBuildItem.getEffectiveModel(), javaFiles, launchMode.getLaunchMode(),
+            compile(appPaths, curateOutcomeBuildItem.getApplicationModel(), javaFiles, launchMode.getLaunchMode(),
                     generatedBeans, additionalIndexClass, (className, data) -> {
                         return generateBeanBuildItem(archivesIndex, automatikoIndexer, automatikoIndex, className, data);
                     }, pconfig);
@@ -306,7 +307,7 @@ public class AutomatikoQuarkusProcessor {
 
             writeGeneratedFiles(appPaths, generatedFiles);
 
-            compile(appPaths, curateOutcomeBuildItem.getEffectiveModel(), generatedFiles, launchMode.getLaunchMode(),
+            compile(appPaths, curateOutcomeBuildItem.getApplicationModel(), generatedFiles, launchMode.getLaunchMode(),
                     generatedBeans, additionalIndexClass, GeneratedBeanBuildItem::new, pconfig);
         }
 
@@ -368,7 +369,7 @@ public class AutomatikoQuarkusProcessor {
     }
 
     @SuppressWarnings("unchecked")
-    private void compile(AppPaths appPaths, AppModel appModel, Collection<GeneratedFile> generatedFiles,
+    private void compile(AppPaths appPaths, ApplicationModel appModel, Collection<GeneratedFile> generatedFiles,
             LaunchMode launchMode, BuildProducer<GeneratedBeanBuildItem> generatedBeans,
             BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexClassProducer,
             BiFunction<String, byte[], GeneratedBeanBuildItem> bif, PackageConfig config) throws Exception {
@@ -381,8 +382,8 @@ public class AutomatikoQuarkusProcessor {
             classpaths.add(classPath.toString());
         }
         if (appModel != null) {
-            for (AppDependency i : appModel.getUserDependencies()) {
-                classpaths.add(i.getArtifact().getPaths().getSinglePath().toAbsolutePath().toString());
+            for (ResolvedDependency i : appModel.getRuntimeDependencies()) {
+                classpaths.add(i.getResolvedPaths().getSinglePath().toAbsolutePath().toString());
             }
         }
         if (!classpaths.isEmpty()) {
@@ -473,7 +474,7 @@ public class AutomatikoQuarkusProcessor {
     }
 
     private ApplicationGenerator createApplicationGenerator(AutomatikoBuildTimeConfig config, AppPaths appPaths,
-            CompositeIndex archivesIndex) throws IOException {
+            CompositeIndex archivesIndex, ApplicationModel appModel) throws IOException {
 
         boolean usePersistence = archivesIndex
                 .getClassByName(createDotName(persistenceFactoryClass)) != null;
@@ -484,26 +485,34 @@ public class AutomatikoQuarkusProcessor {
                 new File(appPaths.getFirstProjectPath().toFile(), "target"))
                         .withDependencyInjection(new CDIDependencyInjectionAnnotator()).withPersistence(usePersistence)
                         .withMonitoring(config.metrics().enabled()).withGeneratorContext(context);
+        List<String> dependencies = new ArrayList<>();
+        if (appModel != null) {
+            for (ResolvedDependency i : appModel.getRuntimeDependencies()) {
+                dependencies.add(i.getResolvedPaths().getSinglePath().toAbsolutePath().toString());
+            }
+        }
 
-        addProcessGenerator(appPaths, usePersistence, appGen);
-        addDecisionGenerator(appPaths, appGen, false);
+        addProcessGenerator(appPaths, usePersistence, appGen, dependencies);
+        addDecisionGenerator(appPaths, appGen, false, dependencies);
 
         return appGen;
     }
 
-    private void addProcessGenerator(AppPaths appPaths, boolean usePersistence, ApplicationGenerator appGen)
+    private void addProcessGenerator(AppPaths appPaths, boolean usePersistence, ApplicationGenerator appGen,
+            List<String> dependencies)
             throws IOException {
-        ProcessCodegen generator = appPaths.isJar ? ProcessCodegen.ofJar(appPaths.getJarPath())
-                : ProcessCodegen.ofPath(appPaths.getProjectPaths());
+        ProcessCodegen generator = appPaths.isJar ? ProcessCodegen.ofJar(dependencies, appPaths.getJarPath())
+                : ProcessCodegen.ofPath(dependencies, appPaths.getProjectPaths());
 
         appGen.withGenerator(generator).withPersistence(usePersistence)
                 .withClassLoader(Thread.currentThread().getContextClassLoader());
     }
 
-    private void addDecisionGenerator(AppPaths appPaths, ApplicationGenerator appGen, boolean useMonitoring)
+    private void addDecisionGenerator(AppPaths appPaths, ApplicationGenerator appGen, boolean useMonitoring,
+            List<String> dependencies)
             throws IOException {
-        DecisionCodegen generator = appPaths.isJar ? DecisionCodegen.ofJar(appPaths.getJarPath())
-                : DecisionCodegen.ofPath(appPaths.getResourcePaths());
+        DecisionCodegen generator = appPaths.isJar ? DecisionCodegen.ofJar(dependencies, appPaths.getJarPath())
+                : DecisionCodegen.ofPath(dependencies, appPaths.getResourcePaths());
 
         appGen.withGenerator(generator).withMonitoring(useMonitoring);
     }

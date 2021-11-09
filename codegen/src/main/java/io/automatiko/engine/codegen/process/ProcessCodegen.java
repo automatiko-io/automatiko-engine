@@ -100,6 +100,10 @@ public class ProcessCodegen extends AbstractGenerator {
     private ResourceGeneratorFactory resourceGeneratorFactory;
 
     public static ProcessCodegen ofJar(Path... jarPaths) {
+        return ofJar(Collections.emptyList(), jarPaths);
+    }
+
+    public static ProcessCodegen ofJar(List<String> dependencies, Path... jarPaths) {
         List<Process> processes = new ArrayList<>();
 
         for (Path jarPath : jarPaths) {
@@ -121,12 +125,70 @@ public class ProcessCodegen extends AbstractGenerator {
             }
         }
 
+        for (String dependency : dependencies) {
+            try (ZipFile zipFile = new ZipFile(dependency)) {
+                Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry entry = entries.nextElement();
+                    ResourceType resourceType = determineResourceType(entry.getName());
+                    if (SUPPORTED_BPMN_EXTENSIONS.stream().anyMatch(entry.getName()::endsWith)) {
+                        InternalResource resource = new ByteArrayResource(
+                                readBytesFromInputStream(zipFile.getInputStream(entry)));
+                        resource.setResourceType(resourceType);
+                        resource.setSourcePath(entry.getName());
+                        processes.addAll(parseProcessFile(resource));
+                    }
+                }
+            } catch (IOException e) {
+
+            }
+        }
+
         return ofProcesses(processes);
     }
 
     public static ProcessCodegen ofPath(Path... paths) throws IOException {
 
+        return ofPath(Collections.emptyList(), paths);
+    }
+
+    public static ProcessCodegen ofPath(List<String> dependencies, Path... paths) throws IOException {
+
         List<Process> allProcesses = new ArrayList<>();
+
+        for (String dependency : dependencies) {
+            File file = new File(dependency);
+
+            if (file.isDirectory()) {
+
+                try (Stream<Path> filesStream = Files.walk(file.toPath())) {
+                    List<File> files = filesStream
+                            .filter(p -> SUPPORTED_BPMN_EXTENSIONS.stream().anyMatch(p.toString()::endsWith)
+                                    || SUPPORTED_SW_EXTENSIONS.keySet().stream().anyMatch(p.toString()::endsWith))
+                            .map(Path::toFile).collect(Collectors.toList());
+                    allProcesses.addAll(parseProcesses(files, true));
+                }
+            } else {
+
+                try (ZipFile zipFile = new ZipFile(dependency)) {
+                    Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                    while (entries.hasMoreElements()) {
+                        ZipEntry entry = entries.nextElement();
+                        ResourceType resourceType = determineResourceType(entry.getName());
+                        if (SUPPORTED_BPMN_EXTENSIONS.stream().anyMatch(entry.getName()::endsWith)) {
+                            InternalResource resource = new ByteArrayResource(
+                                    readBytesFromInputStream(zipFile.getInputStream(entry)));
+                            resource.setResourceType(resourceType);
+                            resource.setSourcePath(entry.getName());
+                            allProcesses.addAll(parseProcessFile(resource));
+                        }
+                    }
+                } catch (IOException e) {
+
+                }
+            }
+        }
+
         for (Path path : paths) {
             Path srcPath = Paths.get(path.toString());
             try (Stream<Path> filesStream = Files.walk(srcPath)) {
@@ -134,14 +196,14 @@ public class ProcessCodegen extends AbstractGenerator {
                         .filter(p -> SUPPORTED_BPMN_EXTENSIONS.stream().anyMatch(p.toString()::endsWith)
                                 || SUPPORTED_SW_EXTENSIONS.keySet().stream().anyMatch(p.toString()::endsWith))
                         .map(Path::toFile).collect(Collectors.toList());
-                allProcesses.addAll(parseProcesses(files));
+                allProcesses.addAll(parseProcesses(files, false));
             }
         }
         return ofProcesses(allProcesses);
     }
 
     public static ProcessCodegen ofFiles(Collection<File> processFiles) {
-        List<Process> allProcesses = parseProcesses(processFiles);
+        List<Process> allProcesses = parseProcesses(processFiles, false);
         return ofProcesses(allProcesses);
     }
 
@@ -149,10 +211,10 @@ public class ProcessCodegen extends AbstractGenerator {
         return new ProcessCodegen(processes);
     }
 
-    static List<Process> parseProcesses(Collection<File> processFiles) {
+    static List<Process> parseProcesses(Collection<File> processFiles, boolean fromDeps) {
         List<Process> processes = new ArrayList<>();
         for (File processSourceFile : processFiles) {
-            if (processSourceFile.getAbsolutePath().contains("target" + File.separator + "classes")) {
+            if (!fromDeps && processSourceFile.getAbsolutePath().contains("target" + File.separator + "classes")) {
                 // exclude any resources files that come from target folder especially in dev mode which can cause overrides
                 continue;
             }
@@ -224,9 +286,6 @@ public class ProcessCodegen extends AbstractGenerator {
         setPackageName(ApplicationGenerator.DEFAULT_PACKAGE_NAME);
         contextClassLoader = Thread.currentThread().getContextClassLoader();
 
-        // FIXME: once all endpoint generators are implemented it should be changed to
-        // ResourceGeneratorFactory, to
-        // consider Spring generators.
         resourceGeneratorFactory = new DefaultResourceGeneratorFactory();
     }
 

@@ -38,6 +38,10 @@ import io.automatiko.engine.services.io.InternalResource;
 public class DecisionCodegen extends AbstractGenerator {
 
     public static DecisionCodegen ofJar(Path... jarPaths) throws IOException {
+        return ofJar(Collections.emptyList(), jarPaths);
+    }
+
+    public static DecisionCodegen ofJar(List<String> dependencies, Path... jarPaths) throws IOException {
         List<DMNResource> dmnResources = new ArrayList<>();
 
         for (Path jarPath : jarPaths) {
@@ -58,11 +62,70 @@ public class DecisionCodegen extends AbstractGenerator {
             dmnResources.addAll(parseDecisions(jarPath, resources));
         }
 
+        for (String dependency : dependencies) {
+            List<Resource> resources = new ArrayList<>();
+            try (ZipFile zipFile = new ZipFile(dependency)) {
+                Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry entry = entries.nextElement();
+
+                    if (entry.getName().endsWith(".dmn")) {
+                        InternalResource resource = new ByteArrayResource(
+                                readBytesFromInputStream(zipFile.getInputStream(entry)));
+                        resource.setSourcePath(entry.getName());
+                        resources.add(resource);
+                    }
+                }
+            } catch (IOException e) {
+
+            }
+            dmnResources.addAll(parseDecisions(Paths.get(dependency), resources));
+        }
+
         return ofDecisions(dmnResources);
     }
 
     public static DecisionCodegen ofPath(Path... paths) throws IOException {
+        return ofPath(Collections.emptyList(), paths);
+    }
+
+    public static DecisionCodegen ofPath(List<String> dependencies, Path... paths) throws IOException {
         List<DMNResource> resources = new ArrayList<>();
+
+        for (String dependency : dependencies) {
+            List<Resource> dmnresources = new ArrayList<>();
+            File file = new File(dependency);
+
+            if (file.isDirectory()) {
+                Path srcPath = file.toPath();
+                if (Files.exists(srcPath)) {
+                    try (Stream<Path> filesStream = Files.walk(srcPath)) {
+                        List<File> files = filesStream.filter(p -> p.toString().endsWith(".dmn")).map(Path::toFile)
+                                .collect(Collectors.toList());
+                        resources.addAll(parseFiles(srcPath, files));
+                    }
+                }
+            } else {
+
+                try (ZipFile zipFile = new ZipFile(dependency)) {
+                    Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                    while (entries.hasMoreElements()) {
+                        ZipEntry entry = entries.nextElement();
+
+                        if (entry.getName().endsWith(".dmn")) {
+                            InternalResource resource = new ByteArrayResource(
+                                    readBytesFromInputStream(zipFile.getInputStream(entry)));
+                            resource.setSourcePath(entry.getName());
+                            dmnresources.add(resource);
+                        }
+                    }
+                } catch (IOException e) {
+
+                }
+                resources.addAll(parseDecisions(Paths.get(dependency), dmnresources));
+            }
+        }
+
         for (Path path : paths) {
             Path srcPath = Paths.get(path.toString());
             if (Files.exists(srcPath)) {
@@ -73,7 +136,6 @@ public class DecisionCodegen extends AbstractGenerator {
                 }
             }
         }
-
         return ofDecisions(resources);
     }
 
