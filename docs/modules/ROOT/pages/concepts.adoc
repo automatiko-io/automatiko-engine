@@ -7,7 +7,7 @@ explain what the service is about.
 
 == Workflow
 
-Workflow (aka process) is the main entry point of the service. Depending on the language,
+Workflow (aka process) is the main entry point of the service or function. Depending on the language,
 a workflow can be expressed either as flow chart (in case of BPMN2), or a text-based format
 (JSON or YAML in case of Serverless Workflow).
 
@@ -22,88 +22,11 @@ in the workflow model, such as:
 hierarchy of workflow instances and take advantage of *workflow composition* pattern
 (_'call activity or reusable subworkflow'_ in BPMN or _'subflow state'_ in Serverless Workflow)
 
-== Workflow as a Service (WaaS)
+Automatiko comes with following approaches to use workflows
 
-image::workflow-as-service.png[]
-
-Workflow as a service brings an idea of modeling a service as a workflow.
-In this scenario a workflow is exposed as a fully featured service with a dedicated (domain specific) API.
-Workflow as a Service aims to cover more traditional service deployments that usually
-consists of:
-
-- a service API exposed over `http/rest`
-- an `OpenAPI` definition for describing services to simplify their use
-- taking advantage of various integration mechanism to be able to exchange data with
-different services/systems
-- ability to be either short lived or long running
-
-Workflow as a Service does not really differ from any other developed service. The main
-advantage it provides is the ability to use the mentioned well established and known
-workflow languages such as BPMN and DMN as programing languages. Other
-features are for the most part very similar to those that could be
-coded by hand.
-
-== Workflow as a Function (WaaF)
-
-image::workflow-as-function.png[]
-
-Workflow as a Function is dedicated for short lived operations that usually last
-no longer that a second. They are expected to be fast and small in size both at runtime
-and at boot time.
-
-Workflow as a Function typically targets deployments in more constrained environments such as:
-
-- link:https://aws.amazon.com/lambda/[AWS Lambda]
-- link:https://cloud.google.com/run[Google Cloud Run]
-- link:https://docs.microsoft.com/en-us/azure/azure-functions/functions-overview[Azure Functions]
-
-however are not strictly limited to them, as they can easily be invoked
-over HTTP with both `POST` and `GET` endpoints, making them deployable virtually
-anywhere.
-
-TIP: Functions can map data from payloads (`POST`) as well as from query parameters
-(`GET`).
-
-Regardless of the number of activities it contains, the workflow is always
-exposed as a single function with its id being its `public` identifier, namely the function name.
-
-== Workflow as a Function Flow (WaaFF)
-
-image::workflow-as-function-flow.png[]
-
-Workflow as Function Flow is a more advanced extension to Workflow as a Function
-which breaks the workflow into many different functions.
-
-A function, in workflow terms, is a single `executing` activity. This single
-activity can be grouped with other activities that do not actually perform work but
-can be one of the following:
-
-- start or end of the workflow
-- control logic (gateways)
-- pass-through activities
-
-
-In the diagram above again we see the same workflow example as used in
-the WaaS and WaaF scenarios. This time however we can break it up into multiple
-functions:
-
-- function `A` defines the start of the workflow instance function and it consists
- of three activities (`start`, `service A`, and the`gateway`)
-- function `B` defines the second function and it consists of two activities, namely `Service REST B` and `end`. It is
-invoked when a decision was made to invoke "Service REST B".
-- function `C` defines the third function which is invoked when a decision is made to invoke
- `Service Java C` and. It consists only a single activity (`Service Java C`)
-- function `D` is the last function that is invoked directly after `Function C`
- and consists of two activities (`Service Java D` and `end`)
-
-All functions (except "Function A" which defines the workflow start) are invoked automatically based on
-the execution context.
-This means that a function, during its execution, can identify the next function to be invoked.
-This decision is influcenced by both the workflow definition as well as workflow data.
-
-Workflow as a function flow always the exchanges of data as events in link:https://cloudevents.io/[`CloudEvent`] format.
-It target deployment environment is link:https://knative.dev/docs/eventing/[`Knative Eventing`] in order to take advantage of
-its routing capabilities for events.
+* Workflow as a service
+* Workflow as a function
+* Workflow as a function flow
 
 == Identification and description
 

@@ -1,0 +1,98 @@
+= Workflow as a Service
+
+image::workflow-as-service.png[]
+
+Workflow as a service brings an idea of modeling a service as a workflow.
+In this scenario a workflow is exposed as a fully featured service with a dedicated (domain specific) API.
+Workflow as a Service aims to cover more traditional service deployments that usually
+consists of:
+
+- a service API exposed over `http/rest`
+- an `OpenAPI` definition for describing services to simplify their use
+- taking advantage of various integration mechanism to be able to exchange data with
+different services/systems
+- ability to be either short lived or long running
+
+In addition, GraphQL service interface can also be added to enhance capabilities of the service.
+
+Workflow as a Service does not really differ from any other developed service. The main
+advantage it provides is the ability to use the mentioned well established and known
+workflow languages such as BPMN and DMN as programming languages. Other
+features are for the most part very similar to those that could be
+coded by hand.
+
+== Get started
+
+To get started with Workflow as a Service users can take advantage of ready to use maven archetypes
+to generate the project structure
+
+- *automatiko-archetype* - Generic project type that comes with basic setup
+
+- *automatiko-orchestration-archetype* - Tailored for service orchestration scenarios 
+
+- *automatiko-event-stream-archetype* - Tailored project type for event stream use case backed by Apache Kafka
+
+- *automatiko-iot-archetype* - Tailored project type for IoT use case backed by MQTT
+
+- *automatiko-db-archetype* - Tailored project type for database record processing use case
+
+- *automatiko-batch-archetype* - Tailored project type for batch processing use case
+
+
+Here is a ready to use command to generate project based on *automatiko-orchestration-archetype*
+
+[source,plain]
+----
+mvn archetype:generate                                      \
+  -DarchetypeGroupId=io.automatiko.archetypes               \
+  -DarchetypeArtifactId=automatiko-orchestration-archetype  \
+  -DarchetypeVersion=LATEST                                 \
+  -DgroupId=com.acme.workflows                              \
+  -DartifactId=workfow-service
+----
+
+== Configure project
+
+Once the project is bootstrapped, it needs to be configured according to the needs. There are two places where 
+configuration is done
+
+- `pom.xml` - definition of the dependencies and Automatiko addons to be used
+- `application.properties` - all configuration parameters are defined there (found in `src/main/resources` directory)
+
+A complete configuration of Automatiko specific configuration parameters can be found here, Quarkus specific configuration
+parameters can be found here.
+
+== Examples
+
+Following is a list of examples that can be tried out to see Workflow as a Service in action
+
+.Function flow examples
+|====
+|Name | Description | Link
+
+|weather-conditions
+|Weather conditions is implementing Service Orchestration use case.
+| link:https://github.com/automatiko-io/automatiko-examples/tree/main/weather-conditions[link]
+
+|vacation-requests
+|Vacation requests is implementing Human Centric use case backed by database.
+| link:https://github.com/automatiko-io/automatiko-examples/tree/main/vacation-requests[link]
+
+|support-incidents
+|Support incidents is implementing Human Centric use case backed by Apache Cassandra database.
+| link:https://github.com/automatiko-io/automatiko-examples/tree/main/support-incidents[link]
+
+|document-processor
+|Document processor is implementing Batch processing use case.
+| link:https://github.com/automatiko-io/automatiko-examples/tree/main/document-processor[link]
+
+|event-streams-orders
+|Order management is implementing Event Stream use case backed by Apache Kafka.
+| link:https://github.com/automatiko-io/automatiko-examples/tree/main/event-streams-orders[link]
+
+|event-streams-sensors
+|Water leak detection is implementing Internet of Things use case backed by MQTT.
+| link:https://github.com/automatiko-io/automatiko-examples/tree/main/event-streams-sensors[link]
+
+
+|====

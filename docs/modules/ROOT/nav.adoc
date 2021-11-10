@@ -1,5 +1,8 @@
 * xref:about.adoc[About]
 * xref:concepts.adoc[Concepts]
+** xref:workflow-service.adoc[Workflow as a service]
+** xref:workflow-function.adoc[Workflow as a function]
+** xref:workflow-function-flow.adoc[Workflow as a function flow]
 * xref:use-cases.adoc[Use cases]
 * xref:examples.adoc[Examples]
 * xref:getting-started.adoc[Getting started]
