@@ -60,6 +60,9 @@ with preconfigured set of dependencies needed for given use case
 |automatiko-archetype
 |Generic project type that comes with basic setup
 
+|automatiko-orchestration-archetype
+|Tailored for service orchestration scenarios
+
 |automatiko-event-stream-archetype
 |Tailored project type for event stream use case backed by Apache Kafka
 
@@ -85,6 +88,18 @@ with preconfigured set of dependencies needed for given use case
 
 Select archetype that matches the best for the type of automation you're going
 to work with. Fill in the details of the wizard and the project will be created.
+
+Alternatively use following command to generate project based on *automatiko-orchestration-archetype*
+
+[source,plain]
+----
+mvn archetype:generate                                      \
+  -DarchetypeGroupId=io.automatiko.archetypes               \
+  -DarchetypeArtifactId=automatiko-orchestration-archetype  \
+  -DarchetypeVersion=LATEST                                 \
+  -DgroupId=com.acme.workflows                              \
+  -DartifactId=workfow-service
+----
 
 It is standard Maven folder structure so should be rather familiar to most people
 but to just highlight most important parts of it

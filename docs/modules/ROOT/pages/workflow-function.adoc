@@ -1,0 +1,54 @@
+= Workflow as a Function (WaaF)
+
+image::workflow-as-function.png[]
+
+Workflow as a Function is dedicated for short lived operations that usually last
+no longer that a second. They are expected to be fast and small in size both at runtime
+and at boot time.
+
+Workflow as a Function typically targets deployments in more constrained environments such as:
+
+- link:https://aws.amazon.com/lambda/[AWS Lambda]
+- link:https://cloud.google.com/run[Google Cloud Run]
+- link:https://docs.microsoft.com/en-us/azure/azure-functions/functions-overview[Azure Functions]
+
+however are not strictly limited to them, as they can easily be invoked
+over HTTP with both `POST` and `GET` endpoints, making them deployable virtually
+anywhere.
+
+TIP: Functions can map data from payloads (`POST`) as well as from query parameters
+(`GET`).
+
+Regardless of the number of activities it contains, the workflow is always
+exposed as a single function with its id being its `public` identifier, namely the function name.
+
+== Get started
+
+To get started with Workflow as a Function users can take advantage of ready to use maven archetype
+to generate the project structure
+
+- *automatiko-function-archetype* - Tailored project type for workflow as a function use case
+
+
+Here is a ready to use command to generate project based on *automatiko-function-archetype*
+
+[source,plain]
+----
+mvn archetype:generate                                      \
+  -DarchetypeGroupId=io.automatiko.archetypes               \
+  -DarchetypeArtifactId=automatiko-function-archetype       \
+  -DarchetypeVersion=LATEST                                 \
+  -DgroupId=com.acme.workflows                              \
+  -DartifactId=workfow-function
+----
+
+== Configure project
+
+Once the project is bootstrapped, it needs to be configured according to the needs. There are two places where 
+configuration is done
+
+- `pom.xml` - definition of the dependencies and Automatiko addons to be used
+- `application.properties` - all configuration parameters are defined there (found in `src/main/resources` directory)
+
+A complete configuration of Automatiko specific configuration parameters can be found here, Quarkus specific configuration
+parameters can be found here.
