@@ -436,7 +436,6 @@ public class PublishEventTest extends AbstractCodegenTest {
                                                                                               // time
 
         assertThat(body.getErrors()).hasSize(1);
-        assertThat(body.getErrors().get(0).getErrorMessage()).isNull();
         assertThat(body.getErrors().get(0).getNodeDefinitionId()).isEqualTo("_38E04E27-3CCA-47F9-927B-E37DC4B8CE25");
 
         parameters.put("s", "john");
@@ -450,7 +449,6 @@ public class PublishEventTest extends AbstractCodegenTest {
         assertThat(events).isNotNull().hasSize(1);
         body = assertProcessInstanceEvent(events.get(0), "ServiceProcessDifferentOperations", "Service Process", 5);
         assertThat(body.getErrors()).hasSize(1);
-        assertThat(body.getErrors().get(0).getErrorMessage()).isNull();
         assertThat(body.getErrors().get(0).getNodeDefinitionId()).isEqualTo("_38E04E27-3CCA-47F9-927B-E37DC4B8CE25");
 
         uow = app.unitOfWorkManager().newUnitOfWork();

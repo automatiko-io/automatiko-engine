@@ -126,7 +126,7 @@ public class MockCacheProcessInstancesTest {
         mutablePi.start();
         assertThat(mutablePi.status()).isEqualTo(STATE_ERROR);
         assertThat(mutablePi.errors()).hasValueSatisfying(errors -> {
-            assertThat(errors.errorMessages()).isEqualTo("null");
+            assertThat(errors.errorMessages()).contains("null");
             assertThat(errors.failedNodeIds()).isEqualTo("ScriptTask_1");
         });
         assertThat(mutablePi.variables().toMap()).containsExactly(entry("var", "value"));
@@ -141,7 +141,6 @@ public class MockCacheProcessInstancesTest {
                 .findById(mutablePi.id(), ProcessInstance.STATE_ERROR, ProcessInstanceReadMode.READ_ONLY).get();
         assertThat(readOnlyPi.status()).isEqualTo(STATE_ERROR);
         assertThat(readOnlyPi.errors()).hasValueSatisfying(errors -> {
-            assertThat(errors.errorMessages()).isEqualTo("");
             assertThat(errors.failedNodeIds()).isEqualTo("ScriptTask_1");
         });
         assertThat(readOnlyPi.variables().toMap()).containsExactly(entry("var", "value"));
@@ -269,7 +268,7 @@ public class MockCacheProcessInstancesTest {
         Optional<ProcessErrors> errorOp = processInstance.errors();
         assertThat(errorOp).isPresent();
         assertThat(errorOp.get().failedNodeIds()).isEqualTo("ScriptTask_1");
-        assertThat(errorOp.get().errorMessages()).isEqualTo("null");
+        assertThat(errorOp.get().errorMessages()).contains("null");
 
         op.accept(processInstance);
         processInstance.errors().ifPresent(e -> e.retrigger());
