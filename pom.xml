@@ -118,7 +118,7 @@
     <version.com.datastax.oss>4.13.0</version.com.datastax.oss>
     <version.org.apache.camel.quarkus>2.3.0</version.org.apache.camel.quarkus>
 
-    <version.com.cronutils>9.1.5</version.com.cronutils>
+    <version.com.cronutils>9.1.6</version.com.cronutils>
 
     <version.org.antlr>3.5.2</version.org.antlr>
     <version.org.antlr4>4.8</version.org.antlr4>
