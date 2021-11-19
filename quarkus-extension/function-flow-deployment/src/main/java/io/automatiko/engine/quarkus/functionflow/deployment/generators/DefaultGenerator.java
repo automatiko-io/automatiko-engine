@@ -51,7 +51,7 @@ public class DefaultGenerator implements Generator {
         String sinkBindingTemplate = StringUtils.readFileAsString(
                 new InputStreamReader(this.getClass().getResourceAsStream("/function-sink-template.yaml")));
         descriptorFileContent.append(sinkBindingTemplate
-                .replaceAll("@@name@@", cob.getEffectiveModel().getAppArtifact().getArtifactId()));
+                .replaceAll("@@name@@", cob.getApplicationModel().getAppArtifact().getArtifactId()));
 
         descriptorFileContent.append("\n").append("---").append("\n");
 
@@ -59,9 +59,9 @@ public class DefaultGenerator implements Generator {
         String serviceTemplate = StringUtils.readFileAsString(
                 new InputStreamReader(this.getClass().getResourceAsStream("/function-service-template.yaml")));
         descriptorFileContent.append(serviceTemplate
-                .replaceAll("@@name@@", cob.getEffectiveModel().getAppArtifact().getArtifactId())
+                .replaceAll("@@name@@", cob.getApplicationModel().getAppArtifact().getArtifactId())
                 .replaceAll("@@user@@", System.getProperty("user.name"))
-                .replaceAll("@@version@@", cob.getEffectiveModel().getAppArtifact().getVersion()));
+                .replaceAll("@@version@@", cob.getApplicationModel().getAppArtifact().getVersion()));
 
         Collection<AnnotationInstance> functions = index.getIndex()
                 .getAnnotations(AutomatikoFunctionFlowProcessor.createDotName("io.quarkus.funqy.Funq"));
@@ -86,9 +86,9 @@ public class DefaultGenerator implements Generator {
                         new InputStreamReader(this.getClass().getResourceAsStream("/function-trigger-template.yaml")));
                 descriptorFileContent.append("\n").append("---").append("\n");
                 descriptorFileContent.append(triggerTemplate
-                        .replaceAll("@@name@@", mi.name())
+                        .replaceAll("@@name@@", sanitizeIdentifier(mi.name()))
                         .replaceAll("@@trigger@@", mi.annotation(mapping).value("trigger").asString())
-                        .replaceAll("@@servicename@@", cob.getEffectiveModel().getAppArtifact().getArtifactId()));
+                        .replaceAll("@@servicename@@", cob.getApplicationModel().getAppArtifact().getArtifactId()));
                 boolean includeSubjectAttribute = false;
                 Type param = mi.parameters().get(0);
                 if (param instanceof ParameterizedType) {
@@ -113,8 +113,8 @@ public class DefaultGenerator implements Generator {
         }
 
         Path filePath = Paths.get(directory.toString(),
-                cob.getEffectiveModel().getAppArtifact().getArtifactId() + "-"
-                        + cob.getEffectiveModel().getAppArtifact().getVersion() + ".yaml");
+                cob.getApplicationModel().getAppArtifact().getArtifactId() + "-"
+                        + cob.getApplicationModel().getAppArtifact().getVersion() + ".yaml");
         Files.write(
                 filePath,
                 descriptorFileContent.toString().getBytes(StandardCharsets.UTF_8));
@@ -123,5 +123,9 @@ public class DefaultGenerator implements Generator {
         LOGGER.info("************************************************************");
 
         SchemaRegistry.remove();
+    }
+
+    private String sanitizeIdentifier(String name) {
+        return name.replaceAll("\\p{P}", "").toLowerCase();
     }
 }

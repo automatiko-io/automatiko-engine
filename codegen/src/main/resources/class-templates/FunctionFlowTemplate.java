@@ -111,7 +111,7 @@ public class WorkflowFunction {
         identitySupplier.buildIdentityProvider(null, Collections.emptyList());
         Collection<FunctionContext> contexts = io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {            
             List<FunctionContext> executed = new ArrayList<>();
-            if (id != null) {
+            if (id != null && !id.isEmpty()) {
                 ProcessInstance<$Type$> pi = process.instances().findById(id).orElse(null);
                 if (pi != null) {
                     pi.send(Sig.of("$signalName$", value, getReferenceId(event)));
@@ -123,7 +123,7 @@ public class WorkflowFunction {
                     executed.add(new FunctionContext(pid, (List<String>)((WorkflowProcessInstanceImpl)((AbstractProcessInstance<$Type$>) pi).processInstance()).getMetaData().remove("ATK_FUNC_FLOW_NEXT"), getModel(pi)));
                 }
                 return executed;
-            } else if (correlation != null) {
+            } else if (correlation != null && !correlation.isEmpty()) {
                 Collection possiblyFound = process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE, correlation);
                 if (!possiblyFound.isEmpty()) {
                     
