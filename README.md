@@ -1,5 +1,4 @@
-![Java 11 CI with Maven](https://github.com/automatiko-io/automatiko-engine/workflows/Java%2011%20CI%20with%20Maven/badge.svg)
-![Java 17 CI with Maven](https://github.com/automatiko-io/automatiko-engine/workflows/Java%2017%20CI%20with%20Maven/badge.svg)
+![Java 11 CI with Maven](https://github.com/automatiko-io/automatiko-engine/workflows/Java%20%2811%20and%2017%29%20CI%20with%20Maven/badge.svg)
 
 <p align="center">
 <a href="https://automatiko.io"><img src="img/automatiko-engine.png" width="800px" alt="Automatiko Engine"/></a>
