@@ -20,6 +20,7 @@ of the custom resource.
 
 Depending which change event is received different actions will be invoked.
 
+image:examples-operator.png[]
 
 == Run it
 

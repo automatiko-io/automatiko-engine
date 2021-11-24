@@ -20,6 +20,10 @@ In addition to that REST calls are equipped with error handling to tackle unexpe
 errors during creation of a user in Swagger PetStore service or expected situations like user not found in Swagger 
 PetStore service. 
 
+image:examples-user-registration.png[]
+
+== Run it
+
 There are multiple paths that can be taken during the user registration
 
 image:user-registration-workflow.png[]
@@ -33,10 +37,6 @@ the `Notify invalid data` is combined with `Verify user data` into single functi
 of being able to control which activities are included in single function.
 
 image:user-registration-workflow-ff-continue.png[]  
-
-
-
-== Run it
 
 To be able to run it a Kubernetes cluster must be available with KNative Eventing installed. It could be local installation, such as 
 

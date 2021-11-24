@@ -20,6 +20,7 @@
     <maven.compiler.source>11</maven.compiler.source>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <quarkus.package.type>uber-jar</quarkus.package.type>
   </properties>
 
   <dependencyManagement>
@@ -88,6 +89,166 @@
   </build>
 
   <profiles>
+    <!-- azure functions support -->
+    <profile>
+      <id>azure</id>
+      <activation>
+        <property>
+          <name>azure</name>
+        </property>
+      </activation>
+      
+      <properties>
+        <azure.functions.maven.plugin.version>1.9.1</azure.functions.maven.plugin.version>
+        <functionAppName>\${project.artifactId}</functionAppName>
+        <functionAppRegion>westus</functionAppRegion>
+        <functionResourceGroup>my-resource-group</functionResourceGroup>
+        <!-- function should match workflow definition id -->
+        <function>\${project.artifactId}</function>
+        <stagingDirectory>\${project.build.directory}/azure-functions/\${functionAppName}</stagingDirectory>
+        <quarkus.package.type>uber-jar</quarkus.package.type>
+      </properties>
+      
+      <dependencies>
+        <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-azure-functions-http</artifactId>
+        </dependency>
+      </dependencies>
+      
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-functions-maven-plugin</artifactId>
+            <version>\${azure.functions.maven.plugin.version}</version>
+            <configuration>
+              <resourceGroup>\${functionResourceGroup}</resourceGroup>
+              <appName>\${functionAppName}</appName>
+              <region>\${functionAppRegion}</region>
+              <runtime>
+                <!-- runtime os, could be windows, linux or docker-->
+                <os>windows</os>
+                <javaVersion>11</javaVersion>
+                <!-- for docker function, please set the following parameters -->
+                <!-- <image>[hub-user/]repo-name[:tag]</image> -->
+                <!-- <serverId></serverId> -->
+                <!-- <registryUrl></registryUrl>  -->
+              </runtime>
+              <appSettings>
+                <property>
+                  <name>FUNCTIONS_EXTENSION_VERSION</name>
+                  <value>~3</value>
+                </property>
+              </appSettings>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+              <!-- add azure required json files
+                   to Azure staging directory -->
+              <execution>
+                <id>copy-base-azure-config</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <overwrite>true</overwrite>
+                  <outputDirectory>\${stagingDirectory}</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>\${project.basedir}/azure-config</directory>
+                      <includes>
+                        <include>host.json</include>
+                        <include>local.settings.json</include>
+                      </includes>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+              <!-- copy unpacked function.json into Azure staging directory -->
+              <execution>
+                <id>copy-function-json</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <overwrite>true</overwrite>
+                  <outputDirectory>\${stagingDirectory}/\${function}</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>\${project.basedir}/azure-config</directory>
+                      <filtering>true</filtering>
+                      <includes>
+                        <include>function.json</include>
+                      </includes>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <!-- azure plugin wants a specific name for the jar so need to copy runner jar and rename it -->
+          <plugin>
+            <groupId>com.coderplus.maven.plugins</groupId>
+            <artifactId>copy-rename-maven-plugin</artifactId>
+            <version>1.0.1</version>
+            <executions>
+              <execution>
+                <id>rename-file</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <configuration>
+                  <sourceFile>\${project.build.directory}/\${project.artifactId}-\${project.version}-runner.jar</sourceFile>
+                  <destinationFile>\${stagingDirectory}/\${project.artifactId}-\${project.version}.jar</destinationFile>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <!-- Amazon Lambda functions support -->
+    <profile>
+      <id>aws-lambda</id>
+      <activation>
+        <property>
+          <name>aws-lambda</name>
+        </property>
+      </activation>    
+      
+      <dependencies>
+        <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-amazon-lambda-http</artifactId>
+        </dependency>
+      </dependencies>      
+    </profile>  
+    
+    <!-- Google Cloud functions support -->
+    <profile>
+      <id>gcp</id>
+      <activation>
+        <property>
+          <name>gcp</name>
+        </property>
+      </activation>    
+      
+      <dependencies>
+        <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-google-cloud-functions-http</artifactId>
+        </dependency>
+      </dependencies>      
+    </profile>      
+  
     <profile>
       <id>native</id>
       <activation>
