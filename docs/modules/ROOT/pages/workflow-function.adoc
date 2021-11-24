@@ -42,6 +42,12 @@ mvn archetype:generate                                      \
   -DartifactId=workfow-function
 ----
 
+Generated project has three maven profile defined that represents the target environment to deploy your function
+
+- `azure` - for Azure Functions
+- `gcp` - for Google Cloud Functions
+- `lambda` - for Amazon Lambda
+
 == Configure project
 
 Once the project is bootstrapped, it needs to be configured according to the needs. There are two places where 
@@ -52,3 +58,55 @@ configuration is done
 
 A complete configuration of Automatiko specific configuration parameters can be found here, Quarkus specific configuration
 parameters can be found here.
+
+=== Azure functions
+
+Azure configuration uses `azure-functions-maven-plugin` and thus requires additional configuration to be set. 
+Either by editing pom.xml file or using `-D` on the command lines. Here are the properties that must be set
+
+- `functionResourceGroup` - resource group in your Azure subscription to be used
+- `functionAppPlan` - application plan to be used
+
+Once this is done Azure function deployment can be done via maven plugin
+
+[source,plain]
+----
+mvn clean package azure-functions:deploy -Pazure
+----
+
+This command will give you as output a `HTTP Trigger Urls` that points to your function.
+
+=== Google Cloud functions
+
+For Google Cloud functions it should be build with `gcp` profile
+
+[source,plain]
+----
+mvn clean package -Pgcp
+----
+
+And then deployed to your Google Cloud project using `gcloud`
+
+[source,plain]
+----
+gcloud functions deploy automatiko-user-registration-example \
+  --entry-point=io.quarkus.gcp.functions.http.QuarkusHttpFunction \
+  --runtime=java11 --trigger-http --source=target/deployment
+----
+
+This command will give you as output a `httpsTrigger.url` that points to your function.
+
+== Examples
+
+Following is a list of examples that can be tried out to see Workflow as a Function in action
+
+.Function examples
+|====
+|Name | Description | Link
+
+|user registration
+|BPMN based workflow for user registration that uses Swagger PetStore as user repository. Ready to be deployed to 
+Azure Functions, Google Cloud Functions and Amazon Lambda
+| link:https://github.com/automatiko-io/automatiko-examples/tree/main/user-registration-function[link]
+
+|====

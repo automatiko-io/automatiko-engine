@@ -53,3 +53,10 @@ User registration is implementing `Workflow as a Function Flow` use case.
 
 Complete example description and instructions can be
 found link:examples/userregistration.html[User registration example].
+
+== User registration function
+
+User registration is implementing `Workflow as a Function` use case.
+
+Complete example description and instructions can be
+found link:examples/userregistration-function.html[User registration Function example].

@@ -57,6 +57,11 @@
         <include>**/*.xml</include>
       </includes>
     </fileSet>
-
+    <fileSet filtered="true" packaged="false" encoding="UTF-8">
+      <directory>azure-config</directory>
+      <includes>
+        <include>**/*.json</include>
+      </includes>
+    </fileSet>
   </fileSets>
 </archetype-descriptor>

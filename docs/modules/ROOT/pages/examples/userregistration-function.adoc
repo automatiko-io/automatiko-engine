@@ -1,0 +1,240 @@
+:imagesdir: ../../images
+
+= User registration function
+
+User registration example illustrates `Workflow as a Function` concept that allows to deploy the function to 
+various cloud providers such as
+
+- Azure Functions
+- Google Cloud Functions
+- Amazon Lambda 
+
+This example takes a simple user registration use case and implements it as workflow. The logic behind is
+composed of
+
+- validating provided user information
+- generating username and password
+- verifying that given user name is not yet registered in the Swagger PetStore service
+- creating user in the Swagger PetStore service
+
+So the workflow defines multiple types of operations that are being invoked, starting from java services
+implemented within the service and finishing at REST invocation based on OpenAPI definitions.
+
+In addition to that REST calls are equipped with error handling to tackle unexpected responses like server
+errors during creation of a user in Swagger PetStore service or expected situations like user not found in Swagger 
+PetStore service. 
+
+
+image:examples-user-registration-func.png[]
+
+
+== Run it
+
+Depending on which environment you are targeting there will be different requirements
+
+First select proper profile to build the functon for target environment
+
+- Azure functions use `-Pazure`
+- Google Cloud Functions use `-Pgcp`
+- Amazon Lambda use `-Plambda`
+
+=== Azure functions
+
+Azure configuration uses `azure-functions-maven-plugin` and thus requires additional configuration to be set. 
+Either by editing pom.xml file or using `-D` on the command lines. Here are the properties that must be set
+
+- `functionResourceGroup` - resource group in your Azure subscription to be used
+- `functionAppPlan` - application plan to be used
+
+Once this is done Azure function deployment can be done via maven plugin
+
+[source,plain]
+----
+mvn clean package azure-functions:deploy -Pazure
+----
+
+
+Completion of the build should end with similar output
+
+[source,plain]
+----
+[INFO] HTTP Trigger Urls:
+[INFO] 	 userregistration : https://automatiko-user-registration-example.azurewebsites.net/api/{*path}
+----
+
+This is the url that should be used to invoke function, where `{*path}` should be replaced with the function name, in this case `userregistration`
+
+
+=== Google Cloud functions
+
+For Google Cloud functions it should be build with `gcp` profile
+
+[source,plain]
+----
+mvn clean package -Pgcp
+----
+
+And then deployed to your Google Cloud project using `gcloud`
+
+[source,plain]
+----
+gcloud functions deploy automatiko-user-registration-example \
+  --entry-point=io.quarkus.gcp.functions.http.QuarkusHttpFunction \
+  --runtime=java11 --trigger-http --source=target/deployment
+----
+
+This command will give you as output a `httpsTrigger.url` that points to your function.
+
+There are multiple paths that can be taken during the user registration
+image:user-registration-workflow.png[]
+
+=== The happy path
+
+Happy path consists of steps that will lead to successful user registration.
+
+==== Try it
+
+Follow steps in the `Details` section to see the happy path in action.
+
+[%collapsible]
+====
+
+NOTE: Login to a curler pod that enables an easy access to the broker to send requests as it might not be exposed to 
+external traffic (e.g. ingress). If your Knative broker is exposed to external traffic you can skip the curler step.
+
+Issue following curl command from the pod running within cluster so the broker url will be properly resolved.
+
+[source,plain]
+----
+curl -v "FUNCTION_ENDPOINT_URL/api/userregistration" \
+-X POST \
+-H "Content-Type: application/json" \
+-d '{"user" : {"email" : "mike.strong@email.com",  "firstName" : "mike",  "lastName" : "strong"}}'
+----
+
+Alternatively you can send request to start user registration for user using GET
+
+[source,plain]
+----
+curl -v "FUNCTION_ENDPOINT_URL/api/userregistration?user.email=john@email.com&user.firstName=John&user.lastName=Strong"
+----
+
+It will respond with something like the following response
+
+```
+{"id":"3ac3032b-ed91-409c-8faf-7bf3ee9b0482","user":{"id":null,"username":"jstrong","firstName":"John","lastName":"Strong","email":"john@email.com","password":"S3cr3T","phone":null,"userStatus":100}}
+```
+
+Important part is the `userStatus` field that represents the output of the function
+
+- 100 - successful registration
+- 300 - already registered
+- 400 - invalid data
+- 500 - server error on registering user in Swagger PetStore
+
+Taking into consideration that this request was sent for the first time it should register user in Swagger PetStore.
+
+NOTE: It might result in a already registered when the user was already registered so consider updating the first name 
+and last name in the request payload with custom data that will ensure new user
+
+====
+
+
+=== The invalid data path
+
+Invalid data path consists of steps that will lead to fast finish without user registration.
+
+==== Try it
+
+Follow steps in the `Details` section to see the invalid data path in action.
+
+[%collapsible]
+====
+
+NOTE: Login to a curler pod that enables an easy access to the broker to send requests as it might not be exposed to 
+external traffic (e.g. ingress). If your Knative broker is exposed to external traffic you can skip the curler step.
+
+Issue following curl command from the pod running within cluster so the broker url will be properly resolved.
+
+[source,plain]
+----
+curl -v "FUNCTION_ENDPOINT_URL/api/userregistration" \
+-X POST \
+-H "Content-Type: application/json" \
+-d '{"user" : {"email" : "mike.strong@email.com",  "firstName" : "mike",  "lastName" : ""}}'
+----
+
+Alternatively you can send request to start user registration for user using GET
+
+[source,plain]
+----
+curl -v "FUNCTION_ENDPOINT_URL/api/userregistration?user.email=john@email.com&user.firstName=John&user.lastName="
+----
+
+It will respond with something like the following response
+
+```
+{"id":"3ac3032b-ed91-409c-8faf-7bf3ee9b0482","user":{"id":null,"username":"jstrong","firstName":"John","lastName":"Strong","email":"john@email.com","password":"S3cr3T","phone":null,"userStatus":100}}
+```
+
+Important part is the `userStatus` field that represents the output of the function
+
+- 100 - successful registration
+- 300 - already registered
+- 400 - invalid data
+- 500 - server error on registering user in Swagger PetStore
+
+Since user's last name is not set the workflow will reject processing due to invalid data
+
+====
+
+
+=== The already registered path
+
+Already registered path consists of steps that will lead to fast finish without user registration.
+
+==== Try it
+
+Follow steps in the `Details` section to see the already registered path in action.
+
+[%collapsible]
+====
+
+NOTE: Login to a curler pod that enables an easy access to the broker to send requests as it might not be exposed to 
+external traffic (e.g. ingress). If your Knative broker is exposed to external traffic you can skip the curler step.
+
+Issue following curl command from the pod running within cluster so the broker url will be properly resolved.
+Main rule here is that there should be already user with same first and last name registered. For example 
+that the happy path has been executed.
+
+[source,plain]
+----
+curl -v "FUNCTION_ENDPOINT_URL/api/userregistration" \
+-X POST \
+-H "Content-Type: application/json" \
+-d '{"user" : {"email" : "mike.strong@email.com",  "firstName" : "mike",  "lastName" : "strong"}}'
+----
+
+Alternatively you can send request to start user registration for user using GET
+
+[source,plain]
+----
+curl -v "FUNCTION_ENDPOINT_URL/api/userregistration?user.email=john@email.com&user.firstName=John&user.lastName=Strong"
+----
+
+It will respond with something like the following response
+
+```
+{"id":"3ac3032b-ed91-409c-8faf-7bf3ee9b0482","user":{"id":null,"username":"jstrong","firstName":"John","lastName":"Strong","email":"john@email.com","password":"S3cr3T","phone":null,"userStatus":100}}
+```
+
+Important part is the `userStatus` field that represents the output of the function
+
+- 100 - successful registration
+- 300 - already registered
+- 400 - invalid data
+- 500 - server error on registering user in Swagger PetStore
+
+Since user was already registered processing is stopped
+
+====
