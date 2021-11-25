@@ -12,6 +12,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 
 import io.automatiko.engine.api.marshalling.ObjectMarshallingStrategy;
 
@@ -24,7 +27,10 @@ public class JacksonObjectMarshallingStrategy implements ObjectMarshallingStrate
     public JacksonObjectMarshallingStrategy() {
         this.mapper = new ObjectMapper().activateDefaultTyping(
                 BasicPolymorphicTypeValidator.builder().allowIfSubType(Object.class).build(), DefaultTyping.EVERYTHING,
-                As.PROPERTY);
+                As.PROPERTY)
+                .registerModule(new ParameterNamesModule())
+                .registerModule(new Jdk8Module())
+                .registerModule(new JavaTimeModule());
     }
 
     @Override
