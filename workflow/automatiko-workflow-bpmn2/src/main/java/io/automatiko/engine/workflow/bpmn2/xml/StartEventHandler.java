@@ -465,8 +465,6 @@ public class StartEventHandler extends AbstractNodeHandler {
                             String period = delay.substring(index + 3);
                             delay = delay.substring(0, index);
                             timer.setPeriod(period);
-                        } else {
-                            timer.setPeriod(delay);
                         }
                         timer.setTimeType(Timer.TIME_CYCLE);
                         timer.setDelay(delay);
