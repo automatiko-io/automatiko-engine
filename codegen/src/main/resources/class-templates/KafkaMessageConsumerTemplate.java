@@ -55,12 +55,8 @@ public class $Type$MessageConsumer {
             final $Type$ model = new $Type$();  
             IdentityProvider.set(new TrustedIdentityProvider("System<messaging>"));
             io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-                String correlation;
-                if (record.getKey() != null) {
-                    correlation = ((io.smallrye.reactive.messaging.kafka.KafkaRecord<?, ?>) msg).getKey().toString();
-                } else {
-                    correlation = correlationPayload(eventData, msg);
-                }
+                String correlation = correlation(eventData, msg);
+                
             	if (correlation != null) {
             		LOGGER.debug("Correlation ({}) is set, attempting to find if there is matching instance already active", correlation);
             		Collection possiblyFound = process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE, correlation);
@@ -125,5 +121,13 @@ public class $Type$MessageConsumer {
 	    }
 	    
 	    return ($DataType$) payload;
+	}
+	
+	private String correlation($DataType$ eventData, Message<?> msg) {
+	    String correlation = correlationPayload(eventData, msg);
+        if (correlation == null && ((io.smallrye.reactive.messaging.kafka.KafkaRecord<?, ?>) msg).getKey() != null) {
+            correlation = ((io.smallrye.reactive.messaging.kafka.KafkaRecord<?, ?>) msg).getKey().toString();
+        }
+        return correlation;
 	}
 }
