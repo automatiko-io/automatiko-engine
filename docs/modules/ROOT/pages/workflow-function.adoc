@@ -46,7 +46,7 @@ Generated project has three maven profile defined that represents the target env
 
 - `azure` - for Azure Functions
 - `gcp` - for Google Cloud Functions
-- `lambda` - for Amazon Lambda
+- `aws-lambda` - for Amazon Lambda
 
 == Configure project
 
@@ -95,6 +95,39 @@ gcloud functions deploy automatiko-user-registration-example \
 ----
 
 This command will give you as output a `httpsTrigger.url` that points to your function.
+
+=== AWS Lambda
+
+For AWS Lambda functions it should be build with `aws-lambda` profile
+
+[source,plain]
+----
+mvn clean package -Paws-lambda
+----
+
+And then deployed to your AWS Lambda project using `sam`
+
+[source,plain]
+----
+sam deploy -t target/sam.jvm.yaml -g
+----
+
+This command will give you output similar to following
+
+[source,plain]
+----
+---------------------------------------------------------------------------------------
+Outputs
+---------------------------------------------------------------------------------------
+Key                 UserRegistrationFunctionApi
+Description         URL for application
+Value               https://xqe0c0addh.execute-api.us-east-2.amazonaws.com/
+----------------------------------------------------------------------------------------
+
+----
+
+The above url can be used to trigger lambda functions by appending the context path.
+
 
 == Examples
 
