@@ -136,7 +136,7 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
                         // when using ISO date/time period is not set
                         long[] repeatValues = null;
                         try {
-                            repeatValues = DateTimeUtils.parseRepeatableDateTime(timer.getDelay());
+                            repeatValues = DateTimeUtils.parseRepeatableDateTime(resolvedDelay);
                         } catch (RuntimeException e) {
                             // cannot parse delay, trying to interpret it
                             repeatValues = DateTimeUtils.parseRepeatableDateTime(resolvedDelay);

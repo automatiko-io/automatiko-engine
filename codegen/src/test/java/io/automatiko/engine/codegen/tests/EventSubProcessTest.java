@@ -212,4 +212,32 @@ public class EventSubProcessTest extends AbstractCodegenTest {
         processInstance.abort();
         assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ABORTED);
     }
+
+    @Test
+    public void testEventTimerCycleISOSubProcess() throws Exception {
+
+        Application app = generateCodeProcessesOnly("event-subprocess/EventSubprocessTimerCycle.bpmn2");
+        assertThat(app).isNotNull();
+
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("start-sub", 2);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+
+        Process<? extends Model> p = app.processes().processById("EventSubprocessTimer_1");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        boolean completed = listener.waitTillCompleted(5000);
+        assertThat(completed).isTrue();
+
+        processInstance.abort();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ABORTED);
+    }
 }
