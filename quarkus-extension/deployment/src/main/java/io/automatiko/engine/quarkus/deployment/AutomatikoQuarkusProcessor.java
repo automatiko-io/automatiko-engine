@@ -47,6 +47,7 @@ import io.automatiko.engine.api.codegen.AutomatikoConfigProperties;
 import io.automatiko.engine.api.codegen.Generated;
 import io.automatiko.engine.api.codegen.VariableInfo;
 import io.automatiko.engine.codegen.ApplicationGenerator;
+import io.automatiko.engine.codegen.CodeGenConstants;
 import io.automatiko.engine.codegen.GeneratedFile;
 import io.automatiko.engine.codegen.GeneratorContext;
 import io.automatiko.engine.codegen.context.QuarkusApplicationBuildContext;
@@ -182,24 +183,6 @@ public class AutomatikoQuarkusProcessor {
             BuildProducer<ReflectiveHierarchyIgnoreWarningBuildItem> reflectiveHierarchy,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
 
-        // DMN related
-        reflectiveHierarchy
-                .produce(new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.api.builder.Message$Level")));
-        reflectiveHierarchy
-                .produce(new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.dmn.api.core.DMNContext")));
-        reflectiveHierarchy.produce(
-                new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.dmn.api.core.DMNDecisionResult")));
-        reflectiveHierarchy.produce(new ReflectiveHierarchyIgnoreWarningBuildItem(
-                createDotName("org.kie.dmn.api.core.DMNDecisionResult$DecisionEvaluationStatus")));
-        reflectiveHierarchy
-                .produce(new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.dmn.api.core.DMNMessage")));
-        reflectiveHierarchy.produce(new ReflectiveHierarchyIgnoreWarningBuildItem(
-                createDotName("org.kie.dmn.api.core.DMNMessage$Severity")));
-        reflectiveHierarchy
-                .produce(new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.dmn.api.core.DMNMessageType")));
-        reflectiveHierarchy.produce(new ReflectiveHierarchyIgnoreWarningBuildItem(
-                createDotName("org.kie.dmn.api.feel.runtime.events.FEELEvent")));
-
         reflectiveClass.produce(
                 new ReflectiveClassBuildItem(true, true, "io.automatiko.engine.api.event.AbstractDataEvent"));
         reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
@@ -255,6 +238,28 @@ public class AutomatikoQuarkusProcessor {
                 .map(c -> c.name().toString())
                 .forEach(
                         c -> reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, c)));
+
+        // DMN related
+        DotName classDotName = createDotName(CodeGenConstants.DMN_CLASS);
+        if (!archivesIndex.getAnnotations(classDotName).isEmpty() || archivesIndex.getClassByName(classDotName) != null) {
+            reflectiveHierarchy
+                    .produce(new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.api.builder.Message$Level")));
+            reflectiveHierarchy
+                    .produce(new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.dmn.api.core.DMNContext")));
+            reflectiveHierarchy.produce(
+                    new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.dmn.api.core.DMNDecisionResult")));
+            reflectiveHierarchy.produce(new ReflectiveHierarchyIgnoreWarningBuildItem(
+                    createDotName("org.kie.dmn.api.core.DMNDecisionResult$DecisionEvaluationStatus")));
+            reflectiveHierarchy
+                    .produce(new ReflectiveHierarchyIgnoreWarningBuildItem(createDotName("org.kie.dmn.api.core.DMNMessage")));
+            reflectiveHierarchy.produce(new ReflectiveHierarchyIgnoreWarningBuildItem(
+                    createDotName("org.kie.dmn.api.core.DMNMessage$Severity")));
+            reflectiveHierarchy
+                    .produce(new ReflectiveHierarchyIgnoreWarningBuildItem(
+                            createDotName("org.kie.dmn.api.core.DMNMessageType")));
+            reflectiveHierarchy.produce(new ReflectiveHierarchyIgnoreWarningBuildItem(
+                    createDotName("org.kie.dmn.api.feel.runtime.events.FEELEvent")));
+        }
 
     }
 
@@ -493,7 +498,10 @@ public class AutomatikoQuarkusProcessor {
         }
 
         addProcessGenerator(appPaths, usePersistence, appGen, dependencies);
-        addDecisionGenerator(appPaths, appGen, false, dependencies);
+
+        if (context.getBuildContext().isDmnSupported()) {
+            addDecisionGenerator(appPaths, appGen, false, dependencies);
+        }
 
         return appGen;
     }

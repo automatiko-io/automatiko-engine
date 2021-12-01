@@ -33,6 +33,10 @@
       <artifactId>automatiko-service</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.automatiko.decision</groupId>
+      <artifactId>automatiko-decision-dmn</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
     </dependency>

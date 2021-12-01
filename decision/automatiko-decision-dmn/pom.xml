@@ -31,7 +31,7 @@
       <groupId>org.kie</groupId>
       <artifactId>kie-api</artifactId>
       <exclusions>
-              <exclusion>
+        <exclusion>
           <groupId>org.kie.soup</groupId>
           <artifactId>kie-soup-maven-support</artifactId>
         </exclusion>

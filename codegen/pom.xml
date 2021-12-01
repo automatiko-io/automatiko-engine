@@ -54,6 +54,7 @@
     <dependency>
       <groupId>io.automatiko.decision</groupId>
       <artifactId>automatiko-decision-dmn</artifactId>
+      <optional>true</optional>
     </dependency>
     <!-- Json schema generator -->
     <dependency>
