@@ -33,4 +33,8 @@ public interface ApplicationBuildContext {
     default boolean isGraphQLSupported() {
         return hasClassAvailable(CodeGenConstants.GRAPHQL_CLASS);
     }
+
+    default boolean isDmnSupported() {
+        return hasClassAvailable(CodeGenConstants.DMN_CLASS);
+    }
 }
