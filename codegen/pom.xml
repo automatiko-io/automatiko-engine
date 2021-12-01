@@ -100,10 +100,6 @@
     </dependency>
 
     <!-- marshallers -->
-    <dependency>
-      <groupId>org.infinispan.protostream</groupId>
-      <artifactId>protostream</artifactId>
-    </dependency>
 
     <!-- test -->
     <dependency>

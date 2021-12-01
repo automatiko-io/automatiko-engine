@@ -36,9 +36,6 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.automatiko.engine.api.Config;
 import io.automatiko.engine.api.event.EventPublisher;
 import io.automatiko.engine.codegen.di.DependencyInjectionAnnotator;
-import io.automatiko.engine.codegen.metadata.Labeler;
-import io.automatiko.engine.codegen.metadata.MetaDataWriter;
-import io.automatiko.engine.codegen.metadata.PrometheusLabeler;
 
 public class ApplicationGenerator {
 
@@ -59,7 +56,6 @@ public class ApplicationGenerator {
     private final List<BodyDeclaration<?>> factoryMethods;
     private ConfigGenerator configGenerator;
     private List<Generator> generators = new ArrayList<>();
-    private List<Labeler> labelers = new ArrayList<>();
 
     private GeneratorContext context;
     private boolean persistence;
@@ -192,19 +188,9 @@ public class ApplicationGenerator {
         return this;
     }
 
-    public ApplicationGenerator withMonitoring(boolean monitoring) {
-        if (monitoring) {
-            this.labelers.add(new PrometheusLabeler());
-        }
-        return this;
-    }
-
     public Collection<GeneratedFile> generate() {
         List<GeneratedFile> generatedFiles = generateComponents();
         generators.forEach(gen -> gen.updateConfig(configGenerator));
-        if (targetDirectory.isDirectory()) {
-            generators.forEach(gen -> MetaDataWriter.writeLabelsImageMetadata(targetDirectory, gen.getLabels()));
-        }
         generatedFiles.add(generateApplicationDescriptor());
         generatedFiles.addAll(generateApplicationSections());
         generatedFiles.add(generateApplicationConfigDescriptor());
@@ -212,7 +198,6 @@ public class ApplicationGenerator {
             generators.stream().filter(gen -> gen.section() != null)
                     .forEach(gen -> generateSectionClass(gen.section(), generatedFiles));
         }
-        this.labelers.forEach(l -> MetaDataWriter.writeLabelsImageMetadata(targetDirectory, l.generateLabels()));
 
         if (context != null) {
             CompilationUnit cp = context.write(DEFAULT_PACKAGE_NAME);

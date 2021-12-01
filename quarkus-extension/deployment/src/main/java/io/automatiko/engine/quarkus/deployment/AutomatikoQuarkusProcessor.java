@@ -44,8 +44,6 @@ import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.codegen.AutomatikoConfigProperties;
-import io.automatiko.engine.api.codegen.Generated;
-import io.automatiko.engine.api.codegen.VariableInfo;
 import io.automatiko.engine.codegen.ApplicationGenerator;
 import io.automatiko.engine.codegen.CodeGenConstants;
 import io.automatiko.engine.codegen.GeneratedFile;
@@ -329,9 +327,7 @@ public class AutomatikoQuarkusProcessor {
         for (Path projectPath : appPaths.projectPaths) {
             PersistenceGenerator persistenceGenerator = new PersistenceGenerator(
                     new File(projectPath.toFile(), "target"), modelClasses, usePersistence,
-                    new JandexProtoGenerator(index, createDotName(Generated.class.getCanonicalName()),
-                            createDotName(VariableInfo.class.getCanonicalName())),
-                    parameters);
+                    Thread.currentThread().getContextClassLoader());
             persistenceGenerator.setDependencyInjection(new CDIDependencyInjectionAnnotator());
             persistenceGenerator.setPackageName(config.packageName.orElse(DEFAULT_PACKAGE_NAME));
             persistenceGenerator.setContext(AutomatikoBuildData.get().getGenerationContext());
@@ -489,7 +485,7 @@ public class AutomatikoQuarkusProcessor {
         ApplicationGenerator appGen = new ApplicationGenerator(config.packageName().orElse(DEFAULT_PACKAGE_NAME),
                 new File(appPaths.getFirstProjectPath().toFile(), "target"))
                         .withDependencyInjection(new CDIDependencyInjectionAnnotator()).withPersistence(usePersistence)
-                        .withMonitoring(config.metrics().enabled()).withGeneratorContext(context);
+                        .withGeneratorContext(context);
         List<String> dependencies = new ArrayList<>();
         if (appModel != null) {
             for (ResolvedDependency i : appModel.getRuntimeDependencies()) {
