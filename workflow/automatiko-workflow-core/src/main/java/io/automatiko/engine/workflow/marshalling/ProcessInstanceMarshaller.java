@@ -65,6 +65,11 @@ public class ProcessInstanceMarshaller {
         env.put(EnvironmentName.OBJECT_MARSHALLING_STRATEGIES, strats);
     }
 
+    public void addToEnvironment(String name, Object value) {
+        env.put(name, value);
+
+    }
+
     public byte[] marhsallProcessInstance(ProcessInstance<?> processInstance) {
 
         io.automatiko.engine.api.runtime.process.ProcessInstance pi = ((AbstractProcessInstance<?>) processInstance)

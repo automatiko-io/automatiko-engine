@@ -172,7 +172,9 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
             }
         }
 
-        writeVariableScope(context, workFlow, _instance);
+        if (!(boolean) context.env.getOrDefault("_ignore_vars_", false)) {
+            writeVariableScope(context, workFlow, _instance);
+        }
 
         List<Map.Entry<String, Integer>> iterationlevels = new ArrayList<Map.Entry<String, Integer>>(
                 workFlow.getIterationLevels().entrySet());

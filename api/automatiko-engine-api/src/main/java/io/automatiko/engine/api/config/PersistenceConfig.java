@@ -52,4 +52,11 @@ public class PersistenceConfig {
     public CassandraPersistenceConfig cassandra() {
         return new CassandraPersistenceConfig();
     }
+
+    /**
+     * Configures MongoDB based persistence
+     */
+    public MongodbPersistenceConfig mongodb() {
+        return new MongodbPersistenceConfig();
+    }
 }

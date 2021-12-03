@@ -49,6 +49,8 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
         this.codec = codec;
 
         this.type = process.createModel().getClass();
+        // mark the marshaller that it should not serialize variables
+        this.marshaller.addToEnvironment("_ignore_vars_", true);
     }
 
     @SuppressWarnings("unchecked")

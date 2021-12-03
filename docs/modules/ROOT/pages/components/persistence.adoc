@@ -11,6 +11,7 @@ Automatiko comes with several options to chose from
 - *Database* based storage
 - *Amazon DynamoDB* based storage
 - *Apache Cassandra* based storage
+- *MongoDB* based storage
 
 NOTE: More is on their way and as soon as they will be implemented they will
 be listed here.
@@ -168,6 +169,8 @@ The table structure will have following attributes
 - *InstanceId* - (of type string) this is the unique id of each workflow instance
 - *Content* - (of type binary) this is the actual workflow instance serialized
 - *Tags* - (of type list) this is the workflow instance tags - it also includes `instance id` and `business key`
+- *PIStatus* - current status of the workflow instance
+- *VersionTrack* - current version of the workflow instance (increment with each change)
 
 NOTE: In addition when table is created it assigns default values for read and write capacity set to 10, it can be
 changed via configuration properties
@@ -235,7 +238,8 @@ The table structure will have following attributes
 - *InstanceId* - (of type text) this is the unique id of each workflow instance
 - *Content* - (of type blob) this is the actual workflow instance serialized
 - *Tags* - (of type set) this is the workflow instance tags - it also includes `instance id` and `business key`
-
+- *PIStatus* - current status of the workflow instance
+- *VersionTrack* - current version of the workflow instance (increment with each change)
 
 In addition to tables, Automatiko will create key space as well with configured name. If name is not given then it 
 defaults to `automatiko`.
@@ -292,3 +296,66 @@ Additional configuration should be placed in `application.properties`
 
 Full configuration reference for Apache Cassandra can be found link:https://quarkus.io/guides/cassandra#advanced-driver-configuration[here]
 
+== MongoDB based storage
+
+Document databases are very popular and makes a good fit in cloud environments. MongoDB based persistence addon
+allows to keep workflow information as a document. Most important part is that data objects of the workflow 
+instance is stored as nested document and by that can be used as target of queries. 
+
+Every workflow definition will be stored in dedicated table that is constructed
+based on workflow identifier and version. That will result in each workflow definition to have 
+dedicated storage location. Automatiko by default creates all required collections and default indexes
+ so there is no need to dive into the details but if such need arise collections can be created up front.
+ 
+The table structure will have following attributes
+
+- *instanceId* - (of type text) this is the unique id of each workflow instance
+- *content* - (of type binary) this is the actual workflow instance serialized
+- *tags* - (of type set) this is the workflow instance tags - it also includes `instance id` and `business key`
+- *piStatus* - current status of the workflow instance
+- *versionTrack* - current version of the workflow instance (increment with each change)
+- *variables* - a nested document that represents all variables
+
+ 
+
+=== Configuration
+
+To use MongoDB based persistence your service must have following dependency
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-mongodb-persistence-addon</artifactId>
+</dependency>
+----
+
+NOTE: Note that each persistence addon comes with job service implementation as well
+to provide persistence of timers defined in workflows
+
+Additional configuration should be placed in `application.properties`
+
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.automatiko.persistence.type||Specify what persistence should be used|No||Yes
+|quarkus.automatiko.persistence.mongodb.database|QUARKUS_AUTOMATIKO_PERSISTENCE_MONGODB_DATABASE|Name of the database where collections for workflows will be created|Yes|automatiko|No
+||||||
+|quarkus.automatiko.jobs.type||Specifies type of jobs implementation to be used|No||Yes
+||||||
+|quarkus.automatiko.jobs.mongodb.database|QUARKUS_AUTOMATIKO_JOBS_MONGODB_DATABASE|Name of the database where collection for jobs (atk_jobs) will be created|Yes|automatiko|No
+|quarkus.automatiko.jobs.mongodb.interval|QUARKUS_AUTOMATIKO_JOBS_MONGODB_INTERVAL|Specifies interval (in minutes) how often look for another chunk of jobs to execute|No|60|No
+|quarkus.automatiko.jobs.mongodb.threads|QUARKUS_AUTOMATIKO_JOBS_MONGODB_THREADS|Specifies how many threads should be used for job execution|No|1|No
+
+|====
+
+
+.MongoDB specific configuration properties
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.mongodb.hosts|QUARKUS_MONGODB_HOSTS|Configures the MongoDB server addressed (one if single mode). The addresses are passed as host:port.|Yes||No
+
+|====
+
+Full configuration reference for dynamodb can be found link:https://quarkus.io/guides/mongodb#configuration-reference[here]

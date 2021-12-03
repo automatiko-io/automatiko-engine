@@ -45,4 +45,11 @@ public class JobsConfig {
     public CassandraJobsConfig cassandra() {
         return new CassandraJobsConfig();
     }
+
+    /**
+     * Configures MongoDB based jobs service
+     */
+    public MongodbJobsConfig mongodb() {
+        return new MongodbJobsConfig();
+    }
 }

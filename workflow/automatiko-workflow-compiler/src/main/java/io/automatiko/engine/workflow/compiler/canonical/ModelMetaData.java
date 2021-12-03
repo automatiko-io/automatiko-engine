@@ -254,6 +254,10 @@ public class ModelMetaData {
             fd.addAnnotation(new NormalAnnotationExpr(new Name(JsonProperty.class.getCanonicalName()),
                     NodeList.nodeList(new MemberValuePair("value", new StringLiteralExpr(varName)))));
 
+            if (asEntity && tags.contains(Variable.TRANSIENT_TAG)) {
+                fd.addAnnotation("javax.persistence.Transient");
+            }
+
             if (supportsOpenApi) {
                 fd.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.media.Schema"),
                         NodeList.nodeList(new MemberValuePair("name",

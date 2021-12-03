@@ -7,6 +7,7 @@ import io.automatiko.engine.api.config.DatabasePersistenceConfig;
 import io.automatiko.engine.api.config.DynamoDBPersistenceConfig;
 import io.automatiko.engine.api.config.FileSystemPersistenceConfig;
 import io.automatiko.engine.api.config.InfinispanPersistenceConfig;
+import io.automatiko.engine.api.config.MongodbPersistenceConfig;
 import io.automatiko.engine.api.config.PersistenceConfig;
 import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
@@ -56,6 +57,12 @@ public class PersistenceBuildTimeConfig extends PersistenceConfig {
     @ConfigItem
     public CassandraPersistenceBuildTimeConfig cassandra;
 
+    /**
+     * Configures mongodb based persistence
+     */
+    @ConfigItem
+    public MongodbPersistenceBuildTimeConfig mongodb;
+
     @Override
     public Optional<String> type() {
         return type;
@@ -90,5 +97,10 @@ public class PersistenceBuildTimeConfig extends PersistenceConfig {
     @Override
     public CassandraPersistenceConfig cassandra() {
         return cassandra;
+    }
+
+    @Override
+    public MongodbPersistenceConfig mongodb() {
+        return mongodb;
     }
 }
