@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script type = "text/javascript">
+
+var ws;
+         function WebSocketConnect() {
+            
+            if ("WebSocket" in window) {
+            	console.log("WebSocket is supported by your Browser!");
+               
+               // Let us open a web socket
+               ws = new WebSocket("ws://localhost:8080/process/events?user=" + $("#userid").val());
+				
+               ws.onopen = function() {
+                  
+                  // Web Socket is connected, send data using send()
+                  ws.send("Message to send");
+                  console.log("Message is sent...");
+               };
+				
+               ws.onmessage = function (evt) { 
+                  var val = JSON.parse(evt.data);
+                  console.log("Message is received...");
+                  if (val.type === 'ProcessInstanceEvent') {
+                  	appendPIDataRow(null, val);
+                  } else if (val.type === 'UserTaskInstanceEvent') {
+                  	appendTaskDataRow(null, val);
+                  }
+               };
+				
+               ws.onclose = function() { 
+                  
+                  // websocket is closed.
+                  console.log("Connection is closed..."); 
+               };
+            } else {
+              
+               // The browser doesn't support WebSocket
+               console.log("WebSocket NOT supported by your Browser!");
+            }
+         }
+         
+         function WebSocketDisconnect() {
+         	if (ws !== null) {
+         		ws.close();
+         	}
+         }
+         
+         function appendPIDataRow(key, val) {        	 
+        	 var html = "<tr>" +
+        	 "<td>" + val.data.id + "</td>" +
+        	 "<td>" + val.data.processId + "</td>" +
+        	 "<td>" + val.data.state + "</td>" +
+        	 "</tr>";
+             $(html).appendTo("#content");
+         }
+         
+         function appendTaskDataRow(key, val) {        	 
+        	 var html = "<tr>" +
+        	 "<td>" + val.data.id + "</td>" +
+        	 "<td>" + val.data.taskName + "</td>" +
+        	 "<td>" + val.data.state + "</td>" +
+        	 "</tr>";
+             $(html).appendTo("#contentT");
+         }
+      </script>
+		
+   </head>
+   
+   <body>
+      <div id = "sse">
+         
+      </div>
+      <div class="container" role="main">
+      <br/>
+      <input type="text" id="userid" placeholder="Type user name to connect with" size="50"/>&nbsp;&nbsp;&nbsp;&nbsp;
+      <a href = "javascript:WebSocketConnect()">Connect</a>&nbsp;&nbsp;&nbsp;&nbsp;
+      <a href = "javascript:WebSocketDisconnect()">Disconnect</a>
+      <br/><hr/>
+      <table class="table">
+                <thead>
+                <tr>
+                    <th>Instance ID</th>
+                    <th>Definition</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody id="content">
+                <!-- filled using Ajax -->
+                </tbody>
+            </table>
+            
+      <table class="table">
+                <thead>
+                <tr>
+                    <th>Task ID</th>
+                    <th>Name</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody id="contentT">
+                <!-- filled using Ajax -->
+                </tbody>
+            </table>            
+      </div>
+   </body>
+
+</body>
+</html>

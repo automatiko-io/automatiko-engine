@@ -19,5 +19,6 @@
     <module>automatiko-dynamodb-persistence-addon</module>
     <module>automatiko-cassandra-persistence-addon</module>
     <module>automatiko-common-persistence</module>
+    <module>automatiko-mongodb-persistence-addon</module>
   </modules>
 </project>

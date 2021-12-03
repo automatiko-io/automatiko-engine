@@ -8,6 +8,7 @@ import io.automatiko.engine.api.config.DynamoDBJobsConfig;
 import io.automatiko.engine.api.config.FileSystemJobsConfig;
 import io.automatiko.engine.api.config.HttpJobsConfig;
 import io.automatiko.engine.api.config.JobsConfig;
+import io.automatiko.engine.api.config.MongodbJobsConfig;
 import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
@@ -50,6 +51,12 @@ public class JobsBuildTimeConfig extends JobsConfig {
     @ConfigItem
     public HttpJobsBuildTimeConfig http;
 
+    /**
+     * Configures jobs based on mongodb
+     */
+    @ConfigItem
+    public MongodbJobsBuildTimeConfig mongodb;
+
     @Override
     public Optional<String> type() {
         return type;
@@ -80,4 +87,8 @@ public class JobsBuildTimeConfig extends JobsConfig {
         return cassandra;
     }
 
+    @Override
+    public MongodbJobsConfig mongodb() {
+        return mongodb;
+    }
 }

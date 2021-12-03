@@ -40,6 +40,7 @@ public class PersistenceGenerator extends AbstractGenerator {
     private static final String DB_PERSISTENCE_TYPE = "db";
     private static final String DYNAMO_DB_PERSISTENCE_TYPE = "dynamodb";
     private static final String CASSANDRA_PERSISTENCE_TYPE = "cassandra";
+    private static final String MONGODB_PERSISTENCE_TYPE = "mongodb";
     private static final String DEFAULT_PERSISTENCE_TYPE = FILESYSTEM_PERSISTENCE_TYPE;
 
     private static final String PATH_NAME = "path";
@@ -86,6 +87,8 @@ public class PersistenceGenerator extends AbstractGenerator {
                 dynamoDBBasedPersistence(generatedFiles);
             } else if (persistenceType.equals(CASSANDRA_PERSISTENCE_TYPE)) {
                 cassandraBasedPersistence(generatedFiles);
+            } else if (persistenceType.equals(MONGODB_PERSISTENCE_TYPE)) {
+                mongodbBasedPersistence(generatedFiles);
             }
 
         }
@@ -233,6 +236,44 @@ public class PersistenceGenerator extends AbstractGenerator {
         BlockStmt body = new BlockStmt();
         ExplicitConstructorInvocationStmt superExp = new ExplicitConstructorInvocationStmt(false, null,
                 NodeList.nodeList(new NameExpr("cqlSession"), new NameExpr("config")));
+        body.addStatement(superExp);
+
+        constructor.setBody(body);
+
+        if (useInjection()) {
+            annotator.withApplicationComponent(persistenceProviderClazz);
+            annotator.withInjection(constructor);
+
+            addCodecComponents(persistenceProviderClazz);
+        }
+
+        String packageName = compilationUnit.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
+        String clazzName = packageName + "." + persistenceProviderClazz.findFirst(ClassOrInterfaceDeclaration.class)
+                .map(c -> c.getName().toString()).get();
+
+        generatedFiles.add(new GeneratedFile(GeneratedFile.Type.CLASS, clazzName.replace('.', '/') + ".java",
+                compilationUnit.toString().getBytes(StandardCharsets.UTF_8)));
+
+        persistenceProviderClazz.getMembers().sort(new BodyDeclarationComparator());
+    }
+
+    protected void mongodbBasedPersistence(List<GeneratedFile> generatedFiles) {
+        ClassOrInterfaceDeclaration persistenceProviderClazz = new ClassOrInterfaceDeclaration()
+                .setName("ProcessInstancesFactoryImpl").setModifiers(Modifier.Keyword.PUBLIC)
+                .addExtendedType("io.automatiko.engine.addons.persistence.AbstractProcessInstancesFactory");
+
+        CompilationUnit compilationUnit = new CompilationUnit("io.automatiko.engine.addons.persistence.impl");
+        compilationUnit.getTypes().add(persistenceProviderClazz);
+
+        persistenceProviderClazz.addConstructor(Keyword.PUBLIC);
+
+        ConstructorDeclaration constructor = persistenceProviderClazz.addConstructor(Keyword.PUBLIC)
+                .addParameter("com.mongodb.client.MongoClient", "mongoClient")
+                .addParameter("io.automatiko.engine.api.config.MongodbPersistenceConfig", "config");
+
+        BlockStmt body = new BlockStmt();
+        ExplicitConstructorInvocationStmt superExp = new ExplicitConstructorInvocationStmt(false, null,
+                NodeList.nodeList(new NameExpr("mongoClient"), new NameExpr("config")));
         body.addStatement(superExp);
 
         constructor.setBody(body);

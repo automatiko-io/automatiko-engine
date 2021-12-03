@@ -63,4 +63,8 @@ public class JacksonObjectMarshallingStrategy implements ObjectMarshallingStrate
 
         return data;
     }
+
+    public ObjectMapper mapper() {
+        return mapper;
+    }
 }
