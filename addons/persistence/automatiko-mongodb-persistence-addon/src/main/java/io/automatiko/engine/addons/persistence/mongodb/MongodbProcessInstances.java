@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.Projections;
 
@@ -83,8 +84,9 @@ public class MongodbProcessInstances implements MutableProcessInstances {
         // mark the marshaller that it should not serialize variables
         this.marshaller.addToEnvironment("_ignore_vars_", true);
 
-        collection().createIndex(Indexes.compoundIndex(Indexes.ascending(INSTANCE_ID_FIELD), Indexes.ascending(STATUS_FIELD)));
-        collection().createIndex(Indexes.text(TAGS_FIELD));
+        collection().createIndex(Indexes.compoundIndex(Indexes.ascending(INSTANCE_ID_FIELD), Indexes.ascending(STATUS_FIELD)),
+                new IndexOptions().unique(true));
+        collection().createIndex(Indexes.ascending(TAGS_FIELD));
     }
 
     @Override
