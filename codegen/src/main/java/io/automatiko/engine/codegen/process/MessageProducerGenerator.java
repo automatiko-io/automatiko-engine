@@ -2,8 +2,10 @@
 package io.automatiko.engine.codegen.process;
 
 import static com.github.javaparser.StaticJavaParser.parse;
+import static io.automatiko.engine.codegen.CodeGenConstants.AMQP_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.CAMEL_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.FUNCTION_FLOW_CONNECTOR;
+import static io.automatiko.engine.codegen.CodeGenConstants.JMS_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.OUTGOING_PROP_PREFIX;
@@ -155,6 +157,28 @@ public class MessageProducerGenerator {
             context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
                     + ".group.id' should be used to configure Kafka group id that defaults to '" + classPrefix
                     + "-consumer'");
+        } else if (connector.equals(JMS_CONNECTOR)) {
+            context.setApplicationProperty("quarkus.index-dependency.sjms.group-id", "io.smallrye.reactive");
+            context.setApplicationProperty("quarkus.index-dependency.sjms.artifact-id", "smallrye-reactive-messaging-jms");
+
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".destination", sanitizedName.toUpperCase());
+            context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents", "false");
+            context.addInstruction(
+                    "Properties for JMS based message event '" + trigger.getDescription() + "'");
+            context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
+                    + ".destination' should be used to configure destination (queue or topic) name defaults to '"
+                    + context.getApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".destination")
+                            .orElse(sanitizedName.toUpperCase())
+                    + "'");
+        } else if (connector.equals(AMQP_CONNECTOR)) {
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".address", sanitizedName.toUpperCase());
+            context.addInstruction(
+                    "Properties for AMQP based message event '" + trigger.getDescription() + "'");
+            context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
+                    + ".address' should be used to configure address name, defaults to "
+                    + context.getApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".address")
+                            .orElse(sanitizedName.toUpperCase())
+                    + "'");
         }
     }
 
@@ -168,6 +192,10 @@ public class MessageProducerGenerator {
             return "/class-templates/CamelMessageProducerTemplate.java";
         } else if (connector.equals(KAFKA_CONNECTOR)) {
             return "/class-templates/KafkaMessageProducerTemplate.java";
+        } else if (connector.equals(JMS_CONNECTOR)) {
+            return "/class-templates/JMSMessageProducerTemplate.java";
+        } else if (connector.equals(AMQP_CONNECTOR)) {
+            return "/class-templates/AMQPMessageProducerTemplate.java";
         } else {
             return "/class-templates/MessageProducerTemplate.java";
         }
@@ -271,6 +299,48 @@ public class MessageProducerGenerator {
                         md.setBody(body);
                     });
         }
+        // used by AMQP to get address name based on expression
+        String addressExpression = (String) trigger.getContext("addressExpression");
+        if (addressExpression != null) {
+            template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("address"))
+                    .forEach(md -> {
+                        BlockStmt body = new BlockStmt();
+
+                        ClassOrInterfaceType stringType = new ClassOrInterfaceType(null, String.class.getCanonicalName());
+
+                        if (addressExpression.contains("id")) {
+                            VariableDeclarationExpr idField = new VariableDeclarationExpr(stringType, "id");
+                            body.addStatement(new AssignExpr(idField,
+                                    new MethodCallExpr(new NameExpr("pi"), "getId"), AssignExpr.Operator.ASSIGN));
+                        }
+
+                        if (addressExpression.contains("businessKey")) {
+                            VariableDeclarationExpr businessKeyField = new VariableDeclarationExpr(stringType, "businessKey");
+                            body.addStatement(new AssignExpr(businessKeyField,
+                                    new MethodCallExpr(new NameExpr("pi"), "getCorrelationKey"), AssignExpr.Operator.ASSIGN));
+                        }
+                        VariableScope variableScope = (VariableScope) ((io.automatiko.engine.workflow.process.core.WorkflowProcess) process)
+                                .getDefaultContext(VariableScope.VARIABLE_SCOPE);
+
+                        for (Variable var : variableScope.getVariables()) {
+
+                            if (addressExpression.contains(var.getSanitizedName())) {
+                                ClassOrInterfaceType varType = new ClassOrInterfaceType(null, var.getType().getStringType());
+                                VariableDeclarationExpr v = new VariableDeclarationExpr(
+                                        varType,
+                                        var.getSanitizedName());
+                                body.addStatement(new AssignExpr(v,
+                                        new CastExpr(varType,
+                                                new MethodCallExpr(new MethodCallExpr(new NameExpr("pi"), "getVariables"),
+                                                        "get")
+                                                                .addArgument(new StringLiteralExpr(var.getName()))),
+                                        AssignExpr.Operator.ASSIGN));
+                            }
+                        }
+                        body.addStatement(new ReturnStmt(new NameExpr(addressExpression)));
+                        md.setBody(body);
+                    });
+        }
 
         // used by FunctionFlow to set subject (used by reply to)
         String subjectExpression = (String) trigger.getContext("subjectExpression");
@@ -319,7 +389,7 @@ public class MessageProducerGenerator {
                         md.setBody(body);
                     });
         }
-
+        // Camal headers
         template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("headers"))
                 .forEach(md -> {
                     StringBuilder allHeaderValues = new StringBuilder();
@@ -375,6 +445,65 @@ public class MessageProducerGenerator {
                     }
 
                     body.addStatement(new ReturnStmt(new NameExpr("metadata")));
+                    md.setBody(body);
+                });
+
+        // JMS properties
+        template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("properties"))
+                .forEach(md -> {
+                    StringBuilder allHeaderValues = new StringBuilder();
+                    for (Entry<String, Object> entry : trigger.getContext().entrySet()) {
+
+                        if (entry.getKey().startsWith("JMS")) {
+                            allHeaderValues.append(entry.getValue().toString()).append(" ");
+                        }
+                    }
+                    String allHeaderValuesStr = allHeaderValues.toString();
+                    BlockStmt body = new BlockStmt();
+
+                    ClassOrInterfaceType stringType = new ClassOrInterfaceType(null, String.class.getCanonicalName());
+
+                    if (allHeaderValuesStr.contains("id")) {
+                        VariableDeclarationExpr idField = new VariableDeclarationExpr(stringType, "id");
+                        body.addStatement(new AssignExpr(idField,
+                                new MethodCallExpr(new NameExpr("pi"), "getId"), AssignExpr.Operator.ASSIGN));
+                    }
+
+                    if (allHeaderValuesStr.contains("businessKey")) {
+                        VariableDeclarationExpr businessKeyField = new VariableDeclarationExpr(stringType, "businessKey");
+                        body.addStatement(new AssignExpr(businessKeyField,
+                                new MethodCallExpr(new NameExpr("pi"), "getCorrelationKey"), AssignExpr.Operator.ASSIGN));
+                    }
+                    VariableScope variableScope = (VariableScope) ((io.automatiko.engine.workflow.process.core.WorkflowProcess) process)
+                            .getDefaultContext(VariableScope.VARIABLE_SCOPE);
+
+                    for (Variable var : variableScope.getVariables()) {
+
+                        if (allHeaderValuesStr.contains(var.getSanitizedName())) {
+                            ClassOrInterfaceType varType = new ClassOrInterfaceType(null, var.getType().getStringType());
+                            VariableDeclarationExpr v = new VariableDeclarationExpr(
+                                    varType,
+                                    var.getSanitizedName());
+                            body.addStatement(new AssignExpr(v,
+                                    new CastExpr(varType,
+                                            new MethodCallExpr(new MethodCallExpr(new NameExpr("pi"), "getVariables"),
+                                                    "get")
+                                                            .addArgument(new StringLiteralExpr(var.getName()))),
+                                    AssignExpr.Operator.ASSIGN));
+                        }
+                    }
+
+                    for (Entry<String, Object> entry : trigger.getContext().entrySet()) {
+
+                        if (entry.getKey().startsWith("JMS")) {
+                            body.addStatement(new MethodCallExpr(new NameExpr("builder"), "with")
+                                    .addArgument(new StringLiteralExpr(entry.getKey().replaceFirst("JMS", "")))
+                                    .addArgument(new NameExpr(entry.getValue().toString())));
+                        }
+
+                    }
+
+                    body.addStatement(new ReturnStmt(new NameExpr("builder")));
                     md.setBody(body);
                 });
 

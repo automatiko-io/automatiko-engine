@@ -5,6 +5,8 @@ import static io.automatiko.engine.codegen.CodeGenConstants.AMQP_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.AMQP_CONNECTOR_CLASS;
 import static io.automatiko.engine.codegen.CodeGenConstants.CAMEL_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.CAMEL_CONNECTOR_CLASS;
+import static io.automatiko.engine.codegen.CodeGenConstants.JMS_CONNECTOR;
+import static io.automatiko.engine.codegen.CodeGenConstants.JMS_CONNECTOR_CLASS;
 import static io.automatiko.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR_CLASS;
 import static io.automatiko.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
@@ -154,6 +156,8 @@ public class CodegenUtils {
             return CAMEL_CONNECTOR;
         } else if (context.getBuildContext().hasClassAvailable(OPERATOR_CONNECTOR_CLASS)) {
             return OPERATOR_CONNECTOR;
+        } else if (context.getBuildContext().hasClassAvailable(JMS_CONNECTOR_CLASS)) {
+            return JMS_CONNECTOR;
         }
 
         return "unknown";
@@ -168,6 +172,8 @@ public class CodegenUtils {
             return AMQP_CONNECTOR;
         } else if (connector.toLowerCase().endsWith("camel")) {
             return CAMEL_CONNECTOR;
+        } else if (connector.toLowerCase().endsWith("jms")) {
+            return JMS_CONNECTOR;
         }
 
         return "unknown";

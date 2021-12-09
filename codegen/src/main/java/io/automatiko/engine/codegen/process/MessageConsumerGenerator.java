@@ -2,8 +2,10 @@
 package io.automatiko.engine.codegen.process;
 
 import static com.github.javaparser.StaticJavaParser.parse;
+import static io.automatiko.engine.codegen.CodeGenConstants.AMQP_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.CAMEL_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.INCOMING_PROP_PREFIX;
+import static io.automatiko.engine.codegen.CodeGenConstants.JMS_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.OPERATOR_CONNECTOR;
@@ -181,6 +183,36 @@ public class MessageConsumerGenerator {
             context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
                     + ".group.id' should be used to configure Kafka group id that defaults to '" + classPrefix
                     + "-consumer'");
+        } else if (connector.equals(JMS_CONNECTOR)) {
+
+            context.setApplicationProperty("quarkus.index-dependency.sjms.group-id", "io.smallrye.reactive");
+            context.setApplicationProperty("quarkus.index-dependency.sjms.artifact-id", "smallrye-reactive-messaging-jms");
+
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".destination", sanitizedName.toUpperCase());
+            if (trigger.getContext("selector") != null) {
+                context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".selector",
+                        trigger.getContext("selector").toString().replaceAll("=", "\\="));
+            }
+            context.addInstruction(
+                    "Properties for JMS based message event '" + trigger.getDescription() + "'");
+            context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                    + ".destination' should be used to configure destination (queue or topic) name, defaults to '"
+                    + context.getApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".destination")
+                            .orElse(sanitizedName.toUpperCase())
+                    + "'");
+            context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                    + ".selector' should be used to configure JMS selector to filter messages that will be consumed");
+        } else if (connector.equals(AMQP_CONNECTOR)) {
+
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".address", sanitizedName.toUpperCase());
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".failure-strategy", "release");
+            context.addInstruction(
+                    "Properties for AMQP based message event '" + trigger.getDescription() + "'");
+            context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                    + ".address' should be used to configure address name, defaults to '"
+                    + context.getApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".address")
+                            .orElse(sanitizedName.toUpperCase())
+                    + "'");
         }
     }
 
@@ -193,6 +225,10 @@ public class MessageConsumerGenerator {
             return "/class-templates/KafkaMessageConsumerTemplate.java";
         } else if (connector.equals(OPERATOR_CONNECTOR)) {
             return "/class-templates/OperatorMessageConsumerTemplate.java";
+        } else if (connector.equals(JMS_CONNECTOR)) {
+            return "/class-templates/JMSMessageConsumerTemplate.java";
+        } else if (connector.equals(AMQP_CONNECTOR)) {
+            return "/class-templates/AMQPMessageConsumerTemplate.java";
         } else {
             return "/class-templates/MessageConsumerTemplate.java";
         }

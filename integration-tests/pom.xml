@@ -41,6 +41,8 @@
     <module>automatiko-files</module>
     <module>automatiko-include-models</module>
     <module>automatiko-mongodb</module>
+    <module>automatiko-jms</module>
+    <module>automatiko-amqp</module>
   </modules>
 
   <build>

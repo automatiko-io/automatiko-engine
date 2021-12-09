@@ -108,7 +108,9 @@ public class GeneratorContext {
     }
 
     public void setApplicationProperty(String property, String value) {
-        this.modifiedApplicationProperties.put(property, value);
+        if (applicationProperties.getProperty(property) == null) {
+            this.modifiedApplicationProperties.put(property, value);
+        }
     }
 
     public CompilationUnit write(String packageName) {
