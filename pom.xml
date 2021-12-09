@@ -523,6 +523,11 @@
         <artifactId>smallrye-reactive-messaging-provider</artifactId>
         <version>${version.io.smallrye.reactive}</version>
       </dependency>
+      <dependency>
+        <groupId>io.smallrye.reactive</groupId>
+        <artifactId>smallrye-reactive-messaging-jms</artifactId>
+        <version>${version.io.smallrye.reactive}</version>
+      </dependency>
 
       <dependency>
         <groupId>org.eclipse.microprofile.metrics</groupId>

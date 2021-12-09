@@ -25,10 +25,12 @@ public class CodeGenConstants {
     public static final String KAFKA_CONNECTOR = "smallrye-kafka";
     public static final String AMQP_CONNECTOR = "smallrye-amqp";
     public static final String CAMEL_CONNECTOR = "smallrye-camel";
+    public static final String JMS_CONNECTOR = "smallrye-jms";
     public static final String OPERATOR_CONNECTOR = "javaoperatorsdk";
     public static final String FUNCTION_FLOW_CONNECTOR = "function-flow";
 
     public static final String MQTT_CONNECTOR_CLASS = "io.smallrye.reactive.messaging.mqtt.MqttConnector";
+    public static final String JMS_CONNECTOR_CLASS = "io.smallrye.reactive.messaging.jms.JmsConnector";
     public static final String KAFKA_CONNECTOR_CLASS = "io.smallrye.reactive.messaging.kafka.KafkaConnector";
     public static final String AMQP_CONNECTOR_CLASS = "io.smallrye.reactive.messaging.amqp.AmqpConnector";
     public static final String CAMEL_CONNECTOR_CLASS = "io.smallrye.reactive.messaging.camel.CamelConnector";

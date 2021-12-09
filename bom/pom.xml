@@ -535,6 +535,13 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
+      
+      <!-- third party dependencies -->
+      <dependency>
+        <groupId>io.smallrye.reactive</groupId>
+        <artifactId>smallrye-reactive-messaging-jms</artifactId>
+        <version>${version.io.smallrye.reactive}</version>
+      </dependency>
     </dependencies>
 
   </dependencyManagement>

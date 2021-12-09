@@ -28,7 +28,7 @@ be consumed or produced.
 
 Automatiko uses connectors to provide connectivity with other systems.
 There are several out of the box connectors available depending which
-use case for the service you selected (*event streams*, *IoT*, etc).
+use case for the service you selected (*event streams*, *IoT*, *messaging*, etc).
 
 .Supported expressions
 |===
@@ -41,12 +41,14 @@ with Internet of Things appliances e.g. sensors
 |Apache Camel|EventStreams and Batch|Preconfigured for Batch Processing use case
 as Apache Camel comes with comprehensive list of components that allow to connect
 to various 3rd party systems
+|JMS|Messaging and Batch|Allows to use JMS as traditional messaging middleware as part of workflows
+|AMQPl|Messaging and Batch|Similar to JMS but more powerful in terms of messaging capabilities
 
 |===
 
 IMPORTANT: In case there is more than one connector defined in the service
 each message definition needs to provide `connector` custom attribute to
-indicate which connector should be used.
+indicate which connector should be used. Allowed values `kafka`, `mqtt`, `camel`, `amqp`, `jms`
 
 == Configuration of the connector
 
@@ -216,14 +218,17 @@ via _custom attributes_
 image::messaging-publishing-attr.png[]
 
 - *topicExpression* - instructs what is the expected topic in the message broker this
-message should be connected to - if not defined name of the message is used
+message should be sent to - if not defined name of the message is used - applies to MQTT only
+- *addressExpression* - instructs what is the expected address in the message broker this
+message should be sent to - if not defined name of the message is used - applies to AMQP only
 - *connector* - in case there are multiple connectors used it must be given
  explicitly for every message. Note it is not required if there is only one
  connector - e.g. MQTT or Apache Kafka.
 
 IMPORTANT: `topicExpression` provides an flexible way to define location where
-the event should be published. Note all connectors support it - at the moment
-it is dedicated to *MQTT*
+the event should be published - it is dedicated to *MQTT*, 
+similar `addressExpression` provides same flexibility for dynamically 
+selecting address that message should be pushed to - this one is dedicated to *AMQP*
 
 Similar to consuming events, producing events also requires data mapping. This
 is to instruct what should be the payload of the event
@@ -290,6 +295,25 @@ file name as custom attribute that will be set as header on Camel's message.
 image::messaging-camel-headers.png[]
 
 Headers can be set as
+
+- static value e.g. `"my value"`
+- reference to a workflow variable e.g. `myvariable`
+- reference to a function e.g. `buildFileName()` or `buildFileName(id)` where `id` is workflow 
+instance id
+
+== JMS connector
+ 
+In many situations when using JMS as the messaging provider there is a need to set message properties.
+It is really handy when combined with `message selectors` to filter efficiently messages that should 
+not be consumed.
+ 
+Automatiko allows to specify any number of properties via custom attributes of the message.
+ 
+ 
+NOTE: Custom attributes that starts with `JMS` will be considered properties.
+
+
+Properties can be set as
 
 - static value e.g. `"my value"`
 - reference to a workflow variable e.g. `myvariable`
