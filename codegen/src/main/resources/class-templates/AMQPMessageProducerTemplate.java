@@ -36,11 +36,21 @@ public class MessageProducer {
 	    metrics.messageProduced(CONNECTOR, MESSAGE, pi.getProcess());
 	    Message<String> msg = Message.of(this.marshall(pi, eventData));
 	    
-	    String addressName = address(pi);
-	    if (addressName != null) {
-	        io.smallrye.reactive.messaging.amqp.OutgoingAmqpMetadata metadata = io.smallrye.reactive.messaging.amqp.OutgoingAmqpMetadata.builder()
-	                .withAddress(addressName)
-	                .build();
+	    io.smallrye.reactive.messaging.amqp.OutgoingAmqpMetadata metadata = null;
+	    if (converter != null && !converter.isUnsatisfied()) {                    
+            
+            metadata = converter.get().metadata(pi, io.smallrye.reactive.messaging.amqp.OutgoingAmqpMetadata.class);
+        } 
+        if (metadata == null) {
+	    
+    	    String addressName = address(pi);
+    	    if (addressName != null) {
+    	        metadata = io.smallrye.reactive.messaging.amqp.OutgoingAmqpMetadata.builder()
+    	                .withAddress(addressName)
+    	                .build();
+    	        msg = msg.addMetadata(metadata);
+    	    }
+	    } else {
 	        msg = msg.addMetadata(metadata);
 	    }
 	    emitter.send(msg);

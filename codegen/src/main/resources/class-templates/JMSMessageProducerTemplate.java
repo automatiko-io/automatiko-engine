@@ -34,12 +34,23 @@ public class MessageProducer {
     
 	public void produce(ProcessInstance pi, $Type$ eventData) {
 	    metrics.messageProduced(CONNECTOR, MESSAGE, pi.getProcess());
-	    io.smallrye.reactive.messaging.jms.OutgoingJmsMessageMetadata.OutgoingJmsMessageMetadataBuilder builder = io.smallrye.reactive.messaging.jms.OutgoingJmsMessageMetadata.builder();
-	    io.smallrye.reactive.messaging.jms.JmsPropertiesBuilder propsBuilder = io.smallrye.reactive.messaging.jms.JmsProperties.builder();
-	    	    
-	    builder.withProperties(properties(pi, propsBuilder).build());
 	    
-	    emitter.send(Message.of(this.marshall(pi, eventData)).addMetadata(builder.build()));
+	    io.smallrye.reactive.messaging.jms.OutgoingJmsMessageMetadata metadata = null;
+	    
+	    if (converter != null && !converter.isUnsatisfied()) {                    
+            
+	        metadata = converter.get().metadata(pi, io.smallrye.reactive.messaging.jms.OutgoingJmsMessageMetadata.class);
+        } 
+	    if (metadata == null) {
+	    
+    	    io.smallrye.reactive.messaging.jms.OutgoingJmsMessageMetadata.OutgoingJmsMessageMetadataBuilder builder = io.smallrye.reactive.messaging.jms.OutgoingJmsMessageMetadata.builder();
+    	    io.smallrye.reactive.messaging.jms.JmsPropertiesBuilder propsBuilder = io.smallrye.reactive.messaging.jms.JmsProperties.builder();
+    	    	    
+    	    builder.withProperties(properties(pi, propsBuilder).build());
+    	    metadata = builder.build();
+        }
+	    
+	    emitter.send(Message.of(this.marshall(pi, eventData)).addMetadata(metadata));
     }
 	    
 	private String marshall(ProcessInstance pi, $Type$ eventData) {
