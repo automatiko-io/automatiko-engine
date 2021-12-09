@@ -36,7 +36,17 @@ public class MessageProducer {
 	public void produce(ProcessInstance pi, $Type$ eventData) {
 	    metrics.messageProduced(CONNECTOR, MESSAGE, pi.getProcess());
 	    
-	    emitter.send(io.smallrye.reactive.messaging.kafka.KafkaRecord.of(((WorkflowProcessInstance) pi).getCorrelationKey(), this.marshall(pi, eventData)));
+	    io.smallrye.reactive.messaging.kafka.OutgoingKafkaRecordMetadata metadata = null;
+        
+        if (converter != null && !converter.isUnsatisfied()) {                    
+            
+            metadata = converter.get().metadata(pi, io.smallrye.reactive.messaging.kafka.OutgoingKafkaRecordMetadata.class);
+        } 
+        if (metadata == null) {
+            metadata = io.smallrye.reactive.messaging.kafka.OutgoingKafkaRecordMetadata.builder().build();
+        }
+	    
+	    emitter.send(io.smallrye.reactive.messaging.kafka.KafkaRecord.of(((WorkflowProcessInstance) pi).getCorrelationKey(), this.marshall(pi, eventData)).addMetadata(metadata));
     }
 	    
 	private $Type$ marshall(ProcessInstance pi, $Type$ eventData) {
