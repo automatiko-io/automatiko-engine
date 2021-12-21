@@ -42,7 +42,7 @@ with Internet of Things appliances e.g. sensors
 as Apache Camel comes with comprehensive list of components that allow to connect
 to various 3rd party systems
 |JMS|Messaging and Batch|Allows to use JMS as traditional messaging middleware as part of workflows
-|AMQPl|Messaging and Batch|Similar to JMS but more powerful in terms of messaging capabilities
+|AMQP|Messaging and Batch|Similar to JMS but more powerful in terms of messaging capabilities
 
 |===
 
