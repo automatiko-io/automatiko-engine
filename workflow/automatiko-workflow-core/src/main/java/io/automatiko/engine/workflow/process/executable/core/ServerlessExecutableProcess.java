@@ -5,6 +5,7 @@ import io.automatiko.engine.workflow.base.core.context.exception.ExceptionScope;
 import io.automatiko.engine.workflow.base.core.context.swimlane.SwimlaneContext;
 import io.automatiko.engine.workflow.base.core.context.variable.JsonVariableScope;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
+import io.automatiko.engine.workflow.expression.JqExpressionEvaluator;
 
 public class ServerlessExecutableProcess extends ExecutableProcess {
 
@@ -21,6 +22,8 @@ public class ServerlessExecutableProcess extends ExecutableProcess {
         ExceptionScope exceptionScope = new ExceptionScope();
         addContext(exceptionScope);
         setDefaultContext(exceptionScope);
+
+        setDefaultContext(new JqExpressionEvaluator(this));
     }
 
 }

@@ -16,7 +16,7 @@ import io.automatiko.engine.api.definition.process.NodeContainer;
 import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.workflow.base.core.impl.ProcessImpl;
 import io.automatiko.engine.workflow.base.instance.ProcessInstance;
-import io.automatiko.engine.workflow.file.MvelExpressionEvaluator;
+import io.automatiko.engine.workflow.expression.MvelExpressionEvaluator;
 import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 import io.automatiko.engine.workflow.process.core.node.StartNode;
 import io.automatiko.engine.workflow.process.instance.WorkflowProcessInstance;
