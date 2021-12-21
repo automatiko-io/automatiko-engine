@@ -24,4 +24,5 @@
 ** xref:services/archive.adoc[Archive]
 ** xref:services/email.adoc[Send Email]
 ** xref:services/receive-email.adoc[Receive Email]
-
+* Migration guide
+** xref:migration-guide/0.11.0.adoc[0.11.0]

@@ -1,0 +1,16 @@
+= Migrate to 0.11.0
+
+== Decision requires explicit dependency declaration
+
+In version 0.11.0 to use DMN decisions there is a need to explicitly declare 
+dependency to that module as it is no longer shipped with default configuration.
+
+To use DMN decisions add following dependency to your service
+
+[source.xml]
+----
+<dependency>
+  <groupId>io.automatiko.decision</groupId>
+  <artifactId>automatiko-decision-dmn</artifactId>
+</dependency>
+----
