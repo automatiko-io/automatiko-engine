@@ -33,6 +33,7 @@
     <module>automatiko-workflow-compiler</module>
     <module>automatiko-workflow-bpmn2</module>
     <module>automatiko-workflow-serverless</module>
+    <module>automatiko-workflow-sw</module>
   </modules>
 
 </project>

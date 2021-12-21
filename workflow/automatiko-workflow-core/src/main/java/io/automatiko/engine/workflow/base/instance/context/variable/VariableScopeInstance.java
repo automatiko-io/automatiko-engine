@@ -47,7 +47,7 @@ public class VariableScopeInstance extends AbstractContextInstance {
             defaultValue = items[1];
         }
 
-        if (name.contains(VariableScope.VERSION_SEPARATOR)) {
+        if (name.contains(VariableScope.VERSION_SEPARATOR) && !name.startsWith(VariableScope.VERSION_SEPARATOR)) {
             String[] items = name.split("\\" + VariableScope.VERSION_SEPARATOR);
 
             Variable var = getVariableScope().findVariable(items[0]);
@@ -154,20 +154,21 @@ public class VariableScopeInstance extends AbstractContextInstance {
                 }
             }
         }
+        if (getProcessInstance().getProcessRuntime().getVariableInitializer() != null) {
+            for (VariableAugmentor augmentor : getProcessInstance().getProcessRuntime().getVariableInitializer().augmentors()) {
 
-        for (VariableAugmentor augmentor : getProcessInstance().getProcessRuntime().getVariableInitializer().augmentors()) {
-
-            if (augmentor.accept(var, value)) {
-                // run any of the available augmentors on the value
-                if (oldValue != null) {
-                    value = augmentor.augmentOnUpdate(getProcessInstance().getProcess().getId(),
-                            getProcessInstance().getProcess().getVersion(), getProcessInstance().getId(), var, value);
-                } else if (value == null) {
-                    augmentor.augmentOnDelete(getProcessInstance().getProcess().getId(),
-                            getProcessInstance().getProcess().getVersion(), getProcessInstance().getId(), var, oldValue);
-                } else {
-                    value = augmentor.augmentOnCreate(getProcessInstance().getProcess().getId(),
-                            getProcessInstance().getProcess().getVersion(), getProcessInstance().getId(), var, value);
+                if (augmentor.accept(var, value)) {
+                    // run any of the available augmentors on the value
+                    if (oldValue != null) {
+                        value = augmentor.augmentOnUpdate(getProcessInstance().getProcess().getId(),
+                                getProcessInstance().getProcess().getVersion(), getProcessInstance().getId(), var, value);
+                    } else if (value == null) {
+                        augmentor.augmentOnDelete(getProcessInstance().getProcess().getId(),
+                                getProcessInstance().getProcess().getVersion(), getProcessInstance().getId(), var, oldValue);
+                    } else {
+                        value = augmentor.augmentOnCreate(getProcessInstance().getProcess().getId(),
+                                getProcessInstance().getProcess().getVersion(), getProcessInstance().getId(), var, value);
+                    }
                 }
             }
         }

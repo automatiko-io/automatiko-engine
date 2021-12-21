@@ -76,6 +76,7 @@
     <version.taglist.plugin>2.4</version.taglist.plugin>
     <version.versions.plugin>2.1</version.versions.plugin>
     <version.jayway.jsonpath>2.6.0</version.jayway.jsonpath>
+    <version.net.thisptr.jackson-jq>0.0.13</version.net.thisptr.jackson-jq>
 
     <!-- dependencies versions -->
     <version.ch.obermuhlner>2.0.1</version.ch.obermuhlner>
@@ -327,6 +328,12 @@
         <groupId>com.jayway.jsonpath</groupId>
         <artifactId>json-path-assert</artifactId>
         <version>${version.jayway.jsonpath}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>net.thisptr</groupId>
+        <artifactId>jackson-jq</artifactId>
+        <version>${version.net.thisptr.jackson-jq}</version>
       </dependency>
 
       <!-- open api client generator -->
@@ -637,6 +644,11 @@
         <groupId>io.quarkiverse.reactivemessaging.http</groupId>
         <artifactId>quarkus-reactive-messaging-http</artifactId>
         <version>${version.io.quarkiverse.reactivemessaging.http}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.serverlessworkflow</groupId>
+        <artifactId>serverlessworkflow-util</artifactId>
+        <version>${verion.io.serverlessworkflow}</version>
       </dependency>
 
     </dependencies>
