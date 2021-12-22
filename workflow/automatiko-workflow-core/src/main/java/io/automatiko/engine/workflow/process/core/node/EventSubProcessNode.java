@@ -11,80 +11,90 @@ import io.automatiko.engine.workflow.process.core.ProcessAction;
 
 public class EventSubProcessNode extends CompositeContextNode {
 
-	private static final long serialVersionUID = 2200928773922042238L;
+    private static final long serialVersionUID = 2200928773922042238L;
 
-	private List<String> events = new ArrayList<String>();
-	private List<EventTypeFilter> eventTypeFilters = new ArrayList<EventTypeFilter>();
-	private boolean keepActive = true;
+    private List<String> events = new ArrayList<String>();
+    private List<EventTypeFilter> eventTypeFilters = new ArrayList<EventTypeFilter>();
+    private boolean keepActive = true;
 
-	public void addEvent(EventTypeFilter filter) {
-		String type = filter.getType();
-		this.events.add(type);
-		this.eventTypeFilters.add(filter);
-	}
+    public void addEvent(EventTypeFilter filter) {
+        String type = filter.getType();
+        this.events.add(type);
+        this.eventTypeFilters.add(filter);
+    }
 
-	public List<String> getEvents() {
-		return events;
-	}
+    public void addEvent(String type) {
+        this.events.add(type);
+    }
 
-	public boolean isKeepActive() {
-		return keepActive;
-	}
+    public List<String> getEvents() {
+        return events;
+    }
 
-	public void setKeepActive(boolean triggerOnActivation) {
-		this.keepActive = triggerOnActivation;
-	}
+    public boolean isKeepActive() {
+        return keepActive;
+    }
 
-	public StartNode findStartNode() {
-		for (Node node : getNodes()) {
-			if (node instanceof StartNode) {
-				StartNode startNode = (StartNode) node;
-				return startNode;
-			}
-		}
-		return null;
-	}
+    public void setKeepActive(boolean triggerOnActivation) {
+        this.keepActive = triggerOnActivation;
+    }
 
-	@Override
-	public void addTimer(Timer timer, ProcessAction action) {
-		super.addTimer(timer, action);
-		if (timer.getTimeType() == Timer.TIME_CYCLE) {
-			setKeepActive(false);
-		}
-	}
+    public StartNode findStartNode() {
+        for (Node node : getNodes()) {
+            if (node instanceof StartNode) {
+                StartNode startNode = (StartNode) node;
+                return startNode;
+            }
+        }
+        return null;
+    }
 
-	@Override
-	public boolean acceptsEvent(String type, Object event) {
-		for (EventTypeFilter filter : this.eventTypeFilters) {
-			if (filter.acceptsEvent(type, event)) {
-				return true;
-			}
-		}
-		return super.acceptsEvent(type, event);
-	}
+    @Override
+    public void addTimer(Timer timer, ProcessAction action) {
+        super.addTimer(timer, action);
+        if (timer.getTimeType() == Timer.TIME_CYCLE) {
+            setKeepActive(false);
+        }
+    }
 
-	@Override
-	public boolean acceptsEvent(String type, Object event, Function<String, String> resolver) {
-		if (resolver == null) {
-			return acceptsEvent(type, event);
-		}
+    @Override
+    public boolean acceptsEvent(String type, Object event) {
+        for (EventTypeFilter filter : this.eventTypeFilters) {
+            if (filter.acceptsEvent(type, event)) {
+                return true;
+            }
+        }
+        if ("variableChanged".equals(type) && hasCondition()) {
+            return true;
+        }
+        return super.acceptsEvent(type, event);
+    }
 
-		for (EventTypeFilter filter : this.eventTypeFilters) {
-			if (filter.acceptsEvent(type, event, resolver)) {
-				return true;
-			}
-		}
-		return super.acceptsEvent(type, event);
-	}
+    @Override
+    public boolean acceptsEvent(String type, Object event, Function<String, String> resolver) {
+        if (resolver == null) {
+            return acceptsEvent(type, event);
+        }
 
-	@Override
-	public String getVariableName() {
-		StartNode startNode = findStartNode();
-		if (startNode != null) {
-			return (String) startNode.getMetaData("TriggerMapping");
-		}
+        for (EventTypeFilter filter : this.eventTypeFilters) {
+            if (filter.acceptsEvent(type, event, resolver)) {
+                return true;
+            }
+        }
+        if ("variableChanged".equals(type) && hasCondition()) {
+            return true;
+        }
+        return super.acceptsEvent(type, event);
+    }
 
-		return super.getVariableName();
-	}
+    @Override
+    public String getVariableName() {
+        StartNode startNode = findStartNode();
+        if (startNode != null) {
+            return (String) startNode.getMetaData("TriggerMapping");
+        }
+
+        return super.getVariableName();
+    }
 
 }

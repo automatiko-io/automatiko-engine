@@ -598,6 +598,7 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
                                 EventTypeFilter eventTypeFilter = new EventTypeFilter();
                                 eventTypeFilter.setType(type);
                                 eventSubProcessNode.addEvent(eventTypeFilter);
+                                eventSubProcessNode.addEvent("variableChanged");
                             }
                         }
                     }

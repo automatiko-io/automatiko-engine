@@ -514,11 +514,6 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
                                 node);
                         eventSubProcess.trigger(null,
                                 io.automatiko.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
-                    } else if (((EventSubProcessNode) node).findStartNode().hasCondition()) {
-                        EventSubProcessNodeInstance eventSubProcess = (EventSubProcessNodeInstance) getNodeInstance(
-                                node);
-                        eventSubProcess.trigger(null,
-                                io.automatiko.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
                     }
                 }
             }
@@ -929,7 +924,9 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
                             } else {
 
                                 for (String eventName : eventSubProcessNode.getEvents()) {
-
+                                    if ("variableChanged".equals(eventName)) {
+                                        continue;
+                                    }
                                     eventDesciptions.add(new BaseEventDescription(eventName,
                                             (String) startNode.getMetaData().get("UniqueId"), startNode.getName(), "signal",
                                             null, getId(), dataType));
