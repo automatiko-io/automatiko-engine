@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- origin at X=0.0 Y=0.0 -->
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:automatik="https://automatiko.io" xmlns="https://automatiko.io" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:java="http://www.java.com/javaTypes" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatiko.io automatiko.xsd" id="Definition" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="2.0.0" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="https://automatiko.io" typeLanguage="http://www.java.com/javaTypes">
+  <bpmn2:itemDefinition id="ItemDefinition_11" isCollection="false" structureRef="io.automatiko.engine.codegen.data.Person"/>
+  <bpmn2:itemDefinition id="ItemDefinition_96" isCollection="false" structureRef="java.util.List"/>
+  <bpmn2:process id="subprocessCondition" automatik:packageName="com.sample" name="ConditionalEventSubprocess" isExecutable="true" processType="Public">
+    <bpmn2:extensionElements>
+      <automatik:import name="io.automatiko.engine.codegen.data.Person"/>
+      <automatik:import name="java.util.List"/>
+    </bpmn2:extensionElements>
+    <bpmn2:startEvent id="StartEvent_1" name="StartProcess">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[StartProcess]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
+    </bpmn2:startEvent>
+    <bpmn2:userTask id="UserTask_1" name="User Task 1">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[User Task 1]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+      <bpmn2:ioSpecification id="InputOutputSpecification_1">
+        <bpmn2:dataInput id="DataInput_1" name="TaskName"/>
+        <bpmn2:dataInput id="DataInput_2" name="Exluded users"/>
+        <bpmn2:dataInput id="DataInput_3" name="Groups"/>
+        <bpmn2:dataInput id="DataInput_4" itemSubjectRef="ItemDefinition_11" name="person"/>
+        <bpmn2:inputSet id="_InputSet_2">
+          <bpmn2:dataInputRefs>DataInput_1</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_2</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_3</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_4</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet id="OutputSet_1" name="Output Set"/>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_1">
+        <bpmn2:targetRef>DataInput_1</bpmn2:targetRef>
+        <bpmn2:assignment id="Assignment_1">
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_1">Task Name</bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_2">DataInput_1</bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_2">
+        <bpmn2:targetRef>DataInput_2</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_3">
+        <bpmn2:targetRef>DataInput_3</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_4">
+        <bpmn2:sourceRef>person</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_4</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+    </bpmn2:userTask>
+    <bpmn2:sequenceFlow id="SequenceFlow_1" automatik:priority="1" sourceRef="StartEvent_1" targetRef="UserTask_1"/>
+    <bpmn2:endEvent id="EndEvent_1" name="End Event 1">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[End Event 1]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_2</bpmn2:incoming>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_2" automatik:priority="1" sourceRef="UserTask_1" targetRef="EndEvent_1"/>
+    <bpmn2:dataObject id="person" name="person" itemSubjectRef="ItemDefinition_11"/>
+    <bpmn2:subProcess id="SubProcess_1" name="Event Handler" triggeredByEvent="true">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="elementname">
+          <automatik:metaValue><![CDATA[Event Handler]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:endEvent id="EndEvent_2" name="End Event 2">
+        <bpmn2:extensionElements>
+          <automatik:metaData name="elementname">
+            <automatik:metaValue><![CDATA[End Event 2]]></automatik:metaValue>
+          </automatik:metaData>
+        </bpmn2:extensionElements>
+        <bpmn2:incoming>SequenceFlow_3</bpmn2:incoming>
+      </bpmn2:endEvent>
+      <bpmn2:scriptTask id="ScriptTask_1" name="Condition met" scriptFormat="http://www.java.com/java">
+        <bpmn2:extensionElements>
+          <automatik:metaData name="elementname">
+            <automatik:metaValue><![CDATA[Condition met]]></automatik:metaValue>
+          </automatik:metaData>
+        </bpmn2:extensionElements>
+        <bpmn2:incoming>SequenceFlow_5</bpmn2:incoming>
+        <bpmn2:outgoing>SequenceFlow_3</bpmn2:outgoing>
+        <bpmn2:script>counter.add(&quot;executed&quot;);
+System.out.println(&quot;Condition met &quot; + counter.size());</bpmn2:script>
+      </bpmn2:scriptTask>
+      <bpmn2:sequenceFlow id="SequenceFlow_3" automatik:priority="1" sourceRef="ScriptTask_1" targetRef="EndEvent_2"/>
+      <bpmn2:startEvent id="StartEvent_2" name="On person age too high" isInterrupting="false">
+        <bpmn2:extensionElements>
+          <automatik:metaData name="elementname">
+            <automatik:metaValue><![CDATA[On person age too high]]></automatik:metaValue>
+          </automatik:metaData>
+        </bpmn2:extensionElements>
+        <bpmn2:outgoing>SequenceFlow_5</bpmn2:outgoing>
+        <bpmn2:conditionalEventDefinition id="ConditionalEventDefinition_2">
+          <bpmn2:condition xsi:type="bpmn2:tFormalExpression" id="FormalExpression_3" language="http://www.java.com/java">person.getAge() > 40</bpmn2:condition>
+        </bpmn2:conditionalEventDefinition>
+      </bpmn2:startEvent>
+      <bpmn2:sequenceFlow id="SequenceFlow_5" automatik:priority="1" sourceRef="StartEvent_2" targetRef="ScriptTask_1"/>
+    </bpmn2:subProcess>
+    <bpmn2:dataObject id="counter" name="counter" itemSubjectRef="ItemDefinition_96">
+      <bpmn2:extensionElements>
+        <automatik:metaData name="tags">
+          <automatik:metaValue><![CDATA[auto-initialized]]></automatik:metaValue>
+        </automatik:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:dataObject>
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_Process_1" bpmnElement="subprocessCondition">
+      <bpmndi:BPMNShape id="BPMNShape_SubProcess_1" bpmnElement="SubProcess_1" isExpanded="true">
+        <dc:Bounds height="161.0" width="437.0" x="92.0" y="340.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_1">
+          <dc:Bounds height="11.0" width="58.0" x="98.0" y="343.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_StartEvent_1" bpmnElement="StartEvent_1">
+        <dc:Bounds height="36.0" width="36.0" x="100.0" y="120.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_1" labelStyle="BPMNLabelStyle_1">
+          <dc:Bounds height="11.0" width="52.0" x="92.0" y="156.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_UserTask_1" bpmnElement="UserTask_1" isExpanded="true">
+        <dc:Bounds height="50.0" width="110.0" x="241.0" y="113.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_2">
+          <dc:Bounds height="11.0" width="48.0" x="272.0" y="132.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_1" bpmnElement="EndEvent_1">
+        <dc:Bounds height="36.0" width="36.0" x="419.0" y="120.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_3" labelStyle="BPMNLabelStyle_1">
+          <dc:Bounds height="11.0" width="50.0" x="412.0" y="156.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ScriptTask_1" bpmnElement="ScriptTask_1" isExpanded="true">
+        <dc:Bounds height="50.0" width="110.0" x="260.0" y="390.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_5">
+          <dc:Bounds height="11.0" width="56.0" x="287.0" y="409.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_2" bpmnElement="EndEvent_2">
+        <dc:Bounds height="36.0" width="36.0" x="443.0" y="397.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_6" labelStyle="BPMNLabelStyle_1">
+          <dc:Bounds height="11.0" width="50.0" x="436.0" y="433.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_1" bpmnElement="person">
+        <dc:Bounds height="50.0" width="36.0" x="150.0" y="250.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_7">
+          <dc:Bounds height="11.0" width="28.0" x="154.0" y="300.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_StartEvent_2" bpmnElement="StartEvent_2">
+        <dc:Bounds height="36.0" width="36.0" x="160.0" y="397.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_4" labelStyle="BPMNLabelStyle_1">
+          <dc:Bounds height="22.0" width="64.0" x="146.0" y="433.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_2" bpmnElement="counter">
+        <dc:Bounds height="50.0" width="36.0" x="241.0" y="250.0"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds height="11.0" width="31.0" x="243.0" y="300.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_1" bpmnElement="SequenceFlow_1" sourceElement="BPMNShape_StartEvent_1" targetElement="BPMNShape_UserTask_1">
+        <di:waypoint xsi:type="dc:Point" x="136.0" y="138.0"/>
+        <di:waypoint xsi:type="dc:Point" x="188.0" y="138.0"/>
+        <di:waypoint xsi:type="dc:Point" x="241.0" y="138.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_8"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_2" bpmnElement="SequenceFlow_2" sourceElement="BPMNShape_UserTask_1" targetElement="BPMNShape_EndEvent_1">
+        <di:waypoint xsi:type="dc:Point" x="351.0" y="138.0"/>
+        <di:waypoint xsi:type="dc:Point" x="385.0" y="138.0"/>
+        <di:waypoint xsi:type="dc:Point" x="419.0" y="138.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_9"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_3" bpmnElement="SequenceFlow_3" sourceElement="BPMNShape_ScriptTask_1" targetElement="BPMNShape_EndEvent_2">
+        <di:waypoint xsi:type="dc:Point" x="370.0" y="415.0"/>
+        <di:waypoint xsi:type="dc:Point" x="406.0" y="415.0"/>
+        <di:waypoint xsi:type="dc:Point" x="443.0" y="415.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_10"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_1" bpmnElement="DataInputAssociation_4" sourceElement="BPMNShape_DataObject_1" targetElement="BPMNShape_UserTask_1">
+        <di:waypoint xsi:type="dc:Point" x="168.0" y="250.0"/>
+        <di:waypoint xsi:type="dc:Point" x="168.0" y="146.0"/>
+        <di:waypoint xsi:type="dc:Point" x="241.0" y="146.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_12"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_5" bpmnElement="SequenceFlow_5" sourceElement="BPMNShape_StartEvent_2" targetElement="BPMNShape_ScriptTask_1">
+        <di:waypoint xsi:type="dc:Point" x="196.0" y="415.0"/>
+        <di:waypoint xsi:type="dc:Point" x="228.0" y="415.0"/>
+        <di:waypoint xsi:type="dc:Point" x="260.0" y="415.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_11"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+    <bpmndi:BPMNLabelStyle id="BPMNLabelStyle_1">
+      <dc:Font name="arial" size="9.0"/>
+    </bpmndi:BPMNLabelStyle>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>

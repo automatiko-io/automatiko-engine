@@ -929,6 +929,7 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
                                     EventTypeFilter eventTypeFilter = new EventTypeFilter();
                                     eventTypeFilter.setType(type);
                                     eventSubProcessNode.addEvent(eventTypeFilter);
+                                    eventSubProcessNode.addEvent("variableChanged");
 
                                     ((StartNode) subNode).setCondition(context -> {
                                         return (boolean) MVEL.executeExpression(constraintTrigger.getConstraint(),

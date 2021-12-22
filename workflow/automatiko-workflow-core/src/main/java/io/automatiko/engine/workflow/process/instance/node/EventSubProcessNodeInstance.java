@@ -44,9 +44,11 @@ public class EventSubProcessNodeInstance extends CompositeContextNodeInstance {
             StartNode startNode = getCompositeNode().findStartNode();
             if (startNode.hasCondition()) {
                 if (startNode.isMet(context)) {
-                    getProcessInstance().removeEventListener("variableChanged", this, false);
                     signalEvent(getCompositeNode().getEvents().get(0), null);
 
+                } else {
+                    removeNodeInstance(this);
+                    return;
                 }
             }
         }
@@ -105,15 +107,10 @@ public class EventSubProcessNodeInstance extends CompositeContextNodeInstance {
     @Override
     public void addEventListeners() {
         super.addEventListeners();
-        StartNode startNode = getCompositeNode().findStartNode();
-        if (startNode.hasCondition()) {
-            getProcessInstance().addEventListener("variableChanged", this, false);
-        }
     }
 
     @Override
     public void removeEventListeners() {
-        getProcessInstance().removeEventListener("variableChanged", this, false);
         super.removeEventListeners();
     }
 }

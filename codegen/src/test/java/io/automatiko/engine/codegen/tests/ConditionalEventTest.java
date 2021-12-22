@@ -88,4 +88,42 @@ public class ConditionalEventTest extends AbstractCodegenTest {
         assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ABORTED);
 
     }
+
+    @Test
+    public void testNonInterruptingEventSubprocessConditionalEventProcess() throws Exception {
+
+        Application app = generateCodeProcessesOnly("conditionalevent/ConditionalEventSubprocessNonInterrupting.bpmn2");
+
+        Process<? extends Model> p = app.processes().processById("subprocessCondition");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("person", new Person("john", 30));
+        m.fromMap(parameters);
+
+        ProcessInstance processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        m.fromMap(Collections.singletonMap("person", new Person("john", 45)));
+        processInstance.updateVariables(m);
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        m.fromMap(Collections.singletonMap("person", new Person("john", 15)));
+        processInstance.updateVariables(m);
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        m.fromMap(Collections.singletonMap("person", new Person("john", 45)));
+        processInstance.updateVariables(m);
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        Object counter = ((Model) processInstance.variables()).toMap().get("counter");
+        assertThat(counter).isNotNull().asList().hasSize(2);
+
+        processInstance.abort();
+    }
 }
