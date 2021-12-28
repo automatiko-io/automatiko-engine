@@ -1,0 +1,24 @@
+{
+  "id": "helloworld",
+  "version": "1.0",
+  "specVersion": "0.8",
+  "name": "Hello World Workflow",
+  "description": "Sleep Hello World",
+  "start": "Sleep for a while",
+  "states":[
+    {
+      "name":"Sleep for a while",
+      "type":"sleep",
+      "duration": "PT2S",
+      "transition": "Goodbye State"
+    },
+    {
+      "name":"Goodbye State",
+      "type":"inject",
+      "data": {
+        "result": "Goodbye World!"
+      },
+      "end": true
+    }
+  ]
+}

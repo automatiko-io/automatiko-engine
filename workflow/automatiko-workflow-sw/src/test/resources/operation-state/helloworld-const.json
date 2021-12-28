@@ -1,0 +1,43 @@
+{
+  "id": "helloworld",
+  "version": "1.0",
+  "specVersion": "0.8",
+  "name": "Hello World Workflow",
+  "description": "Inject Hello World",
+  "functions": [
+    {
+        "name": "Get Serbian",
+        "type": "expression",
+        "operation": "$CONST.Translations.Dog.Serbian"
+    }
+  ],
+  "constants": {
+  "Translations": {
+    "Dog": {
+      "Serbian": "pas",
+      "Spanish": "perro",
+      "French": "chien"
+      }
+    }
+  },
+  "start": "Pick translation",
+  "states":[
+    {
+        "name": "Pick translation",
+        "type": "operation",
+        "actions": [
+            {
+                "functionRef": "Get Serbian",
+                "actionDataFilter": {
+                    "toStateData": "${ .result }"
+                },
+                "sleep" : {
+                	"before" : "PT2S",
+                	"after" : "PT2S"
+                }
+            }
+        ],
+        "end": true
+    }
+  ]
+}

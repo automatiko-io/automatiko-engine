@@ -1,0 +1,68 @@
+{
+  "id": "applicantrequest",
+  "version": "1.0",
+  "specVersion": "0.8",
+  "name": "Applicant Request Decision Workflow",
+  "description": "Determine if applicant request is valid",
+  "start": "CheckApplication",
+  "functions": [
+    {
+      "name": "sendRejectionEmailFunction",
+      "operation": "http://myapis.org/applicationapi.json#emailRejection"
+    },
+    {
+      "name": "sendStartEmailFunction",
+      "operation": "http://myapis.org/applicationapi.json#emailStart"
+    }
+  ],
+  "states":[
+    {
+      "name":"CheckApplication",
+      "type":"switch",
+      "dataConditions": [
+        {
+          "condition": "${ .applicant | .age >= 18 }",
+          "transition": "StartApplication"
+        },
+        {
+          "condition": "${ .applicant | .age < 18 }",
+          "transition": "RejectApplication"
+        }
+      ],
+      "defaultCondition": {
+        "transition": "RejectApplication"
+      }
+    },
+    {
+      "name": "StartApplication",
+      "type": "operation",
+      "actions": [
+        {
+          "functionRef": {
+            "refName": "sendStartEmailFunction",
+            "arguments": {
+              "applicant": "${ .applicant }"
+            }
+          }
+        }
+      ],
+      "end": true
+    },
+    {
+      "name":"RejectApplication",
+      "type":"operation",
+      "actionMode":"sequential",
+      "actions":[
+        {
+          "functionRef": {
+            "refName": "sendRejectionEmailFunction",
+            "arguments": {
+              "applicant": "${ .applicant }"
+            }
+          }
+        }
+      ],
+      "end": true
+    }
+  ]
+}

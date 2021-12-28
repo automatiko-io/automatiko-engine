@@ -6,8 +6,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -18,32 +16,18 @@ import io.automatiko.engine.api.runtime.process.ProcessContext;
 import io.automatiko.engine.workflow.base.core.context.variable.JsonVariableScope;
 import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class ServerlessFunctions implements Functions {
 
     private static ObjectMapper mapper = new ObjectMapper();
 
     public static void inject(ProcessContext context, String json) {
 
-        ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) context.getProcessInstance()
-                .getProcess())
-                        .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
         try {
             ObjectNode data = (ObjectNode) mapper.readTree(json);
-
-            //            Object content = evaluator.evaluate("{vegetables: [.vegetables[] | select(.veggieLike == true) ] }",
-            //                    Collections.singletonMap(JsonVariableScope.WORKFLOWDATA_KEY, context.getVariableJsonVariableScope.WORKFLOWDATA_KEY)));
-            //            Map<String, Object> vars = new HashMap<>();
-            //            vars.put("workflowdata", context.getVariable(JsonVariableScope.WORKFLOWDATA_KEY));
-            //            vars.put("workflow_variables", Collections.singletonMap("CONST", context.getVariable("$CONST")));
-            //            Object content = evaluator.evaluate("{dogs: [$CONST.Translations.Dog ] }", vars);
-            System.out.println(data + " " + context.getNodeInstance().getNodeName());
             data.fields().forEachRemaining(field -> context.setVariable(field.getKey(), field.getValue()));
-        } catch (JsonMappingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (JsonProcessingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        } catch (Exception e) {
+            throw new RuntimeException("Error injecting data into state data", e);
         }
     }
 
@@ -58,7 +42,6 @@ public class ServerlessFunctions implements Functions {
             vars.put("workflow_variables", Collections.singletonMap("CONST", context.getVariable("$CONST")));
         }
         Object content = evaluator.evaluate(expression, vars);
-        System.out.println(content);
 
         context.setVariable("current", content);
         return content;
@@ -79,8 +62,7 @@ public class ServerlessFunctions implements Functions {
             Object filteredInput = evaluator.evaluate(inputFilter, vars);
             vars.put("workflowdata", filteredInput);
         }
-        Object content = evaluator.evaluate(expression, vars);
-        System.out.println(content);
+        evaluator.evaluate(expression, vars);
 
     }
 
@@ -103,7 +85,6 @@ public class ServerlessFunctions implements Functions {
             vars.put("workflowdata", filteredInput);
         }
         Object content = evaluator.evaluate(expression, vars);
-        System.out.println(content);
 
         if (outputFilter != null) {
             vars.put("workflowdata", content);

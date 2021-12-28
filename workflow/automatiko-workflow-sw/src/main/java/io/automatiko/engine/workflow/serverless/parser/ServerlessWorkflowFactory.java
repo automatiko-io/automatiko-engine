@@ -1,4 +1,4 @@
-package io.automatiko.engine.workflow.serverless;
+package io.automatiko.engine.workflow.serverless.parser;
 
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.ACTION;
 
@@ -193,7 +193,7 @@ public class ServerlessWorkflowFactory {
                 "expression(context, \"" + expression.replaceAll("\\\"", "\\\\\"") + "\");");
 
         io.automatiko.engine.workflow.base.instance.impl.Action injectAction = context -> {
-            if (actionDataFilter.isUseResults()) {
+            if (actionDataFilter != null && actionDataFilter.isUseResults()) {
                 io.automatiko.engine.workflow.serverless.ServerlessFunctions.expression(context, expression, inputFilter,
                         outputFilter, scopeFilter);
             } else {
@@ -661,7 +661,7 @@ public class ServerlessWorkflowFactory {
         return boundaryEventNode;
     }
 
-    public void connect(long fromId, long toId, String uniqueId, NodeContainer nodeContainer, boolean association) {
+    public Connection connect(long fromId, long toId, String uniqueId, NodeContainer nodeContainer, boolean association) {
         Node from = nodeContainer.getNode(fromId);
         Node to = nodeContainer.getNode(toId);
         ConnectionImpl connection = new ConnectionImpl(
@@ -671,6 +671,8 @@ public class ServerlessWorkflowFactory {
         if (association) {
             connection.setMetaData("association", true);
         }
+
+        return connection;
     }
 
     public void addExecutionTimeout(long id, WorkflowExecTimeout timeout, ExecutableProcess process) {
