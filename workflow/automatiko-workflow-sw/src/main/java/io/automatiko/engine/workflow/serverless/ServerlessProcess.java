@@ -22,6 +22,7 @@ import io.automatiko.engine.workflow.DefaultWorkItemHandlerConfig;
 import io.automatiko.engine.workflow.StaticProcessConfig;
 import io.automatiko.engine.workflow.base.instance.context.variable.DefaultVariableInitializer;
 import io.automatiko.engine.workflow.process.core.node.SubProcessNode;
+import io.automatiko.engine.workflow.serverless.parser.ServerlessWorkflowParser;
 
 public class ServerlessProcess extends AbstractProcess<ServerlessModel> {
 
