@@ -70,6 +70,7 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.AdditionalIndexedClassesBuildItem;
 import io.quarkus.deployment.builditem.ApplicationArchivesBuildItem;
 import io.quarkus.deployment.builditem.ArchiveRootBuildItem;
+import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.builditem.LiveReloadBuildItem;
@@ -90,6 +91,8 @@ import io.quarkus.runtime.LaunchMode;
 public class AutomatikoQuarkusProcessor {
 
     public static final String DEFAULT_PACKAGE_NAME = "io.automatiko.app";
+
+    private static final String FEATURE = "automatiko";
 
     private static final String generatedResourcesDir = System.getProperty("io.automatiko.codegen.resources.directory",
             "target/generated-resources/automatiko");
@@ -174,6 +177,11 @@ public class AutomatikoQuarkusProcessor {
                     curateOutcomeBuildItem);
 
         }
+    }
+
+    @BuildStep
+    FeatureBuildItem feature() {
+        return new FeatureBuildItem(FEATURE);
     }
 
     @BuildStep

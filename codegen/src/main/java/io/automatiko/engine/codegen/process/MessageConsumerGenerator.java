@@ -4,6 +4,7 @@ package io.automatiko.engine.codegen.process;
 import static com.github.javaparser.StaticJavaParser.parse;
 import static io.automatiko.engine.codegen.CodeGenConstants.AMQP_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.CAMEL_CONNECTOR;
+import static io.automatiko.engine.codegen.CodeGenConstants.HTTP_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.INCOMING_PROP_PREFIX;
 import static io.automatiko.engine.codegen.CodeGenConstants.JMS_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR;
@@ -213,6 +214,22 @@ public class MessageConsumerGenerator {
                     + context.getApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".address")
                             .orElse(sanitizedName.toUpperCase())
                     + "'");
+        } else if (connector.equals(HTTP_CONNECTOR)) {
+
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".path", "/" + sanitizedName.toLowerCase());
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".buffer-size", "10");
+            context.addInstruction(
+                    "Properties for HTTP based message event '" + trigger.getDescription() + "'");
+            context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                    + ".path' should be used to configure path, defaults to '"
+                    + context.getApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".path")
+                            .orElse("/" + sanitizedName.toLowerCase())
+                    + "'");
+            context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                    + ".buffer-size' should be used to configure buffer size in case consumer cannot keep up, defaults to '"
+                    + context.getApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".buffer-size")
+                            .orElse("10")
+                    + "'");
         }
     }
 
@@ -229,6 +246,8 @@ public class MessageConsumerGenerator {
             return "/class-templates/JMSMessageConsumerTemplate.java";
         } else if (connector.equals(AMQP_CONNECTOR)) {
             return "/class-templates/AMQPMessageConsumerTemplate.java";
+        } else if (connector.equals(HTTP_CONNECTOR)) {
+            return "/class-templates/HTTPMessageConsumerTemplate.java";
         } else {
             return "/class-templates/MessageConsumerTemplate.java";
         }

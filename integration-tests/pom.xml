@@ -43,6 +43,7 @@
     <module>automatiko-mongodb</module>
     <module>automatiko-jms</module>
     <module>automatiko-amqp</module>
+    <module>automatiko-http</module>
   </modules>
 
   <build>
