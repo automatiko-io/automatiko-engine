@@ -116,6 +116,7 @@
     <version.com.datastax.oss.quarkus>1.1.1</version.com.datastax.oss.quarkus>
     <version.com.datastax.oss>4.13.0</version.com.datastax.oss>
     <version.org.apache.camel.quarkus>2.5.0</version.org.apache.camel.quarkus>
+    <version.io.quarkiverse.reactivemessaging.http>1.0.0</version.io.quarkiverse.reactivemessaging.http>
 
     <version.com.cronutils>9.1.6</version.com.cronutils>
 
@@ -141,7 +142,7 @@
     <version.org.openapitools>4.3.1</version.org.openapitools>
 
     <!-- SW -->
-    <verion.io.serverlessworkflow>2.0.0.Final</verion.io.serverlessworkflow>
+    <version.io.serverlessworkflow>2.0.0.Final</version.io.serverlessworkflow>
 
   </properties>
 
@@ -613,22 +614,29 @@
       <dependency>
         <groupId>io.serverlessworkflow</groupId>
         <artifactId>serverlessworkflow-api</artifactId>
-        <version>${verion.io.serverlessworkflow}</version>
+        <version>${version.io.serverlessworkflow}</version>
       </dependency>
       <dependency>
         <groupId>io.serverlessworkflow</groupId>
         <artifactId>serverlessworkflow-spi</artifactId>
-        <version>${verion.io.serverlessworkflow}</version>
+        <version>${version.io.serverlessworkflow}</version>
       </dependency>
       <dependency>
         <groupId>io.serverlessworkflow</groupId>
         <artifactId>serverlessworkflow-validation</artifactId>
-        <version>${verion.io.serverlessworkflow}</version>
+        <version>${version.io.serverlessworkflow}</version>
       </dependency>
       <dependency>
         <groupId>io.serverlessworkflow</groupId>
         <artifactId>serverlessworkflow-diagram</artifactId>
-        <version>${verion.io.serverlessworkflow}</version>
+        <version>${version.io.serverlessworkflow}</version>
+      </dependency>
+      
+      <!-- quarkiverse dependencies -->
+      <dependency>
+        <groupId>io.quarkiverse.reactivemessaging.http</groupId>
+        <artifactId>quarkus-reactive-messaging-http</artifactId>
+        <version>${version.io.quarkiverse.reactivemessaging.http}</version>
       </dependency>
 
     </dependencies>

@@ -5,6 +5,7 @@ import static com.github.javaparser.StaticJavaParser.parse;
 import static io.automatiko.engine.codegen.CodeGenConstants.AMQP_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.CAMEL_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.FUNCTION_FLOW_CONNECTOR;
+import static io.automatiko.engine.codegen.CodeGenConstants.HTTP_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.JMS_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
@@ -179,6 +180,23 @@ public class MessageProducerGenerator {
                     + context.getApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".address")
                             .orElse(sanitizedName.toUpperCase())
                     + "'");
+        } else if (connector.equals(HTTP_CONNECTOR)) {
+
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".serializer",
+                    "io.quarkus.reactivemessaging.http.runtime.serializers.StringSerializer");
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".method", "POST");
+            context.addInstruction(
+                    "Properties for HTTP based message event '" + trigger.getDescription() + "'");
+            context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
+                    + ".url' should be used to configure location of the service to call via HTTP, defaults to "
+                    + context.getApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".url")
+                            .orElse("")
+                    + "'");
+            context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
+                    + ".method' should be used to configure HTTP method of the service to call, defaults to "
+                    + context.getApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".method")
+                            .orElse("POST")
+                    + "'");
         }
     }
 
@@ -196,6 +214,8 @@ public class MessageProducerGenerator {
             return "/class-templates/JMSMessageProducerTemplate.java";
         } else if (connector.equals(AMQP_CONNECTOR)) {
             return "/class-templates/AMQPMessageProducerTemplate.java";
+        } else if (connector.equals(HTTP_CONNECTOR)) {
+            return "/class-templates/HTTPMessageProducerTemplate.java";
         } else {
             return "/class-templates/MessageProducerTemplate.java";
         }
@@ -389,13 +409,13 @@ public class MessageProducerGenerator {
                         md.setBody(body);
                     });
         }
-        // Camal headers
+        // Camal or HTTP headers
         template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("headers"))
                 .forEach(md -> {
                     StringBuilder allHeaderValues = new StringBuilder();
                     for (Entry<String, Object> entry : trigger.getContext().entrySet()) {
 
-                        if (entry.getKey().startsWith("Camel")) {
+                        if (entry.getKey().startsWith("Camel") || entry.getKey().startsWith("HTTP")) {
                             allHeaderValues.append(entry.getValue().toString()).append(" ");
                         }
                     }
@@ -433,18 +453,26 @@ public class MessageProducerGenerator {
                                     AssignExpr.Operator.ASSIGN));
                         }
                     }
-
+                    boolean hasCamelHeaders = true;
                     for (Entry<String, Object> entry : trigger.getContext().entrySet()) {
 
                         if (entry.getKey().startsWith("Camel")) {
+
                             body.addStatement(new MethodCallExpr(new NameExpr("metadata"), "putHeader")
                                     .addArgument(new StringLiteralExpr(entry.getKey()))
+                                    .addArgument(new NameExpr(entry.getValue().toString())));
+                        } else if (entry.getKey().startsWith("HTTP")) {
+                            hasCamelHeaders = false;
+                            body.addStatement(new MethodCallExpr(new NameExpr("builder"), "addHeader")
+                                    .addArgument(new StringLiteralExpr(entry.getKey().replaceFirst("HTTP", "")))
                                     .addArgument(new NameExpr(entry.getValue().toString())));
                         }
 
                     }
 
-                    body.addStatement(new ReturnStmt(new NameExpr("metadata")));
+                    if (hasCamelHeaders) {
+                        body.addStatement(new ReturnStmt(new NameExpr("metadata")));
+                    }
                     md.setBody(body);
                 });
 
