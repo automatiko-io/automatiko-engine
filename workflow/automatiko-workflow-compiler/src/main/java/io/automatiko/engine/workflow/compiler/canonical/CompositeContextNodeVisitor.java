@@ -1,6 +1,8 @@
 
 package io.automatiko.engine.workflow.compiler.canonical;
 
+import static io.automatiko.engine.workflow.process.executable.core.factory.CompositeContextNodeFactory.METHOD_JQ_IN_MAPPING;
+import static io.automatiko.engine.workflow.process.executable.core.factory.CompositeContextNodeFactory.METHOD_JQ_OUT_MAPPING;
 import static io.automatiko.engine.workflow.process.executable.core.factory.CompositeContextNodeFactory.METHOD_VARIABLE;
 
 import java.util.HashSet;
@@ -24,8 +26,11 @@ import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
+import io.automatiko.engine.workflow.base.instance.impl.jq.InputJqAssignmentAction;
+import io.automatiko.engine.workflow.base.instance.impl.jq.OutputJqAssignmentAction;
 import io.automatiko.engine.workflow.compiler.util.ClassUtils;
 import io.automatiko.engine.workflow.process.core.node.CompositeContextNode;
+import io.automatiko.engine.workflow.process.core.node.DataAssociation;
 import io.automatiko.engine.workflow.process.executable.core.factory.CompositeContextNodeFactory;
 
 public class CompositeContextNodeVisitor<T extends CompositeContextNode> extends AbstractCompositeNodeVisitor<T> {
@@ -62,7 +67,7 @@ public class CompositeContextNodeVisitor<T extends CompositeContextNode> extends
         if (variableScope != null) {
             visitVariableScope(getNodeId(node), variableScopeNode, body, new HashSet<>());
         }
-
+        visitDataMapping(process, getNodeId(node), node, body);
         visitCustomFields(node, variableScope).forEach(body::addStatement);
 
         // composite context node might not have variable scope
@@ -105,4 +110,38 @@ public class CompositeContextNodeVisitor<T extends CompositeContextNode> extends
             }
         }
     }
+
+    protected void visitDataMapping(WorkflowProcess process, String contextNode, T node, BlockStmt body) {
+        boolean serverless = ProcessToExecModelGenerator.isServerlessWorkflow(process);
+
+        if (serverless) {
+            for (DataAssociation association : node.getInAssociations()) {
+
+                if (association.getAssignments() != null && !association.getAssignments().isEmpty()) {
+                    InputJqAssignmentAction action = (InputJqAssignmentAction) association.getAssignments().get(0)
+                            .getMetaData("Action");
+
+                    String inputFilter = action.getInputFilterExpression();
+                    body.addStatement(
+                            getFactoryMethod(contextNode, METHOD_JQ_IN_MAPPING,
+                                    (inputFilter != null ? new StringLiteralExpr().setString(inputFilter)
+                                            : new NullLiteralExpr())));
+                }
+            }
+            for (DataAssociation association : node.getOutAssociations()) {
+
+                if (association.getAssignments() != null && !association.getAssignments().isEmpty()) {
+                    OutputJqAssignmentAction action = (OutputJqAssignmentAction) association.getAssignments().get(0)
+                            .getMetaData("Action");
+
+                    String outputFilter = action.getOutputFilterExpression();
+                    body.addStatement(
+                            getFactoryMethod(contextNode, METHOD_JQ_OUT_MAPPING,
+                                    (outputFilter != null ? new StringLiteralExpr().setString(outputFilter)
+                                            : new NullLiteralExpr())));
+                }
+            }
+        }
+    }
+
 }

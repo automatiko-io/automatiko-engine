@@ -1,17 +1,26 @@
 
 package io.automatiko.engine.workflow.process.executable.core.factory;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 import io.automatiko.engine.api.workflow.datatype.DataType;
 import io.automatiko.engine.workflow.base.core.context.exception.ActionExceptionHandler;
 import io.automatiko.engine.workflow.base.core.context.exception.ExceptionHandler;
 import io.automatiko.engine.workflow.base.core.context.exception.ExceptionScope;
+import io.automatiko.engine.workflow.base.core.context.variable.JsonVariableScope;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
+import io.automatiko.engine.workflow.base.instance.impl.jq.InputJqAssignmentAction;
+import io.automatiko.engine.workflow.base.instance.impl.jq.OutputJqAssignmentAction;
 import io.automatiko.engine.workflow.process.core.Node;
 import io.automatiko.engine.workflow.process.core.NodeContainer;
 import io.automatiko.engine.workflow.process.core.impl.ConsequenceAction;
+import io.automatiko.engine.workflow.process.core.node.Assignment;
 import io.automatiko.engine.workflow.process.core.node.CompositeContextNode;
+import io.automatiko.engine.workflow.process.core.node.DataAssociation;
 import io.automatiko.engine.workflow.process.executable.core.ExecutableNodeContainerFactory;
+import io.automatiko.engine.workflow.process.executable.core.ServerlessExecutableProcess;
 
 public class CompositeContextNodeFactory extends ExecutableNodeContainerFactory {
 
@@ -19,6 +28,9 @@ public class CompositeContextNodeFactory extends ExecutableNodeContainerFactory 
     public static final String METHOD_LINK_INCOMING_CONNECTIONS = "linkIncomingConnections";
     public static final String METHOD_LINK_OUTGOING_CONNECTIONS = "linkOutgoingConnections";
     public static final String METHOD_AUTO_COMPLETE = "autoComplete";
+
+    public static final String METHOD_JQ_IN_MAPPING = "inMappingWithJqAssignment";
+    public static final String METHOD_JQ_OUT_MAPPING = "outMappingWithJqAssignment";
 
     private ExecutableNodeContainerFactory nodeContainerFactory;
     private NodeContainer nodeContainer;
@@ -32,10 +44,20 @@ public class CompositeContextNodeFactory extends ExecutableNodeContainerFactory 
         CompositeContextNode node = createNode();
         node.setId(id);
         setNodeContainer(node);
+
+        setVariableScope(this.nodeContainer, node);
     }
 
     protected CompositeContextNode createNode() {
         return new CompositeContextNode();
+    }
+
+    protected void setVariableScope(NodeContainer nodeContainer, CompositeContextNode node) {
+        if (nodeContainer instanceof ServerlessExecutableProcess) {
+            JsonVariableScope variableScope = new JsonVariableScope();
+            node.addContext(variableScope);
+            node.setDefaultContext(variableScope);
+        }
     }
 
     protected CompositeContextNode getCompositeNode() {
@@ -116,6 +138,22 @@ public class CompositeContextNodeFactory extends ExecutableNodeContainerFactory 
 
     public CompositeContextNodeFactory metaData(String name, Object value) {
         getCompositeNode().setMetaData(name, value);
+        return this;
+    }
+
+    public CompositeContextNodeFactory outMappingWithJqAssignment(String stateDataFilter) {
+        Assignment outputAssignment = new Assignment("jq", "", "");
+        outputAssignment.setMetaData("Action", new OutputJqAssignmentAction(stateDataFilter));
+        getCompositeNode().addOutAssociation(
+                new DataAssociation(Collections.emptyList(), "", Arrays.asList(outputAssignment), null));
+        return this;
+    }
+
+    public CompositeContextNodeFactory inMappingWithJqAssignment(String stateDataFilter) {
+        Assignment inputAssignment = new Assignment("jq", "", "");
+        inputAssignment.setMetaData("Action", new InputJqAssignmentAction(stateDataFilter));
+        getCompositeNode().addInAssociation(
+                new DataAssociation(Collections.emptyList(), "", Arrays.asList(inputAssignment), null));
         return this;
     }
 

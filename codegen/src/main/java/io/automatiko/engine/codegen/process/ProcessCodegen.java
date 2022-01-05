@@ -240,8 +240,8 @@ public class ProcessCodegen extends AbstractGenerator {
 
     private static Process parseWorkflowFile(Resource r, String parser) {
         try {
-            ServerlessWorkflowParser workflowParser = new ServerlessWorkflowParser(parser);
-            Process p = workflowParser.parseWorkFlow(r.getReader());
+            ServerlessWorkflowParser workflowParser = new ServerlessWorkflowParser();
+            Process p = workflowParser.parse(r.getReader());
             ((WorkflowProcess) p).getMetaData().put("IsServerlessWorkflow", true);
             p.setResource(r);
             return p;

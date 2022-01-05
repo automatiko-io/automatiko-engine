@@ -2,6 +2,7 @@
   "id": "switchworkflow",
   "name": "switch-wf",
   "version": "1.0",
+  "specVersion": "0.8",
   "start":"AddInfo",
   "states":[
     {
@@ -20,15 +21,15 @@
       "type": "switch",
       "dataConditions": [
         {
-          "condition": "{{ $.person[?(@.age >= 18)] }}",
+          "condition": "${ .person | .age >= 18 }",
           "transition": "Approve"          
         },
         {
-          "condition": "{{ $.person[?(@.age < 18)] }}",
+          "condition": "${ .person | .age < 18 }",
           "transition": "Deny"          
         }
       ],
-      "default": {
+      "defaultCondition": {
         "transition": "Approve"        
       }
     },

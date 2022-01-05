@@ -1,4 +1,4 @@
-package io.automatiko.engine.workflow.serverless;
+package io.automatiko.engine.workflow.sw;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

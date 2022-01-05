@@ -6,7 +6,9 @@ import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
@@ -20,8 +22,6 @@ import io.automatiko.engine.workflow.base.instance.impl.jq.OutputJqAssignmentAct
 import io.automatiko.engine.workflow.process.core.Node;
 import io.automatiko.engine.workflow.process.core.NodeContainer;
 import io.automatiko.engine.workflow.process.core.WorkflowProcess;
-import io.automatiko.engine.workflow.process.core.impl.ConnectionRef;
-import io.automatiko.engine.workflow.process.core.impl.ConstraintImpl;
 import io.automatiko.engine.workflow.process.core.node.ActionNode;
 import io.automatiko.engine.workflow.process.core.node.Assignment;
 import io.automatiko.engine.workflow.process.core.node.CompositeContextNode;
@@ -30,17 +30,24 @@ import io.automatiko.engine.workflow.process.core.node.EndNode;
 import io.automatiko.engine.workflow.process.core.node.Join;
 import io.automatiko.engine.workflow.process.core.node.Split;
 import io.automatiko.engine.workflow.process.core.node.StartNode;
+import io.automatiko.engine.workflow.process.core.node.SubProcessNode;
 import io.automatiko.engine.workflow.process.core.node.TimerNode;
 import io.automatiko.engine.workflow.process.core.node.WorkItemNode;
+import io.automatiko.engine.workflow.process.executable.core.ExecutableProcess;
 import io.serverlessworkflow.api.Workflow;
 import io.serverlessworkflow.api.actions.Action;
+import io.serverlessworkflow.api.branches.Branch;
 import io.serverlessworkflow.api.functions.FunctionDefinition;
+import io.serverlessworkflow.api.functions.SubFlowRef.Invoke;
+import io.serverlessworkflow.api.functions.SubFlowRef.OnParentComplete;
 import io.serverlessworkflow.api.interfaces.State;
 import io.serverlessworkflow.api.states.DefaultState;
 import io.serverlessworkflow.api.states.DefaultState.Type;
 import io.serverlessworkflow.api.states.InjectState;
 import io.serverlessworkflow.api.states.OperationState;
 import io.serverlessworkflow.api.states.OperationState.ActionMode;
+import io.serverlessworkflow.api.states.ParallelState;
+import io.serverlessworkflow.api.states.ParallelState.CompletionType;
 import io.serverlessworkflow.api.states.SleepState;
 import io.serverlessworkflow.api.states.SwitchState;
 import io.serverlessworkflow.api.switchconditions.DataCondition;
@@ -108,17 +115,40 @@ public class ServerlessWorkflowParser {
                 StartNode embeddedStartNode = factory.startNode(ids.getAndIncrement(), "EmbeddedStart", embeddedSubProcess);
                 EndNode embeddedEndNode = factory.endNode(ids.getAndIncrement(), "EmbeddedEnd", false, embeddedSubProcess);
 
+                if (operationState.getActions() == null || operationState.getActions().isEmpty()) {
+                    factory.connect(embeddedStartNode.getId(), embeddedEndNode.getId(),
+                            embeddedStartNode.getId() + "_" + embeddedEndNode.getId(),
+                            embeddedSubProcess, false);
+
+                    if (state.getEnd() != null) {
+
+                        EndNode endNode = factory.endNode(ids.getAndIncrement(), state.getName() + "-end",
+                                state.getEnd().isTerminate(),
+                                process);
+                        factory.connect(embeddedSubProcess.getId(), endNode.getId(),
+                                "connection_" + embeddedSubProcess.getId() + "_" + endNode.getId(), process, false);
+                    }
+                    // ensure that start node is connected
+                    if (state.equals(start) && currentNode != null) {
+                        factory.connect(startNode.getId(), currentNode.getId(),
+                                "connection_" + startNode.getId() + "_" + currentNode.getId(), process, false);
+                    }
+                    continue;
+                }
+
                 if (operationState.getActionMode() == null || operationState.getActionMode() == ActionMode.SEQUENTIAL) {
 
-                    buildActionsForOperationState(workflow, operationState, embeddedSubProcess, factory, ids, (first, last) -> {
-                        factory.connect(embeddedStartNode.getId(), first.getId(),
-                                embeddedStartNode.getId() + "_" + first.getId(),
-                                embeddedSubProcess, false);
+                    buildActionsForState(workflow, operationState.getActions(), embeddedSubProcess, factory, ids,
+                            (first, last) -> {
+                                factory.connect(embeddedStartNode.getId(), first.getId(),
+                                        embeddedStartNode.getId() + "_" + first.getId(),
+                                        embeddedSubProcess, false);
 
-                        factory.connect(last.getId(), embeddedEndNode.getId(), last.getId() + "_" + embeddedEndNode.getId(),
-                                embeddedSubProcess, false);
-                    }, (first, last) -> {
-                    });
+                                factory.connect(last.getId(), embeddedEndNode.getId(),
+                                        last.getId() + "_" + embeddedEndNode.getId(),
+                                        embeddedSubProcess, false);
+                            }, (first, last) -> {
+                            });
 
                 } else {
                     Split split = factory.splitNode(ids.getAndIncrement(), "parallel-split-" + state.getName(), Split.TYPE_AND,
@@ -134,16 +164,17 @@ public class ServerlessWorkflowParser {
                     factory.connect(join.getId(), embeddedEndNode.getId(), join.getId() + "_" + embeddedEndNode.getId(),
                             embeddedSubProcess, false);
 
-                    buildActionsForOperationState(workflow, operationState, embeddedSubProcess, factory, ids, (first, last) -> {
+                    buildActionsForState(workflow, operationState.getActions(), embeddedSubProcess, factory, ids,
+                            (first, last) -> {
 
-                    }, (first, last) -> {
-                        factory.connect(split.getId(), first.getId(),
-                                split.getId() + "_" + first.getId(),
-                                embeddedSubProcess, false);
+                            }, (first, last) -> {
+                                factory.connect(split.getId(), first.getId(),
+                                        split.getId() + "_" + first.getId(),
+                                        embeddedSubProcess, false);
 
-                        factory.connect(last.getId(), join.getId(), last.getId() + "_" + join.getId(),
-                                embeddedSubProcess, false);
-                    });
+                                factory.connect(last.getId(), join.getId(), last.getId() + "_" + join.getId(),
+                                        embeddedSubProcess, false);
+                            });
                 }
 
                 if (state.getEnd() != null) {
@@ -170,6 +201,77 @@ public class ServerlessWorkflowParser {
                             "connection_" + sleep.getId() + "_" + endNode.getId(), process, false);
                 }
                 currentNode = sleep;
+            } else if (state.getType().equals(DefaultState.Type.PARALLEL)) {
+
+                ParallelState parallelState = (ParallelState) state;
+
+                CompositeContextNode embeddedSubProcess = factory.subProcessNode(ids.getAndIncrement(), state.getName(),
+                        process);
+                currentNode = embeddedSubProcess;
+                // handle state data inputs
+                Assignment inputAssignment = new Assignment("jq", "", "");
+                inputAssignment.setMetaData("Action", new InputJqAssignmentAction(
+                        state.getStateDataFilter() == null ? null
+                                : factory.unwrapExpression(state.getStateDataFilter().getInput())));
+                embeddedSubProcess.addInAssociation(
+                        new DataAssociation(Collections.emptyList(), "", Arrays.asList(inputAssignment), null));
+
+                // handle state data outputs
+                Assignment outputAssignment = new Assignment("jq", "", "");
+                outputAssignment.setMetaData("Action", new OutputJqAssignmentAction(
+                        state.getStateDataFilter() == null ? null
+                                : factory.unwrapExpression(state.getStateDataFilter().getOutput())));
+                embeddedSubProcess.addOutAssociation(
+                        new DataAssociation(Collections.emptyList(), "", Arrays.asList(outputAssignment), null));
+                mappedNodes.put(state.getName(), embeddedSubProcess.getId());
+
+                StartNode embeddedStartNode = factory.startNode(ids.getAndIncrement(), "EmbeddedStart", embeddedSubProcess);
+                EndNode embeddedEndNode = factory.endNode(ids.getAndIncrement(), "EmbeddedEnd", false, embeddedSubProcess);
+
+                Split parallelSplit = factory.splitNode(ids.getAndIncrement(), "split_" + state.getName(), Split.TYPE_AND,
+                        embeddedSubProcess);
+
+                Join parallelJoin;
+
+                if (parallelState.getCompletionType().equals(CompletionType.AT_LEAST)) {
+                    parallelJoin = factory.joinNode(ids.getAndIncrement(), "join_" + state.getName(), Join.TYPE_N_OF_M,
+                            embeddedSubProcess);
+                    parallelJoin.setN(parallelState.getNumCompleted());
+                } else {
+                    parallelJoin = factory.joinNode(ids.getAndIncrement(), "join_" + state.getName(), Join.TYPE_AND,
+                            embeddedSubProcess);
+                }
+
+                factory.connect(embeddedStartNode.getId(), parallelSplit.getId(),
+                        "connection_" + embeddedStartNode.getId() + "_" + parallelSplit.getId(), embeddedSubProcess, false);
+
+                for (Branch branch : parallelState.getBranches()) {
+                    buildActionsForState(workflow, branch.getActions(), embeddedSubProcess, factory, ids,
+                            (first, last) -> {
+                                factory.connect(parallelSplit.getId(), first.getId(),
+                                        parallelSplit.getId() + "_" + first.getId(),
+                                        embeddedSubProcess, false);
+
+                                factory.connect(last.getId(), parallelJoin.getId(),
+                                        last.getId() + "_" + parallelJoin.getId(),
+                                        embeddedSubProcess, false);
+                            }, (first, last) -> {
+                            });
+                }
+                factory.connect(parallelJoin.getId(), embeddedEndNode.getId(),
+                        "connection_" + parallelJoin.getId() + "_" + embeddedEndNode.getId(), embeddedSubProcess, false);
+
+                if (state.getEnd() != null) {
+
+                    EndNode endNode = factory.endNode(ids.getAndIncrement(), state.getName() + "-end",
+                            state.getEnd().isTerminate(),
+                            process);
+                    factory.connect(embeddedSubProcess.getId(), endNode.getId(),
+                            "connection_" + embeddedSubProcess.getId() + "_" + endNode.getId(), process, false);
+                }
+
+            } else if (state.getType().equals(DefaultState.Type.FOREACH)) {
+
             }
             // ensure that start node is connected
             if (state.equals(start) && currentNode != null) {
@@ -212,13 +314,6 @@ public class ServerlessWorkflowParser {
                             EndNode endNode = factory.endNode(ids.getAndIncrement(), "end_" + switchState.getName(), false,
                                     process);
                             target = endNode.getId();
-                            ConstraintImpl constraintImpl = factory.splitConstraint(splitNode.getId() + "_" + endNode.getId(),
-                                    "DROOLS_DEFAULT", "jq", factory.unwrapExpression(condition.getCondition()), priority,
-                                    isDefaultConstraint);
-                            splitNode.addConstraint(
-                                    new ConnectionRef(splitNode.getId() + "_" + endNode.getId(), endNode.getId(),
-                                            Node.CONNECTION_DEFAULT_TYPE),
-                                    constraintImpl);
 
                             outgoingConnection = factory.connect(splitNode.getId(), endNode.getId(),
                                     "connection_" + splitNode.getId() + "_" + endNode.getId(), process, false);
@@ -226,13 +321,6 @@ public class ServerlessWorkflowParser {
                             long source = splitNode.getId();
 
                             target = mappedNodes.get(condition.getTransition().getNextState());
-
-                            ConstraintImpl constraintImpl = factory.splitConstraint(splitNode.getId() + "_" + target,
-                                    "DROOLS_DEFAULT", "jq", factory.unwrapExpression(condition.getCondition()), priority,
-                                    isDefaultConstraint);
-                            splitNode.addConstraint(
-                                    new ConnectionRef(splitNode.getId() + "_" + target, target, Node.CONNECTION_DEFAULT_TYPE),
-                                    constraintImpl);
 
                             outgoingConnection = factory.connect(source, target, "connection_" + source + "_" + target, process,
                                     false);
@@ -252,13 +340,13 @@ public class ServerlessWorkflowParser {
                         splitNode.setConstraint(outgoingConnection, returnValueConstraint);
                     }
                 }
+                // ensure that start node is connected
+                if (state.equals(start) && currentNode != null) {
+                    factory.connect(startNode.getId(), currentNode.getId(),
+                            "connection_" + startNode.getId() + "_" + currentNode.getId(), process, false);
+                }
+            }
 
-            }
-            // ensure that start node is connected
-            if (state.equals(start) && currentNode != null) {
-                factory.connect(startNode.getId(), currentNode.getId(),
-                        "connection_" + startNode.getId() + "_" + currentNode.getId(), process, false);
-            }
         }
 
         // lastly connect all nodes
@@ -271,6 +359,15 @@ public class ServerlessWorkflowParser {
                 factory.connect(source, target, "connection_" + source + "_" + target, process, false);
             }
         }
+        factory.validate((ExecutableProcess) process);
+
+        if (workflow.getTimeouts() != null && workflow.getTimeouts().getWorkflowExecTimeout() != null) {
+            factory.addExecutionTimeout(ids.getAndIncrement(), workflow.getTimeouts().getWorkflowExecTimeout(),
+                    (ExecutableProcess) process);
+        }
+
+        process.setMetaData("SW-Workflow", workflow);
+
         return process;
     }
 
@@ -289,27 +386,28 @@ public class ServerlessWorkflowParser {
         }
     }
 
-    protected void buildActionsForOperationState(Workflow workflow, OperationState operationState,
+    protected void buildActionsForState(Workflow workflow, List<Action> actions,
             NodeContainer embeddedSubProcess, ServerlessWorkflowFactory factory, AtomicLong ids,
             BiConsumer<Node, Node> firstLastNodeConsumer, BiConsumer<Node, Node> actionConsumer) {
         Node firstNode = null;
         Node lastNode = null;
-        for (Action action : operationState.getActions()) {
+        for (Action action : actions) {
 
-            Optional<FunctionDefinition> functionDefinition = workflow.getFunctions().getFunctionDefs()
-                    .stream()
-                    .filter(functionDef -> functionDef.getName().equals(action.getFunctionRef().getRefName()))
-                    .distinct()
-                    .findFirst();
+            if (action.getFunctionRef() != null) {
+                // handle function based action
 
-            if (functionDefinition.isPresent()) {
+                Optional<FunctionDefinition> functionDefinition = workflow.getFunctions().getFunctionDefs()
+                        .stream()
+                        .filter(functionDef -> functionDef.getName().equals(action.getFunctionRef().getRefName()))
+                        .distinct()
+                        .findFirst();
 
                 if (functionDefinition.get().getType() == FunctionDefinition.Type.EXPRESSION) {
                     ActionNode actionNode = factory.expressionActionStateNode(ids.getAndIncrement(),
                             action.getName(),
                             embeddedSubProcess,
                             functionDefinition.get().getOperation(),
-                            action.getActionDataFilter());
+                            action);
 
                     if (firstNode == null) {
                         firstNode = actionNode;
@@ -336,24 +434,55 @@ public class ServerlessWorkflowParser {
                     throw new UnsupportedOperationException(
                             functionDefinition.get().getType() + " is not yet supported");
                 }
-                if (action.getSleep() != null && action.getSleep().getBefore() != null) {
-                    TimerNode sleep = factory.timerNode(ids.getAndIncrement(), "sleep-before-" + action.getName(),
-                            action.getSleep().getBefore(), embeddedSubProcess);
-                    factory.connect(sleep.getId(), firstNode.getId(), "connection_" + sleep.getId() + "_" + firstNode.getId(),
-                            embeddedSubProcess, false);
-                    firstNode = sleep;
+
+            } else if (action.getSubFlowRef() != null) {
+                // handler sub workflow action definition
+                String workflowId = Objects.requireNonNull(action.getSubFlowRef().getWorkflowId(),
+                        "Workflow id for subworkflow is mandatory");
+
+                boolean independent = false;
+                if (action.getSubFlowRef().getOnParentComplete() != null
+                        && action.getSubFlowRef().getOnParentComplete().equals(OnParentComplete.CONTINUE)) {
+                    independent = true;
+                }
+                boolean waitForCompletion = true;
+                if (action.getSubFlowRef().getInvoke().equals(Invoke.ASYNC)) {
+                    waitForCompletion = false;
                 }
 
-                if (action.getSleep() != null && action.getSleep().getAfter() != null) {
-                    TimerNode sleep = factory.timerNode(ids.getAndIncrement(), "sleep-after-" + action.getName(),
-                            action.getSleep().getAfter(), embeddedSubProcess);
+                SubProcessNode callactivity = factory.callActivity(ids.getAndIncrement(), action.getName(), workflowId,
+                        waitForCompletion,
+                        embeddedSubProcess);
 
-                    factory.connect(lastNode.getId(), sleep.getId(), "connection_" + lastNode.getId() + "_" + sleep.getId(),
-                            embeddedSubProcess, false);
-                    lastNode = sleep;
+                callactivity.setIndependent(independent);
+                callactivity.setProcessVersion(action.getSubFlowRef().getVersion());
+                if (firstNode == null) {
+                    firstNode = callactivity;
                 }
-                actionConsumer.accept(firstNode, lastNode);
+                lastNode = callactivity;
+                if (action.getSleep() == null
+                        || (action.getSleep().getBefore() == null && action.getSleep().getAfter() == null)) {
+                    actionConsumer.accept(callactivity, callactivity);
+                }
+
             }
+            if (action.getSleep() != null && action.getSleep().getBefore() != null) {
+                TimerNode sleep = factory.timerNode(ids.getAndIncrement(), "sleep-before-" + action.getName(),
+                        action.getSleep().getBefore(), embeddedSubProcess);
+                factory.connect(sleep.getId(), firstNode.getId(), "connection_" + sleep.getId() + "_" + firstNode.getId(),
+                        embeddedSubProcess, false);
+                firstNode = sleep;
+            }
+
+            if (action.getSleep() != null && action.getSleep().getAfter() != null) {
+                TimerNode sleep = factory.timerNode(ids.getAndIncrement(), "sleep-after-" + action.getName(),
+                        action.getSleep().getAfter(), embeddedSubProcess);
+
+                factory.connect(lastNode.getId(), sleep.getId(), "connection_" + lastNode.getId() + "_" + sleep.getId(),
+                        embeddedSubProcess, false);
+                lastNode = sleep;
+            }
+            actionConsumer.accept(firstNode, lastNode);
         }
         firstLastNodeConsumer.accept(firstNode, lastNode);
     }

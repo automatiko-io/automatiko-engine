@@ -46,4 +46,8 @@ public class InputJqAssignmentAction implements AssignmentAction {
         }
     }
 
+    public String getInputFilterExpression() {
+        return inputFilterExpression;
+    }
+
 }

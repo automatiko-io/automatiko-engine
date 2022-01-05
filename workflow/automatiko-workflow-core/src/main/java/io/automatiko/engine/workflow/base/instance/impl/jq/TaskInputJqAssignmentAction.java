@@ -2,6 +2,7 @@ package io.automatiko.engine.workflow.base.instance.impl.jq;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,6 +25,17 @@ public class TaskInputJqAssignmentAction implements AssignmentAction {
     public TaskInputJqAssignmentAction(String input, Set<String> paramNames) {
         this.inputFilterExpression = input;
         this.paramNames = paramNames;
+    }
+
+    public TaskInputJqAssignmentAction(String input, String... paramNames) {
+        this.inputFilterExpression = input;
+        if (paramNames != null && paramNames.length > 0) {
+            this.paramNames = new LinkedHashSet<>();
+
+            for (String param : paramNames) {
+                this.paramNames.add(param);
+            }
+        }
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -65,6 +77,14 @@ public class TaskInputJqAssignmentAction implements AssignmentAction {
                 }
             }
         }
+    }
+
+    public String getInputFilterExpression() {
+        return inputFilterExpression;
+    }
+
+    public Set<String> getParamNames() {
+        return paramNames;
     }
 
 }

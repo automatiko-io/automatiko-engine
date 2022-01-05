@@ -656,7 +656,7 @@ public class ExecutableProcessValidator implements ProcessValidator {
 
     public ProcessValidationError[] validateProcess(Process process) {
         if (!(process instanceof ExecutableProcess)) {
-            throw new IllegalArgumentException("This validator can only validate ruleflow processes!");
+            throw new IllegalArgumentException("This validator can only validate processes!");
         }
         return validateProcess((ExecutableProcess) process);
     }

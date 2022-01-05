@@ -1,9 +1,0 @@
-id: noactions
-name: noactions
-version: '1.0'
-start: DoNothing
-states:
-  - name: DoNothing
-    type: operation   
-    end:
-      terminate: true

@@ -1,6 +1,7 @@
 {
   "id": "singlesubflow",
   "name": "singlesubflow",
+  "specVersion": "0.8",
   "version": "1.0",
   "start":"InjectTestData",
   "states":[
@@ -14,9 +15,15 @@
     },
     {
       "name":"SimpleSubFlow",
-      "type":"subflow",
-      "workflowId": "calledsubflow_1_0",
-      "waitForCompletion":true,
+      "type":"operation",
+      "actions": [
+        {
+          "subFlowRef": {
+            "workflowId": "calledsubflow",
+            "version": "1.0"
+          }
+        }
+      ],
       "end": {
         "terminate": true
       }

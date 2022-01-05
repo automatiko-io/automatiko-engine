@@ -9,28 +9,32 @@ import io.automatiko.engine.workflow.process.executable.core.ExecutableNodeConta
 
 public class EventSubProcessNodeFactory extends CompositeContextNodeFactory {
 
-	public static final String METHOD_KEEP_ACTIVE = "keepActive";
-	public static final String METHOD_EVENT = "event";
+    public static final String METHOD_KEEP_ACTIVE = "keepActive";
+    public static final String METHOD_EVENT = "event";
 
-	public EventSubProcessNodeFactory(ExecutableNodeContainerFactory nodeContainerFactory, NodeContainer nodeContainer,
-			long id) {
-		super(nodeContainerFactory, nodeContainer, id);
-	}
+    public EventSubProcessNodeFactory(ExecutableNodeContainerFactory nodeContainerFactory, NodeContainer nodeContainer,
+            long id) {
+        super(nodeContainerFactory, nodeContainer, id);
+    }
 
-	@Override
-	protected CompositeContextNode createNode() {
-		return new EventSubProcessNode();
-	}
+    @Override
+    protected CompositeContextNode createNode() {
+        return new EventSubProcessNode();
+    }
 
-	public EventSubProcessNodeFactory keepActive(boolean keepActive) {
-		((EventSubProcessNode) getCompositeNode()).setKeepActive(keepActive);
-		return this;
-	}
+    protected void setVariableScope(NodeContainer nodeContainer, CompositeContextNode node) {
 
-	public EventSubProcessNodeFactory event(String event) {
-		EventTypeFilter filter = new EventTypeFilter();
-		filter.setType(event);
-		((EventSubProcessNode) getCompositeNode()).addEvent(filter);
-		return this;
-	}
+    }
+
+    public EventSubProcessNodeFactory keepActive(boolean keepActive) {
+        ((EventSubProcessNode) getCompositeNode()).setKeepActive(keepActive);
+        return this;
+    }
+
+    public EventSubProcessNodeFactory event(String event) {
+        EventTypeFilter filter = new EventTypeFilter();
+        filter.setType(event);
+        ((EventSubProcessNode) getCompositeNode()).addEvent(filter);
+        return this;
+    }
 }

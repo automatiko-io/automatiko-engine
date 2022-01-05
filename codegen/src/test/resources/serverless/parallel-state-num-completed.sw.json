@@ -8,6 +8,8 @@
     {
       "name":"ExecInParallel",
       "type": "parallel",
+      "completionType": "atLeast",
+      "numCompleted": "1",
       "branches": [
         {
           "name": "branch1",

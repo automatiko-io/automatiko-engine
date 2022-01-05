@@ -164,10 +164,10 @@ public class ServerlessWorkflowFactory {
         actionNode.setId(id);
         actionNode.setName(name);
         ConsequenceAction processAction = new ConsequenceAction(null,
-                "inject(context, \"" + dataToInject.replaceAll("\\\"", "\\\\\"") + "\");");
+                "inject(context, " + escapeExpression(dataToInject) + ");");
 
         io.automatiko.engine.workflow.base.instance.impl.Action injectAction = context -> {
-            io.automatiko.engine.workflow.serverless.ServerlessFunctions.inject(context, dataToInject);
+            io.automatiko.engine.workflow.sw.ServerlessFunctions.inject(context, dataToInject);
         };
 
         processAction.setMetaData(ACTION, injectAction);
@@ -180,25 +180,47 @@ public class ServerlessWorkflowFactory {
     }
 
     public ActionNode expressionActionStateNode(long id, String name, NodeContainer nodeContainer, String expression,
-            ActionDataFilter actionDataFilter) {
+            Action action) {
         ActionNode actionNode = new ActionNode();
         actionNode.setId(id);
         actionNode.setName(name);
+
+        ActionDataFilter actionDataFilter = action.getActionDataFilter();
+
+        StringBuilder functionArguments = new StringBuilder();
+        if (action.getFunctionRef().getArguments() != null) {
+            functionArguments.append("(");
+
+            for (JsonNode argument : action.getFunctionRef().getArguments()) {
+                functionArguments.append(unwrapExpression(argument.toString())).append(",");
+            }
+            functionArguments.deleteCharAt(functionArguments.length() - 1);
+
+            functionArguments.append(")");
+        }
 
         String inputFilter = actionDataFilter == null ? null : unwrapExpression(actionDataFilter.getFromStateData());
         String outputFilter = actionDataFilter == null ? null : unwrapExpression(actionDataFilter.getResults());
         String scopeFilter = actionDataFilter == null ? null : unwrapExpression(actionDataFilter.getToStateData());
 
         ConsequenceAction processAction = new ConsequenceAction(null,
-                "expression(context, \"" + expression.replaceAll("\\\"", "\\\\\"") + "\");");
+                "expression(context, " + escapeExpression(expression + functionArguments) + ", " + escapeExpression(inputFilter)
+                        + ");");
+
+        if (actionDataFilter != null && actionDataFilter.isUseResults()) {
+            processAction = new ConsequenceAction(null,
+                    "expression(context, " + escapeExpression(expression + functionArguments) + ", "
+                            + escapeExpression(inputFilter)
+                            + ", " + escapeExpression(outputFilter) + ", " + escapeExpression(scopeFilter) + ");");
+        }
 
         io.automatiko.engine.workflow.base.instance.impl.Action injectAction = context -> {
             if (actionDataFilter != null && actionDataFilter.isUseResults()) {
-                io.automatiko.engine.workflow.serverless.ServerlessFunctions.expression(context, expression, inputFilter,
+                io.automatiko.engine.workflow.sw.ServerlessFunctions.expression(context, expression, inputFilter,
                         outputFilter, scopeFilter);
             } else {
 
-                io.automatiko.engine.workflow.serverless.ServerlessFunctions.expression(context, expression, inputFilter);
+                io.automatiko.engine.workflow.sw.ServerlessFunctions.expression(context, expression, inputFilter);
             }
         };
 
@@ -726,7 +748,17 @@ public class ServerlessWorkflowFactory {
             return trimmed.trim().substring(2, trimmed.length() - 2);
         } else if (input.startsWith("\"${")) {
             return trimmed.trim().substring(3, trimmed.length() - 3);
+        } else if (input.startsWith("\"")) {
+            return trimmed.trim().substring(1, trimmed.length() - 1);
         }
-        return input;
+        return input.trim();
+    }
+
+    protected String escapeExpression(String expression) {
+        if (expression == null) {
+            return null;
+        }
+
+        return "\"" + expression.replaceAll("\\\"", "\\\\\"") + "\"";
     }
 }

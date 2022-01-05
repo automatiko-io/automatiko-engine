@@ -16,7 +16,7 @@
   <properties>
     <java.module.name>io.automatiko.engine.workflow.serverless</java.module.name>
     
-    <verion.io.serverlessworkflow>4.0.1.Final</verion.io.serverlessworkflow>
+    <version.io.serverlessworkflow>4.0.1.Final</version.io.serverlessworkflow>
   </properties>
 
   <dependencies>
@@ -113,7 +113,7 @@
     <dependency>
       <groupId>io.serverlessworkflow</groupId>
       <artifactId>serverlessworkflow-api</artifactId>
-      <version>${verion.io.serverlessworkflow}</version>
+      <version>${version.io.serverlessworkflow}</version>
       <scope>test</scope>
       <type>test-jar</type>
     </dependency>

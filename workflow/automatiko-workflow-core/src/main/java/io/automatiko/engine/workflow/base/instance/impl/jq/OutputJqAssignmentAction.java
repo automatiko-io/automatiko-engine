@@ -47,4 +47,8 @@ public class OutputJqAssignmentAction implements AssignmentAction {
         context.getProcessInstance().setVariable(JsonVariableScope.WORKFLOWDATA_KEY, updated);
     }
 
+    public String getOutputFilterExpression() {
+        return outputFilterExpression;
+    }
+
 }

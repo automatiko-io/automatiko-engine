@@ -1,6 +1,7 @@
 {
   "id": "singleinject",
   "name": "test-wf",
+  "specVersion": "0.8",
   "version": "1.0",
   "start":"SimpleInject",
   "states":[
@@ -10,9 +11,7 @@
       "data": {
         "name": "john"
       },
-      "end": {
-        "terminate": true
-      }
+      "end": true
     }
   ]
 }

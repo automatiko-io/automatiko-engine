@@ -53,7 +53,7 @@ public class DynamicUtils {
         final WorkItemImpl workItem = new WorkItemImpl();
         workItem.setState(WorkItem.ACTIVE);
         workItem.setProcessInstanceId(processInstance.getId());
-        workItem.setProcessInstanceId(processInstance.getParentProcessInstanceId());
+        workItem.setParentProcessInstanceId(processInstance.getParentProcessInstanceId());
         workItem.setName(workItemName);
         workItem.setParameters(parameters);
 

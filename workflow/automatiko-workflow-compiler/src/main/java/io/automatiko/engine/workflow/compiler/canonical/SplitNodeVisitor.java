@@ -44,34 +44,48 @@ public class SplitNodeVisitor extends AbstractNodeVisitor<Split> {
         if (node.getType() == Split.TYPE_OR || node.getType() == Split.TYPE_XOR) {
             for (Entry<ConnectionRef, Constraint> entry : node.getConstraints().entrySet()) {
                 if (entry.getValue() != null) {
-                    BlockStmt actionBody = new BlockStmt();
-                    LambdaExpr lambda = new LambdaExpr(new Parameter(new UnknownType(), KCONTEXT_VAR), // (kcontext) ->
-                            actionBody);
 
-                    for (Variable v : variableScope.getVariables()) {
-                        actionBody.addStatement(makeAssignment(v));
-                    }
-
-                    variableScope.getVariables().stream().filter(v -> v.hasTag(Variable.VERSIONED_TAG))
-                            .map(ActionNodeVisitor::makeAssignmentVersions)
-                            .forEach(actionBody::addStatement);
-
-                    if (entry.getValue().getConstraint().contains(System.getProperty("line.separator"))) {
-                        BlockStmt constraintBody = new BlockStmt();
-                        constraintBody.addStatement(entry.getValue().getConstraint());
-
-                        actionBody.addStatement(constraintBody);
+                    String dialect = entry.getValue().getDialect();
+                    if ("jq".equals(dialect)) {
+                        body.addStatement(getFactoryMethod(getNodeId(node), METHOD_CONSTRAINT,
+                                new LongLiteralExpr(entry.getKey().getNodeId()),
+                                new StringLiteralExpr(getOrDefault(entry.getKey().getConnectionId(), "")),
+                                new StringLiteralExpr(entry.getKey().getToType()),
+                                new StringLiteralExpr(entry.getValue().getDialect()),
+                                new StringLiteralExpr(entry.getValue().getConstraint()),
+                                new IntegerLiteralExpr(entry.getValue().getPriority())));
                     } else {
-                        actionBody
-                                .addStatement(new ReturnStmt(new EnclosedExpr(new NameExpr(entry.getValue().getConstraint()))));
-                    }
 
-                    body.addStatement(getFactoryMethod(getNodeId(node), METHOD_CONSTRAINT,
-                            new LongLiteralExpr(entry.getKey().getNodeId()),
-                            new StringLiteralExpr(getOrDefault(entry.getKey().getConnectionId(), "")),
-                            new StringLiteralExpr(entry.getKey().getToType()),
-                            new StringLiteralExpr(entry.getValue().getDialect()), lambda,
-                            new IntegerLiteralExpr(entry.getValue().getPriority())));
+                        BlockStmt actionBody = new BlockStmt();
+                        LambdaExpr lambda = new LambdaExpr(new Parameter(new UnknownType(), KCONTEXT_VAR), // (kcontext) ->
+                                actionBody);
+
+                        for (Variable v : variableScope.getVariables()) {
+                            actionBody.addStatement(makeAssignment(v));
+                        }
+
+                        variableScope.getVariables().stream().filter(v -> v.hasTag(Variable.VERSIONED_TAG))
+                                .map(ActionNodeVisitor::makeAssignmentVersions)
+                                .forEach(actionBody::addStatement);
+
+                        if (entry.getValue().getConstraint().contains(System.getProperty("line.separator"))) {
+                            BlockStmt constraintBody = new BlockStmt();
+                            constraintBody.addStatement(entry.getValue().getConstraint());
+
+                            actionBody.addStatement(constraintBody);
+                        } else {
+                            actionBody
+                                    .addStatement(
+                                            new ReturnStmt(new EnclosedExpr(new NameExpr(entry.getValue().getConstraint()))));
+                        }
+
+                        body.addStatement(getFactoryMethod(getNodeId(node), METHOD_CONSTRAINT,
+                                new LongLiteralExpr(entry.getKey().getNodeId()),
+                                new StringLiteralExpr(getOrDefault(entry.getKey().getConnectionId(), "")),
+                                new StringLiteralExpr(entry.getKey().getToType()),
+                                new StringLiteralExpr(entry.getValue().getDialect()), lambda,
+                                new IntegerLiteralExpr(entry.getValue().getPriority())));
+                    }
                 }
             }
         }

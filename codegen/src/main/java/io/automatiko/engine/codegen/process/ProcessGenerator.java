@@ -56,13 +56,16 @@ import io.automatiko.engine.codegen.BodyDeclarationComparator;
 import io.automatiko.engine.codegen.CodegenUtils;
 import io.automatiko.engine.codegen.GeneratorContext;
 import io.automatiko.engine.codegen.di.DependencyInjectionAnnotator;
+import io.automatiko.engine.codegen.process.image.SvgBpmnProcessImageGenerator;
 import io.automatiko.engine.codegen.process.image.SvgProcessImageGenerator;
+import io.automatiko.engine.codegen.process.image.SvgServerlessProcessImageGenerator;
 import io.automatiko.engine.services.execution.BaseFunctions;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.AbstractProcess;
 import io.automatiko.engine.workflow.compiler.canonical.ProcessMetaData;
 import io.automatiko.engine.workflow.compiler.canonical.TriggerMetaData;
 import io.automatiko.engine.workflow.compiler.canonical.UserTaskModelMetaData;
+import io.automatiko.engine.workflow.sw.ServerlessFunctions;
 
 /**
  * Generates the Process&lt;T&gt; container for a process, which encapsulates
@@ -144,6 +147,9 @@ public class ProcessGenerator {
         compilationUnit.addImport("io.automatiko.engine.workflow.base.core.datatype.impl.type.ObjectDataType");
         compilationUnit.addImport("io.automatiko.engine.workflow.process.executable.core.ExecutableProcessFactory");
         compilationUnit.addImport(new ImportDeclaration(BaseFunctions.class.getCanonicalName(), true, true));
+        if (isServerlessWorkflow()) {
+            compilationUnit.addImport(new ImportDeclaration(ServerlessFunctions.class.getCanonicalName(), true, true));
+        }
         List<String> functions = context.getBuildContext().classThatImplement(Functions.class.getCanonicalName());
         functions.forEach(c -> compilationUnit.addImport(new ImportDeclaration(c, true, true)));
 
@@ -668,7 +674,9 @@ public class ProcessGenerator {
                 .addMember(process(processMetaData));
 
         if (isServiceProject()) {
-            SvgProcessImageGenerator imageGenerator = new SvgProcessImageGenerator(process);
+
+            SvgProcessImageGenerator imageGenerator = isServerlessWorkflow() ? new SvgServerlessProcessImageGenerator(process)
+                    : new SvgBpmnProcessImageGenerator(process);
             String svg = imageGenerator.generate();
 
             if (svg != null && !svg.isEmpty()) {
@@ -762,5 +770,12 @@ public class ProcessGenerator {
         } catch (ClassNotFoundException e) {
             return false;
         }
+    }
+
+    protected boolean isServerlessWorkflow() {
+
+        return ProcessCodegen.SUPPORTED_SW_EXTENSIONS.keySet().stream()
+                .filter(ext -> process.getResource().getSourcePath().endsWith(ext)).findAny().isPresent();
+
     }
 }

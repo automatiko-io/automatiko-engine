@@ -2,6 +2,7 @@
   "id": "logvar",
   "version": "1.0",
   "name": "Log variable Workflow",
+  "specVersion": "0.8",
   "description": "Logging variable value",
   "start": "Log",
   "metadata": {
@@ -24,7 +25,7 @@
           "functionRef": {
             "refName": "sysout",
             "arguments": {
-                "name": "name"
+                "encoded": ".name, (.name | @base64)"
             }
           }
         }
