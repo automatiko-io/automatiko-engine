@@ -114,7 +114,9 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
 
     public void internalSetWorkItem(WorkItem workItem) {
         this.workItem = workItem;
-        this.workItem.setProcessInstance(getProcessInstance());
+        if (getProcessInstance() != null) {
+            this.workItem.setProcessInstance(getProcessInstance());
+        }
         this.workItem.setNodeInstance(this);
     }
 
@@ -125,6 +127,7 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
     }
 
     public void internalRegisterWorkItem() {
+        workItem.setProcessInstance(getProcessInstance());
         ((DefaultWorkItemManager) getProcessInstance().getProcessRuntime().getWorkItemManager())
                 .internalAddWorkItem(workItem);
 

@@ -40,6 +40,7 @@ import io.automatiko.engine.workflow.base.core.timer.DateTimeUtils;
 import io.automatiko.engine.workflow.base.core.timer.TimeUtils;
 import io.automatiko.engine.workflow.base.core.timer.Timer;
 import io.automatiko.engine.workflow.base.instance.context.variable.VariableScopeInstance;
+import io.automatiko.engine.workflow.base.instance.impl.DefaultProcessInstanceManager;
 import io.automatiko.engine.workflow.process.core.node.EventTrigger;
 import io.automatiko.engine.workflow.process.core.node.StartNode;
 import io.automatiko.engine.workflow.process.core.node.Trigger;
@@ -70,7 +71,7 @@ public class LightProcessRuntime implements InternalProcessRuntime {
         this.unitOfWorkManager = services.getUnitOfWorkManager();
         this.runtimeContext = runtimeContext;
         this.variableInitializer = services.getVariableInitializer();
-        this.processInstanceManager = services.getProcessInstanceManager();
+        this.processInstanceManager = new DefaultProcessInstanceManager();
         this.signalManager = services.getSignalManager();
         this.jobService = services.getJobsService() == null ? new InMemoryJobService(this, this.unitOfWorkManager)
                 : services.getJobsService();

@@ -10,17 +10,15 @@ import io.automatiko.engine.workflow.base.core.event.ProcessEventSupport;
 
 public interface ProcessRuntimeServiceProvider {
 
-	JobsService getJobsService();
+    JobsService getJobsService();
 
-	ProcessInstanceManager getProcessInstanceManager();
+    SignalManager getSignalManager();
 
-	SignalManager getSignalManager();
+    WorkItemManager getWorkItemManager();
 
-	WorkItemManager getWorkItemManager();
+    ProcessEventSupport getEventSupport();
 
-	ProcessEventSupport getEventSupport();
+    UnitOfWorkManager getUnitOfWorkManager();
 
-	UnitOfWorkManager getUnitOfWorkManager();
-
-	VariableInitializer getVariableInitializer();
+    VariableInitializer getVariableInitializer();
 }
