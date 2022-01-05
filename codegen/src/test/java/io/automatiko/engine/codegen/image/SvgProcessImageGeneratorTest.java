@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 import org.junit.jupiter.api.Test;
 
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
-import io.automatiko.engine.codegen.process.image.SvgProcessImageGenerator;
+import io.automatiko.engine.codegen.process.image.SvgBpmnProcessImageGenerator;
 import io.automatiko.engine.services.io.ClassPathResource;
 import io.automatiko.engine.workflow.bpmn2.BpmnProcess;
 import io.automatiko.engine.workflow.bpmn2.BpmnProcessCompiler;
@@ -114,7 +114,7 @@ public class SvgProcessImageGeneratorTest {
         BpmnProcess process = compiler.from(null, new ClassPathResource(processResource)).get(0);
         assertThat(process).isNotNull();
 
-        SvgProcessImageGenerator generator = new SvgProcessImageGenerator((WorkflowProcess) process.process());
+        SvgBpmnProcessImageGenerator generator = new SvgBpmnProcessImageGenerator((WorkflowProcess) process.process());
 
         String svg = generator.generate();
 

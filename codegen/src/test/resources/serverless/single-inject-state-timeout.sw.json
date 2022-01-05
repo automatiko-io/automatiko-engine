@@ -2,10 +2,13 @@
   "id": "singleinject",
   "name": "test-wf",
   "version": "1.0",
+  "specVersion": "0.8",
   "start":"SimpleInject",
-  "execTimeout" : {
-  	"duration": "PT2S",
-    "runBefore": "BeforeTimeout"
+  "timeouts": {
+    "workflowExecTimeout" : {
+  	  "duration": "PT2S",
+      "runBefore": "BeforeTimeout"
+    }
   },
   "keepActive": true,
   "states":[

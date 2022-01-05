@@ -12,6 +12,7 @@ import static io.automatiko.engine.workflow.process.executable.core.factory.Node
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.Parameter;
@@ -23,6 +24,7 @@ import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
@@ -40,8 +42,11 @@ import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.base.core.context.variable.Mappable;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
+import io.automatiko.engine.workflow.base.instance.impl.jq.TaskInputJqAssignmentAction;
+import io.automatiko.engine.workflow.base.instance.impl.jq.TaskOutputJqAssignmentAction;
 import io.automatiko.engine.workflow.process.core.impl.ConnectionImpl;
 import io.automatiko.engine.workflow.process.core.node.BoundaryEventNode;
+import io.automatiko.engine.workflow.process.core.node.DataAssociation;
 import io.automatiko.engine.workflow.process.core.node.EventSubProcessNode;
 import io.automatiko.engine.workflow.process.core.node.HumanTaskNode;
 import io.automatiko.engine.workflow.process.core.node.StartNode;
@@ -152,13 +157,58 @@ public abstract class AbstractNodeVisitor<T extends Node> extends AbstractVisito
     }
 
     protected void addNodeMappings(Mappable node, BlockStmt body, String variableName) {
-        for (Entry<String, String> entry : node.getInMappings().entrySet()) {
-            body.addStatement(getFactoryMethod(variableName, METHOD_IN_MAPPING, new StringLiteralExpr(entry.getKey()),
-                    new StringLiteralExpr(entry.getValue())));
-        }
-        for (Entry<String, String> entry : node.getOutMappings().entrySet()) {
-            body.addStatement(getFactoryMethod(variableName, METHOD_OUT_MAPPING, new StringLiteralExpr(entry.getKey()),
-                    new StringLiteralExpr(entry.getValue())));
+
+        boolean serverless = ProcessToExecModelGenerator.isServerlessWorkflow(null);
+
+        if (serverless) {
+            for (DataAssociation association : node.getInAssociations()) {
+
+                if (association.getAssignments() != null && !association.getAssignments().isEmpty()) {
+                    TaskInputJqAssignmentAction action = (TaskInputJqAssignmentAction) association.getAssignments().get(0)
+                            .getMetaData("Action");
+
+                    String inputFilter = action.getInputFilterExpression();
+                    Set<String> params = action.getParamNames();
+
+                    List<Expression> expressions = new ArrayList<>();
+                    expressions
+                            .add(inputFilter != null ? new StringLiteralExpr().setString(inputFilter) : new NullLiteralExpr());
+
+                    for (String param : params) {
+                        expressions.add((param != null ? new StringLiteralExpr().setString(param)
+                                : new NullLiteralExpr()));
+                    }
+                    body.addStatement(
+                            getFactoryMethod(variableName, METHOD_IN_MAPPING,
+                                    expressions.toArray(Expression[]::new)));
+                }
+            }
+            for (DataAssociation association : node.getOutAssociations()) {
+
+                if (association.getAssignments() != null && !association.getAssignments().isEmpty()) {
+                    TaskOutputJqAssignmentAction action = (TaskOutputJqAssignmentAction) association.getAssignments().get(0)
+                            .getMetaData("Action");
+
+                    String outputFilter = action.getOutputFilterExpression();
+                    String scopeFilter = action.getScopeFilter();
+                    body.addStatement(
+                            getFactoryMethod(variableName, METHOD_IN_MAPPING,
+                                    (outputFilter != null ? new StringLiteralExpr().setString(outputFilter)
+                                            : new NullLiteralExpr()),
+                                    (scopeFilter != null ? new StringLiteralExpr().setString(scopeFilter)
+                                            : new NullLiteralExpr())));
+                }
+            }
+        } else {
+
+            for (Entry<String, String> entry : node.getInMappings().entrySet()) {
+                body.addStatement(getFactoryMethod(variableName, METHOD_IN_MAPPING, new StringLiteralExpr(entry.getKey()),
+                        new StringLiteralExpr(entry.getValue())));
+            }
+            for (Entry<String, String> entry : node.getOutMappings().entrySet()) {
+                body.addStatement(getFactoryMethod(variableName, METHOD_OUT_MAPPING, new StringLiteralExpr(entry.getKey()),
+                        new StringLiteralExpr(entry.getValue())));
+            }
         }
     }
 

@@ -43,6 +43,10 @@
       <groupId>io.automatiko.addons</groupId>
       <artifactId>automatiko-filesystem-persistence-addon</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.automatiko.addons</groupId>
+      <artifactId>automatiko-process-management-addon</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>io.quarkus</groupId>

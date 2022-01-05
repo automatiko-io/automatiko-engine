@@ -28,7 +28,7 @@ public abstract class ExecutableNodeContainerFactory {
 
     public static final String METHOD_CONNECTION = "connection";
 
-    private NodeContainer nodeContainer;
+    protected NodeContainer nodeContainer;
 
     protected void setNodeContainer(NodeContainer nodeContainer) {
         this.nodeContainer = nodeContainer;

@@ -25,6 +25,7 @@ import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.process.core.ProcessAction;
 import io.automatiko.engine.workflow.process.core.impl.ConsequenceAction;
 import io.automatiko.engine.workflow.process.core.node.ActionNode;
+import io.automatiko.engine.workflow.process.core.node.DataAssociation;
 import io.automatiko.engine.workflow.process.executable.core.factory.ActionNodeFactory;
 
 public class ActionNodeVisitor extends AbstractNodeVisitor<ActionNode> {
@@ -82,6 +83,11 @@ public class ActionNodeVisitor extends AbstractNodeVisitor<ActionNode> {
             body.addStatement(getFactoryMethod(getNodeId(node), METHOD_ACTION, lambda));
         }
         visitMetaData(node.getMetaData(), body, getNodeId(node));
+
+        for (DataAssociation association : node.getInAssociations()) {
+
+        }
+
         body.addStatement(getDoneMethod(getNodeId(node)));
     }
 

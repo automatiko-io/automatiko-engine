@@ -1,6 +1,7 @@
 {
   "id": "branch1subflow",
   "name": "branch1subflow",
+  "specVersion": "0.8",
   "start":"InjectTestData1",
   "states":[
     {

@@ -58,4 +58,12 @@ public class TaskOutputJqAssignmentAction implements AssignmentAction {
 
     }
 
+    public String getOutputFilterExpression() {
+        return outputFilterExpression;
+    }
+
+    public String getScopeFilter() {
+        return scopeFilter;
+    }
+
 }

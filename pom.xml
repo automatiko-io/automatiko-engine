@@ -143,7 +143,7 @@
     <version.org.openapitools>4.3.1</version.org.openapitools>
 
     <!-- SW -->
-    <version.io.serverlessworkflow>2.0.0.Final</version.io.serverlessworkflow>
+    <version.io.serverlessworkflow>4.0.1.Final</version.io.serverlessworkflow>
 
   </properties>
 
@@ -648,7 +648,7 @@
       <dependency>
         <groupId>io.serverlessworkflow</groupId>
         <artifactId>serverlessworkflow-util</artifactId>
-        <version>${verion.io.serverlessworkflow}</version>
+        <version>${version.io.serverlessworkflow}</version>
       </dependency>
 
     </dependencies>

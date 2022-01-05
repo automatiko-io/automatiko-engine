@@ -1,56 +1,52 @@
 {
-  "id": "newpatient",
-  "name": "Onboard a new patient",
-  "description": "Adds a new Patient and assigns a doctor",
-  "start":"OnboardNewPatient",
-  "functions": [
-    {
-      "name": "storeNewPatient",
-      "operation": "api/swagger.json#add"
-    },
-    {
-      "name": "assignDoctor",
-      "operation": "api/swagger.json#assign"
-    }
-  ],
-  "retries": [
-    {
-      "name": "NotFoundStrategy",
-      "delay": "PT1S",
-      "maxAttempts": 3
-    }
-  ],
+  "id": "switchworkflow",
+  "name": "switch-wf",
+  "description" : "Sample process illustrating Swerverless Workflow in ation",
+  "specVersion": "0.8",
+  "version": "1.0",
+  "start":"AddInfo",
   "states":[
     {
-      "name":"OnboardNewPatient",
-      "type":"operation",
-      "actions":[
+      "name":"AddInfo",
+      "type":"inject",
+      "data": {
+        "person": {
+          "name": "john",
+          "age": 25
+        }
+      },
+      "transition": "ChooseOnAge"      
+    },
+    {
+      "name": "ChooseOnAge",
+      "type": "switch",
+      "dataConditions": [
         {
-          "functionRef": {
-            "refName": "storeNewPatient"
-          }
+          "condition": "${ .person | .age >= 18 }",
+          "transition": "Approve"
         },
         {
-          "functionRef": {
-            "refName": "assignDoctor"
-          }
+          "condition": "${ .person | .age < 18 }",
+          "transition": "Deny"          
         }
       ],
-      "onErrors": [
-        {
-          "error": "NotFound",
-          "code": "404",
-          "retryRef": "NotFoundStrategy",
-          "transition":  "AddNotFoundInfo"          
-        }
-      ],
+      "defaultCondition": {
+        "transition": "Approve"        
+      }
+    },
+    {
+      "name":"Approve",
+      "type":"inject",
+      "data": {
+        "decision": "Approved"
+      },
       "end": true
     },
     {
-      "name": "AddNotFoundInfo",
-      "type": "inject",
+      "name":"Deny",
+      "type":"inject",
       "data": {
-        "errormessage": "Invalid Patient Data"
+        "decision": "Denied"
       },
       "end": true
     }
