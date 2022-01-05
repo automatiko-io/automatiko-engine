@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.AccessPolicy;
@@ -31,6 +32,8 @@ import io.automatiko.engine.api.workflow.ProcessInstances;
 import io.automatiko.engine.api.workflow.ProcessInstancesFactory;
 import io.automatiko.engine.api.workflow.Signal;
 import io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError;
+import io.automatiko.engine.services.signal.EventListenerResolver;
+import io.automatiko.engine.services.signal.LightSignalManager;
 import io.automatiko.engine.workflow.auth.AccessPolicyFactory;
 import io.automatiko.engine.workflow.auth.AllowAllAccessPolicy;
 import io.automatiko.engine.workflow.base.core.timer.CronExpirationTime;
@@ -144,6 +147,9 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
     }
 
     public Process<T> configure() {
+        if (this.services.getSignalManager() instanceof LightSignalManager) {
+            ((LightSignalManager) this.services.getSignalManager()).setInstanceResolver(new ProcessEventListenerResolver());
+        }
         this.accessPolicy = AccessPolicyFactory.newPolicy((String) process().getMetaData().get("accessPolicy"));
         registerListeners();
         if (isProcessFactorySet()) {
@@ -322,5 +328,16 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
         public String[] getEventTypes() {
             return new String[0];
         }
+    }
+
+    private class ProcessEventListenerResolver implements EventListenerResolver {
+
+        @Override
+        public Optional<EventListener> find(String id) {
+            Optional.ofNullable(instances().findById(id)
+                    .map(pi -> ((AbstractProcessInstance<?>) pi).internalGetProcessInstance()).orElse(null));
+            return null;
+        }
+
     }
 }

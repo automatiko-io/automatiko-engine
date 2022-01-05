@@ -40,17 +40,15 @@ public class LightWorkItemManager extends DefaultWorkItemManager {
     private Map<String, WorkItem> workItems = new ConcurrentHashMap<>();
     private Map<String, WorkItemHandler> workItemHandlers = new HashMap<>();
 
-    private final ProcessInstanceManager processInstanceManager;
     private final SignalManager signalManager;
     private final ProcessEventSupport eventSupport;
 
     private Complete completePhase = new Complete();
     private Abort abortPhase = new Abort();
 
-    public LightWorkItemManager(InternalProcessRuntime runtime, ProcessInstanceManager processInstanceManager,
+    public LightWorkItemManager(InternalProcessRuntime runtime,
             SignalManager signalManager, ProcessEventSupport eventSupport) {
         super(runtime);
-        this.processInstanceManager = processInstanceManager;
         this.signalManager = signalManager;
         this.eventSupport = eventSupport;
     }
@@ -61,9 +59,6 @@ public class LightWorkItemManager extends DefaultWorkItemManager {
         WorkItemHandler handler = this.workItemHandlers.get(workItem.getName());
         if (handler != null) {
             ProcessInstance processInstance = workItem.getProcessInstance();
-            if (processInstance == null) {
-                processInstance = processInstanceManager.getProcessInstance(workItem.getProcessInstanceId());
-            }
             Transition<?> transition = new TransitionToActive();
             eventSupport.fireBeforeWorkItemTransition(processInstance, workItem, transition, null);
 
@@ -92,9 +87,6 @@ public class LightWorkItemManager extends DefaultWorkItemManager {
             if (handler != null) {
 
                 ProcessInstance processInstance = workItem.getProcessInstance();
-                if (processInstance == null) {
-                    processInstance = processInstanceManager.getProcessInstance(workItem.getProcessInstanceId());
-                }
                 Transition<?> transition = new TransitionToAbort(Collections.emptyList());
                 eventSupport.fireBeforeWorkItemTransition(processInstance, workItem, transition, null);
 
@@ -149,9 +141,6 @@ public class LightWorkItemManager extends DefaultWorkItemManager {
 
     public void internalCompleteWorkItem(WorkItem workItem) {
         ProcessInstance processInstance = workItem.getProcessInstance();
-        if (processInstance == null) {
-            processInstance = processInstanceManager.getProcessInstance(workItem.getProcessInstanceId());
-        }
         ((WorkItemImpl) workItem).setState(COMPLETED);
         workItem.setCompleteDate(new Date());
 
@@ -165,9 +154,6 @@ public class LightWorkItemManager extends DefaultWorkItemManager {
 
     public void internalAbortWorkItem(WorkItem workItem) {
         ProcessInstance processInstance = workItem.getProcessInstance();
-        if (processInstance == null) {
-            processInstance = processInstanceManager.getProcessInstance(workItem.getProcessInstanceId());
-        }
 
         ((WorkItemImpl) workItem).setState(ABORTED);
 
@@ -189,9 +175,6 @@ public class LightWorkItemManager extends DefaultWorkItemManager {
             WorkItemHandler handler = this.workItemHandlers.get(workItem.getName());
             if (handler != null) {
                 ProcessInstance processInstance = workItem.getProcessInstance();
-                if (processInstance == null) {
-                    processInstance = processInstanceManager.getProcessInstance(workItem.getProcessInstanceId());
-                }
                 eventSupport.fireBeforeWorkItemTransition(processInstance, workItem, transition, null);
 
                 try {
@@ -222,8 +205,7 @@ public class LightWorkItemManager extends DefaultWorkItemManager {
                 throw new NotAuthorizedException(
                         "Work item can be aborted as it does not fulfil policies (e.g. security)");
             }
-            ProcessInstance processInstance = processInstanceManager
-                    .getProcessInstance(workItem.getProcessInstanceId());
+            ProcessInstance processInstance = workItem.getProcessInstance();
             Transition<?> transition = new TransitionToAbort(Arrays.asList(policies));
             eventSupport.fireBeforeWorkItemTransition(processInstance, workItem, transition, null);
             workItem.setState(ABORTED);
@@ -283,9 +265,6 @@ public class LightWorkItemManager extends DefaultWorkItemManager {
         // work item may have been aborted
         if (workItem != null) {
             ProcessInstance processInstance = workItem.getProcessInstance();
-            if (processInstance == null) {
-                processInstance = processInstanceManager.getProcessInstance(workItem.getProcessInstanceId());
-            }
             workItem.setState(FAILED);
             // process instance may have finished already
             if (processInstance != null) {

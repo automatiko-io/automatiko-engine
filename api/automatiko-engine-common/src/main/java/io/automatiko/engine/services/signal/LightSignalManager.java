@@ -14,7 +14,7 @@ import io.automatiko.engine.api.workflow.signal.SignalManagerHub;
 
 public class LightSignalManager implements SignalManager {
 
-    private final EventListenerResolver instanceResolver;
+    private EventListenerResolver instanceResolver;
     private SignalManagerHub signalManagerHub;
     private ConcurrentHashMap<String, Set<EventListener>> listeners = new ConcurrentHashMap<>();
 
@@ -84,5 +84,9 @@ public class LightSignalManager implements SignalManager {
             return "_" + version.replaceAll("\\.", "_");
         }
         return "";
+    }
+
+    public void setInstanceResolver(EventListenerResolver instanceResolver) {
+        this.instanceResolver = instanceResolver;
     }
 }

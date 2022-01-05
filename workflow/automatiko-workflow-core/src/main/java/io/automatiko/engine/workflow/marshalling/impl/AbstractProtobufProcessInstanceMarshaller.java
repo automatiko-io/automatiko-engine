@@ -512,7 +512,8 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         return _workItem.build();
     }
 
-    public static WorkItem readWorkItem(MarshallerReaderContext context, AutomatikoMessages.WorkItem _workItem)
+    public static WorkItem readWorkItem(WorkflowProcessInstance processInstance, MarshallerReaderContext context,
+            AutomatikoMessages.WorkItem _workItem)
             throws IOException {
         WorkItemImpl workItem = new WorkItemImpl();
         workItem.setId(_workItem.getId());
@@ -525,6 +526,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         workItem.setPhaseId(_workItem.getPhaseId());
         workItem.setPhaseStatus(_workItem.getPhaseStatus());
         workItem.setStartDate(new Date(_workItem.getStartDate()));
+        workItem.setProcessInstance(processInstance);
         if (_workItem.getCompleteDate() > 0) {
             workItem.setCompleteDate(new Date(_workItem.getCompleteDate()));
         }
@@ -593,7 +595,8 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         return _workItem.build();
     }
 
-    public static HumanTaskWorkItem readHumanTaskWorkItem(MarshallerReaderContext context,
+    public static HumanTaskWorkItem readHumanTaskWorkItem(WorkflowProcessInstance processInstance,
+            MarshallerReaderContext context,
             AutomatikoMessages.HumanTaskWorkItem _workItem) throws IOException {
         HumanTaskWorkItemImpl workItem = new HumanTaskWorkItemImpl();
         workItem.setId(_workItem.getId());
@@ -606,6 +609,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         workItem.setPhaseId(_workItem.getPhaseId());
         workItem.setPhaseStatus(_workItem.getPhaseStatus());
         workItem.setStartDate(new Date(_workItem.getStartDate()));
+        workItem.setProcessInstance(processInstance);
         if (_workItem.getCompleteDate() > 0) {
             workItem.setCompleteDate(new Date(_workItem.getCompleteDate()));
         }
@@ -955,7 +959,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                 nodeInstance = new HumanTaskNodeInstance();
                 ((HumanTaskNodeInstance) nodeInstance).internalSetWorkItemId(_content.getHumanTask().getWorkItemId());
                 ((HumanTaskNodeInstance) nodeInstance).internalSetWorkItem(
-                        (WorkItemImpl) readHumanTaskWorkItem(context, _content.getHumanTask().getWorkitem()));
+                        (WorkItemImpl) readHumanTaskWorkItem(processInstance, context, _content.getHumanTask().getWorkitem()));
                 if (_content.getHumanTask().getTimerInstanceIdCount() > 0) {
                     List<String> timerInstances = new ArrayList<>();
                     for (String _timerId : _content.getHumanTask().getTimerInstanceIdList()) {
@@ -970,7 +974,8 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                 nodeInstance = new WorkItemNodeInstance();
                 ((WorkItemNodeInstance) nodeInstance).internalSetWorkItemId(_content.getWorkItem().getWorkItemId());
                 ((WorkItemNodeInstance) nodeInstance)
-                        .internalSetWorkItem((WorkItemImpl) readWorkItem(context, _content.getWorkItem().getWorkitem()));
+                        .internalSetWorkItem(
+                                (WorkItemImpl) readWorkItem(processInstance, context, _content.getWorkItem().getWorkitem()));
                 if (_content.getWorkItem().getTimerInstanceIdCount() > 0) {
                     List<String> timerInstances = new ArrayList<>();
                     for (String _timerId : _content.getWorkItem().getTimerInstanceIdList()) {
