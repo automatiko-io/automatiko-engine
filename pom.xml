@@ -83,7 +83,7 @@
     <version.com.github.haifengl.smile>1.5.2</version.com.github.haifengl.smile>
     <version.com.github.javaparser>3.13.10</version.com.github.javaparser>
     <version.com.github.victools>4.12.1</version.com.github.victools>
-    <version.com.google.protobuf>3.19.1</version.com.google.protobuf>
+    <version.com.google.protobuf>3.19.2</version.com.google.protobuf>
     <version.org.graalvm.nativeimage>21.3.0</version.org.graalvm.nativeimage>
     <version.com.sun.xml.bind>2.3.0</version.com.sun.xml.bind>
     <version.com.thoughtworks.xstream>1.4.18</version.com.thoughtworks.xstream>
