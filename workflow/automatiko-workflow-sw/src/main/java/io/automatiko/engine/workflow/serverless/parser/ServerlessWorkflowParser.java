@@ -3,6 +3,7 @@ package io.automatiko.engine.workflow.serverless.parser;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 
@@ -88,6 +90,7 @@ public class ServerlessWorkflowParser {
                     factory.connect(actionNode.getId(), endNode.getId(),
                             "connection_" + actionNode.getId() + "_" + endNode.getId(), process, false);
                 }
+                setUniqueId(actionNode, state);
                 currentNode = actionNode;
             } else if (state.getType().equals(DefaultState.Type.OPERATION)) {
                 OperationState operationState = (OperationState) state;
@@ -95,6 +98,7 @@ public class ServerlessWorkflowParser {
                 CompositeContextNode embeddedSubProcess = factory.subProcessNode(ids.getAndIncrement(), state.getName(),
                         process);
                 currentNode = embeddedSubProcess;
+                setUniqueId(embeddedSubProcess, state);
                 // handle state data inputs
                 Assignment inputAssignment = new Assignment("jq", "", "");
                 inputAssignment.setMetaData("Action", new InputJqAssignmentAction(
@@ -192,6 +196,7 @@ public class ServerlessWorkflowParser {
                 TimerNode sleep = factory.timerNode(ids.getAndIncrement(), "sleep-" + state.getName(),
                         ((SleepState) state).getDuration(), process);
                 mappedNodes.put(state.getName(), sleep.getId());
+                setUniqueId(sleep, state);
                 if (state.getEnd() != null) {
 
                     EndNode endNode = factory.endNode(ids.getAndIncrement(), state.getName() + "-end",
@@ -207,6 +212,7 @@ public class ServerlessWorkflowParser {
 
                 CompositeContextNode embeddedSubProcess = factory.subProcessNode(ids.getAndIncrement(), state.getName(),
                         process);
+                setUniqueId(embeddedSubProcess, state);
                 currentNode = embeddedSubProcess;
                 // handle state data inputs
                 Assignment inputAssignment = new Assignment("jq", "", "");
@@ -290,6 +296,7 @@ public class ServerlessWorkflowParser {
                     Split splitNode = factory.splitNode(ids.getAndIncrement(), "split_" + state.getName(), Split.TYPE_XOR,
                             process);
                     currentNode = splitNode;
+                    setUniqueId(splitNode, state);
                     mappedNodes.put(state.getName(), splitNode.getId());
                     int priority = 1;
                     for (DataCondition condition : switchState.getDataConditions()) {
@@ -485,5 +492,9 @@ public class ServerlessWorkflowParser {
             actionConsumer.accept(firstNode, lastNode);
         }
         firstLastNodeConsumer.accept(firstNode, lastNode);
+    }
+
+    protected void setUniqueId(Node node, State state) {
+        node.setMetaData("UniqueId", UUID.nameUUIDFromBytes(state.getName().getBytes(StandardCharsets.UTF_8)).toString());
     }
 }

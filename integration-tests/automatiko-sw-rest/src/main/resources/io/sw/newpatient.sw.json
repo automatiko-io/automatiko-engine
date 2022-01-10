@@ -1,7 +1,6 @@
 {
   "id": "switchworkflow",
   "name": "switch-wf",
-  "description" : "Sample process illustrating Swerverless Workflow in ation",
   "specVersion": "0.8",
   "version": "1.0",
   "start":"AddInfo",
@@ -15,7 +14,13 @@
           "age": 25
         }
       },
-      "transition": "ChooseOnAge"      
+      "transition": "Sleep for a while"      
+    },
+    {
+      "name":"Sleep for a while",
+      "type":"sleep",
+      "duration": "PT20M",
+      "transition": "ChooseOnAge"
     },
     {
       "name": "ChooseOnAge",
