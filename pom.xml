@@ -143,7 +143,7 @@
     <version.org.openapitools>4.3.1</version.org.openapitools>
 
     <!-- SW -->
-    <version.io.serverlessworkflow>4.0.1.Final</version.io.serverlessworkflow>
+    <version.io.serverlessworkflow>4.0.x</version.io.serverlessworkflow>
 
   </properties>
 
