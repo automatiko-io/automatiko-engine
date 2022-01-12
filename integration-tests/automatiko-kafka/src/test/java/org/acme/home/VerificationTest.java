@@ -21,10 +21,10 @@ import io.automatiko.engine.api.event.EventPublisher;
 import io.automatiko.engine.services.event.impl.CountDownProcessInstanceEventPublisher;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
-import io.smallrye.reactive.messaging.connectors.InMemoryConnector;
-import io.smallrye.reactive.messaging.connectors.InMemorySink;
-import io.smallrye.reactive.messaging.connectors.InMemorySource;
 import io.smallrye.reactive.messaging.kafka.KafkaRecord;
+import io.smallrye.reactive.messaging.providers.connectors.InMemoryConnector;
+import io.smallrye.reactive.messaging.providers.connectors.InMemorySink;
+import io.smallrye.reactive.messaging.providers.connectors.InMemorySource;
 
 @QuarkusTest
 public class VerificationTest {
