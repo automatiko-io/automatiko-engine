@@ -41,7 +41,7 @@
     </dependency>
 
     <dependency>
-      <groupId>io.quarkus</groupId>
+      <groupId>io.quarkiverse.amazonservices</groupId>
       <artifactId>quarkus-amazon-s3</artifactId>
     </dependency>
     <dependency>
