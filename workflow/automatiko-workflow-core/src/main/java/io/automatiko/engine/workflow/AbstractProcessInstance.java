@@ -702,6 +702,14 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
             script.append(
                     "function remove(item) {if (item != null) {var parent = item.parentNode; parent.removeChild(item);}}");
             script.append(
+                    "function linkSet(item, link) {if (item != null) {item.setAttribute('xlink:href', link);}}");
+            script.append(
+                    "function urlSet(item, url) {if (item != null) {item.onclick=function (e) {openInNewTab(url);};}}");
+            script.append(
+                    "function fill(item, rgb) {if (item != null) {item.style['fill']=rgb;}}");
+            script.append(
+                    "function highlight(item) {if (item != null) {item.style['stroke']='rgb(255, 0, 0)';item.style['stroke-width']='2';}}");
+            script.append(
                     "var warnIcon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABz0lEQVQ4y2NgoBAwYhNsK7HVdbOWCpCX5FJjYGRgePzi+63dR59tKO86dBmvAQlB2kJT6ixncLN+CWH4/xvVcEbW/9//8q4taDuZPmvFpXcYBsQFagktaDM7zPj3sxZM7Or93wwMDAwM2oqscHP+M/Ney2g8aztrxeV3KAZ8Phe/moftSwiypfVzPjEwMDAwNKbwoTjm+x/e1VwGC8IYGBgYWBgYGBga88x1edi+BhMbcJwsX0I6S610y7uPXWZhYGBgcLUUDmBg+M9IfNj/Z3SxEA5gYGCAGCArzqpGavTJSUD0sDAwMDC8ef+VUUaMnyQDXr/9wgg34Oi5N3cM1DENkBfH7avDZ1/fgceCpb6Q8dElDqcZGRlRdPz//x8S16jCDP////9vF3/Q9Mi5t2dZGBgYGI5ffHd2475nWwOcpX2QFTbO+8zAwMDA0JCMGo2b9j/feuTc27Mo6UBUkE3q0EKHQxpKvMowsZNXvzMwMDAwmGtzwjXfuP/5rn38QbtX734+w0jKwgJsMjPrjWYHuUi5Y/HO/3V7nu3MaDyX+ubDryf4MhOzvjq/lb+TVIC6Ao86AwMDw80HX25u3Pds48WbH48xMDD8YaAmAAAYL5tXiXxXawAAAABJRU5ErkJggg==';");
             script.append(
                     "var errorIcon = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAC80lEQVR42m2TD0yMYRzHP897d65y0akzUTYjVEKnMNQw2RqbzVrzd2wopkwrFrMw//8sDBtbNmZj5k9tDYXMbEYRM8oiSwqp6E53qbvu8uuG5c+zvXv37v09n+f3+36/j+I/azkERsJsM4zVg74D3tfC3ePw4e9a1fdjLvgnQJ5Z0zKGx8ebQqKi0BkM2OrqqH/wwGPr6LjaDDmHoeEfQDxY5kNJZHi4NTYzE1NY2B90l8NBVUEBNRUVLe9g3lF4/BswWNpcAWXxZnNibMZadCYjOk1D9Sh6usHrgW6PB6UUtZcuUVVd3XwPYovhow8wB1YthoKY5NkYJ0czKi2HugsnMdqbUN0aNqdi9IYt1F+5iquykprCQso9nnPHYKXqB1oWVEzVaZNGpE6he1oS1vU7cDu+Ub43DVfLJ2JzTzNoVCS114tp2LUbd81r3thsXUdgmDJBiMzzOdwfLTTBiNMcgHtaOjMy99L5zUZ78wcGR4zjVUkRb/LWYGn5juO9kyYvnIEFahhMPADPhgaJipPBbyi+n/bxeczL3ukT8EXZLar2zCfaz01XIzhExeZ2OA8ZSgSMFn9fWgIhOA76CfGVaxBx224THmP1AZxtX7mRlcSYzqfSq8CroUX8PAXpSoOBZ8XXED2BQePhi0U2599mSJSV+ofXaH1bjnXpfhmnjfubkghueIr9kUBssBUSe10wbITLM2UezQKhm3OJy9nHR9nceHERpgFu9DHZRKQe4vPjUp5nJtP1RBrx0rhWkuqzcTjMOgGl4pjBG6oYmbYaW8VZgkLcGPpLiCQL/Scso6msmLYyO3o7nJRE3oT8X2EzLoTt6ZBrV5IfuQT+oSKovHsBvXN2tkK7zB7gBGmgdAek9IiefdM6IEUA6yDbIVo6ZZNHQqJ0EhSXwNwgvJ47UHQQ1rl9cv51mWQFhMH0JVIghiRIRoLlFCUTOOTwyitifaUApK79v7fx59J6QfKY/QQgDeikaxmANnmkObx9i38AhmwGt8LiZCUAAAAASUVORK5CYII=';");
@@ -712,10 +720,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                     continue;
                 }
 
-                script.append("document.getElementById('").append(nodeInstance.getNodeDefinitionId())
-                        .append("').style['stroke']='rgb(255, 0, 0)';\n");
-                script.append("document.getElementById('").append(nodeInstance.getNodeDefinitionId())
-                        .append("').style['stroke-width']='2';\n");
+                script.append("highlight(document.getElementById('").append(nodeInstance.getNodeDefinitionId())
+                        .append("'));\n");
 
                 if (nodeInstance instanceof LambdaSubProcessNodeInstance) {
                     // add links for call activity
@@ -723,8 +729,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                     String url = path + "/" + ((SubProcessNode) subprocess.getNode()).getProcessId() + "/"
                             + subprocess.getProcessInstanceId() + "/image";
 
-                    script.append("document.getElementById('").append(nodeInstance.getNodeDefinitionId())
-                            .append("_image').onclick=function (e) {openInNewTab('" + url + "');};\n");
+                    script.append("urlSet(document.getElementById('").append(nodeInstance.getNodeDefinitionId())
+                            .append("_image'), '" + url + "');\n");
                 }
 
                 if (nodeInstance instanceof EventSubProcessNodeInstance) {
@@ -735,48 +741,39 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                                         .findStartNode().getMetaData("UniqueId");
 
                         if (nodeDefId != null) {
-                            script.append("document.getElementById('").append(nodeDefId)
-                                    .append("').style['stroke']='rgb(255, 0, 0)';\n");
-                            script.append("document.getElementById('").append(nodeDefId)
-                                    .append("').style['stroke-width']='2';\n");
+                            script.append("highlight(document.getElementById('").append(nodeDefId)
+                                    .append("'));\n");
                         }
                     }
                 }
 
                 if (nodeInstance.getNodeInstanceState().equals(NodeInstanceState.Retrying)) {
-                    script.append("document.getElementById('").append(nodeInstance.getNodeDefinitionId())
-                            .append("_warn_image').setAttribute('xlink:href', warnIcon);\n");
+                    script.append("linkSet(document.getElementById('").append(nodeInstance.getNodeDefinitionId())
+                            .append("_warn_image'), warnIcon);\n");
                 } else if (nodeInstance.getNodeInstanceState().equals(NodeInstanceState.Failed)) {
-                    script.append("document.getElementById('").append(nodeInstance.getNodeDefinitionId())
-                            .append("_warn_image').setAttribute('xlink:href', errorIcon);\n");
+                    script.append("linkSet(document.getElementById('").append(nodeInstance.getNodeDefinitionId())
+                            .append("_warn_image'), errorIcon);\n");
                 } else {
                     script.append("remove(document.getElementById('").append(nodeInstance.getNodeDefinitionId())
                             .append("_warn_image'));\n");
                 }
             }
             for (String nodeInstanceId : completedNodes) {
-                if (nodeInstanceId.startsWith("_jbpm-unique")) {
-                    continue;
-                }
                 script.append("remove(document.getElementById('").append(nodeInstanceId)
                         .append("_warn_image'));\n");
-                script.append("document.getElementById('").append(nodeInstanceId)
-                        .append("').style['fill']='rgb(160, 160, 160)';\n");
+                script.append("fill(document.getElementById('").append(nodeInstanceId)
+                        .append("'), 'rgb(160, 160, 160)');\n");
             }
 
             if (status == STATE_ERROR) {
 
                 for (ProcessError error : errors().get().errors()) {
                     String failedNodeId = error.failedNodeId();
-                    if (failedNodeId.startsWith("_jbpm-unique")) {
-                        continue;
-                    }
-                    script.append("document.getElementById('").append(failedNodeId)
-                            .append("').style['stroke']='rgb(255, 0, 0)';\n");
-                    script.append("document.getElementById('").append(failedNodeId)
-                            .append("').style['stroke-width']='2';\n");
-                    script.append("document.getElementById('").append(failedNodeId)
-                            .append("_warn_image').setAttribute('xlink:href', errorIcon);\n");
+
+                    script.append("highlight(document.getElementById('").append(failedNodeId)
+                            .append("'));\n");
+                    script.append("linkSet(document.getElementById('").append(failedNodeId)
+                            .append("_warn_image'), errorIcon);\n");
                 }
             }
             script.append("</script></svg>");

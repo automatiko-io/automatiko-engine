@@ -4,7 +4,9 @@ package io.automatiko.engine.workflow.compiler.canonical;
 import static com.github.javaparser.StaticJavaParser.parseClassOrInterfaceType;
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.CUSTOM_AUTO_START;
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.HIDDEN;
+import static io.automatiko.engine.workflow.process.executable.core.factory.MappableNodeFactory.METHOD_IN_JQ_MAPPING;
 import static io.automatiko.engine.workflow.process.executable.core.factory.MappableNodeFactory.METHOD_IN_MAPPING;
+import static io.automatiko.engine.workflow.process.executable.core.factory.MappableNodeFactory.METHOD_OUT_JQ_MAPPING;
 import static io.automatiko.engine.workflow.process.executable.core.factory.MappableNodeFactory.METHOD_OUT_MAPPING;
 import static io.automatiko.engine.workflow.process.executable.core.factory.NodeFactory.METHOD_DONE;
 import static io.automatiko.engine.workflow.process.executable.core.factory.NodeFactory.METHOD_NAME;
@@ -156,9 +158,9 @@ public abstract class AbstractNodeVisitor<T extends Node> extends AbstractVisito
         return new ExpressionStmt(assignExpr);
     }
 
-    protected void addNodeMappings(Mappable node, BlockStmt body, String variableName) {
+    protected void addNodeMappings(WorkflowProcess process, Mappable node, BlockStmt body, String variableName) {
 
-        boolean serverless = ProcessToExecModelGenerator.isServerlessWorkflow(null);
+        boolean serverless = ProcessToExecModelGenerator.isServerlessWorkflow(process);
 
         if (serverless) {
             for (DataAssociation association : node.getInAssociations()) {
@@ -171,16 +173,20 @@ public abstract class AbstractNodeVisitor<T extends Node> extends AbstractVisito
                     Set<String> params = action.getParamNames();
 
                     List<Expression> expressions = new ArrayList<>();
+
                     expressions
                             .add(inputFilter != null ? new StringLiteralExpr().setString(inputFilter) : new NullLiteralExpr());
 
                     for (String param : params) {
-                        expressions.add((param != null ? new StringLiteralExpr().setString(param)
-                                : new NullLiteralExpr()));
+
+                        expressions.add(param != null ? new StringLiteralExpr().setString(param) : new NullLiteralExpr());
+
                     }
+
                     body.addStatement(
-                            getFactoryMethod(variableName, METHOD_IN_MAPPING,
+                            getFactoryMethod(variableName, METHOD_IN_JQ_MAPPING,
                                     expressions.toArray(Expression[]::new)));
+
                 }
             }
             for (DataAssociation association : node.getOutAssociations()) {
@@ -192,7 +198,7 @@ public abstract class AbstractNodeVisitor<T extends Node> extends AbstractVisito
                     String outputFilter = action.getOutputFilterExpression();
                     String scopeFilter = action.getScopeFilter();
                     body.addStatement(
-                            getFactoryMethod(variableName, METHOD_IN_MAPPING,
+                            getFactoryMethod(variableName, METHOD_OUT_JQ_MAPPING,
                                     (outputFilter != null ? new StringLiteralExpr().setString(outputFilter)
                                             : new NullLiteralExpr()),
                                     (scopeFilter != null ? new StringLiteralExpr().setString(scopeFilter)

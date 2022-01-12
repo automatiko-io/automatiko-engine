@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.definition.process.Node;
 import io.automatiko.engine.api.definition.process.NodeContainer;
+import io.automatiko.engine.api.runtime.process.ProcessContext;
 import io.automatiko.engine.api.workflow.datatype.DataType;
 import io.automatiko.engine.workflow.base.core.ContextContainer;
 import io.automatiko.engine.workflow.base.core.FunctionTagDefinition;
@@ -202,7 +203,7 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
         return this;
     }
 
-    public ExecutableProcessFactory tag(String id, String value, BiFunction<String, Map<String, Object>, String> function) {
+    public ExecutableProcessFactory tag(String id, String value, BiFunction<String, ProcessContext, String> function) {
         Collection<TagDefinition> definitions = getExecutableProcess().getTagDefinitions();
 
         if (function != null) {

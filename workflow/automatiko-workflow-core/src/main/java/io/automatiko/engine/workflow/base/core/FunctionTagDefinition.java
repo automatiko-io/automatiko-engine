@@ -3,20 +3,27 @@ package io.automatiko.engine.workflow.base.core;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+import io.automatiko.engine.api.runtime.process.ProcessContext;
+import io.automatiko.engine.api.runtime.process.ProcessInstance;
+import io.automatiko.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
+
 public class FunctionTagDefinition extends TagDefinition {
 
-    private BiFunction<String, Map<String, Object>, String> function;
+    private BiFunction<String, ProcessContext, String> function;
 
     public FunctionTagDefinition(String id, String expression,
-            BiFunction<String, Map<String, Object>, String> function) {
+            BiFunction<String, ProcessContext, String> function) {
         super(id, expression);
         this.function = function;
     }
 
     @Override
-    public String get(Map<String, Object> variables) {
+    public String get(ProcessInstance instance, Map<String, Object> variables) {
         try {
-            return function.apply(expression, variables);
+            io.automatiko.engine.workflow.base.core.context.ProcessContext ctx = new io.automatiko.engine.workflow.base.core.context.ProcessContext(
+                    ((WorkflowProcessInstanceImpl) instance).getProcessRuntime());
+            ctx.setProcessInstance(instance);
+            return function.apply(expression, ctx);
         } catch (Exception e) {
             return null;
         }

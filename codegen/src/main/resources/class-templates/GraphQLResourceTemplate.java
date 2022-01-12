@@ -57,7 +57,7 @@ public class $Type$GraphQLResource {
     
     
     @javax.inject.Inject
-    public void $Type$GraphQLResource(Application application, @javax.inject.Named("$id$$version$") Process<$Type$> process, IdentitySupplier identitySupplier, GraphQLProcessSubscriptionEventPublisher subscriptionPublisher) {
+    public $ResourceType$(Application application, @javax.inject.Named("$id$$version$") Process<$Type$> process, IdentitySupplier identitySupplier, GraphQLProcessSubscriptionEventPublisher subscriptionPublisher) {
         this.application = application;
         this.process = process;
         this.identitySupplier = identitySupplier;

@@ -17,9 +17,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 
 import io.automatiko.engine.api.definition.process.Connection;
 import io.automatiko.engine.api.definition.process.Node;
+import io.automatiko.engine.workflow.base.core.FunctionTagDefinition;
+import io.automatiko.engine.workflow.base.core.Process;
+import io.automatiko.engine.workflow.base.core.StaticTagDefinition;
+import io.automatiko.engine.workflow.base.core.TagDefinition;
 import io.automatiko.engine.workflow.base.core.Work;
 import io.automatiko.engine.workflow.base.core.context.variable.JsonVariableScope;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
@@ -59,6 +64,7 @@ import io.automatiko.engine.workflow.process.executable.core.ExecutableProcess;
 import io.automatiko.engine.workflow.process.executable.core.Metadata;
 import io.automatiko.engine.workflow.process.executable.core.ServerlessExecutableProcess;
 import io.automatiko.engine.workflow.process.executable.core.validation.ExecutableProcessValidator;
+import io.automatiko.engine.workflow.sw.ServerlessFunctions;
 import io.serverlessworkflow.api.Workflow;
 import io.serverlessworkflow.api.actions.Action;
 import io.serverlessworkflow.api.end.End;
@@ -143,6 +149,28 @@ public class ServerlessWorkflowFactory {
                     new JsonNodeDataType());
             constantsVariable.setMetaData("value", value.replaceAll("\"", "\\\""));
             process.getVariableScope().addVariable(constantsVariable);
+        }
+
+        if (workflow.getAnnotations() != null) {
+            List<TagDefinition> tagDefinitions = new ArrayList<TagDefinition>();
+            int counter = 0;
+            for (String tag : workflow.getAnnotations()) {
+
+                if (tag.startsWith("${")) {
+                    tagDefinitions
+                            .add(new FunctionTagDefinition(String.valueOf(++counter), unwrapExpression(tag),
+                                    (exp, vars) -> {
+                                        Object result = ServerlessFunctions.expression(vars, exp);
+                                        if (result instanceof TextNode) {
+                                            return ((TextNode) result).asText();
+                                        }
+                                        return result.toString();
+                                    }));
+                } else {
+                    tagDefinitions.add(new StaticTagDefinition(String.valueOf(++counter), tag));
+                }
+            }
+            ((Process) process).setTagDefinitions(tagDefinitions);
         }
 
         return process;

@@ -28,74 +28,74 @@ import io.automatiko.engine.workflow.process.executable.core.factory.RuleSetNode
 
 public class RuleSetNodeVisitor extends AbstractNodeVisitor<RuleSetNode> {
 
-	public static final Logger logger = LoggerFactory.getLogger(ProcessToExecModelGenerator.class);
+    public static final Logger logger = LoggerFactory.getLogger(ProcessToExecModelGenerator.class);
 
-	private final ClassLoader contextClassLoader;
+    private final ClassLoader contextClassLoader;
 
-	public RuleSetNodeVisitor(ClassLoader contextClassLoader) {
-		this.contextClassLoader = contextClassLoader;
-	}
+    public RuleSetNodeVisitor(ClassLoader contextClassLoader) {
+        this.contextClassLoader = contextClassLoader;
+    }
 
-	@Override
-	protected String getNodeKey() {
-		return "ruleSetNode";
-	}
+    @Override
+    protected String getNodeKey() {
+        return "ruleSetNode";
+    }
 
-	@Override
-	public void visitNode(WorkflowProcess process, String factoryField, RuleSetNode node, BlockStmt body,
-			VariableScope variableScope, ProcessMetaData metadata) {
-		String nodeName = node.getName();
+    @Override
+    public void visitNode(WorkflowProcess process, String factoryField, RuleSetNode node, BlockStmt body,
+            VariableScope variableScope, ProcessMetaData metadata) {
+        String nodeName = node.getName();
 
-		body.addStatement(getAssignedFactoryMethod(factoryField, RuleSetNodeFactory.class, getNodeId(node),
-				getNodeKey(), new LongLiteralExpr(node.getId()))).addStatement(getNameMethod(node, "Rule"));
+        body.addStatement(getAssignedFactoryMethod(factoryField, RuleSetNodeFactory.class, getNodeId(node),
+                getNodeKey(), new LongLiteralExpr(node.getId()))).addStatement(getNameMethod(node, "Rule"));
 
-		RuleSetNode.RuleType ruleType = node.getRuleType();
-		if (ruleType.getName().isEmpty()) {
-			throw new IllegalArgumentException(MessageFormat.format(
-					"Rule task \"{0}\" is invalid: you did not set a unit name, a rule flow group or a decision model.",
-					nodeName));
-		}
+        RuleSetNode.RuleType ruleType = node.getRuleType();
+        if (ruleType.getName().isEmpty()) {
+            throw new IllegalArgumentException(MessageFormat.format(
+                    "Rule task \"{0}\" is invalid: you did not set a unit name, a rule flow group or a decision model.",
+                    nodeName));
+        }
 
-		addNodeMappings(node, body, getNodeId(node));
-		addParams(node, body, getNodeId(node));
+        addNodeMappings(process, node, body, getNodeId(node));
+        addParams(node, body, getNodeId(node));
 
-		NameExpr methodScope = new NameExpr(getNodeId(node));
-		MethodCallExpr m;
-		if (ruleType.isDecision()) {
-			m = handleDecision((RuleSetNode.RuleType.Decision) ruleType);
-		} else {
-			throw new IllegalArgumentException(
-					"Rule task " + nodeName + "is invalid: unsupported rule language " + node.getLanguage());
-		}
-		m.setScope(methodScope);
-		body.addStatement(m);
+        NameExpr methodScope = new NameExpr(getNodeId(node));
+        MethodCallExpr m;
+        if (ruleType.isDecision()) {
+            m = handleDecision((RuleSetNode.RuleType.Decision) ruleType);
+        } else {
+            throw new IllegalArgumentException(
+                    "Rule task " + nodeName + "is invalid: unsupported rule language " + node.getLanguage());
+        }
+        m.setScope(methodScope);
+        body.addStatement(m);
 
-		visitMetaData(node.getMetaData(), body, getNodeId(node));
-		body.addStatement(getDoneMethod(getNodeId(node)));
-	}
+        visitMetaData(node.getMetaData(), body, getNodeId(node));
+        body.addStatement(getDoneMethod(getNodeId(node)));
+    }
 
-	private void addParams(RuleSetNode node, BlockStmt body, String nodeId) {
-		node.getParameters().forEach((k, v) -> body.addStatement(getFactoryMethod(nodeId, METHOD_PARAMETER,
-				new StringLiteralExpr(k), new StringLiteralExpr(v.toString()))));
-	}
+    private void addParams(RuleSetNode node, BlockStmt body, String nodeId) {
+        node.getParameters().forEach((k, v) -> body.addStatement(getFactoryMethod(nodeId, METHOD_PARAMETER,
+                new StringLiteralExpr(k), new StringLiteralExpr(v.toString()))));
+    }
 
-	private MethodCallExpr handleDecision(RuleSetNode.RuleType.Decision ruleType) {
+    private MethodCallExpr handleDecision(RuleSetNode.RuleType.Decision ruleType) {
 
-		StringLiteralExpr namespace = new StringLiteralExpr(ruleType.getNamespace());
-		StringLiteralExpr model = new StringLiteralExpr(ruleType.getModel());
-		Expression decision = ruleType.getDecision() == null ? new NullLiteralExpr()
-				: new StringLiteralExpr(ruleType.getDecision());
+        StringLiteralExpr namespace = new StringLiteralExpr(ruleType.getNamespace());
+        StringLiteralExpr model = new StringLiteralExpr(ruleType.getModel());
+        Expression decision = ruleType.getDecision() == null ? new NullLiteralExpr()
+                : new StringLiteralExpr(ruleType.getDecision());
 
-		MethodCallExpr decisionModels = new MethodCallExpr(new NameExpr("app"), "decisionModels");
-		MethodCallExpr decisionModel = new MethodCallExpr(decisionModels, "getDecisionModel").addArgument(namespace)
-				.addArgument(model);
+        MethodCallExpr decisionModels = new MethodCallExpr(new NameExpr("app"), "decisionModels");
+        MethodCallExpr decisionModel = new MethodCallExpr(decisionModels, "getDecisionModel").addArgument(namespace)
+                .addArgument(model);
 
-		BlockStmt actionBody = new BlockStmt();
-		LambdaExpr lambda = new LambdaExpr(new Parameter(new UnknownType(), "()"), actionBody);
-		actionBody.addStatement(new ReturnStmt(decisionModel));
+        BlockStmt actionBody = new BlockStmt();
+        LambdaExpr lambda = new LambdaExpr(new Parameter(new UnknownType(), "()"), actionBody);
+        actionBody.addStatement(new ReturnStmt(decisionModel));
 
-		return new MethodCallExpr(METHOD_DECISION).addArgument(namespace).addArgument(model).addArgument(decision)
-				.addArgument(lambda);
-	}
+        return new MethodCallExpr(METHOD_DECISION).addArgument(namespace).addArgument(model).addArgument(decision)
+                .addArgument(lambda);
+    }
 
 }

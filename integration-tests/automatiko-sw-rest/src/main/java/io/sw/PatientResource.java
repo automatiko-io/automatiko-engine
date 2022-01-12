@@ -33,7 +33,7 @@ public class PatientResource {
         if (patient.condition == null || patient.condition.trim().length() < 1) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-
+        patient.doctor = new Doctor("Doctor No", null, null, null);
         patients.add(patient);
         return Response.ok(patient).build();
     }

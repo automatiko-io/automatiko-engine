@@ -403,7 +403,8 @@ public class ServiceTaskDescriptor {
                 results = new NullLiteralExpr();
             } else {
                 results = new MethodCallExpr(new NameExpr("java.util.Collections"), "singletonMap")
-                        .addArgument(new StringLiteralExpr(outAssociations.get(0).getSources().get(0)))
+                        .addArgument(new StringLiteralExpr(outAssociations.get(0).getSources().isEmpty() ? "workflowdata"
+                                : outAssociations.get(0).getSources().get(0)))
                         .addArgument(new NameExpr("result"));
             }
         } else if (outAssociations.isEmpty()) {
@@ -417,7 +418,8 @@ public class ServiceTaskDescriptor {
             executeWorkItemBody.addStatement(resultField);
 
             results = new MethodCallExpr(new NameExpr("java.util.Collections"), "singletonMap")
-                    .addArgument(new StringLiteralExpr(outAssociations.get(0).getSources().get(0)))
+                    .addArgument(new StringLiteralExpr(outAssociations.get(0).getSources().isEmpty() ? "workflowdata"
+                            : outAssociations.get(0).getSources().get(0)))
                     .addArgument(new NameExpr("result"));
         }
 
@@ -439,14 +441,16 @@ public class ServiceTaskDescriptor {
             if (outAssociations.isEmpty()) {
                 name = new NullLiteralExpr();
             } else {
-                name = new StringLiteralExpr(outAssociations.get(0).getSources().get(0));
+                name = new StringLiteralExpr(outAssociations.get(0).getSources().isEmpty() ? "workflowdata"
+                        : outAssociations.get(0).getSources().get(0));
             }
             source = new NameExpr("result");
         } else if (outAssociations.isEmpty()) {
             name = new NullLiteralExpr();
             source = new NullLiteralExpr();
         } else {
-            name = new StringLiteralExpr(outAssociations.get(0).getSources().get(0));
+            name = new StringLiteralExpr(outAssociations.get(0).getSources().isEmpty() ? "workflowdata"
+                    : outAssociations.get(0).getSources().get(0));
             source = new NameExpr("result");
         }
 

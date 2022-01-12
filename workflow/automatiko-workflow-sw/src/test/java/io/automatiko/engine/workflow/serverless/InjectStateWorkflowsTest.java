@@ -53,4 +53,23 @@ public class InjectStateWorkflowsTest {
                 .isEqualTo(new TextNode("Goodbye World!"));
     }
 
+    @Test
+    public void testMultipleInjectStateWithAnnotationsWorkflow() throws Exception {
+
+        ServerlessProcess process = ServerlessProcess
+                .from(new ClassPathResource("inject-state/helloworld-multiple-with-annotations.json"))
+                .get(0);
+        assertThat(process).isNotNull();
+
+        JsonNode data = new ObjectMapper().readTree("{\n"
+                + "  \"name\": \"john\"\n"
+                + "}");
+        ServerlessProcessInstance pi = (ServerlessProcessInstance) process.createInstance(ServerlessModel.from(data));
+        pi.start();
+        assertThat(pi.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        assertThat(pi.variables().toMap()).hasSize(2).containsKey("result").extracting("result")
+                .isEqualTo(new TextNode("Goodbye World!"));
+        assertThat(pi.tags().values()).hasSize(4).contains("a", "b", "c", "john");
+    }
+
 }
