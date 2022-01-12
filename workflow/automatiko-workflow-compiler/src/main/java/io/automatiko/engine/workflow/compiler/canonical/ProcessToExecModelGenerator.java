@@ -175,12 +175,13 @@ public class ProcessToExecModelGenerator {
     public static boolean isServerlessWorkflow(WorkflowProcess process) {
 
         return serverlessExtensions.stream()
-                .filter(ext -> process.getResource() != null && process.getResource().getSourcePath().endsWith(ext)).findAny()
+                .filter(ext -> extractSourcePath(process).endsWith(ext))
+                .findAny()
                 .isPresent();
 
     }
 
-    protected String extractSourcePath(WorkflowProcess process) {
+    protected static String extractSourcePath(WorkflowProcess process) {
         if (process.getResource() != null) {
             return process.getResource().getSourcePath();
         }

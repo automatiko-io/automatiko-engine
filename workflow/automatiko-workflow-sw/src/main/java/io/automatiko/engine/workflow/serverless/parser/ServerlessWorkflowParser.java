@@ -17,6 +17,7 @@ import java.util.function.BiConsumer;
 
 import io.automatiko.engine.api.definition.process.Connection;
 import io.automatiko.engine.api.definition.process.Process;
+import io.automatiko.engine.workflow.base.core.timer.DateTimeUtils;
 import io.automatiko.engine.workflow.base.instance.impl.ReturnValueConstraintEvaluator;
 import io.automatiko.engine.workflow.base.instance.impl.jq.InputJqAssignmentAction;
 import io.automatiko.engine.workflow.base.instance.impl.jq.JqReturnValueEvaluator;
@@ -432,6 +433,11 @@ public class ServerlessWorkflowParser {
                         firstNode = serviceNode;
                     }
                     lastNode = serviceNode;
+
+                    if (workflow.getTimeouts() != null && workflow.getTimeouts().getActionExecTimeout() != null) {
+                        serviceNode.setMetaData("timeout",
+                                String.valueOf(DateTimeUtils.parseDuration(workflow.getTimeouts().getActionExecTimeout())));
+                    }
 
                     if (action.getSleep() == null
                             || (action.getSleep().getBefore() == null && action.getSleep().getAfter() == null)) {

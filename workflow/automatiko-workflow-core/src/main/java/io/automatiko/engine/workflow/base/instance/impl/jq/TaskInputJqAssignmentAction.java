@@ -76,6 +76,8 @@ public class TaskInputJqAssignmentAction implements AssignmentAction {
                     ((WorkItemImpl) workItem).setParameter(name, param);
                 }
             }
+        } else {
+            ((WorkItemImpl) workItem).setParameter("Parameter", sdata);
         }
     }
 

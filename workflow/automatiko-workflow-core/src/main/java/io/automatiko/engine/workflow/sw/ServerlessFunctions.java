@@ -9,6 +9,7 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 
 import io.automatiko.engine.api.Functions;
 import io.automatiko.engine.api.expression.ExpressionEvaluator;
@@ -43,8 +44,29 @@ public class ServerlessFunctions implements Functions {
         }
         Object content = evaluator.evaluate(expression, vars);
 
-        context.setVariable("current", content);
         return content;
+    }
+
+    public static String expressionAsString(ProcessContext context, String expression) {
+
+        ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) context.getProcessInstance()
+                .getProcess())
+                        .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("workflowdata", context.getVariable(JsonVariableScope.WORKFLOWDATA_KEY));
+        if (context.getVariable("$CONST") != null) {
+            vars.put("workflow_variables", Collections.singletonMap("CONST", context.getVariable("$CONST")));
+        }
+        Object content = evaluator.evaluate(expression, vars);
+
+        if (content == null) {
+            return null;
+        }
+        if (content instanceof TextNode) {
+            return ((TextNode) content).asText();
+        }
+
+        return content.toString();
     }
 
     public static void expression(ProcessContext context, String expression, String inputFilter) {

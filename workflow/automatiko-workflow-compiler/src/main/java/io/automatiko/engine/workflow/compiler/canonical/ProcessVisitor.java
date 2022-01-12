@@ -116,14 +116,14 @@ public class ProcessVisitor extends AbstractVisitor {
 
         ClassOrInterfaceType processFactoryType = new ClassOrInterfaceType(null,
                 ExecutableProcessFactory.class.getSimpleName());
-
+        boolean serverless = ProcessToExecModelGenerator.isServerlessWorkflow(process);
         // create local variable factory and assign new fluent process to it
         VariableDeclarationExpr factoryField = new VariableDeclarationExpr(processFactoryType, FACTORY_FIELD_NAME);
         MethodCallExpr assignFactoryMethod = new MethodCallExpr(new NameExpr(processFactoryType.getName().asString()),
                 "createProcess");
         assignFactoryMethod.addArgument(new StringLiteralExpr(process.getId()))
                 .addArgument(new StringLiteralExpr(workflowType))
-                .addArgument(new BooleanLiteralExpr(ProcessToExecModelGenerator.isServerlessWorkflow(process)));
+                .addArgument(new BooleanLiteralExpr(serverless));
         body.addStatement(new AssignExpr(factoryField, assignFactoryMethod, AssignExpr.Operator.ASSIGN));
 
         // item definitions
@@ -146,20 +146,28 @@ public class ProcessVisitor extends AbstractVisitor {
                         expression = matcher.group(1);
                     }
                     BlockStmt actionBody = new BlockStmt();
-                    List<Variable> variables = variableScope.getVariables();
-                    variables.stream().filter(v -> tag.getExpression().contains(v.getName()))
-                            .map(ActionNodeVisitor::makeAssignmentFromMap)
-                            .forEach(actionBody::addStatement);
-                    actionBody.addStatement(new ReturnStmt(new NameExpr(expression)));
+
+                    if (serverless) {
+                        MethodCallExpr evaluate = new MethodCallExpr(null, "expressionAsString")
+                                .addArgument(new NameExpr("context")).addArgument(new NameExpr("exp"));
+                        actionBody.addStatement(
+                                new ReturnStmt(evaluate));
+                    } else {
+                        List<Variable> variables = variableScope.getVariables();
+                        variables.stream().filter(v -> tag.getExpression().contains(v.getName()))
+                                .map(ActionNodeVisitor::makeAssignment)
+                                .forEach(actionBody::addStatement);
+                        actionBody.addStatement(new ReturnStmt(new NameExpr(expression)));
+
+                    }
 
                     LambdaExpr lambda = new LambdaExpr(
                             NodeList.nodeList(new Parameter(new UnknownType(), "exp"),
-                                    new Parameter(new UnknownType(), "variables")),
+                                    new Parameter(new UnknownType(), "context")),
                             actionBody);
-
                     body.addStatement(
                             getFactoryMethod(FACTORY_FIELD_NAME, "tag", new StringLiteralExpr(tag.getId()),
-                                    new StringLiteralExpr(tag.getExpression()), lambda));
+                                    new StringLiteralExpr().setString(tag.getExpression()), lambda));
 
                 } else {
                     body.addStatement(

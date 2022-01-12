@@ -86,7 +86,7 @@ public class WorkItemNodeVisitor<T extends WorkItemNode> extends AbstractNodeVis
                 .addStatement(getFactoryMethod(getNodeId(node), METHOD_WORK_NAME, new StringLiteralExpr(workName)));
 
         addWorkItemParameters(work, body, getNodeId(node));
-        addNodeMappings(node, body, getNodeId(node));
+        addNodeMappings(process, node, body, getNodeId(node));
 
         body.addStatement(getDoneMethod(getNodeId(node)));
 

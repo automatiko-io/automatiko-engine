@@ -4,6 +4,16 @@
   "specVersion": "0.8",
   "version": "1.0",
   "start":"AddInfo",
+  "annotations": ["simple", "1111", "${ \"hello \" + .name }"],
+  "timeouts": {
+    "actionExecTimeout" : "PT2S"
+  },
+  "functions": [
+   {
+     "name": "storeNewPatient",
+     "operation": "api/swagger.json#add"
+   }
+ ],
   "states":[
     {
       "name":"AddInfo",
@@ -14,7 +24,19 @@
           "age": 25
         }
       },
-      "transition": "Sleep for a while"      
+      "transition": "OnboardNewPatient"
+    },
+    {
+      "name":"OnboardNewPatient",
+      "type":"operation",
+      "actions":[
+        {
+          "functionRef": {
+            "refName": "storeNewPatient"
+          }
+        }
+      ],
+      "transition": "Sleep for a while"
     },
     {
       "name":"Sleep for a while",
@@ -32,11 +54,11 @@
         },
         {
           "condition": "${ .person | .age < 18 }",
-          "transition": "Deny"          
+          "transition": "Deny"
         }
       ],
       "defaultCondition": {
-        "transition": "Approve"        
+        "transition": "Approve"
       }
     },
     {

@@ -1314,7 +1314,7 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
 
         for (TagDefinition def : tagDefinitions) {
 
-            String tag = def.get(getVariables());
+            String tag = def.get(this, getVariables());
             if (tag != null) {
                 Tag tagInstance = new TagInstance(def.getId(), tag);
                 evaluatedTags.add(tagInstance);

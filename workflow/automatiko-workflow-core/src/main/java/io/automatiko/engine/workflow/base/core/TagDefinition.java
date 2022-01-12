@@ -2,6 +2,8 @@ package io.automatiko.engine.workflow.base.core;
 
 import java.util.Map;
 
+import io.automatiko.engine.api.runtime.process.ProcessInstance;
+
 public abstract class TagDefinition {
 
     protected final String id;
@@ -23,6 +25,6 @@ public abstract class TagDefinition {
         return expression;
     }
 
-    public abstract String get(Map<String, Object> variables);
+    public abstract String get(ProcessInstance instance, Map<String, Object> variables);
 
 }

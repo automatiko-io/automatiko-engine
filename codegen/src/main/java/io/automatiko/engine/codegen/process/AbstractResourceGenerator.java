@@ -20,6 +20,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier.Keyword;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
@@ -278,6 +279,7 @@ public abstract class AbstractResourceGenerator {
         typeInterpolations.put("$Type$", dataClazzName);
         template.findAll(ClassOrInterfaceType.class).forEach(cls -> interpolateTypes(cls, typeInterpolations));
         template.findAll(MethodDeclaration.class).forEach(this::interpolateMethods);
+        template.findAll(ConstructorDeclaration.class).forEach(this::interpolateConstructor);
         template.findAll(FieldDeclaration.class).forEach(this::interpolateFields);
         template.findAll(NameExpr.class).forEach(this::interpolateVariables);
         template.findAll(MethodCallExpr.class).forEach(this::interpolateMethodCall);
@@ -471,6 +473,13 @@ public abstract class AbstractResourceGenerator {
         m.getParameters().forEach(p -> p.setName(
                 p.getNameAsString().replace("$name$", processName).replace("$prefix$", pathPrefix).replace(
                         "$parentprocess$", parentProcessName)));
+    }
+
+    private void interpolateConstructor(ConstructorDeclaration c) {
+        SimpleName methodName = c.getName();
+        String interpolated = methodName.asString().replace("$ResourceType$", resourceClazzName);
+        c.setName(interpolated);
+
     }
 
     private void interpolateMethodParams(MethodDeclaration m) {
