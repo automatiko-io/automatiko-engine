@@ -4,6 +4,7 @@ import java.util.TimeZone;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Optional;
 
 import io.automatiko.engine.api.Application;
@@ -31,6 +32,8 @@ public class $Type$MessageConsumer {
 
     Application application;
     
+    Optional<Boolean> useCloudEvents = Optional.of(false);
+    
     javax.enterprise.inject.Instance<io.automatiko.engine.api.io.InputConverter<$DataType$>> converter;
   
     @javax.inject.Inject
@@ -49,10 +52,35 @@ public class $Type$MessageConsumer {
         try {
             IdentityProvider.set(new TrustedIdentityProvider("System<messaging>"));
 
-            final $DataType$ eventData = convert(msg, $DataType$.class);
-            final $Type$ model = new $Type$();                
+            final $DataType$ eventData;
+            final $Type$ model;   
+            final String correlation;
+            LOGGER.debug("Received message with payload '{}'", msg.getPayload());
+            if (useCloudEvents.orElse(false)) {
+                $DataEventType$ event;
+                String contentType = appProperty(msg, "contentType");
+                model = new $Type$(); 
+                if (contentType != null && contentType.startsWith("application/cloudevents+json")) {
+                    // structured
+                    event = json.readValue(msg.getPayload(), $DataEventType$.class);
+                    eventData = event.getData();
+                    
+                } else {
+                    // binary
+                    eventData = convert(msg, $DataType$.class);
+                    event =  new $DataEventType$(appProperty(msg, "ce_specversion"), appProperty(msg, "ce_id"), appProperty(msg, "ce_source"), appProperty(msg, "ce_type"), appProperty(msg, "ce_time"), eventData);
+                    cloudEventsExtensions(msg, event);
+                }
+                
+                correlation = correlationEvent(event, msg);
+            } else {
+                eventData = convert(msg, $DataType$.class);
+                model = new $Type$();  
+                
+                correlation = correlationPayload(eventData, msg);            
+            }               
             io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-            	String correlation = correlationPayload(eventData, msg);
+            	
             	if (correlation != null) {
             		LOGGER.debug("Correlation ({}) is set, attempting to find if there is matching instance already active", correlation);
             		Collection possiblyFound = process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE, correlation);
@@ -114,4 +142,26 @@ public class $Type$MessageConsumer {
         
         return ($DataType$) json.readValue(message.getPayload(), $DataType$.class);
     }
+	
+   protected String appProperty(Message<String> message, String name) {
+
+       io.smallrye.reactive.messaging.jms.IncomingJmsMessageMetadata metadata = message.getMetadata(io.smallrye.reactive.messaging.jms.IncomingJmsMessageMetadata.class).orElse(null);
+        if (metadata == null || metadata.getProperties() == null) {
+            return null;
+        }
+        return metadata.getProperties().getStringProperty(name);        
+    }
+   
+   protected void cloudEventsExtensions(Message<String> message, $DataEventType$ event) {
+       io.smallrye.reactive.messaging.jms.IncomingJmsMessageMetadata metadata = message.getMetadata(io.smallrye.reactive.messaging.jms.IncomingJmsMessageMetadata.class).orElse(null);
+       if (metadata == null || metadata.getProperties() == null) {
+           return;
+       }
+       Enumeration<String> it = metadata.getProperties().getPropertyNames();
+       while (it.hasMoreElements()) {
+           String name = it.nextElement();
+           if (name.startsWith("ce_"))
+           event.addExtension(name.replaceFirst("ce_", ""), metadata.getProperties().getStringProperty(name));
+       }
+   }
 }

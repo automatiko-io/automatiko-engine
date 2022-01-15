@@ -3,6 +3,7 @@ package com.myspace.demo;
 import java.util.TimeZone;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -51,11 +52,35 @@ public class $Type$MessageConsumer {
         try {
             io.smallrye.reactive.messaging.kafka.KafkaRecord<?, ?> record = (io.smallrye.reactive.messaging.kafka.KafkaRecord<?, ?>) msg;
             
-            final $DataType$ eventData = convert(record, $DataType$.class);
-            final $Type$ model = new $Type$();  
+            final $DataType$ eventData;
+            final $Type$ model;   
+            final String correlation;
+            LOGGER.debug("Received message with key '{}' and payload '{}'", record.getKey(), msg.getPayload());
+            if (useCloudEvents.orElse(false)) {
+                $DataEventType$ event;
+                String contentType = header(record, "content-type");
+                model = new $Type$(); 
+                if (contentType != null && contentType.startsWith("application/cloudevents+json")) {
+                    // structured
+                    event = json.readValue(record.getPayload().toString(), $DataEventType$.class);
+                    eventData = event.getData();
+                    
+                } else {
+                    // binary
+                    eventData = convert(record, $DataType$.class);
+                    event =  new $DataEventType$(header(record, "ce_specversion"), header(record, "ce_id"), header(record, "ce_source"), header(record, "ce_type"), header(record, "ce_time"), eventData);
+                    cloudEventsExtensions(msg, event);
+                }
+                                
+                correlation = correlation(event, msg);  
+            } else {
+                eventData = convert(msg, $DataType$.class);
+                model = new $Type$();  
+                
+                correlation = correlation(eventData, msg);            
+            }   
             IdentityProvider.set(new TrustedIdentityProvider("System<messaging>"));
-            io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-                String correlation = correlation(eventData, msg);
+            io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {                
                 
             	if (correlation != null) {
             		LOGGER.debug("Correlation ({}) is set, attempting to find if there is matching instance already active", correlation);
@@ -130,4 +155,41 @@ public class $Type$MessageConsumer {
         }
         return correlation;
 	}
+	
+    private String correlation($DataEventType$ eventData, Message<?> msg) {
+        String correlation = correlationEvent(eventData, msg);
+        if (correlation == null && ((io.smallrye.reactive.messaging.kafka.KafkaRecord<?, ?>) msg).getKey() != null) {
+            correlation = ((io.smallrye.reactive.messaging.kafka.KafkaRecord<?, ?>) msg).getKey().toString();
+        }
+        return correlation;
+    }
+	
+    protected String header(Message<?> message, String name) {
+
+        io.smallrye.reactive.messaging.kafka.api.IncomingKafkaRecordMetadata<?, ?> metadata = message.getMetadata(io.smallrye.reactive.messaging.kafka.api.IncomingKafkaRecordMetadata.class).orElse(null);
+        if (metadata == null) {
+            return null;
+        }
+        org.apache.kafka.common.header.Headers headers = metadata.getHeaders();
+        
+        org.apache.kafka.common.header.Header header = headers.lastHeader(name);
+        
+        if (header == null) {
+            return null;
+        }
+        
+        return new String(header.value(), StandardCharsets.UTF_8);
+    }
+    
+    protected void cloudEventsExtensions(Message<?> message, $DataEventType$ event) {
+        io.smallrye.reactive.messaging.kafka.api.IncomingKafkaRecordMetadata<?, ?> metadata = message.getMetadata(io.smallrye.reactive.messaging.kafka.api.IncomingKafkaRecordMetadata.class).orElse(null);
+        if (metadata == null) {
+            return;
+        }
+        org.apache.kafka.common.header.Headers headers = metadata.getHeaders();
+        for (org.apache.kafka.common.header.Header header : headers.toArray()) {
+            if (header.key().startsWith("ce_"))
+                event.addExtension(header.key().replaceFirst("ce_", ""), new String(header.value(), StandardCharsets.UTF_8));
+        }
+    }
 }

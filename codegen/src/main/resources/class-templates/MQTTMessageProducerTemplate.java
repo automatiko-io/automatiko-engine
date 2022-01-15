@@ -1,6 +1,7 @@
 package com.myspace.demo;
 
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.TimeZone;
 
@@ -12,13 +13,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 
 import org.eclipse.microprofile.reactive.messaging.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class MessageProducer {
     
-    org.eclipse.microprofile.reactive.messaging.Emitter<io.smallrye.reactive.messaging.mqtt.MqttMessage> emitter;
+    private static final Logger LOGGER = LoggerFactory.getLogger("MessageProducer");
     
-    Optional<Boolean> useCloudEvents = Optional.of(true);
+    org.eclipse.microprofile.reactive.messaging.Emitter<io.smallrye.reactive.messaging.mqtt.MqttMessage> emitter;
     
     javax.enterprise.inject.Instance<io.automatiko.engine.api.io.OutputConverter<$Type$, byte[]>> converter;    
     
@@ -35,36 +38,20 @@ public class MessageProducer {
 	public void produce(ProcessInstance pi, $Type$ eventData) {
 	    metrics.messageProduced(CONNECTOR, MESSAGE, pi.getProcess());
 	    
-	    emitter.send(io.smallrye.reactive.messaging.mqtt.MqttMessage.of(topic(pi), this.marshall(pi, eventData), io.netty.handler.codec.mqtt.MqttQoS.AT_LEAST_ONCE, true));
+	    emitter.send(io.smallrye.reactive.messaging.mqtt.MqttMessage.of(topic(pi), log(marshall(pi, eventData)), io.netty.handler.codec.mqtt.MqttQoS.AT_LEAST_ONCE, true));
     }
 	    
 	private byte[] marshall(ProcessInstance pi, $Type$ eventData) {
 	    try {
 	        Object payload = eventData;
 	        	        
-	        if (useCloudEvents.orElse(true)) {
-	            
-        	    $DataEventType$ event = new $DataEventType$("",
-        	                                                    eventData,
-        	                                                    pi.getId(),
-        	                                                    pi.getParentProcessInstanceId(),
-        	                                                    pi.getRootProcessInstanceId(),
-        	                                                    pi.getProcessId(),
-        	                                                    pi.getRootProcessId(),
-        	                                                    String.valueOf(pi.getState()));
-        	    if (pi.getReferenceId() != null && !pi.getReferenceId().isEmpty()) {
-        	        event.setAutomatikReferenceId(pi.getReferenceId());
-        	    }
-        	    return json.writeValueAsBytes(event);
+            if (converter != null && !converter.isUnsatisfied()) {                    
+                            
+                return converter.get().convert(eventData);
             } else {
-                
-                if (converter != null && !converter.isUnsatisfied()) {                    
-                                
-                    return converter.get().convert(eventData);
-                } else {
-                    return json.writeValueAsBytes(payload);
-                }
+                return json.writeValueAsBytes(payload);
             }
+            
 	    } catch (Exception e) {
 	        throw new RuntimeException(e);
 	    }
@@ -73,4 +60,12 @@ public class MessageProducer {
 	protected String topic(ProcessInstance pi) {
 	    return null;
 	}
+	
+   protected byte[] log(byte[] value) {
+       
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Message to be published with payload '{}'", new String(value, StandardCharsets.UTF_8));
+        }
+        return value;
+    }
 }

@@ -10,6 +10,7 @@ import static io.automatiko.engine.codegen.CodeGenConstants.JMS_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.OUTGOING_PROP_PREFIX;
+import static io.automatiko.engine.codegen.CodegenUtils.interpolateEventTypes;
 import static io.automatiko.engine.codegen.CodegenUtils.interpolateTypes;
 
 import java.util.Map.Entry;
@@ -246,6 +247,7 @@ public class MessageProducerGenerator {
         template.setName(resourceClazzName);
 
         template.findAll(ClassOrInterfaceType.class).forEach(cls -> interpolateTypes(cls, trigger.getDataType()));
+        template.findAll(ClassOrInterfaceType.class).forEach(cls -> interpolateEventTypes(cls, messageDataEventClassName));
         template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("produce"))
                 .forEach(md -> {
 
@@ -535,11 +537,17 @@ public class MessageProducerGenerator {
                     md.setBody(body);
                 });
 
+        template.findAll(MethodDeclaration.class)
+                .forEach(md -> {
+                    md.findAll(StringLiteralExpr.class)
+                            .forEach(str -> str.setString(str.asString().replace("$Trigger$", trigger.getName())));
+                });
+
         if (useInjection()) {
             annotator.withApplicationComponent(template);
 
-            template.findFirst(FieldDeclaration.class)
-                    .filter(fd -> fd.getVariable(0).getNameAsString().equals("emitter")).ifPresent(emitterField -> {
+            template.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("emitter"))
+                    .forEach(emitterField -> {
                         annotator.withInjection(emitterField);
                         annotator.withOutgoingMessage(emitterField, sanitizedName);
                     });
@@ -552,6 +560,9 @@ public class MessageProducerGenerator {
 
             template.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("useCloudEvents"))
                     .forEach(fd -> annotator.withConfigInjection(fd, "quarkus.automatiko.messaging.as-cloudevents"));
+
+            template.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("useCloudEventsBinary"))
+                    .forEach(fd -> annotator.withConfigInjection(fd, "quarkus.automatiko.messaging.as-cloudevents-binary"));
 
         }
         // add connector and message name as static fields of the class

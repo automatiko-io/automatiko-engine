@@ -169,6 +169,7 @@ public class MessageConsumerGenerator {
                     classPrefix + "-consumer");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".broadcast", "true");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".failure-strategy", "ignore");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".cloud-events", "false");
             context.addInstruction(
                     "Properties for Apache Kafka based message event '" + trigger.getDescription() + "'");
             context.addInstruction(
@@ -207,6 +208,7 @@ public class MessageConsumerGenerator {
 
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".address", sanitizedName.toUpperCase());
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".failure-strategy", "release");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".cloud-events", "false");
             context.addInstruction(
                     "Properties for AMQP based message event '" + trigger.getDescription() + "'");
             context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
@@ -409,6 +411,7 @@ public class MessageConsumerGenerator {
         template.getMembers().sort(new BodyDeclarationComparator());
         ImportsOrganizer.organize(clazz);
         return clazz.toString().replaceAll("\\$DataType\\$", trigger.getDataType())
+                .replaceAll("\\$DataEventType\\$", messageDataEventClassName)
                 .replaceAll("\\$ProcessId\\$", processId + version)
                 .replaceAll("\\$ControllerParam\\$",
                         "{" + Stream.of(namespaces.split(","))

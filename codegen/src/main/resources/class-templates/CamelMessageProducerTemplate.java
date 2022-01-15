@@ -17,9 +17,7 @@ import org.eclipse.microprofile.reactive.messaging.Message;
 public class MessageProducer {
     
     org.eclipse.microprofile.reactive.messaging.Emitter<CamelOutMessage> emitter;
-    
-    Optional<Boolean> useCloudEvents = Optional.of(true);
-    
+
     javax.enterprise.inject.Instance<io.automatiko.engine.api.io.OutputConverter<$Type$, Object>> converter;    
     
     @javax.inject.Inject
@@ -45,29 +43,14 @@ public class MessageProducer {
 	    try {
 	        Object payload = eventData;
 	        
-	        if (useCloudEvents.orElse(true)) {	            
-        	    $DataEventType$ event = new $DataEventType$("",
-        	                                                    eventData,
-        	                                                    pi.getId(),
-        	                                                    pi.getParentProcessInstanceId(),
-        	                                                    pi.getRootProcessInstanceId(),
-        	                                                    pi.getProcessId(),
-        	                                                    pi.getRootProcessId(),
-        	                                                    String.valueOf(pi.getState()));
-        	    if (pi.getReferenceId() != null && !pi.getReferenceId().isEmpty()) {
-        	        event.setAutomatikReferenceId(pi.getReferenceId());
-        	    }
-        	    return json.writeValueAsString(event);
-	        } else {
-	            
-	            if (converter != null && !converter.isUnsatisfied()) {
-	                payload = converter.get().convert(eventData);
-	            	            
-	                return payload;
-	            } else {
-	                return json.writeValueAsString(eventData);
-	            }
-	        }
+            if (converter != null && !converter.isUnsatisfied()) {
+                payload = converter.get().convert(eventData);
+            	            
+                return payload;
+            } else {
+                return json.writeValueAsString(eventData);
+            }
+	        
 	    } catch (Exception e) {
 	        throw new RuntimeException(e);
 	    }

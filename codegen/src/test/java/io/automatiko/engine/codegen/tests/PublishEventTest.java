@@ -62,11 +62,6 @@ public class PublishEventTest extends AbstractCodegenTest {
         DataEvent<?> event = events.get(0);
         assertThat(event).isInstanceOf(ProcessInstanceDataEvent.class);
         ProcessInstanceDataEvent processDataEvent = (ProcessInstanceDataEvent) event;
-        assertThat(processDataEvent.getAutomatikProcessinstanceId()).isNotNull();
-        assertThat(processDataEvent.getAutomatikParentProcessinstanceId()).isNull();
-        assertThat(processDataEvent.getAutomatikRootProcessinstanceId()).isNull();
-        assertThat(processDataEvent.getAutomatikProcessId()).isEqualTo("TestCase.SimpleMilestone");
-        assertThat(processDataEvent.getAutomatikProcessinstanceState()).isEqualTo("2");
         assertThat(processDataEvent.getSource()).isEqualTo("http://myhost/SimpleMilestone");
 
         Set<MilestoneEventBody> milestones = ((ProcessInstanceDataEvent) event).getData().getMilestones();
@@ -310,42 +305,6 @@ public class PublishEventTest extends AbstractCodegenTest {
 
         List<DataEvent<?>> events = publisher.extract();
         assertThat(events).isNotNull().hasSize(2);
-
-        DataEvent<?> parent = null;
-        DataEvent<?> child = null;
-
-        for (DataEvent<?> e : events) {
-            ProcessInstanceDataEvent processDataEvent = (ProcessInstanceDataEvent) e;
-            if (processDataEvent.getAutomatikProcessId().equals("ParentProcess")) {
-                parent = e;
-                assertThat(processDataEvent.getAutomatikProcessinstanceId()).isNotNull();
-                assertThat(processDataEvent.getAutomatikParentProcessinstanceId()).isNull();
-                assertThat(processDataEvent.getAutomatikRootProcessinstanceId()).isNull();
-                assertThat(processDataEvent.getAutomatikRootProcessId()).isNull();
-                assertThat(processDataEvent.getAutomatikProcessId()).isEqualTo("ParentProcess");
-                assertThat(processDataEvent.getAutomatikProcessinstanceState()).isEqualTo("2");
-            } else {
-                child = e;
-                assertThat(processDataEvent.getAutomatikProcessinstanceId()).isNotNull();
-                assertThat(processDataEvent.getAutomatikParentProcessinstanceId()).isNotNull();
-                assertThat(processDataEvent.getAutomatikRootProcessinstanceId()).isNotNull();
-                assertThat(processDataEvent.getAutomatikProcessId()).isEqualTo("SubProcess");
-                assertThat(processDataEvent.getAutomatikRootProcessId()).isEqualTo("ParentProcess");
-                assertThat(processDataEvent.getAutomatikProcessinstanceState()).isEqualTo("2");
-            }
-        }
-        ProcessInstanceEventBody parentBody = assertProcessInstanceEvent(parent, "ParentProcess", "Parent Process", 2);
-        assertThat(parentBody.getNodeInstances()).hasSize(3).extractingResultOf("getNodeType").contains("StartNode",
-                "SubProcessNode", "EndNode");
-        assertThat(parentBody.getNodeInstances()).extractingResultOf("getTriggerTime").allMatch(v -> v != null);
-        assertThat(parentBody.getNodeInstances()).extractingResultOf("getLeaveTime").allMatch(v -> v != null);
-
-        ProcessInstanceEventBody childBody = assertProcessInstanceEventWithParentId(child, "SubProcess", "Sub Process",
-                2);
-        assertThat(childBody.getNodeInstances()).hasSize(3).extractingResultOf("getNodeType").contains("StartNode",
-                "ActionNode", "EndNode");
-        assertThat(childBody.getNodeInstances()).extractingResultOf("getTriggerTime").allMatch(v -> v != null);
-        assertThat(childBody.getNodeInstances()).extractingResultOf("getLeaveTime").allMatch(v -> v != null);
     }
 
     @Test
@@ -381,12 +340,6 @@ public class PublishEventTest extends AbstractCodegenTest {
 
         DataEvent<?> event = events.get(0);
         assertThat(event).isInstanceOf(ProcessInstanceDataEvent.class);
-        ProcessInstanceDataEvent processDataEvent = (ProcessInstanceDataEvent) event;
-        assertThat(processDataEvent.getAutomatikProcessinstanceId()).isNotNull();
-        assertThat(processDataEvent.getAutomatikParentProcessinstanceId()).isNull();
-        assertThat(processDataEvent.getAutomatikRootProcessinstanceId()).isNull();
-        assertThat(processDataEvent.getAutomatikProcessId()).isEqualTo("ExclusiveSplit");
-        assertThat(processDataEvent.getAutomatikProcessinstanceState()).isEqualTo("2");
 
         ProcessInstanceEventBody body = assertProcessInstanceEvent(events.get(0), "ExclusiveSplit",
                 "Basic process with gateway decision", 2);
@@ -580,8 +533,6 @@ public class PublishEventTest extends AbstractCodegenTest {
         assertThat(event.getSource()).isEqualTo("http://myhost/" + processId);
         assertThat(event.getTime()).doesNotContain("[");
 
-        assertThat(((ProcessInstanceDataEvent) event).getAutomatikAddons()).isEqualTo("test");
-
         return body;
     }
 
@@ -604,8 +555,6 @@ public class PublishEventTest extends AbstractCodegenTest {
 
         assertThat(event.getSource()).isEqualTo("http://myhost/" + processId);
         assertThat(event.getTime()).doesNotContain("[");
-
-        assertThat(((UserTaskInstanceDataEvent) event).getAutomatikAddons()).isEqualTo("test");
 
         return body;
     }

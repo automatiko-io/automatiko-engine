@@ -47,7 +47,6 @@ public class HumanTaskLifeCycleWithEmail extends BaseHumanTaskLifeCycle {
         this.emailAddressResolver = emailAddressResolver;
         this.engine = engine;
         this.serviceUrl = serviceUrl.orElse("http://localhost:8080");
-        System.out.println("######## " + this.serviceUrl);
     }
 
     @Override

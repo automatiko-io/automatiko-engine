@@ -3,11 +3,13 @@ package io.automatiko.engine.api.event;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
  * This is an abstract implementation of the {@link DataEvent} that contains
- * basic common attributes referring to automatik processes metadata. This class
+ * basic common attributes referring to automatiko processes metadata. This class
  * can be extended mainly by Services that need to publish events to be indexed
  * by the Data-Index service.
  *
@@ -15,84 +17,89 @@ import java.util.UUID;
  */
 public abstract class AbstractDataEvent<T> implements DataEvent<T> {
 
-	private static final String SPEC_VERSION = "0.3";
+    protected String specversion;
+    protected String id;
+    protected String source;
+    protected String type;
+    protected String time;
+    protected String datacontenttype;
+    protected T data;
 
-	private String specversion;
-	private String id;
-	private String source;
-	private String type;
-	private String time;
-	private T data;
-	private String automatikProcessinstanceId;
-	private String automatikRootProcessinstanceId;
-	private String automatikProcessId;
-	private String automatikRootProcessId;
-	private String automatikAddons;
+    protected Map<String, Object> extensions = new HashMap<>();
 
-	public AbstractDataEvent(String type, String source, T body, String automatikProcessinstanceId,
-			String automatikRootProcessinstanceId, String automatikProcessId, String automatikRootProcessId,
-			String automatikAddons) {
-		this.specversion = SPEC_VERSION;
-		this.id = UUID.randomUUID().toString();
-		this.source = source;
-		this.type = type;
-		this.time = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-		this.data = body;
+    public AbstractDataEvent(String type, String source, T body) {
+        this.specversion = SPEC_VERSION;
+        this.id = UUID.randomUUID().toString();
+        this.source = source;
+        this.type = type;
+        this.time = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        this.datacontenttype = "application/json";
+        this.data = body;
+    }
 
-		this.automatikProcessinstanceId = automatikProcessinstanceId;
-		this.automatikRootProcessinstanceId = automatikRootProcessinstanceId;
-		this.automatikProcessId = automatikProcessId;
-		this.automatikRootProcessId = automatikRootProcessId;
-		this.automatikAddons = automatikAddons;
-	}
+    public AbstractDataEvent(String specversion, String id, String source, String type, String time, T data) {
+        this.specversion = specversion;
+        this.id = id;
+        this.source = source;
+        this.type = type;
+        this.time = time == null ? ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) : time;
+        this.datacontenttype = "application/json";
+        this.data = data;
+    }
 
-	@Override
-	public String getSource() {
-		return source;
-	}
+    public AbstractDataEvent(String specversion, String id, String source, String type, String time, String datacontenttype,
+            T data) {
+        this.specversion = specversion;
+        this.id = id;
+        this.source = source;
+        this.type = type;
+        this.time = time;
+        this.datacontenttype = datacontenttype;
+        this.data = data;
+    }
 
-	@Override
-	public String getSpecversion() {
-		return specversion;
-	}
+    @Override
+    public String getSource() {
+        return source;
+    }
 
-	@Override
-	public String getId() {
-		return id;
-	}
+    @Override
+    public String getSpecversion() {
+        return specversion;
+    }
 
-	@Override
-	public String getType() {
-		return type;
-	}
+    @Override
+    public String getId() {
+        return id;
+    }
 
-	@Override
-	public String getTime() {
-		return time;
-	}
+    @Override
+    public String getType() {
+        return type;
+    }
 
-	@Override
-	public T getData() {
-		return data;
-	}
+    @Override
+    public String getTime() {
+        return time;
+    }
 
-	public String getAutomatikProcessinstanceId() {
-		return automatikProcessinstanceId;
-	}
+    @Override
+    public T getData() {
+        return data;
+    }
 
-	public String getAutomatikRootProcessinstanceId() {
-		return automatikRootProcessinstanceId;
-	}
+    @Override
+    public Map<String, Object> getExtensions() {
+        return extensions;
+    }
 
-	public String getAutomatikProcessId() {
-		return automatikProcessId;
-	}
+    @Override
+    public void addExtension(String name, Object value) {
+        this.extensions.put(name, value);
+    }
 
-	public String getAutomatikRootProcessId() {
-		return automatikRootProcessId;
-	}
-
-	public String getAutomatikAddons() {
-		return automatikAddons;
-	}
+    @Override
+    public Object getExtension(String name) {
+        return this.extensions.get(name);
+    }
 }

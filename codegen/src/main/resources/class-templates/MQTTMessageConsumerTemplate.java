@@ -3,6 +3,7 @@ package com.myspace.demo;
 import java.util.TimeZone;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -31,8 +32,6 @@ public class $Type$MessageConsumer {
 
     Application application;
     
-    Optional<Boolean> useCloudEvents = Optional.of(false);
-    
     javax.enterprise.inject.Instance<io.automatiko.engine.api.io.InputConverter<$DataType$>> converter;
   
     @javax.inject.Inject
@@ -50,7 +49,7 @@ public class $Type$MessageConsumer {
 	    final String trigger = "$Trigger$";
         try {
             IdentityProvider.set(new TrustedIdentityProvider("System<messaging>"));
-
+            LOGGER.debug("Received message with payload '{}'", new String(msg.getPayload(), StandardCharsets.UTF_8));
             final $DataType$ eventData = convert(msg, $DataType$.class);
             final $Type$ model = new $Type$();                
             io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
