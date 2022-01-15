@@ -36,17 +36,7 @@ public class MessageProducer {
 	    try {
 	        
 	        if (useCloudEvents.orElse(true)) {
-        	    $DataEventType$ event = new $DataEventType$("",
-        	                                                    eventData,
-        	                                                    pi.getId(),
-        	                                                    pi.getParentProcessInstanceId(),
-        	                                                    pi.getRootProcessInstanceId(),
-        	                                                    pi.getProcessId(),
-        	                                                    pi.getRootProcessId(),
-        	                                                    String.valueOf(pi.getState()));
-        	    if (pi.getReferenceId() != null && !pi.getReferenceId().isEmpty()) {
-        	        event.setAutomatikReferenceId(pi.getReferenceId());
-        	    }
+        	    $DataEventType$ event = new $DataEventType$("", "", eventData);
         	    return Message.of(json.writeValueAsBytes(event));
 	        } else {
 	            return Message.of(json.writeValueAsBytes(eventData));

@@ -1,6 +1,8 @@
 
 package io.automatiko.engine.api.event;
 
+import java.util.Map;
+
 /**
  * Represents top level data event structure that can be emitted from within
  * running process, decision or rule.
@@ -18,45 +20,70 @@ package io.automatiko.engine.api.event;
  */
 public interface DataEvent<T> {
 
-	/**
-	 * Returns specification version of the cloud event
-	 * 
-	 * @return specification version
-	 */
-	String getSpecversion();
+    public static final String SPEC_VERSION = "1.0.1";
 
-	/**
-	 * Returns unique id of the event
-	 * 
-	 * @return unique event id
-	 */
-	String getId();
+    /**
+     * Returns specification version of the cloud event
+     * 
+     * @return specification version
+     */
+    String getSpecversion();
 
-	/**
-	 * Returns type of the event this instance represents e.g. ProcessInstanceEvent
-	 * 
-	 * @return type of the event
-	 */
-	String getType();
+    /**
+     * Returns unique id of the event
+     * 
+     * @return unique event id
+     */
+    String getId();
 
-	/**
-	 * Returns source of the event that is in URI syntax
-	 * 
-	 * @return uri source
-	 */
-	String getSource();
+    /**
+     * Returns type of the event this instance represents e.g. ProcessInstanceEvent
+     * 
+     * @return type of the event
+     */
+    String getType();
 
-	/**
-	 * Returns returns time when the event was created
-	 * 
-	 * @return time of the event
-	 */
-	String getTime();
+    /**
+     * Returns source of the event that is in URI syntax
+     * 
+     * @return uri source
+     */
+    String getSource();
 
-	/**
-	 * Returns actual body of the event
-	 * 
-	 * @return
-	 */
-	T getData();
+    /**
+     * Returns returns time when the event was created
+     * 
+     * @return time of the event
+     */
+    String getTime();
+
+    /**
+     * Returns actual body of the event
+     * 
+     * @return
+     */
+    T getData();
+
+    /**
+     * Returns all extension attributes of the event
+     * 
+     * @return extension attributes
+     */
+    Map<String, Object> getExtensions();
+
+    /**
+     * Stores extension attribute with given name and value
+     * 
+     * @param name name of the attribute
+     * @param value value of the attribute
+     */
+    void addExtension(String name, Object value);
+
+    /**
+     * Returns extension attribute with given name
+     * 
+     * @param name name of the attribute
+     * @return extension attribute value if exists otherwise null
+     */
+    Object getExtension(String name);
 }

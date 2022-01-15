@@ -90,6 +90,14 @@ public class CodegenUtils {
         t.getTypeArguments().ifPresent(ta -> interpolateTypeArguments(ta, interpolatedTypes));
     }
 
+    public static void interpolateEventTypes(ClassOrInterfaceType t, String dataClazzName) {
+        SimpleName returnType = t.getName();
+        Map<String, String> interpolatedTypes = new HashMap<>();
+        interpolatedTypes.put("$DataEventType$", dataClazzName);
+        interpolateTypes(returnType, interpolatedTypes);
+        t.getTypeArguments().ifPresent(ta -> interpolateTypeArguments(ta, interpolatedTypes));
+    }
+
     public static void interpolateTypes(ClassOrInterfaceType t, Map<String, String> typeInterpolations) {
         SimpleName returnType = t.getName();
         interpolateTypes(returnType, typeInterpolations);

@@ -3,6 +3,7 @@ package com.myspace.demo;
 
 import java.util.Optional;
 import java.util.TimeZone;
+import java.util.UUID;
 
 import io.automatiko.engine.api.runtime.process.ProcessInstance;
 import io.automatiko.engine.workflow.process.instance.WorkflowProcessInstance;
@@ -12,13 +13,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 
 import org.eclipse.microprofile.reactive.messaging.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class MessageProducer {
     
+    private static final Logger LOGGER = LoggerFactory.getLogger("MessageProducer");
+    
     org.eclipse.microprofile.reactive.messaging.Emitter<String> emitter;
     
     Optional<Boolean> useCloudEvents = Optional.of(true);
+    
+    Optional<Boolean> useCloudEventsBinary = Optional.of(false);
     
     javax.enterprise.inject.Instance<io.automatiko.engine.api.io.OutputConverter<$Type$, String>> converter;    
     
@@ -34,7 +41,7 @@ public class MessageProducer {
     
 	public void produce(ProcessInstance pi, $Type$ eventData) {
 	    metrics.messageProduced(CONNECTOR, MESSAGE, pi.getProcess());
-	    Message<String> msg = Message.of(this.marshall(pi, eventData));
+	    Message<String> msg = Message.of(log(marshall(pi, eventData)));
 	    
 	    io.smallrye.reactive.messaging.amqp.OutgoingAmqpMetadata metadata = null;
 	    if (converter != null && !converter.isUnsatisfied()) {                    
@@ -42,14 +49,29 @@ public class MessageProducer {
             metadata = converter.get().metadata(pi, io.smallrye.reactive.messaging.amqp.OutgoingAmqpMetadata.class);
         } 
         if (metadata == null) {
-	    
+            io.smallrye.reactive.messaging.amqp.OutgoingAmqpMetadata.OutgoingAmqpMetadataBuilder builder = io.smallrye.reactive.messaging.amqp.OutgoingAmqpMetadata.builder();
     	    String addressName = address(pi);
     	    if (addressName != null) {
-    	        metadata = io.smallrye.reactive.messaging.amqp.OutgoingAmqpMetadata.builder()
-    	                .withAddress(addressName)
-    	                .build();
-    	        msg = msg.addMetadata(metadata);
+    	        builder.withAddress(addressName);
+    	                
+    	        
     	    }
+    	    if (useCloudEvents.orElse(false)) {
+                if (useCloudEventsBinary.orElse(false)) {
+                    builder.withContentType("application/json; charset=UTF-8");
+                    builder.withApplicationProperty("cloudEvents:specversion", DataEvent.SPEC_VERSION);
+                    builder.withApplicationProperty("cloudEvents:id", UUID.randomUUID().toString());
+                    builder.withApplicationProperty("cloudEvents:source", "/" + pi.getProcessId() + "/" + pi.getId());
+                    builder.withApplicationProperty("cloudEvents:type", "$Trigger$");
+                    
+                } else {
+                    builder.withContentType("application/cloudevents+json; charset=UTF-8");
+                }
+            } else {
+                builder.withContentType("application/json; charset=UTF-8");
+            }
+    	    metadata = builder.build();
+    	    msg = msg.addMetadata(metadata);
 	    } else {
 	        msg = msg.addMetadata(metadata);
 	    }
@@ -60,22 +82,25 @@ public class MessageProducer {
 	    try {
 	        Object payload = eventData;
 	        	        
-	        if (useCloudEvents.orElse(true)) {
-	            
-        	    $DataEventType$ event = new $DataEventType$("",
-        	                                                    eventData,
-        	                                                    pi.getId(),
-        	                                                    pi.getParentProcessInstanceId(),
-        	                                                    pi.getRootProcessInstanceId(),
-        	                                                    pi.getProcessId(),
-        	                                                    pi.getRootProcessId(),
-        	                                                    String.valueOf(pi.getState()));
-        	    if (pi.getReferenceId() != null && !pi.getReferenceId().isEmpty()) {
-        	        event.setAutomatikReferenceId(pi.getReferenceId());
-        	    }
-        	    return json.writeValueAsString(event);
-            } else {
+            if (useCloudEvents.orElse(false)) {
                 
+                String id = UUID.randomUUID().toString();
+                String spec = DataEvent.SPEC_VERSION;
+                String source = "/" + pi.getProcessId() + "/" + pi.getId();
+                String type = "$Trigger$";
+                if (useCloudEventsBinary.orElse(false)) {
+
+                    if (converter != null && !converter.isUnsatisfied()) {
+                        return converter.get().convert(eventData);
+                    } else {
+                        return json.writeValueAsString(payload);
+                    }                    
+                } else {
+                    $DataEventType$ event = new $DataEventType$(spec, id, source, type, null, eventData);
+                    return json.writeValueAsString(event);
+                }
+	            
+            } else {
                 if (converter != null && !converter.isUnsatisfied()) {                    
                                 
                     return converter.get().convert(eventData);
@@ -91,4 +116,13 @@ public class MessageProducer {
 	protected String address(ProcessInstance pi) {
 	    return null;
 	}
+	
+	protected String log(String value) {
+	 
+	    if (LOGGER.isDebugEnabled()) {
+	        LOGGER.debug("Message to be published with payload '{}'", value);
+	    }
+	    return value;
+	}
+	
 }

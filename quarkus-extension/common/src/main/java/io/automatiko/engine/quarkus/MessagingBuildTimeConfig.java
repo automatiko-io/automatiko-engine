@@ -7,15 +7,26 @@ import io.quarkus.runtime.annotations.ConfigItem;
 @ConfigGroup
 public class MessagingBuildTimeConfig extends MessagingBuildConfig {
 
-	/**
-	 * Enables cloud event format for messages
-	 */
-	@ConfigItem
-	public boolean asCloudevents;
+    /**
+     * Enables cloud event format for messages
+     */
+    @ConfigItem
+    public boolean asCloudevents;
 
-	@Override
-	public boolean asCloudevents() {
-		return asCloudevents;
-	}
+    /**
+     * Instructs to use binary binding mode for cloud event for messages
+     */
+    @ConfigItem
+    public boolean asCloudeventsBinary;
+
+    @Override
+    public boolean asCloudevents() {
+        return asCloudevents;
+    }
+
+    @Override
+    public boolean asCloudeventsBinary() {
+        return asCloudeventsBinary;
+    }
 
 }

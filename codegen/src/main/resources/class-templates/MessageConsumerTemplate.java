@@ -52,10 +52,7 @@ public class $Type$MessageConsumer {
                 final $Type$ model = new $Type$();   
                 io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                     
-                    if (eventData.getAutomatikReferenceId() != null) {
-                        LOGGER.debug("Received message with reference id '{}' going to use it to send signal '{}'", eventData.getAutomatikReferenceId(), trigger);
-                        process.instances().findById(eventData.getAutomatikReferenceId()).ifPresent(pi -> pi.send(Sig.of("Message-"+trigger, eventData.getData(), eventData.getAutomatikProcessinstanceId())));
-                    } else {  
+               
                     	String correlation = correlationEvent(eventData, msg);
                     	if (correlation != null) {
                     		LOGGER.debug("Correlation ({}) is set, attempting to find if there is matching instance already active", correlation);
@@ -70,21 +67,15 @@ public class $Type$MessageConsumer {
                         } 
                         LOGGER.debug("Received message without reference id and no correlation is set/matched, staring new process instance with trigger '{}'", trigger);                        
                         
-                        if (eventData.getAutomatikStartFromNode() != null) {
-                        	model.set$ModelRef$(eventData.getData());
-                        	ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
-                        	
-                            pi.startFrom(eventData.getAutomatikStartFromNode(), eventData.getAutomatikProcessinstanceId());
-                        } else {
-                        	try {
-                        		ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
-                        		pi.start(trigger, eventData.getAutomatikProcessinstanceId(), eventData.getData());
-                        	} catch (ProcessInstanceDuplicatedException e) {
-                            	ProcessInstance<$Type$> pi = process.instances().findById(correlation).get();
-                            	pi.send(Sig.of(trigger, eventData.getData()));
-                            }
+                    	try {
+                    		ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
+                    		pi.start(trigger, null, eventData.getData());
+                    	} catch (ProcessInstanceDuplicatedException e) {
+                        	ProcessInstance<$Type$> pi = process.instances().findById(correlation).get();
+                        	pi.send(Sig.of(trigger, eventData.getData()));
                         }
-                    }
+                        
+                    
                     return null;
                 });                
             } else {
