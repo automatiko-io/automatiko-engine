@@ -15,6 +15,9 @@ public class DotNotationChangeTest {
 
         String expression = VariableUtil.transformDotNotation(dotnotation, "event");
         assertEquals("person.setName(event)", expression);
+
+        String var = VariableUtil.nameFromDotNotation(dotnotation);
+        assertEquals("person", var);
     }
 
     @Test
@@ -69,6 +72,9 @@ public class DotNotationChangeTest {
 
         String expression = VariableUtil.transformDotNotation(dotnotation, "event");
         assertEquals("firstName.add(event)", expression);
+
+        String var = VariableUtil.nameFromDotNotation(dotnotation);
+        assertEquals("firstName", var);
     }
 
     @Test
@@ -78,6 +84,9 @@ public class DotNotationChangeTest {
 
         String expression = VariableUtil.transformDotNotation(dotnotation, "event");
         assertEquals("person.getName().remove(event)", expression);
+
+        String var = VariableUtil.nameFromDotNotation(dotnotation);
+        assertEquals("person", var);
     }
 
     @Test

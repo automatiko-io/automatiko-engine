@@ -440,6 +440,10 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
                             resolver.addExtraParameters(workItem.getResults());
                             Serializable compiled = MVEL.compileExpression(expression);
                             MVEL.executeExpression(compiled, resolver);
+                            String varName = VariableUtil.nameFromDotNotation(paramName);
+                            variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+                                    VARIABLE_SCOPE, varName);
+                            variableScopeInstance.setVariable(this, varName, variableScopeInstance.getVariable(varName));
                         } else {
                             logger.warn("Could not find variable scope for variable {}", association.getTarget());
                             logger.warn("when trying to complete Work Item {}", workItem.getName());

@@ -7,7 +7,7 @@ import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
-public class AsyncCallbackBuiltTimeConfig extends AsyncCallbackConfig {
+public class AsyncCallbackRuntimeConfig extends AsyncCallbackConfig {
 
     /**
      * Specifies authorization type to be used when callbacks are invoked

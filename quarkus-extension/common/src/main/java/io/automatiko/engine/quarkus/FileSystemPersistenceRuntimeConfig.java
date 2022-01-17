@@ -7,7 +7,7 @@ import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
-public class FileSystemPersistenceBuildTimeConfig extends FileSystemPersistenceConfig {
+public class FileSystemPersistenceRuntimeConfig extends FileSystemPersistenceConfig {
 
 	/**
 	 * File system path to be used as storage location

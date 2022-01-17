@@ -92,6 +92,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         } catch (IOException e) {
             throw new RuntimeException("Unable to create directories for file based storage of process instances", e);
         }
+        LOGGER.info("Location of the storage is {}", storage);
     }
 
     public Long size() {

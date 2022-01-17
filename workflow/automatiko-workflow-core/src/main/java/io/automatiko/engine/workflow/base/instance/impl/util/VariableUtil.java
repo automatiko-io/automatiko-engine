@@ -64,6 +64,25 @@ public class VariableUtil {
         return s;
     }
 
+    public static String nameFromDotNotation(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        if (value.contains(".")) {
+            return value.split("\\.")[0];
+        }
+
+        if (value.endsWith("[]")) {
+            return value.substring(0, value.length() - 2);
+        }
+        if (value.endsWith("[+]") || value.endsWith("[-]")) {
+            return value.substring(0, value.length() - 3);
+        }
+
+        return value;
+    }
+
     public static String transformDotNotation(String value, String object) {
         if (value == null || !value.contains(".")) {
             if (value.endsWith("[]")) {

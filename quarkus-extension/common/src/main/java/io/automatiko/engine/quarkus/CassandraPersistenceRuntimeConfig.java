@@ -2,14 +2,14 @@ package io.automatiko.engine.quarkus;
 
 import java.util.Optional;
 
-import io.automatiko.engine.api.config.CassandraJobsConfig;
+import io.automatiko.engine.api.config.CassandraPersistenceConfig;
 import io.quarkus.arc.config.ConfigProperties;
 import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
-@ConfigProperties(prefix = "quarkus.automatiko.jobs.cassandra")
-public class CassandraJobsBuildTimeConfig extends CassandraJobsConfig {
+@ConfigProperties(prefix = "quarkus.automatiko.persistence.cassandra")
+public class CassandraPersistenceRuntimeConfig extends CassandraPersistenceConfig {
 
     /**
      * Indicates if keyspace should be created during startup
@@ -29,18 +29,6 @@ public class CassandraJobsBuildTimeConfig extends CassandraJobsConfig {
     @ConfigItem
     public Optional<String> keyspace;
 
-    /**
-     * Interval (in minutes) how often to look for next chunk of jobs to schedule
-     */
-    @ConfigItem
-    public Optional<Long> interval;
-
-    /**
-     * Number of threads to be used for jobs execution
-     */
-    @ConfigItem
-    public Optional<Integer> threads;
-
     @Override
     public Optional<Boolean> createKeyspace() {
         return createKeyspace;
@@ -56,13 +44,4 @@ public class CassandraJobsBuildTimeConfig extends CassandraJobsConfig {
         return keyspace;
     }
 
-    @Override
-    public Optional<Long> interval() {
-        return interval;
-    }
-
-    @Override
-    public Optional<Integer> threads() {
-        return threads;
-    }
 }

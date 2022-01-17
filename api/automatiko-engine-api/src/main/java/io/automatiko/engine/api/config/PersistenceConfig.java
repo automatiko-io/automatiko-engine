@@ -26,13 +26,6 @@ public class PersistenceConfig {
     }
 
     /**
-     * Configures infinispan based persistence
-     */
-    public InfinispanPersistenceConfig infinispan() {
-        return new InfinispanPersistenceConfig();
-    }
-
-    /**
      * Configures database based persistence
      */
     public DatabasePersistenceConfig database() {

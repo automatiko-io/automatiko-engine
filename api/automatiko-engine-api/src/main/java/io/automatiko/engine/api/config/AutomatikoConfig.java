@@ -8,20 +8,8 @@ public class AutomatikoConfig {
         return Optional.empty();
     };
 
-    public Optional<String> packageName() {
-        return Optional.empty();
-    };
-
-    public Optional<Boolean> includeAutomatikoApi() {
-        return Optional.empty();
-    };
-
     public Optional<Boolean> instanceLocking() {
         return Optional.of(true);
-    };
-
-    public Optional<String> targetDeployment() {
-        return Optional.empty();
     };
 
     public Optional<String> onInstanceEnd() {
@@ -32,16 +20,8 @@ public class AutomatikoConfig {
         return Optional.empty();
     };
 
-    public MetricsConfig metrics() {
-        return new MetricsConfig();
-    }
-
     public PersistenceConfig persistence() {
         return new PersistenceConfig();
-    }
-
-    public MessagingConfig messaging() {
-        return new MessagingConfig();
     }
 
     public JobsConfig jobs() {

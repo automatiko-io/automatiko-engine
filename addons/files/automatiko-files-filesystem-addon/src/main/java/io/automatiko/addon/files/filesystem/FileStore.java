@@ -62,10 +62,12 @@ public class FileStore {
         Path path = createPath(processId, processVersion, processInstanceId, name);
 
         try {
-            Files.walk(path)
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
+            if (Files.exists(path)) {
+                Files.walk(path)
+                        .sorted(Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(File::delete);
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

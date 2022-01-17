@@ -114,6 +114,10 @@ public class StartNodeInstance extends NodeInstanceImpl {
                                         Collections.singletonMap(association.getSources().get(0), event));
                                 Serializable compiled = MVEL.compileExpression(expression);
                                 MVEL.executeExpression(compiled, resolver);
+                                String varName = VariableUtil.nameFromDotNotation(paramName);
+                                variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+                                        VARIABLE_SCOPE, varName);
+                                variableScopeInstance.setVariable(this, varName, variableScopeInstance.getVariable(varName));
                             } else {
                                 logger.warn("Could not find variable scope for variable {}", association.getTarget());
                                 logger.warn("when trying to complete start node {}", getStartNode().getName());

@@ -14,11 +14,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import io.automatiko.engine.api.config.AutomatikoConfig;
+import io.automatiko.engine.api.config.AutomatikoBuildConfig;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
-import io.automatiko.engine.codegen.GeneratorConfig;
-import io.automatiko.engine.codegen.GeneratorContext;
-import io.automatiko.engine.codegen.ResourceGeneratorFactory;
 import io.automatiko.engine.codegen.context.QuarkusApplicationBuildContext;
 import io.automatiko.engine.codegen.process.AbstractResourceGenerator;
 import io.automatiko.engine.codegen.process.ReactiveResourceGenerator;
@@ -46,7 +43,8 @@ class ResourceGeneratorFactoryTest {
     @Test
     void testCreateQuarkus(@Mock GeneratorContext generatorContext) {
         when(generatorContext.getBuildContext())
-                .thenReturn(new QuarkusApplicationBuildContext(new AutomatikoConfig(), p -> true, c -> Collections.emptyList()));
+                .thenReturn(new QuarkusApplicationBuildContext(new AutomatikoBuildConfig(), p -> true,
+                        c -> Collections.emptyList()));
         Optional<AbstractResourceGenerator> context = tested.create(generatorContext, process, MODEL_FQCN, PROCESS_FQCN,
                 APP_CANONICAL_NAME);
         assertThat(context.isPresent()).isTrue();
@@ -58,7 +56,8 @@ class ResourceGeneratorFactoryTest {
         when(generatorContext.getApplicationProperty(GeneratorConfig.REST_RESOURCE_TYPE_PROP))
                 .thenReturn(Optional.of("reactive"));
         when(generatorContext.getBuildContext())
-                .thenReturn(new QuarkusApplicationBuildContext(new AutomatikoConfig(), p -> true, c -> Collections.emptyList()));
+                .thenReturn(new QuarkusApplicationBuildContext(new AutomatikoBuildConfig(), p -> true,
+                        c -> Collections.emptyList()));
 
         Optional<AbstractResourceGenerator> context = tested.create(generatorContext, process, MODEL_FQCN, PROCESS_FQCN,
                 APP_CANONICAL_NAME);

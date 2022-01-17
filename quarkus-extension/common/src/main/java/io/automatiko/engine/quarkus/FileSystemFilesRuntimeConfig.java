@@ -9,7 +9,7 @@ import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
 @ConfigProperties(prefix = "quarkus.automatiko.files.fs")
-public class FileSystemFilesBuildTimeConfig extends FileSystemFilesConfig {
+public class FileSystemFilesRuntimeConfig extends FileSystemFilesConfig {
 
     /**
      * Determines the location where files should be stored on file system

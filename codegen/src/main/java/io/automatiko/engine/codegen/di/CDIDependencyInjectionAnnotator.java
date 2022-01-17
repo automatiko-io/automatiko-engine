@@ -138,6 +138,7 @@ public class CDIDependencyInjectionAnnotator implements DependencyInjectionAnnot
     public <T extends NodeWithAnnotations<?>> T withConfigInjection(T node, String configKey) {
         node.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.config.inject.ConfigProperty"),
                 NodeList.nodeList(new MemberValuePair("name", new StringLiteralExpr(configKey)))));
+        withInjection(node);
         return node;
     }
 
