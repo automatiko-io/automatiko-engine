@@ -2,14 +2,14 @@ package io.automatiko.engine.quarkus;
 
 import java.util.Optional;
 
-import io.automatiko.engine.api.config.DynamoDBJobsConfig;
+import io.automatiko.engine.api.config.DynamoDBPersistenceConfig;
 import io.quarkus.arc.config.ConfigProperties;
 import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
-@ConfigProperties(prefix = "quarkus.automatiko.jobs.dynamodb")
-public class DynamoDBJobsBuildTimeConfig extends DynamoDBJobsConfig {
+@ConfigProperties(prefix = "quarkus.automatiko.persistence.dynamodb")
+public class DynamoDBPersistenceRuntimeConfig extends DynamoDBPersistenceConfig {
 
     /**
      * Indicates if tables should be created during startup
@@ -29,18 +29,6 @@ public class DynamoDBJobsBuildTimeConfig extends DynamoDBJobsConfig {
     @ConfigItem
     public Optional<Long> writeCapacity;
 
-    /**
-     * Interval (in minutes) how often to look for next chunk of jobs to schedule
-     */
-    @ConfigItem
-    public Optional<Long> interval;
-
-    /**
-     * Number of threads to be used for jobs execution
-     */
-    @ConfigItem
-    public Optional<Integer> threads;
-
     @Override
     public Optional<Boolean> createTables() {
         return createTables;
@@ -54,15 +42,5 @@ public class DynamoDBJobsBuildTimeConfig extends DynamoDBJobsConfig {
     @Override
     public Optional<Long> writeCapacity() {
         return writeCapacity;
-    }
-
-    @Override
-    public Optional<Long> interval() {
-        return interval;
-    }
-
-    @Override
-    public Optional<Integer> threads() {
-        return threads;
     }
 }

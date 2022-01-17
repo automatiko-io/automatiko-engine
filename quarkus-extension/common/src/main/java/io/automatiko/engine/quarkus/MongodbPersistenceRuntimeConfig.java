@@ -9,7 +9,7 @@ import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
 @ConfigProperties(prefix = "quarkus.automatiko.persistence.mongodb")
-public class MongodbPersistenceBuildTimeConfig extends MongodbPersistenceConfig {
+public class MongodbPersistenceRuntimeConfig extends MongodbPersistenceConfig {
 
     /**
      * Name of the data base to be used to create collections for jobs

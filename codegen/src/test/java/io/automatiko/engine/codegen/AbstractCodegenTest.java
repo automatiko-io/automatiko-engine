@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.Application;
-import io.automatiko.engine.api.config.AutomatikoConfig;
+import io.automatiko.engine.api.config.AutomatikoBuildConfig;
 import io.automatiko.engine.codegen.context.QuarkusApplicationBuildContext;
 import io.automatiko.engine.codegen.decision.DecisionCodegen;
 import io.automatiko.engine.codegen.process.ProcessCodegen;
@@ -45,7 +45,7 @@ public class AbstractCodegenTest {
     private ClassLoader classloader;
     private Path compilationOutcome;
 
-    protected AutomatikoConfig config = new AutomatikoConfig();
+    protected AutomatikoBuildConfig config = new AutomatikoBuildConfig();
 
     private boolean testService;
 

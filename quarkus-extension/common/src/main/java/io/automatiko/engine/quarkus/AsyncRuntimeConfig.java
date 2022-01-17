@@ -2,17 +2,19 @@ package io.automatiko.engine.quarkus;
 
 import io.automatiko.engine.api.config.AsyncCallbackConfig;
 import io.automatiko.engine.api.config.AsyncConfig;
+import io.quarkus.arc.config.ConfigProperties;
 import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
-public class AsyncBuildTimeConfig extends AsyncConfig {
+@ConfigProperties(prefix = "quarkus.automatiko.async")
+public class AsyncRuntimeConfig extends AsyncConfig {
 
     /**
      * Provides configuration of async callback
      */
     @ConfigItem
-    public AsyncCallbackBuiltTimeConfig callback;
+    public AsyncCallbackRuntimeConfig callback;
 
     @Override
     public AsyncCallbackConfig callback() {

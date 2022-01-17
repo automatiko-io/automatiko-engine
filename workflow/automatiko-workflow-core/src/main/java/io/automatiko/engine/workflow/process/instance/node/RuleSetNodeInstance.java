@@ -1,6 +1,8 @@
 
 package io.automatiko.engine.workflow.process.instance.node;
 
+import static io.automatiko.engine.workflow.base.core.context.variable.VariableScope.VARIABLE_SCOPE;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -232,6 +234,10 @@ public class RuleSetNodeInstance extends StateBasedNodeInstance implements Event
                             resolver.addExtraParameters(objects);
                             Serializable compiled = MVEL.compileExpression(expression);
                             MVEL.executeExpression(compiled, resolver);
+                            String varName = VariableUtil.nameFromDotNotation(paramName);
+                            variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+                                    VARIABLE_SCOPE, varName);
+                            variableScopeInstance.setVariable(this, varName, variableScopeInstance.getVariable(varName));
                         } else {
                             logger.warn("Could not find variable scope for variable {}", association.getTarget());
                         }

@@ -2,20 +2,14 @@ package io.automatiko.engine.quarkus;
 
 import java.util.Optional;
 
-import io.automatiko.engine.api.config.ElasticEventsConfig;
+import io.automatiko.engine.api.config.WebsocketEventsConfig;
 import io.quarkus.arc.config.ConfigProperties;
 import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
-@ConfigProperties(prefix = "quarkus.automatiko.events.elastic")
-public class ElasticEventsBuildTimeConfig extends ElasticEventsConfig {
-
-    /**
-     * Indicates if the audit log events are enabled
-     */
-    @ConfigItem
-    public Optional<Boolean> audit;
+@ConfigProperties(prefix = "quarkus.automatiko.events.websocket")
+public class WebsocketEventsRuntimeConfig extends WebsocketEventsConfig {
 
     /**
      * Indicates if the instance events are enabled
@@ -29,17 +23,6 @@ public class ElasticEventsBuildTimeConfig extends ElasticEventsConfig {
     @ConfigItem
     public Optional<Boolean> tasks;
 
-    /**
-     * Determines the name of the audit index in Elastic
-     */
-    @ConfigItem
-    public Optional<String> auditIndex;
-
-    @Override
-    public Optional<Boolean> audit() {
-        return audit;
-    }
-
     @Override
     public Optional<Boolean> instance() {
         return instance;
@@ -49,10 +32,4 @@ public class ElasticEventsBuildTimeConfig extends ElasticEventsConfig {
     public Optional<Boolean> tasks() {
         return tasks;
     }
-
-    @Override
-    public Optional<String> auditIndex() {
-        return auditIndex;
-    }
-
 }

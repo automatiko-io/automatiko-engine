@@ -7,7 +7,7 @@ import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
-public class HttpJobsBuildTimeConfig extends HttpJobsConfig {
+public class HttpJobsRuntimeConfig extends HttpJobsConfig {
 
 	/**
 	 * File system path to be used as storage location

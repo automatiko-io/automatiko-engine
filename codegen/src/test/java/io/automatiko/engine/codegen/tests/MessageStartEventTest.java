@@ -18,8 +18,8 @@ import org.junit.jupiter.api.Test;
 import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.SecurityPolicy;
-import io.automatiko.engine.api.config.AutomatikoConfig;
-import io.automatiko.engine.api.config.MessagingConfig;
+import io.automatiko.engine.api.config.AutomatikoBuildConfig;
+import io.automatiko.engine.api.config.MessagingBuildConfig;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.WorkItem;
@@ -35,10 +35,10 @@ public class MessageStartEventTest extends AbstractCodegenTest {
     @BeforeEach
     public void setup() {
 
-        this.config = new AutomatikoConfig() {
+        this.config = new AutomatikoBuildConfig() {
             @Override
-            public MessagingConfig messaging() {
-                return new MessagingConfig() {
+            public MessagingBuildConfig messaging() {
+                return new MessagingBuildConfig() {
                     @Override
                     public boolean asCloudevents() {
                         return false;

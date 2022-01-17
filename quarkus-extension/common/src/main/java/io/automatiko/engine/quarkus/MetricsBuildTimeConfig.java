@@ -1,11 +1,11 @@
 package io.automatiko.engine.quarkus;
 
-import io.automatiko.engine.api.config.MetricsConfig;
+import io.automatiko.engine.api.config.MetricsBuildConfig;
 import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
-public class MetricsBuildTimeConfig extends MetricsConfig {
+public class MetricsBuildTimeConfig extends MetricsBuildConfig {
 
 	/**
 	 * Enables metrics for automatik

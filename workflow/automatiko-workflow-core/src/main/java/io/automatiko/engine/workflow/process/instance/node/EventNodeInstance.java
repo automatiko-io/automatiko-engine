@@ -1,6 +1,7 @@
 
 package io.automatiko.engine.workflow.process.instance.node;
 
+import static io.automatiko.engine.workflow.base.core.context.variable.VariableScope.VARIABLE_SCOPE;
 import static io.automatiko.engine.workflow.process.instance.impl.DummyEventListener.EMPTY_EVENT_LISTENER;
 
 import java.io.Serializable;
@@ -79,6 +80,10 @@ public class EventNodeInstance extends ExtendedNodeInstanceImpl
                         resolver.addExtraParameters(Collections.singletonMap("event", event));
                         Serializable compiled = MVEL.compileExpression(expression);
                         MVEL.executeExpression(compiled, resolver);
+                        String varName = VariableUtil.nameFromDotNotation(paramName);
+                        variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+                                VARIABLE_SCOPE, varName);
+                        variableScopeInstance.setVariable(this, varName, variableScopeInstance.getVariable(varName));
                     } else {
                         logger.warn("Could not find variable scope for variable {}", variableName);
                         logger.warn("when trying to complete start node {}", getEventNode().getName());

@@ -1,6 +1,6 @@
 package io.automatiko.engine.api.config;
 
-public class MessagingConfig {
+public class MessagingBuildConfig {
 
 	/**
 	 * Enables cloud event format for messages

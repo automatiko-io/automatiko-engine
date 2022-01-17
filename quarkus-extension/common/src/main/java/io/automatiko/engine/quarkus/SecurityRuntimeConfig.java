@@ -3,11 +3,13 @@ package io.automatiko.engine.quarkus;
 import java.util.Optional;
 
 import io.automatiko.engine.api.config.SecurityConfig;
+import io.quarkus.arc.config.ConfigProperties;
 import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
-public class SecurityBuildTimeConfig extends SecurityConfig {
+@ConfigProperties(prefix = "quarkus.automatiko.security")
+public class SecurityRuntimeConfig extends SecurityConfig {
 
     /**
      * Configures identity provider build mechanism to either allow to use

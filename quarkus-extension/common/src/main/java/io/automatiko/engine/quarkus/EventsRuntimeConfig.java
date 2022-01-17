@@ -6,19 +6,19 @@ import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
-public class EventsBuildTimeConfig extends EventsConfig {
+public class EventsRuntimeConfig extends EventsConfig {
 
     /**
      * Provides configuration of Elastic based events publisher
      */
     @ConfigItem
-    public ElasticEventsBuildTimeConfig elastic;
+    public ElasticEventsRuntimeConfig elastic;
 
     /**
      * Provides configuration of websocket based events publisher
      */
     @ConfigItem
-    public WebsocketEventsBuildTimeConfig websocket;
+    public WebsocketEventsRuntimeConfig websocket;
 
     @Override
     public ElasticEventsConfig elastic() {
@@ -26,7 +26,7 @@ public class EventsBuildTimeConfig extends EventsConfig {
     }
 
     @Override
-    public WebsocketEventsBuildTimeConfig websocket() {
+    public WebsocketEventsRuntimeConfig websocket() {
         return websocket;
     }
 }

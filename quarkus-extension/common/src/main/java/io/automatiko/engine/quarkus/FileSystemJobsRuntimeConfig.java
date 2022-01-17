@@ -2,18 +2,18 @@ package io.automatiko.engine.quarkus;
 
 import java.util.Optional;
 
-import io.automatiko.engine.api.config.DatabaseJobsConfig;
+import io.automatiko.engine.api.config.FileSystemJobsConfig;
 import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
-public class DatabaseJobsBuildTimeConfig extends DatabaseJobsConfig {
+public class FileSystemJobsRuntimeConfig extends FileSystemJobsConfig {
 
     /**
-     * Interval (in minutes) how often to look for next chunk of jobs to schedule
+     * File system path to be used as storage location
      */
     @ConfigItem
-    public Optional<Long> interval;
+    public Optional<String> path;
 
     /**
      * Number of threads to be used for jobs execution
@@ -22,8 +22,8 @@ public class DatabaseJobsBuildTimeConfig extends DatabaseJobsConfig {
     public Optional<Integer> threads;
 
     @Override
-    public Optional<Long> interval() {
-        return interval;
+    public Optional<String> path() {
+        return path;
     }
 
     @Override

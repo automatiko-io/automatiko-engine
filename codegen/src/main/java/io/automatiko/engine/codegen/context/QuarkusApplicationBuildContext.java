@@ -5,15 +5,15 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import io.automatiko.engine.api.config.AutomatikoConfig;
+import io.automatiko.engine.api.config.AutomatikoBuildConfig;
 
 public class QuarkusApplicationBuildContext implements ApplicationBuildContext {
 
-    private AutomatikoConfig config;
+    private AutomatikoBuildConfig config;
     private Predicate<String> classAvailabilityResolver;
     private Function<String, List<String>> implementationFinder;
 
-    public QuarkusApplicationBuildContext(AutomatikoConfig config, Predicate<String> classAvailabilityResolver,
+    public QuarkusApplicationBuildContext(AutomatikoBuildConfig config, Predicate<String> classAvailabilityResolver,
             Function<String, List<String>> implementationFinder) {
         this.config = config;
         this.classAvailabilityResolver = classAvailabilityResolver;
@@ -26,7 +26,7 @@ public class QuarkusApplicationBuildContext implements ApplicationBuildContext {
     }
 
     @Override
-    public AutomatikoConfig config() {
+    public AutomatikoBuildConfig config() {
         return config;
     }
 

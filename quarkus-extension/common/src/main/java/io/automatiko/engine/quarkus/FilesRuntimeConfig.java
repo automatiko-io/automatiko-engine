@@ -8,25 +8,25 @@ import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
-public class FilesBuildTimeConfig extends FilesConfig {
+public class FilesRuntimeConfig extends FilesConfig {
 
     /**
      * Provides configuration of file system based files
      */
     @ConfigItem
-    public FileSystemFilesBuildTimeConfig fs;
+    public FileSystemFilesRuntimeConfig fs;
 
     /**
      * Provides configuration of AWS S3 based files
      */
     @ConfigItem
-    public S3FilesBuildTimeConfig s3;
+    public S3FilesRuntimeConfig s3;
 
     /**
      * Provides configuration of Google Storage based files
      */
     @ConfigItem
-    public GoogleStorageFilesBuildTimeConfig googleStorage;
+    public GoogleStorageFilesRuntimeConfig googleStorage;
 
     @Override
     public FileSystemFilesConfig fs() {

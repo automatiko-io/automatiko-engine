@@ -2,18 +2,13 @@ package io.automatiko.engine.quarkus;
 
 import java.util.Optional;
 
-import io.automatiko.engine.api.config.CassandraPersistenceConfig;
-import io.automatiko.engine.api.config.DatabasePersistenceConfig;
-import io.automatiko.engine.api.config.DynamoDBPersistenceConfig;
-import io.automatiko.engine.api.config.FileSystemPersistenceConfig;
-import io.automatiko.engine.api.config.InfinispanPersistenceConfig;
-import io.automatiko.engine.api.config.MongodbPersistenceConfig;
-import io.automatiko.engine.api.config.PersistenceConfig;
+import io.automatiko.engine.api.config.DatabasePersistenceBuildConfig;
+import io.automatiko.engine.api.config.PersistenceBuildConfig;
 import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
-public class PersistenceBuildTimeConfig extends PersistenceConfig {
+public class PersistenceBuildTimeConfig extends PersistenceBuildConfig {
 
     /**
      * Determines the type of persistence to be used
@@ -22,46 +17,10 @@ public class PersistenceBuildTimeConfig extends PersistenceConfig {
     public Optional<String> type;
 
     /**
-     * Determines the type of encryption to be used
-     */
-    @ConfigItem
-    public Optional<String> encryption;
-
-    /**
-     * Configures file system based persistence
-     */
-    @ConfigItem
-    public FileSystemPersistenceBuildTimeConfig filesystem;
-
-    /**
-     * Configures infinispan based persistence
-     */
-    @ConfigItem
-    public InfinispanPersistenceBuildTimeConfig infinispan;
-
-    /**
      * Configures database based persistence
      */
     @ConfigItem
     public DatabasePersistenceBuildTimeConfig database;
-
-    /**
-     * Configures dynamodb based persistence
-     */
-    @ConfigItem
-    public DynamoDBPersistenceBuildTimeConfig dynamodb;
-
-    /**
-     * Configures cassandra based persistence
-     */
-    @ConfigItem
-    public CassandraPersistenceBuildTimeConfig cassandra;
-
-    /**
-     * Configures mongodb based persistence
-     */
-    @ConfigItem
-    public MongodbPersistenceBuildTimeConfig mongodb;
 
     @Override
     public Optional<String> type() {
@@ -69,38 +28,8 @@ public class PersistenceBuildTimeConfig extends PersistenceConfig {
     }
 
     @Override
-    public Optional<String> encryption() {
-        return encryption;
-    }
-
-    @Override
-    public FileSystemPersistenceConfig filesystem() {
-
-        return filesystem;
-    }
-
-    @Override
-    public InfinispanPersistenceConfig infinispan() {
-        return infinispan;
-    }
-
-    @Override
-    public DatabasePersistenceConfig database() {
+    public DatabasePersistenceBuildConfig database() {
         return database;
     }
 
-    @Override
-    public DynamoDBPersistenceConfig dynamodb() {
-        return dynamodb;
-    }
-
-    @Override
-    public CassandraPersistenceConfig cassandra() {
-        return cassandra;
-    }
-
-    @Override
-    public MongodbPersistenceConfig mongodb() {
-        return mongodb;
-    }
 }
