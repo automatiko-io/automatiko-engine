@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 
 import io.automatiko.engine.api.Functions;
+import io.automatiko.engine.api.event.AbstractDataEvent;
 import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.runtime.process.ProcessContext;
 import io.automatiko.engine.workflow.base.core.context.variable.JsonVariableScope;
@@ -84,7 +85,17 @@ public class ServerlessFunctions implements Functions {
             Object filteredInput = evaluator.evaluate(inputFilter, vars);
             vars.put("workflowdata", filteredInput);
         }
-        evaluator.evaluate(expression, vars);
+        JsonNode outcome = (JsonNode) evaluator.evaluate(expression, vars);
+        Object updated;
+        try {
+            if (outcome != null) {
+                updated = mapper.readerForUpdating(context.getVariable(JsonVariableScope.WORKFLOWDATA_KEY))
+                        .readValue(outcome);
+                context.setVariable(JsonVariableScope.WORKFLOWDATA_KEY, updated);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -136,11 +147,56 @@ public class ServerlessFunctions implements Functions {
         }
     }
 
+    public static Object variableExpression(ProcessContext context, String expression) {
+
+        if (expression.startsWith("${") || expression.startsWith("\"${")) {
+
+            ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) context.getProcessInstance()
+                    .getProcess())
+                            .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+            Map<String, Object> vars = new HashMap<>();
+            vars.put("workflowdata", context.getVariable(JsonVariableScope.WORKFLOWDATA_KEY));
+            if (context.getVariable("$CONST") != null) {
+                vars.put("workflow_variables", Collections.singletonMap("CONST", context.getVariable("$CONST")));
+            }
+            Object content = evaluator.evaluate(unwrapExpression(expression), vars);
+
+            return content;
+        } else {
+            return fromJson(expression);
+        }
+    }
+
     public static JsonNode fromJson(String json) {
         try {
             return mapper.readTree(json);
         } catch (Exception e) {
             throw new RuntimeException("Error transforming json string to object", e);
         }
+    }
+
+    public static String extensionAttribute(AbstractDataEvent<?> eventData, String attributeName) {
+        String actualAttributeName = eventData.getExtensions().keySet().stream()
+                .filter(attr -> attr.equalsIgnoreCase(attributeName)).findFirst().orElse(null);
+        if (actualAttributeName != null) {
+            return eventData.getExtension(actualAttributeName).toString();
+        }
+
+        return null;
+    }
+
+    private static String unwrapExpression(String input) {
+        if (input == null) {
+            return null;
+        }
+        String trimmed = input.trim();
+        if (input.startsWith("${")) {
+            return trimmed.trim().substring(2, trimmed.length() - 2);
+        } else if (input.startsWith("\"${")) {
+            return trimmed.trim().substring(3, trimmed.length() - 3);
+        } else if (input.startsWith("\"")) {
+            return trimmed.trim().substring(1, trimmed.length() - 1);
+        }
+        return input.trim();
     }
 }

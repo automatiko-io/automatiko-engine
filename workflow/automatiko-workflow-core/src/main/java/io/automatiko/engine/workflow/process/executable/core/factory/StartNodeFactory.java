@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import io.automatiko.engine.api.runtime.process.ProcessContext;
+import io.automatiko.engine.workflow.base.core.context.variable.Mappable;
 import io.automatiko.engine.workflow.base.core.event.EventTypeFilter;
 import io.automatiko.engine.workflow.base.core.timer.Timer;
 import io.automatiko.engine.workflow.base.instance.impl.Action;
@@ -19,7 +20,7 @@ import io.automatiko.engine.workflow.process.core.node.EventTrigger;
 import io.automatiko.engine.workflow.process.core.node.StartNode;
 import io.automatiko.engine.workflow.process.executable.core.ExecutableNodeContainerFactory;
 
-public class StartNodeFactory extends ExtendedNodeFactory {
+public class StartNodeFactory extends ExtendedNodeFactory implements MappableNodeFactory {
 
     public static final String METHOD_INTERRUPTING = "interrupting";
     public static final String METHOD_TRIGGER = "trigger";
@@ -98,5 +99,10 @@ public class StartNodeFactory extends ExtendedNodeFactory {
     public StartNodeFactory condition(Predicate<ProcessContext> condition) {
         getStartNode().setCondition(condition);
         return this;
+    }
+
+    @Override
+    public Mappable getMappableNode() {
+        return getStartNode();
     }
 }

@@ -66,6 +66,7 @@ import io.automatiko.engine.workflow.process.instance.NodeInstance;
 import io.automatiko.engine.workflow.process.instance.NodeInstanceContainer;
 import io.automatiko.engine.workflow.process.instance.impl.NodeInstanceImpl;
 import io.automatiko.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
+import io.automatiko.engine.workflow.process.instance.node.CompositeContextNodeInstance;
 import io.automatiko.engine.workflow.process.instance.node.EventSubProcessNodeInstance;
 import io.automatiko.engine.workflow.process.instance.node.HumanTaskNodeInstance;
 import io.automatiko.engine.workflow.process.instance.node.LambdaSubProcessNodeInstance;
@@ -503,6 +504,12 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
         NodeInstanceContainer nodeInstanceContainerNode = parentNode == null ? wfpi
                 : ((NodeInstanceContainer) wfpi.getNodeInstance(parentNode));
+
+        if (nodeInstanceContainerNode.getNodeInstances().isEmpty()
+                && nodeInstanceContainerNode instanceof CompositeContextNodeInstance) {
+
+            ((CompositeContextNodeInstance) nodeInstanceContainerNode).internalTriggerOnlyParent(null, nodeId);
+        }
 
         nodeInstanceContainerNode.getNodeInstance(node).trigger(null,
                 io.automatiko.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);

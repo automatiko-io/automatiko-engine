@@ -13,6 +13,7 @@ import java.util.Map;
 
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -173,9 +174,19 @@ public class TriggerMetaData {
 
         // and add trigger action
         BlockStmt actionBody = new BlockStmt();
-        CastExpr variable = new CastExpr(new ClassOrInterfaceType(null, triggerMetaData.getDataType()),
-                new MethodCallExpr(new NameExpr(KCONTEXT_VAR), "getVariable")
-                        .addArgument(new StringLiteralExpr(triggerMetaData.getModelRef())));
+        Expression variable;
+        if (metadata.isServerless()) {
+            variable = new CastExpr(new ClassOrInterfaceType(null, triggerMetaData.getDataType()),
+                    new MethodCallExpr(null, "variableExpression")
+                            .addArgument(new NameExpr(KCONTEXT_VAR))
+                            .addArgument(new StringLiteralExpr(triggerMetaData.getModelRef())));
+
+        } else {
+            variable = new CastExpr(new ClassOrInterfaceType(null, triggerMetaData.getDataType()),
+                    new MethodCallExpr(new NameExpr(KCONTEXT_VAR), "getVariable")
+                            .addArgument(new StringLiteralExpr(triggerMetaData.getModelRef())));
+        }
+
         MethodCallExpr producerMethodCall = new MethodCallExpr(new NameExpr("producer_" + node.getId()), "produce")
                 .addArgument(new MethodCallExpr(new NameExpr("context"), "getProcessInstance")).addArgument(variable);
         actionBody.addStatement(producerMethodCall);

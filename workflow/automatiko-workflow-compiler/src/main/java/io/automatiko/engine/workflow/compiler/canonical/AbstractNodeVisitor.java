@@ -19,6 +19,7 @@ import java.util.Set;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.Expression;
@@ -202,7 +203,8 @@ public abstract class AbstractNodeVisitor<T extends Node> extends AbstractVisito
                                     (outputFilter != null ? new StringLiteralExpr().setString(outputFilter)
                                             : new NullLiteralExpr()),
                                     (scopeFilter != null ? new StringLiteralExpr().setString(scopeFilter)
-                                            : new NullLiteralExpr())));
+                                            : new NullLiteralExpr()),
+                                    new BooleanLiteralExpr(action.isIgnoreScopeFilter())));
                 }
             }
         } else {

@@ -164,10 +164,10 @@ public class ExecutableProcessValidator implements ProcessValidator {
                 if (split.getFrom() == null && !acceptsNoIncomingConnections(node)) {
                     addErrorMessage(process, node, errors, "Split has no incoming connection.");
                 }
-                if (split.getDefaultOutgoingConnections().size() < 2) {
-                    addErrorMessage(process, node, errors, "Split does not have more than one outgoing connection: "
-                            + split.getOutgoingConnections().size() + ".");
-                }
+                //                if (split.getDefaultOutgoingConnections().size() < 2) {
+                //                    addErrorMessage(process, node, errors, "Split does not have more than one outgoing connection: "
+                //                            + split.getOutgoingConnections().size() + ".");
+                //                }
                 if (split.getType() == Split.TYPE_XOR || split.getType() == Split.TYPE_OR) {
                     for (final Iterator<Connection> it = split.getDefaultOutgoingConnections().iterator(); it
                             .hasNext();) {
@@ -186,10 +186,10 @@ public class ExecutableProcessValidator implements ProcessValidator {
                 if (join.getType() == Join.TYPE_UNDEFINED) {
                     addErrorMessage(process, node, errors, "Join has no type.");
                 }
-                if (join.getDefaultIncomingConnections().size() < 2) {
-                    addErrorMessage(process, node, errors, "Join does not have more than one incoming connection: "
-                            + join.getIncomingConnections().size() + ".");
-                }
+                //                if (join.getDefaultIncomingConnections().size() < 2) {
+                //                    addErrorMessage(process, node, errors, "Join does not have more than one incoming connection: "
+                //                            + join.getIncomingConnections().size() + ".");
+                //                }
                 if (join.getTo() == null && !acceptsNoOutgoingConnections(node)) {
                     addErrorMessage(process, node, errors, "Join has no outgoing connection.");
                 }

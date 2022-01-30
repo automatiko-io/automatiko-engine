@@ -1,0 +1,73 @@
+{
+  "id": "greetInTheMiddle",
+  "version": "1.0",
+  "specVersion": "0.8",
+  "name": "Event (in the middle) Based Greeting Workflow",
+  "description": "Event Based Greeting illustrating event receive in the middle of the workflow",
+  "annotations" : ["${ .name }"],
+  "start": "Hello State",
+  "events": [
+    {
+      "name": "GreetingEvent",
+      "type": "greetingEventType",
+      "source": "greetingEventSource",
+      "correlation" : [
+      	{
+      	  "contextAttributeName" : "userName"
+      	}
+      ]
+    },
+    {
+      "name": "CarBidEvent",
+      "type": "carBidMadeType",
+      "source": "carBidEventSource",
+      "kind" : "produced"
+    }
+  ],
+  "functions": [
+    {
+      "name": "greetingFunction",
+      "operation": "api/swagger.json#greet"
+    }
+  ],
+  "states":[
+    {
+      "name":"Hello State",
+      "type":"inject",
+      "data": {
+        "result": "Hello World!"
+      },
+      "transition": "Greet"
+    },
+    {
+      "name":"Greet",
+      "type":"event",
+      "onEvents": [{
+        "eventRefs": ["GreetingEvent"],
+        "eventDataFilter": {
+          "data": "${ .data.greet }"
+        },
+        "actions":[
+          {
+            "functionRef": {
+              "refName": "greetingFunction",
+              "arguments": {
+                "name": "${ {name : .name} }"
+              }
+            }
+          }
+        ]
+      }],
+      "stateDataFilter": {
+        "output": "${ . }"
+      },
+      "end": {
+		    "terminate": true,
+		    "produceEvents": [{
+		        "eventRef": "CarBidEvent",
+		        "data": "${ {greet :.greeting} }"
+		    }]
+		}
+    }
+  ]
+}

@@ -42,12 +42,13 @@ public class ProcessMetaData {
 
     private boolean startable;
     private boolean dynamic;
+    private boolean serverless;
 
     private Map<String, ServiceTaskDescriptor> generatedHandlers = new HashMap<>();
     private Set<CompilationUnit> generatedListeners = new HashSet<>();
 
     public ProcessMetaData(String processId, String extractedProcessId, String processName, String processVersion,
-            String processPackageName, String processClassName, String source) {
+            String processPackageName, String processClassName, String source, boolean serverless) {
         super();
         this.processId = processId;
         this.extractedProcessId = extractedProcessId;
@@ -58,6 +59,7 @@ public class ProcessMetaData {
                 : processPackageName + "." + processClassName;
         this.processBaseClassName = processClassName;
         this.setSource(source);
+        this.serverless = serverless;
     }
 
     public String getPackageName() {
@@ -192,6 +194,10 @@ public class ProcessMetaData {
 
     public void setDynamic(boolean dynamic) {
         this.dynamic = dynamic;
+    }
+
+    public boolean isServerless() {
+        return serverless;
     }
 
     @Override

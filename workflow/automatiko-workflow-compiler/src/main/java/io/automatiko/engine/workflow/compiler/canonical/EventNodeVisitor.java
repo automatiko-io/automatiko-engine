@@ -59,6 +59,8 @@ public class EventNodeVisitor extends AbstractNodeVisitor<EventNode> {
                 triggerMetaData.addContext(node.getMetaData());
                 triggerMetaData.addContext(Collections.singletonMap("_node_", node));
                 metadata.addTrigger(triggerMetaData);
+
+                addNodeMappings(process, node, body, getNodeId(node));
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException(MessageFormat
                         .format("Invalid parameters for event node \"{0}\": {1}", node.getName(), e.getMessage()), e);

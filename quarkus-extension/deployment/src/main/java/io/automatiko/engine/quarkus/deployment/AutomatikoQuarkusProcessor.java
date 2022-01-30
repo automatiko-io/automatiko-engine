@@ -172,6 +172,14 @@ public class AutomatikoQuarkusProcessor {
 
             Index index = automatikoIndexer.complete();
 
+            Collection<ClassInfo> dataEvents = index
+                    .getAllKnownSubclasses(createDotName("io.automatiko.engine.api.event.AbstractDataEvent"));
+
+            dataEvents.forEach(
+                    c -> {
+                        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, c.name().toString()));
+                    });
+
             generatePersistenceInfo(config, pconfig, appPaths, generatedBeans, additionalIndexClass,
                     CompositeIndex.create(archivesIndex, index), launchMode, resource,
                     curateOutcomeBuildItem);
@@ -230,12 +238,6 @@ public class AutomatikoQuarkusProcessor {
 
         CompositeIndex archivesIndex = CompositeIndex.create(archiveIndexes);
 
-        Collection<ClassInfo> dataEvents = archivesIndex
-                .getAllKnownSubclasses(createDotName("io.automatiko.engine.api.event.AbstractDataEvent"));
-
-        dataEvents.forEach(
-                c -> reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, c.name().toString())));
-
         // add functions classes found
         reflectiveClass.produce(
                 new ReflectiveClassBuildItem(true, false, "io.automatiko.engine.services.execution.BaseFunctions"));
@@ -266,6 +268,36 @@ public class AutomatikoQuarkusProcessor {
             reflectiveHierarchy.produce(new ReflectiveHierarchyIgnoreWarningBuildItem(
                     createDotName("org.kie.dmn.api.feel.runtime.events.FEELEvent")));
         }
+
+        // jackson node classes for serializing JSON tree instances
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "com.fasterxml.jackson.databind.node.TextNode"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "com.fasterxml.jackson.databind.node.BinaryNode"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "com.fasterxml.jackson.databind.node.BooleanNode"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "com.fasterxml.jackson.databind.node.NullNode"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "com.fasterxml.jackson.databind.node.BigIntegerNode"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "com.fasterxml.jackson.databind.node.DecimalNode"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "com.fasterxml.jackson.databind.node.DoubleNode"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "com.fasterxml.jackson.databind.node.FloatNode"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "com.fasterxml.jackson.databind.node.IntNode"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "com.fasterxml.jackson.databind.node.LongNode"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "com.fasterxml.jackson.databind.node.ShortNode"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "com.fasterxml.jackson.databind.node.POJONode"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "com.fasterxml.jackson.databind.node.ObjectNode"));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                "com.fasterxml.jackson.databind.node.ArrayNode"));
 
     }
 

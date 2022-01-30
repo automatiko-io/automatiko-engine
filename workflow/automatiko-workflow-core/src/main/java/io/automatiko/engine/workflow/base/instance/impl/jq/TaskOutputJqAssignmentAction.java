@@ -17,10 +17,21 @@ public class TaskOutputJqAssignmentAction implements AssignmentAction {
 
     private String outputFilterExpression;
     private String scopeFilter;
+    private boolean ignoreScopeFilter;
 
     public TaskOutputJqAssignmentAction(String output, String scope) {
         this.outputFilterExpression = output;
         this.scopeFilter = scope == null ? output : scope;
+    }
+
+    public TaskOutputJqAssignmentAction(String output, String scope, boolean ignoreScopeFilter) {
+        this.outputFilterExpression = output;
+        this.ignoreScopeFilter = ignoreScopeFilter;
+        if (ignoreScopeFilter) {
+            this.scopeFilter = scope;
+        } else {
+            this.scopeFilter = scope == null ? output : scope;
+        }
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -44,17 +55,21 @@ public class TaskOutputJqAssignmentAction implements AssignmentAction {
             vars.put("workflow_variables", variables);
             sdata = (JsonNode) evaluator.evaluate(outputFilterExpression, vars);
 
-            variables.put("v", sdata);
-            sdata = (JsonNode) evaluator.evaluate(scopeFilter + "=$v", vars);
+            if (scopeFilter != null) {
+                variables.put("v", sdata);
+                sdata = (JsonNode) evaluator.evaluate(scopeFilter + "=$v", vars);
+            }
 
         }
 
         ObjectMapper mapper = new ObjectMapper();
 
-        Object updated = mapper.readerForUpdating(context.getVariable(JsonVariableScope.WORKFLOWDATA_KEY))
-                .readValue(sdata);
+        if (sdata != null) {
+            Object updated = mapper.readerForUpdating(context.getVariable(JsonVariableScope.WORKFLOWDATA_KEY))
+                    .readValue(sdata);
 
-        context.setVariable(JsonVariableScope.WORKFLOWDATA_KEY, updated);
+            context.setVariable(JsonVariableScope.WORKFLOWDATA_KEY, updated);
+        }
 
     }
 
@@ -64,6 +79,10 @@ public class TaskOutputJqAssignmentAction implements AssignmentAction {
 
     public String getScopeFilter() {
         return scopeFilter;
+    }
+
+    public boolean isIgnoreScopeFilter() {
+        return ignoreScopeFilter;
     }
 
 }

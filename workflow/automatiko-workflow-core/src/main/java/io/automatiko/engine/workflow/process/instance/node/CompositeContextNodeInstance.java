@@ -122,7 +122,7 @@ public class CompositeContextNodeInstance extends CompositeNodeInstance
     }
 
     @Override
-    protected void internalTriggerOnlyParent(NodeInstance from, String type) {
+    public void internalTriggerOnlyParent(NodeInstance from, String type) {
         processInputMappings();
         super.internalTriggerOnlyParent(from, type);
 

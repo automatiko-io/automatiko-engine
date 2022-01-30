@@ -1,0 +1,80 @@
+{
+  "id": "applicantrequest",
+  "version": "1.0",
+  "specVersion": "0.8",
+  "name": "Applicant Request Decision Workflow",
+  "description": "Determine if applicant request is valid",
+  "start": "CheckApplication",
+  "functions": [
+    {
+      "name": "sendRejectionEmailFunction",
+      "operation": "http://myapis.org/applicationapi.json#emailRejection"
+    },
+    {
+      "name": "sendStartEmailFunction",
+      "operation": "http://myapis.org/applicationapi.json#emailStart"
+    }
+  ],
+  "events": [
+    {
+      "name": "visaApprovedEvent",
+      "type": "VisaApproved",
+      "source": "visaCheckSource"
+    },
+    {
+      "name": "visaRejectedEvent",
+      "type": "VisaRejected",
+      "source": "visaCheckSource"
+    }
+  ],
+  "states":[
+    {
+      "name":"CheckApplication",
+      "type":"switch",
+      "eventConditions": [
+        {
+          "eventRef": "visaApprovedEvent",
+          "transition": "StartApplication"
+        },
+        {
+          "eventRef": "visaRejectedEvent",
+          "transition": "RejectApplication"
+        }
+      ],
+      "timeouts": {
+        "eventTimeout": "PT1H"
+      }
+    },
+    {
+      "name": "StartApplication",
+      "type": "operation",
+      "actions": [
+        {
+          "functionRef": {
+            "refName": "sendStartEmailFunction",
+            "arguments": {
+              "applicant": "${ .applicant }"
+            }
+          }
+        }
+      ],
+      "end": true
+    },
+    {
+      "name":"RejectApplication",
+      "type":"operation",
+      "actionMode":"sequential",
+      "actions":[
+        {
+          "functionRef": {
+            "refName": "sendRejectionEmailFunction",
+            "arguments": {
+              "applicant": "${ .applicant }"
+            }
+          }
+        }
+      ],
+      "end": true
+    }
+  ]
+}

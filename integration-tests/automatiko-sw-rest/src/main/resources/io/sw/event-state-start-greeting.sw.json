@@ -1,0 +1,64 @@
+{
+  "id": "eventbasedgreeting",
+  "version": "1.0",
+  "specVersion": "0.8",
+  "name": "Event Based Greeting Workflow",
+  "description": "Event Based Greeting",
+  "start": "Greet",
+  "events": [
+    {
+      "name": "GreetingEvent",
+      "type": "greetingEventType",
+      "source": "greetingEventSource"
+    },
+    {
+      "name": "ExtraGreetingEvent",
+      "type": "extraGreetingEventType",
+      "source": "extraGreetingEventSource"
+    },
+    {
+      "name": "CarBidEvent",
+      "type": "carBidMadeType",
+      "source": "carBidEventSource",
+      "kind" : "produced"
+    }
+  ],
+  "functions": [
+    {
+      "name": "greetingFunction",
+      "operation": "api/swagger.json#greet"
+    }
+  ],
+  "states":[
+    {
+      "name":"Greet",
+      "type":"event",
+      "onEvents": [{
+        "eventRefs": ["GreetingEvent"],
+        "eventDataFilter": {
+          "data": "${ .data.greet }"
+        },
+        "actions":[
+          {
+            "functionRef": {
+              "refName": "greetingFunction",
+              "arguments": {
+                "name": "${ {name : .name} }"
+              }
+            }
+          }
+        ]
+      }],
+      "stateDataFilter": {
+        "output": "${ . }"
+      },
+      "end": {
+		    "terminate": true,
+		    "produceEvents": [{
+		        "eventRef": "CarBidEvent",
+		        "data": "${ {greet :.greeting} }"
+		    }]
+		}
+    }
+  ]
+}
