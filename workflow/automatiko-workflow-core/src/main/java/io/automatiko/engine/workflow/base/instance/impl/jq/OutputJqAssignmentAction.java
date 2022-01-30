@@ -42,9 +42,10 @@ public class OutputJqAssignmentAction implements AssignmentAction {
 
         ObjectNode workflowData = (ObjectNode) context.getProcessInstance().getVariable(JsonVariableScope.WORKFLOWDATA_KEY);
         ObjectMapper mapper = new ObjectMapper();
-
-        Object updated = mapper.readerForUpdating(workflowData).readValue((JsonNode) sdata);
-        context.getProcessInstance().setVariable(JsonVariableScope.WORKFLOWDATA_KEY, updated);
+        if (!workflowData.equals(sdata)) {
+            Object updated = mapper.readerForUpdating(workflowData).readValue((JsonNode) sdata);
+            context.getProcessInstance().setVariable(JsonVariableScope.WORKFLOWDATA_KEY, updated);
+        }
     }
 
     public String getOutputFilterExpression() {

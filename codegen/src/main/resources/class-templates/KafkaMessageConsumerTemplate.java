@@ -129,7 +129,7 @@ public class $Type$MessageConsumer {
 		return null;
 	}
 	 
-	protected String correlationEvent(Object eventData, Message<?> message) {
+	protected String correlationEvent(io.automatiko.engine.api.event.AbstractDataEvent<?> eventData, Message<?> message) {
 		
 		return null;
 	}

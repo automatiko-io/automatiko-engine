@@ -65,6 +65,14 @@ public class SvgServerlessProcessImageGenerator implements SvgProcessImageGenera
             DocumentBuilder dBuilder = DOCUMENT_BUILDER_FACTORY.newDocumentBuilder();
             Document doc = dBuilder.parse(is);
 
+            Node svg = doc.getElementsByTagName("svg").item(0);
+            ((Element) svg).removeAttribute("height");
+            ((Element) svg).removeAttribute("width");
+            ((Element) svg).removeAttribute("style");
+            ((Element) svg).removeAttribute("preserveAspectRatio");
+            ((Element) svg).setAttribute("text-rendering", "auto");
+            ((Element) svg).setAttribute("shape-rendering", "auto");
+
             NodeList textNodes = doc.getElementsByTagName("text");
             for (int i = 0; i < textNodes.getLength(); i++) {
                 Element text = (Element) textNodes.item(i);

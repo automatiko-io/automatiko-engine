@@ -1,31 +1,41 @@
 {
-  "id": "switchworkflow",
-  "name": "switch-wf",
+  "id": "newpatient",
+  "name": "Onboard a new patient",
+  "description": "Adds a new Patient and assigns a doctor",
   "specVersion": "0.8",
-  "version": "1.0",
-  "start":"AddInfo",
-  "annotations": ["simple", "1111", "${ \"hello \" + .name }"],
-  "timeouts": {
-    "actionExecTimeout" : "PT2S"
-  },
+  "start":"OnboardNewPatient",
   "functions": [
-   {
-     "name": "storeNewPatient",
-     "operation": "api/swagger.json#add"
-   }
- ],
-  "states":[
     {
-      "name":"AddInfo",
-      "type":"inject",
-      "data": {
-        "person": {
-          "name": "john",
-          "age": 25
-        }
-      },
-      "transition": "OnboardNewPatient"
+      "name": "storeNewPatient",
+      "operation": "api/swagger.json#add"
     },
+    {
+      "name": "assignDoctor",
+      "operation": "api/swagger.json#assign"
+    }
+  ],
+  "retries": [
+    {
+      "name": "NotFoundStrategy",
+      "delay": "PT1S",
+      "maxAttempts": 3
+    }
+  ],
+  "errors": [
+    {
+      "name": "NotFound",
+      "code": "404"
+    }
+  ],
+  "events": [
+    {
+      "name": "CarBidEvent",
+      "type": "carBidMadeType",
+      "source": "carBidEventSource",
+      "kind" : "produced"
+    }
+  ],
+  "states":[
     {
       "name":"OnboardNewPatient",
       "type":"operation",
@@ -34,46 +44,55 @@
           "functionRef": {
             "refName": "storeNewPatient"
           }
-        }
-      ],
-      "transition": "Sleep for a while"
-    },
-    {
-      "name":"Sleep for a while",
-      "type":"sleep",
-      "duration": "PT20M",
-      "transition": "ChooseOnAge"
-    },
-    {
-      "name": "ChooseOnAge",
-      "type": "switch",
-      "dataConditions": [
-        {
-          "condition": "${ .person | .age >= 18 }",
-          "transition": "Approve"
         },
         {
-          "condition": "${ .person | .age < 18 }",
-          "transition": "Deny"
+          "functionRef": {
+            "refName": "assignDoctor"
+          }
         }
       ],
-      "defaultCondition": {
-        "transition": "Approve"
+      "onErrors": [
+        {
+          "errorRef": "NotFound",          
+          "transition": {
+	      	"nextState":"AddNotFoundInfo",
+	      	"produceEvents" :  [{
+		       "eventRef": "CarBidEvent",
+		       "data": "${ . }"
+		   },{
+		       "eventRef": "CarBidEvent",
+		       "data": "${ {patient : .name} }"
+		   }]
+	      }         
+        }
+      ],
+      "end": {
+		    "terminate": true,
+		    "produceEvents": [{
+		        "eventRef": "CarBidEvent",
+		        "data": "${ .doctor }"
+		    }]
+		}
+    },
+    {
+      "name": "AddNotFoundInfo",
+      "type": "inject",
+      "data": {
+        "errormessage": "Invalid Patient Data"
+      },
+      "transition": {
+      	"nextState":"Done",
+      	"produceEvents" :  [{
+	       "eventRef": "CarBidEvent",
+	       "data": "${ . }"
+	   }]
       }
     },
     {
-      "name":"Approve",
-      "type":"inject",
+      "name": "Done",
+      "type": "inject",
       "data": {
-        "decision": "Approved"
-      },
-      "end": true
-    },
-    {
-      "name":"Deny",
-      "type":"inject",
-      "data": {
-        "decision": "Denied"
+        "completionMessage": "Failure"
       },
       "end": true
     }

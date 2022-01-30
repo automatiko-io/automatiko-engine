@@ -577,7 +577,7 @@ public abstract class NodeInstanceImpl
         return contextInstanceContainer.getContextInstance(context);
     }
 
-    private ContextInstanceContainer getContextInstanceContainer(ContextContainer contextContainer) {
+    public ContextInstanceContainer getContextInstanceContainer(ContextContainer contextContainer) {
         ContextInstanceContainer contextInstanceContainer;
         if (this instanceof ContextInstanceContainer) {
             contextInstanceContainer = (ContextInstanceContainer) this;

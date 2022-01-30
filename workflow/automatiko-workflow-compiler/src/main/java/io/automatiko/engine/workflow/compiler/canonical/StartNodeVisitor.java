@@ -9,6 +9,7 @@ import static io.automatiko.engine.workflow.process.executable.core.Metadata.TRI
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.TRIGGER_MAPPING;
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.TRIGGER_REF;
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.TRIGGER_TYPE;
+import static io.automatiko.engine.workflow.process.executable.core.factory.MappableNodeFactory.METHOD_OUT_JQ_MAPPING;
 import static io.automatiko.engine.workflow.process.executable.core.factory.MilestoneNodeFactory.METHOD_CONDITION;
 import static io.automatiko.engine.workflow.process.executable.core.factory.StartNodeFactory.METHOD_INTERRUPTING;
 import static io.automatiko.engine.workflow.process.executable.core.factory.StartNodeFactory.METHOD_TIMER;
@@ -30,6 +31,7 @@ import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.core.timer.Timer;
+import io.automatiko.engine.workflow.base.instance.impl.jq.TaskOutputJqAssignmentAction;
 import io.automatiko.engine.workflow.process.core.node.Assignment;
 import io.automatiko.engine.workflow.process.core.node.ConstraintTrigger;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
@@ -54,18 +56,42 @@ public class StartNodeVisitor extends AbstractNodeVisitor<StartNode> {
 
         visitMetaData(node.getMetaData(), body, getNodeId(node));
 
-        for (DataAssociation entry : node.getOutAssociations()) {
+        boolean serverless = ProcessToExecModelGenerator.isServerlessWorkflow(process);
 
-            if (entry.getAssignments() != null && !entry.getAssignments().isEmpty()) {
-                Assignment assignment = entry.getAssignments().get(0);
-                body.addStatement(getFactoryMethod(getNodeId(node), "outMapping",
-                        new StringLiteralExpr(entry.getSources().get(0)), new NullLiteralExpr(),
-                        new StringLiteralExpr(assignment.getDialect()), new StringLiteralExpr(assignment.getFrom()),
-                        new StringLiteralExpr(assignment.getTo())));
-            } else {
-                body.addStatement(getFactoryMethod(getNodeId(node), "outMapping",
-                        new StringLiteralExpr(entry.getSources().get(0)), new StringLiteralExpr(entry.getTarget()),
-                        new NullLiteralExpr(), new NullLiteralExpr(), new NullLiteralExpr()));
+        if (serverless) {
+
+            for (DataAssociation association : node.getOutAssociations()) {
+
+                if (association.getAssignments() != null && !association.getAssignments().isEmpty()) {
+                    TaskOutputJqAssignmentAction action = (TaskOutputJqAssignmentAction) association.getAssignments().get(0)
+                            .getMetaData("Action");
+
+                    String outputFilter = action.getOutputFilterExpression();
+                    String scopeFilter = action.getScopeFilter();
+                    body.addStatement(
+                            getFactoryMethod(getNodeId(node), METHOD_OUT_JQ_MAPPING,
+                                    (outputFilter != null ? new StringLiteralExpr().setString(outputFilter)
+                                            : new NullLiteralExpr()),
+                                    (scopeFilter != null ? new StringLiteralExpr().setString(scopeFilter)
+                                            : new NullLiteralExpr()),
+                                    new BooleanLiteralExpr(action.isIgnoreScopeFilter())));
+                }
+            }
+        } else {
+
+            for (DataAssociation entry : node.getOutAssociations()) {
+
+                if (entry.getAssignments() != null && !entry.getAssignments().isEmpty()) {
+                    Assignment assignment = entry.getAssignments().get(0);
+                    body.addStatement(getFactoryMethod(getNodeId(node), "outMapping",
+                            new StringLiteralExpr(entry.getSources().get(0)), new NullLiteralExpr(),
+                            new StringLiteralExpr(assignment.getDialect()), new StringLiteralExpr(assignment.getFrom()),
+                            new StringLiteralExpr(assignment.getTo())));
+                } else {
+                    body.addStatement(getFactoryMethod(getNodeId(node), "outMapping",
+                            new StringLiteralExpr(entry.getSources().get(0)), new StringLiteralExpr(entry.getTarget()),
+                            new NullLiteralExpr(), new NullLiteralExpr(), new NullLiteralExpr()));
+                }
             }
         }
 
@@ -92,6 +118,7 @@ public class StartNodeVisitor extends AbstractNodeVisitor<StartNode> {
             metadata.addTrigger(trigger);
 
             handleTrigger(node, nodeMetaData, body, variableScope, metadata);
+
         } else {
             // since there is start node without trigger then make sure it is startable
             metadata.setStartable(true);

@@ -103,13 +103,13 @@ public class MessageProducerGenerator {
         String sanitizedName = CodegenUtils.triggerSanitizedName(trigger, process.getVersion());
         if (connector.equals(MQTT_CONNECTOR)) {
 
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".merge", "true");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".topic",
                     (String) trigger.getContext("topic", trigger.getName()));
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".host", "${mqtt.server:localhost}");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".port", "${mqtt.port:1883}");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".client-id",
                     classPrefix + "-producer");
-            context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents", "false");
 
             context.addInstruction(
                     "Properties for MQTT based message event '" + trigger.getDescription() + "'");
@@ -125,6 +125,7 @@ public class MessageProducerGenerator {
                     + ".client-id' should be used to configure MQTT client id that defaults to '" + classPrefix
                     + "-producer'");
         } else if (connector.equals(CAMEL_CONNECTOR)) {
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".merge", "true");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".endpoint-uri", "");
             context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents", "false");
             context.addInstruction(
@@ -133,6 +134,7 @@ public class MessageProducerGenerator {
                     + ".endpoint-uri' should be used to configure Apache Camel location");
         } else if (connector.equals(KAFKA_CONNECTOR)) {
 
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".merge", "true");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".bootstrap.servers",
                     "${kafka.servers:localhost:9092}");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".topic",
@@ -143,7 +145,8 @@ public class MessageProducerGenerator {
                     "org.apache.kafka.common.serialization.StringSerializer");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".group.id",
                     classPrefix + "-consumer");
-            context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents", "false");
+            context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents",
+                    isServerlessProcess() ? "true" : "false");
             context.addInstruction(
                     "Properties for Apache Kafka based message event '" + trigger.getDescription() + "'");
             context.addInstruction(
@@ -160,11 +163,13 @@ public class MessageProducerGenerator {
                     + ".group.id' should be used to configure Kafka group id that defaults to '" + classPrefix
                     + "-consumer'");
         } else if (connector.equals(JMS_CONNECTOR)) {
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".merge", "true");
             context.setApplicationProperty("quarkus.index-dependency.sjms.group-id", "io.smallrye.reactive");
             context.setApplicationProperty("quarkus.index-dependency.sjms.artifact-id", "smallrye-reactive-messaging-jms");
 
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".destination", sanitizedName.toUpperCase());
-            context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents", "false");
+            context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents",
+                    isServerlessProcess() ? "true" : "false");
             context.addInstruction(
                     "Properties for JMS based message event '" + trigger.getDescription() + "'");
             context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
@@ -173,7 +178,10 @@ public class MessageProducerGenerator {
                             .orElse(sanitizedName.toUpperCase())
                     + "'");
         } else if (connector.equals(AMQP_CONNECTOR)) {
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".merge", "true");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".address", sanitizedName.toUpperCase());
+            context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents",
+                    isServerlessProcess() ? "true" : "false");
             context.addInstruction(
                     "Properties for AMQP based message event '" + trigger.getDescription() + "'");
             context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
@@ -182,10 +190,12 @@ public class MessageProducerGenerator {
                             .orElse(sanitizedName.toUpperCase())
                     + "'");
         } else if (connector.equals(HTTP_CONNECTOR)) {
-
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".merge", "true");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".serializer",
                     "io.quarkus.reactivemessaging.http.runtime.serializers.StringSerializer");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".method", "POST");
+            context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents",
+                    isServerlessProcess() ? "true" : "false");
             context.addInstruction(
                     "Properties for HTTP based message event '" + trigger.getDescription() + "'");
             context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
@@ -455,7 +465,7 @@ public class MessageProducerGenerator {
                                     AssignExpr.Operator.ASSIGN));
                         }
                     }
-                    boolean hasCamelHeaders = true;
+
                     for (Entry<String, Object> entry : trigger.getContext().entrySet()) {
 
                         if (entry.getKey().startsWith("Camel")) {
@@ -464,7 +474,7 @@ public class MessageProducerGenerator {
                                     .addArgument(new StringLiteralExpr(entry.getKey()))
                                     .addArgument(new NameExpr(entry.getValue().toString())));
                         } else if (entry.getKey().startsWith("HTTP")) {
-                            hasCamelHeaders = false;
+
                             body.addStatement(new MethodCallExpr(new NameExpr("builder"), "addHeader")
                                     .addArgument(new StringLiteralExpr(entry.getKey().replaceFirst("HTTP", "")))
                                     .addArgument(new NameExpr(entry.getValue().toString())));
@@ -472,7 +482,7 @@ public class MessageProducerGenerator {
 
                     }
 
-                    if (hasCamelHeaders) {
+                    if (!md.getTypeAsString().equalsIgnoreCase("void")) {
                         body.addStatement(new ReturnStmt(new NameExpr("metadata")));
                     }
                     md.setBody(body);
@@ -591,6 +601,10 @@ public class MessageProducerGenerator {
         template.getMembers().sort(new BodyDeclarationComparator());
         ImportsOrganizer.organize(clazz);
         return clazz.toString();
+    }
+
+    private boolean isServerlessProcess() {
+        return (boolean) process.getMetaData().getOrDefault("IsServerlessWorkflow", false);
     }
 
 }

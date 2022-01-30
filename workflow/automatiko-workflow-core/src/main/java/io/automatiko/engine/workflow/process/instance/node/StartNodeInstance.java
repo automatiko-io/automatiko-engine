@@ -13,13 +13,18 @@ import org.mvel2.MVEL;
 
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.api.workflow.datatype.DataType;
+import io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError;
 import io.automatiko.engine.workflow.base.core.ContextContainer;
+import io.automatiko.engine.workflow.base.core.context.ProcessContext;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.core.event.EventTransformer;
 import io.automatiko.engine.workflow.base.instance.InternalProcessRuntime;
 import io.automatiko.engine.workflow.base.instance.context.variable.VariableScopeInstance;
+import io.automatiko.engine.workflow.base.instance.impl.AssignmentAction;
 import io.automatiko.engine.workflow.base.instance.impl.util.VariableUtil;
+import io.automatiko.engine.workflow.base.instance.impl.workitem.WorkItemImpl;
+import io.automatiko.engine.workflow.process.core.node.Assignment;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
 import io.automatiko.engine.workflow.process.core.node.StartNode;
 import io.automatiko.engine.workflow.process.instance.impl.NodeInstanceImpl;
@@ -125,6 +130,10 @@ public class StartNodeInstance extends NodeInstanceImpl {
                             }
                         }
 
+                    } else {
+                        Object data = event;
+                        association.getAssignments().stream()
+                                .forEach(assignment -> handleAssignment(assignment, data));
                     }
                 }
             } else {
@@ -175,5 +184,25 @@ public class StartNodeInstance extends NodeInstanceImpl {
         ((io.automatiko.engine.workflow.process.instance.NodeInstanceContainer) getNodeInstanceContainer())
                 .setCurrentLevel(getLevel());
         triggerCompleted(io.automatiko.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE, true);
+    }
+
+    private void handleAssignment(Assignment assignment, Object result) {
+        AssignmentAction action = (AssignmentAction) assignment.getMetaData("Action");
+        if (action == null) {
+            return;
+        }
+        try {
+            ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
+            context.setNodeInstance(this);
+
+            WorkItemImpl workItem = new WorkItemImpl();
+            workItem.setResult("workflowdata", result);
+            workItem.setResult("event", result);
+            action.execute(workItem, context);
+        } catch (WorkItemExecutionError e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("unable to execute Assignment", e);
+        }
     }
 }

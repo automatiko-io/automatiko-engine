@@ -21,6 +21,7 @@ public class MessageProducer {
     
     private static final Logger LOGGER = LoggerFactory.getLogger("MessageProducer");
     
+    @io.smallrye.reactive.messaging.annotations.Broadcast(0)
     org.eclipse.microprofile.reactive.messaging.Emitter<String> emitter;
     
     Optional<Boolean> useCloudEvents = Optional.of(false);

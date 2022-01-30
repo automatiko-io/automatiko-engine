@@ -5,6 +5,7 @@ public class Metadata {
 
     public static final String ACTION = "Action";
     public static final String TRIGGER_REF = "TriggerRef";
+    public static final String TRIGGER_SOURCE = "TriggerSource";
     public static final String REF = "Ref";
     public static final String MESSAGE_TYPE = "MessageType";
     public static final String TRIGGER_TYPE = "TriggerType";
@@ -40,6 +41,8 @@ public class Metadata {
     public static final String COMPLETION_CONDITION = "completionCondition";
     public static final String DATA_INPUTS = "DataInputs";
     public static final String DATA_OUTPUTS = "DataOutputs";
+
+    public static final String CONNECTOR = "connector";
 
     private Metadata() {
     }

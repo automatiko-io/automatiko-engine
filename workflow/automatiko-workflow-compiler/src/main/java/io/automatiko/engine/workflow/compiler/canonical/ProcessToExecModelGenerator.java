@@ -59,7 +59,7 @@ public class ProcessToExecModelGenerator {
         String packageName = parsedClazzFile.getPackageDeclaration().map(NodeWithName::getNameAsString).orElse(null);
         ProcessMetaData metadata = new ProcessMetaData(process.getId(), extractedProcessId, process.getName(),
                 ModelMetaData.version(process.getVersion()), packageName, processClazz.getNameAsString(),
-                extractSourcePath(process));
+                extractSourcePath(process), isServerlessWorkflow(process));
 
         Optional<MethodDeclaration> processMethod = parsedClazzFile.findFirst(MethodDeclaration.class,
                 sl -> sl.getName().asString().equals("buildProcess"));
@@ -79,7 +79,8 @@ public class ProcessToExecModelGenerator {
 
         String packageName = clazz.getPackageDeclaration().map(NodeWithName::getNameAsString).orElse(null);
         ProcessMetaData metadata = new ProcessMetaData(process.getId(), extractedProcessId, process.getName(),
-                ModelMetaData.version(process.getVersion()), packageName, "process", extractSourcePath(process));
+                ModelMetaData.version(process.getVersion()), packageName, "process", extractSourcePath(process),
+                isServerlessWorkflow(process));
 
         MethodDeclaration processMethod = new MethodDeclaration();
         processVisitor.visitProcess(process, processMethod, metadata, workflowType);

@@ -22,14 +22,21 @@ import io.automatiko.engine.api.runtime.process.NodeInstanceState;
 import io.automatiko.engine.api.workflow.BaseEventDescription;
 import io.automatiko.engine.api.workflow.EventDescription;
 import io.automatiko.engine.api.workflow.NamedDataType;
+import io.automatiko.engine.api.workflow.datatype.DataType;
+import io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError;
 import io.automatiko.engine.services.time.TimerInstance;
+import io.automatiko.engine.workflow.base.core.context.ProcessContext;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.core.event.EventTransformer;
 import io.automatiko.engine.workflow.base.instance.InternalProcessRuntime;
 import io.automatiko.engine.workflow.base.instance.ProcessInstance;
 import io.automatiko.engine.workflow.base.instance.context.variable.VariableScopeInstance;
+import io.automatiko.engine.workflow.base.instance.impl.AssignmentAction;
 import io.automatiko.engine.workflow.base.instance.impl.util.VariableUtil;
+import io.automatiko.engine.workflow.base.instance.impl.workitem.WorkItemImpl;
+import io.automatiko.engine.workflow.process.core.node.Assignment;
+import io.automatiko.engine.workflow.process.core.node.DataAssociation;
 import io.automatiko.engine.workflow.process.core.node.EventNode;
 import io.automatiko.engine.workflow.process.instance.WorkflowProcessInstance;
 import io.automatiko.engine.workflow.process.instance.impl.ExtendedNodeInstanceImpl;
@@ -58,7 +65,57 @@ public class EventNodeInstance extends ExtendedNodeInstanceImpl
 
         } else {
             String variableName = getEventNode().getVariableName();
-            if (variableName != null) {
+            if (!getEventNode().getOutAssociations().isEmpty()) {
+                for (DataAssociation association : getEventNode().getOutAssociations()) {
+
+                    if (association.getAssignments() == null || association.getAssignments().isEmpty()) {
+                        VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+                                VARIABLE_SCOPE, association.getTarget());
+                        if (variableScopeInstance != null) {
+                            Variable varDef = variableScopeInstance.getVariableScope()
+                                    .findVariable(association.getTarget());
+                            DataType dataType = varDef.getType();
+                            // exclude java.lang.Object as it is considered unknown type
+                            if (!dataType.getStringType().endsWith("java.lang.Object")
+                                    && !dataType.getStringType().endsWith("Object") && event instanceof String) {
+                                event = dataType.readValue((String) event);
+                            } else {
+                                variableScopeInstance.getVariableScope().validateVariable(
+                                        getProcessInstance().getProcessName(), association.getTarget(), event);
+                            }
+                            variableScopeInstance.setVariable(this, association.getTarget(), event);
+                        } else {
+                            String output = association.getSources().get(0);
+                            String target = association.getTarget();
+
+                            Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(target);
+                            if (matcher.find()) {
+                                String paramName = matcher.group(1);
+
+                                String expression = VariableUtil.transformDotNotation(paramName, output);
+                                NodeInstanceResolverFactory resolver = new NodeInstanceResolverFactory(this);
+                                resolver.addExtraParameters(
+                                        Collections.singletonMap(association.getSources().get(0), event));
+                                Serializable compiled = MVEL.compileExpression(expression);
+                                MVEL.executeExpression(compiled, resolver);
+                                String varName = VariableUtil.nameFromDotNotation(paramName);
+                                variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+                                        VARIABLE_SCOPE, varName);
+                                variableScopeInstance.setVariable(this, varName, variableScopeInstance.getVariable(varName));
+                            } else {
+                                logger.warn("Could not find variable scope for variable {}", association.getTarget());
+                                logger.warn("when trying to complete start node {}", getEventNode().getName());
+                                logger.warn("Continuing without setting variable.");
+                            }
+                        }
+
+                    } else {
+                        Object data = event;
+                        association.getAssignments().stream()
+                                .forEach(assignment -> handleAssignment(assignment, data));
+                    }
+                }
+            } else if (variableName != null) {
                 VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
                         VariableScope.VARIABLE_SCOPE, variableName);
                 if (variableScopeInstance != null) {
@@ -347,5 +404,25 @@ public class EventNodeInstance extends ExtendedNodeInstanceImpl
         }
         return Collections.singleton(new BaseEventDescription(getEventType(), getNodeDefinitionId(), getNodeName(),
                 "signal", getId(), getProcessInstance().getId(), dataType));
+    }
+
+    private void handleAssignment(Assignment assignment, Object result) {
+        AssignmentAction action = (AssignmentAction) assignment.getMetaData("Action");
+        if (action == null) {
+            return;
+        }
+        try {
+            ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
+            context.setNodeInstance(this);
+
+            WorkItemImpl workItem = new WorkItemImpl();
+            workItem.setResult("workflowdata", result);
+            workItem.setResult("event", result);
+            action.execute(workItem, context);
+        } catch (WorkItemExecutionError e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("unable to execute Assignment", e);
+        }
     }
 }

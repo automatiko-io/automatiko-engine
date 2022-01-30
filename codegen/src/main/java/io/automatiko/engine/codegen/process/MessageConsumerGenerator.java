@@ -131,6 +131,7 @@ public class MessageConsumerGenerator {
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".auto-keep-alive", "true");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".keep-alive-seconds", "600");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".failure-strategy", "ignore");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".broadcast", "true");
             context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents", "false");
 
             context.addInstruction(
@@ -151,6 +152,7 @@ public class MessageConsumerGenerator {
 
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".endpoint-uri", "");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".failure-strategy", "ignore");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".broadcast", "true");
             context.addInstruction(
                     "Properties for Apache Camel based message event '" + trigger.getDescription() + "'");
             context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
@@ -170,6 +172,8 @@ public class MessageConsumerGenerator {
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".broadcast", "true");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".failure-strategy", "ignore");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".cloud-events", "false");
+            context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents",
+                    isServerlessProcess() ? "true" : "false");
             context.addInstruction(
                     "Properties for Apache Kafka based message event '" + trigger.getDescription() + "'");
             context.addInstruction(
@@ -189,8 +193,11 @@ public class MessageConsumerGenerator {
 
             context.setApplicationProperty("quarkus.index-dependency.sjms.group-id", "io.smallrye.reactive");
             context.setApplicationProperty("quarkus.index-dependency.sjms.artifact-id", "smallrye-reactive-messaging-jms");
+            context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents",
+                    isServerlessProcess() ? "true" : "false");
 
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".destination", sanitizedName.toUpperCase());
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".broadcast", "true");
             if (trigger.getContext("selector") != null) {
                 context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".selector",
                         trigger.getContext("selector").toString().replaceAll("=", "\\="));
@@ -209,6 +216,9 @@ public class MessageConsumerGenerator {
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".address", sanitizedName.toUpperCase());
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".failure-strategy", "release");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".cloud-events", "false");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".broadcast", "true");
+            context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents",
+                    isServerlessProcess() ? "true" : "false");
             context.addInstruction(
                     "Properties for AMQP based message event '" + trigger.getDescription() + "'");
             context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
@@ -220,6 +230,9 @@ public class MessageConsumerGenerator {
 
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".path", "/" + sanitizedName.toLowerCase());
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".buffer-size", "10");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".broadcast", "true");
+            context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents",
+                    isServerlessProcess() ? "true" : "false");
             context.addInstruction(
                     "Properties for HTTP based message event '" + trigger.getDescription() + "'");
             context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
@@ -374,7 +387,9 @@ public class MessageConsumerGenerator {
             body.addStatement(new ReturnStmt(new NullLiteralExpr()));
         }
 
-        boolean cloudEvents = context.getBuildContext().config().messaging().asCloudevents();
+        boolean cloudEvents = context.getBuildContext().config().messaging().asCloudevents() ||
+                Boolean.parseBoolean(
+                        context.getApplicationProperty("quarkus.automatiko.messaging.as-cloudevents").orElse("false"));
 
         if (cloudEvents) {
 
@@ -462,5 +477,9 @@ public class MessageConsumerGenerator {
         } else if (!trigger.getName().equals(other.trigger.getName()))
             return false;
         return true;
+    }
+
+    private boolean isServerlessProcess() {
+        return (boolean) process.getMetaData().getOrDefault("IsServerlessWorkflow", false);
     }
 }

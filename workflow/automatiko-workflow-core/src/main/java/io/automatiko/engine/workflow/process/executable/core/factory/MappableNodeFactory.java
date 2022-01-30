@@ -29,9 +29,11 @@ public interface MappableNodeFactory {
         return this;
     }
 
-    default MappableNodeFactory outMappingWithJqAssignment(String outputExpression, String scopeExpression) {
+    default MappableNodeFactory outMappingWithJqAssignment(String outputExpression, String scopeExpression,
+            boolean ignoreScopeExpression) {
         Assignment outAssignment = new Assignment("jq", null, null);
-        outAssignment.setMetaData("Action", new TaskOutputJqAssignmentAction(outputExpression, scopeExpression));
+        outAssignment.setMetaData("Action",
+                new TaskOutputJqAssignmentAction(outputExpression, scopeExpression, ignoreScopeExpression));
         getMappableNode().addOutAssociation(
                 new DataAssociation(Collections.emptyList(), "", Arrays.asList(outAssignment), null));
         return this;
