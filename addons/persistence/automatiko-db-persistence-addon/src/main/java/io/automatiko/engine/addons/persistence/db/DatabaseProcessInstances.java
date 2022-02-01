@@ -45,7 +45,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
 
     public DatabaseProcessInstances(Process<? extends ProcessInstanceEntity> process, StoredDataCodec codec) {
         this.process = process;
-        this.marshaller = new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy());
+        this.marshaller = new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process));
         this.codec = codec;
 
         this.type = process.createModel().getClass();

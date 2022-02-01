@@ -150,7 +150,8 @@ public class MessageConsumerGenerator {
 
         } else if (connector.equals(CAMEL_CONNECTOR)) {
 
-            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".endpoint-uri", "");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".endpoint-uri",
+                    (String) trigger.getContext("url", ""));
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".failure-strategy", "ignore");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".broadcast", "true");
             context.addInstruction(
@@ -160,7 +161,7 @@ public class MessageConsumerGenerator {
         } else if (connector.equals(KAFKA_CONNECTOR)) {
 
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".bootstrap.servers",
-                    "${kafka.servers:localhost:9092}");
+                    "${kafka.bootstrap.servers:localhost\\\\:9092}");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".topic",
                     (String) trigger.getContext("topic", trigger.getName()));
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".key.deserializer",
@@ -231,6 +232,7 @@ public class MessageConsumerGenerator {
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".path", "/" + sanitizedName.toLowerCase());
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".buffer-size", "10");
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".broadcast", "true");
+
             context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents",
                     isServerlessProcess() ? "true" : "false");
             context.addInstruction(

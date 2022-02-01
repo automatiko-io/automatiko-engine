@@ -74,7 +74,7 @@ public class MongodbProcessInstances implements MutableProcessInstances {
     public MongodbProcessInstances(Process<? extends Model> process, MongoClient mongoClient,
             MongodbPersistenceConfig config, StoredDataCodec codec) {
         this.process = process;
-        this.marshallingStrategy = new JacksonObjectMarshallingStrategy();
+        this.marshallingStrategy = new JacksonObjectMarshallingStrategy(process);
         this.marshaller = new ProcessInstanceMarshaller(marshallingStrategy);
         this.config = config;
         this.mongoClient = mongoClient;

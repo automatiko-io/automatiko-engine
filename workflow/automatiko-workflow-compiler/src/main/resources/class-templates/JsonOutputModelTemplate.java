@@ -3,7 +3,6 @@ package org.jbpm.process.codegen;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -22,16 +21,6 @@ public class XXXModel extends io.automatiko.engine.workflow.JsonModel {
     
     public XXXModel(JsonNode jsonNode) {
         super(jsonNode);
-    }
-    
-    @JsonIgnore
-    public void setId(String id) {
-        
-    }
-    
-    @JsonIgnore
-    public void setMetadata(InstanceMetadata metadata) {
-        
     }
     
     public static class ModelJsonNodeDeserializer extends JsonNodeDeserializer {

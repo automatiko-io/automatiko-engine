@@ -79,7 +79,7 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
     public DynamoDBProcessInstances(Process<? extends Model> process, DynamoDbClient dynamodb,
             DynamoDBPersistenceConfig config, StoredDataCodec codec) {
         this.process = process;
-        this.marshaller = new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy());
+        this.marshaller = new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process));
         this.config = config;
         this.dynamodb = dynamodb;
         this.tableName = process.id().toUpperCase();

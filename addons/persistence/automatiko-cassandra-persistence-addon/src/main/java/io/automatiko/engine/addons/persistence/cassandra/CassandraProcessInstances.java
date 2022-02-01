@@ -82,7 +82,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
     public CassandraProcessInstances(Process<? extends Model> process, CqlSession cqlSession,
             CassandraPersistenceConfig config, StoredDataCodec codec) {
         this.process = process;
-        this.marshaller = new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy());
+        this.marshaller = new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process));
         this.config = config;
         this.cqlSession = cqlSession;
         this.tableName = process.id().toUpperCase();
