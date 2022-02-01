@@ -52,6 +52,7 @@ import io.serverlessworkflow.api.functions.SubFlowRef.OnParentComplete;
 import io.serverlessworkflow.api.interfaces.State;
 import io.serverlessworkflow.api.produce.ProduceEvent;
 import io.serverlessworkflow.api.retry.RetryDefinition;
+import io.serverlessworkflow.api.states.CallbackState;
 import io.serverlessworkflow.api.states.DefaultState;
 import io.serverlessworkflow.api.states.DefaultState.Type;
 import io.serverlessworkflow.api.states.EventState;
@@ -193,8 +194,15 @@ public class ServerlessWorkflowParser {
                     EndNode endNode = factory.endNode(ids.getAndIncrement(), state.getName() + "-end",
                             state.getEnd().isTerminate(),
                             process);
-                    factory.connect(actionNode.getId(), endNode.getId(),
-                            "connection_" + actionNode.getId() + "_" + endNode.getId(), process, false);
+
+                    if (state.getEnd().getProduceEvents() != null && !state.getEnd().getProduceEvents().isEmpty()) {
+                        produceEvents(state.getEnd().getProduceEvents(), factory, workflow, ids, process,
+                                actionNode.getId(),
+                                endNode.getId());
+                    } else {
+                        factory.connect(actionNode.getId(), endNode.getId(),
+                                "connection_" + actionNode.getId() + "_" + endNode.getId(), process, false);
+                    }
                 }
                 setUniqueId(actionNode, state);
                 currentNode = actionNode;
@@ -448,6 +456,67 @@ public class ServerlessWorkflowParser {
                 }
 
             } else if (state.getType().equals(DefaultState.Type.CALLBACK)) {
+                CallbackState callcackState = (CallbackState) state;
+                CompositeContextNode embeddedSubProcess = factory.subProcessNode(ids.getAndIncrement(), state.getName(),
+                        process);
+                currentNode = embeddedSubProcess;
+                setUniqueId(embeddedSubProcess, state);
+                // handle state data inputs
+                Assignment inputAssignment = new Assignment("jq", "", "");
+                inputAssignment.setMetaData("Action", new InputJqAssignmentAction(
+                        state.getStateDataFilter() == null ? null
+                                : factory.unwrapExpression(state.getStateDataFilter().getInput())));
+                embeddedSubProcess.addInAssociation(
+                        new DataAssociation(Collections.emptyList(), "", Arrays.asList(inputAssignment), null));
+
+                // handle state data outputs
+                Assignment outputAssignment = new Assignment("jq", "", "");
+                outputAssignment.setMetaData("Action", new OutputJqAssignmentAction(
+                        state.getStateDataFilter() == null ? null
+                                : factory.unwrapExpression(state.getStateDataFilter().getOutput())));
+                embeddedSubProcess.addOutAssociation(
+                        new DataAssociation(Collections.emptyList(), "", Arrays.asList(outputAssignment), null));
+                mappedNodes.put(state.getName(), embeddedSubProcess.getId());
+
+                StartNode embeddedStartNode = factory.startNode(ids.getAndIncrement(), "EmbeddedStart", embeddedSubProcess);
+                EndNode embeddedEndNode = factory.endNode(ids.getAndIncrement(), "EmbeddedEnd", false, embeddedSubProcess);
+
+                EventDefinition event = WorkflowUtils.getDefinedConsumedEvents(workflow).stream()
+                        .filter(e -> e.getName().equals(callcackState.getEventRef())).findFirst().get();
+
+                EventNode eventNode = factory.consumeEventNode(ids.getAndIncrement(), event, callcackState.getEventDataFilter(),
+                        embeddedSubProcess);
+
+                buildActionsForState(workflow, Collections.singletonList(callcackState.getAction()), embeddedSubProcess,
+                        factory, ids,
+                        (first, last) -> {
+                            factory.connect(embeddedStartNode.getId(), first.getId(),
+                                    embeddedStartNode.getId() + "_" + first.getId(),
+                                    embeddedSubProcess, false);
+
+                            factory.connect(last.getId(), eventNode.getId(),
+                                    last.getId() + "_" + eventNode.getId(),
+                                    embeddedSubProcess, false);
+                        }, (first, last) -> {
+                        }, false);
+
+                factory.connect(eventNode.getId(), embeddedEndNode.getId(),
+                        "connection_" + eventNode.getId() + "_" + embeddedEndNode.getId(), embeddedSubProcess, false);
+
+                if (state.getEnd() != null) {
+
+                    EndNode endNode = factory.endNode(ids.getAndIncrement(), state.getName() + "-end",
+                            state.getEnd().isTerminate(),
+                            process);
+                    if (state.getEnd().getProduceEvents() != null && !state.getEnd().getProduceEvents().isEmpty()) {
+                        produceEvents(state.getEnd().getProduceEvents(), factory, workflow, ids, process,
+                                embeddedSubProcess.getId(),
+                                endNode.getId());
+                    } else {
+                        factory.connect(embeddedSubProcess.getId(), endNode.getId(),
+                                "connection_" + embeddedSubProcess.getId() + "_" + endNode.getId(), process, false);
+                    }
+                }
 
             } else if (state.getType().equals(Type.SLEEP)) {
 

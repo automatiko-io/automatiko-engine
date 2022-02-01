@@ -1,0 +1,57 @@
+{
+  "id": "helloworld",
+  "version": "1.0",
+  "specVersion": "0.8",
+  "name": "Hello World Workflow",
+  "description": "Callback State Hello World",
+  "start": "Initialize Count",
+  "functions": [
+	    {
+	        "name": "Increment Count Function",
+	        "type": "expression",
+	        "operation": ".current += 1 | .current"
+	    }
+  ],
+  "events": [
+    {
+      "name": "CarBidEvent",
+      "type": "carBidMadeType",
+      "source": "carBidEventSource",
+      "kind" : "consumed"
+    }
+  ],
+  "states":[
+   {
+        "name": "Initialize Count",
+        "type": "inject",
+        "data": {
+            "count": 10
+        },
+        "transition": "Callback State"
+    },
+    {
+      "name":"Callback State",
+      "type":"callback",
+      "stateDataFilter": {
+		      "input": "${ {current: .count} }",
+		      "output": "${ {count: .current} }"
+		    },
+      "action" : {
+	        "functionRef": "Increment Count Function",
+	        "actionDataFilter": {
+	            "toStateData": "${ .current }"
+	        }
+	    },
+      "eventRef": "CarBidEvent",
+      "transition": "Goodbye State"
+    },
+    {
+      "name":"Goodbye State",
+      "type":"inject",
+      "data": {
+        "result": "Goodbye World!"
+      },
+      "end": true
+    }
+  ]
+}
