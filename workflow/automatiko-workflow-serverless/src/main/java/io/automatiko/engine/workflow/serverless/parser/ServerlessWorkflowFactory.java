@@ -332,6 +332,10 @@ public class ServerlessWorkflowFactory {
 
         startNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
 
+        if (eventDefinition.getMetadata() != null) {
+            eventDefinition.getMetadata().forEach((k, v) -> startNode.setMetaData(k, v));
+        }
+
         //        if (ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()) != null) {
         //            eventNode.setMetaData(Metadata.TRIGGER_CORRELATION_EXPR,
         //                    ServerlessWorkflowUtils.correlationExpressionFromSource(eventDefinition.getSource()));
@@ -567,6 +571,10 @@ public class ServerlessWorkflowFactory {
         eventNode.setMetaData(Metadata.EVENT_TYPE, "message");
         eventNode.setMetaData(Metadata.MESSAGE_TYPE, JSON_NODE);
         eventNode.setVariableName(DEFAULT_WORKFLOW_VAR);
+
+        if (eventDefinition.getMetadata() != null) {
+            eventDefinition.getMetadata().forEach((k, v) -> eventNode.setMetaData(k, v));
+        }
 
         if (eventDefinition.getCorrelation() != null && !eventDefinition.getCorrelation().isEmpty()) {
 

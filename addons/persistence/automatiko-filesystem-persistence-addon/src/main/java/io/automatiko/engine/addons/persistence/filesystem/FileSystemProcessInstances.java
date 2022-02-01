@@ -65,12 +65,12 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     private Map<String, ProcessInstance> cachedInstances = new ConcurrentHashMap<>();
 
     public FileSystemProcessInstances(Process<?> process, Path storage, StoredDataCodec codec) {
-        this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy()), codec);
+        this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process)), codec);
     }
 
     public FileSystemProcessInstances(Process<?> process, Path storage, boolean useCompositeIdForSubprocess,
             StoredDataCodec codec) {
-        this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy()),
+        this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process)),
                 useCompositeIdForSubprocess, codec);
     }
 

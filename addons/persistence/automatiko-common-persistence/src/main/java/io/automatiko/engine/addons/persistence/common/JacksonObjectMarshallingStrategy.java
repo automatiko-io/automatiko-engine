@@ -17,6 +17,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 
 import io.automatiko.engine.api.marshalling.ObjectMarshallingStrategy;
+import io.automatiko.engine.api.workflow.Process;
+import io.automatiko.engine.workflow.AbstractProcess;
+import io.automatiko.engine.workflow.process.executable.core.ServerlessExecutableProcess;
 
 public class JacksonObjectMarshallingStrategy implements ObjectMarshallingStrategy {
 
@@ -24,11 +27,20 @@ public class JacksonObjectMarshallingStrategy implements ObjectMarshallingStrate
 
     protected ObjectMapper mapper;
 
-    public JacksonObjectMarshallingStrategy() {
-        this.mapper = new ObjectMapper().activateDefaultTyping(
-                BasicPolymorphicTypeValidator.builder().allowIfSubType(Object.class).build(), DefaultTyping.EVERYTHING,
-                As.PROPERTY)
-                .registerModule(new ParameterNamesModule())
+    private boolean usePolomorfic = true;
+
+    public JacksonObjectMarshallingStrategy(Process<?> process) {
+        if (((AbstractProcess<?>) process).process() instanceof ServerlessExecutableProcess) {
+            this.usePolomorfic = false;
+        }
+        this.mapper = new ObjectMapper();
+
+        if (usePolomorfic) {
+            mapper.activateDefaultTyping(
+                    BasicPolymorphicTypeValidator.builder().allowIfSubType(Object.class).build(), DefaultTyping.EVERYTHING,
+                    As.PROPERTY);
+        }
+        mapper.registerModule(new ParameterNamesModule())
                 .registerModule(new Jdk8Module())
                 .registerModule(new JavaTimeModule());
     }
@@ -50,7 +62,11 @@ public class JacksonObjectMarshallingStrategy implements ObjectMarshallingStrate
         if (object.length == 0) {
             return null;
         }
-        return mapper.readValue(log(object), Object.class);
+        if (usePolomorfic) {
+            return mapper.readValue(log(object), Object.class);
+        } else {
+            return mapper.readTree(log(object));
+        }
     }
 
     @Override

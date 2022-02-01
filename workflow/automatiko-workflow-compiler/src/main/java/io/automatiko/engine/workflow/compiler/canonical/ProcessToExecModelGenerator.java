@@ -127,7 +127,7 @@ public class ProcessToExecModelGenerator {
                 VariableDeclarations.ofOutput((VariableScope) ((io.automatiko.engine.workflow.base.core.Process) process)
                         .getDefaultContext(VariableScope.VARIABLE_SCOPE)),
                 true,
-                isServerlessWorkflow(process) ? "/class-templates/JsonModelTemplate.java"
+                isServerlessWorkflow(process) ? "/class-templates/JsonOutputModelTemplate.java"
                         : "/class-templates/ModelTemplate.java",
                 "Output data model for " + process.getName(),
                 "Describes output data model expected by " + process.getName());

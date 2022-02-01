@@ -126,7 +126,8 @@ public class MessageProducerGenerator {
                     + "-producer'");
         } else if (connector.equals(CAMEL_CONNECTOR)) {
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".merge", "true");
-            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".endpoint-uri", "");
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".endpoint-uri",
+                    (String) trigger.getContext("url", ""));
             context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents", "false");
             context.addInstruction(
                     "Properties for Apache Camel based message event '" + trigger.getDescription() + "'");
@@ -136,7 +137,7 @@ public class MessageProducerGenerator {
 
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".merge", "true");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".bootstrap.servers",
-                    "${kafka.servers:localhost:9092}");
+                    "${kafka.bootstrap.servers:localhost\\\\:9092}");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".topic",
                     (String) trigger.getContext("topic", trigger.getName()));
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".key.serializer",
@@ -190,6 +191,8 @@ public class MessageProducerGenerator {
                             .orElse(sanitizedName.toUpperCase())
                     + "'");
         } else if (connector.equals(HTTP_CONNECTOR)) {
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".url",
+                    (String) trigger.getContext("url", "http://localhost:8080/" + sanitizedName));
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".merge", "true");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".serializer",
                     "io.quarkus.reactivemessaging.http.runtime.serializers.StringSerializer");
@@ -201,7 +204,7 @@ public class MessageProducerGenerator {
             context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
                     + ".url' should be used to configure location of the service to call via HTTP, defaults to "
                     + context.getApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".url")
-                            .orElse("")
+                            .orElse((String) trigger.getContext("url", "http://localhost:8080/" + sanitizedName))
                     + "'");
             context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
                     + ".method' should be used to configure HTTP method of the service to call, defaults to "
