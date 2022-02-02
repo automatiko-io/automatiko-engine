@@ -56,6 +56,7 @@ public class $Type$MessageConsumer {
             final $Type$ model;   
             final String correlation;
             LOGGER.debug("Received message with key '{}' and payload '{}'", record.getKey(), msg.getPayload());
+            boolean accepted;
             if (useCloudEvents.orElse(false)) {
                 $DataEventType$ event;
                 String contentType = header(record, "content-type");
@@ -68,17 +69,24 @@ public class $Type$MessageConsumer {
                 } else {
                     // binary
                     eventData = convert(record, $DataType$.class);
-                    event =  new $DataEventType$(header(record, "ce_specversion"), header(record, "ce_id"), header(record, "ce_source"), header(record, "ce_type"), header(record, "ce_time"), eventData);
+                    event =  new $DataEventType$(header(record, "ce_specversion"), header(record, "ce_id"), header(record, "ce_source"), header(record, "ce_type"), header(record, "ce_subject"), header(record, "ce_time"), eventData);
                     cloudEventsExtensions(msg, event);
                 }
                                 
                 correlation = correlation(event, msg);  
+                accepted = acceptedEvent(event, msg);
             } else {
                 eventData = convert(msg, $DataType$.class);
                 model = new $Type$();  
                 
-                correlation = correlation(eventData, msg);            
+                correlation = correlation(eventData, msg); 
+                accepted = acceptedPayload(eventData, msg);
             }   
+            if (!accepted) {
+                metrics.messageRejected(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
+                LOGGER.debug("Message has been rejected by filter expression");
+                return msg.ack();
+            }
             IdentityProvider.set(new TrustedIdentityProvider("System<messaging>"));
             io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {                
                 
@@ -133,6 +141,14 @@ public class $Type$MessageConsumer {
 		
 		return null;
 	}
+	
+    protected boolean acceptedPayload(Object eventData, Message<?> message) {
+        return true;
+    }
+
+    protected boolean acceptedEvent(io.automatiko.engine.api.event.AbstractDataEvent<?> eventData, Message<?> message) {
+        return true;
+    }
 	
 	protected $DataType$ convert(Message<?> message, Class<?> clazz) throws Exception {
 	    Object payload = message.getPayload();

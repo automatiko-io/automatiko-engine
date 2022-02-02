@@ -48,10 +48,18 @@ public class $Type$MessageConsumer {
 	    metrics.messageReceived(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
 	    final String trigger = "$Trigger$";
         try {
-            IdentityProvider.set(new TrustedIdentityProvider("System<messaging>"));
+            
             LOGGER.debug("Received message with payload '{}'", new String(msg.getPayload(), StandardCharsets.UTF_8));
             final $DataType$ eventData = convert(msg, $DataType$.class);
-            final $Type$ model = new $Type$();                
+            final $Type$ model = new $Type$();  
+            
+            boolean accepted = acceptedPayload(eventData, msg);
+            if (!accepted) {
+                metrics.messageRejected(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
+                LOGGER.debug("Message has been rejected by filter expression");
+                return msg.ack();
+            }
+            IdentityProvider.set(new TrustedIdentityProvider("System<messaging>"));
             io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             	String correlation = correlationPayload(eventData, msg);
             	if (correlation != null) {
@@ -105,6 +113,14 @@ public class $Type$MessageConsumer {
 		
 		return null;
 	}
+	
+	protected boolean acceptedPayload(Object eventData, Message<byte[]> message) {
+        return true;
+    }
+
+    protected boolean acceptedEvent(io.automatiko.engine.api.event.AbstractDataEvent<?> eventData, Message<byte[]> message) {
+        return true;
+    }
 	
 	protected String topic(Message<byte[]> message, int... items) {
 		String topic = ((io.smallrye.reactive.messaging.mqtt.MqttMessage<byte[]>) message).getTopic();

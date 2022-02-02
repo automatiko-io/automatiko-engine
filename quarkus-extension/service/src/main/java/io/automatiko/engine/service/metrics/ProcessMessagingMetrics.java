@@ -77,6 +77,22 @@ public class ProcessMessagingMetrics {
         counter.increment();
     }
 
+    public void messageRejected(String connector, String message, Process process) {
+        if (!enabled.orElse(false)) {
+            return;
+        }
+
+        // "Displays total count of rejected (received but rejected by filter expression) messages on given process"
+        Counter counter = registry.get().counter("automatiko.process.messages.rejected.count",
+                Arrays.asList(Tag.of("application", application.orElse("")), Tag.of("version", version.orElse("")),
+                        Tag.of("processId", process.getId()),
+                        Tag.of("processName", nonNull(process.getName())),
+                        Tag.of("processVersion", nonNull(process.getVersion())),
+                        Tag.of("message", message),
+                        Tag.of("connector", connector)));
+        counter.increment();
+    }
+
     public void messageFailed(String connector, String message, Process process) {
         if (!enabled.orElse(false)) {
             return;

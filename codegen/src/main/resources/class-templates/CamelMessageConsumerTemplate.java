@@ -47,9 +47,15 @@ public class $Type$MessageConsumer {
 	    metrics.messageReceived(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
 	    final String trigger = "$Trigger$";
         try {
-                        
+            
             final $DataType$ eventData = convert(msg, $DataType$.class);
-            final $Type$ model = new $Type$();  
+            final $Type$ model = new $Type$();
+            boolean accepted = acceptedPayload(eventData, msg);
+            if (!accepted) {
+                metrics.messageRejected(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
+                LOGGER.debug("Message has been rejected by filter expression");
+                return msg.ack();
+            }
             IdentityProvider.set(new TrustedIdentityProvider("System<messaging>"));
             io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             	String correlation = correlationPayload(eventData, msg);
@@ -103,6 +109,14 @@ public class $Type$MessageConsumer {
 		
 		return null;
 	}
+	
+    protected boolean acceptedPayload(Object eventData, Message<?> message) {
+        return true;
+    }
+
+    protected boolean acceptedEvent(io.automatiko.engine.api.event.AbstractDataEvent<?> eventData, Message<?> message) {
+        return true;
+    }
 	
 	protected $DataType$ convert(Message<?> message, Class<?> clazz) {
 	    Object payload = message.getPayload();

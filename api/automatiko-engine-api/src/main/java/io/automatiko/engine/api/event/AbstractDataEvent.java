@@ -22,6 +22,7 @@ public abstract class AbstractDataEvent<T> implements DataEvent<T> {
     protected String source;
     protected String type;
     protected String time;
+    protected String subject;
     protected String datacontenttype;
     protected T data;
 
@@ -37,22 +38,25 @@ public abstract class AbstractDataEvent<T> implements DataEvent<T> {
         this.data = body;
     }
 
-    public AbstractDataEvent(String specversion, String id, String source, String type, String time, T data) {
+    public AbstractDataEvent(String specversion, String id, String source, String type, String subject, String time, T data) {
         this.specversion = specversion;
         this.id = id;
         this.source = source;
         this.type = type;
+        this.subject = subject;
         this.time = time == null ? ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) : time;
         this.datacontenttype = "application/json";
         this.data = data;
     }
 
-    public AbstractDataEvent(String specversion, String id, String source, String type, String time, String datacontenttype,
+    public AbstractDataEvent(String specversion, String id, String source, String type, String subject, String time,
+            String datacontenttype,
             T data) {
         this.specversion = specversion;
         this.id = id;
         this.source = source;
         this.type = type;
+        this.subject = subject;
         this.time = time;
         this.datacontenttype = datacontenttype;
         this.data = data;
@@ -66,6 +70,11 @@ public abstract class AbstractDataEvent<T> implements DataEvent<T> {
     @Override
     public String getSpecversion() {
         return specversion;
+    }
+
+    @Override
+    public String getSubject() {
+        return subject;
     }
 
     @Override

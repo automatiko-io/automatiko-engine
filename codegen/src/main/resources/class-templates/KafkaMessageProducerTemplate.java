@@ -82,6 +82,7 @@ public class MessageProducer {
                 String spec = DataEvent.SPEC_VERSION;
                 String source = "/" + pi.getProcessId() + "/" + pi.getId();
                 String type = "$Trigger$";
+                String subject = null;
                 if (useCloudEventsBinary.orElse(false)) {
                     if (converter != null && !converter.isUnsatisfied()) {
                         return converter.get().convert(eventData);
@@ -89,7 +90,7 @@ public class MessageProducer {
                         return json.writeValueAsString(eventData);
                     }                    
                 } else {
-                    $DataEventType$ event = new $DataEventType$(spec, id, source, type, null, eventData);
+                    $DataEventType$ event = new $DataEventType$(spec, id, source, type, subject, null, eventData);
                     return json.writeValueAsString(event);
                 }
             } else {
