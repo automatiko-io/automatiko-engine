@@ -22,8 +22,8 @@ public class $TypeName$ extends AbstractDataEvent<$Type$> {
         super(type, source, body);
     }
     
-    public $TypeName$(String specversion, String id, String source, String type, String time, $Type$  data) {
-        super(specversion, id, source, type, time, data);
+    public $TypeName$(String specversion, String id, String source, String type, String subject, String time, $Type$  data) {
+        super(specversion, id, source, type, subject, time, data);
     }
     
     @Override

@@ -185,6 +185,32 @@ public class ServerlessFunctions implements Functions {
         return null;
     }
 
+    public static boolean hasAttributeWithValue(AbstractDataEvent<?> eventData, String attributeName, String value) {
+
+        if (attributeName == null) {
+            return false;
+        }
+        if (attributeName.equalsIgnoreCase("id")) {
+            return eventData.getId() == null ? false : eventData.getId().equalsIgnoreCase(value);
+        } else if (attributeName.equalsIgnoreCase("type")) {
+            return eventData.getType() == null ? false : eventData.getType().equalsIgnoreCase(value);
+        } else if (attributeName.equalsIgnoreCase("source")) {
+            return eventData.getSource() == null ? false : eventData.getSource().equalsIgnoreCase(value);
+        } else if (attributeName.equalsIgnoreCase("subject")) {
+            return eventData.getSubject() == null ? false : eventData.getSubject().equalsIgnoreCase(value);
+        } else if (attributeName.equalsIgnoreCase("time")) {
+            return eventData.getTime() == null ? false : eventData.getTime().equalsIgnoreCase(value);
+        }
+
+        String actualAttributeName = eventData.getExtensions().keySet().stream()
+                .filter(attr -> attr.equalsIgnoreCase(attributeName)).findFirst().orElse(null);
+        if (actualAttributeName != null) {
+            return eventData.getExtension(actualAttributeName).toString().equalsIgnoreCase(value);
+        }
+
+        return false;
+    }
+
     private static String unwrapExpression(String input) {
         if (input == null) {
             return null;

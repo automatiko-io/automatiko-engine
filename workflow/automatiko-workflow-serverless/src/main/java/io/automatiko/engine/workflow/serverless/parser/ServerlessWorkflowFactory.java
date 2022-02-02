@@ -317,6 +317,8 @@ public class ServerlessWorkflowFactory {
                             + "\")");
             startNode.setMetaData("acceptStartSignal", "true");
         }
+        startNode.setMetaData(Metadata.TRIGGER_FILTER_EXPR,
+                "hasAttributeWithValue(eventData, \"type\", \"" + eventDefinition.getType() + "\")");
 
         EventTrigger trigger = new EventTrigger();
         EventTypeFilter eventFilter = new EventTypeFilter();
@@ -570,6 +572,8 @@ public class ServerlessWorkflowFactory {
         eventNode.setMetaData(Metadata.TRIGGER_REF, eventDefinition.getName());
         eventNode.setMetaData(Metadata.EVENT_TYPE, "message");
         eventNode.setMetaData(Metadata.MESSAGE_TYPE, JSON_NODE);
+        eventNode.setMetaData(Metadata.TRIGGER_FILTER_EXPR,
+                "hasAttributeWithValue(eventData, \"type\", \"" + eventDefinition.getType() + "\")");
         eventNode.setVariableName(DEFAULT_WORKFLOW_VAR);
 
         if (eventDefinition.getMetadata() != null) {

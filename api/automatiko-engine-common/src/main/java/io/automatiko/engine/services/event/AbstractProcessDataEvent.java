@@ -14,6 +14,6 @@ public abstract class AbstractProcessDataEvent<T> extends AbstractDataEvent<T> {
     }
 
     public AbstractProcessDataEvent(String specversion, String id, String source, String type, String time, T data) {
-        super(specversion, id, source, type, time, data);
+        super(specversion, id, source, type, null, time, data);
     }
 }

@@ -58,6 +58,13 @@ public interface DataEvent<T> {
     String getTime();
 
     /**
+     * Returns subject of the event
+     * 
+     * @return subject
+     */
+    String getSubject();
+
+    /**
      * Returns actual body of the event
      * 
      * @return

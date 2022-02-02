@@ -377,6 +377,14 @@ public class MessageConsumerGenerator {
                                 .setType(fd.getVariable(0).getTypeAsString().replace("$DataType$", trigger.getDataType()));
                     });
         }
+        BlockStmt filterExpressionBody = new BlockStmt();
+        if (trigger.getContext("filterExpression") != null) {
+
+            filterExpressionBody.addStatement(new ReturnStmt(new NameExpr((String) trigger.getContext("filterExpression"))));
+        } else {
+            filterExpressionBody.addStatement(new ReturnStmt(new BooleanLiteralExpr(true)));
+        }
+
         BlockStmt body = new BlockStmt();
         if (trigger.getCorrelation() != null) {
 
@@ -400,6 +408,12 @@ public class MessageConsumerGenerator {
                         md.setBody(body);
                         md.getParameters().get(0).setType(messageDataEventClassName);
                     });
+
+            template.findAll(MethodDeclaration.class).stream()
+                    .filter(md -> md.getNameAsString().equals("acceptedEvent")).forEach(md -> {
+                        md.setBody(filterExpressionBody);
+                        md.getParameters().get(0).setType(messageDataEventClassName);
+                    });
         } else {
 
             template.findAll(MethodDeclaration.class).stream()
@@ -407,7 +421,11 @@ public class MessageConsumerGenerator {
                         md.setBody(body);
                         md.getParameters().get(0).setType(trigger.getDataType());
                     });
-
+            template.findAll(MethodDeclaration.class).stream()
+                    .filter(md -> md.getNameAsString().equals("acceptedPayload")).forEach(md -> {
+                        md.setBody(filterExpressionBody);
+                        md.getParameters().get(0).setType(trigger.getDataType());
+                    });
         }
 
         template.addMember(
