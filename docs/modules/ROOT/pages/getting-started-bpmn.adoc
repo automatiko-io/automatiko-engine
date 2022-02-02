@@ -1,6 +1,6 @@
 :imagesdir: ../images
 
-= Getting started
+= Getting started based on BPMN2
 
 TIP: Best place to start is by trying the link:examples.html[examples]
 that will let you feel the Automatiko in action before getting your hands dirty
@@ -224,7 +224,7 @@ This just illustrates how workflow testing looks like, more advanced test cases
 can be found
 
 - link:https://github.com/automatiko-io/automatiko-examples[in examples]
-- link:https://github.com/automatiko-io/automatiko-engine-tests[in tests of Automatiko]
+- link:https://github.com/automatiko-io/automatiko-engine/integration-tests[in tests of Automatiko]
 
 == Build
 

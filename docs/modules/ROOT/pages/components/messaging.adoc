@@ -154,6 +154,9 @@ event to extract correlation value to be used to find matching workflow instance
 - *connector* - in case there are multiple connectors used it must be given
  explicitly for every message. Note it is not required if there is only one
  connector - e.g. MQTT or Apache Kafka.
+ - *filterExpression* - allows to pass a function/expression that will have access 
+ to message payload (already converted) and message itself to check if given message
+ is accepted or not. By default all messages are accepted.
 
 image::messaging-definition-general.png[]
 
