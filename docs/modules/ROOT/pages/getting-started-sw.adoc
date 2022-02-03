@@ -29,7 +29,7 @@ cd workflows
 +	
 [source,bash]
 ----
-mkdir workflows
+md workflows
 cd workflows
 ----
 
@@ -56,7 +56,7 @@ Here is a hello world example in Serverless Workflow DSL
                 "message": "Hello World"
             },
             "end": true
-        },       
+        }   
     ]
 }
 
