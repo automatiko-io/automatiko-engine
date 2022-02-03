@@ -426,8 +426,9 @@ public class ServerlessWorkflowFactory {
         EventDefinition eventDef = WorkflowUtils.getDefinedProducedEvents(workflow).stream().filter(e -> e.getName().equals(
                 event.getEventRef())).findFirst().get();
 
-        produceEventNode.setMetaData(Metadata.TRIGGER_REF, eventDef.getType());
-        produceEventNode.setMetaData(Metadata.TRIGGER_SOURCE, eventDef.getSource());
+        produceEventNode.setMetaData(Metadata.TRIGGER_REF, eventDef.getName());
+        produceEventNode.setMetaData(Metadata.TRIGGER_TYPE_ATTR, eventDef.getType());
+        produceEventNode.setMetaData(Metadata.TRIGGER_SOURCE_ATTR, eventDef.getSource());
         produceEventNode.setMetaData(Metadata.TRIGGER_TYPE, "ProduceMessage");
 
         //            if (ServerlessWorkflowUtils.correlationExpressionFromSource(eventDef.getSource()) != null) {
@@ -439,6 +440,9 @@ public class ServerlessWorkflowFactory {
 
         if (eventDef.getMetadata() != null && eventDef.getMetadata().containsKey(Metadata.CONNECTOR)) {
             produceEventNode.setMetaData(Metadata.CONNECTOR, eventDef.getMetadata().containsKey(Metadata.CONNECTOR));
+        }
+        if (eventDef.getMetadata() != null) {
+            eventDef.getMetadata().forEach((k, v) -> produceEventNode.setMetaData(k, v));
         }
 
         if (event.getData() == null || event.getData().isEmpty()) {
