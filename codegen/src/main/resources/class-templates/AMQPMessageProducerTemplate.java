@@ -63,7 +63,7 @@ public class MessageProducer {
                     builder.withApplicationProperty("cloudEvents:specversion", DataEvent.SPEC_VERSION);
                     builder.withApplicationProperty("cloudEvents:id", UUID.randomUUID().toString());
                     builder.withApplicationProperty("cloudEvents:source", "/" + pi.getProcessId() + "/" + pi.getId());
-                    builder.withApplicationProperty("cloudEvents:type", "$Trigger$");
+                    builder.withApplicationProperty("cloudEvents:type", "$TriggerType$");
                     
                 } else {
                     builder.withContentType("application/cloudevents+json; charset=UTF-8");
@@ -88,7 +88,7 @@ public class MessageProducer {
                 String id = UUID.randomUUID().toString();
                 String spec = DataEvent.SPEC_VERSION;
                 String source = "/" + pi.getProcessId() + "/" + pi.getId();
-                String type = "$Trigger$";
+                String type = "$TriggerType$";
                 String subject = null;
                 if (useCloudEventsBinary.orElse(false)) {
 

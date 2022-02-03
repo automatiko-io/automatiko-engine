@@ -61,7 +61,7 @@ public class MessageProducer {
                     headers.add("ce_specversion", DataEvent.SPEC_VERSION.getBytes(StandardCharsets.UTF_8));
                     headers.add("ce_id", UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8));
                     headers.add("ce_source", ("/" + pi.getProcessId() + "/" + pi.getId()).getBytes(StandardCharsets.UTF_8));
-                    headers.add("ce_type", "$Trigger$".getBytes(StandardCharsets.UTF_8));
+                    headers.add("ce_type", "$TriggerType$".getBytes(StandardCharsets.UTF_8));
                     
                 } else {
                     headers.add("content-type", "application/cloudevents+json; charset=UTF-8".getBytes(StandardCharsets.UTF_8));
@@ -81,7 +81,7 @@ public class MessageProducer {
                 String id = UUID.randomUUID().toString();
                 String spec = DataEvent.SPEC_VERSION;
                 String source = "/" + pi.getProcessId() + "/" + pi.getId();
-                String type = "$Trigger$";
+                String type = "$TriggerType$";
                 String subject = null;
                 if (useCloudEventsBinary.orElse(false)) {
                     if (converter != null && !converter.isUnsatisfied()) {

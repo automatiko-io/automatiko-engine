@@ -44,6 +44,7 @@ import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.compiler.canonical.TriggerMetaData;
+import io.automatiko.engine.workflow.process.executable.core.Metadata;
 
 public class MessageProducerGenerator {
 
@@ -554,6 +555,12 @@ public class MessageProducerGenerator {
                 .forEach(md -> {
                     md.findAll(StringLiteralExpr.class)
                             .forEach(str -> str.setString(str.asString().replace("$Trigger$", trigger.getName())));
+                });
+        template.findAll(MethodDeclaration.class)
+                .forEach(md -> {
+                    md.findAll(StringLiteralExpr.class)
+                            .forEach(str -> str.setString(str.asString().replace("$TriggerType$",
+                                    (String) trigger.getContext(Metadata.TRIGGER_TYPE_ATTR, trigger.getName()))));
                 });
 
         if (useInjection()) {
