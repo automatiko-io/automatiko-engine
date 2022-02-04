@@ -52,7 +52,7 @@ public class FileStore {
     }
 
     public void replace(byte[] content, String processId, String processVersion, String processInstanceId, String... name) {
-        remove(processId, processVersion, processInstanceId, name[0]);
+        remove(processId, processVersion, processInstanceId, name);
 
         save(content, processId, processVersion, processInstanceId, name);
     }
