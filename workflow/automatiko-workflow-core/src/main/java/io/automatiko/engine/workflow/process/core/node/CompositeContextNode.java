@@ -79,4 +79,5 @@ public class CompositeContextNode extends CompositeNode implements ContextContai
     public void addOutMapping(String parameterName, String variableName) {
         outMapping.add(new DataAssociation(parameterName, variableName, null, null));
     }
+
 }

@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- origin at X=0.0 Y=0.0 -->
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:automatiko="https://automatiko.io" xmlns="https://automatiko.io" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:java="http://www.java.com/javaTypes" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatiko.io automatiko.xsd" id="Definition" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="2.0.0" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="https://automatiko.io" typeLanguage="http://www.java.com/javaTypes">
+  <bpmn2:itemDefinition id="ItemDefinition_111" isCollection="false" structureRef="io.automatiko.tekton.task.approval.ApprovalTask"/>
+  <bpmn2:itemDefinition id="ItemDefinition_152" isCollection="false" structureRef="java.lang.Boolean"/>
+  <bpmn2:itemDefinition id="ItemDefinition_403" isCollection="false" structureRef="java.lang.String"/>
+  <bpmn2:itemDefinition id="ItemDefinition_453" isCollection="false" structureRef="io.automatiko.tekton.task.approval.ApprovalSpec"/>
+  <bpmn2:itemDefinition id="ItemDefinition_57" isCollection="false" structureRef="java.util.List&lt;String&gt;"/>
+  <bpmn2:itemDefinition id="ItemDefinition_380" isCollection="false" structureRef="java.util.List&lt;io.automatiko.tekton.task.approval.ApprovalResults&gt;"/>
+  <bpmn2:itemDefinition id="ItemDefinition_567" isCollection="false" structureRef="io.automatiko.tekton.task.approval.ApprovalResults"/>
+  <bpmn2:process id="multi" automatiko:packageName="io.automatiko.tekton.tasks.approval" name="Multi Approval" isExecutable="true" processType="Private">
+    <bpmn2:extensionElements>
+      <automatiko:import name="io.automatiko.tekton.task.approval.ApprovalTask"/>
+      <automatiko:import name="io.automatiko.tekton.task.approval.ApprovalSpec"/>
+      <automatiko:import name="java.util.List"/>
+      <automatiko:import name="io.automatiko.tekton.task.approval.ApprovalResults"/>
+    </bpmn2:extensionElements>
+    <bpmn2:startEvent id="StartEvent_1" name="StartProcess">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="elementname">
+          <automatiko:metaValue><![CDATA[StartProcess]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
+    </bpmn2:startEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_1" automatiko:priority="1" sourceRef="StartEvent_1" targetRef="SubProcess_1"/>
+    <bpmn2:endEvent id="EndEvent_1" name="approval step done">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="elementname">
+          <automatiko:metaValue><![CDATA[approval step done]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_2</bpmn2:incoming>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_2" automatiko:priority="1" sourceRef="ScriptTask_2" targetRef="EndEvent_1"/>
+    <bpmn2:dataObject id="resource" name="resource" itemSubjectRef="ItemDefinition_111"/>
+    <bpmn2:dataObject id="approved" name="approved" itemSubjectRef="ItemDefinition_152"/>
+    <bpmn2:dataObject id="comment" name="comment" itemSubjectRef="ItemDefinition_403"/>
+    <bpmn2:subProcess id="SubProcess_1" name="Approval task for each approver">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="elementname">
+          <automatiko:metaValue><![CDATA[Approval task for each approver]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_6</bpmn2:outgoing>
+      <bpmn2:ioSpecification id="InputOutputSpecification_2">
+        <bpmn2:dataInput id="DataInput_7" itemSubjectRef="ItemDefinition_57" isCollection="true" name="approvers"/>
+        <bpmn2:dataOutput id="DataOutput_5" itemSubjectRef="ItemDefinition_380" isCollection="true" name="results"/>
+        <bpmn2:inputSet id="InputSet_1" name="Input Set 1">
+          <bpmn2:dataInputRefs>DataInput_7</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet id="OutputSet_2" name="Output Set 2">
+          <bpmn2:dataOutputRefs>DataOutput_5</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
+      </bpmn2:ioSpecification>
+      <bpmn2:property id="itemDecision" itemSubjectRef="ItemDefinition_152" name="itemDecision"/>
+      <bpmn2:property id="itemComment" itemSubjectRef="ItemDefinition_403" name="itemComment"/>
+      <bpmn2:property id="approver_local" itemSubjectRef="ItemDefinition_403" name="approver_local"/>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_5">
+        <bpmn2:sourceRef>approvers</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_7</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataOutputAssociation id="DataOutputAssociation_3">
+        <bpmn2:sourceRef>DataOutput_5</bpmn2:sourceRef>
+        <bpmn2:targetRef>results</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:multiInstanceLoopCharacteristics id="MultiInstanceLoopCharacteristics_1">
+        <bpmn2:loopDataInputRef>DataInput_7</bpmn2:loopDataInputRef>
+        <bpmn2:loopDataOutputRef>DataOutput_5</bpmn2:loopDataOutputRef>
+        <bpmn2:inputDataItem xsi:type="bpmn2:tDataInput" id="approver" itemSubjectRef="ItemDefinition_403" name="approver"/>
+        <bpmn2:outputDataItem xsi:type="bpmn2:tDataOutput" id="result" itemSubjectRef="ItemDefinition_567" name="result"/>
+      </bpmn2:multiInstanceLoopCharacteristics>
+      <bpmn2:startEvent id="StartEvent_2" name="item start">
+        <bpmn2:extensionElements>
+          <automatiko:metaData name="elementname">
+            <automatiko:metaValue><![CDATA[item start]]></automatiko:metaValue>
+          </automatiko:metaData>
+        </bpmn2:extensionElements>
+        <bpmn2:outgoing>SequenceFlow_3</bpmn2:outgoing>
+      </bpmn2:startEvent>
+      <bpmn2:userTask id="UserTask_1" name="Multi Approval">
+        <bpmn2:extensionElements>
+          <automatiko:metaData name="elementname">
+            <automatiko:metaValue><![CDATA[Multi Approval]]></automatiko:metaValue>
+          </automatiko:metaData>
+        </bpmn2:extensionElements>
+        <bpmn2:incoming>SequenceFlow_3</bpmn2:incoming>
+        <bpmn2:outgoing>SequenceFlow_4</bpmn2:outgoing>
+        <bpmn2:ioSpecification id="InputOutputSpecification_1">
+          <bpmn2:dataInput id="DataInput_1" name="TaskName"/>
+          <bpmn2:dataInput id="DataInput_2" name="Exluded users"/>
+          <bpmn2:dataInput id="DataInput_3" name="Groups"/>
+          <bpmn2:dataInput id="DataInput_4" itemSubjectRef="ItemDefinition_453" name="spec"/>
+          <bpmn2:dataOutput id="DataOutput_1" itemSubjectRef="ItemDefinition_152" name="approval"/>
+          <bpmn2:dataOutput id="DataOutput_2" itemSubjectRef="ItemDefinition_403" name="comment"/>
+          <bpmn2:inputSet id="_InputSet_4">
+            <bpmn2:dataInputRefs>DataInput_1</bpmn2:dataInputRefs>
+            <bpmn2:dataInputRefs>DataInput_2</bpmn2:dataInputRefs>
+            <bpmn2:dataInputRefs>DataInput_3</bpmn2:dataInputRefs>
+            <bpmn2:dataInputRefs>DataInput_4</bpmn2:dataInputRefs>
+          </bpmn2:inputSet>
+          <bpmn2:outputSet id="OutputSet_1" name="Output Set">
+            <bpmn2:dataOutputRefs>DataOutput_1</bpmn2:dataOutputRefs>
+            <bpmn2:dataOutputRefs>DataOutput_2</bpmn2:dataOutputRefs>
+          </bpmn2:outputSet>
+        </bpmn2:ioSpecification>
+        <bpmn2:dataInputAssociation id="DataInputAssociation_1">
+          <bpmn2:targetRef>DataInput_1</bpmn2:targetRef>
+          <bpmn2:assignment id="Assignment_1">
+            <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_1">approval</bpmn2:from>
+            <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_2">DataInput_1</bpmn2:to>
+          </bpmn2:assignment>
+        </bpmn2:dataInputAssociation>
+        <bpmn2:dataInputAssociation id="DataInputAssociation_2">
+          <bpmn2:targetRef>DataInput_2</bpmn2:targetRef>
+        </bpmn2:dataInputAssociation>
+        <bpmn2:dataInputAssociation id="DataInputAssociation_3">
+          <bpmn2:targetRef>DataInput_3</bpmn2:targetRef>
+        </bpmn2:dataInputAssociation>
+        <bpmn2:dataInputAssociation id="DataInputAssociation_4">
+          <bpmn2:targetRef>DataInput_4</bpmn2:targetRef>
+          <bpmn2:assignment id="Assignment_4">
+            <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_10">#{resource.getSpec()}</bpmn2:from>
+            <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_8">DataInput_4</bpmn2:to>
+          </bpmn2:assignment>
+        </bpmn2:dataInputAssociation>
+        <bpmn2:dataOutputAssociation id="DataOutputAssociation_1">
+          <bpmn2:sourceRef>DataOutput_1</bpmn2:sourceRef>
+          <bpmn2:targetRef>itemDecision</bpmn2:targetRef>
+        </bpmn2:dataOutputAssociation>
+        <bpmn2:dataOutputAssociation id="DataOutputAssociation_2">
+          <bpmn2:sourceRef>DataOutput_2</bpmn2:sourceRef>
+          <bpmn2:targetRef>itemComment</bpmn2:targetRef>
+        </bpmn2:dataOutputAssociation>
+        <bpmn2:potentialOwner id="PotentialOwner_2" name="Potential Owner 2">
+          <bpmn2:resourceAssignmentExpression id="ResourceAssignmentExpression_2">
+            <bpmn2:formalExpression id="FormalExpression_3">#{approver}</bpmn2:formalExpression>
+          </bpmn2:resourceAssignmentExpression>
+        </bpmn2:potentialOwner>
+      </bpmn2:userTask>
+      <bpmn2:sequenceFlow id="SequenceFlow_3" automatiko:priority="1" sourceRef="StartEvent_2" targetRef="UserTask_1"/>
+      <bpmn2:scriptTask id="ScriptTask_1" name="create result" scriptFormat="http://www.java.com/java">
+        <bpmn2:extensionElements>
+          <automatiko:metaData name="elementname">
+            <automatiko:metaValue><![CDATA[create result]]></automatiko:metaValue>
+          </automatiko:metaData>
+        </bpmn2:extensionElements>
+        <bpmn2:incoming>SequenceFlow_4</bpmn2:incoming>
+        <bpmn2:outgoing>SequenceFlow_5</bpmn2:outgoing>
+        <bpmn2:script>context.setVariable(&quot;result&quot;, new io.automatiko.tekton.task.approval.ApprovalResults(itemDecision, itemComment));</bpmn2:script>
+      </bpmn2:scriptTask>
+      <bpmn2:sequenceFlow id="SequenceFlow_4" automatiko:priority="1" sourceRef="UserTask_1" targetRef="ScriptTask_1"/>
+      <bpmn2:endEvent id="EndEvent_2" name="item end">
+        <bpmn2:extensionElements>
+          <automatiko:metaData name="elementname">
+            <automatiko:metaValue><![CDATA[item end]]></automatiko:metaValue>
+          </automatiko:metaData>
+        </bpmn2:extensionElements>
+        <bpmn2:incoming>SequenceFlow_5</bpmn2:incoming>
+      </bpmn2:endEvent>
+      <bpmn2:sequenceFlow id="SequenceFlow_5" automatiko:priority="1" sourceRef="ScriptTask_1" targetRef="EndEvent_2"/>
+    </bpmn2:subProcess>
+    <bpmn2:dataObject id="approvers" name="approvers" itemSubjectRef="ItemDefinition_57"/>
+    <bpmn2:dataObject id="results" name="results" itemSubjectRef="ItemDefinition_380"/>
+    <bpmn2:scriptTask id="ScriptTask_2" name="Calculate outcome" scriptFormat="http://www.java.com/java">
+      <bpmn2:extensionElements>
+        <automatiko:metaData name="elementname">
+          <automatiko:metaValue><![CDATA[Calculate outcome]]></automatiko:metaValue>
+        </automatiko:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_6</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+      <bpmn2:script>calculateOutcome(results, context)</bpmn2:script>
+    </bpmn2:scriptTask>
+    <bpmn2:sequenceFlow id="SequenceFlow_6" automatiko:priority="1" sourceRef="SubProcess_1" targetRef="ScriptTask_2"/>
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_Process_1" bpmnElement="multi">
+      <bpmndi:BPMNShape id="BPMNShape_SubProcess_1" bpmnElement="SubProcess_1" isExpanded="true">
+        <dc:Bounds height="166.0" width="504.0" x="110.0" y="195.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_1">
+          <dc:Bounds height="11.0" width="128.0" x="116.0" y="198.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_StartEvent_1" bpmnElement="StartEvent_1">
+        <dc:Bounds height="36.0" width="36.0" x="30.0" y="260.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_1">
+          <dc:Bounds height="11.0" width="52.0" x="22.0" y="296.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_UserTask_1" bpmnElement="UserTask_1" isExpanded="true">
+        <dc:Bounds height="50.0" width="110.0" x="223.0" y="254.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_2">
+          <dc:Bounds height="11.0" width="57.0" x="249.0" y="273.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_1" bpmnElement="EndEvent_1">
+        <dc:Bounds height="36.0" width="36.0" x="800.0" y="260.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_3">
+          <dc:Bounds height="11.0" width="77.0" x="780.0" y="296.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_1" bpmnElement="resource">
+        <dc:Bounds height="50.0" width="36.0" x="160.0" y="400.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_4">
+          <dc:Bounds height="11.0" width="36.0" x="160.0" y="450.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_2" bpmnElement="approved">
+        <dc:Bounds height="50.0" width="36.0" x="270.0" y="400.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_5">
+          <dc:Bounds height="11.0" width="38.0" x="269.0" y="450.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_3" bpmnElement="comment">
+        <dc:Bounds height="50.0" width="36.0" x="370.0" y="400.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_6">
+          <dc:Bounds height="11.0" width="38.0" x="369.0" y="450.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_4" bpmnElement="approvers">
+        <dc:Bounds height="50.0" width="36.0" x="73.0" y="120.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_7">
+          <dc:Bounds height="11.0" width="41.0" x="71.0" y="170.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_DataObject_5" bpmnElement="results">
+        <dc:Bounds height="50.0" width="36.0" x="670.0" y="133.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_8">
+          <dc:Bounds height="11.0" width="27.0" x="674.0" y="183.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_StartEvent_2" bpmnElement="StartEvent_2">
+        <dc:Bounds height="36.0" width="36.0" x="132.0" y="257.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_9">
+          <dc:Bounds height="11.0" width="38.0" x="131.0" y="293.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ScriptTask_1" bpmnElement="ScriptTask_1" isExpanded="true">
+        <dc:Bounds height="50.0" width="110.0" x="380.0" y="254.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_10">
+          <dc:Bounds height="11.0" width="50.0" x="410.0" y="273.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_EndEvent_2" bpmnElement="EndEvent_2">
+        <dc:Bounds height="36.0" width="36.0" x="540.0" y="261.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_11">
+          <dc:Bounds height="11.0" width="35.0" x="540.0" y="297.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ScriptTask_2" bpmnElement="ScriptTask_2" isExpanded="true">
+        <dc:Bounds height="50.0" width="110.0" x="670.0" y="251.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_12">
+          <dc:Bounds height="11.0" width="75.0" x="687.0" y="270.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_1" bpmnElement="SequenceFlow_1" sourceElement="BPMNShape_StartEvent_1" targetElement="BPMNShape_SubProcess_1">
+        <di:waypoint xsi:type="dc:Point" x="66.0" y="278.0"/>
+        <di:waypoint xsi:type="dc:Point" x="88.0" y="278.0"/>
+        <di:waypoint xsi:type="dc:Point" x="110.0" y="278.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_7"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_2" bpmnElement="SequenceFlow_2" sourceElement="BPMNShape_ScriptTask_2" targetElement="BPMNShape_EndEvent_1">
+        <di:waypoint xsi:type="dc:Point" x="780.0" y="276.0"/>
+        <di:waypoint xsi:type="dc:Point" x="790.0" y="276.0"/>
+        <di:waypoint xsi:type="dc:Point" x="790.0" y="278.0"/>
+        <di:waypoint xsi:type="dc:Point" x="800.0" y="278.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_8"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_3" bpmnElement="SequenceFlow_3" sourceElement="BPMNShape_StartEvent_2" targetElement="BPMNShape_UserTask_1">
+        <di:waypoint xsi:type="dc:Point" x="168.0" y="275.0"/>
+        <di:waypoint xsi:type="dc:Point" x="195.0" y="275.0"/>
+        <di:waypoint xsi:type="dc:Point" x="195.0" y="279.0"/>
+        <di:waypoint xsi:type="dc:Point" x="223.0" y="279.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_13"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_4" bpmnElement="SequenceFlow_4" sourceElement="BPMNShape_UserTask_1" targetElement="BPMNShape_ScriptTask_1">
+        <di:waypoint xsi:type="dc:Point" x="333.0" y="279.0"/>
+        <di:waypoint xsi:type="dc:Point" x="356.0" y="279.0"/>
+        <di:waypoint xsi:type="dc:Point" x="356.0" y="279.0"/>
+        <di:waypoint xsi:type="dc:Point" x="380.0" y="279.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_14"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_5" bpmnElement="SequenceFlow_5" sourceElement="BPMNShape_ScriptTask_1" targetElement="BPMNShape_EndEvent_2">
+        <di:waypoint xsi:type="dc:Point" x="490.0" y="279.0"/>
+        <di:waypoint xsi:type="dc:Point" x="515.0" y="279.0"/>
+        <di:waypoint xsi:type="dc:Point" x="540.0" y="279.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_15"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_6" bpmnElement="SequenceFlow_6" sourceElement="BPMNShape_SubProcess_1" targetElement="BPMNShape_ScriptTask_2">
+        <di:waypoint xsi:type="dc:Point" x="614.0" y="278.0"/>
+        <di:waypoint xsi:type="dc:Point" x="642.0" y="278.0"/>
+        <di:waypoint xsi:type="dc:Point" x="642.0" y="276.0"/>
+        <di:waypoint xsi:type="dc:Point" x="670.0" y="276.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_16"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>

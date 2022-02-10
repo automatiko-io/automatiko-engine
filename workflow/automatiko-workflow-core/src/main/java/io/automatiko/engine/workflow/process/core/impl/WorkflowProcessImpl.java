@@ -19,8 +19,6 @@ import io.automatiko.engine.workflow.base.instance.ProcessInstance;
 import io.automatiko.engine.workflow.expression.MvelExpressionEvaluator;
 import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 import io.automatiko.engine.workflow.process.core.node.StartNode;
-import io.automatiko.engine.workflow.process.instance.WorkflowProcessInstance;
-import io.automatiko.engine.workflow.process.instance.impl.ProcessInstanceResolverFactory;
 import io.automatiko.engine.workflow.util.PatternConstants;
 
 /**
@@ -59,11 +57,10 @@ public class WorkflowProcessImpl extends ProcessImpl
                     ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) p
                             .getProcess())
                                     .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
-                    String value = (String) evaluator.evaluate(paramName,
-                            new ProcessInstanceResolverFactory(((WorkflowProcessInstance) p)));
+                    String value = (String) evaluator.evaluate(paramName, p.getVariables());
                     replacements.put(replacementKey, value == null ? defaultValue : value);
                 } catch (Throwable t) {
-                    logger.error("Could not resolve, parameter {} while evaluating expression {}", paramName,
+                    logger.debug("Could not resolve, parameter {} while evaluating expression {}", paramName,
                             expression, t);
                 }
             }

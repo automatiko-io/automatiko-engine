@@ -87,13 +87,14 @@ public class UserTaskManagementResource {
         try {
             Process<?> process = processData.get(processId);
             if (process == null) {
-                return engine.getTemplate(PROCESS_INSTANCE_NOT_FOUND).instance().data("instanceId", pInstanceId);
+                return getTemplate("process-not-found", PROCESS_INSTANCE_NOT_FOUND).instance().data("instanceId", pInstanceId);
             }
             Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(pInstanceId,
                     ProcessInstanceReadMode.READ_ONLY);
 
             if (instance.isEmpty()) {
-                return engine.getTemplate(PROCESS_INSTANCE_NOT_FOUND).instance().data("instanceId", pInstanceId);
+                return getTemplate("process-instance-not-found", PROCESS_INSTANCE_NOT_FOUND).instance().data("instanceId",
+                        pInstanceId);
             }
 
             ProcessInstance<?> pi = instance.get();
@@ -127,7 +128,7 @@ public class UserTaskManagementResource {
             return templateInstance;
         } catch (WorkItemNotFoundException e) {
 
-            return engine.getTemplate(TASK_INSTANCE_NOT_FOUND).instance().data("taskId", taskId);
+            return getTemplate("task-not-found", TASK_INSTANCE_NOT_FOUND).instance().data("taskId", taskId);
 
         } finally {
             IdentityProvider.set(null);
@@ -142,14 +143,16 @@ public class UserTaskManagementResource {
     @Path("link/{details}")
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance fromEmailLink(@Context UriInfo uriInfo,
-            @Parameter(description = "User task link details", required = true) @PathParam("details") String details) {
+            @Parameter(description = "User task link details", required = true) @PathParam("details") String details,
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         String[] taskCoordinates = new String(Base64.getDecoder().decode(details), StandardCharsets.UTF_8).split("\\|");
         if (taskCoordinates.length > 3) {
             return get(uriInfo, taskCoordinates[0], taskCoordinates[1], taskCoordinates[2], taskCoordinates[3],
                     Collections.emptyList());
         } else {
-            return get(uriInfo, taskCoordinates[0], taskCoordinates[1], taskCoordinates[2], null,
-                    Collections.emptyList());
+            return get(uriInfo, taskCoordinates[0], taskCoordinates[1], taskCoordinates[2], user,
+                    groups);
         }
     }
 
@@ -173,4 +176,12 @@ public class UserTaskManagementResource {
         return template;
     }
 
+    protected Template getTemplate(String name, String defaultTemplate) {
+        Template template = engine.getTemplate(name);
+        if (template == null) {
+            template = engine.getTemplate(defaultTemplate);
+        }
+
+        return template;
+    }
 }

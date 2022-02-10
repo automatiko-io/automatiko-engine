@@ -252,7 +252,8 @@ public abstract class AbstractResourceGenerator {
                     .orElseThrow(() -> new NoSuchElementException(
                             "Compilation unit doesn't contain a class or interface declaration!"));
             for (UserTaskModelMetaData userTask : userTasks) {
-                String methodSuffix = sanitizeName(userTask.getName()) + "_" + uindex.getAndIncrement();
+                String methodSuffix = sanitizeName(userTask.getName()) + "_" + sanitizeName(processId) + "_"
+                        + uindex.getAndIncrement();
                 userTaskTemplate.findAll(MethodDeclaration.class).forEach(md -> {
 
                     MethodDeclaration cloned = md.clone();
@@ -544,7 +545,7 @@ public abstract class AbstractResourceGenerator {
     }
 
     private String sanitizeName(String name) {
-        return name.replaceAll("\\s", "_");
+        return name.replaceAll("\\s", "_").replaceAll("\\.", "_");
     }
 
     public String generatedFilePath() {

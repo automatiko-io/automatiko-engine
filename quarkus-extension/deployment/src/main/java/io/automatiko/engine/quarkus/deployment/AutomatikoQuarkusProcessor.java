@@ -299,6 +299,15 @@ public class AutomatikoQuarkusProcessor {
         reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
                 "com.fasterxml.jackson.databind.node.ArrayNode"));
 
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                Long.class.getCanonicalName()));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                Integer.class.getCanonicalName()));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                Boolean.class.getCanonicalName()));
+        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
+                String.class.getCanonicalName()));
+
     }
 
     @BuildStep

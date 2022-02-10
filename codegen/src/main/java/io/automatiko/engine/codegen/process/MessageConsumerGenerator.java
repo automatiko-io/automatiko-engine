@@ -24,10 +24,12 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
@@ -84,7 +86,7 @@ public class MessageConsumerGenerator {
             this.version = CodegenUtils.version(process.getVersion());
         }
         this.classPrefix = StringUtils.capitalize(processName) + CodegenUtils.version(process.getVersion());
-        this.resourceClazzName = classPrefix + "MessageConsumer_" + trigger.getOwnerId();
+        this.resourceClazzName = classPrefix + "MessageConsumer" + trigger.getOwnerId();
         this.relativePath = packageName.replace(".", "/") + "/" + resourceClazzName + ".java";
         this.modelfqcn = modelfqcn;
         this.dataClazzName = modelfqcn.substring(modelfqcn.lastIndexOf('.') + 1);
@@ -442,6 +444,18 @@ public class MessageConsumerGenerator {
                 .addVariable(new VariableDeclarator(new ClassOrInterfaceType(null, "String"), "MESSAGE",
                         new StringLiteralExpr(trigger.getName())));
         template.addMember(messageNameField);
+
+        if (OPERATOR_CONNECTOR.equals(connector)) {
+            // add event filter
+            String eventFilterClass = (String) trigger.getContext("eventFilter");
+
+            if (eventFilterClass != null && !eventFilterClass.isEmpty()) {
+                AnnotationExpr controllerAnnotation = template.getAnnotationByName("Controller").get();
+                ((NormalAnnotationExpr) controllerAnnotation).addPair("eventFilters",
+                        new NameExpr(eventFilterClass + ".class"));
+
+            }
+        }
 
         template.getMembers().sort(new BodyDeclarationComparator());
         ImportsOrganizer.organize(clazz);

@@ -25,6 +25,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -118,14 +119,20 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
                 String topLevelVariable = expression.split("\\.")[0];
                 Variable v = variableScope.findVariable(topLevelVariable);
 
-                actionBody.addStatement(makeAssignment(v));
+                if (actionBody.findFirst(VariableDeclarationExpr.class,
+                        vd -> vd.getVariable(0).getNameAsString().equals(v.getSanitizedName())).isEmpty()) {
+                    actionBody.addStatement(makeAssignment(v));
+                }
                 actionBody.addStatement(
                         subProcessModel.callSetter("model", e.getKey(), dotNotationToGetExpression(expression)));
             } else {
 
                 Variable v = variableScope.findVariable(e.getValue());
                 if (v != null) {
-                    actionBody.addStatement(makeAssignment(v));
+                    if (actionBody.findFirst(VariableDeclarationExpr.class,
+                            vd -> vd.getVariable(0).getNameAsString().equals(v.getSanitizedName())).isEmpty()) {
+                        actionBody.addStatement(makeAssignment(v));
+                    }
                     actionBody.addStatement(subProcessModel.callSetter("model", e.getKey(), e.getValue()));
                 }
             }

@@ -20,6 +20,7 @@ import io.automatiko.engine.workflow.compiler.xml.ExtensibleXmlParser;
 import io.automatiko.engine.workflow.compiler.xml.Handler;
 import io.automatiko.engine.workflow.compiler.xml.ProcessBuildData;
 import io.automatiko.engine.workflow.process.core.impl.ConnectionImpl;
+import io.automatiko.engine.workflow.process.core.node.ForEachNode;
 import io.automatiko.engine.workflow.process.executable.core.ExecutableProcess;
 
 public class BPMNPlaneHandler extends BaseAbstractHandler implements Handler {
@@ -100,18 +101,24 @@ public class BPMNPlaneHandler extends BaseAbstractHandler implements Handler {
 
     private void postProcessNodeOffset(Node[] nodes, int xOffset, int yOffset) {
         for (Node node : nodes) {
+
             Integer x = (Integer) node.getMetaData().get("x");
+            Integer y = (Integer) node.getMetaData().get("y");
+
             if (x != null) {
                 ((io.automatiko.engine.workflow.process.core.Node) node).setMetaData("x", x - xOffset);
             }
-            Integer y = (Integer) node.getMetaData().get("y");
+
             if (y != null) {
                 ((io.automatiko.engine.workflow.process.core.Node) node).setMetaData("y", y - yOffset);
             }
-
-            if (node instanceof NodeContainer) {
-                postProcessNodeOffset(((NodeContainer) node).getNodes(), xOffset + (x == null ? 0 : x),
-                        yOffset + (y == null ? 0 : y));
+            if (node instanceof ForEachNode) {
+                postProcessNodeOffset(((NodeContainer) node).getNodes(), xOffset, yOffset);
+            } else {
+                if (node instanceof NodeContainer) {
+                    postProcessNodeOffset(((NodeContainer) node).getNodes(), xOffset + (x == null ? 0 : x),
+                            yOffset + (y == null ? 0 : y));
+                }
             }
         }
     }

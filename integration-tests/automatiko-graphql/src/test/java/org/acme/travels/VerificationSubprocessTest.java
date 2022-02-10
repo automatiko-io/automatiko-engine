@@ -263,7 +263,7 @@ public class VerificationSubprocessTest {
             .body("data.get_scripts_tasks.size()", is(1))
             .extract().path("data.get_scripts_tasks[0].id");
  
-        String completeTaskPayload = "{\"query\":\"mutation {completeTask_approval_0(id: \\\"" + parentId+":"+childId + "\\\", workItemId: \\\"" + taskId +"\\\", user:\\\"john\\\", data: {}) {id,name}}\\n\",\"variables\":null}";
+        String completeTaskPayload = "{\"query\":\"mutation {completeTask_approval_scripts_0(id: \\\"" + parentId+":"+childId + "\\\", workItemId: \\\"" + taskId +"\\\", user:\\\"john\\\", data: {}) {id,name}}\\n\",\"variables\":null}";
         given()
             .contentType(ContentType.JSON)
             .accept(ContentType.JSON)
@@ -273,7 +273,7 @@ public class VerificationSubprocessTest {
             .then()
                 //.log().all(true)
                 .statusCode(200)
-                .body("data.completeTask_approval_0.id", notNullValue(), "data.completeTask_approval_0.name", equalTo("mary"), "data.completeTask_approval_0.message", nullValue());
+                .body("data.completeTask_approval_scripts_0.id", notNullValue(), "data.completeTask_approval_scripts_0.name", equalTo("mary"), "data.completeTask_approval_scripts_0.message", nullValue());
         given()
         .contentType(ContentType.JSON)
         .accept(ContentType.JSON)

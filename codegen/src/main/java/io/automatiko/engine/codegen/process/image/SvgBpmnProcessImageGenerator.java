@@ -554,10 +554,16 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
      */
 
     protected int x(Node node) {
+        if (node instanceof ForEachNode) {
+            return 0;
+        }
         return (int) node.getMetaData().get("x");
     }
 
     protected int y(Node node) {
+        if (node instanceof ForEachNode) {
+            return 0;
+        }
         return (int) node.getMetaData().get("y");
     }
 
