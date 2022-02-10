@@ -159,7 +159,7 @@ public class VerificationTest {
             .body("data.get_scripts_tasks.size()", is(1))
             .extract().path("data.get_scripts_tasks[0].id");
  
-        String completeTaskPayload = "{\"query\":\"mutation {completeTask_approval_0(id: \\\"test\\\", workItemId: \\\"" + taskId +"\\\", user:\\\"john\\\", data: {}) {id,name}}\\n\",\"variables\":null}";
+        String completeTaskPayload = "{\"query\":\"mutation {completeTask_approval_scripts_0(id: \\\"test\\\", workItemId: \\\"" + taskId +"\\\", user:\\\"john\\\", data: {}) {id,name}}\\n\",\"variables\":null}";
         given()
             .contentType(ContentType.JSON)
             .accept(ContentType.JSON)
@@ -169,7 +169,7 @@ public class VerificationTest {
             .then()
                 //.log().all(true)
                 .statusCode(200)
-                .body("data.completeTask_approval_0.id", notNullValue(), "data.completeTask_approval_0.name", equalTo("mary"), "data.completeTask_approval_0.message", nullValue());
+                .body("data.completeTask_approval_scripts_0.id", notNullValue(), "data.completeTask_approval_scripts_0.name", equalTo("mary"), "data.completeTask_approval_scripts_0.message", nullValue());
         given()
         .contentType(ContentType.JSON)
         .accept(ContentType.JSON)
@@ -226,7 +226,7 @@ public class VerificationTest {
             .body("data.get_scripts_tasks.size()", is(1))
             .extract().path("data.get_scripts_tasks[0].id");
  
-        String abortTaskPayload = "{\"query\":\"mutation {abortTask_approval_0(id: \\\"test\\\", workItemId: \\\"" + taskId +"\\\", user:\\\"john\\\", phase: \\\"skip\\\") {id,name}}\\n\",\"variables\":null}";
+        String abortTaskPayload = "{\"query\":\"mutation {abortTask_approval_scripts_0(id: \\\"test\\\", workItemId: \\\"" + taskId +"\\\", user:\\\"john\\\", phase: \\\"skip\\\") {id,name}}\\n\",\"variables\":null}";
         given()
             .contentType(ContentType.JSON)
             .accept(ContentType.JSON)
@@ -236,7 +236,7 @@ public class VerificationTest {
             .then()
                 //.log().all(true)
                 .statusCode(200)
-                .body("data.abortTask_approval_0.id", notNullValue(), "data.abortTask_approval_0.name", equalTo("mary"), "data.abortTask_approval_0.message", nullValue());
+                .body("data.abortTask_approval_scripts_0.id", notNullValue(), "data.abortTask_approval_scripts_0.name", equalTo("mary"), "data.abortTask_approval_scripts_0.message", nullValue());
       
         given()
         .contentType(ContentType.JSON)
@@ -527,7 +527,7 @@ public class VerificationTest {
             .body("data.get_scripts_tasks.size()", is(1))
             .extract().path("data.get_scripts_tasks[0].id");
  
-        String abortTaskPayload = "{\"query\":\"mutation {abortTask_approval_0(id: \\\"test\\\", workItemId: \\\"" + taskId +"\\\", user:\\\"john\\\", phase: \\\"skip\\\") {id,name,metadata {id,businessKey,state,tags,description}}}\\n\",\"variables\":null}";
+        String abortTaskPayload = "{\"query\":\"mutation {abortTask_approval_scripts_0(id: \\\"test\\\", workItemId: \\\"" + taskId +"\\\", user:\\\"john\\\", phase: \\\"skip\\\") {id,name,metadata {id,businessKey,state,tags,description}}}\\n\",\"variables\":null}";
         given()
             .contentType(ContentType.JSON)
             .accept(ContentType.JSON)
@@ -537,13 +537,13 @@ public class VerificationTest {
             .then()
                 //.log().all(true)
                 .statusCode(200)
-                .body("data.abortTask_approval_0.id", notNullValue(), "data.abortTask_approval_0.name", equalTo("mary"), "data.abortTask_approval_0.message", nullValue(),
-                        "data.abortTask_approval_0.metadata.description", equalTo("Simple script handling workflow for mary"),
-                        "data.abortTask_approval_0.metadata.state", equalTo(2),
-                        "data.abortTask_approval_0.metadata.id", notNullValue(),
-                        "data.abortTask_approval_0.metadata.businessKey", equalTo("test"),
-                        "data.abortTask_approval_0.metadata.tags.size()", is(1),
-                        "data.abortTask_approval_0.metadata.tags[0]", equalTo("mary"));
+                .body("data.abortTask_approval_scripts_0.id", notNullValue(), "data.abortTask_approval_scripts_0.name", equalTo("mary"), "data.abortTask_approval_scripts_0.message", nullValue(),
+                        "data.abortTask_approval_scripts_0.metadata.description", equalTo("Simple script handling workflow for mary"),
+                        "data.abortTask_approval_scripts_0.metadata.state", equalTo(2),
+                        "data.abortTask_approval_scripts_0.metadata.id", notNullValue(),
+                        "data.abortTask_approval_scripts_0.metadata.businessKey", equalTo("test"),
+                        "data.abortTask_approval_scripts_0.metadata.tags.size()", is(1),
+                        "data.abortTask_approval_scripts_0.metadata.tags[0]", equalTo("mary"));
       
         given()
         .contentType(ContentType.JSON)

@@ -70,18 +70,30 @@ public class SubProcessHandler extends AbstractNodeHandler {
                 forEachNode.setSequential(Boolean.parseBoolean(((Element) xmlNode).getAttribute("isSequential")));
                 forEachNode.setAutoComplete(((CompositeContextNode) node).isAutoComplete());
 
-                for (io.automatiko.engine.api.definition.process.Node subNode : ((CompositeContextNode) node)
-                        .getNodes()) {
-
-                    forEachNode.addNode(subNode);
-                }
+                //                for (io.automatiko.engine.api.definition.process.Node subNode : ((CompositeContextNode) node)
+                //                        .getNodes()) {
+                //
+                //                    forEachNode.addNode(subNode);
+                //                }
+                forEachNode.addNode(node);
+                forEachNode.linkIncomingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE, node.getId(),
+                        NodeImpl.CONNECTION_DEFAULT_TYPE);
+                forEachNode.linkOutgoingConnections(node.getId(), NodeImpl.CONNECTION_DEFAULT_TYPE,
+                        NodeImpl.CONNECTION_DEFAULT_TYPE);
                 forEachNode.setMetaData("UniqueId", ((CompositeContextNode) node).getMetaData("UniqueId"));
-                forEachNode.setMetaData(ProcessHandler.CONNECTIONS,
-                        ((CompositeContextNode) node).getMetaData(ProcessHandler.CONNECTIONS));
+                //                forEachNode.setMetaData(ProcessHandler.CONNECTIONS,
+                //                        ((CompositeContextNode) node).getMetaData(ProcessHandler.CONNECTIONS));
                 VariableScope v = (VariableScope) ((CompositeContextNode) node)
                         .getDefaultContext(VariableScope.VARIABLE_SCOPE);
-                ((VariableScope) ((CompositeContextNode) forEachNode.internalGetNode(2))
-                        .getDefaultContext(VariableScope.VARIABLE_SCOPE)).setVariables(v.getVariables());
+                //                ((VariableScope) ((CompositeContextNode) forEachNode.internalGetNode(2))
+                //                        .getDefaultContext(VariableScope.VARIABLE_SCOPE)).setVariables(v.getVariables());
+
+                List<SequenceFlow> connections = (List<SequenceFlow>) ((CompositeContextNode) node)
+                        .getMetaData(ProcessHandler.CONNECTIONS);
+                ProcessHandler processHandler = new ProcessHandler();
+                processHandler.linkConnections((io.automatiko.engine.api.definition.process.NodeContainer) node, connections);
+                processHandler.linkBoundaryEvents((io.automatiko.engine.api.definition.process.NodeContainer) node);
+
                 node = forEachNode;
                 handleForEachNode(node, element, uri, localName, parser, isAsync);
                 found = true;
@@ -156,10 +168,10 @@ public class SubProcessHandler extends AbstractNodeHandler {
         handleScript(forEachNode, element, "onEntry");
         handleScript(forEachNode, element, "onExit");
 
-        List<SequenceFlow> connections = (List<SequenceFlow>) forEachNode.getMetaData(ProcessHandler.CONNECTIONS);
-        ProcessHandler processHandler = new ProcessHandler();
-        processHandler.linkConnections(forEachNode, connections);
-        processHandler.linkBoundaryEvents(forEachNode);
+        //        List<SequenceFlow> connections = (List<SequenceFlow>) ((CompositeNode) node).getMetaData(ProcessHandler.CONNECTIONS);
+        //        ProcessHandler processHandler = new ProcessHandler();
+        //        processHandler.linkConnections((io.automatiko.engine.api.definition.process.NodeContainer) node, connections);
+        //        processHandler.linkBoundaryEvents((io.automatiko.engine.api.definition.process.NodeContainer) node);
 
         // This must be done *after* linkConnections(process, connections)
         // because it adds hidden connections for compensations

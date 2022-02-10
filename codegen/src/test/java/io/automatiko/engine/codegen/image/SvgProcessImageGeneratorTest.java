@@ -42,6 +42,12 @@ public class SvgProcessImageGeneratorTest {
     }
 
     @Test
+    public void testEmbededSPMIProcessImageGeneration() throws IOException {
+
+        testGeneration("Multi Approval.bpmn2");
+    }
+
+    @Test
     public void testEventBasedGatewayProcessImageGeneration() throws IOException {
 
         testGeneration("gateway/EventBasedSplit.bpmn2");
