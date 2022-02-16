@@ -462,6 +462,7 @@ public class MessageConsumerGenerator {
         return clazz.toString().replaceAll("\\$DataType\\$", trigger.getDataType())
                 .replaceAll("\\$DataEventType\\$", messageDataEventClassName)
                 .replaceAll("\\$ProcessId\\$", processId + version)
+                .replaceAll("\\$GenControllerParam\\$", (String) trigger.getContext("generationAware", "true"))
                 .replaceAll("\\$ControllerParam\\$",
                         "{" + Stream.of(namespaces.split(","))
                                 .filter(s -> !s.trim().isEmpty()).map(s -> "\"" + s.trim() + "\"")
