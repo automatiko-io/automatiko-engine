@@ -31,7 +31,7 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.internal.KubernetesDeserializer;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
-@Controller(namespaces=$ControllerParam$, name="$ProcessId$")
+@Controller(namespaces=$ControllerParam$, name="$ProcessId$", generationAwareEventProcessing=$GenControllerParam$)
 public class Controller implements ResourceController<$DataType$> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("MessageConsumer");
