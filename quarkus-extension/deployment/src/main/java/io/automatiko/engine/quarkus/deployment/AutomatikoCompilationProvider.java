@@ -30,6 +30,7 @@ import io.quarkus.bootstrap.model.PathsCollection;
 import io.quarkus.deployment.dev.CompilationProvider;
 import io.quarkus.deployment.dev.CompilerFlags;
 import io.quarkus.gizmo.Gizmo;
+import io.quarkus.paths.PathCollection;
 
 public abstract class AutomatikoCompilationProvider implements CompilationProvider {
 
@@ -95,7 +96,7 @@ public abstract class AutomatikoCompilationProvider implements CompilationProvid
     }
 
     @Override
-    public Path getSourcePath(Path classFilePath, PathsCollection sourcePaths, String classesPath) {
+    public Path getSourcePath(Path classFilePath, PathCollection sourcePaths, String classesPath) {
         try {
             return AutomatikoBuildData.get().getGenerationContext().getClassSource(classFilePath);
         } catch (IllegalStateException e) {

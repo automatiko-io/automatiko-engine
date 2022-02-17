@@ -35,7 +35,7 @@ public class CodeGenConstants {
     public static final String KAFKA_CONNECTOR_CLASS = "io.smallrye.reactive.messaging.kafka.KafkaConnector";
     public static final String AMQP_CONNECTOR_CLASS = "io.smallrye.reactive.messaging.amqp.AmqpConnector";
     public static final String CAMEL_CONNECTOR_CLASS = "io.smallrye.reactive.messaging.camel.CamelConnector";
-    public static final String OPERATOR_CONNECTOR_CLASS = "io.javaoperatorsdk.operator.api.Controller";
+    public static final String OPERATOR_CONNECTOR_CLASS = "io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration";
     public static final String HTTP_CONNECTOR_CLASS = "io.quarkus.reactivemessaging.http.runtime.QuarkusHttpConnector";
 
     public static final String MP_RESTCLIENT_PROP_URL = "/mp-rest/url";
