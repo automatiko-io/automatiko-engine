@@ -304,8 +304,8 @@ public class MessageConsumerGenerator {
         template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("configure"))
                 .forEach(md -> md.addAnnotation("javax.annotation.PostConstruct"));
         template.findAll(MethodDeclaration.class).stream()
-                .filter(md -> md.getNameAsString().equals("consume") || md.getNameAsString().equals("deleteResource")
-                        || md.getNameAsString().equals("createOrUpdateResource"))
+                .filter(md -> md.getNameAsString().equals("consume") || md.getNameAsString().equals("cleanup")
+                        || md.getNameAsString().equals("reconcile"))
                 .forEach(md -> {
                     md.findAll(StringLiteralExpr.class)
                             .forEach(str -> str.setString(str.asString().replace("$Trigger$", trigger.getName())));

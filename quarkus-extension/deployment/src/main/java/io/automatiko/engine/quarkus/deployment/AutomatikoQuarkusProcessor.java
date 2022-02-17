@@ -495,7 +495,7 @@ public class AutomatikoQuarkusProcessor {
                     f.setAccessible(true);
                     List<ClassPathElement> element = (List<ClassPathElement>) f.get(cl);
 
-                    element.add(new MemoryClassPathElement(classes) {
+                    element.add(new MemoryClassPathElement(classes, result) {
 
                         @Override
                         public Path getRoot() {

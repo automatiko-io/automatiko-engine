@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -20,19 +21,18 @@ import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.Sig;
 import io.automatiko.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
-import io.javaoperatorsdk.operator.api.Context;
-import io.javaoperatorsdk.operator.api.Controller;
-import io.javaoperatorsdk.operator.api.DeleteControl;
-import io.javaoperatorsdk.operator.api.ResourceController;
-import io.javaoperatorsdk.operator.api.UpdateControl;
-import io.javaoperatorsdk.operator.processing.event.EventSourceManager;
+import io.javaoperatorsdk.operator.api.reconciler.Context;
+import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
+import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
+import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.internal.KubernetesDeserializer;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
-@Controller(namespaces=$ControllerParam$, name="$ProcessId$", generationAwareEventProcessing=$GenControllerParam$)
-public class Controller implements ResourceController<$DataType$> {
+@ControllerConfiguration(namespaces=$ControllerParam$, name="$ProcessId$", generationAwareEventProcessing=$GenControllerParam$)
+public class Controller implements Reconciler<$DataType$> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("MessageConsumer");
 
@@ -41,12 +41,13 @@ public class Controller implements ResourceController<$DataType$> {
     Application application;
     
     
-    public void init(EventSourceManager eventSourceManager) {
+    @PostConstruct
+    public void init() {
         KubernetesDeserializer.registerCustomKind(HasMetadata.getApiVersion($DataType$.class), $DataType$.class.getSimpleName(), $DataType$.class);
     }
 
     @Override
-    public DeleteControl deleteResource($DataType$ resource, Context<$DataType$> context) {
+    public DeleteControl cleanup($DataType$ resource, Context context) {
         try {
             String trigger = "deleted";
             IdentityProvider.set(new TrustedIdentityProvider("System<messaging>"));
@@ -82,12 +83,12 @@ public class Controller implements ResourceController<$DataType$> {
         } catch(Throwable t) {
             LOGGER.error("Encountered problems while deleting instance", t);
         }
-        return DeleteControl.DEFAULT_DELETE;
+        return DeleteControl.defaultDelete();
 
     }
 
     @Override
-    public synchronized UpdateControl<$DataType$> createOrUpdateResource($DataType$ resource, Context<$DataType$> context) {
+    public synchronized UpdateControl<$DataType$> reconcile($DataType$ resource, Context context) {
         
         
         if (!acceptedPayload(resource)) {
@@ -123,7 +124,7 @@ public class Controller implements ResourceController<$DataType$> {
                             return UpdateControl.noUpdate();
                         }
                         LOGGER.debug("Signalled and returned updated {} that requires update of the custom resource", updated);
-                        return UpdateControl.updateStatusSubResource(updated);
+                        return UpdateControl.updateResourceAndStatus(updated);
                     }
                 }
                 if (canStartInstance()) {
@@ -140,7 +141,7 @@ public class Controller implements ResourceController<$DataType$> {
                         return UpdateControl.noUpdate();
                     }
                     LOGGER.debug("New instance started and with the need to update custom resource");
-                    return UpdateControl.updateStatusSubResource(updated);
+                    return UpdateControl.updateResourceAndStatus(updated);
                 } else {
                     LOGGER.warn(
                             "Received message without reference id and no correlation is set/matched, for trigger not capable of starting new instance '{}'",
