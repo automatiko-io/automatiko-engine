@@ -5,7 +5,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -17,7 +16,7 @@ import io.restassured.http.ContentType;
 public class BinaryCEVerificationTest {
  // @formatter:off
     
-    @Disabled
+ 
     @Test
     public void testProcessSendsAndReceives() throws InterruptedException {
         String id = "bbb";
