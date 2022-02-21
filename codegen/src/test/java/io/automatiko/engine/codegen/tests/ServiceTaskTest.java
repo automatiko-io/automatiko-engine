@@ -428,6 +428,34 @@ public class ServiceTaskTest extends AbstractCodegenTest {
     }
 
     @Test
+    public void testBasicServiceProcessTaskMultiinstanceCompletionCondition() throws Exception {
+
+        Application app = generateCodeProcessesOnly("servicetask/ServiceProcessMICompletionCondition.bpmn2");
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+
+        List<String> list = new ArrayList<String>();
+        list.add("first");
+        list.add("second");
+        List<String> listOut = new ArrayList<String>();
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("list", list);
+        parameters.put("listOut", listOut);
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(3).containsKeys("list", "s", "listOut");
+        assertThat((List<String>) result.toMap().get("listOut")).isNotNull().hasSize(1).contains("Hello first!");
+    }
+
+    @Test
     public void malformedShouldThrowException() throws Exception {
         assertThrows(ProcessCodegenException.class, () -> {
             generateCodeProcessesOnly("servicetask/ServiceProcessMalformed.bpmn2");

@@ -5,6 +5,7 @@ import static io.automatiko.engine.workflow.process.executable.core.factory.Comp
 import static io.automatiko.engine.workflow.process.executable.core.factory.CompositeContextNodeFactory.METHOD_LINK_OUTGOING_CONNECTIONS;
 import static io.automatiko.engine.workflow.process.executable.core.factory.CompositeContextNodeFactory.METHOD_VARIABLE;
 import static io.automatiko.engine.workflow.process.executable.core.factory.ForEachNodeFactory.METHOD_COLLECTION_EXPRESSION;
+import static io.automatiko.engine.workflow.process.executable.core.factory.ForEachNodeFactory.METHOD_COMPLETION_CONDITION_EXPRESSION;
 import static io.automatiko.engine.workflow.process.executable.core.factory.ForEachNodeFactory.METHOD_OUTPUT_COLLECTION_EXPRESSION;
 import static io.automatiko.engine.workflow.process.executable.core.factory.ForEachNodeFactory.METHOD_OUTPUT_VARIABLE;
 
@@ -75,6 +76,11 @@ public class ForEachNodeVisitor extends AbstractCompositeNodeVisitor<ForEachNode
                                                                     node.getOutputVariableType().getStringType()))),
                                                     new StringLiteralExpr(
                                                             node.getOutputVariableType().getStringType())))));
+        }
+        if (node.getCompletionConditionExpression() != null) {
+            body.addStatement(
+                    getFactoryMethod(getNodeId(node), METHOD_COMPLETION_CONDITION_EXPRESSION,
+                            new StringLiteralExpr(stripExpression(node.getCompletionConditionExpression()))));
         }
         // visit nodes
         visitNodes(process, getNodeId(node), node.getNodes(), body,
