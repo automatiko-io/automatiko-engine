@@ -12,6 +12,7 @@ public class ForEachNodeFactory extends CompositeContextNodeFactory {
 
     public static final String METHOD_COLLECTION_EXPRESSION = "collectionExpression";
     public static final String METHOD_OUTPUT_COLLECTION_EXPRESSION = "outputCollectionExpression";
+    public static final String METHOD_COMPLETION_CONDITION_EXPRESSION = "completionExpression";
     public static final String METHOD_OUTPUT_VARIABLE = "outputVariable";
 
     public ForEachNodeFactory(ExecutableNodeContainerFactory nodeContainerFactory, NodeContainer nodeContainer,
@@ -92,6 +93,11 @@ public class ForEachNodeFactory extends CompositeContextNodeFactory {
 
     public ForEachNodeFactory sequential(boolean sequential) {
         getForEachNode().setSequential(sequential);
+        return this;
+    }
+
+    public ForEachNodeFactory completionExpression(String completionExpression) {
+        getForEachNode().setCompletionConditionExpression(completionExpression);
         return this;
     }
 }
