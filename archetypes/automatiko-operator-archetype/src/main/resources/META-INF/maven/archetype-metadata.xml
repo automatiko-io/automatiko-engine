@@ -16,6 +16,26 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.0.0 http://maven.apache.org/xsd/archetype-descriptor-1.0.0.xsd"
   name="${artifactId}">
+  
+   <requiredProperties>
+     <requiredProperty key="resourceName"> 
+      </requiredProperty>
+     <requiredProperty key="classNameOfSpec">
+        <defaultValue>
+            ${resourceName}Spec
+        </defaultValue>
+      </requiredProperty>
+     <requiredProperty key="classNameOfStatus">
+        <defaultValue>
+            ${resourceName}Status
+        </defaultValue>
+      </requiredProperty>
+     <requiredProperty key="classNameOfResource">
+        <defaultValue>
+            ${resourceName}
+        </defaultValue>
+      </requiredProperty>
+   </requiredProperties>
 
   <fileSets>
     <fileSet encoding="UTF-8" filtered="true">
