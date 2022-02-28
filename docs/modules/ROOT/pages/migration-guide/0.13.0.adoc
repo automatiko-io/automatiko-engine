@@ -1,0 +1,22 @@
+= Migrate to 0.13.0
+
+== GraphQL user task related endpoints renamed
+
+A change has been introduced in naming GraphQL endpoints to allow use of the same task name across different workflow
+definitions within the same project. It means that the generated GraphQL queries and mutations will include 
+`process id` as part of the operation name. Below you can find an example showing before `0.13.0` and in 0.13.0` 
+operation name. Note the `_requests` that is added.
+
+before 0.13.0
+
+[source,plain]
+----
+vacations_completeTask_approval_0
+----
+
+0.13.0
+
+[source,plain]
+----
+vacations_completeTask_approval_requests_0
+----
