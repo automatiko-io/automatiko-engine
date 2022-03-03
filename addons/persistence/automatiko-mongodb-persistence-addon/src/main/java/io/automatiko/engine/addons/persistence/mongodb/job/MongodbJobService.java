@@ -105,7 +105,7 @@ public class MongodbJobService implements JobsService {
 
     public void start(@Observes StartupEvent event) {
 
-        collection().createIndex(Indexes.text(INSTANCE_ID_FIELD));
+        collection().createIndex(Indexes.ascending(INSTANCE_ID_FIELD));
         collection().createIndex(Indexes.descending(FIRE_AT_FIELD));
 
         loadScheduler.scheduleAtFixedRate(() -> {
