@@ -14,9 +14,13 @@ import org.hibernate.StaleObjectStateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.automatiko.engine.addons.persistence.common.JacksonObjectMarshallingStrategy;
+import io.automatiko.engine.addons.persistence.common.tlog.TransactionLogImpl;
 import io.automatiko.engine.addons.persistence.db.model.ProcessInstanceEntity;
 import io.automatiko.engine.api.auth.AccessDeniedException;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
+import io.automatiko.engine.api.uow.TransactionLog;
+import io.automatiko.engine.api.uow.TransactionLogStore;
 import io.automatiko.engine.api.workflow.ConflictingVersionException;
 import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
@@ -43,7 +47,10 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
 
     private Class<? extends ProcessInstanceEntity> type;
 
-    public DatabaseProcessInstances(Process<? extends ProcessInstanceEntity> process, StoredDataCodec codec) {
+    private TransactionLog transactionLog;
+
+    public DatabaseProcessInstances(Process<? extends ProcessInstanceEntity> process, StoredDataCodec codec,
+            TransactionLogStore store) {
         this.process = process;
         this.marshaller = new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process));
         this.codec = codec;
@@ -51,6 +58,13 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
         this.type = process.createModel().getClass();
         // mark the marshaller that it should not serialize variables
         this.marshaller.addToEnvironment("_ignore_vars_", true);
+
+        this.transactionLog = new TransactionLogImpl(store, new JacksonObjectMarshallingStrategy(process));
+    }
+
+    @Override
+    public TransactionLog transactionLog() {
+        return transactionLog;
     }
 
     @SuppressWarnings("unchecked")
@@ -60,6 +74,39 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
 
         Optional<ProcessInstanceEntity> found = (Optional<ProcessInstanceEntity>) JpaOperations.INSTANCE.findByIdOptional(type,
                 resolvedId);
+
+        if (status == ProcessInstance.STATE_RECOVERING) {
+            byte[] content = this.transactionLog.readContent(process.id(), resolvedId);
+
+            // transaction log found value but not in the db storage so use it as it is part of recovery
+            if (content != null) {
+                long versionTracker = 1;
+                ProcessInstanceEntity entity = null;
+                if (found.isPresent()) {
+                    entity = found.get();
+                    versionTracker = entity.version;
+                }
+                ProcessInstance<ProcessInstanceEntity> pi;
+                if (mode == MUTABLE) {
+                    WorkflowProcessInstance wpi = marshaller.unmarshallWorkflowProcessInstance(content, process);
+                    if (entity == null) {
+                        entity = process.createModel();
+                        entity.fromMap(wpi.getVariables());
+                    }
+                    pi = ((AbstractProcess<ProcessInstanceEntity>) process).createInstance(wpi, entity, versionTracker);
+
+                } else {
+                    WorkflowProcessInstance wpi = marshaller.unmarshallWorkflowProcessInstance(content, process);
+                    if (entity == null) {
+                        entity = process.createModel();
+                        entity.fromMap(wpi.getVariables());
+                    }
+                    pi = ((AbstractProcess<ProcessInstanceEntity>) process).createReadOnlyInstance(wpi, entity);
+                }
+
+                return Optional.of(pi);
+            }
+        }
 
         if (found.isEmpty()) {
             return Optional.empty();

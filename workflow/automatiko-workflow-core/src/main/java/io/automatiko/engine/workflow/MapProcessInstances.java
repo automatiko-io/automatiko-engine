@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import io.automatiko.engine.api.auth.IdentityProvider;
+import io.automatiko.engine.api.uow.TransactionLog;
 import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
 import io.automatiko.engine.api.workflow.Process;
@@ -23,6 +24,11 @@ public class MapProcessInstances implements MutableProcessInstances {
     private final ConcurrentHashMap<String, ProcessInstance> instances = new ConcurrentHashMap<>();
 
     private final ProcessInstanceMarshaller marshaller = new ProcessInstanceMarshaller();
+
+    @Override
+    public TransactionLog transactionLog() {
+        return null;
+    }
 
     public Long size() {
         return (long) instances.size();

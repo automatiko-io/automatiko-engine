@@ -1,6 +1,7 @@
 
 package io.automatiko.engine.api.workflow;
 
+import io.automatiko.engine.api.uow.TransactionLogStore;
 import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 
 public interface ProcessInstancesFactory {
@@ -9,5 +10,9 @@ public interface ProcessInstancesFactory {
 
     default StoredDataCodec codec() {
         return StoredDataCodec.NO_OP_CODEC;
+    }
+
+    default TransactionLogStore transactionLogStore() {
+        return null;
     }
 }

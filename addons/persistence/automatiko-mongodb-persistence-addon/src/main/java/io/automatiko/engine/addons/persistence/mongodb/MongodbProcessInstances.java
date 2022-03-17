@@ -27,9 +27,12 @@ import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.Projections;
 
 import io.automatiko.engine.addons.persistence.common.JacksonObjectMarshallingStrategy;
+import io.automatiko.engine.addons.persistence.common.tlog.TransactionLogImpl;
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.config.MongodbPersistenceConfig;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
+import io.automatiko.engine.api.uow.TransactionLog;
+import io.automatiko.engine.api.uow.TransactionLogStore;
 import io.automatiko.engine.api.workflow.ConflictingVersionException;
 import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
@@ -71,8 +74,10 @@ public class MongodbProcessInstances implements MutableProcessInstances {
 
     private Map<String, ProcessInstance> cachedInstances = new ConcurrentHashMap<>();
 
+    private TransactionLog transactionLog;
+
     public MongodbProcessInstances(Process<? extends Model> process, MongoClient mongoClient,
-            MongodbPersistenceConfig config, StoredDataCodec codec) {
+            MongodbPersistenceConfig config, StoredDataCodec codec, TransactionLogStore store) {
         this.process = process;
         this.marshallingStrategy = new JacksonObjectMarshallingStrategy(process);
         this.marshaller = new ProcessInstanceMarshaller(marshallingStrategy);
@@ -87,18 +92,45 @@ public class MongodbProcessInstances implements MutableProcessInstances {
         collection().createIndex(Indexes.compoundIndex(Indexes.ascending(INSTANCE_ID_FIELD), Indexes.ascending(STATUS_FIELD)),
                 new IndexOptions().unique(true));
         collection().createIndex(Indexes.ascending(TAGS_FIELD));
+
+        this.transactionLog = new TransactionLogImpl(store, new JacksonObjectMarshallingStrategy(process));
+    }
+
+    @Override
+    public TransactionLog transactionLog() {
+        return this.transactionLog;
     }
 
     @Override
     public Optional findById(String id, int status, ProcessInstanceReadMode mode) {
         String resolvedId = resolveId(id);
 
+        if (status == ProcessInstance.STATE_RECOVERING) {
+            byte[] content = this.transactionLog.readContent(process.id(), resolvedId);
+
+            // transaction log found value but not in the mongodb storage so use it as it is part of recovery
+            if (content != null) {
+                long versionTracker = 1;
+                Document found = collection().find(and(eq(INSTANCE_ID_FIELD, resolvedId), eq(STATUS_FIELD, status)))
+                        .projection(Projections
+                                .fields(Projections.include(VERSION_FIELD)))
+                        .first();
+                if (found != null) {
+                    versionTracker = found.getLong(VERSION_FIELD);
+                }
+                return Optional
+                        .of(mode == MUTABLE
+                                ? marshaller.unmarshallProcessInstance(content, process, versionTracker)
+                                : marshaller.unmarshallReadOnlyProcessInstance(content, process));
+            }
+        }
         Document found = collection().find(and(eq(INSTANCE_ID_FIELD, resolvedId), eq(STATUS_FIELD, status)))
                 .projection(Projections
                         .fields(Projections.include(INSTANCE_ID_FIELD, CONTENT_FIELD, VERSION_FIELD, VARIABLES_FIELD)))
                 .first();
 
         if (found == null) {
+
             return Optional.empty();
         }
 
@@ -243,8 +275,14 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                             eq(VERSION_FIELD, ((AbstractProcessInstance<?>) instance).getVersionTracker())), item);
 
                     if (replaced == null) {
-                        throw new ConflictingVersionException("Process instance with id '" + instance.id()
-                                + "' has older version than the stored one");
+
+                        if (transactionLog.contains(process.id(), instance.id())) {
+                            collection().insertOne(item);
+                        } else {
+
+                            throw new ConflictingVersionException("Process instance with id '" + instance.id()
+                                    + "' has older version than the stored one");
+                        }
                     }
                 } finally {
                     cachedInstances.remove(resolvedId);

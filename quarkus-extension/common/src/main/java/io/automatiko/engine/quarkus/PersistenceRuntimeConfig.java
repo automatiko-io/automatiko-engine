@@ -3,6 +3,7 @@ package io.automatiko.engine.quarkus;
 import java.util.Optional;
 
 import io.automatiko.engine.api.config.PersistenceConfig;
+import io.automatiko.engine.api.config.TransactionLogConfig;
 import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
@@ -51,6 +52,12 @@ public class PersistenceRuntimeConfig extends PersistenceConfig {
     @ConfigItem
     public MongodbPersistenceRuntimeConfig mongodb;
 
+    /**
+     * Configures transaction log
+     */
+    @ConfigItem
+    public TransactionLogRuntimeConfig transactionLog;
+
     @Override
     public Optional<String> type() {
         return type;
@@ -86,4 +93,10 @@ public class PersistenceRuntimeConfig extends PersistenceConfig {
     public MongodbPersistenceRuntimeConfig mongodb() {
         return mongodb;
     }
+
+    @Override
+    public TransactionLogConfig transactionLog() {
+        return transactionLog;
+    }
+
 }

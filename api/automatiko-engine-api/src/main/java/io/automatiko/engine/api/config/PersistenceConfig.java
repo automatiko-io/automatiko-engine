@@ -52,4 +52,11 @@ public class PersistenceConfig {
     public MongodbPersistenceConfig mongodb() {
         return new MongodbPersistenceConfig();
     }
+
+    /**
+     * Configures transaction log
+     */
+    public TransactionLogConfig transactionLog() {
+        return new TransactionLogConfig();
+    }
 }

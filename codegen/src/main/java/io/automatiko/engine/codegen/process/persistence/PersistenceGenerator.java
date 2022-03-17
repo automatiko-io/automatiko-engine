@@ -1,6 +1,8 @@
 
 package io.automatiko.engine.codegen.process.persistence;
 
+import static io.automatiko.engine.codegen.CodegenUtils.genericType;
+
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -17,15 +19,19 @@ import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExplicitConstructorInvocationStmt;
+import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
+import io.automatiko.engine.api.uow.TransactionLogStore;
 import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 import io.automatiko.engine.codegen.AbstractGenerator;
 import io.automatiko.engine.codegen.ApplicationSection;
@@ -46,6 +52,8 @@ public class PersistenceGenerator extends AbstractGenerator {
     private static final String PATH_NAME = "path";
 
     private static final String CODEC_NAME = "codec";
+
+    private static final String TRANSACTION_LOG_STORE_NAME = "transactionLogStore";
 
     private static final String PERSISTENCE_FS_PATH_PROP = "quarkus.automatiko.persistence.filesystem.path";
 
@@ -145,6 +153,8 @@ public class PersistenceGenerator extends AbstractGenerator {
             persistenceProviderClazz.addMember(pathMethod);
 
             addCodecComponents(persistenceProviderClazz);
+
+            addTransactionLogStoreComponents(persistenceProviderClazz);
         }
 
         String packageName = compilationUnit.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
@@ -169,6 +179,8 @@ public class PersistenceGenerator extends AbstractGenerator {
             annotator.withApplicationComponent(persistenceProviderClazz);
 
             addCodecComponents(persistenceProviderClazz);
+
+            addTransactionLogStoreComponents(persistenceProviderClazz);
         }
 
         String packageName = compilationUnit.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
@@ -207,6 +219,8 @@ public class PersistenceGenerator extends AbstractGenerator {
             annotator.withInjection(constructor);
 
             addCodecComponents(persistenceProviderClazz);
+
+            addTransactionLogStoreComponents(persistenceProviderClazz);
         }
 
         String packageName = compilationUnit.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
@@ -245,6 +259,8 @@ public class PersistenceGenerator extends AbstractGenerator {
             annotator.withInjection(constructor);
 
             addCodecComponents(persistenceProviderClazz);
+
+            addTransactionLogStoreComponents(persistenceProviderClazz);
         }
 
         String packageName = compilationUnit.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
@@ -283,6 +299,8 @@ public class PersistenceGenerator extends AbstractGenerator {
             annotator.withInjection(constructor);
 
             addCodecComponents(persistenceProviderClazz);
+
+            addTransactionLogStoreComponents(persistenceProviderClazz);
         }
 
         String packageName = compilationUnit.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
@@ -313,5 +331,30 @@ public class PersistenceGenerator extends AbstractGenerator {
 
         persistenceProviderClazz.addMember(codecField);
         persistenceProviderClazz.addMember(codecMethod);
+    }
+
+    private void addTransactionLogStoreComponents(ClassOrInterfaceDeclaration persistenceProviderClazz) {
+
+        // allow to inject transaction log store implementation
+        FieldDeclaration tLogStoreField = new FieldDeclaration()
+                .addVariable(
+                        new VariableDeclarator()
+                                .setType(genericType(annotator.optionalInstanceInjectionType(), TransactionLogStore.class))
+                                .setName(TRANSACTION_LOG_STORE_NAME));
+        BlockStmt tLogStoreMethodBody = new BlockStmt();
+        Expression condition = annotator.optionalInstanceExists(TRANSACTION_LOG_STORE_NAME);
+        IfStmt injectedIf = new IfStmt(condition,
+                new ReturnStmt(new MethodCallExpr(new NameExpr(TRANSACTION_LOG_STORE_NAME), "get")),
+                new ReturnStmt(new NullLiteralExpr()));
+        tLogStoreMethodBody.addStatement(injectedIf);
+
+        MethodDeclaration tLogStoreMethod = new MethodDeclaration().addModifier(Keyword.PUBLIC)
+                .setName(TRANSACTION_LOG_STORE_NAME)
+                .setType(TransactionLogStore.class.getCanonicalName()).setBody(tLogStoreMethodBody);
+
+        annotator.withOptionalInjection(tLogStoreField);
+
+        persistenceProviderClazz.addMember(tLogStoreField);
+        persistenceProviderClazz.addMember(tLogStoreMethod);
     }
 }

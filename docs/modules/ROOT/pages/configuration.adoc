@@ -51,6 +51,11 @@ Following are set of configuration parameters that can be used to configure Auto
 |quarkus.automatiko.persistence.cassandra.create-keyspace|QUARKUS_AUTOMATIKO_PERSISTENCE_CASSANDRA_CREATE_KEYSPACE|Specifies if keyspace should be automatically created|No|true|No
 |quarkus.automatiko.persistence.cassandra.create-tables|QUARKUS_AUTOMATIKO_PERSISTENCE_CASSANDRA_CREATE_TABLES|Specifies if tables should be automatically created|No|true|No
 |quarkus.automatiko.persistence.cassandra.keyspace|QUARKUS_AUTOMATIKO_PERSISTENCE_CASSANDRA_KEYSPACE|Specifies key space name to be used for tables|No|10|No
+||||||
+|quarkus.automatiko.persistence.mongodb.database|QUARKUS_AUTOMATIKO_PERSISTENCE_MONGODB_DATABASE|Name of the database where collections for workflows will be created|Yes|automatiko|No
+||||||
+|quarkus.automatiko.persistence.transaction-log.enabled|QUARKUS_AUTOMATIKO_PERSISTENCE_TRANSACTION_LOG_ENABLED|Enables transaction log for workflows to always record activities that are performed to automatically recover after crash|No|false|No
+|quarkus.automatiko.persistence.transaction-log.folder|QUARKUS_AUTOMATIKO_PERSISTENCE_TRANSACTION_LOG_FOLDER|Location on file system that will be used to store transaction log entries|Yes (if transaction log is enabled)||No
 
 
 |====
@@ -78,6 +83,11 @@ Following are set of configuration parameters that can be used to configure Auto
 |quarkus.automatiko.jobs.cassandra.keyspace|QUARKUS_AUTOMATIKO_JOBS_CASSANDRA_KEYSPACE|Specifies key space name to be used for tables|No|10|No
 |quarkus.automatiko.jobs.cassandra.interval|QUARKUS_AUTOMATIKO_JOBS_CASSANDRA_INTERVAL|Specifies interval (in minutes) how often look for another chunk of jobs to execute|No|60|No
 |quarkus.automatiko.jobs.cassandra.threads|QUARKUS_AUTOMATIKO_JOBS_CASSANDRA_THREADS|Specifies how many threads should be used for job execution|No|1|No
+||||||
+|quarkus.automatiko.jobs.mongodb.database|QUARKUS_AUTOMATIKO_JOBS_MONGODB_DATABASE|Name of the database where collection for jobs (atk_jobs) will be created|Yes|automatiko|No
+|quarkus.automatiko.jobs.mongodb.interval|QUARKUS_AUTOMATIKO_JOBS_MONGODB_INTERVAL|Specifies interval (in minutes) how often look for another chunk of jobs to execute|No|60|No
+|quarkus.automatiko.jobs.mongodb.threads|QUARKUS_AUTOMATIKO_JOBS_MONGODB_THREADS|Specifies how many threads should be used for job execution|No|1|No
+
 
 |====
 

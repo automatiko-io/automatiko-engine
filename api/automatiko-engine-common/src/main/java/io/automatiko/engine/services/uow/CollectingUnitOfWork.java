@@ -9,12 +9,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.event.EventBatch;
 import io.automatiko.engine.api.event.EventManager;
+import io.automatiko.engine.api.uow.TransactionLog;
 import io.automatiko.engine.api.uow.UnitOfWork;
 import io.automatiko.engine.api.uow.WorkUnit;
 import io.automatiko.engine.api.workflow.ConflictingVersionException;
@@ -35,6 +37,8 @@ public class CollectingUnitOfWork implements UnitOfWork {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(CollectingUnitOfWork.class);
 
+    private final String identifier;
+
     private Set<WorkUnit<?>> collectedWork;
     private boolean done;
 
@@ -44,6 +48,12 @@ public class CollectingUnitOfWork implements UnitOfWork {
 
     public CollectingUnitOfWork(EventManager eventManager) {
         this.eventManager = eventManager;
+        this.identifier = UUID.randomUUID().toString();
+    }
+
+    @Override
+    public String identifier() {
+        return this.identifier;
     }
 
     @Override
@@ -142,6 +152,11 @@ public class CollectingUnitOfWork implements UnitOfWork {
 
         public ManagedProcessInstances(MutableProcessInstances<?> delegate) {
             this.delegate = delegate;
+        }
+
+        @Override
+        public TransactionLog transactionLog() {
+            return delegate.transactionLog();
         }
 
         @Override

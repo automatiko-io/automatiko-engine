@@ -64,6 +64,7 @@ import io.automatiko.engine.workflow.process.instance.node.WorkItemNodeInstance;
 public abstract class AbstractProtobufProcessInstanceMarshaller implements ProcessInstanceMarshaller {
 
     // Output methods
+    @SuppressWarnings("unchecked")
     public AutomatikoMessages.ProcessInstance writeProcessInstance(MarshallerWriteContext context,
             ProcessInstance processInstance) throws IOException {
         WorkflowProcessInstanceImpl workFlow = (WorkflowProcessInstanceImpl) processInstance;
@@ -154,8 +155,18 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                 return (int) (o1.getId().compareTo(o2.getId()));
             }
         });
+        // list of instances that should not be serialized as they are being currently executed and the marshaller was called by transaction log
+        List<NodeInstance> nodeInstanceToIgnore = (List<NodeInstance>) context.env.getOrDefault("nodeInstances",
+                Collections.emptyList());
+
         for (NodeInstance nodeInstance : nodeInstances) {
-            _instance.addNodeInstance(writeNodeInstance(context, nodeInstance));
+            if (nodeInstanceToIgnore.contains(nodeInstance)) {
+                // if the node instance is found in the environment tha means it should be not serialized as it is being currently
+                // executed and the marshaller is invoked by transaction log
+                continue;
+            }
+            _instance.addNodeInstance(writeNodeInstance(context, nodeInstance, _instance));
+
         }
 
         List<ContextInstance> exclusiveGroupInstances = workFlow.getContextInstances(ExclusiveGroup.EXCLUSIVE_GROUP);
@@ -191,18 +202,35 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
             }
         }
 
+        if (workFlow.internalGetRecoveryItem() != null) {
+            AutomatikoMessages.ProcessInstance.RecoveryItem.Builder recoveryItemBuilder = AutomatikoMessages.ProcessInstance.RecoveryItem
+                    .newBuilder();
+            recoveryItemBuilder.setTransactionId(workFlow.internalGetRecoveryItem().getTransactionId());
+            recoveryItemBuilder.setNodeId(workFlow.internalGetRecoveryItem().getNodeDefinitionId());
+            if (workFlow.internalGetRecoveryItem().getInstanceId() != null) {
+                recoveryItemBuilder.setInstanceId(workFlow.internalGetRecoveryItem().getInstanceId());
+            }
+            if (workFlow.internalGetRecoveryItem().getTimerId() != null) {
+                recoveryItemBuilder.setTimerId(workFlow.internalGetRecoveryItem().getTimerId());
+            }
+            if (workFlow.internalGetRecoveryItem().getStateTimerIds() != null) {
+                recoveryItemBuilder.addAllStateTimerIds(workFlow.internalGetRecoveryItem().getStateTimerIds());
+            }
+            _instance.setRecoveryItem(recoveryItemBuilder.build());
+        }
+
         return _instance.build();
     }
 
     public AutomatikoMessages.ProcessInstance.NodeInstance writeNodeInstance(MarshallerWriteContext context,
-            NodeInstance nodeInstance) throws IOException {
+            NodeInstance nodeInstance, Object _instance) throws IOException {
         AutomatikoMessages.ProcessInstance.NodeInstance.Builder _node = AutomatikoMessages.ProcessInstance.NodeInstance
                 .newBuilder().setId(nodeInstance.getId()).setNodeId(nodeInstance.getNodeId())
                 .setLevel(((io.automatiko.engine.workflow.process.instance.NodeInstance) nodeInstance).getLevel())
                 .setSlaCompliance(
                         ((io.automatiko.engine.workflow.process.instance.NodeInstance) nodeInstance).getSlaCompliance())
-                .setTriggerDate(((io.automatiko.engine.workflow.process.instance.NodeInstance) nodeInstance)
-                        .getTriggerTime().getTime());
+                .setTriggerDate(nodeInstance.getTriggerTime() != null ? nodeInstance
+                        .getTriggerTime().getTime() : 0);
 
         if (((io.automatiko.engine.workflow.process.instance.NodeInstance) nodeInstance).getSlaDueDate() != null) {
             _node.setSlaDueDate(((io.automatiko.engine.workflow.process.instance.NodeInstance) nodeInstance)
@@ -219,11 +247,13 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
             _node.setRetryAttempts(((NodeInstanceImpl) nodeInstance).getRetryAttempts());
         }
 
-        _node.setContent(writeNodeInstanceContent(_node, nodeInstance, context));
+        _node.setContent(
+                writeNodeInstanceContent((AutomatikoMessages.ProcessInstance.Builder) _instance, _node, nodeInstance, context));
         return _node.build();
     }
 
     protected AutomatikoMessages.ProcessInstance.NodeInstanceContent writeNodeInstanceContent(
+            AutomatikoMessages.ProcessInstance.Builder _instance,
             AutomatikoMessages.ProcessInstance.NodeInstance.Builder _node, NodeInstance nodeInstance,
             MarshallerWriteContext context) throws IOException {
         AutomatikoMessages.ProcessInstance.NodeInstanceContent.Builder _content = null;
@@ -356,9 +386,17 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                     return (int) (o1.getId().compareTo(o2.getId()));
                 }
             });
+            // list of instances that should not be serialized as they are being currently executed and the marshaller was called by transaction log
+            List<NodeInstance> nodeInstanceToIgnore = (List<NodeInstance>) context.env.getOrDefault("nodeInstances",
+                    Collections.emptyList());
             for (NodeInstance subNodeInstance : nodeInstances) {
                 if (subNodeInstance instanceof CompositeContextNodeInstance) {
-                    _foreach.addNodeInstance(writeNodeInstance(context, subNodeInstance));
+                    if (nodeInstanceToIgnore.contains(subNodeInstance)) {
+                        // if the node instance is found in the environment tha means it should be not serialized as it is being currently
+                        // executed and the marshaller is invoked by transaction log
+                        continue;
+                    }
+                    _foreach.addNodeInstance(writeNodeInstance(context, subNodeInstance, _instance));
                 }
             }
 
@@ -453,8 +491,16 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                     return (int) (o1.getId().compareTo(o2.getId()));
                 }
             });
+            // list of instances that should not be serialized as they are being currently executed and the marshaller was called by transaction log
+            List<NodeInstance> nodeInstanceToIgnore = (List<NodeInstance>) context.env.getOrDefault("nodeInstances",
+                    Collections.emptyList());
             for (NodeInstance subNodeInstance : nodeInstances) {
-                _composite.addNodeInstance(writeNodeInstance(context, subNodeInstance));
+                if (nodeInstanceToIgnore.contains(subNodeInstance)) {
+                    // if the node instance is found in the environment tha means it should be not serialized as it is being currently
+                    // executed and the marshaller is invoked by transaction log
+                    continue;
+                }
+                _composite.addNodeInstance(writeNodeInstance(context, subNodeInstance, _instance));
             }
             List<ContextInstance> exclusiveGroupInstances = compositeNodeInstance
                     .getContextInstances(ExclusiveGroup.EXCLUSIVE_GROUP);
@@ -722,6 +768,22 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         processInstance.setReferenceId(_instance.getReferenceId());
 
         processInstance.internalSetReferenceFromRoot(_instance.getReferenceFromRoot());
+
+        // configure recovery item
+        if (_instance.hasRecoveryItem()) {
+            errors.add(new ExecutionsErrorInfo(_instance.getRecoveryItem().getNodeId(), "transaction-log-recovery",
+                    "Transaction was not completed, requires recovery",
+                    null));
+            processInstance.internalSetState(ProcessInstance.STATE_ERROR);
+
+            io.automatiko.engine.workflow.process.instance.RecoveryItem recoveryItem = new io.automatiko.engine.workflow.process.instance.RecoveryItem();
+            recoveryItem.setTransactionId(_instance.getRecoveryItem().getTransactionId());
+            recoveryItem.setNodeDefinitionId(_instance.getRecoveryItem().getNodeId());
+            recoveryItem.setInstanceId(_instance.getRecoveryItem().getInstanceId());
+            recoveryItem.setTimerId(_instance.getRecoveryItem().getTimerId());
+            recoveryItem.setStateTimerIds(_instance.getRecoveryItem().getStateTimerIdsList());
+            processInstance.internalSetRecoveryItem(recoveryItem);
+        }
 
         for (String completedNodeId : _instance.getCompletedNodeIdsList()) {
             processInstance.addCompletedNodeId(completedNodeId);

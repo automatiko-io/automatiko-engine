@@ -17,6 +17,7 @@ import io.automatiko.engine.api.workflow.workitem.Transition;
 
 public interface ProcessInstance<T> {
 
+    int STATE_RECOVERING = -1;
     int STATE_PENDING = 0;
     int STATE_ACTIVE = 1;
     int STATE_COMPLETED = 2;

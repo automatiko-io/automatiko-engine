@@ -16,6 +16,13 @@ import io.automatiko.engine.api.workflow.ProcessInstances;
 public interface UnitOfWork {
 
     /**
+     * Returns unique identifier of this unit of work
+     * 
+     * @return identifier of the unit of work
+     */
+    String identifier();
+
+    /**
      * Initiates this unit of work if not already started. It is safe to call start
      * multiple times unless the unit has already been completed or aborted.
      */

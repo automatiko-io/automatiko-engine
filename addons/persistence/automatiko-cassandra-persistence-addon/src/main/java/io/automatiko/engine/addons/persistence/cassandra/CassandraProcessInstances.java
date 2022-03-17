@@ -42,9 +42,12 @@ import com.datastax.oss.driver.api.querybuilder.schema.CreateTable;
 import com.datastax.oss.driver.api.querybuilder.select.Select;
 
 import io.automatiko.engine.addons.persistence.common.JacksonObjectMarshallingStrategy;
+import io.automatiko.engine.addons.persistence.common.tlog.TransactionLogImpl;
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.AccessDeniedException;
 import io.automatiko.engine.api.config.CassandraPersistenceConfig;
+import io.automatiko.engine.api.uow.TransactionLog;
+import io.automatiko.engine.api.uow.TransactionLogStore;
 import io.automatiko.engine.api.workflow.ConflictingVersionException;
 import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
@@ -79,8 +82,10 @@ public class CassandraProcessInstances implements MutableProcessInstances {
 
     private Map<String, ProcessInstance> cachedInstances = new ConcurrentHashMap<>();
 
+    private TransactionLog transactionLog;
+
     public CassandraProcessInstances(Process<? extends Model> process, CqlSession cqlSession,
-            CassandraPersistenceConfig config, StoredDataCodec codec) {
+            CassandraPersistenceConfig config, StoredDataCodec codec, TransactionLogStore store) {
         this.process = process;
         this.marshaller = new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process));
         this.config = config;
@@ -91,6 +96,13 @@ public class CassandraProcessInstances implements MutableProcessInstances {
         if (config.createTables().orElse(Boolean.TRUE)) {
             createTable();
         }
+
+        this.transactionLog = new TransactionLogImpl(store, new JacksonObjectMarshallingStrategy(process));
+    }
+
+    @Override
+    public TransactionLog transactionLog() {
+        return transactionLog;
     }
 
     @Override
@@ -115,11 +127,27 @@ public class CassandraProcessInstances implements MutableProcessInstances {
                 .column(VERSION_FIELD)
                 .whereColumn(INSTANCE_ID_FIELD).isEqualTo(literal(resolvedId))
                 .whereColumn(STATUS_FIELD).isEqualTo(literal(status));
+        if (status == ProcessInstance.STATE_RECOVERING) {
+            byte[] content = this.transactionLog.readContent(process.id(), resolvedId);
+
+            // transaction log found value but not in the cassandra storage so use it as it is part of recovery
+            if (content != null) {
+                long versionTracker = 1;
+                ResultSet rs = cqlSession.execute(select.build());
+                Row row = rs.one();
+                if (row != null) {
+                    versionTracker = row.getLong(VERSION_FIELD);
+                }
+                return Optional
+                        .of(mode == MUTABLE
+                                ? marshaller.unmarshallProcessInstance(content, process, versionTracker)
+                                : marshaller.unmarshallReadOnlyProcessInstance(content, process));
+            }
+        }
 
         ResultSet rs = cqlSession.execute(select.build());
         Row row = rs.one();
         if (row != null) {
-
             byte[] content = ByteUtils.getArray(row.getByteBuffer(CONTENT_FIELD));
 
             return Optional
@@ -340,8 +368,26 @@ public class CassandraProcessInstances implements MutableProcessInstances {
         ResultSet rs = cqlSession.execute(cqlSession.prepare(statement)
                 .bind(ByteBuffer.wrap(data), tags));
         if (!rs.wasApplied()) {
-            throw new ConflictingVersionException("Process instance with id '" + instance.id()
-                    + "' has older version than the stored one");
+            if (transactionLog.contains(process.id(), instance.id())) {
+                Insert insert = insertInto(config.keyspace().orElse("automatiko"), tableName)
+                        .value(INSTANCE_ID_FIELD, literal(resolvedId))
+                        .value(VERSION_FIELD, literal(((AbstractProcessInstance<?>) instance).getVersionTracker()))
+                        .value(STATUS_FIELD, literal(((AbstractProcessInstance<?>) instance).status()))
+                        .value(CONTENT_FIELD, bindMarker())
+                        .value(TAGS_FIELD, bindMarker()).ifNotExists();
+
+                try {
+                    rs = cqlSession.execute(cqlSession.prepare(insert.build()).bind(ByteBuffer.wrap(data), tags));
+                    if (!rs.wasApplied()) {
+                        throw new ProcessInstanceDuplicatedException(id);
+                    }
+                } catch (QueryExecutionException e) {
+                    throw new ProcessInstanceDuplicatedException(id);
+                }
+            } else {
+                throw new ConflictingVersionException("Process instance with id '" + instance.id()
+                        + "' has older version than the stored one");
+            }
         }
 
         disconnect(instance);

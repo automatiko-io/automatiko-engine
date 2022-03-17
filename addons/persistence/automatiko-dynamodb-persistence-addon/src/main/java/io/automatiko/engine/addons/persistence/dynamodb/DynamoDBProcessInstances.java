@@ -14,9 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.addons.persistence.common.JacksonObjectMarshallingStrategy;
+import io.automatiko.engine.addons.persistence.common.tlog.TransactionLogImpl;
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.AccessDeniedException;
 import io.automatiko.engine.api.config.DynamoDBPersistenceConfig;
+import io.automatiko.engine.api.uow.TransactionLog;
+import io.automatiko.engine.api.uow.TransactionLogStore;
 import io.automatiko.engine.api.workflow.ConflictingVersionException;
 import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
@@ -76,8 +79,10 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
 
     private Map<String, ProcessInstance> cachedInstances = new ConcurrentHashMap<>();
 
+    private TransactionLog transactionLog;
+
     public DynamoDBProcessInstances(Process<? extends Model> process, DynamoDbClient dynamodb,
-            DynamoDBPersistenceConfig config, StoredDataCodec codec) {
+            DynamoDBPersistenceConfig config, StoredDataCodec codec, TransactionLogStore store) {
         this.process = process;
         this.marshaller = new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process));
         this.config = config;
@@ -88,6 +93,12 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
         if (config.createTables().orElse(Boolean.TRUE)) {
             createTable();
         }
+        this.transactionLog = new TransactionLogImpl(store, new JacksonObjectMarshallingStrategy(process));
+    }
+
+    @Override
+    public TransactionLog transactionLog() {
+        return this.transactionLog;
     }
 
     @Override
@@ -115,6 +126,22 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
                 .key(keyToGet)
                 .tableName(tableName)
                 .build();
+        if (status == ProcessInstance.STATE_RECOVERING) {
+            byte[] content = this.transactionLog.readContent(process.id(), resolvedId);
+            // transaction log found value but not in the dynamodb storage so use it as it is part of recovery
+            if (content != null) {
+                long versionTracker = 1;
+
+                Map<String, AttributeValue> returnedItem = dynamodb.getItem(request).item();
+                if (returnedItem != null) {
+                    versionTracker = Long.parseLong(returnedItem.get(VERSION_FIELD).n());
+                }
+                return Optional
+                        .of(mode == MUTABLE
+                                ? marshaller.unmarshallProcessInstance(content, process, versionTracker)
+                                : marshaller.unmarshallReadOnlyProcessInstance(content, process));
+            }
+        }
 
         Map<String, AttributeValue> returnedItem = dynamodb.getItem(request).item();
 

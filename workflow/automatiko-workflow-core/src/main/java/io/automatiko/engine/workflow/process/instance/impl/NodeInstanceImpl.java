@@ -258,7 +258,7 @@ public abstract class NodeInstanceImpl
             }
         }
         configureSla();
-
+        triggerTime = new Date();
         InternalProcessRuntime runtime = getProcessInstance().getProcessRuntime();
         if (!hidden) {
             runtime.getProcessEventSupport().fireBeforeNodeTriggered(this, runtime);

@@ -20,4 +20,8 @@ public interface WorkflowProcessInstance
 
     boolean multipleInstancesOfNodeAllowed(Node node);
 
+    RecoveryItem getRecoveryItem(String nodeId);
+
+    void setRecoveryItem(RecoveryItem item);
+
 }

@@ -4,7 +4,11 @@ package io.automatiko.engine.api.workflow;
 import java.util.Collection;
 import java.util.Optional;
 
+import io.automatiko.engine.api.uow.TransactionLog;
+
 public interface ProcessInstances<T> {
+
+    TransactionLog transactionLog();
 
     default Optional<? extends ProcessInstance<T>> findById(String id) {
         return findById(id, ProcessInstanceReadMode.MUTABLE);
