@@ -151,4 +151,12 @@ public interface ProcessEventListener extends EventListener {
      */
     default void afterProcessSignaled(ProcessSignaledEvent event) {
     }
+
+    /**
+     * This listener method is invoked right after node instance is initialized but not yet invoked
+     * 
+     * @param event
+     */
+    default void afterNodeInitialized(ProcessNodeInitializedEvent event) {
+    }
 }

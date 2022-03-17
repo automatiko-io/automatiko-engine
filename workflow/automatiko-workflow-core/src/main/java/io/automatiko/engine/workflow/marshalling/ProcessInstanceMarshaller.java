@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.StreamCorruptedException;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -23,6 +24,7 @@ import io.automatiko.engine.api.jobs.JobsService;
 import io.automatiko.engine.api.jobs.ProcessInstanceJobDescription;
 import io.automatiko.engine.api.marshalling.ObjectMarshallingStrategy;
 import io.automatiko.engine.api.runtime.EnvironmentName;
+import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.Process;
@@ -71,9 +73,18 @@ public class ProcessInstanceMarshaller {
     }
 
     public byte[] marhsallProcessInstance(ProcessInstance<?> processInstance) {
-
         io.automatiko.engine.api.runtime.process.ProcessInstance pi = ((AbstractProcessInstance<?>) processInstance)
                 .internalGetProcessInstance();
+        ((WorkflowProcessInstanceImpl) pi).internalSetRecoveryItem(null);
+        byte[] content = marhsallProcessInstance(pi);
+
+        ((WorkflowProcessInstanceImpl) pi).disconnect();
+
+        return content;
+    }
+
+    public byte[] marhsallProcessInstance(io.automatiko.engine.api.runtime.process.ProcessInstance pi,
+            NodeInstance... nodeInstances) {
 
         if (pi == null) {
             return null;
@@ -82,12 +93,17 @@ public class ProcessInstanceMarshaller {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
             ProcessMarshallerWriteContext context = new ProcessMarshallerWriteContext(baos,
-                    ((io.automatiko.engine.workflow.base.instance.ProcessInstance) pi).getProcessRuntime(), null, env);
+                    ((io.automatiko.engine.workflow.base.instance.ProcessInstance) pi).getProcessRuntime(), null,
+                    new HashMap<>(env));
             context.setProcessInstanceId(pi.getId());
             context.setState(pi.getState());
 
             String processType = pi.getProcess().getType();
             context.stream.writeUTF(processType);
+
+            if (nodeInstances != null && nodeInstances.length > 0) {
+                context.env.put("nodeInstances", Arrays.asList(nodeInstances));
+            }
 
             io.automatiko.engine.workflow.marshalling.impl.ProcessInstanceMarshaller marshaller = ProcessMarshallerRegistry.INSTANCE
                     .getMarshaller(processType);
@@ -98,7 +114,7 @@ public class ProcessInstanceMarshaller {
                 PersisterHelper.writeToStreamWithHeader(context, _instance);
             }
             context.close();
-            ((WorkflowProcessInstanceImpl) pi).disconnect();
+
             return baos.toByteArray();
         } catch (Exception e) {
             throw new RuntimeException("Error while marshalling process instance", e);

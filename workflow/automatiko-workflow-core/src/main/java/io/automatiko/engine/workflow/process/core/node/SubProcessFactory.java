@@ -1,6 +1,8 @@
 
 package io.automatiko.engine.workflow.process.core.node;
 
+import java.util.Optional;
+
 import io.automatiko.engine.api.runtime.process.ProcessContext;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 
@@ -39,5 +41,22 @@ public interface SubProcessFactory<T> {
     default void abortInstance(String instanceId) {
 
     }
+
+    /**
+     * Attempts to find process instance based on given instanceId
+     * 
+     * @param instanceId unique identifier of the process instance
+     * @return optional containing process instance
+     */
+    Optional<ProcessInstance<T>> findInstance(String instanceId);
+
+    /**
+     * Attempts to find process instance based on given instanceId
+     * 
+     * @param instanceId unique identifier of the process instance
+     * @param status status the instance should be in
+     * @return optional containing process instance
+     */
+    Optional<ProcessInstance<T>> findInstanceByStatus(String instanceId, int status);
 
 }

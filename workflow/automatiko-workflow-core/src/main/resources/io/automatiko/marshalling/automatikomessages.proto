@@ -136,7 +136,7 @@ message ProcessInstance {
     optional string root_process_id = 24;
     optional string reference_id = 25;
     optional string initiator = 26;
-    optional string reference_from_root = 30;
+    optional string reference_from_root = 30;    
 
     repeated SwimlaneContextInstance swimlane_context = 6;
     repeated NodeInstance node_instance = 7;
@@ -150,11 +150,21 @@ message ProcessInstance {
     repeated Tag tags = 28;
     
     repeated Error errors = 29;
+    
+    optional RecoveryItem recovery_item = 32;
         
 	message ProcessInstanchChildren {
 	    optional string process_id = 1;
 	    repeated string ids = 2;
 	}	
+	
+	message RecoveryItem {
+		optional string transaction_id = 1;
+	    optional string node_id = 2;
+	    optional string instance_id = 3;
+	    optional string timer_id = 4;
+	    repeated string state_timer_ids = 5;
+	}
 	
 	message Tag {
 	    optional string id = 1;

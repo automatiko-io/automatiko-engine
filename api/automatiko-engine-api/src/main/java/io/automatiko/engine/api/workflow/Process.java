@@ -1,11 +1,14 @@
 
 package io.automatiko.engine.api.workflow;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.AccessPolicy;
 
+@SuppressWarnings("rawtypes")
 public interface Process<T> {
 
     ProcessInstance<T> createInstance(T workingMemory);
@@ -53,4 +56,8 @@ public interface Process<T> {
     ArchivedProcessInstance archiveInstance(String id, ArchiveBuilder builder);
 
     EndOfInstanceStrategy endOfInstanceStrategy();
+
+    default Collection<Process<?>> subprocesses() {
+        return Collections.emptyList();
+    }
 }

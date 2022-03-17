@@ -14,16 +14,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
+import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.ConditionalExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.LongLiteralExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
+import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -94,6 +97,10 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
                     .ifPresent(m -> m.setBody(unbind(variableScope, node)));
             retValueExpression.findFirst(MethodDeclaration.class, m -> m.getNameAsString().equals("abortInstance"))
                     .ifPresent(m -> m.setBody(abortInstance(node, metadata)));
+            retValueExpression.findFirst(MethodDeclaration.class, m -> m.getNameAsString().equals("findInstance"))
+                    .ifPresent(m -> m.setBody(findInstance(node, metadata, subProcessModelClassName)));
+            retValueExpression.findFirst(MethodDeclaration.class, m -> m.getNameAsString().equals("findInstanceByStatus"))
+                    .ifPresent(m -> m.setBody(findInstanceByStatus(node, metadata, subProcessModelClassName)));
         });
 
         if (retValue.isPresent()) {
@@ -168,6 +175,48 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
                         .addArgument(new NameExpr("instanceId")));
 
         return new BlockStmt().addStatement(processInstanceSupplier);
+    }
+
+    private BlockStmt findInstance(SubProcessNode subProcessNode, ProcessMetaData metadata, String subProcessModelClassName) {
+
+        String processId = ProcessToExecModelGenerator.extractProcessId(subProcessNode.getProcessId(),
+                ModelMetaData.version(subProcessNode.getProcessVersion()));
+        String processFielName = "process" + processId;
+
+        MethodCallExpr findInstanceMethod = new MethodCallExpr(new MethodCallExpr(new NameExpr(processFielName), "instances"),
+                "findById")
+                        .addArgument(new NameExpr("instanceId"));
+
+        CastExpr castExpr = new CastExpr(new ClassOrInterfaceType(null, new SimpleName(Optional.class.getCanonicalName()),
+                NodeList.nodeList(new ClassOrInterfaceType(null,
+                        new SimpleName(io.automatiko.engine.api.workflow.ProcessInstance.class.getCanonicalName()),
+                        NodeList.nodeList(new ClassOrInterfaceType(null, subProcessModelClassName))))),
+                findInstanceMethod);
+        ReturnStmt processInstanceSupplier = new ReturnStmt(castExpr);
+        return new BlockStmt().addStatement(processInstanceSupplier);
+    }
+
+    private BlockStmt findInstanceByStatus(SubProcessNode subProcessNode, ProcessMetaData metadata,
+            String subProcessModelClassName) {
+
+        String processId = ProcessToExecModelGenerator.extractProcessId(subProcessNode.getProcessId(),
+                ModelMetaData.version(subProcessNode.getProcessVersion()));
+        String processFielName = "process" + processId;
+
+        MethodCallExpr findInstanceMethod = new MethodCallExpr(new MethodCallExpr(new NameExpr(processFielName), "instances"),
+                "findById")
+                        .addArgument(new NameExpr("instanceId"))
+                        .addArgument(new NameExpr("status"))
+                        .addArgument(new NameExpr("io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE"));
+
+        CastExpr castExpr = new CastExpr(new ClassOrInterfaceType(null, new SimpleName(Optional.class.getCanonicalName()),
+                NodeList.nodeList(new ClassOrInterfaceType(null,
+                        new SimpleName(io.automatiko.engine.api.workflow.ProcessInstance.class.getCanonicalName()),
+                        NodeList.nodeList(new ClassOrInterfaceType(null, subProcessModelClassName))))),
+                findInstanceMethod);
+        ReturnStmt processInstanceSupplier = new ReturnStmt(castExpr);
+        return new BlockStmt().addStatement(processInstanceSupplier);
+
     }
 
     private BlockStmt unbind(VariableScope variableScope, SubProcessNode subProcessNode) {

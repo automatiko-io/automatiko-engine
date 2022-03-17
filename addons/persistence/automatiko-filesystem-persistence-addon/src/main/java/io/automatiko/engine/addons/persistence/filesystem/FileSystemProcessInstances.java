@@ -29,7 +29,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.addons.persistence.common.JacksonObjectMarshallingStrategy;
+import io.automatiko.engine.addons.persistence.common.tlog.TransactionLogImpl;
 import io.automatiko.engine.api.auth.AccessDeniedException;
+import io.automatiko.engine.api.uow.TransactionLog;
+import io.automatiko.engine.api.uow.TransactionLogStore;
 import io.automatiko.engine.api.workflow.ConflictingVersionException;
 import io.automatiko.engine.api.workflow.ExportedProcessInstance;
 import io.automatiko.engine.api.workflow.MutableProcessInstances;
@@ -64,23 +67,25 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 
     private Map<String, ProcessInstance> cachedInstances = new ConcurrentHashMap<>();
 
-    public FileSystemProcessInstances(Process<?> process, Path storage, StoredDataCodec codec) {
-        this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process)), codec);
+    private TransactionLog transactionLog;
+
+    public FileSystemProcessInstances(Process<?> process, Path storage, StoredDataCodec codec, TransactionLogStore store) {
+        this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process)), codec, store);
     }
 
     public FileSystemProcessInstances(Process<?> process, Path storage, boolean useCompositeIdForSubprocess,
-            StoredDataCodec codec) {
+            StoredDataCodec codec, TransactionLogStore store) {
         this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process)),
-                useCompositeIdForSubprocess, codec);
+                useCompositeIdForSubprocess, codec, store);
     }
 
     public FileSystemProcessInstances(Process<?> process, Path storage, ProcessInstanceMarshaller marshaller,
-            StoredDataCodec codec) {
-        this(process, storage, marshaller, true, codec);
+            StoredDataCodec codec, TransactionLogStore store) {
+        this(process, storage, marshaller, true, codec, store);
     }
 
     public FileSystemProcessInstances(Process<?> process, Path storage, ProcessInstanceMarshaller marshaller,
-            boolean useCompositeIdForSubprocess, StoredDataCodec codec) {
+            boolean useCompositeIdForSubprocess, StoredDataCodec codec, TransactionLogStore store) {
         this.process = process;
         this.storage = Paths.get(storage.toString(), process.id());
         this.marshaller = marshaller;
@@ -93,6 +98,13 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             throw new RuntimeException("Unable to create directories for file based storage of process instances", e);
         }
         LOGGER.debug("Location of the file system process storage is {}", storage);
+
+        this.transactionLog = new TransactionLogImpl(store, new JacksonObjectMarshallingStrategy(process));
+    }
+
+    @Override
+    public TransactionLog transactionLog() {
+        return this.transactionLog;
     }
 
     public Long size() {
@@ -127,6 +139,17 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         }
 
         Path processInstanceStorage = Paths.get(storage.toString(), resolvedId);
+
+        if (status == ProcessInstance.STATE_RECOVERING) {
+            byte[] content = this.transactionLog.readContent(process.id(), resolvedId);
+            long versionTracker = 1;
+            if (Files.notExists(processInstanceStorage)) {
+                versionTracker = getVersionTracker(processInstanceStorage);
+            }
+            return Optional.of(
+                    mode == MUTABLE ? marshaller.unmarshallProcessInstance(content, process, versionTracker)
+                            : marshaller.unmarshallReadOnlyProcessInstance(content, process));
+        }
 
         if (Files.notExists(processInstanceStorage)
                 || Integer.parseInt(getMetadata(processInstanceStorage, PI_STATUS)) != status) {
@@ -247,7 +270,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 
             Path processInstanceStorage = Paths.get(storage.toString(), resolvedId);
 
-            if (Files.exists(processInstanceStorage)) {
+            if (Files.exists(processInstanceStorage) || transactionLog.contains(process.id(), instance.id())) {
                 storeProcessInstance(processInstanceStorage, instance);
             }
         }
@@ -351,6 +374,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         ((AbstractProcessInstance<?>) instance).internalRemoveProcessInstance(() -> {
 
             try {
+
                 byte[] reloaded = readBytesFromFile(processInstanceStorage);
 
                 return marshaller.unmarshallWorkflowProcessInstance(reloaded, process);

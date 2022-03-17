@@ -28,6 +28,11 @@ public class ManagedUnitOfWork implements UnitOfWork {
     }
 
     @Override
+    public String identifier() {
+        return delegate.identifier();
+    }
+
+    @Override
     public void start() {
         onStart.accept(delegate);
         delegate.start();

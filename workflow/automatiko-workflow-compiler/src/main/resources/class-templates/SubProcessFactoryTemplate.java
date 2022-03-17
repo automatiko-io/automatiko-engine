@@ -1,3 +1,5 @@
+import java.util.Optional;
+
 import io.automatiko.engine.api.workflow.ProcessInstance;
 
 class Template {
@@ -12,6 +14,16 @@ class Template {
 
         }
         public void abortInstance(String instanceId) {
+            
+        }
+        
+        @SuppressWarnings("unchecked")
+        public java.util.Optional<io.automatiko.engine.api.workflow.ProcessInstance<$Type$>> findInstance(String instanceId) {
+            
+        }
+        
+        @SuppressWarnings("unchecked")
+        public java.util.Optional<io.automatiko.engine.api.workflow.ProcessInstance<$Type$>> findInstanceByStatus(String instanceId, int status) {
             
         }
         

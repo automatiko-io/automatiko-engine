@@ -38,6 +38,7 @@ import io.automatiko.engine.workflow.process.core.Node;
 import io.automatiko.engine.workflow.process.core.ProcessAction;
 import io.automatiko.engine.workflow.process.core.impl.NodeImpl;
 import io.automatiko.engine.workflow.process.core.node.StateBasedNode;
+import io.automatiko.engine.workflow.process.instance.RecoveryItem;
 import io.automatiko.engine.workflow.process.instance.impl.ExtendedNodeInstanceImpl;
 import io.automatiko.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
 
@@ -66,17 +67,26 @@ public abstract class StateBasedNodeInstance extends ExtendedNodeInstanceImpl
         Map<Timer, ProcessAction> timers = getEventBasedNode().getTimers();
         if (timers != null) {
             addTimerListener();
-            timerInstances = new ArrayList<>(timers.size());
-            JobsService jobService = getProcessInstance().getProcessRuntime().getJobsService();
-            for (Timer timer : timers.keySet()) {
-                ExpirationTime expirationTime = createTimerInstance(timer);
-                String jobId = jobService.scheduleProcessInstanceJob(ProcessInstanceJobDescription.of(timer.getId(),
-                        expirationTime, getProcessInstanceIdWithParent(), getProcessInstance().getRootProcessInstanceId(),
-                        getProcessInstance().getProcessId(), getProcessInstance().getProcess().getVersion(),
-                        getProcessInstance().getRootProcessId()));
-                timerInstances.add(jobId);
+
+            RecoveryItem recoveryItem = getProcessInstance().getRecoveryItem(getNodeDefinitionId());
+
+            if (recoveryItem != null && recoveryItem.getStateTimerIds() != null) {
+                timerInstances = recoveryItem.getStateTimerIds();
+            } else {
+
+                timerInstances = new ArrayList<>(timers.size());
+                JobsService jobService = getProcessInstance().getProcessRuntime().getJobsService();
+                for (Timer timer : timers.keySet()) {
+                    ExpirationTime expirationTime = createTimerInstance(timer);
+                    String jobId = jobService.scheduleProcessInstanceJob(ProcessInstanceJobDescription.of(timer.getId(),
+                            expirationTime, getProcessInstanceIdWithParent(), getProcessInstance().getRootProcessInstanceId(),
+                            getProcessInstance().getProcessId(), getProcessInstance().getProcess().getVersion(),
+                            getProcessInstance().getRootProcessId()));
+                    timerInstances.add(jobId);
+                }
             }
         }
+
         ((WorkflowProcessInstanceImpl) getProcessInstance())
                 .addActivatingNodeId((String) getNode().getMetaData().get("UniqueId"));
         if (getExtendedNode().hasCondition()) {

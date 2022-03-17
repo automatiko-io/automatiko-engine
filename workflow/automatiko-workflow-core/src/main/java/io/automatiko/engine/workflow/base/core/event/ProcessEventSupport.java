@@ -7,6 +7,7 @@ import java.util.List;
 import io.automatiko.engine.api.event.process.DelayedExecution;
 import io.automatiko.engine.api.event.process.ProcessCompletedEvent;
 import io.automatiko.engine.api.event.process.ProcessEventListener;
+import io.automatiko.engine.api.event.process.ProcessNodeInitializedEvent;
 import io.automatiko.engine.api.event.process.ProcessNodeInstanceFailedEvent;
 import io.automatiko.engine.api.event.process.ProcessNodeLeftEvent;
 import io.automatiko.engine.api.event.process.ProcessNodeTriggeredEvent;
@@ -418,6 +419,26 @@ public class ProcessEventSupport extends AbstractEventSupport<ProcessEventListen
         }
         unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, (e) -> {
             delayedListeners.forEach(l -> l.afterProcessSignaled(e));
+        }));
+    }
+
+    public void fireAfterNodeInitialized(final NodeInstance nodeInstance, ProcessRuntime runtime) {
+        final Iterator<ProcessEventListener> iter = getEventListenersIterator();
+        final List<ProcessEventListener> delayedListeners = new ArrayList<ProcessEventListener>();
+        final ProcessNodeInitializedEvent event = new ProcessNodeInitializedEventImpl(nodeInstance, runtime);
+        if (iter.hasNext()) {
+
+            do {
+                ProcessEventListener listener = iter.next();
+                if (listener instanceof DelayedExecution) {
+                    delayedListeners.add(listener);
+                } else {
+                    listener.afterNodeInitialized(event);
+                }
+            } while (iter.hasNext());
+        }
+        unitOfWorkManager.currentUnitOfWork().intercept(WorkUnit.create(event, e -> {
+            delayedListeners.forEach(l -> l.afterNodeInitialized(e));
         }));
     }
 

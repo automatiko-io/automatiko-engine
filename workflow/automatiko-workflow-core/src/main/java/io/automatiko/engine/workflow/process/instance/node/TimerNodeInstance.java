@@ -22,6 +22,7 @@ import io.automatiko.engine.api.workflow.EventDescription;
 import io.automatiko.engine.services.time.TimerInstance;
 import io.automatiko.engine.workflow.base.instance.InternalProcessRuntime;
 import io.automatiko.engine.workflow.process.core.node.TimerNode;
+import io.automatiko.engine.workflow.process.instance.RecoveryItem;
 import io.automatiko.engine.workflow.process.instance.WorkflowProcessInstance;
 
 public class TimerNodeInstance extends StateBasedNodeInstance implements EventListener {
@@ -50,16 +51,31 @@ public class TimerNodeInstance extends StateBasedNodeInstance implements EventLi
             throw new IllegalArgumentException("A TimerNode only accepts default incoming connections!");
         }
         triggerTime = new Date();
-        ExpirationTime expirationTime = createTimerInstance(getTimerNode().getTimer());
+
         if (getTimerInstances() == null) {
             addTimerListener();
         }
-        JobsService jobService = getProcessInstance().getProcessRuntime().getJobsService();
-        timerId = jobService.scheduleProcessInstanceJob(ProcessInstanceJobDescription.of(
-                getTimerNode().getTimer().getId(), expirationTime, getProcessInstanceIdWithParent(),
-                getProcessInstance().getRootProcessInstanceId(), getProcessInstance().getProcessId(),
-                getProcessInstance().getProcess().getVersion(), getProcessInstance().getRootProcessId()));
-        logger.debug("Scheduled timer with id {} for node {} with fire date {}", timerId, getNodeName(), expirationTime.get());
+
+        RecoveryItem recoveryItem = getProcessInstance().getRecoveryItem(getNodeDefinitionId());
+
+        if (recoveryItem != null && recoveryItem.getTimerId() != null) {
+            this.timerId = recoveryItem.getTimerId();
+        } else {
+            ExpirationTime expirationTime = createTimerInstance(getTimerNode().getTimer());
+            ProcessInstanceJobDescription descriptor = ProcessInstanceJobDescription.of(
+                    getTimerNode().getTimer().getId(), expirationTime, getProcessInstanceIdWithParent(),
+                    getProcessInstance().getRootProcessInstanceId(), getProcessInstance().getProcessId(),
+                    getProcessInstance().getProcess().getVersion(), getProcessInstance().getRootProcessId());
+
+            this.timerId = descriptor.id();
+            getProcessInstance().getProcessRuntime().getProcessEventSupport().fireAfterNodeInitialized(this,
+                    getProcessInstance().getProcessRuntime());
+
+            JobsService jobService = getProcessInstance().getProcessRuntime().getJobsService();
+            timerId = jobService.scheduleProcessInstanceJob(descriptor);
+            logger.debug("Scheduled timer with id {} for node {} with fire date {}", timerId, getNodeName(),
+                    expirationTime.get());
+        }
     }
 
     public void signalEvent(String type, Object event) {

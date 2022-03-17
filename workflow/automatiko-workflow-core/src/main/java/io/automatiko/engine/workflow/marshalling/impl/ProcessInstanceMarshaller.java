@@ -21,13 +21,14 @@ import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 
 public interface ProcessInstanceMarshaller {
 
-	public Object writeProcessInstance(MarshallerWriteContext context, ProcessInstance processInstance)
-			throws IOException;
+    public Object writeProcessInstance(MarshallerWriteContext context, ProcessInstance processInstance)
+            throws IOException;
 
-	public Object writeNodeInstance(MarshallerWriteContext context, NodeInstance nodeInstance) throws IOException;
+    public Object writeNodeInstance(MarshallerWriteContext context, NodeInstance nodeInstance, Object processInstanceBuilder)
+            throws IOException;
 
-	public ProcessInstance readProcessInstance(MarshallerReaderContext context) throws IOException;
+    public ProcessInstance readProcessInstance(MarshallerReaderContext context) throws IOException;
 
-	public NodeInstance readNodeInstance(MarshallerReaderContext context, NodeInstanceContainer nodeInstanceContainer,
-			WorkflowProcessInstance processInstance) throws IOException;
+    public NodeInstance readNodeInstance(MarshallerReaderContext context, NodeInstanceContainer nodeInstanceContainer,
+            WorkflowProcessInstance processInstance) throws IOException;
 }

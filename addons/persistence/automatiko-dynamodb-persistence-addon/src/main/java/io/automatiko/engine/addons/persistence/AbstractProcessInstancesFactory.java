@@ -27,6 +27,7 @@ public abstract class AbstractProcessInstancesFactory implements ProcessInstance
 
     @SuppressWarnings("unchecked")
     public DynamoDBProcessInstances createProcessInstances(Process<?> process) {
-        return new DynamoDBProcessInstances((Process<? extends Model>) process, dynamodb, config, codec());
+        return new DynamoDBProcessInstances((Process<? extends Model>) process, dynamodb, config, codec(),
+                transactionLogStore());
     }
 }

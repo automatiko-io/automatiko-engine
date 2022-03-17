@@ -14,6 +14,6 @@ public abstract class AbstractProcessInstancesFactory implements ProcessInstance
 
     @SuppressWarnings("unchecked")
     public DatabaseProcessInstances createProcessInstances(Process<?> process) {
-        return new DatabaseProcessInstances((Process<? extends ProcessInstanceEntity>) process, codec());
+        return new DatabaseProcessInstances((Process<? extends ProcessInstanceEntity>) process, codec(), transactionLogStore());
     }
 }

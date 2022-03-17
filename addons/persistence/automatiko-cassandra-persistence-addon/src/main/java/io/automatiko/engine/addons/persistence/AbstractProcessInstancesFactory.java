@@ -28,6 +28,7 @@ public abstract class AbstractProcessInstancesFactory implements ProcessInstance
 
     @SuppressWarnings("unchecked")
     public CassandraProcessInstances createProcessInstances(Process<?> process) {
-        return new CassandraProcessInstances((Process<? extends Model>) process, cqlSession, config, codec());
+        return new CassandraProcessInstances((Process<? extends Model>) process, cqlSession, config, codec(),
+                transactionLogStore());
     }
 }

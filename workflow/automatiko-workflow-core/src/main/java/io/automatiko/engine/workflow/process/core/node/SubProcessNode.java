@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 
 import org.mvel2.MVEL;
@@ -20,6 +21,7 @@ import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.runtime.process.DataTransformer;
 import io.automatiko.engine.api.runtime.process.ProcessContext;
 import io.automatiko.engine.api.workflow.ProcessInstance;
+import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError;
 import io.automatiko.engine.workflow.base.core.Context;
 import io.automatiko.engine.workflow.base.core.ContextContainer;
@@ -436,6 +438,18 @@ public class SubProcessNode extends StateBasedNode implements Mappable, ContextC
                 } catch (Exception e) {
                     throw new RuntimeException("unable to execute Assignment", e);
                 }
+            }
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public Optional<ProcessInstance<Object>> findInstance(String instanceId) {
+                return process.instances().findById(instanceId);
+            }
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public Optional<ProcessInstance<Object>> findInstanceByStatus(String instanceId, int status) {
+                return process.instances().findById(instanceId, status, ProcessInstanceReadMode.MUTABLE);
             }
 
         };

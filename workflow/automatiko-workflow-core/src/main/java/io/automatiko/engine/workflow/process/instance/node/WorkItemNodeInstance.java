@@ -178,6 +178,9 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         workItem.setProcessInstance(getProcessInstance());
         setProcessId();
 
+        getProcessInstance().getProcessRuntime().getProcessEventSupport().fireAfterNodeInitialized(this,
+                getProcessInstance().getProcessRuntime());
+
         try {
             ((DefaultWorkItemManager) getProcessInstance().getProcessRuntime().getWorkItemManager())
                     .internalExecuteWorkItem(workItem);

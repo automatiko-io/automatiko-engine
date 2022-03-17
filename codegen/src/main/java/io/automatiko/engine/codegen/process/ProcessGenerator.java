@@ -2,6 +2,8 @@
 package io.automatiko.engine.codegen.process;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -44,6 +46,7 @@ import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.UnknownType;
+import com.github.javaparser.ast.type.WildcardType;
 
 import io.automatiko.engine.api.Functions;
 import io.automatiko.engine.api.Model;
@@ -596,6 +599,7 @@ public class ProcessGenerator {
         ProcessMetaData processMetaData = processGenerator.generate();
 
         if (!processMetaData.getSubProcesses().isEmpty()) {
+            MethodCallExpr asListMethodCall = new MethodCallExpr(new NameExpr(Arrays.class.getCanonicalName()), "asList");
 
             for (Entry<String, String> subProcess : processMetaData.getSubProcesses().entrySet()) {
                 FieldDeclaration subprocessFieldDeclaration = new FieldDeclaration();
@@ -640,10 +644,20 @@ public class ProcessGenerator {
                                     new CastExpr(modelType, initSubProcessField), Operator.ASSIGN));
 
                 }
-
+                asListMethodCall.addArgument(subprocessFieldDeclaration.getVariable(0).getNameAsExpression());
                 cls.addMember(subprocessFieldDeclaration);
                 subprocessFieldDeclaration.createGetter();
             }
+
+            MethodDeclaration subprocessesMethod = new MethodDeclaration().setName("subprocesses")
+                    .setType(new ClassOrInterfaceType(null, new SimpleName(Collection.class.getCanonicalName()),
+                            NodeList.nodeList(new ClassOrInterfaceType(null,
+                                    new SimpleName(io.automatiko.engine.api.workflow.Process.class.getCanonicalName()),
+                                    NodeList.nodeList(new WildcardType())))))
+                    .setPublic(true);
+
+            subprocessesMethod.setBody(new BlockStmt().addStatement(new ReturnStmt(asListMethodCall)));
+            cls.addMember(subprocessesMethod);
         }
 
         if (useInjection()) {

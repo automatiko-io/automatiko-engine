@@ -92,6 +92,7 @@ import io.automatiko.engine.workflow.process.core.node.StateNode;
 import io.automatiko.engine.workflow.process.executable.core.Metadata;
 import io.automatiko.engine.workflow.process.executable.instance.ExecutableProcessInstance;
 import io.automatiko.engine.workflow.process.instance.NodeInstance;
+import io.automatiko.engine.workflow.process.instance.RecoveryItem;
 import io.automatiko.engine.workflow.process.instance.WorkflowProcessInstance;
 import io.automatiko.engine.workflow.process.instance.node.CompositeNodeInstance;
 import io.automatiko.engine.workflow.process.instance.node.EndNodeInstance;
@@ -147,6 +148,8 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
     private String initiator;
 
     private Collection<Tag> tags = new LinkedHashSet<Tag>();
+
+    private RecoveryItem recoveryItem;
 
     @Override
     public NodeContainer getNodeContainer() {
@@ -1379,4 +1382,26 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
     public void internalSetExecutionErrors(List<ExecutionsErrorInfo> errors) {
         this.errors = errors;
     }
+
+    public RecoveryItem getRecoveryItem(String nodeId) {
+        if (recoveryItem != null && recoveryItem.getNodeDefinitionId().equals(nodeId)) {
+
+            return recoveryItem;
+        }
+
+        return null;
+    }
+
+    public void internalSetRecoveryItem(RecoveryItem item) {
+        this.recoveryItem = item;
+    }
+
+    public void setRecoveryItem(RecoveryItem item) {
+        this.recoveryItem = item;
+    }
+
+    public RecoveryItem internalGetRecoveryItem() {
+        return recoveryItem;
+    }
+
 }

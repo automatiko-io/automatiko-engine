@@ -358,4 +358,54 @@ Additional configuration should be placed in `application.properties`
 
 |====
 
-Full configuration reference for dynamodb can be found link:https://quarkus.io/guides/mongodb#configuration-reference[here]
+Full configuration reference for mongodb can be found link:https://quarkus.io/guides/mongodb#configuration-reference[here]
+
+== Transaction log
+
+IMPORTANT: Use of transaction log comes with performance penalty as it records to disk each activity 
+
+When using persistence, regardless what is the actual data store (file system, Cassandra, DynamoDB, MongoDB etc) there is 
+always a risk that the service might crash while performing operations and before the result of the operation is 
+written to data store. 
+
+At the same time, service can be one of the mission critical services that cannot effort to loose the work that was
+in flight. To allow to have more fault tolerance support to avoid lost work a transaction log can be enabled in the service
+to record individual steps and in case of a crash perform automatic recovery on next start of the service.
+
+Transaction log records every activity of the workflow that is being executed and stores it in transaction log 
+store. In case of a crash of the system, next start will look up into transaction log store to find in flight transactions.
+Every in flight transaction found will be automatically recovered from the last activity recorded meaning it won't
+re-execute already performed activities and resume from last one directly. No need to have administrators to do any
+action to make this happen.
+
+Worth noting is that recovery is done as part of the startup process which blocks and prevents from complete startup until
+recovery is completed. This is done on purpose to ensure no requests get in the way during recovery. This is important from
+health check probes point of view especially readiness check as it might lead to service being killed by orchestrator
+(e.g. Kubernetes) during recovery. Recovery is usually very fast but if there are many instances to be recovered or the actions recovery starts from is 
+blocking for long time it might affect overall startup time.
+
+IMPORTANT: Configure readiness check accordingly to avoid intermittent pod evictions during long recovery.
+
+=== Configuration
+
+Transaction log is disabled by default and must be explicitly enabled. Once enabled it must provide a folder location
+where transaction logs will be written. This folder must be a persistent folder that will survive service crashes.
+
+.Transaction log configuration parameters
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.automatiko.persistence.transaction-log.enabled|QUARKUS_AUTOMATIKO_PERSISTENCE_TRANSACTION_LOG_ENABLED|Enables transaction log for workflows to always record activities that are performed to automatically recover after crash|No|false|No
+|quarkus.automatiko.persistence.transaction-log.folder|QUARKUS_AUTOMATIKO_PERSISTENCE_TRANSACTION_LOG_FOLDER|Location on file system that will be used to store transaction log entries|Yes (if transaction log is enabled)||No
+|====
+
+=== Transaction log store
+
+Transaction log records every activity execution and places that into transaction log store. Currently there is 
+only one transaction log store based on file system that records individual instances grouped by transaction id.
+It is not the most efficient storage option but already provides significant value but with more performance overhead.
+
+Transaction log store can be provided by application developers by implementing 
+`io.automatiko.engine.api.uow.TransactionLogStore` interface. In addition there are plans to also implement other
+store implementation out of the box.
+

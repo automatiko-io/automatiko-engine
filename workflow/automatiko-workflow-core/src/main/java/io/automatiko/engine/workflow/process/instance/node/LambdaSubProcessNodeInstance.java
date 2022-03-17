@@ -14,6 +14,7 @@ import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.runtime.process.EventListener;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
+import io.automatiko.engine.api.uow.WorkUnit;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.base.core.Context;
@@ -23,6 +24,7 @@ import io.automatiko.engine.workflow.base.core.context.exception.ExceptionScope;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.instance.ContextInstance;
 import io.automatiko.engine.workflow.base.instance.ContextInstanceContainer;
+import io.automatiko.engine.workflow.base.instance.InternalProcessRuntime;
 import io.automatiko.engine.workflow.base.instance.ProcessInstance;
 import io.automatiko.engine.workflow.base.instance.context.exception.ExceptionScopeInstance;
 import io.automatiko.engine.workflow.base.instance.context.variable.VariableScopeInstance;
@@ -33,6 +35,7 @@ import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
 import io.automatiko.engine.workflow.process.core.node.SubProcessFactory;
 import io.automatiko.engine.workflow.process.core.node.SubProcessNode;
+import io.automatiko.engine.workflow.process.instance.RecoveryItem;
 import io.automatiko.engine.workflow.process.instance.impl.NodeInstanceResolverFactory;
 
 /**
@@ -66,21 +69,64 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
         if (!io.automatiko.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE.equals(type)) {
             throw new IllegalArgumentException("A SubProcess node only accepts default incoming connections!");
         }
+        SubProcessFactory subProcessFactory = getSubProcessNode().getSubProcessFactory();
 
         ProcessContext context = new ProcessContext(getProcessInstance().getProcessRuntime());
         context.setNodeInstance(this);
         context.setProcessInstance(getProcessInstance());
-        SubProcessFactory subProcessFactory = getSubProcessNode().getSubProcessFactory();
-        Object o = subProcessFactory.bind(context);
-        io.automatiko.engine.api.workflow.ProcessInstance<?> processInstance = subProcessFactory.createInstance(o);
 
-        io.automatiko.engine.api.runtime.process.ProcessInstance pi = ((AbstractProcessInstance<?>) processInstance)
-                .internalGetProcessInstance();
         String parentInstanceId = getProcessInstance().getId();
         if (getProcessInstance().getParentProcessInstanceId() != null
                 && !getProcessInstance().getParentProcessInstanceId().isEmpty()) {
             parentInstanceId = getProcessInstance().getParentProcessInstanceId() + ":" + parentInstanceId;
         }
+
+        // check recovery items in case it was already invoked
+        RecoveryItem recoveryItem = getProcessInstance().getRecoveryItem(getNodeDefinitionId());
+
+        if (recoveryItem != null && recoveryItem.getInstanceId() != null) {
+
+            io.automatiko.engine.api.workflow.ProcessInstance<?> processInstance = (io.automatiko.engine.api.workflow.ProcessInstance<?>) subProcessFactory
+                    .findInstanceByStatus(recoveryItem.getInstanceId(),
+                            io.automatiko.engine.api.workflow.ProcessInstance.STATE_RECOVERING)
+                    .orElse(null);
+            if (processInstance != null) {
+                String subprocessInstanceId = parentInstanceId + ":" + processInstance.id();
+                this.processInstanceId = recoveryItem.getInstanceId();
+                this.processInstanceName = processInstance.description();
+
+                if (processInstance.errors().isPresent()) {
+                    processInstance.errors().get().retrigger();
+                    InternalProcessRuntime processRuntime = ((InternalProcessRuntime) getProcessInstance().getProcessRuntime());
+                    processRuntime.getUnitOfWorkManager().currentUnitOfWork()
+                            .intercept(WorkUnit.create(null, e -> {
+                                processInstance.process().instances().transactionLog().complete(recoveryItem.getTransactionId(),
+                                        processInstance.process().id(), processInstanceId);
+                            }));
+
+                }
+
+                subProcessFactory.unbind(context, processInstance.variables());
+
+                if (!getSubProcessNode().isWaitForCompletion()) {
+                    triggerCompleted();
+                } else if (processInstance.status() == ProcessInstance.STATE_COMPLETED
+                        || processInstance.status() == ProcessInstance.STATE_ABORTED) {
+                    triggerCompleted();
+                } else {
+
+                    ((ProcessInstanceImpl) getProcessInstance()).addChild(processInstance.process().id(), subprocessInstanceId);
+                    addProcessListener();
+                }
+                return;
+            }
+        }
+
+        Object o = subProcessFactory.bind(context);
+        io.automatiko.engine.api.workflow.ProcessInstance<?> processInstance = subProcessFactory.createInstance(o);
+        io.automatiko.engine.api.runtime.process.ProcessInstance pi = ((AbstractProcessInstance<?>) processInstance)
+                .internalGetProcessInstance();
+
         ((ProcessInstanceImpl) pi).setMetaData("ParentProcessInstanceId", parentInstanceId);
         ((ProcessInstanceImpl) pi).setMetaData("ParentNodeInstanceId", getUniqueId());
         ((ProcessInstanceImpl) pi).setMetaData("ParentNodeId", getSubProcessNode().getUniqueId());
@@ -95,8 +141,13 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
         ((ProcessInstanceImpl) pi)
                 .setReferenceFromRoot(getProcessInstance().getReferenceFromRoot());
 
-        processInstance.start();
         this.processInstanceId = processInstance.id();
+        this.processInstanceName = processInstance.description();
+
+        getProcessInstance().getProcessRuntime().getProcessEventSupport().fireAfterNodeInitialized(this,
+                getProcessInstance().getProcessRuntime());
+
+        processInstance.start();
         this.processInstanceName = processInstance.description();
 
         subProcessFactory.unbind(context, processInstance.variables());
