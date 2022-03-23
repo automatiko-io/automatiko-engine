@@ -59,7 +59,7 @@ public class $Type$Resource {
                     tracing(pi);
                     pi.send(Sig.of("$signalName$", data));
                     
-                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, getSubModel_$name$(pi, metadata), httpAuth.produce(headers), pi.status());
+                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, pi.abortCode() != null ? pi.abortData() : getSubModel_$name$(pi, metadata), httpAuth.produce(headers), pi.status());
 
                     return null;
                 });

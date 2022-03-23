@@ -13,8 +13,8 @@ public class Error extends Signal implements Serializable {
 
     private Map<String, Object> metaData = new HashMap<String, Object>();
 
-    public Error(String id, String errorCode, String itemRef) {
-        super(id, itemRef);
+    public Error(String id, String name, String errorCode, String itemRef) {
+        super(id, name, itemRef);
         this.errorCode = errorCode;
     }
 

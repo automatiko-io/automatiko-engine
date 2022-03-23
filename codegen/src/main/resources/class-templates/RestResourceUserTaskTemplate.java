@@ -68,7 +68,7 @@ public class $Type$Resource {
                     tracing(pi);
                     pi.send(Sig.of("$taskNodeName$", java.util.Collections.emptyMap()));
                     
-                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, getModel(pi, metadata), httpAuth.produce(headers), pi.status());
+                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, pi.abortCode() != null ? pi.abortData() : getModel(pi, metadata), httpAuth.produce(headers), pi.status());
 
                     return null;
                 });
@@ -148,7 +148,7 @@ public class $Type$Resource {
                     io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, model.toMap(), io.automatiko.engine.api.auth.IdentityProvider.get());
                     pi.transitionWorkItem(workItemId, transition);
                     
-                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, getModel(pi, metadata), httpAuth.produce(headers), pi.status());
+                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, pi.abortCode() != null ? pi.abortData() : getModel(pi, metadata), httpAuth.produce(headers), pi.status());
 
                     return null;
                 });
@@ -273,7 +273,7 @@ public class $Type$Resource {
                     io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, null, io.automatiko.engine.api.auth.IdentityProvider.get());
                     pi.transitionWorkItem(workItemId, transition);
                     
-                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, getModel(pi, metadata), httpAuth.produce(headers), pi.status());
+                    io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, pi.abortCode() != null ? pi.abortData() : getModel(pi, metadata), httpAuth.produce(headers), pi.status());
 
                     return null;
                 });

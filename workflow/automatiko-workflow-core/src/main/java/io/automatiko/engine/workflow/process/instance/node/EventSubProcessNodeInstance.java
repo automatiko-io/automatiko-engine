@@ -86,7 +86,13 @@ public class EventSubProcessNodeInstance extends CompositeContextNodeInstance {
                         faultName = (String) startNode.getMetaData("FaultCode");
                     }
                     if (getNodeInstanceContainer() instanceof ProcessInstance) {
-                        ((ProcessInstance) getProcessInstance()).setState(ProcessInstance.STATE_ABORTED, faultName);
+                        Object faultData = null;
+                        if (startNode.getOutAssociations() != null && !startNode.getOutAssociations().isEmpty()) {
+                            String faultMappedTo = startNode.getOutAssociations().get(0).getTarget();
+                            faultData = getProcessInstance().getVariable(faultMappedTo);
+                        }
+
+                        ((ProcessInstance) getProcessInstance()).setState(ProcessInstance.STATE_ABORTED, faultName, faultData);
                     } else {
                         ((NodeInstanceContainer) getNodeInstanceContainer()).setState(ProcessInstance.STATE_ABORTED);
                         // to allow top level process instance in case there are no more active nodes

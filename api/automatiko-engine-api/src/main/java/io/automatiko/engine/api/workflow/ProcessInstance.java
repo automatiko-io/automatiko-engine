@@ -236,6 +236,20 @@ public interface ProcessInstance<T> {
     Optional<String> initiator();
 
     /**
+     * Returns abort code in case process instance was aborted
+     * 
+     * @return error code that led to aborting of the instance
+     */
+    String abortCode();
+
+    /**
+     * Returns optional data associated with abort of the instance caused by error
+     * 
+     * @return data associated with the error that led to aborting of the instance
+     */
+    Object abortData();
+
+    /**
      * Returns tags associated with this process instances
      * 
      * @return currently associated tags

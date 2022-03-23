@@ -32,6 +32,7 @@ import io.automatiko.engine.api.runtime.process.WorkItemNotFoundException;
 import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.SecurityPolicy;
+import io.automatiko.engine.api.workflow.DefinedProcessErrorException;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessImageNotFoundException;
 import io.automatiko.engine.api.workflow.ProcessInstance;
@@ -75,6 +76,9 @@ public class $Type$Resource {
     protected $Type$Output getSubModel_$name$(ProcessInstance<$Type$> pi) {
         if (pi.status() == ProcessInstance.STATE_ERROR && pi.errors().isPresent()) {
             throw new ProcessInstanceExecutionException(pi.id(), pi.errors().get().failedNodeIds(), pi.errors().get().errorMessages());
+        }
+        if (pi.abortCode() != null) {
+            throw new DefinedProcessErrorException(pi.id(), pi.abortCode(), mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), pi));            
         }
         
         return mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), pi);

@@ -36,6 +36,7 @@ import io.automatiko.engine.api.auth.IdentitySupplier;
 import io.automatiko.engine.api.auth.SecurityPolicy;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.Sig;
+import io.automatiko.engine.api.workflow.DefinedProcessErrorException;
 import io.automatiko.engine.api.workflow.InstanceMetadata;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
@@ -147,7 +148,7 @@ public class $Type$Resource {
                                 pi.start();
                             }
                             tracing(pi);
-                            $Type$Output result = getModel(pi, metadata);
+                            Object result = pi.abortCode() != null ? pi.abortData() : getModel(pi, metadata);
 
                             io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, result, httpAuth.produce(headers), pi.status());
 
@@ -421,7 +422,7 @@ public class $Type$Resource {
                             .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
                     tracing(pi);
                     pi.updateVariables(resource);
-                    $Type$Output result = mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), metadata ? pi.metadata() : null);
+                    Object result = pi.abortCode() != null ? pi.abortData() : mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), metadata ? pi.metadata() : null);
                     
                     io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, result, httpAuth.produce(headers), pi.status());
 
@@ -442,7 +443,7 @@ public class $Type$Resource {
                 tracing(pi);
                 pi.updateVariables(resource);
                 
-                ResponseBuilder builder = Response.ok().entity(mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), metadata ? pi.metadata() : null));
+                ResponseBuilder builder = Response.ok().entity(pi.abortCode() != null ? pi.abortData() : mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), metadata ? pi.metadata() : null));
                 
                 return builder.build();
             });
@@ -606,6 +607,9 @@ public class $Type$Resource {
     protected $Type$Output getModel(ProcessInstance<$Type$> pi, boolean metadata) {
         if (pi.status() == ProcessInstance.STATE_ERROR && pi.errors().isPresent()) {
             throw new ProcessInstanceExecutionException(pi.id(), pi.errors().get().failedNodeIds(), pi.errors().get().errorMessages());
+        }
+        if (pi.abortCode() != null) {
+            throw new DefinedProcessErrorException(pi.id(), pi.abortCode(), pi.abortData());            
         }
         
         return mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), metadata ? pi.metadata() : null);

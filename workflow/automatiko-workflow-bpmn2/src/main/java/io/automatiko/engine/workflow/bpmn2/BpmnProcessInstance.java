@@ -377,5 +377,14 @@ public class BpmnProcessInstance extends AbstractProcessInstance<BpmnVariables> 
             return null;
         }
 
+        @Override
+        public String abortCode() {
+            return null;
+        }
+
+        @Override
+        public Object abortData() {
+            return null;
+        }
     }
 }

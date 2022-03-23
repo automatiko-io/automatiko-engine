@@ -4,6 +4,7 @@ package io.automatiko.engine.codegen.process;
 import static com.github.javaparser.StaticJavaParser.parse;
 import static io.automatiko.engine.codegen.CodegenUtils.interpolateTypes;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +17,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier.Keyword;
 import com.github.javaparser.ast.NodeList;
@@ -26,9 +30,12 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.ArrayInitializerExpr;
+import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
@@ -38,6 +45,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 
+import io.automatiko.engine.api.definition.process.Node;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.codegen.BodyDeclarationComparator;
 import io.automatiko.engine.codegen.CodegenUtils;
@@ -47,6 +55,7 @@ import io.automatiko.engine.codegen.context.ApplicationBuildContext;
 import io.automatiko.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.compiler.canonical.UserTaskModelMetaData;
+import io.automatiko.engine.workflow.process.core.node.FaultNode;
 import io.automatiko.engine.workflow.util.PatternConstants;
 
 /**
@@ -56,6 +65,7 @@ public abstract class AbstractResourceGenerator {
 
     public static final Pattern PARAMETER_MATCHER = Pattern.compile("\\{([\\S|\\p{javaWhitespace}&&[^\\}]]+)\\}",
             Pattern.DOTALL);
+    public static final Logger LOGGER = LoggerFactory.getLogger(AbstractResourceGenerator.class);
 
     private final String relativePath;
 
@@ -81,6 +91,7 @@ public abstract class AbstractResourceGenerator {
     private boolean dynamic;
     private List<UserTaskModelMetaData> userTasks;
     private Map<String, String> signals;
+    private Map<String, Node> signalNodes;
     private List<AbstractResourceGenerator> subprocesses;
 
     private boolean persistence;
@@ -135,8 +146,9 @@ public abstract class AbstractResourceGenerator {
         return this;
     }
 
-    public AbstractResourceGenerator withSignals(Map<String, String> signals) {
+    public AbstractResourceGenerator withSignals(Map<String, String> signals, Map<String, Node> signalNodes) {
         this.signals = signals;
+        this.signalNodes = signalNodes;
         return this;
     }
 
@@ -221,11 +233,24 @@ public abstract class AbstractResourceGenerator {
                         body.findAll(NameExpr.class, nameExpr -> "data".equals(nameExpr.getNameAsString()))
                                 .forEach(name -> name.replace(new NullLiteralExpr()));
                     }
-                    template.addMethod(cloned.getNameAsString() + "_" + methodName, Keyword.PUBLIC).setType(cloned.getType())
+                    MethodDeclaration signalMethod = new MethodDeclaration()
+                            .setName(cloned.getNameAsString() + "_" + methodName)
+                            .setPublic(true).setType(cloned.getType())
                             // Remove data parameter ( payload ) if signalType is null
                             .setParameters(signalType == null ? removeLastParam(cloned)
                                     : cloned.getParameters())
-                            .setBody(body).setAnnotations(cloned.getAnnotations());
+                            .setBody(body).setAnnotations(cloned.getAnnotations())
+                            .setThrownExceptions(cloned.getThrownExceptions());
+
+                    template.addMember(signalMethod);
+                    if (signalNodes.containsKey(signalName)) {
+                        Collection<FaultNode> errors = ProcessNodeLocator.findFaultNodes(process, signalNodes.get(signalName));
+                        if (!errors.isEmpty()) {
+
+                            // add error responses to complete task method based on errors found
+                            addDefinedError(errors, signalMethod);
+                        }
+                    }
                 });
 
                 if (signalType != null) {
@@ -254,12 +279,21 @@ public abstract class AbstractResourceGenerator {
             for (UserTaskModelMetaData userTask : userTasks) {
                 String methodSuffix = sanitizeName(userTask.getName()) + "_" + sanitizeName(processId) + "_"
                         + uindex.getAndIncrement();
+
+                Collection<FaultNode> errors = ProcessNodeLocator.findFaultNodes(process, userTask.getHumanTaskNode());
+
                 userTaskTemplate.findAll(MethodDeclaration.class).forEach(md -> {
 
                     MethodDeclaration cloned = md.clone();
                     template.addMethod(cloned.getName() + "_" + methodSuffix, Keyword.PUBLIC).setType(cloned.getType())
                             .setParameters(cloned.getParameters()).setBody(cloned.getBody().get())
-                            .setAnnotations(cloned.getAnnotations());
+                            .setAnnotations(cloned.getAnnotations())
+                            .setThrownExceptions(cloned.getThrownExceptions());
+
+                    if (!errors.isEmpty() && cloned.getNameAsString().startsWith("completeTask")) {
+                        // add error responses to complete task method based on errors found
+                        addDefinedError(errors, cloned);
+                    }
                 });
 
                 template.findAll(StringLiteralExpr.class).forEach(s -> interpolateUserTaskStrings(s, userTask));
@@ -271,6 +305,7 @@ public abstract class AbstractResourceGenerator {
                             .filter(md -> md.getNameAsString().equals("signal_" + methodSuffix))
                             .collect(Collectors.toList()).forEach(template::remove);
                 }
+
             }
         }
 
@@ -327,6 +362,14 @@ public abstract class AbstractResourceGenerator {
             Optional<MethodDeclaration> createResourceMethod = template.findAll(MethodDeclaration.class).stream()
                     .filter(md -> md.getNameAsString().equals("create_" + processName)).findFirst();
             createResourceMethod.ifPresent(template::remove);
+        } else {
+            Collection<FaultNode> errors = ProcessNodeLocator.findFaultNodes(process);
+            if (!errors.isEmpty()) {
+                Optional<MethodDeclaration> createResourceMethod = template.findAll(MethodDeclaration.class).stream()
+                        .filter(md -> md.getNameAsString().equals("create_" + processName)).findFirst();
+                // add error responses to complete task method based on errors found
+                addDefinedError(errors, createResourceMethod.get());
+            }
         }
 
         for (AbstractResourceGenerator resourceGenerator : subprocesses) {
@@ -393,6 +436,65 @@ public abstract class AbstractResourceGenerator {
         template.getMembers().sort(new BodyDeclarationComparator());
 
         return clazz;
+    }
+
+    protected void addDefinedError(Collection<FaultNode> errors, MethodDeclaration cloned) {
+        NormalAnnotationExpr apiResponses = (NormalAnnotationExpr) cloned.getAnnotationByName("APIResponses")
+                .orElse(null);
+
+        if (apiResponses == null) {
+            return;
+        }
+
+        MemberValuePair value = apiResponses.getPairs().stream()
+                .filter(pair -> pair.getNameAsString().startsWith("value")).findFirst().orElse(null);
+
+        if (value != null) {
+
+            ArrayInitializerExpr responses = (ArrayInitializerExpr) value.getValue();
+
+            for (FaultNode error : errors) {
+                String responseCode = error.getFaultName();
+                try {
+
+                    int status = Integer.parseInt(error.getFaultName());
+                    if (status < 100 || status > 999) {
+                        // invalid http response code, fallbacks to 500
+                        responseCode = "500";
+                        LOGGER.warn(
+                                "Invalid error code '{}' for service interface defined in process '{}' error name '{}' will be represented as 500",
+                                error.getFaultName(), processId, error.getErrorName());
+                    }
+                } catch (NumberFormatException e) {
+                    LOGGER.warn(
+                            "Invalid error code '{}' for service interface defined in process '{}' error name '{}' will be represented as 500",
+                            error.getFaultName(), processId, error.getErrorName());
+                    responseCode = "500";
+                }
+
+                NormalAnnotationExpr customError = new NormalAnnotationExpr(new Name("APIResponse"),
+                        NodeList.nodeList(new MemberValuePair("responseCode",
+                                new StringLiteralExpr(responseCode)),
+                                new MemberValuePair("description",
+                                        new StringLiteralExpr(
+                                                "Process instance aborted due to defined error - '" + error.getErrorName()
+                                                        + "'"))));
+
+                if (error.getStructureRef() != null) {
+                    NormalAnnotationExpr schemaExpr = new NormalAnnotationExpr(new Name("Schema"),
+                            NodeList.nodeList(new MemberValuePair("implementation",
+                                    new NameExpr(error.getStructureRef() + ".class"))));
+
+                    NormalAnnotationExpr content = new NormalAnnotationExpr(new Name("Content"),
+                            NodeList.nodeList(
+                                    new MemberValuePair("mediaType", new StringLiteralExpr("application/json")),
+                                    new MemberValuePair("schema", schemaExpr)));
+                    customError.getPairs().add(new MemberValuePair("content", content));
+                }
+
+                responses.getValues().add(customError);
+            }
+        }
     }
 
     protected abstract String getSignalResourceTemplate();

@@ -10,6 +10,7 @@ import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.uow.UnitOfWork;
 import io.automatiko.engine.api.uow.UnitOfWorkManager;
 import io.automatiko.engine.api.workflow.ConflictingVersionException;
+import io.automatiko.engine.api.workflow.DefinedProcessErrorException;
 import io.automatiko.engine.api.workflow.ProcessInstanceExecutionException;
 
 public class UnitOfWorkExecutor {
@@ -28,6 +29,10 @@ public class UnitOfWorkExecutor {
 
             return result;
         } catch (ProcessInstanceExecutionException e) {
+            uow.end();
+
+            throw e;
+        } catch (DefinedProcessErrorException e) {
             uow.end();
 
             throw e;

@@ -91,6 +91,9 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     protected String initiator;
 
+    protected String abortCode;
+    protected Object abortData;
+
     protected ProcessErrors processErrors;
 
     protected Tags tags;
@@ -250,6 +253,12 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         visibleTo = setVisibleTo();
 
         setCorrelationKey(wpi.getCorrelationKey());
+
+        if (status == ProcessInstance.STATE_ABORTED) {
+            this.abortCode = ((WorkflowProcessInstanceImpl) wpi).getOutcome();
+            this.abortData = ((WorkflowProcessInstanceImpl) wpi).getFaultData();
+        }
+
     }
 
     private void setCorrelationKey(String businessKey) {
@@ -421,6 +430,16 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     public Optional<String> initiator() {
 
         return Optional.ofNullable(initiator);
+    }
+
+    @Override
+    public String abortCode() {
+        return abortCode;
+    }
+
+    @Override
+    public Object abortData() {
+        return abortData;
     }
 
     @Override

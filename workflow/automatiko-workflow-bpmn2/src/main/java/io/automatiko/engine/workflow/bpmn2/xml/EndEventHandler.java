@@ -18,6 +18,7 @@ import io.automatiko.engine.workflow.base.instance.impl.actions.HandleMessageAct
 import io.automatiko.engine.workflow.base.instance.impl.actions.SignalProcessInstanceAction;
 import io.automatiko.engine.workflow.bpmn2.core.Error;
 import io.automatiko.engine.workflow.bpmn2.core.Escalation;
+import io.automatiko.engine.workflow.bpmn2.core.ItemDefinition;
 import io.automatiko.engine.workflow.bpmn2.core.Message;
 import io.automatiko.engine.workflow.compiler.xml.ExtensibleXmlParser;
 import io.automatiko.engine.workflow.compiler.xml.ProcessBuildData;
@@ -30,6 +31,8 @@ import io.automatiko.engine.workflow.process.core.node.FaultNode;
 import io.automatiko.engine.workflow.process.core.node.Transformation;
 
 public class EndEventHandler extends AbstractNodeHandler {
+
+    private Map<String, ItemDefinition> itemDefinitions;
 
     protected Node createNode(Attributes attrs) {
         EndNode node = new EndNode();
@@ -48,6 +51,7 @@ public class EndEventHandler extends AbstractNodeHandler {
         // determine type of event definition, so the correct type of node
         // can be generated
         super.handleNode(node, element, uri, localName, parser);
+        itemDefinitions = (Map<String, ItemDefinition>) ((ProcessBuildData) parser.getData()).getMetaData("ItemDefinitions");
         org.w3c.dom.Node xmlNode = element.getFirstChild();
         while (xmlNode != null) {
             String nodeName = xmlNode.getNodeName();
@@ -68,7 +72,7 @@ public class EndEventHandler extends AbstractNodeHandler {
                 faultNode.setId(node.getId());
                 faultNode.setName(node.getName());
                 faultNode.setTerminateParent(true);
-                faultNode.setMetaData("UniqueId", node.getMetaData().get("UniqueId"));
+                faultNode.getMetaData().putAll(node.getMetaData());
                 node = faultNode;
                 super.handleNode(node, element, uri, localName, parser);
                 handleErrorNode(node, element, uri, localName, parser);
@@ -247,7 +251,25 @@ public class EndEventHandler extends AbstractNodeHandler {
         org.w3c.dom.Node xmlNode = element.getFirstChild();
         while (xmlNode != null) {
             String nodeName = xmlNode.getNodeName();
-            if ("dataInputAssociation".equals(nodeName)) {
+            if ("dataInput".equals(nodeName)) {
+                String id = ((Element) xmlNode).getAttribute("id");
+                String inputName = ((Element) xmlNode).getAttribute("name");
+                dataInputs.put(id, inputName);
+
+                String itemSubjectRef = ((Element) xmlNode).getAttribute("itemSubjectRef");
+                if (itemSubjectRef == null || itemSubjectRef.isEmpty()) {
+                    String dataType = ((Element) xmlNode).getAttribute("dtype");
+                    if (dataType == null || dataType.isEmpty()) {
+                        dataType = "java.lang.String";
+                    }
+                    dataInputTypes.put(inputName, dataType);
+                } else if (itemDefinitions.get(itemSubjectRef) != null) {
+                    dataInputTypes.put(inputName, itemDefinitions.get(itemSubjectRef).getStructureRef());
+                } else {
+                    dataInputTypes.put(inputName, "java.lang.Object");
+                }
+            } else if ("dataInputAssociation".equals(nodeName)) {
+
                 readFaultDataInputAssociation(xmlNode, faultNode);
             } else if ("errorEventDefinition".equals(nodeName)) {
                 String errorRef = ((Element) xmlNode).getAttribute("errorRef");
@@ -266,7 +288,11 @@ public class EndEventHandler extends AbstractNodeHandler {
                     if (error == null) {
                         throw new IllegalArgumentException("Could not find error " + errorRef);
                     }
+                    faultNode.setErrorName(error.getName());
                     faultNode.setFaultName(error.getErrorCode());
+                    if (itemDefinitions != null && itemDefinitions.get(error.getStructureRef()) != null) {
+                        faultNode.setStructureRef(itemDefinitions.get(error.getStructureRef()).getStructureRef());
+                    }
                     faultNode.setTerminateParent(true);
                 }
             }

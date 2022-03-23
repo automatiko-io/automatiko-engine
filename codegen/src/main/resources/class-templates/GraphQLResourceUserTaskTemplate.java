@@ -13,6 +13,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 
 import io.automatiko.engine.api.auth.IdentityProvider;
+import io.automatiko.engine.api.workflow.DefinedProcessErrorException;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.api.workflow.WorkItem;
@@ -43,7 +44,7 @@ public class $Type$Resource {
     @Description("Completes $taskName$ task instance with given id")
     public $Type$Output completeTask(@Name("id") final String id, @Name("workItemId") final String workItemId, @Name("phase") @DefaultValue("complete") final String phase, @Name("data") final $TaskOutput$ model,
             @Name("user") final String user, 
-            @Name("groups") final List<String> groups) {
+            @Name("groups") final List<String> groups) throws org.eclipse.microprofile.graphql.GraphQLException {
         
         
         try {
@@ -57,6 +58,8 @@ public class $Type$Resource {
 
                 return getModel(pi);
             });
+        } catch(DefinedProcessErrorException e) {
+            throw new org.eclipse.microprofile.graphql.GraphQLException(e.getMessage(), e.getError());
         } catch (WorkItemNotFoundException e) {
             return null;
         } finally {

@@ -27,6 +27,7 @@ import io.automatiko.engine.api.auth.IdentitySupplier;
 import io.automatiko.engine.api.auth.SecurityPolicy;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.Sig;
+import io.automatiko.engine.api.workflow.DefinedProcessErrorException;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceExecutionException;
@@ -70,12 +71,12 @@ public class $Type$GraphQLResource {
     @Description("Creates new instance of $name$ $prefix$")
     public $Type$Output create_$name$(@Name("key") @DefaultValue("") final String businessKey, @Name("data") $Type$Input resource, 
             @Name("user") final String user, 
-            @Name("groups") final List<String> groups) {
+            @Name("groups") final List<String> groups) throws org.eclipse.microprofile.graphql.GraphQLException {
         if (resource == null) {
             resource = new $Type$Input();
         }
         final $Type$Input value = resource;
-                
+        try {        
             identitySupplier.buildIdentityProvider(user, groups);
             return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 ProcessInstance<$Type$> pi = process.createInstance(businessKey.isEmpty() ? null : businessKey, mapInput(value, new $Type$()));
@@ -89,7 +90,9 @@ public class $Type$GraphQLResource {
  
                 return model;
             });
-       
+         } catch(DefinedProcessErrorException e) {
+             throw new org.eclipse.microprofile.graphql.GraphQLException(e.getMessage(), e.getError());
+         }
     }
 
     
@@ -240,7 +243,10 @@ public class $Type$GraphQLResource {
         $Type$Output model = mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), pi);
         if (pi.status() == ProcessInstance.STATE_ERROR && pi.errors().isPresent()) {           
             throw new ProcessInstanceExecutionException(pi.id(), pi.errors().get().failedNodeIds(), pi.errors().get().errorMessages());
-        }        
+        }
+        if (pi.abortCode() != null) {
+            throw new DefinedProcessErrorException(pi.id(), pi.abortCode(), model);            
+        }
         
         return model;
     }
