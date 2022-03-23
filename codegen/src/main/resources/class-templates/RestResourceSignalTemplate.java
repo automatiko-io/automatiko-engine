@@ -68,7 +68,7 @@ public class $Type$Resource {
                     ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
                     tracing(pi);
                     pi.send(Sig.of("$signalName$", data));
-                    $Type$Output result = getModel(pi, metadata);
+                    Object result = pi.abortCode() != null ? pi.abortData() : getModel(pi, metadata);
                     
                     io.automatiko.engine.workflow.http.HttpCallbacks.get().post(callbackUrl, result, httpAuth.produce(headers), pi.status());
 

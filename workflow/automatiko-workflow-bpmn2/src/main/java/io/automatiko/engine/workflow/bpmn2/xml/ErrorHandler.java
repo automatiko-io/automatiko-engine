@@ -47,12 +47,12 @@ public class ErrorHandler extends BaseAbstractHandler implements Handler {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public Object start(final String uri, final String localName, final Attributes attrs,
             final ExtensibleXmlParser parser) throws SAXException {
         parser.startElementBuilder(localName, attrs);
 
         String id = attrs.getValue("id");
+        String name = attrs.getValue("name");
         String errorCode = attrs.getValue("errorCode");
         String structureRef = attrs.getValue("structureRef");
 
@@ -64,7 +64,7 @@ public class ErrorHandler extends BaseAbstractHandler implements Handler {
             definitions.setErrors(errors);
             ((ProcessBuildData) parser.getData()).setMetaData("Errors", errors);
         }
-        Error e = new Error(id, errorCode, structureRef);
+        Error e = new Error(id, name, errorCode, structureRef);
         errors.add(e);
 
         return e;

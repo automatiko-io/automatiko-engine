@@ -86,6 +86,89 @@ ws.onopen = function() {
 
 This will subscribe to `userTasks` as user `john` so only user tasks that `john` is allowed to work on will be delivered.
 
+== Errors from workflow definitions
+
+Defining errors as part of workflow definition is a common practice. In some situations errors are the exit state
+of a given path of the workflow, meaning it will lead to completion of that instance. 
+See more about error end events in <<../../components/errors.adoc#_aborting_workflow_instance_with_an_error,this section>>.
+
+image::errors-throw.png[]
+
+An important aspect of the error end events is that service interface operations will be equipped with
+error information only when there is direct path to that error without any wait states in between.
+
+Looking at the example workflow definition above there are three error end events:
+
+* Payment required (error code 402)
+* Length Required (error code 411)
+* Too Early (error code 425)
+
+and here is how the end points of the service will be described with error responses
+
+* `Payment Required` will be defined on update message operation as this is a a wait state (signal)
+* `Length Required` will be defined on the start instance end point as there are no wait states that lead to the error
+* `Too Early` will be defined on the user task end point as user task is also a wait state
+
+NOTE: Use of gateways will not be taken into account as from definition perspective it's not possible to 
+distinguish if given error will be encountered or not but it certainly can be and that's why it is defined 
+on the service interface operation level.
+
+=== Errors in ReST service interface
+
+These errors (expressed as `error end events`) are represented as additional responses of the ReST operation.
+Such responses will follow normal definition and will include.
+
+* response code - based on error code thus it must be a valid HTTP response code (three digits)
+* schema of the response - based on error data type 
+
+With that information consumers of the ReST service interface have all the information required to properly interact
+with the service. 
+
+image::service-interface-rest-errors.png[]
+
+=== Errors in GraphQL service interface
+
+GraphQL does not use response code as ReST do but instead all information is provided via response payload. 
+In case of an error, GraphQL response will have both `errors` and `data` provided
+
+
+[source,json]
+----
+{
+  "errors": [
+    {
+      "message": "Process instance with id 098f6bcd-4621-3373-8ade-4e832627b4f6 was aborted with defined error code 411",
+      "locations": [
+        {
+          "line": 2,
+          "column": 3
+        }
+      ],
+      "path": [
+        "create_errors"
+      ],
+      "extensions": {
+        "classification": "DataFetchingException"
+      }
+    }
+  ],
+  "data": {
+    "create_errors": {
+      "id": "test",
+      "name": "john",
+      "errorInfo": {
+        "details": "here is an error"
+      }
+    }
+  }
+}
+----
+
+IMPORTANT: The main difference for GraphQL service interface is that the error information must be set for the workflow instance
+output model. The reason for that is GraphQL has only one message type defined for the output of 
+the mutation and by that can only return single type of information.
+It is called *partial results* in GraphQL which is not complete but of the same type. 
+
 == Message based interface
 
 Last but not least, service can also be equipped with message based interface such as

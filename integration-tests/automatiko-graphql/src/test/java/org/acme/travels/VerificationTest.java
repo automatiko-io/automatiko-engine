@@ -1,6 +1,7 @@
 package org.acme.travels;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -555,6 +556,163 @@ public class VerificationTest {
             //.log().all(true)
             .statusCode(200)
             .body("data.get_all_scripts.size()", is(0));
+         
+    }
+    
+    @Test
+    public void testProcessErrorEndEvent() {
+
+        String addPayload = "{\"query\":\"mutation {create_errors(data: {name: \\\"john\\\"}) {id,name, errorInfo {details}}}\\n\",\"variables\":null}";
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(addPayload)
+            .when()
+                .post("/graphql")
+            .then()
+                //.log().all(true)
+                .statusCode(200)
+                .body("data.create_errors.id", notNullValue(), "data.create_errors.name", equalTo("john"), "data.create_errors.message", nullValue(), 
+                        "data.create_errors.errorInfo.details", equalTo("here is an error"), "errors[0].message", containsString("was aborted with defined error code 411"));
+        
+
+        String getInstances = "{\"query\":\"query {get_all_errors {id,name,message}}\\n\",\"variables\":null}";
+        
+        given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_errors.size()", is(0));
+    
+    }
+    
+    @Test
+    public void testProcessErrorEndEventViaSignal() {
+
+        String addPayload = "{\"query\":\"mutation {create_errors(key: \\\"test\\\", data: {name: \\\"mike\\\"}) {id,name,errorInfo{details}}}\\n\",\"variables\":null}";
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(addPayload)
+            .when()
+                .post("/graphql")
+            .then()
+                //.log().all(true)
+                .statusCode(200)
+                .body("data.create_errors.id", notNullValue(), "data.create_errors.name", equalTo("mike"), "data.create_errors.message", nullValue());
+        
+       
+        String getInstances = "{\"query\":\"query {get_all_errors(user: \\\"john\\\") {id,name,message}}\\n\",\"variables\":null}";
+        
+        given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_errors.size()", is(1));
+        
+        String signalPayload = "{\"query\":\"mutation {signal_wait_0(id: \\\"test\\\", user:\\\"john\\\", model: \\\"updated message\\\") {id,name,message, errorInfo {details}}}\\n\",\"variables\":null}";
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(signalPayload)
+            .when()
+                .post("/graphql")
+            .then()
+                //.log().all(true)
+                .statusCode(200)
+                .body("data.signal_wait_0.id", notNullValue(), "data.signal_wait_0.name", equalTo("mike"), "data.signal_wait_0.message", equalTo("updated message"),
+                        "data.signal_wait_0.errorInfo.details", equalTo("here is an error"), "errors[0].message", containsString("was aborted with defined error code 402"));
+     
+        
+        given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_errors.size()", is(0));
+         
+    }
+    
+    @Test
+    public void testProcessErrorEndEventViaTask() {
+
+        String addPayload = "{\"query\":\"mutation {create_errors(key: \\\"test\\\", data: {name: \\\"mary\\\"}) {id,name}}\\n\",\"variables\":null}";
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(addPayload)
+            .when()
+                .post("/graphql")
+            .then()
+                //.log().all(true)
+                .statusCode(200)
+                .body("data.create_errors.id", notNullValue(), "data.create_errors.name", equalTo("mary"), "data.create_errors.message", nullValue());
+        
+       
+        String getInstances = "{\"query\":\"query {get_all_errors(user: \\\"john\\\") {id,name,message}}\\n\",\"variables\":null}";
+        
+        given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_errors.size()", is(1));
+        
+        String getTasks = "{\"query\":\"query {get_errors_tasks(id: \\\"test\\\", user: \\\"john\\\") {id,name}}\\n\",\"variables\":null}";
+        
+        String taskId = given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getTasks)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_errors_tasks.size()", is(1))
+            .extract().path("data.get_errors_tasks[0].id");
+ 
+        String completeTaskPayload = "{\"query\":\"mutation {completeTask_approval_errors_0(id: \\\"test\\\", workItemId: \\\"" + taskId +"\\\", user:\\\"john\\\", phase: \\\"skip\\\", data: {}) {id,name,errorInfo{details}}}\\n\",\"variables\":null}";
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(completeTaskPayload)
+            .when()
+                .post("/graphql")
+            .then()
+                //.log().all(true)
+                .statusCode(200)
+                .body("data.completeTask_approval_errors_0.id", notNullValue(), "data.completeTask_approval_errors_0.name", equalTo("mary"), "data.completeTask_approval_errors_0.message", nullValue(),
+                        "data.completeTask_approval_errors_0.errorInfo.details", equalTo("here is an error"), "errors[0].message", containsString("was aborted with defined error code 425"));
+      
+        given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_errors.size()", is(0));
          
     }
  // @formatter:on

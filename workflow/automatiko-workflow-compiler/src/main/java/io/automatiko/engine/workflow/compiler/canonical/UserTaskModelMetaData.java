@@ -156,6 +156,10 @@ public class UserTaskModelMetaData {
         return humanTaskNode.getId();
     }
 
+    public HumanTaskNode getHumanTaskNode() {
+        return humanTaskNode;
+    }
+
     private void addUserTaskAnnotation(ClassOrInterfaceDeclaration modelClass) {
         String taskName = (String) humanTaskNode.getWork().getParameter(TASK_NAME);
         if (taskName == null)

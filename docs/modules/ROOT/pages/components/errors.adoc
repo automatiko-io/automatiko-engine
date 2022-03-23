@@ -61,6 +61,35 @@ exceptions of `io.automatiko.engine.api.workflow.ServiceExecutionError` type.
 It allows to set the error code that will be used by the workflow instance
 to locate the error handler and the root cause of the error.
 
+=== Aborting workflow instance with an error
+
+Sometimes the business logic can lead to an error state that should abort process instance.
+An example of that is when provided information is not valid and thus should not be 
+used to continue with execution. In such a case an error should be returned to the client
+to indicate this condition.
+
+To be able to define this use case as part of the workflow, a workflow definition can take advantage 
+of `error end events` as illustrated below.
+
+image::errors-throw.png[]
+
+Such `error end events` use the same error definition as described above.
+
+IMPORTANT: Errors based on `error end events` are part of service interface (ReST and GraphQL)
+and will then use `error code` as response code or message to provide valuable information to the
+consumers of the service.
+
+Error end events cause workflow instance to complete with an error and return to the consumer.
+It's important to note that upon such an error the workflow instance data are not sent but instead
+the `error data`. With that in mind, setting error data (that is usually a subset of workflow instance data)
+is important.
+
+image::errors-throw-mapping.png[]
+
+NOTE: This logic also applies to event based subprocesses with error start event. The reason for this is
+that error start event always cause workflow instance to abort.
+
+
 == Retries
 
 One of the most common requirements around error handling is retries. Sometimes

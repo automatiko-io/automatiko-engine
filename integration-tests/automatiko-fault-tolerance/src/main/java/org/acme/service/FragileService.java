@@ -1,5 +1,6 @@
 package org.acme.service;
 
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -31,7 +32,8 @@ public class FragileService {
         final Long invocationNumber = counter.getAndIncrement();
         if (failing.get()) {
             LOGGER.error("Invocation {} failing", invocationNumber);
-            throw new ServiceExecutionError(failingCode, "Service failed.");
+            throw new ServiceExecutionError(failingCode, "Service failed.",
+                    Collections.singletonMap("error", "failed with " + failingCode));
         }
         if (block.get()) {
             try {

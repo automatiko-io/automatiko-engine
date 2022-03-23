@@ -470,7 +470,8 @@ public class ProcessCodegen extends AbstractGenerator {
                                     applicationCanonicalName)
                             .map(r -> r.withDependencyInjection(annotator).withParentProcess(null).withPersistence(persistence)
                                     .withUserTasks(processIdToUserTaskModel.get(execModelGen.getProcessId()))
-                                    .withPathPrefix("{id}").withSignals(metaData.getSignals())
+                                    .withPathPrefix("{id}").withSignals(metaData.getSignals(),
+                                            metaData.getSignalNodes())
                                     .withTriggers(metaData.isStartable(), metaData.isDynamic())
                                     .withSubProcesses(populateSubprocesses(workFlowProcess,
                                             processIdToMetadata.get(execModelGen.getProcessId()), processIdToMetadata,
@@ -486,7 +487,8 @@ public class ProcessCodegen extends AbstractGenerator {
                         graphqlGenerator.withDependencyInjection(annotator).withParentProcess(null).withPersistence(persistence)
                                 .withUserTasks(processIdToUserTaskModel.get(execModelGen.getProcessId()))
                                 .withPathPrefix(CodegenUtils.version(workFlowProcess.getVersion()))
-                                .withSignals(metaData.getSignals())
+                                .withSignals(metaData.getSignals(),
+                                        metaData.getSignalNodes())
                                 .withTriggers(metaData.isStartable(), metaData.isDynamic())
                                 .withSubProcesses(populateSubprocessesGraphQL(workFlowProcess,
                                         processIdToMetadata.get(execModelGen.getProcessId()), processIdToMetadata,
@@ -686,7 +688,8 @@ public class ProcessCodegen extends AbstractGenerator {
                         execModelGen.className(), applicationCanonicalName))
                         .map(r -> r.withDependencyInjection(annotator).withParentProcess(parentProcess)
                                 .withUserTasks(processIdToUserTaskModel.get(execModelGen.getProcessId()))
-                                .withSignals(processIdToMetadata.get(execModelGen.getProcessId()).getSignals())
+                                .withSignals(processIdToMetadata.get(execModelGen.getProcessId()).getSignals(),
+                                        metaData.getSignalNodes())
                                 .withTriggers(processIdToMetadata.get(execModelGen.getProcessId()).isStartable(),
                                         processIdToMetadata.get(execModelGen.getProcessId()).isDynamic())
                                 .withSubProcesses(populateSubprocesses(workFlowProcess,
@@ -720,7 +723,8 @@ public class ProcessCodegen extends AbstractGenerator {
                         execModelGen.className(), applicationCanonicalName))
                         .map(r -> r.withDependencyInjection(annotator).withParentProcess(parentProcess)
                                 .withUserTasks(processIdToUserTaskModel.get(execModelGen.getProcessId()))
-                                .withSignals(processIdToMetadata.get(execModelGen.getProcessId()).getSignals())
+                                .withSignals(processIdToMetadata.get(execModelGen.getProcessId()).getSignals(),
+                                        metaData.getSignalNodes())
                                 .withTriggers(processIdToMetadata.get(execModelGen.getProcessId()).isStartable(),
                                         processIdToMetadata.get(execModelGen.getProcessId()).isDynamic())
                                 .withSubProcesses(populateSubprocessesGraphQL(workFlowProcess,

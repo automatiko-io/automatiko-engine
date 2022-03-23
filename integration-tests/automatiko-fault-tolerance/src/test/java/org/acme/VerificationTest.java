@@ -97,8 +97,8 @@ public class VerificationTest {
                 .post("/fragile")
             .then()
                 //.log().body(true)
-                .statusCode(200)
-                .body("id", notNullValue(), "result", nullValue(), "error", nullValue(), "errorSub", notNullValue());
+                .statusCode(409)
+                .body("error", equalTo("failed with 409"));
         
         given()
             .accept(ContentType.JSON)

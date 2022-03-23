@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.runtime.process.WorkItemNotFoundException;
+import io.automatiko.engine.api.workflow.DefinedProcessErrorException;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.workflow.Sig;
@@ -22,18 +23,20 @@ public class $Type$Resource {
             @Name("id") String id_$name$, 
             @Name("user") final String user, 
             @Name("groups") final List<String> groups,
-            @Name("model") final $signalType$ data) {
+            @Name("model") final $signalType$ data) throws org.eclipse.microprofile.graphql.GraphQLException {
 
-        
-        identitySupplier.buildIdentityProvider(user, groups);
-        return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-            ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id_$name$));
-            tracing(pi);
-            pi.send(Sig.of("$signalName$", data));
-            
-            return getSubModel_$name$(pi);
-        });
-        
+        try {
+            identitySupplier.buildIdentityProvider(user, groups);
+            return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById($parentprocessid$ + ":" + id_$name$).orElseThrow(() -> new ProcessInstanceNotFoundException(id_$name$));
+                tracing(pi);
+                pi.send(Sig.of("$signalName$", data));
+                
+                return getSubModel_$name$(pi);
+            });
+        } catch(DefinedProcessErrorException e) {
+            throw new org.eclipse.microprofile.graphql.GraphQLException(e.getMessage(), e.getError());
+        }
     }
 
 }

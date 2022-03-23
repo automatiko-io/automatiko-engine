@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.runtime.process.WorkItemNotFoundException;
+import io.automatiko.engine.api.workflow.DefinedProcessErrorException;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.api.workflow.WorkItem;
@@ -25,7 +26,7 @@ public class $Type$Resource {
             @Name("phase") @DefaultValue("complete") final String phase, 
             @Name("user") final String user, 
             @Name("group") final List<String> groups, 
-            @Name("data") final $TaskOutput$ model) {
+            @Name("data") final $TaskOutput$ model) throws org.eclipse.microprofile.graphql.GraphQLException {
         try {
            
             identitySupplier.buildIdentityProvider(user, groups);
@@ -44,6 +45,8 @@ public class $Type$Resource {
                 return getSubModel_$name$(pi);
             });
             
+        } catch(DefinedProcessErrorException e) {
+            throw new org.eclipse.microprofile.graphql.GraphQLException(e.getMessage(), e.getError());
         } catch (WorkItemNotFoundException e) {
             return null;
         } finally {

@@ -196,6 +196,7 @@ public class ServerlessProcessInstance extends AbstractProcessInstance<Serverles
                 public EndOfInstanceStrategy endOfInstanceStrategy() {
                     return null;
                 }
+
             };
         }
 
@@ -375,6 +376,16 @@ public class ServerlessProcessInstance extends AbstractProcessInstance<Serverles
         @Override
         public Collection<ProcessInstance<? extends Model>> subprocesses(ProcessInstanceReadMode mode) {
 
+            return null;
+        }
+
+        @Override
+        public String abortCode() {
+            return null;
+        }
+
+        @Override
+        public Object abortData() {
             return null;
         }
 

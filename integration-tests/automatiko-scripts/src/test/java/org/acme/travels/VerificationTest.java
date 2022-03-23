@@ -298,5 +298,97 @@ public class VerificationTest {
         .then().statusCode(200)
             .body("$.size()", is(0));        
     }
+    
+    @Test
+    public void testProcessWithErrorEndEvent() {
+
+        String addPayload = "{\"name\" : \"john\"}";
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(addPayload)
+            .when()
+                .post("/errors")
+            .then()
+                //.log().body(true)
+                .statusCode(410)
+                .body("details", equalTo("here is the error"));
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/errors")
+        .then().statusCode(200)
+            .body("$.size()", is(0));
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testProcessWithErrorEndEventAfterWaitState() {
+
+        String addPayload = "{\"name\" : \"mary\"}";
+        String id = given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(addPayload)
+            .when()
+                .post("/errors")
+            .then()
+                //.log().body(true)
+                .statusCode(200)
+                .body("id", notNullValue(), "name", equalTo("mary"), "message", nullValue(), "lastName", nullValue())
+                .extract().path("id");
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/errors")
+        .then().statusCode(200)
+            .body("$.size()", is(1));
+        
+        
+        List<Map<String, String>> taskInfo = given()
+                .accept(ContentType.JSON)
+            .when()
+                .get("/errors/" + id + "/tasks?user=john")
+            .then()
+                .statusCode(200)
+                .extract().as(List.class);
+
+        assertEquals(1, taskInfo.size());
+        
+        String taskId = taskInfo.get(0).get("id");
+        String taskName = taskInfo.get(0).get("name");
+        
+        assertEquals("approval", taskName);
+        
+        Map<String, String> taskData = given()
+                .accept(ContentType.JSON)
+            .when()
+                .get("/errors/" + id + "/approval/" + taskId + "?user=john")
+            .then()
+                .statusCode(200)
+                .extract().as(Map.class);
+        
+        assertEquals("mary", taskData.get("name"));        
+        
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body("{}")
+            .when()
+                .post("/errors/" + id + "/approval/" + taskId + "?user=john")
+            .then()
+                //.log().body(true)
+                .statusCode(427)
+                .body("details", equalTo("another error"));
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/errors")
+        .then().statusCode(200)
+            .body("$.size()", is(0));  
+    }
  // @formatter:on
 }

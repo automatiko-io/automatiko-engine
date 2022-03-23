@@ -199,5 +199,41 @@ public class AsyncVerificationTest {
         verify(2, postRequestedFor(urlEqualTo("/callback")));
     }
    
+    @Test
+    public void testProcessWithCallbackErrorEndEvent() throws InterruptedException {
+
+        String addPayload = "{\"name\" : \"john\"}";
+        given()
+                    .contentType(ContentType.JSON)
+                    .accept(ContentType.JSON)
+                    .header("X-ATK-Mode", "async")
+                    .header("X-ATK-Callback", "http://localhost:8088/callback")
+                    .body(addPayload)
+                    .when()
+                        .post("/errors?businessKey=test")
+                    .then()
+                        //.log().body(true)
+                        .statusCode(202)
+                        .body("id", notNullValue(), "name", equalTo("john"), "message", nullValue(), "lastName", nullValue());
+        
+        long elapsed = 3000;
+        
+        while(elapsed >= 0) {
+            elapsed -= 1000;
+            Thread.sleep(1000);
+            int size = given()
+                .accept(ContentType.JSON)
+            .when()
+                .get("/errors")
+            .then().statusCode(200)
+                .extract().path("$.size()");
+            
+            if (size == 0) {
+                break;
+            }
+        }
+        
+        verify(1, postRequestedFor(urlEqualTo("/callback")).withRequestBody(equalToJson("{\"details\":\"here is the error\"}")));
+    }
  // @formatter:on
 }

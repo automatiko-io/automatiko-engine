@@ -36,6 +36,7 @@ import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 
 import io.automatiko.engine.api.auth.AccessDeniedException;
+import io.automatiko.engine.api.workflow.DefinedProcessErrorException;
 import io.automatiko.engine.api.workflow.NodeInstanceNotFoundException;
 import io.automatiko.engine.api.workflow.NodeNotFoundException;
 import io.automatiko.engine.api.workflow.ProcessInstanceDuplicatedException;
@@ -146,7 +147,8 @@ public class GeneratorContext {
             whitelist.append(ProcessInstanceExecutionException.class.getCanonicalName()).append(",");
             whitelist.append(ProcessInstanceNotFoundException.class.getCanonicalName()).append(",");
             whitelist.append(VariableNotFoundException.class.getCanonicalName()).append(",");
-            whitelist.append(VariableViolationException.class.getCanonicalName());
+            whitelist.append(VariableViolationException.class.getCanonicalName()).append(",");
+            whitelist.append(DefinedProcessErrorException.class.getCanonicalName());
 
             modifiedApplicationProperties.put("mp.graphql.exceptionsWhiteList", whitelist.toString());
         }
