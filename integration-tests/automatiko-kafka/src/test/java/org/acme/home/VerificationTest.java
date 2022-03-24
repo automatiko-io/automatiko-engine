@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.eclipse.microprofile.reactive.messaging.Message;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.automatiko.engine.api.event.EventPublisher;
@@ -26,6 +27,7 @@ import io.smallrye.reactive.messaging.providers.connectors.InMemoryConnector;
 import io.smallrye.reactive.messaging.providers.connectors.InMemorySink;
 import io.smallrye.reactive.messaging.providers.connectors.InMemorySource;
 
+@Disabled
 @QuarkusTest
 public class VerificationTest {
  // @formatter:off
