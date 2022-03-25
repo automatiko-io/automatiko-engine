@@ -9,7 +9,7 @@ to external systems. There are different types of events being published
 *Workflow instance* provides information about given context of the instance that includes its:
 
 - instance data (data objects)
-- metadata information such as instane id, parent and root instance ids, state, business key and so on
+- metadata information such as instance id, parent and root instance ids, state, business key and so on
 - node instances (activities) executed in the given request
 
 *User task* provides information about tasks assigned to human actors. This is mainly to allow advanced searches

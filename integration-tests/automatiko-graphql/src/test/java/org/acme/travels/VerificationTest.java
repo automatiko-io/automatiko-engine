@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.startsWith;
 
 import org.junit.jupiter.api.Test;
 
@@ -714,6 +715,61 @@ public class VerificationTest {
             .statusCode(200)
             .body("data.get_all_errors.size()", is(0));
          
+    }
+    
+    @Test
+    public void testProcessMetadataLinks() {
+
+        String addPayload = "{\"query\":\"mutation {create_scripts(key: \\\"test\\\", data: {name: \\\"mary\\\"}, user: \\\"john\\\") {id,name,metadata{links{url}}}}\\n\",\"variables\":null}";
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(addPayload)
+            .when()
+                .post("/graphql")
+            .then()
+                //.log().all(true)
+                .statusCode(200)
+                .body("data.create_scripts.id", notNullValue(), "data.create_scripts.name", equalTo("mary"), "data.create_scripts.message", nullValue(),
+                        "data.create_scripts.metadata.links[0].url", startsWith("/scripts/098f6bcd-4621-3373-8ade-4e832627b4f6/approval/"));
+        
+       
+        String getInstances = "{\"query\":\"query {get_all_scripts(user: \\\"john\\\") {id,name,message,metadata{links{url}}}}\\n\",\"variables\":null}";
+        
+        given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_scripts.size()", is(1),
+                    "data.get_all_scripts[0].metadata.links[0].url", startsWith("/scripts/098f6bcd-4621-3373-8ade-4e832627b4f6/approval/"));
+        
+        String removePayload = "{\"query\":\"mutation {delete_scripts(id: \\\"test\\\", user: \\\"john\\\") {id,name}}\\n\",\"variables\":null}";
+        given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(removePayload)
+            .when()
+                .post("/graphql")
+            .then()
+                //.log().all(true)
+                .statusCode(200)
+                .body("data.delete_scripts.id", notNullValue(), "data.delete_scripts.name", equalTo("mary"), "data.delete_scripts.message", nullValue());
+       
+        given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(getInstances)
+        .when()
+            .post("/graphql")
+        .then()
+            //.log().all(true)
+            .statusCode(200)
+            .body("data.get_all_scripts.size()", is(0));
     }
  // @formatter:on
 }

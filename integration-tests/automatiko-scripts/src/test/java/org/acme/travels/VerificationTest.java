@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
@@ -387,6 +388,75 @@ public class VerificationTest {
             .accept(ContentType.JSON)
         .when()
             .get("/errors")
+        .then().statusCode(200)
+            .body("$.size()", is(0));  
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testProcessUserInfoMetadataLinks() {
+
+        String addPayload = "{\"name\" : \"john\"}";
+        String id = given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(addPayload)
+            .when()
+                .post("/users?user=mary&group=admin&metadata=true&businessKey=test")
+            .then()
+                //.log().body(true)
+                .statusCode(200)
+                .body("id", notNullValue(), "name", equalTo("john"), "message", nullValue(), "lastName", nullValue(),
+                        "metadata.links[0].url", startsWith("/users/098f6bcd-4621-3373-8ade-4e832627b4f6/approval/"),
+                        "metadata.links[0].form", startsWith("/management/tasks/link/"))
+                .extract().path("id");
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/users?user=mary&group=admin&metadata=true")
+        .then().statusCode(200)
+            //.log().body(true)
+            .body("$.size()", is(1),
+                    "[0].metadata.links[0].url", startsWith("/users/098f6bcd-4621-3373-8ade-4e832627b4f6/approval/"),
+                    "[0].metadata.links[0].form", startsWith("/management/tasks/link/"));
+        
+        List<Map<String, String>> taskInfo = given()
+                .accept(ContentType.JSON)
+            .when()
+                .get("/users/" + id + "/tasks?user=mary&group=admin")
+            .then()
+                .statusCode(200)
+                .extract().as(List.class);
+
+        assertEquals(1, taskInfo.size());
+        
+        String taskId = taskInfo.get(0).get("id");
+        String taskName = taskInfo.get(0).get("name");
+        
+        assertEquals("approval", taskName);
+        
+        Map<String, String> taskData = given()
+                .accept(ContentType.JSON)
+            .when()
+                .get("/users/" + id + "/approval/" + taskId + "?user=mary&group=admin")
+            .then()
+                .statusCode(200)
+                .extract().as(Map.class);
+        
+        assertEquals("mary", taskData.get("name"));
+        assertEquals(true, taskData.get("admin"));
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .delete("/users/" + id + "?user=mary&group=admin")
+        .then().statusCode(200);        
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/users?user=mary&group=admin")
         .then().statusCode(200)
             .body("$.size()", is(0));  
     }
