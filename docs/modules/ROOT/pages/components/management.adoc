@@ -57,7 +57,7 @@ Export of a workflow instance is responsible for extracting complete set of info
 workflow instance, this includes:
 
 - workflow instance metadata such as id, business key, state etc
-- active node instances with thier metadata and variables
+- active node instances with their metadata and variables
 - workflow instance variables
 - timers
 - sub instances when there are any being currently active
