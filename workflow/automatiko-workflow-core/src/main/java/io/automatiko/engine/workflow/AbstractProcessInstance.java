@@ -261,6 +261,15 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
 
     }
 
+    public void sync(WorkflowProcessInstance wpi) {
+        description = ((WorkflowProcessInstanceImpl) wpi).getDescription();
+        parentProcessInstanceId = "".equals(wpi.getParentProcessInstanceId()) ? null : wpi.getParentProcessInstanceId();
+        rootProcessInstanceId = "".equals(wpi.getRootProcessInstanceId()) ? null : wpi.getRootProcessInstanceId();
+        rootProcessId = "".equals(wpi.getRootProcessId()) ? null : wpi.getRootProcessId();
+        initiator = "".equals(((WorkflowProcessInstanceImpl) wpi).getInitiator()) ? null
+                : ((WorkflowProcessInstanceImpl) wpi).getInitiator();
+    }
+
     private void setCorrelationKey(String businessKey) {
         if (businessKey != null && !businessKey.trim().isEmpty()) {
             correlationKey = new StringCorrelationKey(businessKey);

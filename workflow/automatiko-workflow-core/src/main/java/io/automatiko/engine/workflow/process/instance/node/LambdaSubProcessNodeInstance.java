@@ -14,6 +14,7 @@ import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.runtime.process.EventListener;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
+import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatiko.engine.api.uow.WorkUnit;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
@@ -85,13 +86,13 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
         RecoveryItem recoveryItem = getProcessInstance().getRecoveryItem(getNodeDefinitionId());
 
         if (recoveryItem != null && recoveryItem.getInstanceId() != null) {
-
+            String subprocessInstanceId = parentInstanceId + ":" + recoveryItem.getInstanceId();
             io.automatiko.engine.api.workflow.ProcessInstance<?> processInstance = (io.automatiko.engine.api.workflow.ProcessInstance<?>) subProcessFactory
-                    .findInstanceByStatus(recoveryItem.getInstanceId(),
+                    .findInstanceByStatus(subprocessInstanceId,
                             io.automatiko.engine.api.workflow.ProcessInstance.STATE_RECOVERING)
                     .orElse(null);
             if (processInstance != null) {
-                String subprocessInstanceId = parentInstanceId + ":" + processInstance.id();
+
                 this.processInstanceId = recoveryItem.getInstanceId();
                 this.processInstanceName = processInstance.description();
 
@@ -101,7 +102,7 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
                     processRuntime.getUnitOfWorkManager().currentUnitOfWork()
                             .intercept(WorkUnit.create(null, e -> {
                                 processInstance.process().instances().transactionLog().complete(recoveryItem.getTransactionId(),
-                                        processInstance.process().id(), processInstanceId);
+                                        processInstance.process().id(), subprocessInstanceId);
                             }));
 
                 }
@@ -146,6 +147,8 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
 
         getProcessInstance().getProcessRuntime().getProcessEventSupport().fireAfterNodeInitialized(this,
                 getProcessInstance().getProcessRuntime());
+
+        ((AbstractProcessInstance<?>) processInstance).sync((WorkflowProcessInstance) pi);
 
         processInstance.start();
         this.processInstanceName = processInstance.description();

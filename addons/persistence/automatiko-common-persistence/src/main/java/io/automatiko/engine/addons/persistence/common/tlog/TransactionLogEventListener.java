@@ -12,6 +12,7 @@ import io.automatiko.engine.api.event.process.ProcessNodeTriggeredEvent;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatiko.engine.api.uow.TransactionLog;
+import io.automatiko.engine.api.workflow.MutableProcessInstances;
 import io.automatiko.engine.services.uow.TransactionLogWorkUnit;
 import io.automatiko.engine.workflow.base.instance.InternalProcessRuntime;
 import io.automatiko.engine.workflow.process.core.node.StateBasedNode;
@@ -32,6 +33,7 @@ public class TransactionLogEventListener extends DefaultProcessEventListener {
         this.enabled = enabled.orElse(false);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void beforeNodeTriggered(ProcessNodeTriggeredEvent event) {
         if (!enabled) {
@@ -42,7 +44,7 @@ public class TransactionLogEventListener extends DefaultProcessEventListener {
             return;
         }
 
-        io.automatiko.engine.api.workflow.ProcessInstance<?> pi = ((io.automatiko.engine.api.workflow.ProcessInstance<?>) ((WorkflowProcessInstance) event
+        io.automatiko.engine.api.workflow.ProcessInstance pi = ((io.automatiko.engine.api.workflow.ProcessInstance<?>) ((WorkflowProcessInstance) event
                 .getProcessInstance())
                         .getMetaData("AutomatikProcessInstance"));
 
@@ -60,11 +62,13 @@ public class TransactionLogEventListener extends DefaultProcessEventListener {
 
             processRuntime.getUnitOfWorkManager().currentUnitOfWork()
                     .intercept(new TransactionLogWorkUnit(transactionId, transactionLog));
-            transactionLog.record(transactionId, pi.process().id(), pi.id(), event.getNodeInstance());
+            String instanceId = ((MutableProcessInstances<?>) pi.process().instances()).resolveId(pi.id(), pi);
+            transactionLog.record(transactionId, pi.process().id(), instanceId, event.getNodeInstance());
 
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void afterNodeInitialized(ProcessNodeInitializedEvent event) {
         if (!enabled) {
@@ -73,7 +77,7 @@ public class TransactionLogEventListener extends DefaultProcessEventListener {
 
         if (requiresInitialization(event.getNodeInstance())) {
 
-            io.automatiko.engine.api.workflow.ProcessInstance<?> pi = ((io.automatiko.engine.api.workflow.ProcessInstance<?>) ((WorkflowProcessInstance) event
+            io.automatiko.engine.api.workflow.ProcessInstance pi = ((io.automatiko.engine.api.workflow.ProcessInstance<?>) ((WorkflowProcessInstance) event
                     .getProcessInstance())
                             .getMetaData("AutomatikProcessInstance"));
 
@@ -97,7 +101,9 @@ public class TransactionLogEventListener extends DefaultProcessEventListener {
 
                 processRuntime.getUnitOfWorkManager().currentUnitOfWork()
                         .intercept(new TransactionLogWorkUnit(transactionId, transactionLog));
-                transactionLog.record(transactionId, pi.process().id(), pi.id(), event.getNodeInstance());
+
+                String instanceId = ((MutableProcessInstances<?>) pi.process().instances()).resolveId(pi.id(), pi);
+                transactionLog.record(transactionId, pi.process().id(), instanceId, event.getNodeInstance());
 
             }
         }
