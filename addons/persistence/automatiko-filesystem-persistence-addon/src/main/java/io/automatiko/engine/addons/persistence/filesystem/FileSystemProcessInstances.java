@@ -143,7 +143,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         if (status == ProcessInstance.STATE_RECOVERING) {
             byte[] content = this.transactionLog.readContent(process.id(), resolvedId);
             long versionTracker = 1;
-            if (Files.notExists(processInstanceStorage)) {
+            if (Files.exists(processInstanceStorage)) {
                 versionTracker = getVersionTracker(processInstanceStorage);
             }
             return Optional.of(
@@ -270,7 +270,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 
             Path processInstanceStorage = Paths.get(storage.toString(), resolvedId);
 
-            if (Files.exists(processInstanceStorage) || transactionLog.contains(process.id(), instance.id())) {
+            if (Files.exists(processInstanceStorage) || transactionLog.contains(process.id(), resolvedId)) {
                 storeProcessInstance(processInstanceStorage, instance);
             }
         }

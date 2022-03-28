@@ -94,14 +94,14 @@ public class TransactionLogRecovery {
                             transactionLog.complete(elements[0], process.id(), instanceId);
                         }
 
-                        if (process.subprocesses() != null) {
-
-                            for (Process<?> sProcess : process.subprocesses()) {
-                                recoverByProcess(sProcess);
-                            }
-                        }
                     } catch (Throwable e) {
                         LOGGER.warn("Recovery of instance '{}' resulted in exception '{}'", instanceId, e.getMessage());
+                    }
+                }
+                if (process.subprocesses() != null) {
+
+                    for (Process<?> sProcess : process.subprocesses()) {
+                        recoverByProcess(sProcess);
                     }
                 }
             }
