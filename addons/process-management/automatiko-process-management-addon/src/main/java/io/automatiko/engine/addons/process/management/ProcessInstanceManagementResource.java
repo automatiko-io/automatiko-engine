@@ -20,13 +20,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -75,16 +74,20 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     private IdentitySupplier identitySupplier;
     private ProcessInstanceExporter exporter;
 
+    private String serviceUrl;
+
     // CDI
     public ProcessInstanceManagementResource() {
-        this((Map<String, Process<?>>) null, null, null);
+        this((Map<String, Process<?>>) null, null, null, Optional.empty());
     }
 
     public ProcessInstanceManagementResource(Map<String, Process<?>> process, Application application,
-            IdentitySupplier identitySupplier) {
+            IdentitySupplier identitySupplier,
+            @ConfigProperty(name = "quarkus.automatiko.service-url") Optional<String> serviceUrl) {
         super(process, application);
         this.identitySupplier = identitySupplier;
         this.exporter = new ProcessInstanceExporter(processData);
+        this.serviceUrl = serviceUrl.orElse(null);
     }
 
     @Inject
@@ -128,7 +131,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @GET
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ProcessDTO> get(@Context UriInfo uriInfo,
+    public List<ProcessDTO> get(
             @Parameter(description = "Pagination - page to start on", required = false) @QueryParam(value = "page") @DefaultValue("1") int page,
             @Parameter(description = "Pagination - number of items to return", required = false) @QueryParam(value = "size") @DefaultValue("10") int size,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
@@ -151,7 +154,8 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
 
                 collected.add(new ProcessDTO(id, process.version(), process.name(),
                         (String) ((AbstractProcess<?>) process).process().getMetaData().get("Documentation"),
-                        uriInfo.getBaseUri().toString() + pathprefix + ((AbstractProcess<?>) process).process().getId()
+                        (serviceUrl == null ? ""
+                                : serviceUrl) + "/" + pathprefix + ((AbstractProcess<?>) process).process().getId()
                                 + "/image",
                         process.instances().size()));
             }
@@ -167,7 +171,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @GET
     @Path("/{processId}/instances")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ProcessInstanceDTO> getInstances(@Context UriInfo uriInfo,
+    public List<ProcessInstanceDTO> getInstances(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {
                     "active", "completed", "aborted",
@@ -203,7 +207,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @GET
     @Path("/{processId}/instances/{instanceId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ProcessInstanceDetailsDTO getInstance(@Context UriInfo uriInfo,
+    public ProcessInstanceDetailsDTO getInstance(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("instanceId") String instanceId,
             @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {
@@ -244,7 +248,8 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
                             .collect(Collectors.toList()));
                 }
                 details.setImage(
-                        uriInfo.getBaseUri().toString() + "management/processes/" + processId + "/instances/" + instanceId
+                        (serviceUrl == null ? ""
+                                : serviceUrl) + "/management/processes/" + processId + "/instances/" + instanceId
                                 + "/image?status=" + reverseMapStatus(pi.status()));
                 details.setTags(pi.tags().values());
                 details.setVariables(pi.variables());
@@ -274,7 +279,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @GET
     @Path("/{processId}/instances/{instanceId}/variables/{name}/versions")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Object> getInstanceVariableVersions(@Context UriInfo uriInfo,
+    public List<Object> getInstanceVariableVersions(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("instanceId") String instanceId,
             @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {
@@ -321,7 +326,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @POST
     @Path("/{processId}/instances/{instanceId}/variables/{name}/versions/{version}")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Object> restoreInstanceVariableVersions(@Context UriInfo uriInfo,
+    public List<Object> restoreInstanceVariableVersions(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("instanceId") String instanceId,
             @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {
@@ -599,7 +604,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @GET
     @Path("/{processId}/instances/{instanceId}/export")
     @Produces(MediaType.APPLICATION_JSON)
-    public JsonExportedProcessInstance exportInstance(@Context UriInfo uriInfo,
+    public JsonExportedProcessInstance exportInstance(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("instanceId") String instanceId,
             @Parameter(description = "Status of the process instance", required = false) @QueryParam("status") @DefaultValue("active") final String status,
@@ -640,7 +645,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @POST
     @Path("/{processId}/instances")
     @Produces(MediaType.APPLICATION_JSON)
-    public ProcessInstanceDetailsDTO importInstance(@Context UriInfo uriInfo,
+    public ProcessInstanceDetailsDTO importInstance(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
@@ -664,7 +669,8 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
                         .collect(Collectors.toList()));
             }
             details.setImage(
-                    uriInfo.getBaseUri().toString() + "management/processes/" + processId + "/instances/" + pi.id()
+                    (serviceUrl == null ? ""
+                            : serviceUrl) + "/management/processes/" + processId + "/instances/" + pi.id()
                             + "/image");
             details.setTags(pi.tags().values());
             details.setVariables(pi.variables());
@@ -688,7 +694,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
     @GET()
     @Path("/{processId}/instances/{instanceId}/archive")
     @Produces("application/zip")
-    public Response archiveInstance(@Context UriInfo uriInfo,
+    public Response archiveInstance(
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "Unique identifier of the instance", required = true) @PathParam("instanceId") String instanceId,
             @Parameter(description = "Indicates if the instance should be aborted after export, defaults to false", required = false) @QueryParam("abort") @DefaultValue("false") final boolean abort,

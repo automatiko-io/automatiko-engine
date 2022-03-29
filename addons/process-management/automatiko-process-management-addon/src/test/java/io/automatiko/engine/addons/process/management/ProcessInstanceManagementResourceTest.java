@@ -108,7 +108,7 @@ public class ProcessInstanceManagementResourceTest {
                 return new StaticIdentityProvider("test");
             }
         };
-        resource = spy(new ProcessInstanceManagementResource(processes, application, identitySupplier));
+        resource = spy(new ProcessInstanceManagementResource(processes, application, identitySupplier, Optional.empty()));
     }
 
     @Test
