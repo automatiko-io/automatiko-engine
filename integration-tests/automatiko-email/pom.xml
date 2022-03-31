@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.automatiko.tests</groupId>
     <artifactId>integration-tests</artifactId>
-    <version>0.14.0</version>
+    <version>0.0.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>automatiko-email</artifactId>
