@@ -76,10 +76,6 @@
       <groupId>io.automatiko.workflow</groupId>
       <artifactId>automatiko-workflow-core</artifactId>
     </dependency>
-    <dependency>
-      <groupId>io.automatiko.decision</groupId>
-      <artifactId>automatiko-decision-dmn</artifactId>
-    </dependency>
 
     <!-- metrics -->
     <dependency>
