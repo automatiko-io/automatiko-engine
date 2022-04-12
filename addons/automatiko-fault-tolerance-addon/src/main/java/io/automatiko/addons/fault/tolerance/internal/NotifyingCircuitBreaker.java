@@ -29,7 +29,7 @@ public class NotifyingCircuitBreaker<V> implements FaultToleranceStrategy<V> {
     public V apply(InvocationContext<V> ctx) throws Exception {
         ctx.registerEventHandler(CircuitBreakerEvents.StateTransition.class, e -> {
 
-            if (e.targetState.equals(CircuitBreakerEvents.State.CLOSED)) {
+            if (e.targetState.equals(CircuitBreakerEvents.StateTransition.TO_CLOSED.targetState)) {
                 consumer.accept(new CircuitClosedEvent(name));
             }
         });

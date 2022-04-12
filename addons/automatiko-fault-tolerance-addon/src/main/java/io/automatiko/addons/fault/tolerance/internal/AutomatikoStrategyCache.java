@@ -33,12 +33,12 @@ public class AutomatikoStrategyCache extends StrategyCache {
 
     @Override
     public <V> FaultToleranceStrategy<V> getStrategy(InterceptionPoint point, Supplier<FaultToleranceStrategy<V>> producer) {
-        FaultToleranceStrategy<V> t = producer.get();
 
         return super.getStrategy(point,
                 () -> {
                     FaultToleranceOperation operation = operationProvider.get(point.method().getDeclaringClass(),
                             point.method());
+                    FaultToleranceStrategy<V> t = producer.get();
                     if (operation.hasCircuitBreaker()) {
                         String cbName = operation.hasCircuitBreakerName()
                                 ? operation.getCircuitBreakerName().value()
