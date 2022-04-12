@@ -61,7 +61,9 @@ public class ExampleGenerator {
         if (property.getRef() != null) {
             property = openApi.getComponents().getSchemas().get(getSimpleRef(property.getRef()));
         }
-
+        if (propertyName.equals("metadata") || propertyName.equals("data") || propertyName.equals("workflowdata")) {
+            return null;
+        }
         if (property.getType().equals(SchemaType.BOOLEAN)) {
             Object defaultValue = property.getDefaultValue();
             if (defaultValue != null) {

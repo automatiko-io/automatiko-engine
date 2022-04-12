@@ -118,6 +118,16 @@ public class ProcessCodegen extends AbstractGenerator {
                         resource.setResourceType(resourceType);
                         resource.setSourcePath(entry.getName());
                         processes.addAll(parseProcessFile(resource));
+                    } else if (SUPPORTED_SW_EXTENSIONS.keySet().stream().anyMatch(entry.getName()::endsWith)) {
+                        InternalResource resource = new ByteArrayResource(
+                                readBytesFromInputStream(zipFile.getInputStream(entry)));
+                        resource.setResourceType(resourceType);
+                        resource.setSourcePath(entry.getName());
+
+                        SUPPORTED_SW_EXTENSIONS.entrySet().stream()
+                                .filter(e -> entry.getName().endsWith(e.getKey()))
+                                .forEach(e -> processes.add(parseWorkflowFile(resource, e.getValue())));
+
                     }
                 }
             } catch (IOException e) {

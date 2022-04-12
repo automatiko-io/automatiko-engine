@@ -321,6 +321,8 @@ public class AutomatikoQuarkusProcessor {
 
         providerProducer.produce(new ServiceProviderBuildItem(AutomatikoConfigProperties.class.getCanonicalName(),
                 "io.automatiko.application.app.GeneratedAutomatikoConfigProperties"));
+
+        providerProducer.produce(ServiceProviderBuildItem.allProvidersFromClassPath("net.thisptr.jackson.jq.Function"));
     }
 
     @BuildStep

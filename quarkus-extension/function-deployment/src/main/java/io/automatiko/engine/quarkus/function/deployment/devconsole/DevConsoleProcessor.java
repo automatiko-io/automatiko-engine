@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.openapi.models.media.Schema;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget.Kind;
@@ -29,8 +30,12 @@ public class DevConsoleProcessor {
 
     @BuildStep(onlyIf = IsDevelopment.class)
     public DevConsoleTemplateInfoBuildItem collectWorkflowInfo(CombinedIndexBuildItem index) throws Exception {
-        Optional<String> host = Optional.of("localhost");
-        Optional<Integer> port = Optional.of(8080);
+        Optional<String> host = Optional
+                .of(ConfigProvider.getConfig().getOptionalValue("quarkus.http.host", String.class).orElse("localhost"));
+        Optional<Integer> port = Optional
+                .of(ConfigProvider.getConfig().getOptionalValue("quarkus.http.port", Integer.class).orElse(8080));
+
+        String path = ConfigProvider.getConfig().getOptionalValue("quarkus.http.root-path", String.class).orElse("");
 
         List<WorkflowFunctionInfo> infos = new ArrayList<WorkflowFunctionInfo>();
         Collection<AnnotationInstance> functions = index.getIndex()
@@ -46,11 +51,11 @@ public class DevConsoleProcessor {
                 // create function trigger descriptor for every found function
 
                 StringBuilder curlGet = new StringBuilder("curl -X GET http://").append(host.get()).append(":")
-                        .append(port.get())
+                        .append(port.get()).append(path)
                         .append("/").append(mi.name()).append("?");
 
                 StringBuilder curlPost = new StringBuilder("curl -X POST http://").append(host.get()).append(":")
-                        .append(port.get())
+                        .append(port.get()).append(path)
                         .append("/").append(mi.name()).append(" ");
 
                 SchemaFactory.typeToSchema(ctx,
@@ -69,7 +74,7 @@ public class DevConsoleProcessor {
 
                 curlPost.append("-d \"")
                         .append(putInstructions.toString().replaceAll("\"", "\\\\\\\\\"").replaceAll("\\s+", "")).append("\"");
-                infos.add(new WorkflowFunctionInfo(mi.name(), "/" + mi.name(),
+                infos.add(new WorkflowFunctionInfo(mi.name(), path + "/" + mi.name(),
                         getInstructions.deleteCharAt(getInstructions.length() - 1).toString(),
                         curlGet.toString(),
                         putInstructions,
