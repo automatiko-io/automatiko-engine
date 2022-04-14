@@ -153,6 +153,8 @@ public class ServerlessWorkflowFactory {
             Variable constantsVariable = new Variable("contantsVariable", "$CONST",
                     new JsonNodeDataType());
             constantsVariable.setMetaData("value", value.replaceAll("\"", "\\\""));
+            constantsVariable.getTags().add(Variable.INTERNAL_TAG);
+            constantsVariable.getTags().add(Variable.READONLY_TAG);
             process.getVariableScope().addVariable(constantsVariable);
         }
 
@@ -660,10 +662,12 @@ public class ServerlessWorkflowFactory {
         String inputFilter = null;
         String outputFilter = null;
         String scopeFilter = null;
+        boolean useResults = true;
         if (action.getActionDataFilter() != null) {
             inputFilter = unwrapExpression(action.getActionDataFilter().getFromStateData());
             outputFilter = unwrapExpression(action.getActionDataFilter().getResults());
             scopeFilter = unwrapExpression(action.getActionDataFilter().getToStateData());
+            useResults = action.getActionDataFilter().isUseResults();
         }
         Set<String> paramNames = new LinkedHashSet<>();
 
@@ -687,11 +691,12 @@ public class ServerlessWorkflowFactory {
         workItemNode.addInAssociation(
                 new DataAssociation(Collections.emptyList(), "", Arrays.asList(assignment), null));
 
-        Assignment outAssignment = new Assignment("jq", null, null);
-        outAssignment.setMetaData("Action", new TaskOutputJqAssignmentAction(outputFilter, scopeFilter));
-        workItemNode.addOutAssociation(
-                new DataAssociation(Collections.emptyList(), "", Arrays.asList(outAssignment), null));
-
+        if (useResults) {
+            Assignment outAssignment = new Assignment("jq", null, null);
+            outAssignment.setMetaData("Action", new TaskOutputJqAssignmentAction(outputFilter, scopeFilter));
+            workItemNode.addOutAssociation(
+                    new DataAssociation(Collections.emptyList(), "", Arrays.asList(outAssignment), null));
+        }
         nodeContainer.addNode(workItemNode);
 
         return workItemNode;

@@ -35,11 +35,11 @@ public class LogFunction implements Function {
                         toLog.add(null);
                     } else if (results.size() == 1) {
                         pattern.append("{} ");
-                        toLog.add(results.get(0));
+                        toLog.add(results.get(0).textValue());
                     } else {
                         for (JsonNode result : results) {
                             pattern.append("{} ");
-                            toLog.add(result);
+                            toLog.add(result.textValue());
                         }
                     }
 

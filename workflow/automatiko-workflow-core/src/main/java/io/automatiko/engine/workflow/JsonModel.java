@@ -2,6 +2,7 @@ package io.automatiko.engine.workflow;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -16,6 +17,8 @@ import io.automatiko.engine.api.workflow.InstanceMetadata;
 public abstract class JsonModel implements Model {
 
     private static final long serialVersionUID = -801605831545725344L;
+
+    private static final List<String> RESTRICTED_VARIABLES = List.of("$CONST");
 
     protected static ObjectMapper MAPPER = new ObjectMapper();
 
@@ -52,6 +55,9 @@ public abstract class JsonModel implements Model {
 
         while (it.hasNext()) {
             Entry<String, JsonNode> entry = (Entry<String, JsonNode>) it.next();
+            if (RESTRICTED_VARIABLES.contains(entry.getKey())) {
+                continue;
+            }
             copy.put(entry.getKey(), entry.getValue());
         }
 
