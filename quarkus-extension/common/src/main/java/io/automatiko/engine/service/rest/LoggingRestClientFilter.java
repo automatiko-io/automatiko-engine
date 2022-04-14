@@ -49,7 +49,7 @@ public class LoggingRestClientFilter implements ClientResponseFilter, ClientRequ
 
             final StringBuilder content = new StringBuilder();
             content.append("Response:\n status code: ").append(responseContext.getStatus()).append(",\n status info: ")
-                    .append(responseContext.getStatusInfo())
+                    .append(responseContext.getStatusInfo() != null ? responseContext.getStatusInfo().getReasonPhrase() : "")
                     .append(",\n media type: ").append(responseContext.getMediaType()).append(",\n headers: \n");
 
             for (Entry<String, List<String>> header : responseContext.getHeaders().entrySet()) {

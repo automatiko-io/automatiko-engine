@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.runtime.process.ProcessContext;
@@ -38,30 +39,29 @@ public class TaskOutputJqAssignmentAction implements AssignmentAction {
     @Override
     public void execute(WorkItem workItem, ProcessContext context) throws Exception {
         JsonNode sdata = (JsonNode) workItem.getResult(JsonVariableScope.WORKFLOWDATA_KEY);
+
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("workflowdata", sdata);
+
+        Map<String, Object> variables = new HashMap<>();
+        if (context.getVariable("$CONST") != null) {
+
+            variables.put("CONST", context.getVariable("$CONST"));
+        }
+        ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) context.getProcessInstance()
+                .getProcess())
+                        .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+        vars.put("workflow_variables", variables);
         if (outputFilterExpression != null) {
-            ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) context.getProcessInstance()
-                    .getProcess())
-                            .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
 
-            Map<String, Object> vars = new HashMap<>();
-            vars.put("workflowdata", sdata);
-
-            Map<String, Object> variables = new HashMap<>();
-            if (context.getVariable("$CONST") != null) {
-
-                variables.put("CONST", context.getVariable("$CONST"));
-            }
-
-            vars.put("workflow_variables", variables);
             sdata = (JsonNode) evaluator.evaluate(outputFilterExpression, vars);
 
-            if (scopeFilter != null) {
-                variables.put("v", sdata);
-                sdata = (JsonNode) evaluator.evaluate(scopeFilter + "=$v", vars);
-            }
-
         }
-
+        if (scopeFilter != null) {
+            variables.put("v", sdata);
+            vars.put("workflowdata", new ObjectNode(null));
+            sdata = (JsonNode) evaluator.evaluate(scopeFilter + "=$v", vars);
+        }
         ObjectMapper mapper = new ObjectMapper();
 
         if (sdata != null) {

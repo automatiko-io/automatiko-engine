@@ -86,7 +86,7 @@ public class OperationStateWorkflowsTest {
         assertThat(pi.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
         Thread.sleep(5000);
         assertThat(pi.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
-        assertThat(pi.variables().toMap()).hasSize(2).containsKey("result").extracting("result")
+        assertThat(pi.variables().toMap()).hasSize(1).containsKey("result").extracting("result")
                 .isEqualTo(new TextNode("pas"));
     }
 }

@@ -17,6 +17,7 @@ public class TypeConverterRegistry {
         converters.put("java.util.Date", new DateTypeConverter());
         converters.put("java.lang.Double", s -> Double.valueOf(s));
         converters.put("java.math.BigDecimal", s -> BigDecimal.valueOf(Double.valueOf(s)));
+        converters.put("com.fasterxml.jackson.databind.JsonNode", new JsonNodeTypeConverter());
     }
 
     public Function<String, ? extends Object> forType(String type) {
