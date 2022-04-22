@@ -37,6 +37,6 @@
     <module>automatiko-function-flow-archetype</module>
     <module>automatiko-iot-archetype</module>
     <module>automatiko-orchestration-archetype</module>
-    <!-- <module>automatiko-operator-archetype</module> -->
+    <module>automatiko-operator-archetype</module>
   </modules>
 </project>
