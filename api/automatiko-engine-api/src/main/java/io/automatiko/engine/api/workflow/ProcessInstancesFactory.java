@@ -1,6 +1,7 @@
 
 package io.automatiko.engine.api.workflow;
 
+import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.uow.TransactionLogStore;
 import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 
@@ -13,6 +14,10 @@ public interface ProcessInstancesFactory {
     }
 
     default TransactionLogStore transactionLogStore() {
+        return null;
+    }
+
+    default Auditor auditor() {
         return null;
     }
 }

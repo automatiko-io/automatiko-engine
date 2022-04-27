@@ -11,6 +11,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+
+import org.acme.audit.TestAuditStore;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -19,6 +23,15 @@ import io.restassured.http.ContentType;
 @QuarkusTest
 public class VerificationTest {
  // @formatter:off
+    
+    @Inject
+    TestAuditStore auditStore;
+    
+    @BeforeEach
+    public void prepare() {
+        
+        auditStore.clear();
+    }
     
     @Test
     public void testProcessNotVersioned() {
@@ -41,6 +54,8 @@ public class VerificationTest {
             .get("/scripts")
         .then().statusCode(200)
             .body("$.size()", is(0));
+        
+        assertEquals(16, auditStore.entries().size());
     }
     
     @Test
@@ -64,6 +79,8 @@ public class VerificationTest {
             .get("/v1/scripts")
         .then().statusCode(200)
             .body("$.size()", is(0));
+        
+        assertEquals(16, auditStore.entries().size());
     }
     
     @Test
@@ -87,6 +104,8 @@ public class VerificationTest {
             .get("/v2/scripts")
         .then().statusCode(200)
             .body("$.size()", is(0));
+        
+        assertEquals(16, auditStore.entries().size());
     }
     
     @Test
@@ -201,6 +220,8 @@ public class VerificationTest {
             .get("/users?user=mary&group=admin")
         .then().statusCode(200)
             .body("$.size()", is(0));  
+        
+        assertEquals(0, auditStore.entries().size());
     }
     
     @Test

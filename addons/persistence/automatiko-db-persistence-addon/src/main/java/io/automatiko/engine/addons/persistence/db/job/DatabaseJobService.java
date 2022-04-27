@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
@@ -27,6 +28,8 @@ import io.automatiko.engine.addons.persistence.db.model.JobInstanceEntity;
 import io.automatiko.engine.addons.persistence.db.model.JobInstanceEntity.JobStatus;
 import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.Model;
+import io.automatiko.engine.api.audit.AuditEntry;
+import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.TrustedIdentityProvider;
 import io.automatiko.engine.api.jobs.ExpirationTime;
@@ -40,6 +43,7 @@ import io.automatiko.engine.api.workflow.Processes;
 import io.automatiko.engine.services.time.TimerInstance;
 import io.automatiko.engine.services.uow.UnitOfWorkExecutor;
 import io.automatiko.engine.workflow.Sig;
+import io.automatiko.engine.workflow.audit.BaseAuditEntry;
 import io.automatiko.engine.workflow.base.core.timer.CronExpirationTime;
 import io.automatiko.engine.workflow.base.core.timer.NoOpExpirationTime;
 import io.quarkus.runtime.ShutdownEvent;
@@ -54,6 +58,8 @@ public class DatabaseJobService implements JobsService {
 
     protected final UnitOfWorkManager unitOfWorkManager;
 
+    protected final Auditor auditor;
+
     protected final ScheduledThreadPoolExecutor scheduler;
 
     protected final ScheduledThreadPoolExecutor loadScheduler;
@@ -67,12 +73,13 @@ public class DatabaseJobService implements JobsService {
     public DatabaseJobService(ManagedExecutor exec,
             @ConfigProperty(name = "quarkus.automatiko.jobs.db.interval", defaultValue = "10") Long interval,
             @ConfigProperty(name = "quarkus.automatiko.jobs.db.threads", defaultValue = "1") int threads,
-            Processes processes, Application application) {
+            Processes processes, Application application, Auditor auditor) {
         this.exec = exec;
         this.interval = interval;
         processes.processIds().forEach(id -> mappedProcesses.put(id, processes.processById(id)));
 
         this.unitOfWorkManager = application.unitOfWorkManager();
+        this.auditor = auditor;
 
         this.scheduler = new ScheduledThreadPoolExecutor(threads, r -> new Thread(r, "automatiko-jobs-executor"));
         this.loadScheduler = new ScheduledThreadPoolExecutor(1, r -> new Thread(r, "automatiko-jobs-loader"));
@@ -131,6 +138,10 @@ public class DatabaseJobService implements JobsService {
                     description.expirationTime().get().toLocalDateTime(),
                     description.expirationTime().repeatLimit(), description.expirationTime().repeatInterval(),
                     description.expirationTime().expression());
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                    .add("message", "Scheduled repeatable timer job that creates new workflow instances");
+
+            auditor.publish(entry);
         } else {
 
             scheduledJob = new JobInstanceEntity(description.id(),
@@ -138,6 +149,10 @@ public class DatabaseJobService implements JobsService {
                     JobInstanceEntity.JobStatus.SCHEDULED,
                     description.expirationTime().get().toLocalDateTime(),
                     description.expirationTime().repeatLimit(), null, description.expirationTime().expression());
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                    .add("message", "Scheduled one time timer job that creates new workflow instances");
+
+            auditor.publish(entry);
         }
         JobInstanceEntity persist = scheduledJob;
         UnitOfWorkExecutor.executeInUnitOfWork(unitOfWorkManager, () -> {
@@ -171,12 +186,20 @@ public class DatabaseJobService implements JobsService {
                     description.expirationTime().get().toLocalDateTime(),
                     description.expirationTime().repeatLimit(), description.expirationTime().repeatInterval(),
                     description.expirationTime().expression());
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                    .add("message", "Scheduled repeatable timer job for existing workflow instance");
+
+            auditor.publish(entry);
         } else {
             scheduledJob = new JobInstanceEntity(description.id(), description.triggerType(),
                     description.processId() + version(description.processVersion()), description.processInstanceId(),
                     JobInstanceEntity.JobStatus.SCHEDULED,
                     description.expirationTime().get().toLocalDateTime(),
                     description.expirationTime().repeatLimit(), null, description.expirationTime().expression());
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                    .add("message", "Scheduled one time timer job for existing workflow instance");
+
+            auditor.publish(entry);
         }
         JobInstanceEntity.persist(scheduledJob);
 
@@ -197,7 +220,26 @@ public class DatabaseJobService implements JobsService {
 
     @Override
     public boolean cancelJob(String id) {
+        Supplier<AuditEntry> entry = () -> {
+            JobInstanceEntity job = JobInstanceEntity.findById(id);
+            if (job != null) {
+                return BaseAuditEntry.timer()
+                        .add("message", "Cancelled job for existing workflow instance")
+                        .add("jobId", id)
+                        .add("timerExpression", job.expression)
+                        .add("timerInterval", job.repeatInterval)
+                        .add("timerRepeatLimit", job.limit)
+                        .add("workflowDefinitionId", job.ownerDefinitionId)
+                        .add("workflowInstanceId", job.ownerInstanceId)
+                        .add("triggerType", job.triggerType);
+            } else {
+                return BaseAuditEntry.timer()
+                        .add("message", "Cancelled job for existing workflow instance")
+                        .add("jobId", id);
+            }
+        };
 
+        auditor.publish(entry);
         return JobInstanceEntity.deleteById(id);
     }
 
@@ -328,6 +370,10 @@ public class DatabaseJobService implements JobsService {
                 return;
             }
             IdentityProvider.set(new TrustedIdentityProvider("System<timer>"));
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                    .add("message", "Executing timer job for existing workflow instance");
+
+            auditor.publish(entry);
             UnitOfWorkExecutor.executeInUnitOfWork(unitOfWorkManager, () -> {
                 Optional<? extends ProcessInstance<?>> processInstanceFound = process.instances()
                         .findById(processInstanceId);
@@ -405,6 +451,10 @@ public class DatabaseJobService implements JobsService {
                 return;
             }
             IdentityProvider.set(new TrustedIdentityProvider("System<timer>"));
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                    .add("message", "Executing timer job to create new workflow instance");
+
+            auditor.publish(entry);
             UnitOfWorkExecutor.executeInUnitOfWork(unitOfWorkManager, () -> {
                 ProcessInstance<?> pi = process.createInstance(process.createModel());
                 if (pi != null) {

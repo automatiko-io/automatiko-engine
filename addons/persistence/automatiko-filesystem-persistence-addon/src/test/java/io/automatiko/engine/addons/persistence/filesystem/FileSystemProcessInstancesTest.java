@@ -21,6 +21,7 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,8 @@ import org.junit.jupiter.api.Test;
 import io.automatiko.engine.addons.persistence.AbstractProcessInstancesFactory;
 import io.automatiko.engine.addons.persistence.data.Address;
 import io.automatiko.engine.addons.persistence.data.Person;
+import io.automatiko.engine.api.audit.AuditEntry;
+import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.auth.SecurityPolicy;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.api.runtime.process.ProcessContext;
@@ -393,6 +396,17 @@ public class FileSystemProcessInstancesTest {
         @Override
         public String path() {
             return PERSISTENCE_FOLDER;
+        }
+
+        @Override
+        public Auditor auditor() {
+            return new Auditor() {
+
+                @Override
+                public void publish(Supplier<AuditEntry> entry) {
+
+                }
+            };
         }
     }
 }

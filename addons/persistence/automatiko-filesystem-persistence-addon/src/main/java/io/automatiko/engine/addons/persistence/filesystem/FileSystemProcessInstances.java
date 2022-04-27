@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -30,6 +31,8 @@ import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.addons.persistence.common.JacksonObjectMarshallingStrategy;
 import io.automatiko.engine.addons.persistence.common.tlog.TransactionLogImpl;
+import io.automatiko.engine.api.audit.AuditEntry;
+import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.auth.AccessDeniedException;
 import io.automatiko.engine.api.uow.TransactionLog;
 import io.automatiko.engine.api.uow.TransactionLogStore;
@@ -42,6 +45,7 @@ import io.automatiko.engine.api.workflow.ProcessInstanceDuplicatedException;
 import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
+import io.automatiko.engine.workflow.audit.BaseAuditEntry;
 import io.automatiko.engine.workflow.marshalling.ProcessInstanceMarshaller;
 
 @SuppressWarnings({ "rawtypes" })
@@ -69,28 +73,33 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 
     private TransactionLog transactionLog;
 
-    public FileSystemProcessInstances(Process<?> process, Path storage, StoredDataCodec codec, TransactionLogStore store) {
-        this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process)), codec, store);
+    private Auditor auditor;
+
+    public FileSystemProcessInstances(Process<?> process, Path storage, StoredDataCodec codec, TransactionLogStore store,
+            Auditor auditor) {
+        this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process)), codec, store,
+                auditor);
     }
 
     public FileSystemProcessInstances(Process<?> process, Path storage, boolean useCompositeIdForSubprocess,
-            StoredDataCodec codec, TransactionLogStore store) {
+            StoredDataCodec codec, TransactionLogStore store, Auditor auditor) {
         this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process)),
-                useCompositeIdForSubprocess, codec, store);
+                useCompositeIdForSubprocess, codec, store, auditor);
     }
 
     public FileSystemProcessInstances(Process<?> process, Path storage, ProcessInstanceMarshaller marshaller,
-            StoredDataCodec codec, TransactionLogStore store) {
-        this(process, storage, marshaller, true, codec, store);
+            StoredDataCodec codec, TransactionLogStore store, Auditor auditor) {
+        this(process, storage, marshaller, true, codec, store, auditor);
     }
 
     public FileSystemProcessInstances(Process<?> process, Path storage, ProcessInstanceMarshaller marshaller,
-            boolean useCompositeIdForSubprocess, StoredDataCodec codec, TransactionLogStore store) {
+            boolean useCompositeIdForSubprocess, StoredDataCodec codec, TransactionLogStore store, Auditor auditor) {
         this.process = process;
         this.storage = Paths.get(storage.toString(), process.id());
         this.marshaller = marshaller;
         this.useCompositeIdForSubprocess = useCompositeIdForSubprocess;
         this.codec = codec;
+        this.auditor = auditor;
 
         try {
             Files.createDirectories(this.storage);
@@ -146,9 +155,9 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             if (Files.exists(processInstanceStorage)) {
                 versionTracker = getVersionTracker(processInstanceStorage);
             }
-            return Optional.of(
+            return Optional.of(audit(
                     mode == MUTABLE ? marshaller.unmarshallProcessInstance(content, process, versionTracker)
-                            : marshaller.unmarshallReadOnlyProcessInstance(content, process));
+                            : marshaller.unmarshallReadOnlyProcessInstance(content, process)));
         }
 
         if (Files.notExists(processInstanceStorage)
@@ -156,9 +165,9 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             return Optional.empty();
         }
         byte[] data = readBytesFromFile(processInstanceStorage);
-        return Optional.of(
+        return Optional.of(audit(
                 mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process, getVersionTracker(processInstanceStorage))
-                        : marshaller.unmarshallReadOnlyProcessInstance(data, process));
+                        : marshaller.unmarshallReadOnlyProcessInstance(data, process)));
 
     }
 
@@ -184,7 +193,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
                             }
                         })
                         .filter(pi -> pi != null)
-                        .forEach(pi -> collected.add(pi));
+                        .forEach(pi -> collected.add(audit(pi)));
             } catch (IOException e) {
                 throw new RuntimeException("Unable to read process instances ", e);
             }
@@ -215,8 +224,9 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
                     .map(file -> {
                         try {
                             byte[] b = readBytesFromFile(file);
-                            return mode == MUTABLE ? marshaller.unmarshallProcessInstance(b, process, getVersionTracker(file))
-                                    : marshaller.unmarshallReadOnlyProcessInstance(b, process);
+                            return audit(
+                                    mode == MUTABLE ? marshaller.unmarshallProcessInstance(b, process, getVersionTracker(file))
+                                            : marshaller.unmarshallReadOnlyProcessInstance(b, process));
                         } catch (AccessDeniedException e) {
                             return null;
                         }
@@ -251,6 +261,12 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             cachedInstances.remove(id);
 
             storeProcessInstance(processInstanceStorage, instance);
+
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                    .add("message", "Workflow instance created in the file system based data store");
+
+            auditor.publish(entry);
+
         } else if (isPending(instance)) {
             if (cachedInstances.putIfAbsent(resolvedId, instance) != null) {
                 throw new ProcessInstanceDuplicatedException(id);
@@ -271,7 +287,12 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             Path processInstanceStorage = Paths.get(storage.toString(), resolvedId);
 
             if (Files.exists(processInstanceStorage) || transactionLog.contains(process.id(), resolvedId)) {
+
                 storeProcessInstance(processInstanceStorage, instance);
+                Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                        .add("message", "Workflow instance updated in the file system based data store");
+
+                auditor.publish(entry);
             }
         }
     }
@@ -288,6 +309,10 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             Files.deleteIfExists(processInstanceStorage);
 
             Files.deleteIfExists(processInstanceMetadataStorage);
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                    .add("message", "Workflow instance deleted from the file system based data store");
+
+            auditor.publish(entry);
         } catch (IOException e) {
             throw new RuntimeException("Unable to remove process instance with id " + id, e);
         }
@@ -487,7 +512,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     @Override
     public ExportedProcessInstance exportInstance(ProcessInstance instance, boolean abort) {
 
-        ExportedProcessInstance exported = marshaller.exportProcessInstance(instance);
+        ExportedProcessInstance exported = marshaller.exportProcessInstance(audit(instance));
 
         if (abort) {
             instance.abort();
@@ -516,6 +541,15 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         }
 
         return Long.parseLong(version);
+    }
+
+    public ProcessInstance<?> audit(ProcessInstance<?> instance) {
+        Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                .add("message", "Workflow instance was read from the file system based data store");
+
+        auditor.publish(entry);
+
+        return instance;
     }
 
 }

@@ -18,14 +18,12 @@ import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 @QuarkusTest
-@QuarkusTestResource(ElasticContainer.class)
 public class VerificationTest {
 
     @Inject

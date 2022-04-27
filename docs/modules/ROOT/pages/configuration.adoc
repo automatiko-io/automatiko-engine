@@ -132,6 +132,16 @@ Following are set of configuration parameters that can be used to configure Auto
 
 |====
 
+.Audit configuration parameters
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.automatiko.audit.enabled|QUARKUS_AUTOMATIKO_AUDIT_ENABLED|Enables audit logging|No|false|No
+|quarkus.automatiko.audit.format|QUARKUS_AUTOMATIKO_AUDIT_FORMAT|Configures format of the audit logging (plain or json)|No|plain|No
+|quarkus.automatiko.audit.included|QUARKUS_AUTOMATIKO_AUDIT_INCLUDED|Types of audit entries that should be logged (`workflow`,`workflow_node`,`workflow_variable`,`workflow_persistence_read`,`workflow_persistence_write`,`timer`,`messaging`)|No|all|No
+|quarkus.automatiko.audit.excluded|QUARKUS_AUTOMATIKO_AUDIT_EXCLUDED|Types of audit entries that should be excluded from being logged (`workflow`,`workflow_node`,`workflow_variable`,`workflow_persistence_read`,`workflow_persistence_write`,`timer`,`messaging`)|No|none|No
+|====
+
 == Instructions during build
 
 NOTE: Automatiko also predefines several configuration to simplify use. These configuration options are logged as part of the build process

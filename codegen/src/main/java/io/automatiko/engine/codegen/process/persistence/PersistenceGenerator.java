@@ -31,6 +31,7 @@ import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
+import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.uow.TransactionLogStore;
 import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 import io.automatiko.engine.codegen.AbstractGenerator;
@@ -54,6 +55,8 @@ public class PersistenceGenerator extends AbstractGenerator {
     private static final String CODEC_NAME = "codec";
 
     private static final String TRANSACTION_LOG_STORE_NAME = "transactionLogStore";
+
+    private static final String AUDITOR_NAME = "auditor";
 
     private static final String PERSISTENCE_FS_PATH_PROP = "quarkus.automatiko.persistence.filesystem.path";
 
@@ -155,6 +158,7 @@ public class PersistenceGenerator extends AbstractGenerator {
             addCodecComponents(persistenceProviderClazz);
 
             addTransactionLogStoreComponents(persistenceProviderClazz);
+            addAuditorComponents(persistenceProviderClazz);
         }
 
         String packageName = compilationUnit.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
@@ -181,6 +185,7 @@ public class PersistenceGenerator extends AbstractGenerator {
             addCodecComponents(persistenceProviderClazz);
 
             addTransactionLogStoreComponents(persistenceProviderClazz);
+            addAuditorComponents(persistenceProviderClazz);
         }
 
         String packageName = compilationUnit.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
@@ -221,6 +226,7 @@ public class PersistenceGenerator extends AbstractGenerator {
             addCodecComponents(persistenceProviderClazz);
 
             addTransactionLogStoreComponents(persistenceProviderClazz);
+            addAuditorComponents(persistenceProviderClazz);
         }
 
         String packageName = compilationUnit.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
@@ -261,6 +267,7 @@ public class PersistenceGenerator extends AbstractGenerator {
             addCodecComponents(persistenceProviderClazz);
 
             addTransactionLogStoreComponents(persistenceProviderClazz);
+            addAuditorComponents(persistenceProviderClazz);
         }
 
         String packageName = compilationUnit.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
@@ -301,6 +308,7 @@ public class PersistenceGenerator extends AbstractGenerator {
             addCodecComponents(persistenceProviderClazz);
 
             addTransactionLogStoreComponents(persistenceProviderClazz);
+            addAuditorComponents(persistenceProviderClazz);
         }
 
         String packageName = compilationUnit.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
@@ -356,5 +364,30 @@ public class PersistenceGenerator extends AbstractGenerator {
 
         persistenceProviderClazz.addMember(tLogStoreField);
         persistenceProviderClazz.addMember(tLogStoreMethod);
+    }
+
+    private void addAuditorComponents(ClassOrInterfaceDeclaration persistenceProviderClazz) {
+
+        // allow to inject auditor implementation
+        FieldDeclaration auditorStoreField = new FieldDeclaration()
+                .addVariable(
+                        new VariableDeclarator()
+                                .setType(genericType(annotator.optionalInstanceInjectionType(), Auditor.class))
+                                .setName(AUDITOR_NAME));
+        BlockStmt auditorMethodBody = new BlockStmt();
+        Expression condition = annotator.optionalInstanceExists(AUDITOR_NAME);
+        IfStmt injectedIf = new IfStmt(condition,
+                new ReturnStmt(new MethodCallExpr(new NameExpr(AUDITOR_NAME), "get")),
+                new ReturnStmt(new NullLiteralExpr()));
+        auditorMethodBody.addStatement(injectedIf);
+
+        MethodDeclaration auditorMethod = new MethodDeclaration().addModifier(Keyword.PUBLIC)
+                .setName(AUDITOR_NAME)
+                .setType(Auditor.class.getCanonicalName()).setBody(auditorMethodBody);
+
+        annotator.withOptionalInjection(auditorStoreField);
+
+        persistenceProviderClazz.addMember(auditorStoreField);
+        persistenceProviderClazz.addMember(auditorMethod);
     }
 }

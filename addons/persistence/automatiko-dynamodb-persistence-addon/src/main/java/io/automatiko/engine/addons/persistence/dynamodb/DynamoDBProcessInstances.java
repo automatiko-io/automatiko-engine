@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -16,6 +17,8 @@ import org.slf4j.LoggerFactory;
 import io.automatiko.engine.addons.persistence.common.JacksonObjectMarshallingStrategy;
 import io.automatiko.engine.addons.persistence.common.tlog.TransactionLogImpl;
 import io.automatiko.engine.api.Model;
+import io.automatiko.engine.api.audit.AuditEntry;
+import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.auth.AccessDeniedException;
 import io.automatiko.engine.api.config.DynamoDBPersistenceConfig;
 import io.automatiko.engine.api.uow.TransactionLog;
@@ -29,6 +32,7 @@ import io.automatiko.engine.api.workflow.ProcessInstanceDuplicatedException;
 import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
+import io.automatiko.engine.workflow.audit.BaseAuditEntry;
 import io.automatiko.engine.workflow.marshalling.ProcessInstanceMarshaller;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.core.waiters.WaiterResponse;
@@ -81,14 +85,17 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
 
     private TransactionLog transactionLog;
 
+    private Auditor auditor;
+
     public DynamoDBProcessInstances(Process<? extends Model> process, DynamoDbClient dynamodb,
-            DynamoDBPersistenceConfig config, StoredDataCodec codec, TransactionLogStore store) {
+            DynamoDBPersistenceConfig config, StoredDataCodec codec, TransactionLogStore store, Auditor auditor) {
         this.process = process;
         this.marshaller = new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process));
         this.config = config;
         this.dynamodb = dynamodb;
         this.tableName = process.id().toUpperCase();
         this.codec = codec;
+        this.auditor = auditor;
 
         if (config.createTables().orElse(Boolean.TRUE)) {
             createTable();
@@ -137,9 +144,9 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
                     versionTracker = Long.parseLong(returnedItem.get(VERSION_FIELD).n());
                 }
                 return Optional
-                        .of(mode == MUTABLE
+                        .of(audit(mode == MUTABLE
                                 ? marshaller.unmarshallProcessInstance(content, process, versionTracker)
-                                : marshaller.unmarshallReadOnlyProcessInstance(content, process));
+                                : marshaller.unmarshallReadOnlyProcessInstance(content, process)));
             }
         }
 
@@ -148,10 +155,10 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
         if (returnedItem != null && Integer.parseInt(returnedItem.get(STATUS_FIELD).n()) == status) {
             byte[] content = returnedItem.get(CONTENT_FIELD).b().asByteArray();
 
-            return Optional.of(mode == MUTABLE
+            return Optional.of(audit(mode == MUTABLE
                     ? marshaller.unmarshallProcessInstance(codec.decode(content), process,
                             Long.parseLong(returnedItem.get(VERSION_FIELD).n()))
-                    : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process));
+                    : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process)));
 
         } else {
             return Optional.empty();
@@ -178,9 +185,9 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
             try {
                 byte[] content = item.get(CONTENT_FIELD).b().asByteArray();
 
-                return mode == MUTABLE ? marshaller.unmarshallProcessInstance(codec.decode(content), process,
+                return audit(mode == MUTABLE ? marshaller.unmarshallProcessInstance(codec.decode(content), process,
                         Long.parseLong(item.get(VERSION_FIELD).n()))
-                        : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process);
+                        : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process));
             } catch (AccessDeniedException e) {
                 return null;
             }
@@ -194,7 +201,7 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
 
     @Override
     public Collection findByIdOrTag(ProcessInstanceReadMode mode, int status, String... values) {
-        LOGGER.debug("findByIdOrTag() called for values {}", values);
+        LOGGER.debug("findByIdOrTag() called for values {} and status {}", values, status);
         Map<String, AttributeValue> attrValues = new HashMap<String, AttributeValue>();
         int counter = 0;
         StringBuilder condition = new StringBuilder();
@@ -215,9 +222,9 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
             try {
                 byte[] content = item.get(CONTENT_FIELD).b().asByteArray();
 
-                return mode == MUTABLE ? marshaller.unmarshallProcessInstance(codec.decode(content), process,
+                return audit(mode == MUTABLE ? marshaller.unmarshallProcessInstance(codec.decode(content), process,
                         Long.parseLong(item.get(VERSION_FIELD).n()))
-                        : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process);
+                        : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process));
             } catch (AccessDeniedException e) {
                 return null;
             }
@@ -313,6 +320,11 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
 
             try {
                 dynamodb.putItem(request);
+
+                Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                        .add("message", "Workflow instance created in the DynamoDB based data store");
+
+                auditor.publish(entry);
             } catch (ConditionalCheckFailedException e) {
                 throw new ProcessInstanceDuplicatedException(id);
             } finally {
@@ -384,6 +396,11 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
 
             try {
                 dynamodb.updateItem(request);
+
+                Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                        .add("message", "Workflow instance updated in the DynamoDB based data store");
+
+                auditor.publish(entry);
             } catch (ConditionalCheckFailedException e) {
                 throw new ConflictingVersionException("Process instance with id '" + instance.id()
                         + "' has older version than the stored one");
@@ -415,6 +432,11 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
                 .build();
 
         dynamodb.deleteItem(deleteReq);
+
+        Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                .add("message", "Workflow instance removed from the DynamoDB based data store");
+
+        auditor.publish(entry);
     }
 
     protected void createTable() {
@@ -491,7 +513,7 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
     @Override
     public ExportedProcessInstance exportInstance(ProcessInstance instance, boolean abort) {
 
-        ExportedProcessInstance exported = marshaller.exportProcessInstance(instance);
+        ExportedProcessInstance exported = marshaller.exportProcessInstance(audit(instance));
 
         if (abort) {
             instance.abort();
@@ -513,4 +535,12 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
         return imported;
     }
 
+    public ProcessInstance<?> audit(ProcessInstance<?> instance) {
+        Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                .add("message", "Workflow instance was read from the DynamoDB based data store");
+
+        auditor.publish(entry);
+
+        return instance;
+    }
 }

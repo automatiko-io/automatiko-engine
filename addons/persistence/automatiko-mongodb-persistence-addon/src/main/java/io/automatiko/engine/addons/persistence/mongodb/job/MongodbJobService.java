@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
@@ -39,6 +40,8 @@ import com.mongodb.client.result.UpdateResult;
 
 import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.Model;
+import io.automatiko.engine.api.audit.AuditEntry;
+import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.TrustedIdentityProvider;
 import io.automatiko.engine.api.config.MongodbJobsConfig;
@@ -53,6 +56,7 @@ import io.automatiko.engine.api.workflow.Processes;
 import io.automatiko.engine.services.time.TimerInstance;
 import io.automatiko.engine.services.uow.UnitOfWorkExecutor;
 import io.automatiko.engine.workflow.Sig;
+import io.automatiko.engine.workflow.audit.BaseAuditEntry;
 import io.automatiko.engine.workflow.base.core.timer.CronExpirationTime;
 import io.automatiko.engine.workflow.base.core.timer.NoOpExpirationTime;
 import io.quarkus.runtime.ShutdownEvent;
@@ -77,6 +81,8 @@ public class MongodbJobService implements JobsService {
 
     protected final UnitOfWorkManager unitOfWorkManager;
 
+    protected final Auditor auditor;
+
     protected final ScheduledThreadPoolExecutor scheduler;
 
     protected final ScheduledThreadPoolExecutor loadScheduler;
@@ -91,12 +97,13 @@ public class MongodbJobService implements JobsService {
     @Inject
     public MongodbJobService(MongoClient mongoClient,
             MongodbJobsConfig config,
-            Processes processes, Application application) {
+            Processes processes, Application application, Auditor auditor) {
         this.mongoClient = mongoClient;
         this.config = config;
         processes.processIds().forEach(id -> mappedProcesses.put(id, processes.processById(id)));
 
         this.unitOfWorkManager = application.unitOfWorkManager();
+        this.auditor = auditor;
 
         this.scheduler = new ScheduledThreadPoolExecutor(config.threads().orElse(1),
                 r -> new Thread(r, "automatiko-jobs-executor"));
@@ -182,6 +189,10 @@ public class MongodbJobService implements JobsService {
                     .append(FIRE_LIMIT_FIELD, description.expirationTime().repeatLimit())
                     .append(REPEAT_INTERVAL_FIELD, description.expirationTime().repeatInterval())
                     .append(EXPRESSION_FIELD, description.expirationTime().expression());
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                    .add("message", "Scheduled repeatable timer job that creates new workflow instances");
+
+            auditor.publish(entry);
         } else {
 
             job.append(INSTANCE_ID_FIELD, description.id())
@@ -193,7 +204,10 @@ public class MongodbJobService implements JobsService {
                                     .toEpochMilli())
                     .append(FIRE_LIMIT_FIELD, description.expirationTime().repeatLimit())
                     .append(EXPRESSION_FIELD, description.expirationTime().expression());
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                    .add("message", "Scheduled one time timer job that creates new workflow instances");
 
+            auditor.publish(entry);
         }
         collection().insertOne(job);
         if (description.expirationTime().get().toLocalDateTime()
@@ -226,7 +240,10 @@ public class MongodbJobService implements JobsService {
                     .append(FIRE_LIMIT_FIELD, description.expirationTime().repeatLimit())
                     .append(REPEAT_INTERVAL_FIELD, description.expirationTime().repeatInterval())
                     .append(EXPRESSION_FIELD, description.expirationTime().expression());
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                    .add("message", "Scheduled repeatable timer job for existing workflow instance");
 
+            auditor.publish(entry);
         } else {
 
             job.append(INSTANCE_ID_FIELD, description.id())
@@ -240,6 +257,10 @@ public class MongodbJobService implements JobsService {
                                     .toEpochMilli())
                     .append(FIRE_LIMIT_FIELD, description.expirationTime().repeatLimit())
                     .append(EXPRESSION_FIELD, description.expirationTime().expression());
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                    .add("message", "Scheduled one time timer job for existing workflow instance");
+
+            auditor.publish(entry);
         }
 
         collection().insertOne(job);
@@ -262,7 +283,31 @@ public class MongodbJobService implements JobsService {
 
     @Override
     public boolean cancelJob(String id) {
+        Supplier<AuditEntry> entry = () -> {
+            Document found = collection().find(and(eq(INSTANCE_ID_FIELD, id)))
+                    .projection(Projections
+                            .fields(Projections.include(INSTANCE_ID_FIELD, EXPRESSION_FIELD, REPEAT_INTERVAL_FIELD,
+                                    FIRE_LIMIT_FIELD, OWNER_DEF_ID_FIELD, OWNER_INSTANCE_ID_FIELD, TRIGGER_TYPE_FIELD)))
+                    .first();
 
+            if (found != null) {
+                return BaseAuditEntry.timer()
+                        .add("message", "Cancelled job for existing workflow instance")
+                        .add("jobId", id)
+                        .add("timerExpression", found.getString(EXPRESSION_FIELD))
+                        .add("timerInterval", found.getLong(REPEAT_INTERVAL_FIELD))
+                        .add("timerRepeatLimit", found.getInteger(FIRE_LIMIT_FIELD))
+                        .add("workflowDefinitionId", found.getString(OWNER_DEF_ID_FIELD))
+                        .add("workflowInstanceId", found.getString(OWNER_INSTANCE_ID_FIELD))
+                        .add("triggerType", found.getString(TRIGGER_TYPE_FIELD));
+            } else {
+                return BaseAuditEntry.timer()
+                        .add("message", "Cancelled job for existing workflow instance")
+                        .add("jobId", id);
+            }
+        };
+
+        auditor.publish(entry);
         removeScheduledJob(id);
 
         return true;
@@ -419,6 +464,10 @@ public class MongodbJobService implements JobsService {
                     return;
                 }
                 IdentityProvider.set(new TrustedIdentityProvider("System<timer>"));
+                Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                        .add("message", "Executing timer job for existing workflow instance");
+
+                auditor.publish(entry);
                 UnitOfWorkExecutor.executeInUnitOfWork(unitOfWorkManager, () -> {
                     Optional<? extends ProcessInstance<?>> processInstanceFound = process.instances()
                             .findById(processInstanceId);
@@ -489,6 +538,10 @@ public class MongodbJobService implements JobsService {
                     return;
                 }
                 IdentityProvider.set(new TrustedIdentityProvider("System<timer>"));
+                Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                        .add("message", "Executing timer job to create new workflow instance");
+
+                auditor.publish(entry);
                 UnitOfWorkExecutor.executeInUnitOfWork(unitOfWorkManager, () -> {
                     ProcessInstance<?> pi = process.createInstance(process.createModel());
                     if (pi != null) {

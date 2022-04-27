@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,6 +45,8 @@ import com.datastax.oss.driver.api.querybuilder.select.Select;
 import io.automatiko.engine.addons.persistence.common.JacksonObjectMarshallingStrategy;
 import io.automatiko.engine.addons.persistence.common.tlog.TransactionLogImpl;
 import io.automatiko.engine.api.Model;
+import io.automatiko.engine.api.audit.AuditEntry;
+import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.auth.AccessDeniedException;
 import io.automatiko.engine.api.config.CassandraPersistenceConfig;
 import io.automatiko.engine.api.uow.TransactionLog;
@@ -57,6 +60,7 @@ import io.automatiko.engine.api.workflow.ProcessInstanceDuplicatedException;
 import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
+import io.automatiko.engine.workflow.audit.BaseAuditEntry;
 import io.automatiko.engine.workflow.marshalling.ProcessInstanceMarshaller;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -84,14 +88,17 @@ public class CassandraProcessInstances implements MutableProcessInstances {
 
     private TransactionLog transactionLog;
 
+    private Auditor auditor;
+
     public CassandraProcessInstances(Process<? extends Model> process, CqlSession cqlSession,
-            CassandraPersistenceConfig config, StoredDataCodec codec, TransactionLogStore store) {
+            CassandraPersistenceConfig config, StoredDataCodec codec, TransactionLogStore store, Auditor auditor) {
         this.process = process;
         this.marshaller = new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process));
         this.config = config;
         this.cqlSession = cqlSession;
         this.tableName = process.id().toUpperCase();
         this.codec = codec;
+        this.auditor = auditor;
 
         if (config.createTables().orElse(Boolean.TRUE)) {
             createTable();
@@ -139,9 +146,9 @@ public class CassandraProcessInstances implements MutableProcessInstances {
                     versionTracker = row.getLong(VERSION_FIELD);
                 }
                 return Optional
-                        .of(mode == MUTABLE
+                        .of(audit(mode == MUTABLE
                                 ? marshaller.unmarshallProcessInstance(content, process, versionTracker)
-                                : marshaller.unmarshallReadOnlyProcessInstance(content, process));
+                                : marshaller.unmarshallReadOnlyProcessInstance(content, process)));
             }
         }
 
@@ -151,9 +158,9 @@ public class CassandraProcessInstances implements MutableProcessInstances {
             byte[] content = ByteUtils.getArray(row.getByteBuffer(CONTENT_FIELD));
 
             return Optional
-                    .of(mode == MUTABLE
+                    .of(audit(mode == MUTABLE
                             ? marshaller.unmarshallProcessInstance(codec.decode(content), process, row.getLong(VERSION_FIELD))
-                            : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process));
+                            : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process)));
 
         } else {
             return Optional.empty();
@@ -173,9 +180,9 @@ public class CassandraProcessInstances implements MutableProcessInstances {
             try {
                 byte[] content = ByteUtils.getArray(item.getByteBuffer(CONTENT_FIELD));
 
-                return mode == MUTABLE
+                return audit(mode == MUTABLE
                         ? marshaller.unmarshallProcessInstance(codec.decode(content), process, item.getLong(VERSION_FIELD))
-                        : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process);
+                        : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process));
             } catch (AccessDeniedException e) {
                 return null;
             }
@@ -189,7 +196,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
 
     @Override
     public Collection findByIdOrTag(ProcessInstanceReadMode mode, int status, String... values) {
-        LOGGER.debug("findByIdOrTag() called for values {}", values);
+        LOGGER.debug("findByIdOrTag() called for values {} and status {}", values, status);
 
         List<Row> collected = new ArrayList<Row>();
         Set<String> distinct = new HashSet<String>();
@@ -219,9 +226,9 @@ public class CassandraProcessInstances implements MutableProcessInstances {
             try {
                 byte[] content = ByteUtils.getArray(item.getByteBuffer(CONTENT_FIELD));
 
-                return mode == MUTABLE
+                return audit(mode == MUTABLE
                         ? marshaller.unmarshallProcessInstance(codec.decode(content), process, item.getLong(VERSION_FIELD))
-                        : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process);
+                        : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process));
             } catch (AccessDeniedException e) {
                 return null;
             }
@@ -233,7 +240,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
 
     @Override
     public Collection locateByIdOrTag(int status, String... values) {
-        LOGGER.debug("locateByIdOrTag() called for values {}", values);
+        LOGGER.debug("locateByIdOrTag() called for values {} and status {}", values, status);
 
         Set<String> distinct = new HashSet<String>();
 
@@ -320,6 +327,10 @@ public class CassandraProcessInstances implements MutableProcessInstances {
                 if (!rs.wasApplied()) {
                     throw new ProcessInstanceDuplicatedException(id);
                 }
+                Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                        .add("message", "Workflow instance created in the Apache Cassandra based data store");
+
+                auditor.publish(entry);
             } catch (QueryExecutionException e) {
                 throw new ProcessInstanceDuplicatedException(id);
             } finally {
@@ -381,6 +392,10 @@ public class CassandraProcessInstances implements MutableProcessInstances {
                     if (!rs.wasApplied()) {
                         throw new ProcessInstanceDuplicatedException(id);
                     }
+                    Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                            .add("message", "Workflow instance updated in the Apache Cassandra based data store");
+
+                    auditor.publish(entry);
                 } catch (QueryExecutionException e) {
                     throw new ProcessInstanceDuplicatedException(id);
                 }
@@ -407,6 +422,10 @@ public class CassandraProcessInstances implements MutableProcessInstances {
                 .isEqualTo(literal(resolvedId)).ifExists();
 
         cqlSession.execute(deleteStatement.build());
+        Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                .add("message", "Workflow instance removed from the Apache Cassandra based data store");
+
+        auditor.publish(entry);
     }
 
     protected void createTable() {
@@ -460,7 +479,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
     @Override
     public ExportedProcessInstance exportInstance(ProcessInstance instance, boolean abort) {
 
-        ExportedProcessInstance exported = marshaller.exportProcessInstance(instance);
+        ExportedProcessInstance exported = marshaller.exportProcessInstance(audit(instance));
 
         if (abort) {
             instance.abort();
@@ -480,6 +499,15 @@ public class CassandraProcessInstances implements MutableProcessInstances {
 
         create(imported.id(), imported);
         return imported;
+    }
+
+    public ProcessInstance<?> audit(ProcessInstance<?> instance) {
+        Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                .add("message", "Workflow instance was read from the Apache Cassandra based data store");
+
+        auditor.publish(entry);
+
+        return instance;
     }
 
 }

@@ -30,6 +30,6 @@ public abstract class AbstractProcessInstancesFactory implements ProcessInstance
     @SuppressWarnings("unchecked")
     public MongodbProcessInstances createProcessInstances(Process<?> process) {
         return new MongodbProcessInstances((Process<? extends Model>) process, mongoClient, config, codec(),
-                transactionLogStore());
+                transactionLogStore(), auditor());
     }
 }

@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
@@ -45,6 +46,8 @@ import com.datastax.oss.driver.api.querybuilder.select.Select;
 
 import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.Model;
+import io.automatiko.engine.api.audit.AuditEntry;
+import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.TrustedIdentityProvider;
 import io.automatiko.engine.api.config.CassandraJobsConfig;
@@ -59,6 +62,7 @@ import io.automatiko.engine.api.workflow.Processes;
 import io.automatiko.engine.services.time.TimerInstance;
 import io.automatiko.engine.services.uow.UnitOfWorkExecutor;
 import io.automatiko.engine.workflow.Sig;
+import io.automatiko.engine.workflow.audit.BaseAuditEntry;
 import io.automatiko.engine.workflow.base.core.timer.CronExpirationTime;
 import io.automatiko.engine.workflow.base.core.timer.NoOpExpirationTime;
 import io.quarkus.runtime.ShutdownEvent;
@@ -83,6 +87,8 @@ public class CassandraJobService implements JobsService {
 
     protected final UnitOfWorkManager unitOfWorkManager;
 
+    protected final Auditor auditor;
+
     protected final ScheduledThreadPoolExecutor scheduler;
 
     protected final ScheduledThreadPoolExecutor loadScheduler;
@@ -97,7 +103,7 @@ public class CassandraJobService implements JobsService {
     @Inject
     public CassandraJobService(CqlSession cqlSession,
             CassandraJobsConfig config,
-            Processes processes, Application application) {
+            Processes processes, Application application, Auditor auditor) {
         this.cqlSession = cqlSession;
         this.config = config;
         processes.processIds().forEach(id -> mappedProcesses.put(id, processes.processById(id)));
@@ -107,6 +113,7 @@ public class CassandraJobService implements JobsService {
         }
 
         this.unitOfWorkManager = application.unitOfWorkManager();
+        this.auditor = auditor;
 
         this.scheduler = new ScheduledThreadPoolExecutor(config.threads().orElse(1),
                 r -> new Thread(r, "automatiko-jobs-executor"));
@@ -192,6 +199,10 @@ public class CassandraJobService implements JobsService {
                     .value(FIRE_LIMIT_FIELD, literal(description.expirationTime().repeatLimit()))
                     .value(REPEAT_INTERVAL_FIELD, literal(description.expirationTime().repeatInterval()))
                     .value(EXPRESSION_FIELD, literal(description.expirationTime().expression()));
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                    .add("message", "Scheduled repeatable timer job that creates new workflow instances");
+
+            auditor.publish(entry);
         } else {
             insert = insertInto(config.keyspace().orElse("automatiko"), tableName)
                     .value(INSTANCE_ID_FIELD, literal(description.id()))
@@ -203,7 +214,10 @@ public class CassandraJobService implements JobsService {
                                     .toEpochMilli()))
                     .value(FIRE_LIMIT_FIELD, literal(description.expirationTime().repeatLimit()))
                     .value(EXPRESSION_FIELD, literal(description.expirationTime().expression()));
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                    .add("message", "Scheduled one time timer job that creates new workflow instances");
 
+            auditor.publish(entry);
         }
         cqlSession.execute(insert.build());
         if (description.expirationTime().get().toLocalDateTime()
@@ -237,7 +251,10 @@ public class CassandraJobService implements JobsService {
                     .value(FIRE_LIMIT_FIELD, literal(description.expirationTime().repeatLimit()))
                     .value(REPEAT_INTERVAL_FIELD, literal(description.expirationTime().repeatInterval()))
                     .value(EXPRESSION_FIELD, literal(description.expirationTime().expression()));
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                    .add("message", "Scheduled repeatable timer job for existing workflow instance");
 
+            auditor.publish(entry);
         } else {
             insert = insertInto(config.keyspace().orElse("automatiko"), tableName)
                     .value(INSTANCE_ID_FIELD, literal(description.id()))
@@ -251,6 +268,10 @@ public class CassandraJobService implements JobsService {
                                     .toEpochMilli()))
                     .value(FIRE_LIMIT_FIELD, literal(description.expirationTime().repeatLimit()))
                     .value(EXPRESSION_FIELD, literal(description.expirationTime().expression()));
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                    .add("message", "Scheduled one time timer job for existing workflow instance");
+
+            auditor.publish(entry);
         }
 
         cqlSession.execute(insert.build());
@@ -315,6 +336,33 @@ public class CassandraJobService implements JobsService {
     }
 
     protected void removeScheduledJob(String id) {
+        Supplier<AuditEntry> entry = () -> {
+            Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName)
+                    .columns(EXPRESSION_FIELD, REPEAT_INTERVAL_FIELD, FIRE_LIMIT_FIELD, OWNER_DEF_ID_FIELD,
+                            OWNER_INSTANCE_ID_FIELD, TRIGGER_TYPE_FIELD)
+                    .whereColumn(INSTANCE_ID_FIELD).isEqualTo(literal(id));
+
+            ResultSet rs = cqlSession.execute(select.build());
+            Row row = rs.one();
+            if (row != null) {
+                return BaseAuditEntry.timer()
+                        .add("message", "Cancelled job for existing workflow instance")
+                        .add("jobId", id)
+                        .add("timerExpression", row.getString(EXPRESSION_FIELD))
+                        .add("timerInterval", row.getLong(REPEAT_INTERVAL_FIELD))
+                        .add("timerRepeatLimit", row.getInt(FIRE_LIMIT_FIELD))
+                        .add("workflowDefinitionId", row.getString(OWNER_DEF_ID_FIELD))
+                        .add("workflowInstanceId", row.getString(OWNER_INSTANCE_ID_FIELD))
+                        .add("triggerType", row.getString(TRIGGER_TYPE_FIELD));
+
+            } else {
+                return BaseAuditEntry.timer()
+                        .add("message", "Cancelled job for existing workflow instance")
+                        .add("jobId", id);
+            }
+        };
+
+        auditor.publish(entry);
         Delete deleteStatement = deleteFrom(config.keyspace().orElse("automatiko"), tableName).whereColumn(INSTANCE_ID_FIELD)
                 .isEqualTo(literal(id)).ifExists();
 
@@ -459,7 +507,12 @@ public class CassandraJobService implements JobsService {
                     LOGGER.warn("No process found for process id {}", processId);
                     return;
                 }
+
                 IdentityProvider.set(new TrustedIdentityProvider("System<timer>"));
+                Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                        .add("message", "Executing timer job for existing workflow instance");
+
+                auditor.publish(entry);
                 UnitOfWorkExecutor.executeInUnitOfWork(unitOfWorkManager, () -> {
                     Optional<? extends ProcessInstance<?>> processInstanceFound = process.instances()
                             .findById(processInstanceId);
@@ -533,6 +586,10 @@ public class CassandraJobService implements JobsService {
                     return;
                 }
                 IdentityProvider.set(new TrustedIdentityProvider("System<timer>"));
+                Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                        .add("message", "Executing timer job to create new workflow instance");
+
+                auditor.publish(entry);
                 UnitOfWorkExecutor.executeInUnitOfWork(unitOfWorkManager, () -> {
                     ProcessInstance<?> pi = process.createInstance(process.createModel());
                     if (pi != null) {

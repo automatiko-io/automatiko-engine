@@ -13,6 +13,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import org.bson.Document;
 import org.bson.types.Binary;
@@ -29,6 +30,8 @@ import com.mongodb.client.model.Projections;
 import io.automatiko.engine.addons.persistence.common.JacksonObjectMarshallingStrategy;
 import io.automatiko.engine.addons.persistence.common.tlog.TransactionLogImpl;
 import io.automatiko.engine.api.Model;
+import io.automatiko.engine.api.audit.AuditEntry;
+import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.config.MongodbPersistenceConfig;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatiko.engine.api.uow.TransactionLog;
@@ -43,6 +46,7 @@ import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 import io.automatiko.engine.workflow.AbstractProcess;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
+import io.automatiko.engine.workflow.audit.BaseAuditEntry;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.instance.context.variable.VariableScopeInstance;
@@ -76,8 +80,10 @@ public class MongodbProcessInstances implements MutableProcessInstances {
 
     private TransactionLog transactionLog;
 
+    private Auditor auditor;
+
     public MongodbProcessInstances(Process<? extends Model> process, MongoClient mongoClient,
-            MongodbPersistenceConfig config, StoredDataCodec codec, TransactionLogStore store) {
+            MongodbPersistenceConfig config, StoredDataCodec codec, TransactionLogStore store, Auditor auditor) {
         this.process = process;
         this.marshallingStrategy = new JacksonObjectMarshallingStrategy(process);
         this.marshaller = new ProcessInstanceMarshaller(marshallingStrategy);
@@ -85,6 +91,7 @@ public class MongodbProcessInstances implements MutableProcessInstances {
         this.mongoClient = mongoClient;
         this.tableName = process.id();
         this.codec = codec;
+        this.auditor = auditor;
 
         // mark the marshaller that it should not serialize variables
         this.marshaller.addToEnvironment("_ignore_vars_", true);
@@ -119,9 +126,9 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                     versionTracker = found.getLong(VERSION_FIELD);
                 }
                 return Optional
-                        .of(mode == MUTABLE
+                        .of(audit(mode == MUTABLE
                                 ? marshaller.unmarshallProcessInstance(content, process, versionTracker)
-                                : marshaller.unmarshallReadOnlyProcessInstance(content, process));
+                                : marshaller.unmarshallReadOnlyProcessInstance(content, process)));
             }
         }
         Document found = collection().find(and(eq(INSTANCE_ID_FIELD, resolvedId), eq(STATUS_FIELD, status)))
@@ -134,7 +141,7 @@ public class MongodbProcessInstances implements MutableProcessInstances {
             return Optional.empty();
         }
 
-        return Optional.of(unmarshallInstance(mode, found));
+        return Optional.of(audit(unmarshallInstance(mode, found)));
 
     }
 
@@ -146,7 +153,7 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                         .fields(Projections.include(INSTANCE_ID_FIELD, CONTENT_FIELD, VERSION_FIELD, VARIABLES_FIELD)))
                 .skip(calculatePage(page, size))
                 .limit(size)
-                .forEach(item -> found.add(unmarshallInstance(mode, item)));
+                .forEach(item -> found.add(audit(unmarshallInstance(mode, item))));
         return found;
     }
 
@@ -156,7 +163,7 @@ public class MongodbProcessInstances implements MutableProcessInstances {
         collection().find(and(in(TAGS_FIELD, values), eq(STATUS_FIELD, status)))
                 .projection(Projections
                         .fields(Projections.include(INSTANCE_ID_FIELD, CONTENT_FIELD, VERSION_FIELD, VARIABLES_FIELD)))
-                .forEach(item -> found.add(unmarshallInstance(mode, item)));
+                .forEach(item -> found.add(audit(unmarshallInstance(mode, item))));
         return found;
     }
 
@@ -220,6 +227,11 @@ public class MongodbProcessInstances implements MutableProcessInstances {
 
                 try {
                     collection().insertOne(item);
+
+                    Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                            .add("message", "Workflow instance created in the MongoDB based data store");
+
+                    auditor.publish(entry);
                 } finally {
                     cachedInstances.remove(resolvedId);
                     cachedInstances.remove(id);
@@ -284,6 +296,10 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                                     + "' has older version than the stored one");
                         }
                     }
+                    Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                            .add("message", "Workflow instance updated in the MongoDB based data store");
+
+                    auditor.publish(entry);
                 } finally {
                     cachedInstances.remove(resolvedId);
                     cachedInstances.remove(id);
@@ -309,11 +325,16 @@ public class MongodbProcessInstances implements MutableProcessInstances {
         String resolvedId = resolveId(id, instance);
 
         collection().findOneAndDelete(eq(INSTANCE_ID_FIELD, resolvedId));
+
+        Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                .add("message", "Workflow instance removed from the MongoDB based data store");
+
+        auditor.publish(entry);
     }
 
     @Override
     public ExportedProcessInstance exportInstance(ProcessInstance instance, boolean abort) {
-        ExportedProcessInstance exported = marshaller.exportProcessInstance(instance);
+        ExportedProcessInstance exported = marshaller.exportProcessInstance(audit(instance));
 
         if (abort) {
             instance.abort();
@@ -444,5 +465,14 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                 variables.remove(var.getName());
             }
         }
+    }
+
+    public ProcessInstance<?> audit(ProcessInstance<?> instance) {
+        Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                .add("message", "Workflow instance was read from the MongoDB based data store");
+
+        auditor.publish(entry);
+
+        return instance;
     }
 }
