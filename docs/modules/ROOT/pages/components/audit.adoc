@@ -1,0 +1,145 @@
+= Audit
+
+Auditing is a mechanism to capture detailed information about processing. Especially important in highly regulated
+domains. Auditing is usually scoped to a given instance that can be easily identified e.g., claim, order and so on. 
+
+Workflow automation fits very well into this concept as workflow instances are easily identifiable with unique id.
+By that they can produce a complete audit trail for each and every workflow instance executed.
+
+In many cases, audit information can be very specific and can depend on various factors. Though with workflows it 
+can be categorized to the following:
+
+- *workflow life cycle* -  starting, completing, aborting or signaling workflow instances
+- *workflow node life cycle* - triggering workflow nodes (activities and events of the workflow)
+- *workflow variables changes* - data modifications to variables of given workflow instance
+- *timer actions* - time based actions that are scheduled and fired on behalf of the workflow instance
+- *messaging* - messages produced by workflow instances
+- *persistence* - CRUD operation on the backend data store
+
+These categories can be then included or excluded from being collected as part of the audit trail according to
+requirements.
+
+== Capabilities
+
+Audit mechanism comes with several features out of the box and also allow to extend it in case defaults will not be enough.
+
+First of all, audit is configurable when it comes to categories to include or exclude. Here is a list of categories 
+to be used when configuring:
+
+- `workflow`
+- `workflow_node`
+- `workflow_variable`
+- `workflow_persistence_read`
+- `workflow_persistence_write`
+- `timer`
+- `messaging`
+
+These values can be used as comma separated list to either include or exclude given category. Only included and not 
+excluded categories will be stored.
+
+NOTE: By default all categories are included so if you want to have all audit entries to be stored 
+there is no need to explicitly configure them as included.
+
+=== Storage
+
+Audit entries can be stored pretty much in any data store. By default they are simply logged using logger framework.
+This comes as a handy default as it allows to to be consumed by centralized logging solutions and by that indexed for
+further browsing. In addition to that, all features of the logging framework are also available which makes it 
+really flexible.
+
+Though it might not always be enough and to address this potential gap `AuditStore` is pluggable. To provide your own
+implementation it is as simple as implementing `io.automatiko.engine.api.audit.AuditStore` interface in a form of a CDI bean.
+
+NOTE: It's recommended to build on top of default implementation (logger based) and extend its capabilities to 
+have still option to store audit entries locally.  Default implementation class is `io.automatiko.engine.quarkus.audit.LoggerAuditStore` 
+
+=== Format
+
+Audit entries can be stored in two formats
+
+- plain text (default format)
+- JSON
+
+JSON format can be really useful when audit entries are loaded (directly or indirectly) into aggregated logging systems 
+such as `EFK stack' where messages logged as JSON documents can be easily queried by document's fields.
+
+=== Filtering
+
+In some special cases including or excluding categories might not be enough to control what is stored as 
+audit entries. It could be needed to have more control over filtering mechanism.
+
+To make this available, Automatiko Audit comes with an optional filtering mechanism that should be provided by 
+implementors. To build a filter implement `io.automatiko.engine.api.audit.AuditEntryFilter` interface.
+
+It has a single method `accept` where a given `AuditEntry` is given and can be inspected in details. A sample
+filter implementation could look like the following:
+
+[source,java]
+----
+import javax.enterprise.context.ApplicationScoped;
+
+import io.automatiko.engine.api.audit.AuditEntry;
+import io.automatiko.engine.api.audit.AuditEntryFilter;
+
+@ApplicationScoped
+public class OrdersOnlyAuditEntryFilter implements AuditEntryFilter {
+
+    @Override
+    public boolean accept(AuditEntry entry) {
+        if ("orders".equalsIgnoreCase((String) entry.items().get(AuditEntry.WORKFLOW_DEFINITION_ID))) {
+            return true;
+        }
+        return false;
+    }
+
+}
+----
+
+This filter will only take info account audit entries that have `workflowDefinitionId` item set to `orders`
+
+IMPORTANT: All supported audit entry item names are defined as constants on `io.automatiko.engine.api.audit.AuditEntry`
+
+== Configuration
+
+Audit mechanism in Automatiko is available in all services out of the box but it is disabled by default.
+
+IMPORTANT: All categories are included by default, so make sure to configure `included` or `excluded` properties 
+based on your needs to avoid too much data to be collected.
+
+Configuration is done in standard way via `application.properties` file. Following are the configuration properties:
+
+|====
+|Property name|Environment variable|Description|Required|Default value
+
+|quarkus.automatiko.audit.enabled|QUARKUS_AUTOMATIKO_AUDIT_ENABLED|Enables audit logging|No|false
+|quarkus.automatiko.audit.format|QUARKUS_AUTOMATIKO_AUDIT_FORMAT|Configures format of the audit logging (plain or json)|No|plain
+|quarkus.automatiko.audit.included|QUARKUS_AUTOMATIKO_AUDIT_INCLUDED|Types of audit entries that should be logged (`workflow`,`workflow_node`,`workflow_variable`,`workflow_persistence_read`,`workflow_persistence_write`,`timer`,`messaging`)|No|all
+|quarkus.automatiko.audit.excluded|QUARKUS_AUTOMATIKO_AUDIT_EXCLUDED|Types of audit entries that should be excluded from being logged (`workflow`,`workflow_node`,`workflow_variable`,`workflow_persistence_read`,`workflow_persistence_write`,`timer`,`messaging`)|No|none
+|====
+
+=== Configure audit file
+
+Default implementation of the `AuditStore` is based on logger, due to that it allows to use pretty much all the 
+features of the logging system. One of useful things is to store all audit entries into a separate file. To do so
+configure category logger for `AutomatikoAudit` as follows:
+
+[source,plain]
+----
+quarkus.log.handler.file."AUDIT_FILE".enable=true
+quarkus.log.handler.file."AUDIT_FILE".format=%m%n
+quarkus.log.handler.file."AUDIT_FILE".category."AutomatikoAudit".level=INFO
+quarkus.log.handler.file."AUDIT_FILE".path=target/audit.log
+quarkus.log.category."AutomatikoAudit".handlers=AUDIT_FILE
+quarkus.log.category."AutomatikoAudit".use-parent-handlers=false
+----
+
+What this does is:
+
+- created named (`AUDIT_FILE`) file logger handler
+- sets a logging format to only store message (and new line after the message)
+- configure `INFO` level for `AutomatikoAudit` category
+- configures file location - `target/audit.log`
+- enables this logger handler for `AutomatikoAudit` category
+- disables parent handler to avoid duplicated writes (to file and into console) of audit events
+
+There could be more properties to define rotation of the file.

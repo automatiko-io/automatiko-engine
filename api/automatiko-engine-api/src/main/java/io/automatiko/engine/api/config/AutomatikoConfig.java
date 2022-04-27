@@ -39,4 +39,8 @@ public class AutomatikoConfig {
     public FilesConfig files() {
         return new FilesConfig();
     }
+
+    public AuditConfig audit() {
+        return new AuditConfig();
+    }
 }

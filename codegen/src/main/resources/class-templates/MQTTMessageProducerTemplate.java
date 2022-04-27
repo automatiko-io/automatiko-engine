@@ -4,9 +4,12 @@ package com.myspace.demo;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.TimeZone;
+import java.util.function.Supplier;
 
 import io.automatiko.engine.api.runtime.process.ProcessInstance;
+import io.automatiko.engine.workflow.audit.BaseAuditEntry;
 import io.automatiko.engine.workflow.process.instance.WorkflowProcessInstance;
+import io.automatiko.engine.api.audit.AuditEntry;
 import io.automatiko.engine.api.event.DataEvent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,6 +34,9 @@ public class MessageProducer {
     
     @javax.inject.Inject
     io.automatiko.engine.service.metrics.ProcessMessagingMetrics metrics;
+    
+    @javax.inject.Inject
+    io.automatiko.engine.api.audit.Auditor auditor;
 
     public void configure() {
 		
@@ -40,6 +46,10 @@ public class MessageProducer {
 	    metrics.messageProduced(CONNECTOR, MESSAGE, pi.getProcess());
 	    
 	    emitter.send(io.smallrye.reactive.messaging.mqtt.MqttMessage.of(topic(pi), log(marshall(pi, eventData)), io.netty.handler.codec.mqtt.MqttQoS.AT_LEAST_ONCE, true));
+	    
+	    Supplier<AuditEntry> entry = () -> BaseAuditEntry.messaging(pi, CONNECTOR, MESSAGE, eventData)
+                .add("message", "Workflow instance sent message");
+        auditor.publish(entry);
     }
 	    
 	private byte[] marshall(ProcessInstance pi, $Type$ eventData) {

@@ -15,7 +15,7 @@ import io.automatiko.engine.api.workflow.ProcessInstancesFactory;
 public abstract class AbstractProcessInstancesFactory implements ProcessInstancesFactory {
 
     public FileSystemProcessInstances createProcessInstances(Process<?> process) {
-        return new FileSystemProcessInstances(process, Paths.get(path()), codec(), transactionLogStore());
+        return new FileSystemProcessInstances(process, Paths.get(path()), codec(), transactionLogStore(), auditor());
     }
 
     public abstract String path();

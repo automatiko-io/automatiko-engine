@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.persistence.OptimisticLockException;
@@ -17,6 +18,8 @@ import org.slf4j.LoggerFactory;
 import io.automatiko.engine.addons.persistence.common.JacksonObjectMarshallingStrategy;
 import io.automatiko.engine.addons.persistence.common.tlog.TransactionLogImpl;
 import io.automatiko.engine.addons.persistence.db.model.ProcessInstanceEntity;
+import io.automatiko.engine.api.audit.AuditEntry;
+import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.auth.AccessDeniedException;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatiko.engine.api.uow.TransactionLog;
@@ -31,6 +34,7 @@ import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 import io.automatiko.engine.workflow.AbstractProcess;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
+import io.automatiko.engine.workflow.audit.BaseAuditEntry;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.instance.context.variable.VariableScopeInstance;
 import io.automatiko.engine.workflow.base.instance.impl.ProcessInstanceImpl;
@@ -49,11 +53,14 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
 
     private TransactionLog transactionLog;
 
+    private Auditor auditor;
+
     public DatabaseProcessInstances(Process<? extends ProcessInstanceEntity> process, StoredDataCodec codec,
-            TransactionLogStore store) {
+            TransactionLogStore store, Auditor auditor) {
         this.process = process;
         this.marshaller = new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process));
         this.codec = codec;
+        this.auditor = auditor;
 
         this.type = process.createModel().getClass();
         // mark the marshaller that it should not serialize variables
@@ -104,7 +111,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
                     pi = ((AbstractProcess<ProcessInstanceEntity>) process).createReadOnlyInstance(wpi, entity);
                 }
 
-                return Optional.of(pi);
+                return Optional.of(audit(pi));
             }
         }
 
@@ -113,7 +120,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
         }
         ProcessInstanceEntity entity = found.get();
         if (entity.state == status) {
-            return Optional.of(unmarshallInstance(mode, entity));
+            return Optional.of(audit(unmarshallInstance(mode, entity)));
         } else {
             return Optional.empty();
         }
@@ -126,7 +133,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
                 .stream(type, "state = ?1 and (id in (?2) or (?2) in elements(tags)) ", status, Arrays.asList(values))
                 .map(e -> {
                     try {
-                        return unmarshallInstance(mode, ((ProcessInstanceEntity) e));
+                        return audit(unmarshallInstance(mode, ((ProcessInstanceEntity) e)));
                     } catch (AccessDeniedException ex) {
                         return null;
                     }
@@ -153,7 +160,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
                 .stream()
                 .map(e -> {
                     try {
-                        return unmarshallInstance(mode, ((ProcessInstanceEntity) e));
+                        return audit(unmarshallInstance(mode, ((ProcessInstanceEntity) e)));
                     } catch (AccessDeniedException ex) {
                         return null;
                     }
@@ -179,11 +186,19 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
     @Override
     public void create(String id, ProcessInstance<ProcessInstanceEntity> instance) {
         store(id, instance);
+        Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                .add("message", "Workflow instance created in the rdbms based data store");
+
+        auditor.publish(entry);
     }
 
     @Override
     public void update(String id, ProcessInstance<ProcessInstanceEntity> instance) {
         store(id, instance);
+        Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                .add("message", "Workflow instance updated in the rdbms based data store");
+
+        auditor.publish(entry);
     }
 
     @Override
@@ -193,6 +208,10 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
         JpaOperations.INSTANCE.persist(entity);
         // then delete the root one
         JpaOperations.INSTANCE.deleteById(type, resolveId(id, instance));
+        Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                .add("message", "Workflow instance removed from the rdbms based data store");
+
+        auditor.publish(entry);
     }
 
     protected void store(String id, ProcessInstance<ProcessInstanceEntity> instance) {
@@ -285,10 +304,12 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
         return pi;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public ExportedProcessInstance exportInstance(ProcessInstance<?> instance, boolean abort) {
 
-        ExportedProcessInstance exported = marshaller.exportProcessInstance(instance);
+        ExportedProcessInstance exported = marshaller
+                .exportProcessInstance(audit((ProcessInstance<ProcessInstanceEntity>) instance));
 
         if (abort) {
             instance.abort();
@@ -298,6 +319,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
 
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public ProcessInstance importInstance(ExportedProcessInstance instance, Process process) {
         ProcessInstance imported = marshaller.importProcessInstance(instance, process);
@@ -310,4 +332,12 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
         return imported;
     }
 
+    public ProcessInstance<ProcessInstanceEntity> audit(ProcessInstance<ProcessInstanceEntity> instance) {
+        Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
+                .add("message", "Workflow instance was read from the rdbms based data store");
+
+        auditor.publish(entry);
+
+        return instance;
+    }
 }

@@ -3,6 +3,7 @@ package io.automatiko.engine.quarkus;
 import java.util.Optional;
 
 import io.automatiko.engine.api.config.AsyncConfig;
+import io.automatiko.engine.api.config.AuditConfig;
 import io.automatiko.engine.api.config.AutomatikoConfig;
 import io.automatiko.engine.api.config.FilesConfig;
 import io.automatiko.engine.api.config.JobsConfig;
@@ -71,6 +72,12 @@ public class AutomatikoRuntimeConfig extends AutomatikoConfig {
     @ConfigItem
     public FilesRuntimeConfig files;
 
+    /**
+     * Configures auditing support
+     */
+    @ConfigItem
+    public AuditRuntimeConfig audit;
+
     @Override
     public Optional<String> serviceUrl() {
         return serviceUrl;
@@ -116,4 +123,8 @@ public class AutomatikoRuntimeConfig extends AutomatikoConfig {
         return files;
     }
 
+    @Override
+    public AuditConfig audit() {
+        return audit;
+    }
 }

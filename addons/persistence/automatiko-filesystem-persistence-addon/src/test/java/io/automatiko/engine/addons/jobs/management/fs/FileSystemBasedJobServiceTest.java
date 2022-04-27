@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import io.automatiko.engine.addons.persistence.filesystem.job.FileSystemBasedJobService;
 import io.automatiko.engine.api.Application;
+import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.jobs.DurationExpirationTime;
 import io.automatiko.engine.api.jobs.ProcessInstanceJobDescription;
 import io.automatiko.engine.api.workflow.Process;
@@ -42,6 +43,9 @@ public class FileSystemBasedJobServiceTest {
     @Mock
     Process process;
 
+    @Mock
+    Auditor auditor;
+
     @Test
     public void testScheduleJobsForProcessInstance() throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
@@ -58,7 +62,7 @@ public class FileSystemBasedJobServiceTest {
             return Mockito.mock(ProcessInstances.class);
         });
 
-        FileSystemBasedJobService jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application);
+        FileSystemBasedJobService jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application, auditor);
 
         ProcessInstanceJobDescription processInstanceJobDescription = ProcessInstanceJobDescription.of(123,
                 DurationExpirationTime.after(500), "processInstanceId", "processId", "1");
@@ -86,7 +90,7 @@ public class FileSystemBasedJobServiceTest {
             return Mockito.mock(ProcessInstances.class);
         });
 
-        FileSystemBasedJobService jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application);
+        FileSystemBasedJobService jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application, auditor);
 
         ProcessInstanceJobDescription processInstanceJobDescription = ProcessInstanceJobDescription.of(123,
                 DurationExpirationTime.after(100), "processInstanceId", "processId", "1");
@@ -95,7 +99,7 @@ public class FileSystemBasedJobServiceTest {
 
         jobs.shutown(null);
 
-        jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application);
+        jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application, auditor);
         jobs.scheduleOnLoad(null);
 
         boolean achieved = latch.await(2, TimeUnit.SECONDS);
@@ -118,7 +122,7 @@ public class FileSystemBasedJobServiceTest {
             return Mockito.mock(ProcessInstances.class);
         });
 
-        FileSystemBasedJobService jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application);
+        FileSystemBasedJobService jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application, auditor);
 
         ProcessInstanceJobDescription processInstanceJobDescription = ProcessInstanceJobDescription.of(123,
                 DurationExpirationTime.after(500), "processInstanceId", "processId", "1");

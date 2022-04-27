@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
@@ -27,6 +28,8 @@ import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.Model;
+import io.automatiko.engine.api.audit.AuditEntry;
+import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.TrustedIdentityProvider;
 import io.automatiko.engine.api.config.DynamoDBJobsConfig;
@@ -41,6 +44,7 @@ import io.automatiko.engine.api.workflow.Processes;
 import io.automatiko.engine.services.time.TimerInstance;
 import io.automatiko.engine.services.uow.UnitOfWorkExecutor;
 import io.automatiko.engine.workflow.Sig;
+import io.automatiko.engine.workflow.audit.BaseAuditEntry;
 import io.automatiko.engine.workflow.base.core.timer.CronExpirationTime;
 import io.automatiko.engine.workflow.base.core.timer.NoOpExpirationTime;
 import io.quarkus.runtime.ShutdownEvent;
@@ -94,6 +98,8 @@ public class DynamoDBJobService implements JobsService {
 
     protected final UnitOfWorkManager unitOfWorkManager;
 
+    protected final Auditor auditor;
+
     protected final ScheduledThreadPoolExecutor scheduler;
 
     protected final ScheduledThreadPoolExecutor loadScheduler;
@@ -108,7 +114,7 @@ public class DynamoDBJobService implements JobsService {
     @Inject
     public DynamoDBJobService(DynamoDbClient dynamodb,
             DynamoDBJobsConfig config,
-            Processes processes, Application application) {
+            Processes processes, Application application, Auditor auditor) {
         this.dynamodb = dynamodb;
         this.config = config;
         processes.processIds().forEach(id -> mappedProcesses.put(id, processes.processById(id)));
@@ -118,6 +124,8 @@ public class DynamoDBJobService implements JobsService {
         }
 
         this.unitOfWorkManager = application.unitOfWorkManager();
+
+        this.auditor = auditor;
 
         this.scheduler = new ScheduledThreadPoolExecutor(config.threads().orElse(1),
                 r -> new Thread(r, "automatiko-jobs-executor"));
@@ -211,6 +219,11 @@ public class DynamoDBJobService implements JobsService {
                     AttributeValue.builder().n(Long.toString(description.expirationTime().repeatInterval())).build());
             itemValues.put(EXPRESSION_FIELD,
                     AttributeValue.builder().s(nonNull(description.expirationTime().expression())).build());
+
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                    .add("message", "Scheduled repeatable timer job that creates new workflow instances");
+
+            auditor.publish(entry);
         } else {
             itemValues.put(INSTANCE_ID_FIELD, AttributeValue.builder().s(description.id()).build());
             itemValues.put(OWNER_DEF_ID_FIELD,
@@ -227,7 +240,10 @@ public class DynamoDBJobService implements JobsService {
                             : description.expirationTime().repeatLimit())).build());
             itemValues.put(EXPRESSION_FIELD,
                     AttributeValue.builder().s(nonNull(description.expirationTime().expression())).build());
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                    .add("message", "Scheduled one time timer job that creates new workflow instances");
 
+            auditor.publish(entry);
         }
         PutItemRequest request = PutItemRequest.builder()
                 .tableName(tableName)
@@ -271,6 +287,11 @@ public class DynamoDBJobService implements JobsService {
             itemValues.put(EXPRESSION_FIELD,
                     AttributeValue.builder().s(nonNull(description.expirationTime().expression())).build());
 
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                    .add("message", "Scheduled repeatable timer job for existing workflow instance");
+
+            auditor.publish(entry);
+
         } else {
             itemValues.put(INSTANCE_ID_FIELD, AttributeValue.builder().s(description.id()).build());
             itemValues.put(TRIGGER_TYPE_FIELD, AttributeValue.builder().s(description.triggerType()).build());
@@ -289,6 +310,11 @@ public class DynamoDBJobService implements JobsService {
                             : description.expirationTime().repeatLimit())).build());
             itemValues.put(EXPRESSION_FIELD,
                     AttributeValue.builder().s(nonNull(description.expirationTime().expression())).build());
+
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                    .add("message", "Scheduled one time timer job for existing workflow instance");
+
+            auditor.publish(entry);
         }
 
         PutItemRequest request = PutItemRequest.builder()
@@ -316,7 +342,43 @@ public class DynamoDBJobService implements JobsService {
 
     @Override
     public boolean cancelJob(String id) {
+        Supplier<AuditEntry> entry = () -> {
+            Map<String, AttributeValue> keyToGet = new HashMap<String, AttributeValue>();
 
+            keyToGet.put(INSTANCE_ID_FIELD, AttributeValue.builder().s(id).build());
+
+            GetItemRequest request = GetItemRequest.builder()
+                    .key(keyToGet)
+                    .tableName(tableName)
+                    .projectionExpression(INSTANCE_ID_FIELD + "," + EXPRESSION_FIELD + "," + OWNER_INSTANCE_ID_FIELD + ","
+                            + OWNER_DEF_ID_FIELD + "," +
+                            TRIGGER_TYPE_FIELD + "," + FIRE_LIMIT_FIELD + "," + REPEAT_INTERVAL_FIELD)
+                    .build();
+
+            Map<String, AttributeValue> returnedItem = dynamodb.getItem(request).item();
+
+            if (returnedItem != null) {
+                return BaseAuditEntry.timer()
+                        .add("message", "Cancelled job for existing workflow instance")
+                        .add("jobId", id)
+                        .add("timerExpression",
+                                returnedItem.get(EXPRESSION_FIELD) != null ? returnedItem.get(EXPRESSION_FIELD).n() : null)
+                        .add("timerInterval",
+                                returnedItem.get(REPEAT_INTERVAL_FIELD) != null ? returnedItem.get(REPEAT_INTERVAL_FIELD).n()
+                                        : null)
+                        .add("timerRepeatLimit",
+                                returnedItem.get(FIRE_LIMIT_FIELD) != null ? returnedItem.get(FIRE_LIMIT_FIELD).n() : null)
+                        .add("workflowDefinitionId", returnedItem.get(OWNER_DEF_ID_FIELD).n())
+                        .add("workflowInstanceId", returnedItem.get(OWNER_INSTANCE_ID_FIELD).n())
+                        .add("triggerType", TRIGGER_TYPE_FIELD);
+            } else {
+                return BaseAuditEntry.timer()
+                        .add("message", "Cancelled job for existing workflow instance")
+                        .add("jobId", id);
+            }
+        };
+
+        auditor.publish(entry);
         removeScheduledJob(id);
 
         return true;
@@ -571,6 +633,10 @@ public class DynamoDBJobService implements JobsService {
                     return;
                 }
                 IdentityProvider.set(new TrustedIdentityProvider("System<timer>"));
+                Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                        .add("message", "Executing timer job for existing workflow instance");
+
+                auditor.publish(entry);
                 UnitOfWorkExecutor.executeInUnitOfWork(unitOfWorkManager, () -> {
                     Optional<? extends ProcessInstance<?>> processInstanceFound = process.instances()
                             .findById(processInstanceId);
@@ -661,6 +727,10 @@ public class DynamoDBJobService implements JobsService {
                     return;
                 }
                 IdentityProvider.set(new TrustedIdentityProvider("System<timer>"));
+                Supplier<AuditEntry> entry = () -> BaseAuditEntry.timer(description)
+                        .add("message", "Executing timer job to create new workflow instance");
+
+                auditor.publish(entry);
                 UnitOfWorkExecutor.executeInUnitOfWork(unitOfWorkManager, () -> {
                     ProcessInstance<?> pi = process.createInstance(process.createModel());
                     if (pi != null) {
