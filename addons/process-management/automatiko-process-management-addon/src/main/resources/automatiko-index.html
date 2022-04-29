@@ -35,6 +35,12 @@
     padding:5px 10px;
     font-size:20px;
 }
+.hidden {
+  display: none;
+}
+.shown {
+  display: block;
+}
 </style>
 
 <script>
@@ -44,6 +50,7 @@
 	var currentProcess;
 	var currentPIDiv;
 	var status = 'active';
+	var selectedProcessId;
 	
 	
 	function prettifyJson(json, prettify) {
@@ -252,6 +259,47 @@
 			},
 		});
 
+	}
+	
+	function importInstance() {		  
+       var file = document.querySelector('input[type=file]').files[0];
+	   var reader = new FileReader();
+
+	   reader.addEventListener("load", function () {
+	   // convert image file to base64 string
+	   var data = atob(reader.result.toString().replace(/^data:(.*,)?/, ''));
+	   $.ajax({
+			url : '/management/processes/' + selectedProcessId + '/instances',
+			data: data,
+			type : 'POST',
+			dataType : 'json',
+			contentType: 'application/json',
+			crossDomain : true,
+			success : function(data) {
+				$('#successImport').removeClass('hidden');
+				resetUploadFile();
+				$('#uploadModal').modal('hide');
+			},
+			error : function(data) {
+				$('#failureImport').removeClass('hidden');
+				resetUploadFile();
+				$('#uploadModal').modal('hide');
+			}
+		 });
+
+	   }, false);
+
+	  if (file) {
+	      reader.readAsDataURL(file);
+	  }
+	}
+	
+	let resetUploadFile = function() {
+		selectedProcessId = null;
+	}
+	
+	let selectProcessForImport = function(id) {
+		selectedProcessId = id;
 	}
 
 	let showDetails = function(instanceData) {
@@ -542,6 +590,7 @@
 									+ '</a>'
 									
 									+ '  </div>'
+									+ '<button type="button" class="btn btn-dark btn-sm float-right" title="Import workflow instance" data-toggle="modal" data-target="#uploadModal" onclick="selectProcessForImport(\'' + item.id +'\')"><i class="fa fa-upload"></i></button>'
 									+ '</div>'									
 									+ '<div id="expanded_' + item.id +'"></div>'
 									+ '</div>');
@@ -601,7 +650,22 @@
 <body>
 
 	<div class="jumbotron jumbotron-fluid">
-		<div class="container">
+	<div class="container">
+		<div class="m-4">
+		<div id="successImport" class="hidden alert alert-success alert-dismissible fade show">
+		    Instance has been imported successfully.
+		    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+		    	<span aria-hidden="true">&times;</span>
+		  </button>
+		</div>
+		<div id="failureImport" class="hidden alert alert-danger alert-dismissible fade show">
+		    Instance failed to import.
+		    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+		    	<span aria-hidden="true">&times;</span>
+		  </button>
+		</div>
+		</div>
+		
 			<h1 class="display-4">Available processes in the service</h1>
 			<p class="lead">Following section provides information about
 				currently available processes of this service.</p>
@@ -720,6 +784,27 @@
 				</div>
 			</div>
 		</div>
+	</div>
+	
+		<!-- Upload Modal -->
+	<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="uploadModalLabel">Import workflow instance</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	       	<input type="file" id="uploadedFile" name="uploadedFile"/>
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-outline-dark btn-sm" data-dismiss="modal" onclick="resetUploadFile()">Close</button>
+	        <button type="button" class="btn btn-dark btn-sm" onclick="importInstance()">Import</button>
+	      </div>
+	    </div>
+	  </div>
 	</div>
 </body>
 </html>
