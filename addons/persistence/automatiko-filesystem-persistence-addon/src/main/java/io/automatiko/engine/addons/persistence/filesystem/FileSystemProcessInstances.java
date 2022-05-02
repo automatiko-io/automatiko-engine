@@ -75,6 +75,8 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 
     private Auditor auditor;
 
+    private Indexer indexer;
+
     public FileSystemProcessInstances(Process<?> process, Path storage, StoredDataCodec codec, TransactionLogStore store,
             Auditor auditor) {
         this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process)), codec, store,
@@ -109,6 +111,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         LOGGER.debug("Location of the file system process storage is {}", storage);
 
         this.transactionLog = new TransactionLogImpl(store, new JacksonObjectMarshallingStrategy(process));
+        this.indexer = new Indexer(this.storage);
     }
 
     @Override
@@ -175,69 +178,44 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     @Override
     public Collection findByIdOrTag(ProcessInstanceReadMode mode, int status, String... values) {
         Set collected = new LinkedHashSet<>();
-        for (String idOrTag : values) {
 
-            findById(idOrTag, mode).ifPresent(pi -> collected.add(pi));
+        Set<String> found = indexer.instances(status, 0, Integer.MAX_VALUE).stream()
+                .filter(instance -> instance.match(values)).map(instance -> instance.id()).collect(Collectors.toSet());
 
-            try (Stream<Path> stream = Files.walk(storage)) {
-                stream.filter(file -> isValidProcessFile(file, status))
-                        .filter(file -> matchTag(getMetadata(file, PI_TAGS), idOrTag))
-                        .map(file -> {
-                            try {
-                                byte[] b = readBytesFromFile(file);
-                                return mode == MUTABLE
-                                        ? marshaller.unmarshallProcessInstance(b, process, getVersionTracker(file))
-                                        : marshaller.unmarshallReadOnlyProcessInstance(b, process);
-                            } catch (AccessDeniedException e) {
-                                return null;
-                            }
-                        })
-                        .filter(pi -> pi != null)
-                        .forEach(pi -> collected.add(audit(pi)));
-            } catch (IOException e) {
-                throw new RuntimeException("Unable to read process instances ", e);
+        for (String id : found) {
+            try {
+                findById(id, status, mode).ifPresent(pi -> collected.add(pi));
+            } catch (AccessDeniedException e) {
+
             }
+
         }
         return collected;
     }
 
     @Override
     public Collection locateByIdOrTag(int status, String... values) {
-        Set<String> collected = new LinkedHashSet<>();
-        for (String idOrTag : values) {
-
-            try (Stream<Path> stream = Files.walk(storage)) {
-                stream.filter(file -> isValidProcessFile(file, status))
-                        .filter(file -> matchTag(getMetadata(file, PI_TAGS), idOrTag))
-                        .forEach(file -> collected.add(file.getName(file.getNameCount() - 1).toString()));
-            } catch (IOException e) {
-                throw new RuntimeException("Unable to read process instances ", e);
-            }
-        }
+        Set<String> collected = indexer.instances(status, 0, Integer.MAX_VALUE).stream()
+                .filter(instance -> instance.match(values)).map(instance -> instance.id()).collect(Collectors.toSet());
         return collected;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Collection values(ProcessInstanceReadMode mode, int status, int page, int size) {
-        try (Stream<Path> stream = Files.walk(storage)) {
-            return stream.filter(file -> isValidProcessFile(file, status))
-                    .map(file -> {
-                        try {
-                            byte[] b = readBytesFromFile(file);
-                            return audit(
-                                    mode == MUTABLE ? marshaller.unmarshallProcessInstance(b, process, getVersionTracker(file))
-                                            : marshaller.unmarshallReadOnlyProcessInstance(b, process));
-                        } catch (AccessDeniedException e) {
-                            return null;
-                        }
-                    })
-                    .filter(pi -> pi != null)
-                    .skip(calculatePage(page, size))
-                    .limit(size)
-                    .collect(Collectors.toList());
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to read process instances ", e);
+        Set collected = new LinkedHashSet<>();
+
+        Set<String> found = indexer.instances(status, 0, Integer.MAX_VALUE).stream()
+                .map(instance -> instance.id()).collect(Collectors.toSet());
+
+        for (String id : found) {
+            try {
+                findById(id, status, mode).ifPresent(pi -> collected.add(pi));
+            } catch (AccessDeniedException e) {
+
+            }
         }
+        return collected;
     }
 
     @Override
@@ -260,7 +238,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             cachedInstances.remove(resolvedId);
             cachedInstances.remove(id);
 
-            storeProcessInstance(processInstanceStorage, instance);
+            storeProcessInstance(resolvedId, processInstanceStorage, instance);
 
             Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
                     .add("message", "Workflow instance created in the file system based data store");
@@ -288,7 +266,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 
             if (Files.exists(processInstanceStorage) || transactionLog.contains(process.id(), resolvedId)) {
 
-                storeProcessInstance(processInstanceStorage, instance);
+                storeProcessInstance(resolvedId, processInstanceStorage, instance);
                 Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
                         .add("message", "Workflow instance updated in the file system based data store");
 
@@ -309,6 +287,8 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             Files.deleteIfExists(processInstanceStorage);
 
             Files.deleteIfExists(processInstanceMetadataStorage);
+
+            indexer.remove(resolvedId, instance);
             Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
                     .add("message", "Workflow instance deleted from the file system based data store");
 
@@ -325,7 +305,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         return useCompositeIdForSubprocess;
     }
 
-    protected void storeProcessInstance(Path processInstanceStorage, ProcessInstance<?> instance) {
+    protected void storeProcessInstance(String resolvedId, Path processInstanceStorage, ProcessInstance<?> instance) {
         try {
             byte[] data = codec.encode(marshaller.marhsallProcessInstance(instance));
             if (data == null) {
@@ -352,6 +332,8 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             }
             setMetadata(processInstanceStorage, PI_SUB_INSTANCE_COUNT, String.valueOf(instance.subprocesses().size()));
             setMetadata(processInstanceStorage, PI_TAGS, instance.tags().values().stream().collect(Collectors.joining(",")));
+
+            indexer.index(resolvedId, instance.status(), instance.tags().values());
 
             disconnect(processInstanceStorage, instance);
         } catch (IOException e) {
@@ -388,7 +370,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     protected boolean isValidProcessFile(Path file) {
 
         try {
-            return !Files.isDirectory(file) && !Files.isHidden(file);
+            return !Files.isDirectory(file) && !Files.isHidden(file) && !file.toString().contains(".index");
 
         } catch (IOException e) {
             throw new UncheckedIOException(e);
