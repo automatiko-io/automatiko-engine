@@ -15,9 +15,12 @@ import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -144,6 +147,7 @@ public class FileSystemProcessInstancesTest {
         assertThat(instances.size()).isZero();
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     void testBasicFlow() {
         BpmnProcess process = createProcess(null, "BPMN2-UserTask.bpmn2");
@@ -353,6 +357,7 @@ public class FileSystemProcessInstancesTest {
         assertThat(fileSystemBasedStorage.size()).isZero();
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void testBasicFlowWithTransientVariable() {
         BpmnProcess process = createProcess(null, "BPMN2-UserTask.bpmn2");
@@ -383,6 +388,52 @@ public class FileSystemProcessInstancesTest {
         verify(fileSystemBasedStorage, times(2)).remove(any(), any());
 
         assertThat(fileSystemBasedStorage.size()).isZero();
+    }
+
+    @Test
+    void testReindexAtStart() throws IOException {
+        Path instancePath = Paths.get("target", "persistence-test", "UserTask", "74c6ef11-63e9-4c49-9539-8eafe6496436");
+        Files.createDirectories(instancePath.getParent());
+        Files.write(instancePath, Files.readAllBytes(Paths.get("src", "test", "resources", "test-data", "test-instance")));
+
+        if (supportsUserDefinedAttributes(instancePath)) {
+            UserDefinedFileAttributeView view = Files.getFileAttributeView(instancePath, UserDefinedFileAttributeView.class);
+            try {
+                view.write("ProcessInstanceStatus", Charset.defaultCharset().encode("1"));
+                view.write("ProcessInstanceVersion", Charset.defaultCharset().encode("2"));
+                view.write("RootProcessInstance", Charset.defaultCharset().encode("true"));
+                view.write("SubProcessInstanceCount", Charset.defaultCharset().encode("User Task"));
+                view.write("ProcessInstanceDescription", Charset.defaultCharset().encode("1"));
+                view.write("ProcessInstanceTags", Charset.defaultCharset().encode("important"));
+            } catch (IOException e) {
+
+            }
+        } else {
+
+            String data = "ProcessInstanceStatus=1\n"
+                    + "ProcessInstanceVersion=2\n"
+                    + "RootProcessInstance=true\n"
+                    + "SubProcessInstanceCount=0\n"
+                    + "ProcessInstanceDescription=User Task\n"
+                    + "ProcessInstanceTags=important";
+            Path instanceMetadataPath = Paths.get("target", "persistence-test", "UserTask",
+                    "._metadata_74c6ef11-63e9-4c49-9539-8eafe6496436");
+            byte[] metadata = data.getBytes(StandardCharsets.UTF_8);
+            Files.write(instanceMetadataPath, metadata);
+        }
+        BpmnProcess process = createProcess(null, "BPMN2-UserTask.bpmn2");
+
+        assertThat(process.instances().size()).isEqualTo(1);
+        assertThat(process.instances().values(0, 10)).hasSize(1);
+        assertThat(process.instances().locateByIdOrTag("important")).hasSize(1);
+    }
+
+    protected boolean supportsUserDefinedAttributes(Path file) {
+        try {
+            return Files.getFileStore(file).supportsFileAttributeView(UserDefinedFileAttributeView.class);
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     private class FileSystemProcessInstancesFactory extends AbstractProcessInstancesFactory {
