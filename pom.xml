@@ -35,6 +35,7 @@
 
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
+    <maven.compiler.release>11</maven.compiler.release>
 
     <project.root.dir>${maven.multiModuleProjectDirectory}</project.root.dir>
     <tests.surefire.include>**/*Test.java</tests.surefire.include>
