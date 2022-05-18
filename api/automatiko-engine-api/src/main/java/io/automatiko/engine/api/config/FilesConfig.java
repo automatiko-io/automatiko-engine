@@ -13,4 +13,8 @@ public class FilesConfig {
     public GoogleStorageFilesConfig googleStorage() {
         return new GoogleStorageFilesConfig();
     }
+
+    public MongodbFilesConfig mongodb() {
+        return new MongodbFilesConfig();
+    }
 }

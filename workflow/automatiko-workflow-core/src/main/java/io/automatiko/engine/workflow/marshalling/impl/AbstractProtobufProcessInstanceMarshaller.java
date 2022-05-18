@@ -183,7 +183,8 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
             }
         }
 
-        if (!(boolean) context.env.getOrDefault("_ignore_vars_", false)) {
+        if (!(boolean) context.env.getOrDefault("_ignore_vars_", false)
+                || (boolean) context.env.getOrDefault("_export_", false)) {
             writeVariableScope(context, workFlow, _instance);
         }
 

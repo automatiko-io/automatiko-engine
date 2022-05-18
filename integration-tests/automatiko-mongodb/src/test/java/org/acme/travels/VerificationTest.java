@@ -17,12 +17,10 @@ import javax.inject.Named;
 import org.junit.jupiter.api.Test;
 
 import io.automatiko.engine.api.workflow.Process;
-import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 
 @QuarkusTest
-@QuarkusTestResource(MongoDbResource.class)
 public class VerificationTest {
  // @formatter:off
     

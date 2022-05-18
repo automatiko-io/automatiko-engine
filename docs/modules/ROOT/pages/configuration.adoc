@@ -142,6 +142,21 @@ Following are set of configuration parameters that can be used to configure Auto
 |quarkus.automatiko.audit.excluded|QUARKUS_AUTOMATIKO_AUDIT_EXCLUDED|Types of audit entries that should be excluded from being logged (`workflow`,`workflow_node`,`workflow_variable`,`workflow_persistence_read`,`workflow_persistence_write`,`timer`,`messaging`)|No|none|No
 |====
 
+.Files (storing files externally) configuration parameters
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.automatiko.files.fs.location|QUARKUS_AUTOMATIKO_FILES_FS_LOCATION|File system folder absolute path where files should be stored|Yes|false|No
+
+|quarkus.automatiko.files.s3.bucket|QUARKUS_AUTOMATIKO_FILES_S3_BUCKET|AWS S3 bucket name to be used to store files|Yes|false|No
+
+|quarkus.automatiko.files.google-storage.bucket|QUARKUS_AUTOMATIKO_FILES_GOOGLE_STORAGE_BUCKET|Google storage bucket name to be used to store files|yes|false|No
+
+|quarkus.automatiko.files.mongodb.database|QUARKUS_AUTOMATIKO_FILES_MONGODB_DATABASE|Name of the database to be used to store files|No|automatiko|No
+|quarkus.automatiko.files.mongodb.chunk-size|QUARKUS_AUTOMATIKO_FILES_MONGODB_CHUNK_SIZE|Size of the chunks in GridFS when storing files (in bytes)|No|1048576 (1MB)|No
+
+|====
+
 == Instructions during build
 
 NOTE: Automatiko also predefines several configuration to simplify use. These configuration options are logged as part of the build process
