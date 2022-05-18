@@ -3,6 +3,7 @@ package io.automatiko.engine.quarkus;
 import io.automatiko.engine.api.config.FileSystemFilesConfig;
 import io.automatiko.engine.api.config.FilesConfig;
 import io.automatiko.engine.api.config.GoogleStorageFilesConfig;
+import io.automatiko.engine.api.config.MongodbFilesConfig;
 import io.automatiko.engine.api.config.S3FilesConfig;
 import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
@@ -28,6 +29,12 @@ public class FilesRuntimeConfig extends FilesConfig {
     @ConfigItem
     public GoogleStorageFilesRuntimeConfig googleStorage;
 
+    /**
+     * Provides configuration of MongoDB (GridFS) based files
+     */
+    @ConfigItem
+    public MongodbFilesRuntimeConfig mongodb;
+
     @Override
     public FileSystemFilesConfig fs() {
         return fs;
@@ -41,6 +48,11 @@ public class FilesRuntimeConfig extends FilesConfig {
     @Override
     public GoogleStorageFilesConfig googleStorage() {
         return googleStorage;
+    }
+
+    @Override
+    public MongodbFilesConfig mongodb() {
+        return mongodb;
     }
 
 }

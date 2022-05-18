@@ -41,6 +41,11 @@
       <groupId>io.automatiko.addons</groupId>
       <artifactId>automatiko-mongodb-persistence-addon</artifactId>
     </dependency>
+    
+    <dependency>
+      <groupId>io.automatiko.addons</groupId>
+      <artifactId>automatiko-files-mongodb-addon</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>io.automatiko.addons</groupId>

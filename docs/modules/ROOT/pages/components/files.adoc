@@ -32,6 +32,7 @@ Currently there are following addons
 - File System
 - link:https://aws.amazon.com/s3/[Amazon S3]
 - link:https://cloud.google.com/storage[Google Storage]
+- MongoDB based on GridFS
 
 Depending on the selected file addon there will be additional configuration needed. Though regardless of the type used they work 
 in the same way - intercept use of Content based files (`ByteArrayFile`) and replace it with its dedicated flavor
@@ -161,6 +162,34 @@ IMPORTANT: Replace `BUCKET_NAME` with the actual name of the bucket where files 
 `PROJECT_ID` with the Google Cloud project to be used. Lastly, point to service account key to 
 authorize access to the Google Cloud Storage service
 
+
+== MongoDB (GridFS) AddOn
+
+MongoDB (based on GridFS) AddOn allows to put file content into MongoDB instance. The data will not be persisted with workflow instance
+itself but externalized. In addition to that a dedicated endpoint to download the file is also provided.
+
+TIP: See more information about link:https://www.mongodb.com/docs/manual/core/gridfs[MongoDB GridFS]
+
+To enable this addon add following dependency to the project
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-files-mongodb-addon</artifactId>
+</dependency>
+----  
+
+In addition to that, following properties can be set in `application.properties`
+
+[source,plain]
+----
+quarkus.automatiko.files.mongodb.database=NAME_OF_DB
+quarkus.automatiko.files.mongodb.chunk-size=12345
+----
+
+IMPORTANT: Replace `NAME_OF_DB` with the name of database where files should be stored, if not given it defaults to `automatiko`. Chunk size
+can also be given (in bytes) to control the size of the chunks stored in Mongo via GridFS.
 
 == Using files as part of data objects (POJOs)
 
