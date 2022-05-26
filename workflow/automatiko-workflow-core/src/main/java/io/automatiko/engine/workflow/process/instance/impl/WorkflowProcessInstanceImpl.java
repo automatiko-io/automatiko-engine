@@ -1085,6 +1085,12 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
         }
     }
 
+    public void setEndDate(Date endDate) {
+        if (this.endDate == null) {
+            this.endDate = endDate;
+        }
+    }
+
     protected boolean hasDeploymentId() {
         return this.deploymentId != null && !this.deploymentId.isEmpty();
     }

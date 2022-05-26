@@ -18,6 +18,9 @@
       <tns:metaData name="accessPolicy">
         <tns:metaValue><![CDATA[participants]]></tns:metaValue>
       </tns:metaData>
+      <tns:metaData name="expiresAfter">
+        <tns:metaValue><![CDATA[PT10S]]></tns:metaValue>
+      </tns:metaData>
     </bpmn2:extensionElements>
     <bpmn2:property id="name" itemSubjectRef="ItemDefinition_9" name="name"/>
     <bpmn2:property id="lastName" itemSubjectRef="ItemDefinition_9" name="lastName"/>

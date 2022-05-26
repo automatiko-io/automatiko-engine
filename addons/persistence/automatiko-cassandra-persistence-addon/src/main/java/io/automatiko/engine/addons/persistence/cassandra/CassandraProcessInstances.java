@@ -73,6 +73,9 @@ public class CassandraProcessInstances implements MutableProcessInstances {
     private static final String TAGS_FIELD = "Tags";
     private static final String VERSION_FIELD = "VersionTrack";
     private static final String STATUS_FIELD = "PIStatus";
+    private static final String START_DATE_FIELD = "PIStartDate";
+    private static final String END_DATE_FIELD = "PIEndDate";
+    private static final String EXPIRED_AT_FIELD = "PIExpiredAtDate";
 
     private final Process<? extends Model> process;
     private final ProcessInstanceMarshaller marshaller;
@@ -320,6 +323,13 @@ public class CassandraProcessInstances implements MutableProcessInstances {
                     .value(VERSION_FIELD, literal(((AbstractProcessInstance<?>) instance).getVersionTracker()))
                     .value(STATUS_FIELD, literal(((AbstractProcessInstance<?>) instance).status()))
                     .value(CONTENT_FIELD, bindMarker())
+                    .value(START_DATE_FIELD, literal(instance.startDate().toInstant()))
+                    .value(END_DATE_FIELD,
+                            literal(instance.endDate() == null ? null
+                                    : instance.endDate().toInstant()))
+                    .value(EXPIRED_AT_FIELD,
+                            literal(instance.expiresAtDate() == null ? null
+                                    : instance.expiresAtDate().toInstant()))
                     .value(TAGS_FIELD, bindMarker()).ifNotExists();
 
             try {
@@ -372,6 +382,12 @@ public class CassandraProcessInstances implements MutableProcessInstances {
                 .setColumn(TAGS_FIELD, bindMarker())
                 .setColumn(VERSION_FIELD, literal(((AbstractProcessInstance<?>) instance).getVersionTracker() + 1))
                 .setColumn(STATUS_FIELD, literal(((AbstractProcessInstance<?>) instance).status()))
+                .setColumn(START_DATE_FIELD, literal(instance.startDate().toInstant()))
+                .setColumn(END_DATE_FIELD,
+                        literal(instance.endDate() == null ? null
+                                : instance.endDate().toInstant()))
+                .setColumn(EXPIRED_AT_FIELD, literal(instance.expiresAtDate() == null ? null
+                        : instance.expiresAtDate().toInstant()))
                 .whereColumn(INSTANCE_ID_FIELD).isEqualTo(literal(resolvedId))
                 .ifColumn(VERSION_FIELD).isEqualTo(literal(((AbstractProcessInstance<?>) instance).getVersionTracker()))
                 .build();
@@ -385,6 +401,12 @@ public class CassandraProcessInstances implements MutableProcessInstances {
                         .value(VERSION_FIELD, literal(((AbstractProcessInstance<?>) instance).getVersionTracker()))
                         .value(STATUS_FIELD, literal(((AbstractProcessInstance<?>) instance).status()))
                         .value(CONTENT_FIELD, bindMarker())
+                        .value(START_DATE_FIELD, literal(instance.startDate().toInstant()))
+                        .value(END_DATE_FIELD,
+                                literal(instance.endDate() == null ? null
+                                        : instance.endDate().toInstant()))
+                        .value(EXPIRED_AT_FIELD, literal(instance.expiresAtDate() == null ? null
+                                : instance.expiresAtDate()))
                         .value(TAGS_FIELD, bindMarker()).ifNotExists();
 
                 try {
@@ -442,7 +464,10 @@ public class CassandraProcessInstances implements MutableProcessInstances {
                 .withColumn(STATUS_FIELD, DataTypes.INT)
                 .withColumn(CONTENT_FIELD, DataTypes.BLOB)
                 .withColumn(TAGS_FIELD, DataTypes.setOf(DataTypes.TEXT))
-                .withColumn(VERSION_FIELD, DataTypes.BIGINT);
+                .withColumn(VERSION_FIELD, DataTypes.BIGINT)
+                .withColumn(START_DATE_FIELD, DataTypes.TIMESTAMP)
+                .withColumn(END_DATE_FIELD, DataTypes.TIMESTAMP)
+                .withColumn(EXPIRED_AT_FIELD, DataTypes.TIMESTAMP);
 
         cqlSession.execute(createTable.build());
 

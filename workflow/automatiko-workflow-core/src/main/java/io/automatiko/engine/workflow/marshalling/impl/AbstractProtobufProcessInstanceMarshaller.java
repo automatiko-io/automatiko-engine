@@ -73,6 +73,9 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                 .setId(workFlow.getId()).setProcessId(workFlow.getProcessId()).setState(workFlow.getState())
                 .setProcessType(workFlow.getProcess().getType()).setSignalCompletion(workFlow.isSignalCompletion())
                 .setSlaCompliance(workFlow.getSlaCompliance()).setStartDate(workFlow.getStartDate().getTime());
+        if (workFlow.getEndDate() != null) {
+            _instance.setEndDate(workFlow.getEndDate().getTime());
+        }
         if (workFlow.getProcessXml() != null) {
             _instance.setProcessXml(workFlow.getProcessXml());
         }
@@ -750,6 +753,9 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         processInstance.setInitiator(_instance.getInitiator());
         processInstance.setCorrelationKey(_instance.getCorrelationKey());
         processInstance.setStartDate(new Date(_instance.getStartDate()));
+        if (_instance.getEndDate() > 0) {
+            processInstance.setEndDate(new Date(_instance.getEndDate()));
+        }
         processInstance.internalSetSlaCompliance(_instance.getSlaCompliance());
         if (_instance.getSlaDueDate() > 0) {
             processInstance.internalSetSlaDueDate(new Date(_instance.getSlaDueDate()));

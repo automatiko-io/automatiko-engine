@@ -232,6 +232,8 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
             entity.processName = instance.process().name();
             entity.processVersion = instance.process().version();
             entity.startDate = instance.startDate();
+            entity.endtDate = instance.endDate();
+            entity.expiredAtDate = instance.expiresAtDate();
             entity.state = instance.status();
 
             entity.tags = new HashSet<>(instance.tags().values());

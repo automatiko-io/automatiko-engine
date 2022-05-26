@@ -2,6 +2,7 @@ package io.automatiko.engine.api.workflow;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,17 +21,26 @@ public class InstanceMetadata {
 
     private Set<Link> links;
 
+    private Date startDate;
+
+    private Date endDate;
+
+    private Date expiredAtDate;
+
     public InstanceMetadata() {
     }
 
     private InstanceMetadata(String id, String businessKey, String description, int state, Collection<String> tags,
-            Set<Link> links) {
+            Set<Link> links, Date startDate, Date endDate, Date expiredAtDate) {
         this.id = id;
         this.businessKey = businessKey;
         this.description = description;
         this.state = state;
         this.tags = tags == null ? Collections.emptySet() : new HashSet<>(tags);
         this.links = links == null ? Collections.emptySet() : links;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.expiredAtDate = expiredAtDate;
     }
 
     public String getId() {
@@ -53,6 +63,22 @@ public class InstanceMetadata {
         return tags;
     }
 
+    public Set<Link> getLinks() {
+        return links;
+    }
+
+    public Date getStartDate() {
+        return startDate;
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public Date getExpiredAtDate() {
+        return expiredAtDate;
+    }
+
     public void setId(String id) {
         this.id = id;
     }
@@ -73,12 +99,20 @@ public class InstanceMetadata {
         this.tags = tags;
     }
 
-    public Set<Link> getLinks() {
-        return links;
-    }
-
     public void setLinks(Set<Link> links) {
         this.links = links;
+    }
+
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
+    public void setExpiredAtDate(Date expiredAtDate) {
+        this.expiredAtDate = expiredAtDate;
     }
 
     public static InstanceMetadata of(ProcessInstance<?> instance) {
@@ -89,7 +123,7 @@ public class InstanceMetadata {
         }
 
         return new InstanceMetadata(instance.id(), instance.businessKey(), instance.description(), instance.status(),
-                instance.tags().values(), links);
+                instance.tags().values(), links, instance.startDate(), instance.endDate(), instance.expiresAtDate());
     }
 
     public static class Link {

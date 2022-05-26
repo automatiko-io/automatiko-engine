@@ -137,11 +137,12 @@ public class VerificationTest {
                     .accept(ContentType.JSON)
                     .body(addPayload)
                     .when()
-                        .post("/scripts")
+                        .post("/scripts?metadata=true")
                     .then()
                         //.log().body(true)
                         .statusCode(200)
-                        .body("id", notNullValue(), "name", equalTo("rob"), "message", nullValue(), "lastName", nullValue());
+                        .body("id", notNullValue(), "name", equalTo("rob"), "message", nullValue(), "lastName", nullValue(),
+                                "metadata.startDate", notNullValue(), "metadata.endDate", notNullValue(), "metadata.expiredAtDate", notNullValue());
         
         given()
             .accept(ContentType.JSON)

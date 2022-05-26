@@ -55,6 +55,7 @@ import io.automatiko.engine.workflow.base.core.TagDefinition;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
+import io.automatiko.engine.workflow.base.core.timer.DateTimeUtils;
 import io.automatiko.engine.workflow.compiler.util.ClassUtils;
 import io.automatiko.engine.workflow.process.core.Node;
 import io.automatiko.engine.workflow.process.core.NodeContainer;
@@ -113,6 +114,15 @@ public class ProcessVisitor extends AbstractVisitor {
     public void visitProcess(WorkflowProcess process, MethodDeclaration processMethod, ProcessMetaData metadata,
             String workflowType) {
         BlockStmt body = new BlockStmt();
+
+        String expiresAfter = (String) process.getMetaData().get("expiresAfter");
+        if (expiresAfter != null) {
+            if (!DateTimeUtils.isPeriod(expiresAfter)) {
+                throw new IllegalArgumentException(
+                        "ExpiresAfter custom attribute is not a valid ISO period format - '" + expiresAfter + "'");
+            }
+            DateTimeUtils.parseDuration(expiresAfter);
+        }
 
         ClassOrInterfaceType processFactoryType = new ClassOrInterfaceType(null,
                 ExecutableProcessFactory.class.getSimpleName());

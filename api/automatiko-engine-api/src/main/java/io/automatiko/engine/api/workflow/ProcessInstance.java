@@ -217,9 +217,23 @@ public interface ProcessInstance<T> {
     /**
      * Returns startDate of this process instance
      * 
-     * @return
+     * @return date when this instance started
      */
     Date startDate();
+
+    /**
+     * Returns endDate of this process instance
+     * 
+     * @return end date (completed or aborted) of this instance or null if this instance is not yet ended
+     */
+    Date endDate();
+
+    /**
+     * Returns optional expiresAtDate of this process instance
+     * 
+     * @return calculated date when this instance expires or null
+     */
+    Date expiresAtDate();
 
     /**
      * Returns process errors in case process instance is in error state.
