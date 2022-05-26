@@ -14,8 +14,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -59,6 +61,9 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     public static final String PI_SUB_INSTANCE_COUNT = "SubProcessInstanceCount";
     public static final String PI_TAGS = "ProcessInstanceTags";
     public static final String PI_VERSION = "ProcessInstanceVersion";
+    public static final String PI_START_DATE = "ProcessInstanceStartDate";
+    public static final String PI_END_DATE = "ProcessInstanceEndDate";
+    public static final String PI_EXPIRED_AT_DATE = "ProcessInstanceExpiredAtDate";
 
     private boolean useCompositeIdForSubprocess = true;
 
@@ -332,6 +337,19 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             }
             setMetadata(processInstanceStorage, PI_SUB_INSTANCE_COUNT, String.valueOf(instance.subprocesses().size()));
             setMetadata(processInstanceStorage, PI_TAGS, instance.tags().values().stream().collect(Collectors.joining(",")));
+
+            setMetadata(processInstanceStorage, PI_START_DATE,
+                    DateTimeFormatter.ISO_INSTANT.format(instance.startDate().toInstant()));
+            if (instance.status() == ProcessInstance.STATE_ABORTED || instance.status() == ProcessInstance.STATE_COMPLETED) {
+                setMetadata(processInstanceStorage, PI_END_DATE,
+                        DateTimeFormatter.ISO_INSTANT.format(instance.endDate().toInstant()));
+                Date expiration = instance.expiresAtDate();
+
+                if (expiration != null) {
+                    setMetadata(processInstanceStorage, PI_EXPIRED_AT_DATE,
+                            DateTimeFormatter.ISO_INSTANT.format(expiration.toInstant()));
+                }
+            }
 
             indexer.index(resolvedId, instance.status(), instance.tags().values());
 

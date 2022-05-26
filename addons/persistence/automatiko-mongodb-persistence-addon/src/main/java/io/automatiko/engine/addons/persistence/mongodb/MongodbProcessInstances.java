@@ -13,8 +13,11 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import org.bson.BsonDocument;
+import org.bson.BsonInt32;
 import org.bson.Document;
 import org.bson.types.Binary;
 import org.slf4j.Logger;
@@ -65,6 +68,9 @@ public class MongodbProcessInstances implements MutableProcessInstances {
     private static final String VERSION_FIELD = "versionTrack";
     private static final String STATUS_FIELD = "piStatus";
     private static final String VARIABLES_FIELD = "variables";
+    private static final String START_DATE_FIELD = "piStartDate";
+    private static final String END_DATE_FIELD = "piEndDate";
+    private static final String EXPIRED_AT_FIELD = "piExpiredAtDate";
 
     private MongoClient mongoClient;
     private MongodbPersistenceConfig config;
@@ -99,6 +105,13 @@ public class MongodbProcessInstances implements MutableProcessInstances {
         collection().createIndex(Indexes.compoundIndex(Indexes.ascending(INSTANCE_ID_FIELD), Indexes.ascending(STATUS_FIELD)),
                 new IndexOptions().unique(true));
         collection().createIndex(Indexes.ascending(TAGS_FIELD));
+
+        // in case there is expiration set on the process create an ttl index to automatically clean it
+        String expiresAt = (String) ((AbstractProcess<?>) process).process().getMetaData().get("expiresAfter");
+        if (expiresAt != null) {
+            collection().createIndex(new BsonDocument(EXPIRED_AT_FIELD, new BsonInt32(1)),
+                    new IndexOptions().expireAfter(0L, TimeUnit.SECONDS));
+        }
 
         this.transactionLog = new TransactionLogImpl(store, new JacksonObjectMarshallingStrategy(process));
     }
@@ -223,7 +236,16 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                         .append(STATUS_FIELD, instance.status())
                         .append(TAGS_FIELD, tags)
                         .append(VERSION_FIELD, ((AbstractProcessInstance<?>) instance).getVersionTracker())
-                        .append(VARIABLES_FIELD, variables);
+                        .append(VARIABLES_FIELD, variables)
+                        .append(START_DATE_FIELD, instance.startDate());
+
+                if (instance.endDate() != null) {
+
+                    item.append(END_DATE_FIELD, instance.endDate());
+                    if (instance.expiresAtDate() != null) {
+                        item.append(EXPIRED_AT_FIELD, instance.expiresAtDate());
+                    }
+                }
 
                 try {
                     collection().insertOne(item);
@@ -280,7 +302,16 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                         .append(STATUS_FIELD, instance.status())
                         .append(TAGS_FIELD, tags)
                         .append(VERSION_FIELD, ((AbstractProcessInstance<?>) instance).getVersionTracker())
-                        .append(VARIABLES_FIELD, variables);
+                        .append(VARIABLES_FIELD, variables)
+                        .append(START_DATE_FIELD, instance.startDate());
+
+                if (instance.endDate() != null) {
+
+                    item.append(END_DATE_FIELD, instance.endDate());
+                    if (instance.expiresAtDate() != null) {
+                        item.append(EXPIRED_AT_FIELD, instance.expiresAtDate());
+                    }
+                }
 
                 try {
                     Document replaced = collection().findOneAndReplace(and(eq(INSTANCE_ID_FIELD, resolvedId),

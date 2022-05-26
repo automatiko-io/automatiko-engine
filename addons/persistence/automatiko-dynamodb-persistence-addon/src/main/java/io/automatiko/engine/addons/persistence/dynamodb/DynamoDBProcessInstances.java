@@ -2,6 +2,7 @@ package io.automatiko.engine.addons.persistence.dynamodb;
 
 import static io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -70,6 +71,9 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
     private static final String TAGS_FIELD = "Tags";
     private static final String VERSION_FIELD = "VersionTrack";
     private static final String STATUS_FIELD = "PIStatus";
+    private static final String START_DATE_FIELD = "PIStartDate";
+    private static final String END_DATE_FIELD = "PIEndDate";
+    private static final String EXPIRED_AT_FIELD = "PIExpiredAtDate";
 
     private final Process<? extends Model> process;
     private final ProcessInstanceMarshaller marshaller;
@@ -304,6 +308,8 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
             itemValues.put(STATUS_FIELD, AttributeValue.builder()
                     .n(String.valueOf(((AbstractProcessInstance<?>) instance).status())).build());
             itemValues.put(CONTENT_FIELD, AttributeValue.builder().b(SdkBytes.fromByteArray(data)).build());
+            itemValues.put(START_DATE_FIELD, AttributeValue.builder()
+                    .s(DateTimeFormatter.ISO_INSTANT.format(instance.startDate().toInstant())).build());
 
             Collection<String> tags = new ArrayList(instance.tags().values());
             tags.add(resolvedId);
@@ -376,6 +382,22 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
                             .n(String.valueOf(((AbstractProcessInstance<?>) instance).status())).build())
                     .action(AttributeAction.PUT)
                     .build());
+
+            if (instance.endDate() != null) {
+                updatedValues.put(END_DATE_FIELD, AttributeValueUpdate.builder()
+                        .value(AttributeValue.builder()
+                                .n(DateTimeFormatter.ISO_INSTANT.format(instance.endDate().toInstant())).build())
+                        .action(AttributeAction.PUT)
+                        .build());
+
+                if (instance.expiresAtDate() != null) {
+                    updatedValues.put(EXPIRED_AT_FIELD, AttributeValueUpdate.builder()
+                            .value(AttributeValue.builder()
+                                    .n(DateTimeFormatter.ISO_INSTANT.format(instance.expiresAtDate().toInstant())).build())
+                            .action(AttributeAction.PUT)
+                            .build());
+                }
+            }
 
             Collection<String> tags = new ArrayList(instance.tags().values());
             tags.add(resolvedId);

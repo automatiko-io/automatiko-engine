@@ -57,6 +57,7 @@ import io.automatiko.engine.services.correlation.CorrelationAwareProcessRuntime;
 import io.automatiko.engine.services.correlation.CorrelationKey;
 import io.automatiko.engine.services.correlation.StringCorrelationKey;
 import io.automatiko.engine.services.uow.ProcessInstanceWorkUnit;
+import io.automatiko.engine.workflow.base.core.timer.DateTimeUtils;
 import io.automatiko.engine.workflow.base.instance.InternalProcessRuntime;
 import io.automatiko.engine.workflow.lock.UnlockWorkUnit;
 import io.automatiko.engine.workflow.process.core.node.EventSubProcessNode;
@@ -433,6 +434,26 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         return this.processInstance != null && processInstance instanceof WorkflowProcessInstanceImpl
                 ? ((WorkflowProcessInstanceImpl) this.processInstance).getStartDate()
                 : null;
+    }
+
+    @Override
+    public Date endDate() {
+        return this.processInstance != null && processInstance instanceof WorkflowProcessInstanceImpl
+                ? ((WorkflowProcessInstanceImpl) this.processInstance).getEndDate()
+                : null;
+    }
+
+    @Override
+    public Date expiresAtDate() {
+        Date endDate = endDate();
+        String expiredAt = (String) process.process().getMetaData().get("expiresAfter");
+        if (endDate != null && expiredAt != null) {
+            long expiresInMillis = DateTimeUtils.parseDuration(expiredAt);
+
+            return new Date(endDate.getTime() + expiresInMillis);
+        }
+
+        return null;
     }
 
     @Override

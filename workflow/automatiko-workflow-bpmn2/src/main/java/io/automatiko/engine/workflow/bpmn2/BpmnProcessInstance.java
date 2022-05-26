@@ -312,6 +312,16 @@ public class BpmnProcessInstance extends AbstractProcessInstance<BpmnVariables> 
         }
 
         @Override
+        public Date endDate() {
+            return null;
+        }
+
+        @Override
+        public Date expiresAtDate() {
+            return null;
+        }
+
+        @Override
         public Optional errors() {
             return null;
         }

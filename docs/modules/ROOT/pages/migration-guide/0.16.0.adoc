@@ -1,0 +1,36 @@
+= Migrate to 0.16.0
+
+== Persistence addons includes new columns/fields
+
+Persistence addon has been extended to include addition information for every process
+
+- `startDate` - the exact timestamp when instance was started
+- `endDate` - the exact timestamp when instance was finished (either completed or aborted)
+- `expiredAtDate` - the exact timestamp when instance is expired
+
+NOTE: Expired at is only calculated when the duration is explicitly set on the workflow definition via custom attributed named `expiresAfter`
+
+Depending on what data store is used there might be a need to manually update existing tables/collections
+
+== Apache Cassandra
+
+Following columns should be added for each process table
+
+- `PIStartDate` of type timestamp
+- `PIEndDate` of type timestamp
+- `PIExpiredAtDate` of type timestamp
+
+== DynamoDB
+
+Dynamodb does not require any changes
+
+== Database
+
+Following columns should be added for each process table
+
+- `ATK_END_DATE` of type date
+- `ATK_EXPIRED_AT_DATE` of type date
+
+== Mongodb
+
+Mongodb does not require any changes

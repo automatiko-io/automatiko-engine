@@ -87,6 +87,21 @@ be started from outside.
 NOTE: Private workflows provide a perfect fit for subworkflows. This allows you to limit the creation of new instances
 of subworkflows only to their, so called, owning workflow instance.
 
+== Workflow custom attributes
+
+Workflow allows to specify additional information (that in some cases have impact on execution) via custom
+attributes. These attributes are specified as properties of the workflow (BPMN) or metadata (Serverless Workflow).
+
+Following is a list of available custom attributes currently supported
+
+|===
+|Attribute name| Description | Value
+|description | Optional description of the process instance that can reference data objects (variables) of the instance|empty
+|accessPolicy| Access policy to be set for process instances (see security for more details)|`participants` or `initiator`
+|expiresAfter| Specifies an ISO based duration (e.g. P10D) expression that will set expiration date upon instance completion|empty
+|timeout| Execution timeout in ISO based duration (e.g. PT1H) that is the maximum duration of the instance being active|empty
+|===
+
 == Workflow data
 
 Workflow data defines the actual domain of the service that is being modeled.
