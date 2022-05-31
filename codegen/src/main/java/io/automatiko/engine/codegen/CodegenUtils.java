@@ -5,12 +5,22 @@ import static io.automatiko.engine.codegen.CodeGenConstants.AMQP_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.AMQP_CONNECTOR_CLASS;
 import static io.automatiko.engine.codegen.CodeGenConstants.CAMEL_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.CAMEL_CONNECTOR_CLASS;
+import static io.automatiko.engine.codegen.CodeGenConstants.CASSANDRA_PERSISTENCE;
+import static io.automatiko.engine.codegen.CodeGenConstants.CASSANDRA_PERSISTENCE_CLASS;
+import static io.automatiko.engine.codegen.CodeGenConstants.DB_PERSISTENCE;
+import static io.automatiko.engine.codegen.CodeGenConstants.DB_PERSISTENCE_CLASS;
+import static io.automatiko.engine.codegen.CodeGenConstants.DYNAMODB_PERSISTENCE;
+import static io.automatiko.engine.codegen.CodeGenConstants.DYNAMODB_PERSISTENCE_CLASS;
+import static io.automatiko.engine.codegen.CodeGenConstants.FS_PERSISTENCE;
+import static io.automatiko.engine.codegen.CodeGenConstants.FS_PERSISTENCE_CLASS;
 import static io.automatiko.engine.codegen.CodeGenConstants.HTTP_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.HTTP_CONNECTOR_CLASS;
 import static io.automatiko.engine.codegen.CodeGenConstants.JMS_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.JMS_CONNECTOR_CLASS;
 import static io.automatiko.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR_CLASS;
+import static io.automatiko.engine.codegen.CodeGenConstants.MONGO_PERSISTENCE;
+import static io.automatiko.engine.codegen.CodeGenConstants.MONGO_PERSISTENCE_CLASS;
 import static io.automatiko.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.MQTT_CONNECTOR_CLASS;
 import static io.automatiko.engine.codegen.CodeGenConstants.OPERATOR_CONNECTOR;
@@ -208,5 +218,23 @@ public class CodegenUtils {
         }
         return "";
 
+    }
+
+    public static String discoverPersistenceType(GeneratorContext context) {
+
+        // auto discovery by classpath scan
+        if (context.getBuildContext().hasClassAvailable(MONGO_PERSISTENCE_CLASS)) {
+            return MONGO_PERSISTENCE;
+        } else if (context.getBuildContext().hasClassAvailable(CASSANDRA_PERSISTENCE_CLASS)) {
+            return CASSANDRA_PERSISTENCE;
+        } else if (context.getBuildContext().hasClassAvailable(DB_PERSISTENCE_CLASS)) {
+            return DB_PERSISTENCE;
+        } else if (context.getBuildContext().hasClassAvailable(DYNAMODB_PERSISTENCE_CLASS)) {
+            return DYNAMODB_PERSISTENCE;
+        } else if (context.getBuildContext().hasClassAvailable(FS_PERSISTENCE_CLASS)) {
+            return FS_PERSISTENCE;
+        }
+
+        return "unknown";
     }
 }
