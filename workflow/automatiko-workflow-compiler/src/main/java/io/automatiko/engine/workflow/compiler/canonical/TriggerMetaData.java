@@ -9,7 +9,9 @@ import static io.automatiko.engine.workflow.process.executable.core.Metadata.TRI
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.CastExpr;
@@ -24,6 +26,9 @@ import com.github.javaparser.ast.type.UnknownType;
 
 import io.automatiko.engine.api.definition.process.Node;
 import io.automatiko.engine.services.utils.StringUtils;
+import io.automatiko.engine.workflow.base.core.context.variable.Variable;
+import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
+import io.automatiko.engine.workflow.util.PatternConstants;
 
 public class TriggerMetaData {
 
@@ -163,7 +168,7 @@ public class TriggerMetaData {
                 + "]";
     }
 
-    public static LambdaExpr buildLambdaExpr(Node node, ProcessMetaData metadata) {
+    public static LambdaExpr buildLambdaExpr(Node node, ProcessMetaData metadata, VariableScope variableScope) {
         Map<String, Object> nodeMetaData = node.getMetaData();
         TriggerMetaData triggerMetaData = new TriggerMetaData((String) nodeMetaData.get(TRIGGER_REF),
                 (String) nodeMetaData.get(TRIGGER_TYPE), (String) nodeMetaData.get(MESSAGE_TYPE),
@@ -182,9 +187,26 @@ public class TriggerMetaData {
                             .addArgument(new StringLiteralExpr(triggerMetaData.getModelRef())));
 
         } else {
-            variable = new CastExpr(new ClassOrInterfaceType(null, triggerMetaData.getDataType()),
-                    new MethodCallExpr(new NameExpr(KCONTEXT_VAR), "getVariable")
-                            .addArgument(new StringLiteralExpr(triggerMetaData.getModelRef())));
+
+            Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(triggerMetaData.getModelRef());
+            if (matcher.find()) {
+                String expression = matcher.group(1);
+
+                List<Variable> variables = variableScope.getVariables();
+                variables.stream().filter(v -> expression.contains(v.getName())).map(ActionNodeVisitor::makeAssignment)
+                        .forEach(actionBody::addStatement);
+
+                variables.stream().filter(v -> v.hasTag(Variable.VERSIONED_TAG)).map(ActionNodeVisitor::makeAssignmentVersions)
+                        .forEach(actionBody::addStatement);
+
+                variable = new CastExpr(new ClassOrInterfaceType(null, triggerMetaData.getDataType()),
+                        new NameExpr(expression));
+            } else {
+
+                variable = new CastExpr(new ClassOrInterfaceType(null, triggerMetaData.getDataType()),
+                        new MethodCallExpr(new NameExpr(KCONTEXT_VAR), "getVariable")
+                                .addArgument(new StringLiteralExpr(triggerMetaData.getModelRef())));
+            }
         }
 
         MethodCallExpr producerMethodCall = new MethodCallExpr(new NameExpr("producer_" + node.getId()), "produce")
