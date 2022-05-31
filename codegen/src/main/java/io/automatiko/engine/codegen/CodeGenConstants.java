@@ -30,6 +30,18 @@ public class CodeGenConstants {
     public static final String FUNCTION_FLOW_CONNECTOR = "function-flow";
     public static final String HTTP_CONNECTOR = "quarkus-http";
 
+    public static final String MONGO_PERSISTENCE = "mongodb";
+    public static final String CASSANDRA_PERSISTENCE = "cassandra";
+    public static final String DB_PERSISTENCE = "db";
+    public static final String DYNAMODB_PERSISTENCE = "dynamodb";
+    public static final String FS_PERSISTENCE = "filesystem";
+
+    public static final String MONGO_PERSISTENCE_CLASS = "io.automatiko.engine.addons.persistence.mongodb.MongodbProcessInstances";
+    public static final String CASSANDRA_PERSISTENCE_CLASS = "io.automatiko.engine.addons.persistence.cassandra.CassandraProcessInstances";
+    public static final String DB_PERSISTENCE_CLASS = "io.automatiko.engine.addons.persistence.db.DatabaseProcessInstances";
+    public static final String DYNAMODB_PERSISTENCE_CLASS = "io.automatiko.engine.addons.persistence.dynamodb.DynamoDBProcessInstances";
+    public static final String FS_PERSISTENCE_CLASS = "io.automatiko.engine.addons.persistence.filesystem.FileSystemProcessInstances";
+
     public static final String MQTT_CONNECTOR_CLASS = "io.smallrye.reactive.messaging.mqtt.MqttConnector";
     public static final String JMS_CONNECTOR_CLASS = "io.smallrye.reactive.messaging.jms.JmsConnector";
     public static final String KAFKA_CONNECTOR_CLASS = "io.smallrye.reactive.messaging.kafka.KafkaConnector";

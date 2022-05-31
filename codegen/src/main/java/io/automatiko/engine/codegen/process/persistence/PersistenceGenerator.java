@@ -37,6 +37,7 @@ import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 import io.automatiko.engine.codegen.AbstractGenerator;
 import io.automatiko.engine.codegen.ApplicationSection;
 import io.automatiko.engine.codegen.BodyDeclarationComparator;
+import io.automatiko.engine.codegen.CodegenUtils;
 import io.automatiko.engine.codegen.ConfigGenerator;
 import io.automatiko.engine.codegen.GeneratedFile;
 import io.automatiko.engine.codegen.di.DependencyInjectionAnnotator;
@@ -86,7 +87,14 @@ public class PersistenceGenerator extends AbstractGenerator {
     @Override
     public Collection<GeneratedFile> generate() {
         String persistenceType = context.getBuildContext().config().persistence().type()
-                .orElse(DEFAULT_PERSISTENCE_TYPE);
+                .orElse(null);
+
+        if (persistenceType == null) {
+            persistenceType = CodegenUtils.discoverPersistenceType(context);
+            // since it was discovered set the properties for completenes
+            context.setApplicationProperty("quarkus.automatiko.persistence.type", persistenceType);
+            context.setApplicationProperty("quarkus.automatiko.jobs.type", persistenceType);
+        }
 
         List<GeneratedFile> generatedFiles = new ArrayList<>();
         if (persistence) {
