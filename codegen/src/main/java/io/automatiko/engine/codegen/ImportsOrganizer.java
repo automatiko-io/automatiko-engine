@@ -98,6 +98,11 @@ public class ImportsOrganizer extends VoidVisitorAdapter<Object> {
             Iterator<ImportDeclaration> itImport = cleanImportList.iterator();
             while (itImport.hasNext()) {
                 ImportDeclaration id = itImport.next();
+                if (id.isAsterisk()) {
+                    // avoid removing asterisk imports
+                    continue;
+                }
+
                 String importName = id.getName().toString();
 
                 if (importName.startsWith(pDeclaration)) {
