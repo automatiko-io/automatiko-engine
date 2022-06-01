@@ -426,6 +426,8 @@ public abstract class AbstractResourceGenerator {
                 clazz.addImport(subunit.getPackageDeclaration().get().getNameAsString(), false, true);
 
             }
+
+            subunit.getImports().stream().filter(imp -> imp.isAsterisk()).forEach(imp -> clazz.addImport(imp));
         }
 
         collectSubProcessModels(modelfqcn.substring(modelfqcn.lastIndexOf('.') + 1), template, subprocesses);
