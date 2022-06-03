@@ -49,7 +49,7 @@ public class MessageProducer {
     
 	public void produce(ProcessInstance pi, $Type$ eventData) {
 	    metrics.messageProduced(CONNECTOR, MESSAGE, pi.getProcess());
-	    
+	    String key = ((WorkflowProcessInstance) pi).getCorrelationKey();
 	    io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata metadata = null;
         
         if (converter != null && !converter.isUnsatisfied()) {                    
@@ -58,7 +58,7 @@ public class MessageProducer {
         } 
         if (metadata == null) {
             
-            io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata.OutgoingKafkaRecordMetadataBuilder<?> builder = io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata.builder();
+            io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata.OutgoingKafkaRecordMetadataBuilder builder = io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata.builder();
             if (useCloudEvents.orElse(false)) {
                 org.apache.kafka.common.header.internals.RecordHeaders headers = new org.apache.kafka.common.header.internals.RecordHeaders();
                 if (useCloudEventsBinary.orElse(false)) {
@@ -74,9 +74,10 @@ public class MessageProducer {
                 }
                 builder.withHeaders(headers);
             }
+            builder.withKey(key);
             metadata = builder.build();
         }
-        String key = ((WorkflowProcessInstance) pi).getCorrelationKey();
+        
         emitter.send(io.smallrye.reactive.messaging.kafka.KafkaRecord.of(key, log(key, marshall(pi, eventData))).addMetadata(metadata));
 
         Supplier<AuditEntry> entry = () -> BaseAuditEntry.messaging(pi, CONNECTOR, MESSAGE, eventData)
