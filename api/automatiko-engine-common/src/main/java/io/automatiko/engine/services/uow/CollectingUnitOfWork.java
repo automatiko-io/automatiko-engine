@@ -164,6 +164,16 @@ public class CollectingUnitOfWork implements UnitOfWork {
             if (local.containsKey(id)) {
                 return Optional.of(local.get(id));
             }
+            if (id.contains(":")) {
+                if (local.containsKey(id.split(":")[1])) {
+                    ProcessInstance pi = local.get(id.split(":")[1]);
+                    if (pi.status() == status) {
+                        return Optional.of(pi);
+                    } else {
+                        return Optional.empty();
+                    }
+                }
+            }
 
             Optional<?> found = delegate.findById(id, status, mode);
 
