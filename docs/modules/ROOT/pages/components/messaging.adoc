@@ -225,6 +225,8 @@ image::messaging-publishing-attr.png[]
 message should be sent to - if not defined name of the message is used - applies to MQTT only
 - *addressExpression* - instructs what is the expected address in the message broker this
 message should be sent to - if not defined name of the message is used - applies to AMQP only
+- *keyExpression* - instructs what is the expected key for a Kafka record being sent - 
+if not defined busienss key is used which can be null and by that no key is set - applies to Apache Kafka only
 - *connector* - in case there are multiple connectors used it must be given
  explicitly for every message. Note it is not required if there is only one
  connector - e.g. MQTT or Apache Kafka.

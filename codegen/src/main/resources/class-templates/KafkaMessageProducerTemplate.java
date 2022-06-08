@@ -49,7 +49,10 @@ public class MessageProducer {
     
 	public void produce(ProcessInstance pi, $Type$ eventData) {
 	    metrics.messageProduced(CONNECTOR, MESSAGE, pi.getProcess());
-	    String key = ((WorkflowProcessInstance) pi).getCorrelationKey();
+	    String key = key(pi);
+	    if (key == null) {
+	        key = ((WorkflowProcessInstance) pi).getCorrelationKey();
+	    }
 	    io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata metadata = null;
         
         if (converter != null && !converter.isUnsatisfied()) {                    
@@ -115,6 +118,10 @@ public class MessageProducer {
 	        throw new RuntimeException(e);
 	    }
 	}
+	
+	protected String key(ProcessInstance pi) {
+        return null;
+    }
 	
     protected String log(String key, String value) {
         

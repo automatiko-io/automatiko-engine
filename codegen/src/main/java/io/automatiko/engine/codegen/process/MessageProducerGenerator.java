@@ -551,6 +551,49 @@ public class MessageProducerGenerator {
                     md.setBody(body);
                 });
 
+        // used by Kafka to get key name based on expression
+        String keyExpression = (String) trigger.getContext("keyExpression");
+        if (keyExpression != null) {
+            template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("key"))
+                    .forEach(md -> {
+                        BlockStmt body = new BlockStmt();
+
+                        ClassOrInterfaceType stringType = new ClassOrInterfaceType(null, String.class.getCanonicalName());
+
+                        if (keyExpression.contains("id")) {
+                            VariableDeclarationExpr idField = new VariableDeclarationExpr(stringType, "id");
+                            body.addStatement(new AssignExpr(idField,
+                                    new MethodCallExpr(new NameExpr("pi"), "getId"), AssignExpr.Operator.ASSIGN));
+                        }
+
+                        if (keyExpression.contains("businessKey")) {
+                            VariableDeclarationExpr businessKeyField = new VariableDeclarationExpr(stringType, "businessKey");
+                            body.addStatement(new AssignExpr(businessKeyField,
+                                    new MethodCallExpr(new NameExpr("pi"), "getCorrelationKey"), AssignExpr.Operator.ASSIGN));
+                        }
+                        VariableScope variableScope = (VariableScope) ((io.automatiko.engine.workflow.process.core.WorkflowProcess) process)
+                                .getDefaultContext(VariableScope.VARIABLE_SCOPE);
+
+                        for (Variable var : variableScope.getVariables()) {
+
+                            if (keyExpression.contains(var.getSanitizedName())) {
+                                ClassOrInterfaceType varType = new ClassOrInterfaceType(null, var.getType().getStringType());
+                                VariableDeclarationExpr v = new VariableDeclarationExpr(
+                                        varType,
+                                        var.getSanitizedName());
+                                body.addStatement(new AssignExpr(v,
+                                        new CastExpr(varType,
+                                                new MethodCallExpr(new MethodCallExpr(new NameExpr("pi"), "getVariables"),
+                                                        "get")
+                                                                .addArgument(new StringLiteralExpr(var.getName()))),
+                                        AssignExpr.Operator.ASSIGN));
+                            }
+                        }
+                        body.addStatement(new ReturnStmt(new NameExpr(keyExpression)));
+                        md.setBody(body);
+                    });
+        }
+
         template.findAll(MethodDeclaration.class)
                 .forEach(md -> {
                     md.findAll(StringLiteralExpr.class)
