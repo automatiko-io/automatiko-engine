@@ -32,6 +32,15 @@ capabilities of the service based on workflow definition. To name some
 * subprocesses - each subprocess will have dedicated endpoints based on sub workflow definition
 * workflow definition image and workflow instance image
 
+=== Versioned endpoints
+
+ReST endpoints can be versioned based on the version attribute of the workflow definition. In case versions are in 
+use routing to latest version can be enabled. To make use of the routing following property needs to be set:
+`quarkus.automatiko.service-route-to-latest=true` inside the `application.properties` file or via variables (env etc)
+
+This will allow to use enpoints without the version prefix and by that target the latest one or the one given 
+workflow instance belongs to. See version support in this section
+
 == GraphQL interface
 
 In addition to REsT interface users can enhance their service with GraphQL interface. That is to allow more advanced 

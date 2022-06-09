@@ -168,7 +168,7 @@ public class VerificationTest {
             .accept(ContentType.JSON)
             .body(addPayload)
             .when()
-                .post("/users?user=mary&group=admin")
+                .post("/v1/users?user=mary&group=admin")
             .then()
                 //.log().body(true)
                 .statusCode(200)
@@ -178,14 +178,14 @@ public class VerificationTest {
         given()
             .accept(ContentType.JSON)
         .when()
-            .get("/users?user=mary&group=admin")
+            .get("/v1/users?user=mary&group=admin")
         .then().statusCode(200)
             .body("$.size()", is(1));
         
         List<Map<String, String>> taskInfo = given()
                 .accept(ContentType.JSON)
             .when()
-                .get("/users/" + id + "/tasks?user=mary&group=admin")
+                .get("/v1/users/" + id + "/tasks?user=mary&group=admin")
             .then()
                 .statusCode(200)
                 .extract().as(List.class);
@@ -200,7 +200,7 @@ public class VerificationTest {
         Map<String, String> taskData = given()
                 .accept(ContentType.JSON)
             .when()
-                .get("/users/" + id + "/approval/" + taskId + "?user=mary&group=admin")
+                .get("/v1/users/" + id + "/approval/" + taskId + "?user=mary&group=admin")
             .then()
                 .statusCode(200)
                 .extract().as(Map.class);
@@ -211,13 +211,13 @@ public class VerificationTest {
         given()
             .accept(ContentType.JSON)
         .when()
-            .delete("/users/" + id + "?user=mary&group=admin")
+            .delete("/v1/users/" + id + "?user=mary&group=admin")
         .then().statusCode(200);        
         
         given()
             .accept(ContentType.JSON)
         .when()
-            .get("/users?user=mary&group=admin")
+            .get("/v1/users?user=mary&group=admin")
         .then().statusCode(200)
             .body("$.size()", is(0));  
         
@@ -423,29 +423,29 @@ public class VerificationTest {
             .accept(ContentType.JSON)
             .body(addPayload)
             .when()
-                .post("/users?user=mary&group=admin&metadata=true&businessKey=test")
+                .post("/v1/users?user=mary&group=admin&metadata=true&businessKey=test")
             .then()
                 //.log().body(true)
                 .statusCode(200)
                 .body("id", notNullValue(), "name", equalTo("john"), "message", nullValue(), "lastName", nullValue(),
-                        "metadata.links[0].url", startsWith("/users/098f6bcd-4621-3373-8ade-4e832627b4f6/approval/"),
+                        "metadata.links[0].url", startsWith("/v1/users/098f6bcd-4621-3373-8ade-4e832627b4f6/approval/"),
                         "metadata.links[0].form", startsWith("/management/tasks/link/"))
                 .extract().path("id");
         
         given()
             .accept(ContentType.JSON)
         .when()
-            .get("/users?user=mary&group=admin&metadata=true")
+            .get("/v1/users?user=mary&group=admin&metadata=true")
         .then().statusCode(200)
             //.log().body(true)
             .body("$.size()", is(1),
-                    "[0].metadata.links[0].url", startsWith("/users/098f6bcd-4621-3373-8ade-4e832627b4f6/approval/"),
+                    "[0].metadata.links[0].url", startsWith("/v1/users/098f6bcd-4621-3373-8ade-4e832627b4f6/approval/"),
                     "[0].metadata.links[0].form", startsWith("/management/tasks/link/"));
         
         List<Map<String, String>> taskInfo = given()
                 .accept(ContentType.JSON)
             .when()
-                .get("/users/" + id + "/tasks?user=mary&group=admin")
+                .get("/v1/users/" + id + "/tasks?user=mary&group=admin")
             .then()
                 .statusCode(200)
                 .extract().as(List.class);
@@ -460,7 +460,7 @@ public class VerificationTest {
         Map<String, String> taskData = given()
                 .accept(ContentType.JSON)
             .when()
-                .get("/users/" + id + "/approval/" + taskId + "?user=mary&group=admin")
+                .get("/v1/users/" + id + "/approval/" + taskId + "?user=mary&group=admin")
             .then()
                 .statusCode(200)
                 .extract().as(Map.class);
@@ -471,15 +471,148 @@ public class VerificationTest {
         given()
             .accept(ContentType.JSON)
         .when()
-            .delete("/users/" + id + "?user=mary&group=admin")
+            .delete("/v1/users/" + id + "?user=mary&group=admin")
         .then().statusCode(200);        
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/v1/users?user=mary&group=admin")
+        .then().statusCode(200)
+            .body("$.size()", is(0));  
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testProcessUserInfoWithRouteToLatest() {
+
+        String addPayload = "{\"name\" : \"john\"}";
+        String id = given()
+            .contentType(ContentType.JSON)
+            .accept(ContentType.JSON)
+            .body(addPayload)
+            .when()
+                .post("/v1/users?user=mary&group=admin")
+            .then()
+                //.log().body(true)
+                .statusCode(200)
+                .body("id", notNullValue(), "name", equalTo("john"), "message", nullValue(), "lastName", nullValue())
+                .extract().path("id");
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/v1/users?user=mary&group=admin")
+        .then().statusCode(200)
+            .body("$.size()", is(1));
         
         given()
             .accept(ContentType.JSON)
         .when()
             .get("/users?user=mary&group=admin")
         .then().statusCode(200)
-            .body("$.size()", is(0));  
+            .body("$.size()", is(0));
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/users/"+id+"?user=mary&group=admin")
+        .then().statusCode(200)
+            .body("id", notNullValue(), "name", equalTo("john"), "message", nullValue(), "lastName", nullValue());
+        
+        // now create version 2 instance
+        
+        String id2 = given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body(addPayload)
+                .when()
+                    .post("/v2/users?user=mary&group=admin")
+                .then()
+                    //.log().body(true)
+                    .statusCode(200)
+                    .body("id", notNullValue(), "name", equalTo("john"), "message", nullValue(), "lastName", nullValue())
+                    .extract().path("id");
+            
+            given()
+                .accept(ContentType.JSON)
+            .when()
+                .get("/v2/users?user=mary&group=admin")
+            .then().statusCode(200)
+                .body("$.size()", is(1));
+            
+            given()
+                .accept(ContentType.JSON)
+            .when()
+                .get("/users?user=mary&group=admin")
+            .then().statusCode(200)
+                .body("$.size()", is(1));
+            
+            given()
+                .accept(ContentType.JSON)
+            .when()
+                .get("/users/"+id2+"?user=mary&group=admin")
+            .then().statusCode(200)
+                .body("id", notNullValue(), "name", equalTo("john"), "message", nullValue(), "lastName", nullValue());
+            
+            String idLatest = given()
+                    .contentType(ContentType.JSON)
+                    .accept(ContentType.JSON)
+                    .body(addPayload)
+                    .when()
+                        .post("/users?user=mary&group=admin")
+                    .then()
+                        //.log().body(true)
+                        .statusCode(200)
+                        .body("id", notNullValue(), "name", equalTo("john"), "message", nullValue(), "lastName", nullValue())
+                        .extract().path("id");
+                
+            given()
+                .accept(ContentType.JSON)
+            .when()
+                .get("/v2/users?user=mary&group=admin")
+            .then().statusCode(200)
+                .body("$.size()", is(2));
+            
+            given()
+                .accept(ContentType.JSON)
+            .when()
+                .get("/users?user=mary&group=admin")
+            .then().statusCode(200)
+                .body("$.size()", is(2));
+            
+            given()
+                .accept(ContentType.JSON)
+            .when()
+                .get("/users/"+idLatest+"?user=mary&group=admin")
+            .then().statusCode(200)
+                .body("id", notNullValue(), "name", equalTo("john"), "message", nullValue(), "lastName", nullValue());
+            
+            // clean up created instances
+            given()
+                .accept(ContentType.JSON)
+            .when()
+                .delete("/users/"+id+"?user=mary&group=admin")
+            .then().statusCode(200);
+            given()
+                .accept(ContentType.JSON)
+            .when()
+                .delete("/users/"+id2+"?user=mary&group=admin")
+            .then().statusCode(200);
+            
+            given()
+                .accept(ContentType.JSON)
+            .when()
+                .delete("/users/"+idLatest+"?user=mary&group=admin")
+            .then().statusCode(200);
+            
+            given()
+                .accept(ContentType.JSON)
+            .when()
+                .get("/users?user=mary&group=admin")
+            .then().statusCode(200)
+                .body("$.size()", is(0));
+                
     }
  // @formatter:on
 }

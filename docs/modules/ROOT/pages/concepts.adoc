@@ -72,6 +72,33 @@ IMPORTANT: Change the version only when there is good reason for it. As a rule o
  recommended to not change the workflow version if the change is backward compatible.
  In other words, change the version only when the modifications to the workflow make the
  existing instances impossible to continue.
+ 
+In addition, service can be configured to route unversioned requests to latest version or to the version
+ given instance belongs to. Let's look at an example:
+ 
+There are following workflow definitions in the service:
+ 
+ - `orders` with version `1`
+ - `orders` with version `2`
+ 
+These workflow definitions are then exposed via service interface with following endpoints
+ 
+ - `/v1/orders` for version 1
+ - `/v2/orders` for version 2
+ 
+So when consumers of this service interact with it they need to take the decision which version they 
+want to use. In many cases that is expected and explicit decision on which version shall be used is 
+desired. Though there are also cases when consumers should be unaware of the versions and by that could benefit
+simplified usage pattern.
+
+To make this happen, service can be configured with `service-route-to-latest` feature that will make this happen
+so consumers could use the `/orders` endpoint - without the version prefix.
+
+IMPORTANT: When requests are made with instance id they are routed to the version they belong to instead of the latest.
+
+To make use of the routing following property needs to be set:
+`quarkus.automatiko.service-route-to-latest=true` inside the `application.properties` file or via variables (env etc)
+
 
 == Types of workflows
 
