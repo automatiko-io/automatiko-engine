@@ -26,8 +26,8 @@
   <bpmn2:itemDefinition id="ItemDefinition_170" isCollection="false" structureRef="Object"/>
   <bpmn2:itemDefinition id="ItemDefinition_206" isCollection="false" structureRef="Object"/>
   <bpmn2:itemDefinition id="ItemDefinition_207" isCollection="false" structureRef="Object"/>
-  <bpmn2:process id="users" tns:packageName="org.acme.travels" tns:version="1" name="Users" isExecutable="true" processType="Public">
-    <bpmn2:documentation id="Documentation_1"><![CDATA[A workflow testing use of identity functions within the workflow definition version 1]]></bpmn2:documentation>
+  <bpmn2:process id="users" tns:packageName="org.acme.travels" tns:version="2" name="Users" isExecutable="true" processType="Public">
+    <bpmn2:documentation id="Documentation_1"><![CDATA[A workflow testing use of identity functions within the workflow definition version 2]]></bpmn2:documentation>
     <bpmn2:extensionElements>
       <tns:metaData name="accessPolicy">
         <tns:metaValue><![CDATA[participants]]></tns:metaValue>

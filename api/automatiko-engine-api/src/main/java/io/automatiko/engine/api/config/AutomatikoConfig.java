@@ -8,6 +8,10 @@ public class AutomatikoConfig {
         return Optional.empty();
     };
 
+    public Optional<Boolean> serviceRouteToLatest() {
+        return Optional.empty();
+    };
+
     public Optional<Boolean> instanceLocking() {
         return Optional.of(true);
     };

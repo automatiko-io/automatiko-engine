@@ -23,6 +23,13 @@ public class AutomatikoRuntimeConfig extends AutomatikoConfig {
     public Optional<String> serviceUrl;
 
     /**
+     * Specifies if there should be routing to latest version enabled, applies to ReST service interface
+     * and when versions are used. It is by default turned off
+     */
+    @ConfigItem
+    public Optional<Boolean> serviceRouteToLatest;
+
+    /**
      * Determines if instance locking should be used, defaults to true
      */
     @ConfigItem
@@ -81,6 +88,11 @@ public class AutomatikoRuntimeConfig extends AutomatikoConfig {
     @Override
     public Optional<String> serviceUrl() {
         return serviceUrl;
+    }
+
+    @Override
+    public Optional<Boolean> serviceRouteToLatest() {
+        return serviceRouteToLatest;
     }
 
     @Override
