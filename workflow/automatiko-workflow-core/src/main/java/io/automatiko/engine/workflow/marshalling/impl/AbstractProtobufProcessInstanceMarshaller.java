@@ -230,6 +230,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
             NodeInstance nodeInstance, Object _instance) throws IOException {
         AutomatikoMessages.ProcessInstance.NodeInstance.Builder _node = AutomatikoMessages.ProcessInstance.NodeInstance
                 .newBuilder().setId(nodeInstance.getId()).setNodeId(nodeInstance.getNodeId())
+                .setNodeDefId(nodeInstance.getNodeDefinitionId())
                 .setLevel(((io.automatiko.engine.workflow.process.instance.NodeInstance) nodeInstance).getLevel())
                 .setSlaCompliance(
                         ((io.automatiko.engine.workflow.process.instance.NodeInstance) nodeInstance).getSlaCompliance())
@@ -895,6 +896,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
 
         nodeInstance.setNodeId(_node.getNodeId());
         nodeInstance.setId(_node.getId());
+        nodeInstance.setNodeDefinitionId(_node.getNodeDefId());
         nodeInstance.setNodeInstanceContainer(nodeInstanceContainer);
         nodeInstance.setProcessInstance(
                 (io.automatiko.engine.workflow.process.instance.WorkflowProcessInstance) processInstance);

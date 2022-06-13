@@ -60,6 +60,7 @@ public abstract class NodeInstanceImpl
 
     private String id;
     private long nodeId;
+    private String nodeDefinitionId;
     private WorkflowProcessInstance processInstance;
     private io.automatiko.engine.workflow.process.instance.NodeInstanceContainer nodeInstanceContainer;
     private Map<String, Object> metaData = new HashMap<>();
@@ -88,6 +89,10 @@ public abstract class NodeInstanceImpl
 
     public void setNodeId(final long nodeId) {
         this.nodeId = nodeId;
+    }
+
+    public void setNodeDefinitionId(String nodeDefinitionId) {
+        this.nodeDefinitionId = nodeDefinitionId;
     }
 
     public long getNodeId() {
@@ -159,8 +164,27 @@ public abstract class NodeInstanceImpl
 
     public Node getNode() {
         try {
-            return ((io.automatiko.engine.workflow.process.core.NodeContainer) this.nodeInstanceContainer
+            Node node = ((io.automatiko.engine.workflow.process.core.NodeContainer) this.nodeInstanceContainer
                     .getNodeContainer()).internalGetNode(this.nodeId);
+            if (this.nodeDefinitionId != null && !this.nodeDefinitionId.isEmpty()) {
+                String uniqueNodeId = (String) node.getMetaData().get("UniqueId");
+                // verify that the node loaded by id actually match by its unique id to avoid parser order changes
+                if (uniqueNodeId != null && !uniqueNodeId.equals(this.nodeDefinitionId)) {
+                    // if not look up in the node container by unique id to attempt to locate it
+                    for (Node available : node.getParentContainer().getNodes()) {
+                        if (available.getMetaData().getOrDefault("UniqueId", "").equals(this.nodeDefinitionId)) {
+                            // once found reset the node id to avoid further look ups again
+                            node = available;
+                            this.nodeId = node.getId();
+                            return node;
+                        }
+                    }
+                    // otherwise throw a meaningful exception that will provide root cause information
+                    throw new IllegalStateException("Unable to find matching node for node instance " + this.id);
+                }
+            }
+
+            return node;
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Unknown node id: " + this.nodeId + " for node instance " + getUniqueId()
                     + " for process instance " + this.processInstance, e);

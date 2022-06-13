@@ -15922,6 +15922,23 @@ public final class AutomatikoMessages {
        * @return The retryAttempts.
        */
       int getRetryAttempts();
+
+      /**
+       * <code>optional string node_def_id = 12;</code>
+       * @return Whether the nodeDefId field is set.
+       */
+      boolean hasNodeDefId();
+      /**
+       * <code>optional string node_def_id = 12;</code>
+       * @return The nodeDefId.
+       */
+      java.lang.String getNodeDefId();
+      /**
+       * <code>optional string node_def_id = 12;</code>
+       * @return The bytes for nodeDefId.
+       */
+      com.google.protobuf.ByteString
+          getNodeDefIdBytes();
     }
     /**
      * Protobuf type {@code io.automatiko.engine.workflow.marshalling.ProcessInstance.NodeInstance}
@@ -15939,6 +15956,7 @@ public final class AutomatikoMessages {
         id_ = "";
         slaTimerId_ = "";
         retryJobId_ = "";
+        nodeDefId_ = "";
       }
 
       @java.lang.Override
@@ -16031,6 +16049,12 @@ public final class AutomatikoMessages {
               case 88: {
                 bitField0_ |= 0x00000200;
                 retryAttempts_ = input.readInt32();
+                break;
+              }
+              case 98: {
+                com.google.protobuf.ByteString bs = input.readBytes();
+                bitField0_ |= 0x00000400;
+                nodeDefId_ = bs;
                 break;
               }
               default: {
@@ -16350,6 +16374,54 @@ public final class AutomatikoMessages {
         return retryAttempts_;
       }
 
+      public static final int NODE_DEF_ID_FIELD_NUMBER = 12;
+      private volatile java.lang.Object nodeDefId_;
+      /**
+       * <code>optional string node_def_id = 12;</code>
+       * @return Whether the nodeDefId field is set.
+       */
+      @java.lang.Override
+      public boolean hasNodeDefId() {
+        return ((bitField0_ & 0x00000400) != 0);
+      }
+      /**
+       * <code>optional string node_def_id = 12;</code>
+       * @return The nodeDefId.
+       */
+      @java.lang.Override
+      public java.lang.String getNodeDefId() {
+        java.lang.Object ref = nodeDefId_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            nodeDefId_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>optional string node_def_id = 12;</code>
+       * @return The bytes for nodeDefId.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString
+          getNodeDefIdBytes() {
+        java.lang.Object ref = nodeDefId_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          nodeDefId_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
       private byte memoizedIsInitialized = -1;
       @java.lang.Override
       public final boolean isInitialized() {
@@ -16393,6 +16465,9 @@ public final class AutomatikoMessages {
         }
         if (((bitField0_ & 0x00000200) != 0)) {
           output.writeInt32(11, retryAttempts_);
+        }
+        if (((bitField0_ & 0x00000400) != 0)) {
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 12, nodeDefId_);
         }
         unknownFields.writeTo(output);
       }
@@ -16439,6 +16514,9 @@ public final class AutomatikoMessages {
         if (((bitField0_ & 0x00000200) != 0)) {
           size += com.google.protobuf.CodedOutputStream
             .computeInt32Size(11, retryAttempts_);
+        }
+        if (((bitField0_ & 0x00000400) != 0)) {
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(12, nodeDefId_);
         }
         size += unknownFields.getSerializedSize();
         memoizedSize = size;
@@ -16505,6 +16583,11 @@ public final class AutomatikoMessages {
           if (getRetryAttempts()
               != other.getRetryAttempts()) return false;
         }
+        if (hasNodeDefId() != other.hasNodeDefId()) return false;
+        if (hasNodeDefId()) {
+          if (!getNodeDefId()
+              .equals(other.getNodeDefId())) return false;
+        }
         if (!unknownFields.equals(other.unknownFields)) return false;
         return true;
       }
@@ -16558,6 +16641,10 @@ public final class AutomatikoMessages {
         if (hasRetryAttempts()) {
           hash = (37 * hash) + RETRY_ATTEMPTS_FIELD_NUMBER;
           hash = (53 * hash) + getRetryAttempts();
+        }
+        if (hasNodeDefId()) {
+          hash = (37 * hash) + NODE_DEF_ID_FIELD_NUMBER;
+          hash = (53 * hash) + getNodeDefId().hashCode();
         }
         hash = (29 * hash) + unknownFields.hashCode();
         memoizedHashCode = hash;
@@ -16717,6 +16804,8 @@ public final class AutomatikoMessages {
           bitField0_ = (bitField0_ & ~0x00000100);
           retryAttempts_ = 0;
           bitField0_ = (bitField0_ & ~0x00000200);
+          nodeDefId_ = "";
+          bitField0_ = (bitField0_ & ~0x00000400);
           return this;
         }
 
@@ -16789,6 +16878,10 @@ public final class AutomatikoMessages {
             result.retryAttempts_ = retryAttempts_;
             to_bitField0_ |= 0x00000200;
           }
+          if (((from_bitField0_ & 0x00000400) != 0)) {
+            to_bitField0_ |= 0x00000400;
+          }
+          result.nodeDefId_ = nodeDefId_;
           result.bitField0_ = to_bitField0_;
           onBuilt();
           return result;
@@ -16873,6 +16966,11 @@ public final class AutomatikoMessages {
           }
           if (other.hasRetryAttempts()) {
             setRetryAttempts(other.getRetryAttempts());
+          }
+          if (other.hasNodeDefId()) {
+            bitField0_ |= 0x00000400;
+            nodeDefId_ = other.nodeDefId_;
+            onChanged();
           }
           this.mergeUnknownFields(other.unknownFields);
           onChanged();
@@ -17506,6 +17604,90 @@ public final class AutomatikoMessages {
         public Builder clearRetryAttempts() {
           bitField0_ = (bitField0_ & ~0x00000200);
           retryAttempts_ = 0;
+          onChanged();
+          return this;
+        }
+
+        private java.lang.Object nodeDefId_ = "";
+        /**
+         * <code>optional string node_def_id = 12;</code>
+         * @return Whether the nodeDefId field is set.
+         */
+        public boolean hasNodeDefId() {
+          return ((bitField0_ & 0x00000400) != 0);
+        }
+        /**
+         * <code>optional string node_def_id = 12;</code>
+         * @return The nodeDefId.
+         */
+        public java.lang.String getNodeDefId() {
+          java.lang.Object ref = nodeDefId_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              nodeDefId_ = s;
+            }
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>optional string node_def_id = 12;</code>
+         * @return The bytes for nodeDefId.
+         */
+        public com.google.protobuf.ByteString
+            getNodeDefIdBytes() {
+          java.lang.Object ref = nodeDefId_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            nodeDefId_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>optional string node_def_id = 12;</code>
+         * @param value The nodeDefId to set.
+         * @return This builder for chaining.
+         */
+        public Builder setNodeDefId(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000400;
+          nodeDefId_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string node_def_id = 12;</code>
+         * @return This builder for chaining.
+         */
+        public Builder clearNodeDefId() {
+          bitField0_ = (bitField0_ & ~0x00000400);
+          nodeDefId_ = getDefaultInstance().getNodeDefId();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string node_def_id = 12;</code>
+         * @param value The bytes for nodeDefId to set.
+         * @return This builder for chaining.
+         */
+        public Builder setNodeDefIdBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000400;
+          nodeDefId_ = value;
           onChanged();
           return this;
         }
@@ -53127,7 +53309,7 @@ public final class AutomatikoMessages {
       "atiko.engine.workflow.marshalling.Trigge" +
       "r\"T\n\013TriggerType\022\010\n\004CRON\020\000\022\014\n\010INTERVAL\020\001" +
       "\022\021\n\rPOINT_IN_TIME\020\002\022\032\n\026COMPOSITE_MAX_DUR" +
-      "ATION\020\003\"\024\n\013ProcessData*\005\010\n\020\310\001\"\214,\n\017Proces" +
+      "ATION\020\003\"\024\n\013ProcessData*\005\010\n\020\310\001\"\241,\n\017Proces" +
       "sInstance\022\024\n\014process_type\030\001 \001(\t\022\n\n\002id\030\002 " +
       "\001(\t\022\022\n\nprocess_id\030\003 \001(\t\022\027\n\017process_versi" +
       "on\030\037 \001(\t\022\r\n\005state\030\004 \001(\005\022\035\n\025node_instance" +
@@ -53171,7 +53353,7 @@ public final class AutomatikoMessages {
       "rror\022\020\n\010error_id\030\037 \001(\t\022\025\n\rerror_node_id\030" +
       "\031 \001(\t\022\025\n\rerror_message\030\032 \001(\t\022\025\n\rerror_de" +
       "tails\030  \001(\t\032=\n\027SwimlaneContextInstance\022\020" +
-      "\n\010swimlane\030\001 \001(\t\022\020\n\010actor_id\030\002 \001(\t\032\243\002\n\014N" +
+      "\n\010swimlane\030\001 \001(\t\022\020\n\010actor_id\030\002 \001(\t\032\270\002\n\014N" +
       "odeInstance\022\n\n\002id\030\001 \001(\t\022\017\n\007node_id\030\002 \001(\003" +
       "\022_\n\007content\030\004 \001(\0132N.io.automatiko.engine" +
       ".workflow.marshalling.ProcessInstance.No" +
@@ -53179,146 +53361,147 @@ public final class AutomatikoMessages {
       "timer_id\030\006 \001(\t\022\024\n\014sla_due_date\030\007 \001(\003\022\026\n\016" +
       "sla_compliance\030\010 \001(\005\022\024\n\014trigger_date\030\t \001" +
       "(\003\022\024\n\014retry_job_id\030\n \001(\t\022\026\n\016retry_attemp" +
-      "ts\030\013 \001(\005\0328\n\026ExclusiveGroupInstance\022\036\n\026gr" +
-      "oup_node_instance_id\030\001 \003(\t\032\206\031\n\023NodeInsta" +
-      "nceContent\022Y\n\004type\030\001 \001(\0162K.io.automatiko" +
-      ".engine.workflow.marshalling.ProcessInst" +
-      "ance.NodeInstanceType\022l\n\010rule_set\030\002 \001(\0132" +
-      "Z.io.automatiko.engine.workflow.marshall" +
-      "ing.ProcessInstance.NodeInstanceContent." +
-      "RuleSetNode\022p\n\nhuman_task\030\003 \001(\0132\\.io.aut" +
-      "omatiko.engine.workflow.marshalling.Proc" +
-      "essInstance.NodeInstanceContent.HumanTas" +
-      "kNode\022n\n\twork_item\030\004 \001(\0132[.io.automatiko" +
-      ".engine.workflow.marshalling.ProcessInst" +
-      "ance.NodeInstanceContent.WorkItemNode\022r\n" +
-      "\013sub_process\030\005 \001(\0132].io.automatiko.engin" +
-      "e.workflow.marshalling.ProcessInstance.N" +
-      "odeInstanceContent.SubProcessNode\022o\n\tmil" +
-      "estone\030\006 \001(\0132\\.io.automatiko.engine.work" +
+      "ts\030\013 \001(\005\022\023\n\013node_def_id\030\014 \001(\t\0328\n\026Exclusi" +
+      "veGroupInstance\022\036\n\026group_node_instance_i" +
+      "d\030\001 \003(\t\032\206\031\n\023NodeInstanceContent\022Y\n\004type\030" +
+      "\001 \001(\0162K.io.automatiko.engine.workflow.ma" +
+      "rshalling.ProcessInstance.NodeInstanceTy" +
+      "pe\022l\n\010rule_set\030\002 \001(\0132Z.io.automatiko.eng" +
+      "ine.workflow.marshalling.ProcessInstance" +
+      ".NodeInstanceContent.RuleSetNode\022p\n\nhuma" +
+      "n_task\030\003 \001(\0132\\.io.automatiko.engine.work" +
       "flow.marshalling.ProcessInstance.NodeIns" +
-      "tanceContent.MilestoneNode\022g\n\005event\030\007 \001(" +
-      "\0132X.io.automatiko.engine.workflow.marsha" +
-      "lling.ProcessInstance.NodeInstanceConten" +
-      "t.EventNode\022g\n\005timer\030\010 \001(\0132X.io.automati" +
-      "ko.engine.workflow.marshalling.ProcessIn" +
-      "stance.NodeInstanceContent.TimerNode\022e\n\004" +
-      "join\030\t \001(\0132W.io.automatiko.engine.workfl" +
-      "ow.marshalling.ProcessInstance.NodeInsta" +
-      "nceContent.JoinNode\022g\n\005state\030\n \001(\0132X.io." +
-      "automatiko.engine.workflow.marshalling.P" +
-      "rocessInstance.NodeInstanceContent.State" +
-      "Node\022v\n\tcomposite\030\013 \001(\0132c.io.automatiko." +
-      "engine.workflow.marshalling.ProcessInsta" +
-      "nce.NodeInstanceContent.CompositeContext" +
-      "Node\022l\n\010for_each\030\014 \001(\0132Z.io.automatiko.e" +
+      "tanceContent.HumanTaskNode\022n\n\twork_item\030" +
+      "\004 \001(\0132[.io.automatiko.engine.workflow.ma" +
+      "rshalling.ProcessInstance.NodeInstanceCo" +
+      "ntent.WorkItemNode\022r\n\013sub_process\030\005 \001(\0132" +
+      "].io.automatiko.engine.workflow.marshall" +
+      "ing.ProcessInstance.NodeInstanceContent." +
+      "SubProcessNode\022o\n\tmilestone\030\006 \001(\0132\\.io.a" +
+      "utomatiko.engine.workflow.marshalling.Pr" +
+      "ocessInstance.NodeInstanceContent.Milest" +
+      "oneNode\022g\n\005event\030\007 \001(\0132X.io.automatiko.e" +
       "ngine.workflow.marshalling.ProcessInstan" +
-      "ce.NodeInstanceContent.ForEachNode\022r\n\013as" +
-      "ync_event\030\r \001(\0132].io.automatiko.engine.w" +
+      "ce.NodeInstanceContent.EventNode\022g\n\005time" +
+      "r\030\010 \001(\0132X.io.automatiko.engine.workflow." +
+      "marshalling.ProcessInstance.NodeInstance" +
+      "Content.TimerNode\022e\n\004join\030\t \001(\0132W.io.aut" +
+      "omatiko.engine.workflow.marshalling.Proc" +
+      "essInstance.NodeInstanceContent.JoinNode" +
+      "\022g\n\005state\030\n \001(\0132X.io.automatiko.engine.w" +
       "orkflow.marshalling.ProcessInstance.Node" +
-      "InstanceContent.AsyncEventNode\032\351\001\n\013RuleS" +
-      "etNode\022\031\n\021timer_instance_id\030\001 \003(\t\022y\n\010map" +
-      "Entry\030\002 \003(\0132g.io.automatiko.engine.workf" +
-      "low.marshalling.ProcessInstance.NodeInst" +
-      "anceContent.RuleSetNode.TextMapEntry\022\027\n\017" +
-      "rule_flow_group\030\003 \001(\t\032+\n\014TextMapEntry\022\014\n" +
-      "\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\032\274\001\n\rHumanTask" +
-      "Node\022\024\n\014work_item_id\030\001 \001(\t\022\031\n\021timer_inst" +
-      "ance_id\030\002 \003(\t\022*\n\"error_handling_process_" +
-      "instance_id\030\003 \001(\t\022N\n\010workitem\030\004 \001(\0132<.io" +
-      ".automatiko.engine.workflow.marshalling." +
-      "HumanTaskWorkItem\032\262\001\n\014WorkItemNode\022\024\n\014wo" +
-      "rk_item_id\030\001 \001(\t\022\031\n\021timer_instance_id\030\002 " +
-      "\003(\t\022*\n\"error_handling_process_instance_i" +
-      "d\030\003 \001(\t\022E\n\010workitem\030\004 \001(\01323.io.automatik" +
-      "o.engine.workflow.marshalling.WorkItem\032g" +
-      "\n\016SubProcessNode\022\033\n\023process_instance_id\030" +
-      "\001 \001(\t\022\031\n\021timer_instance_id\030\002 \003(\t\022\035\n\025proc" +
-      "ess_instance_name\030\003 \001(\t\032*\n\rMilestoneNode" +
-      "\022\031\n\021timer_instance_id\030\001 \003(\t\032\013\n\tEventNode" +
-      "\032\035\n\tTimerNode\022\020\n\010timer_id\030\001 \001(\t\032\261\001\n\010Join" +
-      "Node\022t\n\007trigger\030\001 \003(\0132c.io.automatiko.en" +
-      "gine.workflow.marshalling.ProcessInstanc" +
-      "e.NodeInstanceContent.JoinNode.JoinTrigg" +
-      "er\032/\n\013JoinTrigger\022\017\n\007node_id\030\001 \001(\003\022\017\n\007co" +
-      "unter\030\002 \001(\005\032&\n\tStateNode\022\031\n\021timer_instan" +
-      "ce_id\030\001 \003(\t\032\230\003\n\024CompositeContextNode\022\031\n\021" +
-      "timer_instance_id\030\002 \003(\t\022E\n\010variable\030\003 \003(" +
-      "\01323.io.automatiko.engine.workflow.marsha" +
-      "lling.Variable\022^\n\rnode_instance\030\004 \003(\0132G." +
-      "io.automatiko.engine.workflow.marshallin" +
-      "g.ProcessInstance.NodeInstance\022j\n\017exclus" +
-      "ive_group\030\005 \003(\0132Q.io.automatiko.engine.w" +
-      "orkflow.marshalling.ProcessInstance.Excl" +
-      "usiveGroupInstance\022R\n\017iterationLevels\030\006 " +
-      "\003(\01329.io.automatiko.engine.workflow.mars" +
-      "halling.IterationLevel\032\244\002\n\013ForEachNode\022^" +
-      "\n\rnode_instance\030\001 \003(\0132G.io.automatiko.en" +
-      "gine.workflow.marshalling.ProcessInstanc" +
-      "e.NodeInstance\022E\n\010variable\030\002 \003(\01323.io.au" +
-      "tomatiko.engine.workflow.marshalling.Var" +
-      "iable\022R\n\017iterationLevels\030\003 \003(\01329.io.auto" +
-      "matiko.engine.workflow.marshalling.Itera" +
-      "tionLevel\022\032\n\022sequential_counter\030\004 \001(\005\032$\n" +
-      "\016AsyncEventNode\022\022\n\nevent_type\030\001 \001(\t\"\276\002\n\020" +
-      "NodeInstanceType\022\021\n\rRULE_SET_NODE\020\000\022\023\n\017H" +
-      "UMAN_TASK_NODE\020\001\022\022\n\016WORK_ITEM_NODE\020\002\022\023\n\017" +
-      "SUBPROCESS_NODE\020\003\022\022\n\016MILESTONE_NODE\020\004\022\016\n" +
-      "\nEVENT_NODE\020\005\022\016\n\nTIMER_NODE\020\006\022\r\n\tJOIN_NO" +
-      "DE\020\007\022\016\n\nSTATE_NODE\020\010\022\032\n\026COMPOSITE_CONTEX" +
-      "T_NODE\020\t\022\021\n\rFOR_EACH_NODE\020\n\022\020\n\014DYNAMIC_N" +
-      "ODE\020\013\022\031\n\025EVENT_SUBPROCESS_NODE\020\014\022\024\n\020ASYN" +
-      "C_EVENT_NODE\020\r\022\024\n\020SUB_PROCESS_NODE\020\016\"R\n\010" +
-      "Variable\022\014\n\004name\030\001 \001(\t\022\026\n\016strategy_index" +
-      "\030\002 \001(\005\022\r\n\005value\030\003 \001(\014\022\021\n\tdata_type\030\004 \001(\t" +
-      "\"\255\002\n\010WorkItem\022\n\n\002id\030\001 \001(\t\022\034\n\024process_ins" +
-      "tances_id\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\r\n\005state\030\004" +
-      " \001(\005\022E\n\010variable\030\005 \003(\01323.io.automatiko.e" +
-      "ngine.workflow.marshalling.Variable\022\025\n\rd" +
-      "eployment_id\030\006 \001(\t\022\030\n\020node_instance_id\030\007" +
-      " \001(\t\022\017\n\007node_id\030\010 \001(\003\022\020\n\010phase_id\030\t \001(\t\022" +
-      "\024\n\014phase_status\030\n \001(\t\022\022\n\nstart_date\030\013 \001(" +
-      "\003\022\025\n\rcomplete_date\030\014 \001(\003\"\227\004\n\021HumanTaskWo" +
-      "rkItem\022\n\n\002id\030\001 \001(\t\022\034\n\024process_instances_" +
-      "id\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\r\n\005state\030\004 \001(\005\022E\n" +
-      "\010variable\030\005 \003(\01323.io.automatiko.engine.w" +
-      "orkflow.marshalling.Variable\022\025\n\rdeployme" +
-      "nt_id\030\006 \001(\t\022\030\n\020node_instance_id\030\007 \001(\t\022\017\n" +
-      "\007node_id\030\010 \001(\003\022\020\n\010phase_id\030\t \001(\t\022\024\n\014phas" +
-      "e_status\030\n \001(\t\022\022\n\nstart_date\030\013 \001(\003\022\025\n\rco" +
-      "mplete_date\030\014 \001(\003\022\021\n\ttask_name\030\r \001(\t\022\030\n\020" +
-      "task_description\030\016 \001(\t\022\025\n\rtask_priority\030" +
-      "\017 \001(\t\022\024\n\014actual_owner\030\020 \001(\t\022\021\n\tpot_users" +
-      "\030\021 \003(\t\022\022\n\npot_groups\030\022 \003(\t\022\026\n\016excluded_u" +
-      "sers\030\023 \003(\t\022\023\n\013admin_users\030\024 \003(\t\022\024\n\014admin" +
-      "_groups\030\025 \003(\t\022\033\n\023task_reference_name\030\026 \001" +
-      "(\t\"\360\002\n\014ProcessTimer\022T\n\005timer\030\001 \001(\0132E.io." +
-      "automatiko.engine.workflow.marshalling.P" +
-      "rocessTimer.TimerInstance\022C\n\007trigger\030\002 \001" +
-      "(\01322.io.automatiko.engine.workflow.marsh" +
-      "alling.Trigger\032\304\001\n\rTimerInstance\022\n\n\002id\030\001" +
-      " \001(\003\022\020\n\010timer_id\030\002 \001(\t\022\r\n\005delay\030\003 \001(\003\022\016\n" +
-      "\006period\030\004 \001(\003\022\033\n\023process_instance_id\030\005 \001" +
-      "(\t\022\026\n\016activated_time\030\006 \001(\003\022\026\n\016last_trigg" +
-      "ered\030\007 \001(\003\022\023\n\013repeatLimit\030\010 \001(\005\022\024\n\014next_" +
-      "trigger\030\t \001(\003\"+\n\016IterationLevel\022\n\n\002id\030\001 " +
-      "\001(\t\022\r\n\005level\030\002 \001(\005\"Z\n\021VariableContainer\022" +
-      "E\n\010variable\030\001 \003(\01323.io.automatiko.engine" +
-      ".workflow.marshalling.Variable:\214\001\n\020proce" +
-      "ss_instance\0226.io.automatiko.engine.workf" +
-      "low.marshalling.ProcessData\030\n \003(\0132:.io.a" +
-      "utomatiko.engine.workflow.marshalling.Pr" +
-      "ocessInstance:~\n\twork_item\0226.io.automati" +
-      "ko.engine.workflow.marshalling.ProcessDa" +
-      "ta\030\013 \003(\01323.io.automatiko.engine.workflow" +
-      ".marshalling.WorkItem:H\n\010timer_id\0226.io.a" +
-      "utomatiko.engine.workflow.marshalling.Pr" +
-      "ocessData\030\r \001(\003:\206\001\n\rprocess_timer\0226.io.a" +
-      "utomatiko.engine.workflow.marshalling.Pr" +
-      "ocessData\030\014 \003(\01327.io.automatiko.engine.w" +
-      "orkflow.marshalling.ProcessTimerBD\n.io.a" +
-      "utomatiko.engine.workflow.marshalling.im" +
-      "plB\022AutomatikoMessages"
+      "InstanceContent.StateNode\022v\n\tcomposite\030\013" +
+      " \001(\0132c.io.automatiko.engine.workflow.mar" +
+      "shalling.ProcessInstance.NodeInstanceCon" +
+      "tent.CompositeContextNode\022l\n\010for_each\030\014 " +
+      "\001(\0132Z.io.automatiko.engine.workflow.mars" +
+      "halling.ProcessInstance.NodeInstanceCont" +
+      "ent.ForEachNode\022r\n\013async_event\030\r \001(\0132].i" +
+      "o.automatiko.engine.workflow.marshalling" +
+      ".ProcessInstance.NodeInstanceContent.Asy" +
+      "ncEventNode\032\351\001\n\013RuleSetNode\022\031\n\021timer_ins" +
+      "tance_id\030\001 \003(\t\022y\n\010mapEntry\030\002 \003(\0132g.io.au" +
+      "tomatiko.engine.workflow.marshalling.Pro" +
+      "cessInstance.NodeInstanceContent.RuleSet" +
+      "Node.TextMapEntry\022\027\n\017rule_flow_group\030\003 \001" +
+      "(\t\032+\n\014TextMapEntry\022\014\n\004name\030\001 \001(\t\022\r\n\005valu" +
+      "e\030\002 \001(\t\032\274\001\n\rHumanTaskNode\022\024\n\014work_item_i" +
+      "d\030\001 \001(\t\022\031\n\021timer_instance_id\030\002 \003(\t\022*\n\"er" +
+      "ror_handling_process_instance_id\030\003 \001(\t\022N" +
+      "\n\010workitem\030\004 \001(\0132<.io.automatiko.engine." +
+      "workflow.marshalling.HumanTaskWorkItem\032\262" +
+      "\001\n\014WorkItemNode\022\024\n\014work_item_id\030\001 \001(\t\022\031\n" +
+      "\021timer_instance_id\030\002 \003(\t\022*\n\"error_handli" +
+      "ng_process_instance_id\030\003 \001(\t\022E\n\010workitem" +
+      "\030\004 \001(\01323.io.automatiko.engine.workflow.m" +
+      "arshalling.WorkItem\032g\n\016SubProcessNode\022\033\n" +
+      "\023process_instance_id\030\001 \001(\t\022\031\n\021timer_inst" +
+      "ance_id\030\002 \003(\t\022\035\n\025process_instance_name\030\003" +
+      " \001(\t\032*\n\rMilestoneNode\022\031\n\021timer_instance_" +
+      "id\030\001 \003(\t\032\013\n\tEventNode\032\035\n\tTimerNode\022\020\n\010ti" +
+      "mer_id\030\001 \001(\t\032\261\001\n\010JoinNode\022t\n\007trigger\030\001 \003" +
+      "(\0132c.io.automatiko.engine.workflow.marsh" +
+      "alling.ProcessInstance.NodeInstanceConte" +
+      "nt.JoinNode.JoinTrigger\032/\n\013JoinTrigger\022\017" +
+      "\n\007node_id\030\001 \001(\003\022\017\n\007counter\030\002 \001(\005\032&\n\tStat" +
+      "eNode\022\031\n\021timer_instance_id\030\001 \003(\t\032\230\003\n\024Com" +
+      "positeContextNode\022\031\n\021timer_instance_id\030\002" +
+      " \003(\t\022E\n\010variable\030\003 \003(\01323.io.automatiko.e" +
+      "ngine.workflow.marshalling.Variable\022^\n\rn" +
+      "ode_instance\030\004 \003(\0132G.io.automatiko.engin" +
+      "e.workflow.marshalling.ProcessInstance.N" +
+      "odeInstance\022j\n\017exclusive_group\030\005 \003(\0132Q.i" +
+      "o.automatiko.engine.workflow.marshalling" +
+      ".ProcessInstance.ExclusiveGroupInstance\022" +
+      "R\n\017iterationLevels\030\006 \003(\01329.io.automatiko" +
+      ".engine.workflow.marshalling.IterationLe" +
+      "vel\032\244\002\n\013ForEachNode\022^\n\rnode_instance\030\001 \003" +
+      "(\0132G.io.automatiko.engine.workflow.marsh" +
+      "alling.ProcessInstance.NodeInstance\022E\n\010v" +
+      "ariable\030\002 \003(\01323.io.automatiko.engine.wor" +
+      "kflow.marshalling.Variable\022R\n\017iterationL" +
+      "evels\030\003 \003(\01329.io.automatiko.engine.workf" +
+      "low.marshalling.IterationLevel\022\032\n\022sequen" +
+      "tial_counter\030\004 \001(\005\032$\n\016AsyncEventNode\022\022\n\n" +
+      "event_type\030\001 \001(\t\"\276\002\n\020NodeInstanceType\022\021\n" +
+      "\rRULE_SET_NODE\020\000\022\023\n\017HUMAN_TASK_NODE\020\001\022\022\n" +
+      "\016WORK_ITEM_NODE\020\002\022\023\n\017SUBPROCESS_NODE\020\003\022\022" +
+      "\n\016MILESTONE_NODE\020\004\022\016\n\nEVENT_NODE\020\005\022\016\n\nTI" +
+      "MER_NODE\020\006\022\r\n\tJOIN_NODE\020\007\022\016\n\nSTATE_NODE\020" +
+      "\010\022\032\n\026COMPOSITE_CONTEXT_NODE\020\t\022\021\n\rFOR_EAC" +
+      "H_NODE\020\n\022\020\n\014DYNAMIC_NODE\020\013\022\031\n\025EVENT_SUBP" +
+      "ROCESS_NODE\020\014\022\024\n\020ASYNC_EVENT_NODE\020\r\022\024\n\020S" +
+      "UB_PROCESS_NODE\020\016\"R\n\010Variable\022\014\n\004name\030\001 " +
+      "\001(\t\022\026\n\016strategy_index\030\002 \001(\005\022\r\n\005value\030\003 \001" +
+      "(\014\022\021\n\tdata_type\030\004 \001(\t\"\255\002\n\010WorkItem\022\n\n\002id" +
+      "\030\001 \001(\t\022\034\n\024process_instances_id\030\002 \001(\t\022\014\n\004" +
+      "name\030\003 \001(\t\022\r\n\005state\030\004 \001(\005\022E\n\010variable\030\005 " +
+      "\003(\01323.io.automatiko.engine.workflow.mars" +
+      "halling.Variable\022\025\n\rdeployment_id\030\006 \001(\t\022" +
+      "\030\n\020node_instance_id\030\007 \001(\t\022\017\n\007node_id\030\010 \001" +
+      "(\003\022\020\n\010phase_id\030\t \001(\t\022\024\n\014phase_status\030\n \001" +
+      "(\t\022\022\n\nstart_date\030\013 \001(\003\022\025\n\rcomplete_date\030" +
+      "\014 \001(\003\"\227\004\n\021HumanTaskWorkItem\022\n\n\002id\030\001 \001(\t\022" +
+      "\034\n\024process_instances_id\030\002 \001(\t\022\014\n\004name\030\003 " +
+      "\001(\t\022\r\n\005state\030\004 \001(\005\022E\n\010variable\030\005 \003(\01323.i" +
+      "o.automatiko.engine.workflow.marshalling" +
+      ".Variable\022\025\n\rdeployment_id\030\006 \001(\t\022\030\n\020node" +
+      "_instance_id\030\007 \001(\t\022\017\n\007node_id\030\010 \001(\003\022\020\n\010p" +
+      "hase_id\030\t \001(\t\022\024\n\014phase_status\030\n \001(\t\022\022\n\ns" +
+      "tart_date\030\013 \001(\003\022\025\n\rcomplete_date\030\014 \001(\003\022\021" +
+      "\n\ttask_name\030\r \001(\t\022\030\n\020task_description\030\016 " +
+      "\001(\t\022\025\n\rtask_priority\030\017 \001(\t\022\024\n\014actual_own" +
+      "er\030\020 \001(\t\022\021\n\tpot_users\030\021 \003(\t\022\022\n\npot_group" +
+      "s\030\022 \003(\t\022\026\n\016excluded_users\030\023 \003(\t\022\023\n\013admin" +
+      "_users\030\024 \003(\t\022\024\n\014admin_groups\030\025 \003(\t\022\033\n\023ta" +
+      "sk_reference_name\030\026 \001(\t\"\360\002\n\014ProcessTimer" +
+      "\022T\n\005timer\030\001 \001(\0132E.io.automatiko.engine.w" +
+      "orkflow.marshalling.ProcessTimer.TimerIn" +
+      "stance\022C\n\007trigger\030\002 \001(\01322.io.automatiko." +
+      "engine.workflow.marshalling.Trigger\032\304\001\n\r" +
+      "TimerInstance\022\n\n\002id\030\001 \001(\003\022\020\n\010timer_id\030\002 " +
+      "\001(\t\022\r\n\005delay\030\003 \001(\003\022\016\n\006period\030\004 \001(\003\022\033\n\023pr" +
+      "ocess_instance_id\030\005 \001(\t\022\026\n\016activated_tim" +
+      "e\030\006 \001(\003\022\026\n\016last_triggered\030\007 \001(\003\022\023\n\013repea" +
+      "tLimit\030\010 \001(\005\022\024\n\014next_trigger\030\t \001(\003\"+\n\016It" +
+      "erationLevel\022\n\n\002id\030\001 \001(\t\022\r\n\005level\030\002 \001(\005\"" +
+      "Z\n\021VariableContainer\022E\n\010variable\030\001 \003(\01323" +
+      ".io.automatiko.engine.workflow.marshalli" +
+      "ng.Variable:\214\001\n\020process_instance\0226.io.au" +
+      "tomatiko.engine.workflow.marshalling.Pro" +
+      "cessData\030\n \003(\0132:.io.automatiko.engine.wo" +
+      "rkflow.marshalling.ProcessInstance:~\n\two" +
+      "rk_item\0226.io.automatiko.engine.workflow." +
+      "marshalling.ProcessData\030\013 \003(\01323.io.autom" +
+      "atiko.engine.workflow.marshalling.WorkIt" +
+      "em:H\n\010timer_id\0226.io.automatiko.engine.wo" +
+      "rkflow.marshalling.ProcessData\030\r \001(\003:\206\001\n" +
+      "\rprocess_timer\0226.io.automatiko.engine.wo" +
+      "rkflow.marshalling.ProcessData\030\014 \003(\01327.i" +
+      "o.automatiko.engine.workflow.marshalling" +
+      ".ProcessTimerBD\n.io.automatiko.engine.wo" +
+      "rkflow.marshalling.implB\022AutomatikoMessa" +
+      "ges"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -53425,7 +53608,7 @@ public final class AutomatikoMessages {
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_NodeInstance_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_NodeInstance_descriptor,
-        new java.lang.String[] { "Id", "NodeId", "Content", "Level", "SlaTimerId", "SlaDueDate", "SlaCompliance", "TriggerDate", "RetryJobId", "RetryAttempts", });
+        new java.lang.String[] { "Id", "NodeId", "Content", "Level", "SlaTimerId", "SlaDueDate", "SlaCompliance", "TriggerDate", "RetryJobId", "RetryAttempts", "NodeDefId", });
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_ExclusiveGroupInstance_descriptor =
       internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(6);
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_ExclusiveGroupInstance_fieldAccessorTable = new
