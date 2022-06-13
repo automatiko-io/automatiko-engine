@@ -195,6 +195,7 @@ message ProcessInstance {
         optional int64 trigger_date = 9;
         optional string retry_job_id = 10;
         optional int32 retry_attempts = 11;
+        optional string node_def_id = 12;
     }
 
     message ExclusiveGroupInstance {
