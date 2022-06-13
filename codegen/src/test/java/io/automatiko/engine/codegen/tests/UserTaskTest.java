@@ -40,6 +40,7 @@ import io.automatiko.engine.api.workflow.workitem.NotAuthorizedException;
 import io.automatiko.engine.api.workflow.workitem.Policy;
 import io.automatiko.engine.codegen.AbstractCodegenTest;
 import io.automatiko.engine.codegen.data.Person;
+import io.automatiko.engine.services.execution.BaseFunctions;
 import io.automatiko.engine.services.identity.StaticIdentityProvider;
 import io.automatiko.engine.workflow.DefaultProcessEventListenerConfig;
 import io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition;
@@ -86,6 +87,7 @@ public class UserTaskTest extends AbstractCodegenTest {
         List<WorkItem> workItems = processInstance.workItems(securityPolicy);
         assertEquals(1, workItems.size());
         assertEquals("FirstTask", workItems.get(0).getName());
+        assertEquals("Hello " + BaseFunctions.todayDate() + " task", workItems.get(0).getDescription());
 
         processInstance.completeWorkItem(workItems.get(0).getId(), null, securityPolicy);
         assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
@@ -93,6 +95,7 @@ public class UserTaskTest extends AbstractCodegenTest {
         workItems = processInstance.workItems(securityPolicy);
         assertEquals(1, workItems.size());
         assertEquals("SecondTask", workItems.get(0).getName());
+        assertEquals("", workItems.get(0).getDescription());
 
         processInstance.completeWorkItem(workItems.get(0).getId(), null, securityPolicy);
         assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
