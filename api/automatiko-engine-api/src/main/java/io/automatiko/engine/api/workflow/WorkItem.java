@@ -13,6 +13,8 @@ public interface WorkItem {
 
     String getName();
 
+    String getDescription();
+
     int getState();
 
     String getPhase();
@@ -41,19 +43,22 @@ public interface WorkItem {
 
     default Descriptor toMap() {
 
-        return new Descriptor(getId(), getName().replaceAll("\\s", "_"), getReferenceId().replaceAll("\\s", "_"),
+        return new Descriptor(getId(), getName().replaceAll("\\s", "_"), getDescription(),
+                getReferenceId().replaceAll("\\s", "_"),
                 getFormLink());
     }
 
     public static class Descriptor {
         String id;
         String name;
+        String description;
         String reference;
         String formLink;
 
-        public Descriptor(String id, String name, String reference, String formLink) {
+        public Descriptor(String id, String name, String description, String reference, String formLink) {
             this.id = id;
             this.name = name;
+            this.description = description;
             this.reference = reference;
             this.formLink = formLink;
         }
@@ -72,6 +77,14 @@ public interface WorkItem {
 
         public void setName(String name) {
             this.name = name;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
         }
 
         public String getReference() {

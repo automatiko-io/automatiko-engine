@@ -4,6 +4,8 @@
   <bpmn2:itemDefinition id="ItemDefinition_1" isCollection="false" structureRef="java.lang.String"/>
   <bpmn2:itemDefinition id="ItemDefinition_2" isCollection="false" structureRef="java.lang.Integer"/>
   <bpmn2:itemDefinition id="ItemDefinition_3" isCollection="false" structureRef="java.lang.Boolean"/>
+  <bpmn2:itemDefinition id="ItemDefinition_4" isCollection="false" structureRef="Object"/>
+  <bpmn2:itemDefinition id="ItemDefinition_5" isCollection="false" structureRef="Object"/>
   <bpmn2:process id="UserTasksProcess" tns:packageName="org.kie.kogito.test" name="UserTasksProcess" isExecutable="true" processType="Public">
     <bpmn2:documentation id="Documentation_1"><![CDATA[Processing of human activities in sequence]]></bpmn2:documentation>
     <bpmn2:startEvent id="StartEvent_1" name="StartProcess">
@@ -64,6 +66,10 @@
       </bpmn2:dataInputAssociation>
       <bpmn2:dataInputAssociation id="DataInputAssociation_4">
         <bpmn2:targetRef>DataInput_4</bpmn2:targetRef>
+        <bpmn2:assignment id="Assignment_4">
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_17">#{\&quot;Hello \&quot; + name + \&quot; task\&quot;}</bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_13">DataInput_4</bpmn2:to>
+        </bpmn2:assignment>
       </bpmn2:dataInputAssociation>
       <bpmn2:dataInputAssociation id="DataInputAssociation_5">
         <bpmn2:targetRef>DataInput_5</bpmn2:targetRef>
@@ -250,6 +256,12 @@
         <di:waypoint xsi:type="dc:Point" x="545.0" y="63.0"/>
         <di:waypoint xsi:type="dc:Point" x="579.0" y="63.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_7"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_DataInputAssociation_1" bpmnElement="DataInputAssociation_4" sourceElement="BPMNShape_DataObject_1" targetElement="BPMNShape_UserTask_1">
+        <di:waypoint xsi:type="dc:Point" x="118.0" y="180.0"/>
+        <di:waypoint xsi:type="dc:Point" x="118.0" y="71.0"/>
+        <di:waypoint xsi:type="dc:Point" x="186.0" y="71.0"/>
+        <bpmndi:BPMNLabel/>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
     <bpmndi:BPMNLabelStyle id="BPMNLabelStyle_1">

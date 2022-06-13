@@ -12,6 +12,7 @@ public class BaseWorkItem implements WorkItem {
     private final String processInstanceId;
     private final String nodeInstanceId;
     private final String name;
+    private final String description;
 
     private final int state;
     private String phase;
@@ -25,12 +26,13 @@ public class BaseWorkItem implements WorkItem {
     private Map<String, Object> results;
 
     public BaseWorkItem(String processInstanceId, String nodeInstanceId, String id, String referenceId, String name,
-            int state, String phase, String phaseStatus, Map<String, Object> results, String formLink) {
+            String description, int state, String phase, String phaseStatus, Map<String, Object> results, String formLink) {
         this.id = id;
         this.processInstanceId = processInstanceId;
         this.nodeInstanceId = nodeInstanceId;
         this.referenceId = referenceId;
         this.name = name;
+        this.description = description;
         this.state = state;
         this.phase = phase;
         this.phaseStatus = phaseStatus;
@@ -39,13 +41,15 @@ public class BaseWorkItem implements WorkItem {
     }
 
     public BaseWorkItem(String processInstanceId, String nodeInstanceId, String id, String referenceId, String name,
-            int state, String phase, String phaseStatus, Map<String, Object> parameters, Map<String, Object> results,
+            String description, int state, String phase, String phaseStatus, Map<String, Object> parameters,
+            Map<String, Object> results,
             String formLink) {
         this.id = id;
         this.processInstanceId = processInstanceId;
         this.nodeInstanceId = nodeInstanceId;
         this.referenceId = referenceId;
         this.name = name;
+        this.description = description;
         this.state = state;
         this.phase = phase;
         this.phaseStatus = phaseStatus;
@@ -62,6 +66,11 @@ public class BaseWorkItem implements WorkItem {
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
     }
 
     @Override

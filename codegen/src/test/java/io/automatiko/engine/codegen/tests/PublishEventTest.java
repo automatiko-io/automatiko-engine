@@ -31,6 +31,7 @@ import io.automatiko.engine.services.event.UserTaskInstanceDataEvent;
 import io.automatiko.engine.services.event.impl.MilestoneEventBody;
 import io.automatiko.engine.services.event.impl.ProcessInstanceEventBody;
 import io.automatiko.engine.services.event.impl.UserTaskInstanceEventBody;
+import io.automatiko.engine.services.execution.BaseFunctions;
 import io.automatiko.engine.services.identity.StaticIdentityProvider;
 
 public class PublishEventTest extends AbstractCodegenTest {
@@ -104,7 +105,8 @@ public class PublishEventTest extends AbstractCodegenTest {
                                                                                               // thus null for leave
                                                                                               // time
 
-        assertUserTaskInstanceEvent(events.get(1), "First Task", null, "1", "Ready", "UserTasksProcess");
+        assertUserTaskInstanceEvent(events.get(1), "First Task", "Hello " + BaseFunctions.todayDate() + " task", "1", "Ready",
+                "UserTasksProcess");
 
         List<WorkItem> workItems = processInstance.workItems(SecurityPolicy.of(new StaticIdentityProvider("john")));
         assertEquals(1, workItems.size());
@@ -126,8 +128,10 @@ public class PublishEventTest extends AbstractCodegenTest {
                                                                                               // thus null for leave
                                                                                               // time
 
-        assertUserTaskInstanceEvent(events.get(1), "Second Task", null, "1", "Ready", "UserTasksProcess");
-        assertUserTaskInstanceEvent(events.get(2), "First Task", null, "1", "Completed", "UserTasksProcess");
+        assertUserTaskInstanceEvent(events.get(1), "Second Task", null, "1", "Ready",
+                "UserTasksProcess");
+        assertUserTaskInstanceEvent(events.get(2), "First Task", "Hello " + BaseFunctions.todayDate() + " task", "1",
+                "Completed", "UserTasksProcess");
 
         workItems = processInstance.workItems(SecurityPolicy.of(new StaticIdentityProvider("john")));
         assertEquals(1, workItems.size());

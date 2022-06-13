@@ -618,6 +618,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                 workItemInstance.getWorkItem().getId(), workItemInstance.buildReferenceId(),
                 (String) workItemInstance.getWorkItem().getParameters().getOrDefault("TaskName",
                         workItemInstance.getNodeName()),
+                (String) workItemInstance.getWorkItem().getParameters().getOrDefault("Description", ""),
                 workItemInstance.getWorkItem().getState(), workItemInstance.getWorkItem().getPhaseId(),
                 workItemInstance.getWorkItem().getPhaseStatus(), workItemInstance.getWorkItem().getParameters(),
                 workItemInstance.getWorkItem().getResults(),
@@ -634,6 +635,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                         ((WorkItemNodeInstance) ni).getWorkItemId(), ((WorkItemNodeInstance) ni).buildReferenceId(),
                         (String) ((WorkItemNodeInstance) ni).getWorkItem().getParameters().getOrDefault("TaskName",
                                 ni.getNodeName()),
+                        (String) ((WorkItemNodeInstance) ni).getWorkItem().getParameters().getOrDefault("Description", ""),
                         ((WorkItemNodeInstance) ni).getWorkItem().getState(),
                         ((WorkItemNodeInstance) ni).getWorkItem().getPhaseId(),
                         ((WorkItemNodeInstance) ni).getWorkItem().getPhaseStatus(),
@@ -912,6 +914,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     protected void removeOnFinish() {
         io.automatiko.engine.api.runtime.process.ProcessInstance processInstance = processInstance();
         this.visibleTo = setVisibleTo();
+
         if (processInstance.getState() != ProcessInstance.STATE_ACTIVE
                 && processInstance.getState() != ProcessInstance.STATE_ERROR) {
             ((WorkflowProcessInstanceImpl) processInstance).removeEventListener(
@@ -931,7 +934,6 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
             unlock(true);
 
         } else {
-            ((WorkflowProcessInstance) processInstance).evaluateTags();
             syncProcessInstance((WorkflowProcessInstance) processInstance);
             unbind(this.variables, processInstance().getVariables());
             addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
@@ -1101,7 +1103,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     }
 
     protected Tags buildTags() {
-
+        ((WorkflowProcessInstance) processInstance).evaluateTags();
         return new Tags() {
 
             Collection<String> values = ((WorkflowProcessInstanceImpl) processInstance()).getTags().stream()
