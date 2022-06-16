@@ -75,6 +75,11 @@ public class ProcessInstanceMarshaller {
     public byte[] marhsallProcessInstance(ProcessInstance<?> processInstance) {
         io.automatiko.engine.api.runtime.process.ProcessInstance pi = ((AbstractProcessInstance<?>) processInstance)
                 .internalGetProcessInstance();
+
+        if (pi == null) {
+            return null;
+        }
+
         ((WorkflowProcessInstanceImpl) pi).internalSetRecoveryItem(null);
         byte[] content = marhsallProcessInstance(pi);
 
