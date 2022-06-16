@@ -508,7 +508,7 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
             try {
                 Map<String, AttributeValue> keyToGet = new HashMap<String, AttributeValue>();
 
-                keyToGet.put(INSTANCE_ID_FIELD, AttributeValue.builder().s(instance.id()).build());
+                keyToGet.put(INSTANCE_ID_FIELD, AttributeValue.builder().s(resolveId(instance.id(), instance)).build());
 
                 GetItemRequest request = GetItemRequest.builder()
                         .key(keyToGet)

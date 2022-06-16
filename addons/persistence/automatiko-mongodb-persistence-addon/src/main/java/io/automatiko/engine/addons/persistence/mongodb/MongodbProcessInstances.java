@@ -448,7 +448,7 @@ public class MongodbProcessInstances implements MutableProcessInstances {
         ((AbstractProcessInstance<?>) instance).internalRemoveProcessInstance(() -> {
 
             try {
-                String resolvedId = instance.id();
+                String resolvedId = resolveId(instance.id(), instance);
 
                 Document returnedItem = collection().find(eq(INSTANCE_ID_FIELD, resolvedId))
                         .projection(Projections
