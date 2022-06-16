@@ -481,7 +481,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
 
             try {
                 Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName).column(CONTENT_FIELD)
-                        .whereColumn(INSTANCE_ID_FIELD).isEqualTo(literal(instance.id()));
+                        .whereColumn(INSTANCE_ID_FIELD).isEqualTo(literal(resolveId(instance.id(), instance)));
 
                 ResultSet rs = cqlSession.execute(select.build());
                 Row row = rs.one();
