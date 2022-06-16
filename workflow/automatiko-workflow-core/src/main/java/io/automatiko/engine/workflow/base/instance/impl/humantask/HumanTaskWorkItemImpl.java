@@ -12,6 +12,9 @@ import io.automatiko.engine.api.auth.SecurityPolicy;
 import io.automatiko.engine.api.runtime.process.HumanTaskWorkItem;
 import io.automatiko.engine.api.workflow.workitem.NotAuthorizedException;
 import io.automatiko.engine.api.workflow.workitem.Policy;
+import io.automatiko.engine.workflow.base.instance.impl.humantask.phases.Skip;
+import io.automatiko.engine.workflow.base.instance.impl.workitem.Abort;
+import io.automatiko.engine.workflow.base.instance.impl.workitem.Complete;
 import io.automatiko.engine.workflow.base.instance.impl.workitem.WorkItemImpl;
 
 public class HumanTaskWorkItemImpl extends WorkItemImpl implements HumanTaskWorkItem {
@@ -148,11 +151,17 @@ public class HumanTaskWorkItemImpl extends WorkItemImpl implements HumanTaskWork
             String currentOwner = getActualOwner();
             // if actual owner is already set always enforce same user
             if (currentOwner != null && !currentOwner.trim().isEmpty() && !user.equals(currentOwner)) {
-                logger.debug(
-                        "Work item {} has already owner assigned so requesting user must match - owner '{}' == requestor '{}'",
-                        getId(), currentOwner, user);
-                throw new NotAuthorizedException(
-                        "User " + user + " is not authorized to access task instance with id " + getId());
+                // if the task is in one of the final states check if there are any eligible user access
+                if (getPhaseId().equals(Complete.ID) || getPhaseId().equals(Abort.ID) || getPhaseId().equals(Skip.ID)) {
+                    checkAssignedOwners(user, identity);
+                } else {
+
+                    logger.debug(
+                            "Work item {} has already owner assigned so requesting user must match - owner '{}' == requestor '{}'",
+                            getId(), currentOwner, user);
+                    throw new NotAuthorizedException(
+                            "User " + user + " is not authorized to access task instance with id " + getId());
+                }
             }
 
             checkAssignedOwners(user, identity);

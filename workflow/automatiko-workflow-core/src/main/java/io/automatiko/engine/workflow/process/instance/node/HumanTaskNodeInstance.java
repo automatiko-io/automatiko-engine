@@ -24,6 +24,7 @@ public class HumanTaskNodeInstance extends WorkItemNodeInstance {
     private static final String BUSINESSADMINISTRATOR_ID = "BusinessAdministratorId";
     private static final String BUSINESSADMINISTRATOR_GROUP_ID = "BusinessAdministratorGroupId";
     private static final String EXCLUDED_OWNER_ID = "ExcludedOwnerId";
+    private static final String EXCLUDED_USERS = "ExcludedUsers";
 
     private transient SwimlaneContextInstance swimlaneContextInstance;
 
@@ -77,6 +78,7 @@ public class HumanTaskNodeInstance extends WorkItemNodeInstance {
         processAssigment(GROUP_ID, workItem, ((HumanTaskWorkItemImpl) workItem).getPotentialGroups());
         processAssigment(GROUPS, workItem, ((HumanTaskWorkItemImpl) workItem).getPotentialGroups());
         processAssigment(EXCLUDED_OWNER_ID, workItem, ((HumanTaskWorkItemImpl) workItem).getExcludedUsers());
+        processAssigment(EXCLUDED_USERS, workItem, ((HumanTaskWorkItemImpl) workItem).getExcludedUsers());
         processAssigment(BUSINESSADMINISTRATOR_ID, workItem, ((HumanTaskWorkItemImpl) workItem).getAdminUsers());
         processAssigment(BUSINESSADMINISTRATOR_GROUP_ID, workItem, ((HumanTaskWorkItemImpl) workItem).getAdminGroups());
 
