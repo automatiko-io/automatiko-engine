@@ -434,8 +434,11 @@ public abstract class AbstractResourceGenerator {
 
         enableValidation(template);
         securityAnnotated(template);
-
-        template.getMembers().sort(new BodyDeclarationComparator());
+        try {
+            template.getMembers().sort(new BodyDeclarationComparator());
+        } catch (IllegalArgumentException e) {
+            // unable to sort members of the class
+        }
 
         return clazz;
     }
