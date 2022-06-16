@@ -159,6 +159,7 @@ public class UserTaskManagementResource {
     /**
      * Retrieve custom template for the email in following order
      * <ul>
+     * <li>'FormName' parameter</li>
      * <li>processId.taskname</li>
      * <li>taskname</li>
      * </ul>
@@ -168,6 +169,12 @@ public class UserTaskManagementResource {
      * @return template for email if found otherwise null
      */
     protected Template getTemplate(String processId, WorkItem humanTask) {
+        String formName = (String) humanTask.getParameters().get("FormName");
+
+        if (formName != null) {
+            return engine.getTemplate(formName);
+        }
+
         Template template = engine.getTemplate(processId + "." + humanTask.getName());
         if (template == null) {
             template = engine.getTemplate(humanTask.getName());
