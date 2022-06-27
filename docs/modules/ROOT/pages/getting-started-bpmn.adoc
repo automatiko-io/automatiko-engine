@@ -34,7 +34,7 @@ link:https://github.com/automatiko-io/bpmn2-modeler/releases/download/2.0.0/org.
 
 Steps to install Automatiko BPMN modeler
 
-- Download `https://github.com/automatiko-io/bpmn2-modeler/releases/download/2.0.0/org.eclipse.bpmn2.modeler.updatesite-2.0.0.zip`
+- Download latest update site of Automtiko modeler from `https://github.com/automatiko-io/bpmn2-modeler/releases/latest`
 into local folder
 - Select `Help` from the menu
 - Select `Install new software`
