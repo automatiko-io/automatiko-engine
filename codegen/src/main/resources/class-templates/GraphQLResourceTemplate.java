@@ -11,6 +11,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import javax.json.JsonValue.ValueType;
+
 import org.eclipse.microprofile.graphql.GraphQLApi;
 import org.eclipse.microprofile.graphql.Description;
 import org.eclipse.microprofile.graphql.Mutation;
@@ -19,6 +21,7 @@ import org.eclipse.microprofile.graphql.DefaultValue;
 import org.eclipse.microprofile.graphql.Name;
 
 import io.smallrye.mutiny.Multi;
+import io.smallrye.graphql.api.Context;
 import io.smallrye.graphql.api.Subscription;
 
 import io.automatiko.engine.api.Application;
@@ -56,9 +59,11 @@ public class $Type$GraphQLResource {
     
     IdentitySupplier identitySupplier;
     
+    Context context;
     
     @javax.inject.Inject
-    public $ResourceType$(Application application, @javax.inject.Named("$id$$version$") Process<$Type$> process, IdentitySupplier identitySupplier, GraphQLProcessSubscriptionEventPublisher subscriptionPublisher) {
+    public $ResourceType$(Context context, Application application, @javax.inject.Named("$id$$version$") Process<$Type$> process, IdentitySupplier identitySupplier, GraphQLProcessSubscriptionEventPublisher subscriptionPublisher) {
+        this.context = context;
         this.application = application;
         this.process = process;
         this.identitySupplier = identitySupplier;
@@ -263,10 +268,21 @@ public class $Type$GraphQLResource {
     
     protected $Type$Output mapOutput($Type$Output output, $Type$ resource, String businessKey, ProcessInstance<$Type$> pi) {
         output.fromMap(businessKey != null ? businessKey: resource.getId(), resource.toMap());
-        
-        output.setMetadata(pi.metadata());
+        if (metadataRequested()) {
+            output.setMetadata(pi.metadata());
+        }
         
         return output;
+    }
+    
+    protected boolean metadataRequested() {
+        return context.getSelectedFields().stream().anyMatch(field -> {
+            if (field.getValueType() == ValueType.OBJECT && field.asJsonObject().containsKey("metadata")) {
+                return true;
+            }
+
+            return false;
+        });
     }
     
     protected void tracing(ProcessInstance<?> intance) {
