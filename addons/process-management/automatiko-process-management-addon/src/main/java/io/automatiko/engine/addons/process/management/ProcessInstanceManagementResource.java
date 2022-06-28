@@ -3,11 +3,13 @@ package io.automatiko.engine.addons.process.management;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import javax.enterprise.inject.Instance;
@@ -701,34 +703,42 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
         identitySupplier.buildIdentityProvider(user, groups);
-        ArchivedProcessInstance archived = UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-            Process<?> process = processData.get(processId);
-            if (process == null) {
-                throw new ProcessInstanceNotFoundException(instanceId);
-            }
-
-            Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId);
-
-            if (instance.isEmpty()) {
-                throw new ProcessInstanceNotFoundException(instanceId);
-            }
-
-            ProcessInstance<?> pi = instance.get();
-
-            return pi.archive(new JsonArchiveBuilder());
-
-        });
         try {
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
-            archived.writeAsZip(output);
+            AtomicReference<String> archiveId = new AtomicReference<String>();
+            ByteArrayOutputStream output = UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
+                Process<?> process = processData.get(processId);
+                if (process == null) {
+                    throw new ProcessInstanceNotFoundException(instanceId);
+                }
+
+                Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId);
+
+                if (instance.isEmpty()) {
+                    throw new ProcessInstanceNotFoundException(instanceId);
+                }
+
+                ProcessInstance<?> pi = instance.get();
+
+                ArchivedProcessInstance archived = pi.archive(new JsonArchiveBuilder());
+                archiveId.set(archived.getId());
+                ByteArrayOutputStream data = new ByteArrayOutputStream();
+                try {
+                    archived.writeAsZip(data);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+
+                if (abort) {
+                    cancelProcessInstanceId(processId, instanceId, "active", user, groups);
+                }
+
+                return data;
+
+            });
+
             ResponseBuilder builder = Response.ok().entity(output.toByteArray());
-
-            if (abort) {
-                cancelProcessInstanceId(processId, instanceId, "active", user, groups);
-            }
-
             return builder.header("Content-Type", "application/zip").header("Content-Disposition",
-                    "attachment; filename=" + archived.getId() + ".zip").build();
+                    "attachment; filename=" + archiveId + ".zip").build();
         } catch (Exception e) {
             LOGGER.error("Error generating process instance archive", e);
             return Response.serverError().entity("Error generating process instance archive").build();
