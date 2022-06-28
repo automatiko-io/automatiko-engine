@@ -276,13 +276,18 @@ public class $Type$GraphQLResource {
     }
     
     protected boolean metadataRequested() {
-        return context.getSelectedFields().stream().anyMatch(field -> {
-            if (field.getValueType() == ValueType.OBJECT && field.asJsonObject().containsKey("metadata")) {
-                return true;
-            }
-
-            return false;
-        });
+        try {
+            return context.getSelectedFields().stream().anyMatch(field -> {
+                if (field.getValueType() == ValueType.OBJECT && field.asJsonObject().containsKey("metadata")) {
+                    return true;
+                }
+    
+                return false;
+            });
+        } catch(Exception e) {
+            // in case selected fields cannot be fetched allow to return metadata
+            return true;
+        }
     }
     
     protected void tracing(ProcessInstance<?> intance) {
