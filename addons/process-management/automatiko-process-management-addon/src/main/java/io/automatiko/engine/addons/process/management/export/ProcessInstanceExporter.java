@@ -62,7 +62,9 @@ public class ProcessInstanceExporter {
         }
 
         Process<?> process = processData.get(processId);
-
+        if (process == null) {
+            throw new IllegalStateException("No process found with '" + processId + "' identifier");
+        }
         return process.importInstance(
                 StringExportedProcessInstance.of(instance.getHeader().toString(), instance.getInstance().toString(),
                         instance.getTimers().toString(), s -> {

@@ -281,6 +281,8 @@
 				$('#uploadModal').modal('hide');
 			},
 			error : function(data) {
+				console.log(data.responseJSON.message);
+				$('#failureMessage').text(data.responseJSON.message);
 				$('#failureImport').removeClass('hidden');
 				resetUploadFile();
 				$('#uploadModal').modal('hide');
@@ -659,7 +661,7 @@
 		  </button>
 		</div>
 		<div id="failureImport" class="hidden alert alert-danger alert-dismissible fade show">
-		    Instance failed to import.
+		    Instance failed to import<p id="failureMessage"></p>
 		    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
 		    	<span aria-hidden="true">&times;</span>
 		  </button>
