@@ -47,7 +47,7 @@ public class GraphQLResourceGenerator extends AbstractResourceGenerator {
     @Override
     public void collectSubProcessModels(String dataClassName, ClassOrInterfaceDeclaration template,
             List<AbstractResourceGenerator> subprocessGenerators) {
-        String collectModelTemplate = "pi.subprocesses().stream().filter(p -> p.process().id().equals(\"$piId$\")).forEach(p -> output.add$UpId$(getSubModel_$piId$((ProcessInstance<$Type$>) p)));";
+        String collectModelTemplate = "pi.subprocesses().stream().filter(p -> p.process().id().equals(\"$piId$\")).forEach(p -> output.add$UpId$(getSubModel_$modelpiId$((ProcessInstance<$Type$>) p)));";
 
         for (AbstractResourceGenerator generator : subprocessGenerators) {
             MethodDeclaration mapOutput = template
@@ -59,8 +59,10 @@ public class GraphQLResourceGenerator extends AbstractResourceGenerator {
             BlockStmt body = mapOutput.getBody().get();
 
             body.findFirst(ReturnStmt.class).ifPresent(r -> r.remove());
-            String sModel = collectModelTemplate.replaceAll("\\$piId\\$", generator.processId())
-                    .replaceAll("\\$UpId\\$", StringUtils.capitalize(generator.processId())).replaceAll("\\$Type\\$",
+            String sModel = collectModelTemplate.replaceAll("\\$piId\\$", generator.processId() + generator.version())
+                    .replaceAll("\\$UpId\\$", StringUtils.capitalize(generator.processId() + generator.version()))
+                    .replaceAll("\\$modelpiId\\$", generator.processId())
+                    .replaceAll("\\$Type\\$",
                             generator.generatorModelClass());
 
             body.addStatement(StaticJavaParser.parseStatement(sModel));

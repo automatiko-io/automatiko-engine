@@ -157,7 +157,7 @@ public class $Type$GraphQLResource {
         });
     }
      
-    @Mutation("update_model_$name$")
+    @Mutation("update_model_$name$$prefix$")
     @Description("Updates data of $name$ instance with given id")
     public $Type$Output update_model_$name$(@Name("id")  String id, 
             @Name("user") final String user, 
