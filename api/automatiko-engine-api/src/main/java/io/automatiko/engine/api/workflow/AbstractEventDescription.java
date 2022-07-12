@@ -17,6 +17,8 @@ public class AbstractEventDescription<T> implements EventDescription<T> {
 
     protected String processInstanceId;
 
+    protected String referenceId;
+
     protected T dataType;
 
     protected Map<String, String> properties = new HashMap<>();
@@ -79,6 +81,11 @@ public class AbstractEventDescription<T> implements EventDescription<T> {
     @Override
     public String getProcessInstanceId() {
         return processInstanceId;
+    }
+
+    @Override
+    public String getReferenceId() {
+        return referenceId;
     }
 
     @Override

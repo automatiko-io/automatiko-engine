@@ -5,22 +5,24 @@ import java.util.Map;
 
 public interface EventDescription<T> {
 
-	String getId();
+    String getId();
 
-	String getEvent();
+    String getEvent();
 
-	String getNodeId();
+    String getNodeId();
 
-	String getNodeName();
+    String getNodeName();
 
-	String getEventType();
+    String getEventType();
 
-	String getNodeInstanceId();
+    String getNodeInstanceId();
 
-	String getProcessInstanceId();
+    String getProcessInstanceId();
 
-	T getDataType();
+    String getReferenceId();
 
-	Map<String, String> getProperties();
+    T getDataType();
+
+    Map<String, String> getProperties();
 
 }

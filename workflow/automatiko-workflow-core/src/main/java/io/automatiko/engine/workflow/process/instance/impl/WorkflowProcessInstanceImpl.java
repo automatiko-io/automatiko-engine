@@ -932,7 +932,7 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
                                     }
                                     eventDesciptions.add(new BaseEventDescription(eventName,
                                             (String) startNode.getMetaData().get("UniqueId"), startNode.getName(), "signal",
-                                            null, getId(), dataType));
+                                            null, getId(), buildReferenceId(eventName), dataType));
                                 }
 
                             }
@@ -943,17 +943,25 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
                                 .forEach(ni -> eventDesciptions.add(new BaseEventDescription(((EventNode) n).getType(),
                                         (String) n.getMetaData().get(UNIQUE_ID), n.getName(),
                                         (String) n.getMetaData().getOrDefault(EVENT_TYPE, EVENT_TYPE_SIGNAL),
-                                        ni.getId(), getId(), finalDataType)));
+                                        ni.getId(), getId(), buildReferenceId(((EventNode) n).getType()), finalDataType)));
                     } else if (n instanceof StateNode) {
                         getNodeInstances(n.getId()).forEach(ni -> eventDesciptions.add(new BaseEventDescription(
                                 (String) n.getMetaData().get(CONDITION), (String) n.getMetaData().get(UNIQUE_ID),
                                 n.getName(), (String) n.getMetaData().getOrDefault(EVENT_TYPE, EVENT_TYPE_SIGNAL),
-                                ni.getId(), getId(), null)));
+                                ni.getId(), getId(), "", null)));
                     }
 
                 });
 
         return eventDesciptions;
+    }
+
+    public String buildReferenceId(String eventName) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("/" + getReferenceFromRoot())
+                .append(eventName);
+
+        return builder.toString();
     }
 
     @Override

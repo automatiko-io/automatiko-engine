@@ -64,6 +64,11 @@ public class GraphQLModelAugmentor implements Consumer<CompilationUnit> {
                     OutputModelClassGenerator outputModelClassGenerator = (OutputModelClassGenerator) context
                             .getGenerator("OutputModelClassGenerator", entry.getValue());
 
+                    if (outputModelClassGenerator == null) {
+                        throw new IllegalStateException("Unable to find model class for process '" + entry.getKey()
+                                + "', most likely does not match on process id and version");
+                    }
+
                     FieldDeclaration subprocessModelField = new FieldDeclaration().addVariable(new VariableDeclarator(
                             new ClassOrInterfaceType(null, new SimpleName(List.class.getCanonicalName()),
                                     NodeList.nodeList(new ClassOrInterfaceType(null, outputModelClassGenerator.className()))),
