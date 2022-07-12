@@ -403,7 +403,7 @@ public class EventNodeInstance extends ExtendedNodeInstanceImpl
 
         }
         return Collections.singleton(new BaseEventDescription(getEventType(), getNodeDefinitionId(), getNodeName(),
-                "signal", getId(), getProcessInstance().getId(), dataType));
+                "signal", getId(), getProcessInstance().getId(), buildReferenceId(), dataType));
     }
 
     private void handleAssignment(Assignment assignment, Object result) {
@@ -424,5 +424,13 @@ public class EventNodeInstance extends ExtendedNodeInstanceImpl
         } catch (Exception e) {
             throw new RuntimeException("unable to execute Assignment", e);
         }
+    }
+
+    public String buildReferenceId() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("/" + getProcessInstance().getReferenceFromRoot())
+                .append(getEventType());
+
+        return builder.toString();
     }
 }

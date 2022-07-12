@@ -122,6 +122,17 @@ public class InstanceMetadata {
             links.add(link);
         }
 
+        Set<EventDescription<?>> events = instance.events();
+        if (events != null) {
+            events.forEach(event -> {
+                if (event.getEventType().equals("signal")) {
+
+                    Link link = new Link(event.getEventType(), event.getEvent(), event.getReferenceId(), null);
+                    links.add(link);
+                }
+            });
+        }
+
         return new InstanceMetadata(instance.id(), instance.businessKey(), instance.description(), instance.status(),
                 instance.tags().values(), links, instance.startDate(), instance.endDate(), instance.expiresAtDate());
     }

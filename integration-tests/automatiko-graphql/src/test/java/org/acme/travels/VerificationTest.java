@@ -256,7 +256,7 @@ public class VerificationTest {
     @Test
     public void testProcessNotVersionedCompleteViaSignal() {
 
-        String addPayload = "{\"query\":\"mutation {create_scripts(key: \\\"test\\\", data: {name: \\\"mike\\\"}) {id,name}}\\n\",\"variables\":null}";
+        String addPayload = "{\"query\":\"mutation {create_scripts(key: \\\"test\\\", data: {name: \\\"mike\\\"}) {id,name,metadata{links{name,url}}}}\\n\",\"variables\":null}";
         given()
             .contentType(ContentType.JSON)
             .accept(ContentType.JSON)
@@ -266,7 +266,8 @@ public class VerificationTest {
             .then()
                 //.log().all(true)
                 .statusCode(200)
-                .body("data.create_scripts.id", notNullValue(), "data.create_scripts.name", equalTo("mike"), "data.create_scripts.message", nullValue());
+                .body("data.create_scripts.id", notNullValue(), "data.create_scripts.name", equalTo("mike"), "data.create_scripts.message", nullValue(),
+                        "data.create_scripts.metadata.links[0].name", equalTo("update"), "data.create_scripts.metadata.links[0].url", notNullValue());
         
        
         String getInstances = "{\"query\":\"query {get_all_scripts(user: \\\"john\\\") {id,name,message}}\\n\",\"variables\":null}";
