@@ -17,7 +17,6 @@
   <description>The Code generation for Automatiko Engine</description>
 
   <properties>
-    <version.org.infinispan.protostream>4.3.0.Alpha8</version.org.infinispan.protostream>
     <java.module.name>io.automatiko.engine.build.codegen</java.module.name>
   </properties>
 
