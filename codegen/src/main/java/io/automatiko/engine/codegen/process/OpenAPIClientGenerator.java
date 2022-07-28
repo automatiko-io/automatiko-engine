@@ -18,6 +18,7 @@ import static org.openapitools.codegen.utils.StringUtils.camelize;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,12 +30,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.openapitools.codegen.ClientOptInput;
-import org.openapitools.codegen.CodegenOperation;
-import org.openapitools.codegen.DefaultGenerator;
-import org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen;
-import org.openapitools.codegen.templating.mustache.LowercaseLambda;
-
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -43,6 +38,18 @@ import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 
+import org.openapitools.codegen.ClientOptInput;
+import org.openapitools.codegen.CodegenOperation;
+import org.openapitools.codegen.DefaultGenerator;
+import org.openapitools.codegen.Generator;
+import org.openapitools.codegen.api.TemplateProcessor;
+import org.openapitools.codegen.api.TemplatingEngineAdapter;
+import org.openapitools.codegen.api.TemplatingExecutor;
+import org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen;
+import org.openapitools.codegen.model.ModelMap;
+import org.openapitools.codegen.model.OperationsMap;
+import org.openapitools.codegen.templating.mustache.LowercaseLambda;
+
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.codegen.GeneratorContext;
 import io.automatiko.engine.codegen.di.DependencyInjectionAnnotator;
@@ -50,6 +57,10 @@ import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.compiler.canonical.OpenAPIMetaData;
 
 public class OpenAPIClientGenerator {
+
+    static {
+        System.setProperty("org.slf4j.simpleLogger.log.org.openapitools", "off");
+    }
 
     private final String relativePath;
 
@@ -66,6 +77,8 @@ public class OpenAPIClientGenerator {
 
     private Set<String> usedTypes = new LinkedHashSet<String>();
 
+    private final static String TEMP_PATH = System.getProperty("java.io.tmpdir");
+
     private JavaJAXRSSpecServerCodegen codegen = new JavaJAXRSSpecServerCodegen() {
 
         @Override
@@ -76,9 +89,9 @@ public class OpenAPIClientGenerator {
 
         @SuppressWarnings("unchecked")
         @Override
-        public Map<String, Object> postProcessOperationsWithModels(Map<String, Object> objs, List<Object> allModels) {
+        public OperationsMap postProcessOperationsWithModels(OperationsMap objs, List<ModelMap> allModels) {
 
-            Map<String, Object> data = super.postProcessOperationsWithModels(objs, allModels);
+            OperationsMap data = super.postProcessOperationsWithModels(objs, allModels);
 
             Map<String, Object> operations = (Map<String, Object>) data.getOrDefault("operations", Collections.emptyMap());
 
@@ -131,6 +144,11 @@ public class OpenAPIClientGenerator {
             }
 
             return data;
+        }
+
+        @Override
+        public void postProcess() {
+
         }
 
     };
@@ -212,7 +230,7 @@ public class OpenAPIClientGenerator {
                             + resourceClazzName.toLowerCase() + MP_RESTCLIENT_PROP_ON_BEHALF_NAME + "'");
         }
 
-        codegen.setOutputDir("");
+        codegen.setOutputDir(TEMP_PATH);
         codegen.additionalProperties().put(JavaJAXRSSpecServerCodegen.INTERFACE_ONLY, true);
         codegen.additionalProperties().put(JavaJAXRSSpecServerCodegen.USE_BEANVALIDATION, false);
         codegen.additionalProperties().put(JavaJAXRSSpecServerCodegen.USE_SWAGGER_ANNOTATIONS, false);
@@ -227,99 +245,156 @@ public class OpenAPIClientGenerator {
 
         DefaultGenerator generator = new DefaultGenerator(false) {
 
+            private TemplatingEngineAdapter engineAdapter;
+
+            protected TemplatingEngineAdapter engineAdapter() {
+                return this.engineAdapter;
+            }
+
             @Override
-            public File writeToFile(String filename, String contents) throws IOException {
-                if (filename.endsWith(".java")) {
-                    String name = filename.substring(1, filename.lastIndexOf(".")).replaceAll("/", ".");
+            public Generator opts(ClientOptInput opts) {
 
-                    generatedContent.compute(name, (n, c) -> {
-                        if (c == null) {
+                this.setGenerateMetadata(false);
+                Generator generator = super.opts(opts);
+                engineAdapter = this.config.getTemplatingEngine();
+                TemplateProcessor delegate = templateProcessor;
 
-                            CompilationUnit unit = com.github.javaparser.StaticJavaParser.parse(contents);
-                            ClassOrInterfaceDeclaration template = unit.findFirst(ClassOrInterfaceDeclaration.class)
-                                    .get();
-                            if (!isServerlessWorkflow() && unit.getPackageDeclaration().get().getNameAsString()
-                                    .equals("io.automatiko.engine.app.rest")) {
-                                // add wildcard import to all model classes generated
-                                unit.addImport("io.automatiko.engine.app.rest.model.*");
-                            } else if (!isServerlessWorkflow() && unit.getPackageDeclaration().get().getNameAsString()
-                                    .equals("io.automatiko.engine.app.rest.model")) {
-                                // find all import definitions that reference other model classes and add them to used types
-                                unit.getImports().stream()
-                                        .filter(i -> i.getNameAsString().startsWith("io.automatiko.engine.app.rest.model"))
-                                        .forEach(i -> usedTypes.add(i.getNameAsString()));
+                this.templateProcessor = new TemplateProcessor() {
+
+                    public File writeToFile(String filename, String contents) throws IOException {
+                        if (filename.endsWith(".java")) {
+                            // remove the absolute path prefix that is based on java tmp dir
+                            String name = filename.substring(TEMP_PATH.length(), filename.lastIndexOf(".")).replaceAll("/",
+                                    ".");
+                            if (name.startsWith(".")) {
+                                name = name.substring(1);
                             }
+                            generatedContent.compute(name, (n, c) -> {
+                                if (c == null) {
 
-                            Optional<AnnotationExpr> p = template.getAnnotationByName("Path");
+                                    CompilationUnit unit = com.github.javaparser.StaticJavaParser
+                                            .parse(contents);
+                                    ClassOrInterfaceDeclaration template = unit.findFirst(ClassOrInterfaceDeclaration.class)
+                                            .get();
+                                    if (!isServerlessWorkflow() && unit.getPackageDeclaration().get().getNameAsString()
+                                            .equals("io.automatiko.engine.app.rest")) {
+                                        // add wildcard import to all model classes generated
+                                        unit.addImport("io.automatiko.engine.app.rest.model.*");
+                                    } else if (!isServerlessWorkflow() && unit.getPackageDeclaration().get().getNameAsString()
+                                            .equals("io.automatiko.engine.app.rest.model")) {
+                                        // find all import definitions that reference other model classes and add them to used types
+                                        unit.getImports().stream()
+                                                .filter(i -> i.getNameAsString()
+                                                        .startsWith("io.automatiko.engine.app.rest.model"))
+                                                .forEach(i -> usedTypes.add(i.getNameAsString()));
+                                    }
 
-                            if (p.isPresent()) {
-                                SingleMemberAnnotationExpr pathannotation = ((SingleMemberAnnotationExpr) p.get());
-                                final String path = pathannotation.getMemberValue().asStringLiteralExpr().getValue();
-                                template.findAll(MethodDeclaration.class).stream()
-                                        .filter(md -> !md.getNameAsString().equals("update") && md.getParentNode()
-                                                .filter(pn -> (pn instanceof ClassOrInterfaceDeclaration)
-                                                        && ((ClassOrInterfaceDeclaration) pn).getNameAsString()
+                                    Optional<AnnotationExpr> p = template.getAnnotationByName("Path");
+
+                                    if (p.isPresent()) {
+                                        SingleMemberAnnotationExpr pathannotation = ((SingleMemberAnnotationExpr) p.get());
+                                        final String path = pathannotation.getMemberValue().asStringLiteralExpr().getValue();
+                                        template.findAll(MethodDeclaration.class).stream()
+                                                .filter(md -> !md.getNameAsString().equals("update") && md.getParentNode()
+                                                        .filter(pn -> (pn instanceof ClassOrInterfaceDeclaration)
+                                                                && ((ClassOrInterfaceDeclaration) pn).getNameAsString()
+                                                                        .equals("HeaderConfig"))
+                                                        .isEmpty())
+                                                .forEach(md -> {
+
+                                                    Optional<AnnotationExpr> pathAnotation = md.getAnnotationByName("Path");
+                                                    if (pathAnotation.isPresent()) {
+
+                                                        String mpath = ((SingleMemberAnnotationExpr) pathAnotation.get())
+                                                                .getMemberValue().asStringLiteralExpr().getValue();
+                                                        ((SingleMemberAnnotationExpr) pathAnotation.get())
+                                                                .setMemberValue(
+                                                                        new StringLiteralExpr(
+                                                                                (path + mpath).replaceAll("//", "/")));
+                                                    } else {
+                                                        md.addAnnotation(new SingleMemberAnnotationExpr(new Name("Path"),
+                                                                new StringLiteralExpr(path)));
+                                                    }
+
+                                                });
+                                        pathannotation.setMemberValue(new StringLiteralExpr("/"));
+                                    }
+
+                                    return unit.toString();
+                                }
+
+                                CompilationUnit unit = com.github.javaparser.StaticJavaParser.parse(c);
+                                ClassOrInterfaceDeclaration template = unit.findFirst(ClassOrInterfaceDeclaration.class).get();
+
+                                CompilationUnit newunit = com.github.javaparser.StaticJavaParser
+                                        .parse(contents);
+                                ClassOrInterfaceDeclaration newtemplate = newunit.findFirst(ClassOrInterfaceDeclaration.class)
+                                        .get();
+                                final String path = ((SingleMemberAnnotationExpr) newtemplate.getAnnotationByName("Path").get())
+                                        .getMemberValue().asStringLiteralExpr().getValue();
+
+                                List<MethodDeclaration> declarations = newtemplate.findAll(MethodDeclaration.class,
+                                        md -> !md.getNameAsString().equals("update") && md.getParentNode()
+                                                .filter(p -> (p instanceof ClassOrInterfaceDeclaration)
+                                                        && ((ClassOrInterfaceDeclaration) p).getNameAsString()
                                                                 .equals("HeaderConfig"))
-                                                .isEmpty())
-                                        .forEach(md -> {
+                                                .isEmpty());
+                                declarations.stream().forEach(md -> {
+                                    MethodDeclaration cloned = md.clone();
+                                    Optional<AnnotationExpr> pathAnotation = cloned.getAnnotationByName("Path");
+                                    if (pathAnotation.isPresent()) {
 
-                                            Optional<AnnotationExpr> pathAnotation = md.getAnnotationByName("Path");
-                                            if (pathAnotation.isPresent()) {
+                                        String mpath = ((SingleMemberAnnotationExpr) pathAnotation.get())
+                                                .getMemberValue().asStringLiteralExpr().getValue();
+                                        ((SingleMemberAnnotationExpr) pathAnotation.get())
+                                                .setMemberValue(new StringLiteralExpr((path + mpath).replaceAll("//", "/")));
+                                    } else {
+                                        cloned.addAnnotation(new SingleMemberAnnotationExpr(new Name("Path"),
+                                                new StringLiteralExpr(path)));
+                                    }
 
-                                                String mpath = ((SingleMemberAnnotationExpr) pathAnotation.get())
-                                                        .getMemberValue().asStringLiteralExpr().getValue();
-                                                ((SingleMemberAnnotationExpr) pathAnotation.get())
-                                                        .setMemberValue(
-                                                                new StringLiteralExpr((path + mpath).replaceAll("//", "/")));
-                                            } else {
-                                                md.addAnnotation(new SingleMemberAnnotationExpr(new Name("Path"),
-                                                        new StringLiteralExpr(path)));
-                                            }
+                                    template.addMember(cloned);
+                                });
 
-                                        });
-                                pathannotation.setMemberValue(new StringLiteralExpr("/"));
-                            }
+                                return unit.toString();
 
-                            return unit.toString();
+                            });
                         }
 
-                        CompilationUnit unit = com.github.javaparser.StaticJavaParser.parse(c);
-                        ClassOrInterfaceDeclaration template = unit.findFirst(ClassOrInterfaceDeclaration.class).get();
+                        return new File(filename);
+                    }
 
-                        CompilationUnit newunit = com.github.javaparser.StaticJavaParser.parse(contents);
-                        ClassOrInterfaceDeclaration newtemplate = newunit.findFirst(ClassOrInterfaceDeclaration.class)
-                                .get();
-                        final String path = ((SingleMemberAnnotationExpr) newtemplate.getAnnotationByName("Path").get())
-                                .getMemberValue().asStringLiteralExpr().getValue();
+                    @Override
+                    public File write(Map<String, Object> data, String template, File target) throws IOException {
 
-                        List<MethodDeclaration> declarations = newtemplate.findAll(MethodDeclaration.class,
-                                md -> !md.getNameAsString().equals("update") && md.getParentNode()
-                                        .filter(p -> (p instanceof ClassOrInterfaceDeclaration)
-                                                && ((ClassOrInterfaceDeclaration) p).getNameAsString().equals("HeaderConfig"))
-                                        .isEmpty());
-                        declarations.stream().forEach(md -> {
-                            MethodDeclaration cloned = md.clone();
-                            Optional<AnnotationExpr> pathAnotation = cloned.getAnnotationByName("Path");
-                            if (pathAnotation.isPresent()) {
+                        if (engineAdapter().handlesFile(template)) {
+                            // Only pass files with valid endings through template engine
+                            String templateContent = engineAdapter().compileTemplate((TemplatingExecutor) delegate,
+                                    data, template);
+                            return writeToFile(target.getPath(), templateContent);
+                        } else {
 
-                                String mpath = ((SingleMemberAnnotationExpr) pathAnotation.get())
-                                        .getMemberValue().asStringLiteralExpr().getValue();
-                                ((SingleMemberAnnotationExpr) pathAnotation.get())
-                                        .setMemberValue(new StringLiteralExpr((path + mpath).replaceAll("//", "/")));
-                            } else {
-                                cloned.addAnnotation(new SingleMemberAnnotationExpr(new Name("Path"),
-                                        new StringLiteralExpr(path)));
-                            }
+                            return delegate.write(data, template, target);
+                        }
+                    }
 
-                            template.addMember(cloned);
-                        });
+                    @Override
+                    public void skip(Path path, String context) {
+                        delegate.skip(path, context);
+                    }
 
-                        return unit.toString();
+                    @Override
+                    public void ignore(Path path, String context) {
+                        delegate.ignore(path, context);
+                    }
 
-                    });
-                }
+                    @Override
+                    public File writeToFile(String filename, byte[] contents) throws IOException {
+                        return delegate.writeToFile(filename, contents);
+                    }
+                };
 
-                return new File(filename);
+                return generator;
             }
 
         };
