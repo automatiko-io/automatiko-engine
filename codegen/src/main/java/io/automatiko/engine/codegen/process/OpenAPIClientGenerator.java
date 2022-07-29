@@ -52,6 +52,7 @@ import org.openapitools.codegen.templating.mustache.LowercaseLambda;
 
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.codegen.GeneratorContext;
+import io.automatiko.engine.codegen.ImportsOrganizer;
 import io.automatiko.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.compiler.canonical.OpenAPIMetaData;
@@ -102,6 +103,7 @@ public class OpenAPIClientGenerator {
             while (it.hasNext()) {
 
                 CodegenOperation codegenOperation = (CodegenOperation) it.next();
+
                 if (!openApiMetadata.operations().contains(codegenOperation.operationId)) {
                     it.remove();
                 } else {
@@ -319,7 +321,7 @@ public class OpenAPIClientGenerator {
                                                 });
                                         pathannotation.setMemberValue(new StringLiteralExpr("/"));
                                     }
-
+                                    ImportsOrganizer.organize(unit);
                                     return unit.toString();
                                 }
 
@@ -355,7 +357,7 @@ public class OpenAPIClientGenerator {
 
                                     template.addMember(cloned);
                                 });
-
+                                ImportsOrganizer.organize(unit);
                                 return unit.toString();
 
                             });
