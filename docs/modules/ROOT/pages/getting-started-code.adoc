@@ -1,0 +1,480 @@
+:imagesdir: ../images
+
+= Getting started based on Java DSL
+
+
+Java DSL of Automatiko allows developers to define their workflows as Java code. This is another 
+alternative to BPMN (visual modeling) and Serverless Workflow (json and yaml). The main advantage is
+that there is nothing else then regular IDE required. 
+
+Java DSL follows fluent API pattern to provide easy to write and easy to read domain specific language 
+to express the workflow definition. At the same time it aims at building fully type based so all 
+code that is going to be executed by workflow is given as code rather than string representation of it.
+
+NOTE: All described examples below can be found in https://github.com/automatiko-io/automatiko-examples/workflows-java-dsl[Automatiko Examples repository]
+
+== Required software
+
+Following are the required software before you can get started with Automatiko
+
+- Java (version 11 or higher)
+- Apache Maven (version 3.6.3 or higher)
+
+In addition, following are good to have though they are not mandatory
+
+- Docker
+- GraalVM
+- Kubernetes like environment (MiniKube, OpenShift, K3s/K3d)
+
+== Create project
+
+Automatiko comes with number of archetypes that allow to easily create project
+with preconfigured set of dependencies needed for given use case
+
+.Automatiko archetypes
+|====
+|Name | Description
+
+|automatiko-archetype
+|Generic project type that comes with basic setup
+
+|automatiko-orchestration-archetype
+|Tailored for service orchestration scenarios
+
+|automatiko-event-stream-archetype
+|Tailored project type for event stream use case backed by Apache Kafka
+
+|automatiko-iot-archetype
+|Tailored project type for IoT use case backed by MQTT
+
+|automatiko-db-archetype
+|Tailored project type for database record processing use case
+
+|automatiko-batch-archetype
+|Tailored project type for batch processing use case
+
+|automatiko-function-archetype
+|Tailored project type for workflow as a function use case
+
+|automatiko-function-flow-archetype
+|Tailored project type for function flow use case backed by KNative
+
+|automatiko-operator-archetype
+|Tailored project type for building Kubernetes Operators
+
+|====
+
+Select archetype that matches the best for the type of automation you're going
+to work with. 
+
+Use following command to generate project based on *automatiko-orchestration-archetype*
+
+[source,plain]
+----
+mvn archetype:generate                                      \
+  -DarchetypeGroupId=io.automatiko.archetypes               \
+  -DarchetypeArtifactId=automatiko-orchestration-archetype  \
+  -DarchetypeVersion=LATEST                                 \
+  -DgroupId=com.acme.workflows                              \
+  -DartifactId=workflow-service
+----
+
+It is standard Maven folder structure so should be rather familiar to most people
+but to just highlight most important parts of it
+
+* pom.xml - configuration of the project that is
+** Maven coordinates (group artifact version)
+** Name and description
+** Dependencies
+** Profiles
+* `src/main/java` folder where all java classes should be created
+* `src/main/resources`
+** folder where application configuration is located - `application.properties`
+** folder where all business assets such as workflow or decision files are to be created
+* `src/test/java` folder where all test related java classes should be created
+* `src/test/resources` folder where all test related additional files should be created
+
+== Create workflow definitions
+
+Workflow definitions created via Java DSL should be placed in class that is annotated with 
+`io.automatiko.engine.api.Workflows`. Each public method that returns `io.automatiko.engine.workflow.builder.WorkflowBuilder`
+is considered a new workflow definition.
+
+Below is the hello world example of workflow definition with Java DSL
+
+[source,java]
+----
+@Workflows
+public class MyWorkflows {
+
+    public WorkflowBuilder helloWorld() {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("hello", "Sample Hello World workflow", "1")
+                .dataObject("name", String.class);
+                
+                builder
+                .start("start here").then()
+                .log("say hello", "Hello world").then()
+                .end("done");
+
+        return builder;
+    }
+ }
+----
+
+That is all needed to build the workflow via Java DSL that is then processed at build time as any other 
+workflow format (e.g. BPMN) and a fully featured service is built from it.
+
+Let's look at different workflow constructs that can be used.
+
+=== Branching execution
+
+A very common use case is to split the execution within the workflow based on conditions.
+
+Java DSL supports following types
+
+- exclusive based on data object conditions - only one path is taken
+- inclusive based on data object conditions - multiple paths can be taken
+- parallel - all paths are taken
+- event based - reacts to incoming events - only one path is taken of the event that arrived first
+
+[source,java]
+----
+@Workflows
+public class MyWorkflows {
+
+    public WorkflowBuilder split() {
+
+		WorkflowBuilder builder = WorkflowBuilder.newWorkflow("split", "Sample workflow with exclusive split");
+
+        String x = builder.dataObject(String.class, "x");
+        String y = builder.dataObject(String.class, "y");
+
+        SplitNodeBuilder split = builder.start("start here").then()
+                .log("log values", "X is {} and Y is {}", "x", "y")
+                .thenSplit("split");
+
+        split.when(() -> x != null).log("first branch", "first branch").then().end("done on first");
+
+        split.when(() -> y != null).log("second branch", "second branch").then().end("done on second");
+
+        return builder;
+    }
+ }
+----
+
+In addition to splitting the execution, another common need is to be able to join (also referred to as merge) of 
+multiple execution paths. Here is similar to split, there are different types
+
+- exclusive - waits for only one path
+- inclusive - waits for all path that are active
+- parallel - waits for all paths
+ 
+ 
+[source,java]
+----
+@Workflows
+public class MyWorkflows {
+
+    public WorkflowBuilder splitAndJoin() {
+
+		WorkflowBuilder builder = WorkflowBuilder.newWorkflow("splitAndJoin", "Sample workflow with exclusive split and join");
+
+        String x = builder.dataObject(String.class, "x");
+        String y = builder.dataObject(String.class, "y");
+
+        SplitNodeBuilder split = builder.start("start here").then()
+                .log("log values", "X is {} and Y is {}", "x", "y")
+                .thenSplit("split");
+
+        JoinNodeBuilder join = split.when(() -> x != null).log("first branch", "first branch").thenJoin("join");
+
+        split.when(() -> y != null).log("second branch", "second branch").thenJoin("join");
+
+        join.then().log("after join", "joined").then().end("done");
+
+        return builder;
+    }
+ }
+---- 
+
+IMPORTANT: Join relies on the name to be able to correlate paths properly so if you want to join different paths
+ via the same join node always use the same name e.g. `.thenJoin("join")`
+ 
+And last sample workflow is to use event based split that will wait either for message arrival or timeout
+
+[source,java]
+----
+@Workflows
+public class MyWorkflows {
+
+    public WorkflowBuilder splitOnEvents() {
+
+		WorkflowBuilder builder = WorkflowBuilder.newWorkflow("splitOnEvents", "Sample workflow with exclusive split on events")
+		.dataObject("customer", Customer.class);
+
+		EventSplitNodeBuilder split = builder.start("start here").then()
+				.log("log", "About to wait for events")
+                .thenSplitOnEvents("wait for events");
+
+        split.onMessage("events").toDataObject("customer").then().log("after message", "Message arrived").then()
+                .end("done on message");
+        split.onTimer("timeout").after(30, TimeUnit.SECONDS).then().log("after timeout", "Timer fired").then()
+                .end("done on timeout");
+
+        return builder;
+    }
+ }
+---- 
+
+IMPORTANT: This workflow uses message events and by that requires additional dependency in the project. Add
+`io.quarkus:quarkus-smallrye-reactive-messaging-kafka` to the project `pom.xml` to have fully working example
+
+
+=== Invoking services
+
+Workflow in most of the cases will delegate the execution to other services, either local (java service methods)
+or external (REST invocation). For this exact purpose a service node is available in Java DSL.
+
+[source,java]
+----
+@Workflows
+public class MyWorkflows {
+
+    public WorkflowBuilder serviceCall() {
+
+		WorkflowBuilder builder = WorkflowBuilder.newWorkflow("service", "Sample workflow calling local service", "1")
+                .dataObject("name", String.class, INPUT_TAG)
+                .dataObject("greeting", String.class, OUTPUT_TAG)
+                .dataObject("age", Integer.class);
+
+        ServiceNodeBuilder service = builder.start("start here").then()
+                .log("execute script", "Hello world").then()
+                .service("greet");
+
+        service.toDataObject("greeting",
+                service.type(MyService.class).sayHello(service.fromDataObject("name"))).then()
+                .end("that's it");
+
+        return builder;
+    }
+ }
+---- 
+
+Few important aspects to note here:
+
+- use of `service.type(clazz)` returns an instance of the service that provides access to its methods so
+definition can be fully type safe and checked by the compiler
+- same foes for parameters that rely on `service.fromDataObject(name)` that will fetch the given data object 
+and use it as parameter of the method at runtime
+- lastly, use of `service.toDataObject(name, value)` is setting the value of the given data object to the 
+value returned from the service method call
+
+
+In similar way, a REST service call can be made with following workflow definition
+
+[source,java]
+----
+@Workflows
+public class MyWorkflows {
+
+    public WorkflowBuilder restServiceCall() {
+
+		WorkflowBuilder builder = WorkflowBuilder.newWorkflow("restService", "Sample workflow calling REST service", "1")
+                .dataObject("petId", Long.class, INPUT_TAG)
+                .dataObject("pet", Object.class, OUTPUT_TAG);
+
+        RestServiceNodeBuilder service = builder.start("start here").then()
+                .log("execute script", "Hello world").then()
+                .restService("get pet from the store");
+
+        service.toDataObject("pet",
+                service.openApi("/api/swagger.json").operation("getPetById").fromDataObject("petId")).then()
+                .end("that's it");
+
+		service.onError("404").then().log("log error", "Unable to find pet with id {}", "petId").then().end("not found");
+
+        return builder;
+    }
+ }
+---- 
+
+This workflow will take the OpenAPI definition and reference its operation based on given id. 
+Then it will create RestClient to invoke it and pass given parameters. Result can be easily mapped 
+back to data object.
+
+
+=== Assigning work to human actors
+
+In some situations there is a need to involve human actors in the course of workflow execution. This is where 
+there must be import given, decision made and so on. Java DSL exposes that capability via `user` builder that
+can be used in following way
+
+[source,java]
+----
+@Workflows
+public class MyWorkflows {
+
+    public WorkflowBuilder userTasks() {
+
+		WorkflowBuilder builder = WorkflowBuilder.newWorkflow("userTasks", "Sample workflow with user tasks")
+                .dataObject("x", Integer.class)
+                .dataObject("y", String.class);
+
+        builder.start("start here").then()
+        	.user("FirstTask").description("A description of the task")
+        			.users("john").outputToDataObject("value", "y").then()
+            .user("SecondTask").users("john").dataObjectAsInput("x").then()
+            .end("done");
+
+        return builder;
+    }
+ }
+---- 
+
+User node allows to assign users and groups that will allow such users and members of the group to work on the
+task. In addition, data objects can be mapped as inputs and then outputs of the user node can be mapped back 
+to data objects for further processing. 
+
+Since this is the user facing activity, optionally form template can also be developed and then referenced by name
+using the `form` method of the builder.
+
+=== Sending and receiving messages
+
+IMPORTANT: This workflow uses message events and by that requires additional dependency in the project. Add
+`io.quarkus:quarkus-smallrye-reactive-messaging-kafka` to the project `pom.xml` to have fully working example
+
+
+Interaction with external world is also very common, sending and receiving various types of messages can 
+be defined in the workflow via Java DSL in following way
+
+[source,java]
+----
+@Workflows
+public class MyWorkflows {
+
+    public WorkflowBuilder receiveAndSendMessages() {
+
+		WorkflowBuilder builder = WorkflowBuilder.newWorkflow("messages", "Workflow with messages");
+        				builder.dataObject("customer", Customer.class)
+                .startOnMessage("customers").toDataObject("customer").topic("org.acme.customers")
+                .then()
+                .sendMessage("new message").fromDataObject("customer").topic("published")
+                .then()
+                .log("log message", "Logged customer with id {}", "customer")
+                .then()
+                .waitOnMessage("updates").toDataObject("customer")
+                .then()
+                .endWithMessage("done").fromDataObject("customer");
+
+        return builder;
+    }
+ }
+---- 
+
+This workflow will be triggered by a message that arrives at topic called `org.acme.customers` and will be 
+unmarshalled into the `Customer` from `JSON` structure (this is the default expectations that the message body 
+is in JSON format).
+
+Next, another message will be sent to `published` topic with payload being the customer data object serialized to 
+JSON.
+
+Then it will wait for another message to be sent to `updates` topic (it is taken from the name of the node if topic is 
+not explicitly given) and here it needs to be correlated. The correlation is taken from the message and is specific to 
+connector in use. For example for Apache Kafka, the key of the Kafka record will be taken as correlation key.
+
+Lastly, upon completion it will send another message to `done` topic with payload of customer data object in JSON 
+format. This will end the workflow instance.
+
+=== And more
+
+There are other constructs available such as 
+
+- sub workflows
+- timers
+- expressions
+
+that can be used via Java DSL of Automatiko workflows. Have a look a the API of `WorkflowBuilder` to know more.  
+
+== Build
+
+Building the service depends on the type of output you're interested in
+
+=== Build executable jar
+
+To build executable jar issue following command
+
+`mvn clean package`
+
+after build completes there will be `{artifactId-version}-runner.jar`
+in the `target` directory. You can easily execute this service by
+
+`java -jar target/{artifactId-version}-runner.jar`
+
+=== Build native image
+
+IMPORTANT: To build native image a GraalVM is required.
+
+To build native image issue following command
+
+`mvn clean package -Pnative`
+
+WARNING: Native image compilation is heavy operation and resource hungry
+so don't be surprised it takes time and the computer is "really" busy...
+
+after build completes there will be `{artifactId-version}-runner`
+in the `target` directory. You can easily execute this service by
+
+`./target/{artifactId-version}-runner`
+
+=== Build container image
+
+To build container image issue following command
+
+`mvn clean package -Pcontainer`
+
+after build completes there will be image created in local container registry.
+You can easily execute this service by
+
+`docker run -p 8080:8080 {username}/{artifactId}:{version}`
+
+replace the username, artifact and version with OS user, adrtifactId of your project
+and version of your project.
+
+TIP: Various configuration options can be specified which are based on
+Quarkus so have a look at link:https://quarkus.io/guides/container-image#customizing[Config Options]
+
+
+=== Build container image with native executable
+
+To build container image with native executable issue following command
+
+`mvn clean package -Pcontainer-native`
+
+after build completes there will be image created in local container registry.
+You can easily execute this service by
+
+`docker run -p 8080:8080 {username}/{artifactId}:{version}`
+
+replace the username, artifact and version with OS user, adrtifactId of your project
+and version of your project.
+
+TIP: Various configuration options can be specified which are based on
+Quarkus so have a look at link:https://quarkus.io/guides/container-image#customizing[Config Options]
+
+
+=== Build container image for Kubernetes
+
+To build container image issue following command
+
+`mvn clean package -Pkubernetes`
+
+after build completes there will image created in local container registry.
+Depending where is your Kubernetes environment there might be a need to push
+the image to external registry.
+
+As part of the build there are Kubernetes descriptor files created to help
+with deployment, they can be found in `target/kubernetes` directory
+
+TIP: Various configuration options can be specified which are based on
+Quarkus so have a look at link:https://quarkus.io/guides/deploying-to-kubernetes#configuration-options[Config Options]

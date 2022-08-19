@@ -1146,7 +1146,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     }
 
     protected void configureLock(String businessKey) {
-        this.lock = businessKey == null ? new ReentrantLock() : process.locks().lock(businessKey);
+        this.lock = businessKey == null || businessKey.isEmpty() ? new ReentrantLock() : process.locks().lock(businessKey);
     }
 
     protected void lock() {

@@ -98,7 +98,7 @@ mvn archetype:generate                                      \
   -DarchetypeArtifactId=automatiko-orchestration-archetype  \
   -DarchetypeVersion=LATEST                                 \
   -DgroupId=com.acme.workflows                              \
-  -DartifactId=workfow-service
+  -DartifactId=workflow-service
 ----
 
 It is standard Maven folder structure so should be rather familiar to most people

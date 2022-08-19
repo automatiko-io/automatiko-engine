@@ -150,11 +150,15 @@ public class ProcessGenerator {
         compilationUnit.addImport("io.automatiko.engine.workflow.base.core.datatype.impl.type.ObjectDataType");
         compilationUnit.addImport("io.automatiko.engine.workflow.process.executable.core.ExecutableProcessFactory");
         compilationUnit.addImport(new ImportDeclaration(BaseFunctions.class.getCanonicalName(), true, true));
+        compilationUnit.addImport(new ImportDeclaration(BaseFunctions.class.getCanonicalName(), false, false));
         if (isServerlessWorkflow()) {
             compilationUnit.addImport(new ImportDeclaration(ServerlessFunctions.class.getCanonicalName(), true, true));
         }
         List<String> functions = context.getBuildContext().classThatImplement(Functions.class.getCanonicalName());
-        functions.forEach(c -> compilationUnit.addImport(new ImportDeclaration(c, true, true)));
+        functions.forEach(c -> {
+            compilationUnit.addImport(new ImportDeclaration(c, true, true));
+            compilationUnit.addImport(new ImportDeclaration(c, false, false));
+        });
 
         compilationUnit.getTypes().add(classDeclaration(compilationUnit));
         return compilationUnit;
@@ -789,7 +793,8 @@ public class ProcessGenerator {
     protected boolean isServerlessWorkflow() {
 
         return ProcessCodegen.SUPPORTED_SW_EXTENSIONS.keySet().stream()
-                .filter(ext -> process.getResource().getSourcePath().endsWith(ext)).findAny().isPresent();
+                .filter(ext -> process.getResource() != null && process.getResource().getSourcePath().endsWith(ext)).findAny()
+                .isPresent();
 
     }
 }

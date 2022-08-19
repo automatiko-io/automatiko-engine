@@ -325,13 +325,13 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
                         }
                     }
                 }
-                if (replacements.size() > 1) {
+                if (replacements.size() == 1 && s.startsWith("#{")) {
+                    ((WorkItemImpl) workItem).setParameter(entry.getKey(), replacements.values().iterator().next());
+                } else if (replacements.size() > 0) {
                     for (Map.Entry<String, Object> replacement : replacements.entrySet()) {
                         s = s.replace("#{" + replacement.getKey() + "}", replacement.getValue().toString());
                     }
                     ((WorkItemImpl) workItem).setParameter(entry.getKey(), s);
-                } else if (replacements.size() == 1) {
-                    ((WorkItemImpl) workItem).setParameter(entry.getKey(), replacements.values().iterator().next());
                 }
 
             }

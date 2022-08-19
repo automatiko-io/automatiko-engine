@@ -30,11 +30,11 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
-
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
 import io.automatiko.engine.api.Functions;
 import io.automatiko.engine.api.definition.process.Process;
@@ -100,11 +100,11 @@ public class ProcessCodegen extends AbstractGenerator {
     private ResourceGeneratorFactory resourceGeneratorFactory;
 
     public static ProcessCodegen ofJar(Path... jarPaths) {
-        return ofJar(Collections.emptyList(), jarPaths);
+        return ofJar(Collections.emptyList(), Collections.emptyList(), jarPaths);
     }
 
-    public static ProcessCodegen ofJar(List<String> dependencies, Path... jarPaths) {
-        List<Process> processes = new ArrayList<>();
+    public static ProcessCodegen ofJar(List<Process> inprocesses, List<String> dependencies, Path... jarPaths) {
+        List<Process> processes = new ArrayList<>(inprocesses);
 
         for (Path jarPath : jarPaths) {
             try (ZipFile zipFile = new ZipFile(jarPath.toFile())) {
@@ -159,12 +159,13 @@ public class ProcessCodegen extends AbstractGenerator {
 
     public static ProcessCodegen ofPath(Path... paths) throws IOException {
 
-        return ofPath(Collections.emptyList(), paths);
+        return ofPath(Collections.emptyList(), Collections.emptyList(), paths);
     }
 
-    public static ProcessCodegen ofPath(List<String> dependencies, Path... paths) throws IOException {
+    public static ProcessCodegen ofPath(List<Process> inprocesses, List<String> dependencies, Path... paths)
+            throws IOException {
 
-        List<Process> allProcesses = new ArrayList<>();
+        List<Process> allProcesses = new ArrayList<>(inprocesses);
 
         for (String dependency : dependencies) {
             File file = new File(dependency);
@@ -217,7 +218,13 @@ public class ProcessCodegen extends AbstractGenerator {
         return ofProcesses(allProcesses);
     }
 
-    private static ProcessCodegen ofProcesses(List<Process> processes) {
+    public static ProcessCodegen ofFilesAndProcesses(Collection<File> processFiles, List<Process> processes) {
+        List<Process> allProcesses = parseProcesses(processFiles, false);
+        allProcesses.addAll(processes);
+        return ofProcesses(allProcesses);
+    }
+
+    public static ProcessCodegen ofProcesses(List<Process> processes) {
         return new ProcessCodegen(processes);
     }
 

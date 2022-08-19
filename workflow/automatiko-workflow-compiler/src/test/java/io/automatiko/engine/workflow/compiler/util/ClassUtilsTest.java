@@ -6,8 +6,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import io.automatiko.engine.workflow.compiler.util.ClassUtils;
-
 public class ClassUtilsTest {
 
 	@Test

@@ -1347,11 +1347,15 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
     }
 
     public void addTag(String value) {
+
         internalAddTag(value, value);
+
     }
 
     public void internalAddTag(String id, String value) {
-        this.tags.add(new TagInstance(id, value));
+        if (value != null) {
+            this.tags.add(new TagInstance(id, value));
+        }
     }
 
     public boolean removedTag(String id) {
