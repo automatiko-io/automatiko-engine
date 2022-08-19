@@ -12,8 +12,12 @@ import org.junit.jupiter.api.Test;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.codegen.process.image.SvgBpmnProcessImageGenerator;
 import io.automatiko.engine.services.io.ClassPathResource;
+import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.bpmn2.BpmnProcess;
 import io.automatiko.engine.workflow.bpmn2.BpmnProcessCompiler;
+import io.automatiko.engine.workflow.builder.ParallelSplitNodeBuilder;
+import io.automatiko.engine.workflow.builder.RestServiceNodeBuilder;
+import io.automatiko.engine.workflow.builder.WorkflowBuilder;
 
 public class SvgProcessImageGeneratorTest {
 
@@ -111,6 +115,54 @@ public class SvgProcessImageGeneratorTest {
     public void testBoundaryProcessImageGeneration() throws IOException {
 
         testGeneration("messageevent/BoundaryMessageEventOnTask.bpmn2");
+    }
+
+    @Test
+    public void testWorkflowAsCodeImageGeneration() throws IOException {
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("parallelGateway", "test workflow with parallel gateway", "1")
+                .dataObject("name", String.class)
+                .dataObject("greeting", String.class, Variable.OUTPUT_TAG)
+                .dataObject("age", Integer.class);
+
+        ParallelSplitNodeBuilder split = builder.start("start here").then()
+                .log("execute script", "Hello world").thenParallelSplit("gateway");
+
+        split.then().log("first branch", "first branch").then().end("end");
+
+        split.then().log("second branch", "second branch").then().end("error");
+
+        SvgBpmnProcessImageGenerator generator = new SvgBpmnProcessImageGenerator(builder.get());
+
+        String svg = generator.generate();
+
+        assertThat(svg).isNotEmpty();
+
+        Files.write(Paths.get("target", "test.svg"), svg.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void testWorkflowAsCodeWithErrorImageGeneration() throws IOException {
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("service", "Sample workflow calling service", "1")
+                .dataObject("name", Long.class, Variable.INPUT_TAG)
+                .dataObject("pet", Object.class, Variable.OUTPUT_TAG);
+
+        RestServiceNodeBuilder service = builder.start("start here").then()
+                .log("execute script", "Hello world").then()
+                .restService("get pet from the store");
+
+        service.toDataObject("pet",
+                service.openApi("api/swagger.json").operation("getPetById").fromDataObject("name")).then()
+                .end("that's it");
+
+        service.onError("404").then().log("Not found", "Pet with id {} not found", "name").then().end("done");
+
+        SvgBpmnProcessImageGenerator generator = new SvgBpmnProcessImageGenerator(builder.get());
+
+        String svg = generator.generate();
+
+        assertThat(svg).isNotEmpty();
+
+        Files.write(Paths.get("target", "test.svg"), svg.getBytes(StandardCharsets.UTF_8));
     }
 
     public void testGeneration(String processResource) throws IOException {

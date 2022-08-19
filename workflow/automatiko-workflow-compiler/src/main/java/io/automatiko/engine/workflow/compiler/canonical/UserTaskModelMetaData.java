@@ -56,7 +56,8 @@ public class UserTaskModelMetaData {
     private static final String TASK_OUTTPUT_CLASS_SUFFIX = "TaskOutput";
     private static final String TASK_NAME = "TaskName";
 
-    protected static final List<String> INTERNAL_FIELDS = Arrays.asList(TASK_NAME, "NodeName", "ActorId", "GroupId",
+    protected static final List<String> INTERNAL_FIELDS = Arrays.asList(TASK_NAME, "Description", "NodeName", "ActorId",
+            "GroupId",
             "Priority", "Comment", "Skippable", "Content", "Locale", "Groups", "ExcludedUsers", "ExcludedOwnerId");
 
     private final String packageName;

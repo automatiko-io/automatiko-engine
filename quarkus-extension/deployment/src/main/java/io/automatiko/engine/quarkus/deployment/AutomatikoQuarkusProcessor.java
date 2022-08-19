@@ -3,6 +3,8 @@ package io.automatiko.engine.quarkus.deployment;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,6 +34,7 @@ import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.CompositeIndex;
 import org.jboss.jandex.DotName;
@@ -44,10 +47,12 @@ import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.codegen.AutomatikoConfigProperties;
+import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.codegen.ApplicationGenerator;
 import io.automatiko.engine.codegen.CodeGenConstants;
 import io.automatiko.engine.codegen.GeneratedFile;
 import io.automatiko.engine.codegen.GeneratorContext;
+import io.automatiko.engine.codegen.LambdaParser;
 import io.automatiko.engine.codegen.context.QuarkusApplicationBuildContext;
 import io.automatiko.engine.codegen.decision.DecisionCodegen;
 import io.automatiko.engine.codegen.di.CDIDependencyInjectionAnnotator;
@@ -56,7 +61,10 @@ import io.automatiko.engine.codegen.process.persistence.PersistenceGenerator;
 import io.automatiko.engine.quarkus.AutomatikoBuildTimeConfig;
 import io.automatiko.engine.services.utils.IoUtils;
 import io.automatiko.engine.workflow.BaseWorkItem;
+import io.automatiko.engine.workflow.builder.BuilderContext;
+import io.automatiko.engine.workflow.builder.WorkflowBuilder;
 import io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages;
+import io.automatiko.engine.workflow.process.executable.core.ExecutableProcess;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
 import io.quarkus.bootstrap.BootstrapDependencyProcessingException;
 import io.quarkus.bootstrap.classloading.ClassPathElement;
@@ -104,6 +112,9 @@ public class AutomatikoQuarkusProcessor {
     private final transient String generatedClassesDir = System.getProperty("quarkus.debug.generated-classes-dir");
     private final transient String persistenceFactoryClass = "io.automatiko.engine.addons.persistence.AbstractProcessInstancesFactory";
 
+    private final transient String workflowsAnnotationClass = "io.automatiko.engine.api.Workflows";
+    private final transient String workflowsBuilderClass = "io.automatiko.engine.workflow.builder.WorkflowBuilder";
+
     @BuildStep
     public void generateClassesFromResourcesStep(AutomatikoBuildTimeConfig config, PackageConfig pconfig,
             ArchiveRootBuildItem root,
@@ -134,12 +145,6 @@ public class AutomatikoQuarkusProcessor {
             }
 
         }));
-
-        if (liveReload.isLiveReload() || ConfigProvider.getConfig()
-                .getOptionalValue("quarkus.live-reload.url", String.class).isPresent()
-                || "true".equals(System.getProperty("test.runs.enabled"))) {
-            return;
-        }
         // prepare index
         List<IndexView> archiveIndexes = new ArrayList<>();
 
@@ -148,11 +153,29 @@ public class AutomatikoQuarkusProcessor {
         }
 
         CompositeIndex archivesIndex = CompositeIndex.create(archiveIndexes);
+        boolean onlyCodeAssets = false;
+        if (liveReload.isLiveReload() || ConfigProvider.getConfig()
+                .getOptionalValue("quarkus.live-reload.url", String.class).isPresent()
+                || "true".equals(System.getProperty("test.runs.enabled"))) {
+
+            List<String> workflowBuilderClasses = archivesIndex
+                    .getAnnotations(createDotName(workflowsAnnotationClass)).stream()
+                    .map(a -> a.target().asClass().name().toString()).collect(Collectors.toList());
+
+            if (liveReload.getChangeInformation().getAddedClasses().stream()
+                    .anyMatch(clazz -> workflowBuilderClasses.contains(clazz))
+                    || liveReload.getChangeInformation().getChangedClasses().stream()
+                            .anyMatch(clazz -> workflowBuilderClasses.contains(clazz))) {
+                onlyCodeAssets = true;
+            } else {
+                return;
+            }
+        }
 
         AppPaths appPaths = new AppPaths(root.getPaths());
 
         ApplicationGenerator appGen = createApplicationGenerator(config, appPaths, archivesIndex,
-                curateOutcomeBuildItem.getApplicationModel());
+                curateOutcomeBuildItem.getApplicationModel(), onlyCodeAssets);
 
         Collection<GeneratedFile> generatedFiles = appGen.generate();
 
@@ -526,7 +549,7 @@ public class AutomatikoQuarkusProcessor {
     }
 
     private ApplicationGenerator createApplicationGenerator(AutomatikoBuildTimeConfig config, AppPaths appPaths,
-            CompositeIndex archivesIndex, ApplicationModel appModel) throws IOException {
+            CompositeIndex archivesIndex, ApplicationModel appModel, boolean onlyCodeAssets) throws IOException {
 
         boolean usePersistence = archivesIndex
                 .getClassByName(createDotName(persistenceFactoryClass)) != null;
@@ -544,7 +567,7 @@ public class AutomatikoQuarkusProcessor {
             }
         }
 
-        addProcessGenerator(appPaths, usePersistence, appGen, dependencies);
+        addProcessGenerator(appPaths, usePersistence, appGen, dependencies, archivesIndex, onlyCodeAssets);
 
         if (context.getBuildContext().isDmnSupported()) {
             addDecisionGenerator(appPaths, appGen, false, dependencies);
@@ -554,10 +577,53 @@ public class AutomatikoQuarkusProcessor {
     }
 
     private void addProcessGenerator(AppPaths appPaths, boolean usePersistence, ApplicationGenerator appGen,
-            List<String> dependencies)
+            List<String> dependencies, CompositeIndex index, boolean onlyCodeAssets)
             throws IOException {
-        ProcessCodegen generator = appPaths.isJar ? ProcessCodegen.ofJar(dependencies, appPaths.getJarPath())
-                : ProcessCodegen.ofPath(dependencies, appPaths.getProjectPaths());
+        DotName workflowBuilderDotName = createDotName(workflowsBuilderClass);
+        List<AnnotationInstance> workflowBuilderClasses = index.getAnnotations(createDotName(workflowsAnnotationClass));
+        List<Process> processes = new ArrayList<Process>();
+        if (workflowBuilderClasses != null && !workflowBuilderClasses.isEmpty()) {
+            for (AnnotationInstance workflowBuilderClass : workflowBuilderClasses) {
+                ClassInfo clazz = workflowBuilderClass.target().asClass();
+
+                String fqcn = clazz.name().toString();
+
+                LambdaParser.parseLambdas("src/main/java/" + fqcn.replace(".", "/") + ".java");
+
+                try {
+                    Class<?> builderClass = Class.forName(fqcn, true, Thread.currentThread().getContextClassLoader());
+                    Object workflowsBuilderInstance = builderClass
+                            .getConstructor(new Class<?>[0])
+                            .newInstance();
+
+                    List<String> workflowsMethods = clazz.methods().stream()
+                            .filter(m -> Modifier.isPublic(m.flags())
+                                    && m.returnType().name().compareTo(workflowBuilderDotName) == 0)
+                            .map(m -> m.name()).collect(Collectors.toList());
+
+                    for (String methodName : workflowsMethods) {
+                        Method method = workflowsBuilderInstance.getClass().getMethod(methodName);
+
+                        WorkflowBuilder builder = (WorkflowBuilder) method.invoke(workflowsBuilderInstance);
+                        ExecutableProcess process = builder.get();
+                        process.setPackageName(builderClass.getPackageName());
+                        processes.add(process);
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    BuilderContext.clear();
+                }
+            }
+        }
+        ProcessCodegen generator;
+        if (onlyCodeAssets) {
+            generator = ProcessCodegen.ofProcesses(processes);
+        } else {
+            generator = appPaths.isJar ? ProcessCodegen.ofJar(processes, dependencies, appPaths.getJarPath())
+                    : ProcessCodegen.ofPath(processes, dependencies, appPaths.getProjectPaths());
+        }
 
         appGen.withGenerator(generator).withPersistence(usePersistence)
                 .withClassLoader(Thread.currentThread().getContextClassLoader());

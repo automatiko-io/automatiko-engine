@@ -14,20 +14,40 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
+import javax.swing.SwingConstants;
 
+import org.apache.commons.collections.map.HashedMap;
 import org.jfree.svg.SVGGraphics2D;
 import org.jfree.svg.SVGHints;
 import org.jfree.svg.ViewBox;
+import org.jgrapht.ListenableGraph;
+import org.jgrapht.ext.JGraphXAdapter;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DefaultListenableGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
+import com.mxgraph.model.mxICell;
+import com.mxgraph.swing.mxGraphComponent;
+import com.mxgraph.swing.handler.mxGraphHandler;
 
 import io.automatiko.engine.api.definition.process.Connection;
 import io.automatiko.engine.api.definition.process.Node;
 import io.automatiko.engine.api.definition.process.NodeContainer;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
+import io.automatiko.engine.workflow.process.core.impl.NodeImpl;
 import io.automatiko.engine.workflow.process.core.node.ActionNode;
 import io.automatiko.engine.workflow.process.core.node.BoundaryEventNode;
 import io.automatiko.engine.workflow.process.core.node.CompositeNode;
@@ -45,10 +65,39 @@ import io.automatiko.engine.workflow.process.core.node.StateNode;
 import io.automatiko.engine.workflow.process.core.node.SubProcessNode;
 import io.automatiko.engine.workflow.process.core.node.TimerNode;
 import io.automatiko.engine.workflow.process.core.node.WorkItemNode;
+import io.automatiko.engine.workflow.process.executable.core.Metadata;
 
 public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SvgBpmnProcessImageGenerator.class);
+
+    @SuppressWarnings({ "unchecked", "serial" })
+    private static Map<Class<?>, Integer> WIDTHS = new HashedMap() {
+        {
+            put(StartNode.class, 50);
+            put(EndNode.class, 50);
+            put(FaultNode.class, 50);
+            put(Split.class, 50);
+            put(Join.class, 50);
+            put(EventNode.class, 50);
+            put(TimerNode.class, 50);
+            put(BoundaryEventNode.class, 50);
+        }
+    };
+
+    @SuppressWarnings({ "unchecked", "serial" })
+    private static Map<Class<?>, Integer> HEIGHTS = new HashedMap() {
+        {
+            put(StartNode.class, 50);
+            put(EndNode.class, 50);
+            put(FaultNode.class, 50);
+            put(Split.class, 50);
+            put(Join.class, 50);
+            put(EventNode.class, 50);
+            put(TimerNode.class, 50);
+            put(BoundaryEventNode.class, 50);
+        }
+    };
 
     private WorkflowProcess workFlowProcess;
 
@@ -67,6 +116,127 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
 
     public SvgBpmnProcessImageGenerator(WorkflowProcess workFlowProcess) {
         this.workFlowProcess = workFlowProcess;
+        createLayoutIfMissing();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void createLayoutIfMissing() {
+        Map<String, List<String>> diagramInfo = (Map<String, List<String>>) this.workFlowProcess.getMetaData()
+                .get("DiagramInfo");
+
+        if (diagramInfo != null) {
+
+            ListenableGraph<String, DefaultEdge> g = new DefaultListenableGraph<>(
+                    new DefaultDirectedGraph<>(DefaultEdge.class));
+            JGraphXAdapter<String, DefaultEdge> jgxAdapter = new JGraphXAdapter<>(g);
+
+            @SuppressWarnings("serial")
+            mxGraphComponent component = new mxGraphComponent(jgxAdapter) {
+
+                @Override
+                protected mxGraphHandler createGraphHandler() {
+
+                    return null;
+                }
+
+            };
+            component.setConnectable(true);
+            component.getGraph().setAllowDanglingEdges(false);
+
+            Set<String> allNodes = new LinkedHashSet<>(diagramInfo.keySet());
+            for (List<String> targets : diagramInfo.values()) {
+                allNodes.addAll(targets);
+            }
+
+            // create vertexes
+            for (String node : allNodes) {
+                g.addVertex(node);
+            }
+
+            // create edges
+            for (Entry<String, List<String>> connection : diagramInfo.entrySet()) {
+
+                for (String target : connection.getValue()) {
+                    g.addEdge(connection.getKey(), target);
+                }
+            }
+            Map<String, List<String>> boundaryEvents = new HashMap<>();
+            this.workFlowProcess.getNodesRecursively().stream().filter(n -> n instanceof BoundaryEventNode).forEach(bn -> {
+                boundaryEvents.compute(((BoundaryEventNode) bn).getAttachedToNodeId(), (k, v) -> {
+                    if (v == null) {
+                        v = new ArrayList<>();
+                    }
+                    v.add((String) bn.getMetaData().get("UniqueId"));
+
+                    return v;
+                });
+
+            });
+
+            mxHierarchicalLayout layout = new mxHierarchicalLayout(jgxAdapter, SwingConstants.WEST);
+
+            layout.setIntraCellSpacing(100);
+            layout.execute(jgxAdapter.getDefaultParent());
+
+            Map<String, mxICell> layedout = jgxAdapter.getVertexToCellMap();
+
+            Map<String, Node> nodesById = this.workFlowProcess.getNodesRecursively().stream()
+                    .collect(Collectors.toMap(n -> (String) n.getMetaData().get("UniqueId"), node -> node));
+
+            for (Entry<String, mxICell> node : layedout.entrySet()) {
+
+                Node found = nodesById.get(node.getKey());
+
+                found.getMetaData().put("width", WIDTHS.getOrDefault(extractNodeClass(found), 200));
+                found.getMetaData().put("height", HEIGHTS.getOrDefault(extractNodeClass(found), 50));
+
+                if (found instanceof BoundaryEventNode) {
+
+                    mxICell attachedTo = layedout.get(((BoundaryEventNode) found).getAttachedToNodeId());
+
+                    int x = Double.valueOf(attachedTo.getGeometry().getX()).intValue() + 20;
+
+                    x = x + (Integer) found.getMetaData().get("width") / 2;
+
+                    int y = Double.valueOf(attachedTo.getGeometry().getY()).intValue() + 20;
+                    y = y + (Integer) found.getMetaData().get("height") - 10;
+
+                    found.getMetaData().put("x", x);
+                    found.getMetaData().put("y", y);
+                } else {
+                    found.getMetaData().put("x", Double.valueOf(node.getValue().getGeometry().getX()).intValue() + 20);
+                    found.getMetaData().put("y", Double.valueOf(node.getValue().getGeometry().getY()).intValue() + 20);
+                }
+
+                for (Connection conn : found.getOutgoingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE)) {
+
+                    String toId = (String) conn.getTo().getMetaData().get("UniqueId");
+                    mxICell to = layedout.get(toId);
+
+                    List<Integer> xs = new ArrayList<Integer>();
+
+                    xs.add((Integer) found.getMetaData().get("x") + (Integer) found.getMetaData().get("width"));
+                    xs.add(Double.valueOf(to.getGeometry().getX()).intValue() + 20);
+
+                    List<Integer> ys = new ArrayList<Integer>();
+
+                    ys.add((Integer) found.getMetaData().get("y") + ((Integer) found.getMetaData().get("height") / 2));
+                    ys.add(Double.valueOf(to.getGeometry().getY()).intValue() + 20
+                            + (HEIGHTS.getOrDefault(extractNodeClass(conn.getTo()), 50) / 2));
+                    conn.getMetaData().put("x", xs);
+                    conn.getMetaData().put("y", ys);
+                }
+
+            }
+        }
+    }
+
+    public Class<?> extractNodeClass(Node node) {
+        if (node instanceof ActionNode && "ProduceMessage".equals(((ActionNode) node).getMetaData(Metadata.TRIGGER_TYPE))) {
+            return EventNode.class;
+        }
+
+        return node.getClass();
     }
 
     @Override

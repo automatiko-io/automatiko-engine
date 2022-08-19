@@ -78,17 +78,20 @@ public class AbstractCodegenTest {
         return generateCode(Arrays.asList(processes), Collections.emptyList());
     }
 
-    protected Application generateCodeRulesOnly(String... rules) throws Exception {
-        return generateCode(Collections.emptyList(), Arrays.asList(rules), Collections.emptyList(),
-                Collections.emptyList(), true);
-    }
-
     protected Application generateCode(List<String> processResources, List<String> rulesResources) throws Exception {
-        return generateCode(processResources, rulesResources, Collections.emptyList(), Collections.emptyList(), false);
+        return generateCode(Collections.emptyList(), processResources, rulesResources, Collections.emptyList(),
+                Collections.emptyList());
     }
 
-    protected Application generateCode(List<String> processResources, List<String> rulesResources,
-            List<String> decisionResources, List<String> javaRulesResources, boolean hasRuleUnit) throws Exception {
+    protected Application generateCode(List<io.automatiko.engine.api.definition.process.Process> processes) throws Exception {
+        return generateCode(processes, Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                Collections.emptyList());
+    }
+
+    protected Application generateCode(List<io.automatiko.engine.api.definition.process.Process> processes,
+            List<String> processResources,
+            List<String> rulesResources,
+            List<String> decisionResources, List<String> javaRulesResources) throws Exception {
         GeneratorContext context = GeneratorContext.ofResourcePath(new File("src/test/resources"),
                 new File("target/classes"));
 
@@ -98,12 +101,14 @@ public class AbstractCodegenTest {
                         c -> Collections.emptyList()));
 
         ApplicationGenerator appGen = new ApplicationGenerator(this.getClass().getPackage().getName(),
-                new File("target/codegen-tests")).withGeneratorContext(context).withRuleUnits(hasRuleUnit)
+                new File("target/codegen-tests")).withGeneratorContext(context)
                         .withDependencyInjection(null);
 
         if (!processResources.isEmpty()) {
             appGen.withGenerator(ProcessCodegen.ofFiles(processResources.stream()
                     .map(resource -> new File("src/test/resources", resource)).collect(Collectors.toList())));
+        } else if (!processes.isEmpty()) {
+            appGen.withGenerator(ProcessCodegen.ofProcesses(processes));
         }
 
         if (!decisionResources.isEmpty()) {

@@ -22,10 +22,10 @@ public class BusinessRuleTaskTest extends AbstractCodegenTest {
 
     @Test
     public void testDecision() throws Exception {
-        Application app = generateCode(Collections.singletonList("decision/models/dmnprocess.bpmn2"),
+        Application app = generateCode(Collections.emptyList(), Collections.singletonList("decision/models/dmnprocess.bpmn2"),
                 Collections.emptyList(),
                 Collections.singletonList("decision/models/vacationDaysAlt/vacationDaysAlt.dmn"),
-                Collections.emptyList(), false);
+                Collections.emptyList());
 
         Process<? extends Model> p = app.processes().processById("DmnProcess_1_0");
 
@@ -83,10 +83,10 @@ public class BusinessRuleTaskTest extends AbstractCodegenTest {
 
     @Test
     public void testDecisionWithErrorHandling() throws Exception {
-        Application app = generateCode(Collections.singletonList("decision/models/dmnprocess.bpmn2"),
+        Application app = generateCode(Collections.emptyList(), Collections.singletonList("decision/models/dmnprocess.bpmn2"),
                 Collections.emptyList(),
                 Collections.singletonList("decision/models/vacationDaysAlt/VacationDays.dmn"),
-                Collections.emptyList(), false);
+                Collections.emptyList());
 
         Process<? extends Model> p = app.processes().processById("DmnProcess_1_0");
 

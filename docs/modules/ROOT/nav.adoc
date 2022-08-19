@@ -8,6 +8,7 @@
 * Getting started
 ** xref:getting-started-bpmn.adoc[Based on BPMN2]
 ** xref:getting-started-sw.adoc[Based on Serverless Workflow]
+** xref:getting-started-code.adoc[Based on Java DSL]
 * xref:best-practice.adoc[Best practice]
 * xref:service-interfaces.adoc[Service interface]
 * Components
