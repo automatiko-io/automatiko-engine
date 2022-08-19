@@ -210,7 +210,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     public Collection values(ProcessInstanceReadMode mode, int status, int page, int size) {
         Set collected = new LinkedHashSet<>();
 
-        Set<String> found = indexer.instances(status, 0, Integer.MAX_VALUE).stream()
+        Set<String> found = indexer.instances(status, page, size).stream()
                 .map(instance -> instance.id()).collect(Collectors.toSet());
 
         for (String id : found) {
@@ -351,7 +351,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
                 }
             }
 
-            indexer.index(resolvedId, instance.status(), instance.tags().values());
+            indexer.index(resolvedId, instance.status(), instance.businessKey(), instance.tags().values());
 
             disconnect(processInstanceStorage, instance);
         } catch (IOException e) {

@@ -45,14 +45,17 @@ public class Indexer {
     }
 
     public void index(ProcessInstance<?> instance) {
-        index(instance.id(), instance.status(), instance.tags().values());
+        index(instance.id(), instance.status(), instance.businessKey(), instance.tags().values());
     }
 
-    public void index(String id, int status, Collection<String> tags) {
+    public void index(String id, int status, String businessKey, Collection<String> tags) {
         Path currentStatePath = Paths.get(indexFolder.toString(), String.valueOf(status), id);
 
         Set<String> info = new LinkedHashSet<>();
         info.add(id);
+        if (businessKey != null) {
+            info.add(businessKey);
+        }
         info.addAll(tags);
         byte[] data = info.stream().map(value -> value + System.lineSeparator()).collect(Collectors.joining())
                 .getBytes(StandardCharsets.UTF_8);
@@ -127,7 +130,7 @@ public class Indexer {
                     piTags.addAll(Arrays.asList(tags.split(",")));
                 }
 
-                index(id, status, piTags);
+                index(id, status, null, piTags);
 
             });
         } catch (IOException e) {
