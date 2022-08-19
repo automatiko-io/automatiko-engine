@@ -24,6 +24,10 @@ public class AutomatikoConfig {
         return Optional.empty();
     };
 
+    public Optional<String> templatesFolder() {
+        return Optional.empty();
+    };
+
     public PersistenceConfig persistence() {
         return new PersistenceConfig();
     }
