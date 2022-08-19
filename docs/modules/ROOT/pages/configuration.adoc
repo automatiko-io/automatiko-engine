@@ -21,6 +21,7 @@ Following are set of configuration parameters that can be used to configure Auto
 |quarkus.automatiko.instance-locking||Determines if instance level locking should be used or not|No|true|Yes
 |quarkus.automatiko.on-instance-end|QUARKUS_AUTOMATIKO_ON_INSTANCE_END|Specifies what should happen with workflow instance when it ends (completes or aborts). Three strategies are available - `remove`, `keep`, `archive`. Defaults to `remove`|No|`remove`|No
 |quarkus.automatiko.archive-path|QUARKUS_AUTOMATIKO_ARCHIVE_PATH|Specifies where archived instances should be stored when `on-instance-end` is set to `archive`|No||No
+|quarkus.automatiko.templates-folder|QUARKUS_AUTOMATIKO_TEMPlATES_FOLDER|Specifies optional location of templates (emails and user tasks) to load|No||No
 
 |====
 

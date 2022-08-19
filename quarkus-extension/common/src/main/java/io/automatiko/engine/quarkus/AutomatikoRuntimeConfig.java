@@ -50,6 +50,12 @@ public class AutomatikoRuntimeConfig extends AutomatikoConfig {
     public Optional<String> archivePath;
 
     /**
+     * Specifies templates folder to populate for customized email and user task templates
+     */
+    @ConfigItem
+    public Optional<String> templatesFolder;
+
+    /**
      * Configures persistence
      */
     @ConfigItem
@@ -108,6 +114,11 @@ public class AutomatikoRuntimeConfig extends AutomatikoConfig {
     @Override
     public Optional<String> archivePath() {
         return archivePath;
+    }
+
+    @Override
+    public Optional<String> templatesFolder() {
+        return templatesFolder;
     }
 
     @Override

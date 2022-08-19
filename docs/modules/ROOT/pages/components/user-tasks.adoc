@@ -70,6 +70,15 @@ of the user task assigned.
 NOTE: When there is no template file found for given task a default form will be returned but it will only 
 provide simple text based form inputs. It is recommended to always provide custom templates for user tasks.
 
+==== External templates loaded at runtime
+
+Not always templates can be provided at build time, for instance when the existing ones should be customized.
+To be able to allow customization templates can be loaded at runtime based on folder path given by 
+`quarkus.automatiko.templates-folder` configuration property. 
+
+All files with `.html` extension will be loaded and registered to the templating engine and by that can 
+be used by user task forms and emails. 
+
 
 === Configure
 
