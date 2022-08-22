@@ -72,6 +72,7 @@ import io.automatiko.engine.workflow.process.instance.node.EventSubProcessNodeIn
 import io.automatiko.engine.workflow.process.instance.node.HumanTaskNodeInstance;
 import io.automatiko.engine.workflow.process.instance.node.LambdaSubProcessNodeInstance;
 import io.automatiko.engine.workflow.process.instance.node.WorkItemNodeInstance;
+import io.automatiko.engine.workflow.util.InstanceTuple;
 
 public abstract class AbstractProcessInstance<T extends Model> implements ProcessInstance<T> {
 
@@ -993,6 +994,24 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                 process.instances().findById(id, mode)
                         .ifPresent(pi -> collection.add((ProcessInstance<? extends Model>) pi));
 
+            }
+        }
+    }
+
+    protected void collectedFinishedSubprocesses(Process<?> process, Collection<ProcessInstance<? extends Model>> collection) {
+        WorkflowProcessInstanceImpl instance = (WorkflowProcessInstanceImpl) processInstance();
+
+        for (Entry<String, Set<InstanceTuple>> entry : instance.getFinishedSubProcess().entrySet()) {
+
+            String processId = entry.getKey();
+            if (process.id().equals(processId)) {
+
+                for (InstanceTuple subInstance : entry.getValue()) {
+
+                    process.instances()
+                            .findById(subInstance.getId(), subInstance.getStatus(), ProcessInstanceReadMode.READ_ONLY)
+                            .ifPresent(pi -> collection.add((ProcessInstance<? extends Model>) pi));
+                }
             }
         }
     }

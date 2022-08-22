@@ -148,10 +148,64 @@
 
 	}
 	
+	let loadSubInstance = function(id, instanceId, state) {
+
+		var mappedStatus = 'pending';
+		if (state === 2) {
+			mappedStatus = 'completed'
+		} else if (state === 3) {
+			mappedStatus = 'aborted'
+		} else if (state === 4) {
+			mappedStatus = 'suspended'
+		} else if (state === 5) {
+			mappedStatus = 'error'
+		} else {
+			mappedStatus = 'active'
+		}
+		
+		$.ajax({
+			url : '/management/processes/' + id + '/instances/' + instanceId + '?status=' + mappedStatus,
+			type : 'GET',
+			dataType : 'json',
+			crossDomain : true,
+			success : function(data) {
+				showDetails(data);
+
+			},
+		});
+
+	}
+	
 	let abortInstance = function(id, instanceId) {
 
 		$.ajax({
 			url : '/management/processes/' + id + '/instances/' + instanceId + '?status=' + status,
+			type : 'DELETE',
+			dataType : 'json',
+			crossDomain : true,
+			success : function(data) {
+				$('#instanceDetailsModal').modal('hide');
+				loadInstances(currentProcess, currentPIDiv);
+			},
+		});
+
+	}
+	
+	let abortSubInstance = function(id, instanceId, state) {
+		var mappedStatus = 'pending';
+		if (state === 2) {
+			mappedStatus = 'completed'
+		} else if (state === 3) {
+			mappedStatus = 'aborted'
+		} else if (state === 4) {
+			mappedStatus = 'suspended'
+		} else if (state === 5) {
+			mappedStatus = 'error'
+		} else {
+			mappedStatus = 'active'
+		}
+		$.ajax({
+			url : '/management/processes/' + id + '/instances/' + instanceId + '?status=' + mappedStatus,
 			type : 'DELETE',
 			dataType : 'json',
 			crossDomain : true,
@@ -361,6 +415,13 @@
 						tags += '<span class="badge badge-light">' + item
 								+ '</span> &nbsp;';
 					});
+					let abortButton = '';
+					if (item.state === 1 || item.state === 5) {
+						abortButton = '&nbsp;&nbsp;<button type="button" class="btn btn-sm btn-danger" onclick="abortSubInstance(\''
+						+ item.processId + '\', \''
+						+ instanceData.id + ':' + item.id
+						+ '\', ' + item.state +')"><i class="fa fa-trash"></i></button>';
+					}
 					$('#piSubinstances')
 							.append(
 									'<tr>' + ' <th scope="row">'
@@ -378,14 +439,12 @@
 											+ ' <td>'
 											+ tags
 											+ '</td>'
-											+ ' <td><button type="button" class="btn btn-sm btn-light" onclick="loadInstance(\''
+											+ ' <td><button type="button" class="btn btn-sm btn-light" onclick="loadSubInstance(\''
 											+ item.processId + '\', \''
 											+ instanceData.id + ':' + item.id
-											+ '\')"><i class="fa fa-info-circle"></i></button>&nbsp;&nbsp;<button type="button" class="btn btn-sm btn-danger" onclick="abortInstance(\''
-											+ item.processId + '\', \''
-											+ instanceData.id + ':' + item.id
-											+ '\')"><i class="fa fa-trash"></i></button></td>'
-											+ '</tr>');
+											+ '\', ' + item.state +')"><i class="fa fa-info-circle"></i></button>'
+											+ abortButton
+											+ '</td></tr>');
 				});
 
 		// display variables as json			

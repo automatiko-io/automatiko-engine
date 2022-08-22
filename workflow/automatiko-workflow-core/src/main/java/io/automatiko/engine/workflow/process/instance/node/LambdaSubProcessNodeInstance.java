@@ -175,6 +175,13 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
             SubProcessFactory<?> subProcessFactory = getSubProcessNode().getSubProcessFactory();
             subProcessFactory.abortInstance(getProcessInstance().getId() + ":" + getProcessInstanceId());
 
+            ((ProcessInstanceImpl) getProcessInstance()).removeChild(
+                    getSubProcessNode().getProcessId() + version(getSubProcessNode().getProcessVersion()),
+                    getProcessInstance().getId() + ":" + getProcessInstanceId());
+            ((ProcessInstanceImpl) getProcessInstance()).addFinishedSubProcess(
+                    getSubProcessNode().getProcessId() + version(getSubProcessNode().getProcessVersion()),
+                    getProcessInstance().getId() + ":" + getProcessInstanceId(), ProcessInstance.STATE_ABORTED);
+
         }
     }
 
@@ -229,8 +236,12 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
                 && !getProcessInstance().getParentProcessInstanceId().isEmpty()) {
             parentInstanceId = getProcessInstance().getParentProcessInstanceId() + ":" + parentInstanceId;
         }
-        ((ProcessInstanceImpl) getProcessInstance()).removeChild(processInstance.getProcess().getId(),
+        ((ProcessInstanceImpl) getProcessInstance()).removeChild(
+                processInstance.getProcess().getId() + version(processInstance.getProcess().getVersion()),
                 parentInstanceId + ":" + processInstance.getId());
+        ((ProcessInstanceImpl) getProcessInstance()).addFinishedSubProcess(
+                processInstance.getProcess().getId() + version(processInstance.getProcess().getVersion()),
+                parentInstanceId + ":" + processInstance.getId(), processInstance.getState());
         handleOutMappings(processInstance);
         if (processInstance.getState() == ProcessInstance.STATE_ABORTED) {
             String faultName = processInstance.getOutcome() == null ? "" : processInstance.getOutcome();
@@ -369,6 +380,13 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
         }
 
         return parameters;
+    }
+
+    private String version(String version) {
+        if (version != null && !version.trim().isEmpty()) {
+            return "_" + version.replaceAll("\\.", "_");
+        }
+        return "";
     }
 
 }

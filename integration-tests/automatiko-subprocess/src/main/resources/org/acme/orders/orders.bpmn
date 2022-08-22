@@ -9,7 +9,7 @@
     <bpmn2:documentation id="_gfw8oUcJEemyodG9iPy-Bw"><![CDATA[Deals with orders created by customer]]></bpmn2:documentation>
     <bpmn2:extensionElements>
       <automatiko:metaData name="timeout">
-        <automatiko:metaValue><![CDATA[PT2M]]></automatiko:metaValue>
+        <automatiko:metaValue><![CDATA[PT20M]]></automatiko:metaValue>
       </automatiko:metaData>
     </bpmn2:extensionElements>
     <bpmn2:property id="order" itemSubjectRef="_orderItem" name="order">
