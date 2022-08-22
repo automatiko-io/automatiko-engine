@@ -153,10 +153,22 @@ message ProcessInstance {
     repeated Error errors = 29;
     
     optional RecoveryItem recovery_item = 32;
+    
+    repeated FinishedSubProcesses finished_subprocesses = 34;
         
 	message ProcessInstanchChildren {
 	    optional string process_id = 1;
 	    repeated string ids = 2;
+	}
+	
+	message InstanceTuple {
+	    optional string id = 1;
+	    optional int32 status = 2;
+	}		
+	
+	message FinishedSubProcesses {
+	    optional string process_id = 1;
+	    repeated InstanceTuple instances = 2;
 	}	
 	
 	message RecoveryItem {

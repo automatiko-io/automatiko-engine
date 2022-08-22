@@ -4,9 +4,11 @@ package io.automatiko.engine.workflow.base.instance.impl;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.automatiko.engine.api.definition.process.Process;
@@ -18,6 +20,7 @@ import io.automatiko.engine.workflow.base.instance.ContextInstance;
 import io.automatiko.engine.workflow.base.instance.InternalProcessRuntime;
 import io.automatiko.engine.workflow.base.instance.ProcessInstance;
 import io.automatiko.engine.workflow.process.core.WorkflowProcess;
+import io.automatiko.engine.workflow.util.InstanceTuple;
 
 /**
  * Default implementation of a process instance.
@@ -43,6 +46,8 @@ public abstract class ProcessInstanceImpl implements ProcessInstance, Serializab
     private String rootProcessId;
 
     private Map<String, List<String>> children = new HashMap<String, List<String>>();
+
+    private Map<String, Set<InstanceTuple>> finishedSubProcesses = new HashMap<String, Set<InstanceTuple>>();
 
     public void setId(final String id) {
         this.id = id;
@@ -314,5 +319,18 @@ public abstract class ProcessInstanceImpl implements ProcessInstance, Serializab
 
     public void removeChild(String processId, String processInstanceId) {
         Optional.ofNullable(this.children.get(processId)).ifPresent(l -> l.remove(processInstanceId));
+    }
+
+    public Map<String, Set<InstanceTuple>> getFinishedSubProcess() {
+        return this.finishedSubProcesses;
+    }
+
+    public void addFinishedSubProcess(String processId, String processInstanceId, int status) {
+        this.finishedSubProcesses.computeIfAbsent(processId, p -> new LinkedHashSet<InstanceTuple>())
+                .add(new InstanceTuple(processInstanceId, status));
+    }
+
+    public void addFinishedSubProcesses(String processId, List<InstanceTuple> processInstanceIds) {
+        this.finishedSubProcesses.computeIfAbsent(processId, p -> new LinkedHashSet<>()).addAll(processInstanceIds);
     }
 }

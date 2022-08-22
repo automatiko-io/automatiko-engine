@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.protobuf.ExtensionRegistry;
 
@@ -56,6 +58,7 @@ import io.automatiko.engine.workflow.process.instance.node.StateNodeInstance;
 import io.automatiko.engine.workflow.process.instance.node.SubProcessNodeInstance;
 import io.automatiko.engine.workflow.process.instance.node.TimerNodeInstance;
 import io.automatiko.engine.workflow.process.instance.node.WorkItemNodeInstance;
+import io.automatiko.engine.workflow.util.InstanceTuple;
 
 /**
  * Default implementation of a process instance marshaller.
@@ -129,6 +132,19 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
             for (Entry<String, List<String>> entry : children.entrySet()) {
                 _instance.addChildren(AutomatikoMessages.ProcessInstance.ProcessInstanchChildren.newBuilder()
                         .setProcessId(entry.getKey()).addAllIds(entry.getValue()).build());
+
+            }
+        }
+
+        Map<String, Set<InstanceTuple>> finishedSubProcesses = workFlow.getFinishedSubProcess();
+        if (finishedSubProcesses != null) {
+            for (Entry<String, Set<InstanceTuple>> entry : finishedSubProcesses.entrySet()) {
+                _instance.addFinishedSubprocesses(AutomatikoMessages.ProcessInstance.FinishedSubProcesses.newBuilder()
+                        .setProcessId(entry.getKey()).addAllInstances(entry.getValue().stream()
+                                .map(tup -> AutomatikoMessages.ProcessInstance.InstanceTuple.newBuilder().setId(tup.getId())
+                                        .setStatus(tup.getStatus()).build())
+                                .collect(Collectors.toList()))
+                        .build());
 
             }
         }
@@ -800,6 +816,17 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
         if (_instance.getChildrenCount() > 0) {
             _instance.getChildrenList()
                     .forEach(child -> processInstance.addChildren(child.getProcessId(), child.getIdsList()));
+        }
+
+        if (_instance.getFinishedSubprocessesCount() > 0) {
+
+            _instance.getFinishedSubprocessesList().forEach(finished -> {
+
+                String subProcessId = finished.getProcessId();
+                finished.getInstancesList()
+                        .forEach(inst -> processInstance.addFinishedSubProcess(subProcessId, inst.getId(), inst.getStatus()));
+            });
+
         }
 
         if (_instance.getTagsCount() > 0) {

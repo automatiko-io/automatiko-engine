@@ -238,8 +238,11 @@ public class ProcessInstanceGenerator {
             body.addStatement(new MethodCallExpr(new ThisExpr(), "populateChildProcesses")
                     .addArgument(fetchProcessInstance).addArgument(new NameExpr("subprocesses"))
                     .addArgument(new NameExpr("mode")));
-
+            body.addStatement(new MethodCallExpr(new ThisExpr(), "collectedFinishedSubprocesses")
+                    .addArgument(fetchProcessInstance)
+                    .addArgument(new NameExpr("subprocesses")));
         }
+
         body.addStatement(new ReturnStmt(new NameExpr("subprocesses")));
         subprocessesMethod.setBody(body);
         return subprocessesMethod;

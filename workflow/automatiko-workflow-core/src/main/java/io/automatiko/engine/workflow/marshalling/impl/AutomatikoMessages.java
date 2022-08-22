@@ -10306,6 +10306,30 @@ public final class AutomatikoMessages {
      * <code>optional .io.automatiko.engine.workflow.marshalling.ProcessInstance.RecoveryItem recovery_item = 32;</code>
      */
     io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.RecoveryItemOrBuilder getRecoveryItemOrBuilder();
+
+    /**
+     * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+     */
+    java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses> 
+        getFinishedSubprocessesList();
+    /**
+     * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+     */
+    io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses getFinishedSubprocesses(int index);
+    /**
+     * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+     */
+    int getFinishedSubprocessesCount();
+    /**
+     * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+     */
+    java.util.List<? extends io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcessesOrBuilder> 
+        getFinishedSubprocessesOrBuilderList();
+    /**
+     * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+     */
+    io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcessesOrBuilder getFinishedSubprocessesOrBuilder(
+        int index);
   }
   /**
    * Protobuf type {@code io.automatiko.engine.workflow.marshalling.ProcessInstance}
@@ -10345,6 +10369,7 @@ public final class AutomatikoMessages {
       children_ = java.util.Collections.emptyList();
       tags_ = java.util.Collections.emptyList();
       errors_ = java.util.Collections.emptyList();
+      finishedSubprocesses_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -10368,6 +10393,7 @@ public final class AutomatikoMessages {
         throw new java.lang.NullPointerException();
       }
       int mutable_bitField0_ = 0;
+      int mutable_bitField1_ = 0;
       com.google.protobuf.UnknownFieldSet.Builder unknownFields =
           com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
@@ -10597,6 +10623,15 @@ public final class AutomatikoMessages {
               endDate_ = input.readInt64();
               break;
             }
+            case 274: {
+              if (!((mutable_bitField1_ & 0x00000001) != 0)) {
+                finishedSubprocesses_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses>();
+                mutable_bitField1_ |= 0x00000001;
+              }
+              finishedSubprocesses_.add(
+                  input.readMessage(io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.PARSER, extensionRegistry));
+              break;
+            }
             default: {
               if (!parseUnknownField(
                   input, unknownFields, extensionRegistry, tag)) {
@@ -10638,6 +10673,9 @@ public final class AutomatikoMessages {
         }
         if (((mutable_bitField0_ & 0x40000000) != 0)) {
           errors_ = java.util.Collections.unmodifiableList(errors_);
+        }
+        if (((mutable_bitField1_ & 0x00000001) != 0)) {
+          finishedSubprocesses_ = java.util.Collections.unmodifiableList(finishedSubprocesses_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -11686,6 +11724,1689 @@ public final class AutomatikoMessages {
 
       @java.lang.Override
       public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.ProcessInstanchChildren getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+      }
+
+    }
+
+    public interface InstanceTupleOrBuilder extends
+        // @@protoc_insertion_point(interface_extends:io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple)
+        com.google.protobuf.MessageOrBuilder {
+
+      /**
+       * <code>optional string id = 1;</code>
+       * @return Whether the id field is set.
+       */
+      boolean hasId();
+      /**
+       * <code>optional string id = 1;</code>
+       * @return The id.
+       */
+      java.lang.String getId();
+      /**
+       * <code>optional string id = 1;</code>
+       * @return The bytes for id.
+       */
+      com.google.protobuf.ByteString
+          getIdBytes();
+
+      /**
+       * <code>optional int32 status = 2;</code>
+       * @return Whether the status field is set.
+       */
+      boolean hasStatus();
+      /**
+       * <code>optional int32 status = 2;</code>
+       * @return The status.
+       */
+      int getStatus();
+    }
+    /**
+     * Protobuf type {@code io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple}
+     */
+    public static final class InstanceTuple extends
+        com.google.protobuf.GeneratedMessageV3 implements
+        // @@protoc_insertion_point(message_implements:io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple)
+        InstanceTupleOrBuilder {
+    private static final long serialVersionUID = 0L;
+      // Use InstanceTuple.newBuilder() to construct.
+      private InstanceTuple(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+        super(builder);
+      }
+      private InstanceTuple() {
+        id_ = "";
+      }
+
+      @java.lang.Override
+      @SuppressWarnings({"unused"})
+      protected java.lang.Object newInstance(
+          UnusedPrivateParameter unused) {
+        return new InstanceTuple();
+      }
+
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+      getUnknownFields() {
+        return this.unknownFields;
+      }
+      private InstanceTuple(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        this();
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                com.google.protobuf.ByteString bs = input.readBytes();
+                bitField0_ |= 0x00000001;
+                id_ = bs;
+                break;
+              }
+              case 16: {
+                bitField0_ |= 0x00000002;
+                status_ = input.readInt32();
+                break;
+              }
+              default: {
+                if (!parseUnknownField(
+                    input, unknownFields, extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e).setUnfinishedMessage(this);
+        } finally {
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_InstanceTuple_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_InstanceTuple_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.class, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.Builder.class);
+      }
+
+      private int bitField0_;
+      public static final int ID_FIELD_NUMBER = 1;
+      private volatile java.lang.Object id_;
+      /**
+       * <code>optional string id = 1;</code>
+       * @return Whether the id field is set.
+       */
+      @java.lang.Override
+      public boolean hasId() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>optional string id = 1;</code>
+       * @return The id.
+       */
+      @java.lang.Override
+      public java.lang.String getId() {
+        java.lang.Object ref = id_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            id_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>optional string id = 1;</code>
+       * @return The bytes for id.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString
+          getIdBytes() {
+        java.lang.Object ref = id_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          id_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      public static final int STATUS_FIELD_NUMBER = 2;
+      private int status_;
+      /**
+       * <code>optional int32 status = 2;</code>
+       * @return Whether the status field is set.
+       */
+      @java.lang.Override
+      public boolean hasStatus() {
+        return ((bitField0_ & 0x00000002) != 0);
+      }
+      /**
+       * <code>optional int32 status = 2;</code>
+       * @return The status.
+       */
+      @java.lang.Override
+      public int getStatus() {
+        return status_;
+      }
+
+      private byte memoizedIsInitialized = -1;
+      @java.lang.Override
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized == 1) return true;
+        if (isInitialized == 0) return false;
+
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      @java.lang.Override
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        if (((bitField0_ & 0x00000001) != 0)) {
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 1, id_);
+        }
+        if (((bitField0_ & 0x00000002) != 0)) {
+          output.writeInt32(2, status_);
+        }
+        unknownFields.writeTo(output);
+      }
+
+      @java.lang.Override
+      public int getSerializedSize() {
+        int size = memoizedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) != 0)) {
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, id_);
+        }
+        if (((bitField0_ & 0x00000002) != 0)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeInt32Size(2, status_);
+        }
+        size += unknownFields.getSerializedSize();
+        memoizedSize = size;
+        return size;
+      }
+
+      @java.lang.Override
+      public boolean equals(final java.lang.Object obj) {
+        if (obj == this) {
+         return true;
+        }
+        if (!(obj instanceof io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple)) {
+          return super.equals(obj);
+        }
+        io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple other = (io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple) obj;
+
+        if (hasId() != other.hasId()) return false;
+        if (hasId()) {
+          if (!getId()
+              .equals(other.getId())) return false;
+        }
+        if (hasStatus() != other.hasStatus()) return false;
+        if (hasStatus()) {
+          if (getStatus()
+              != other.getStatus()) return false;
+        }
+        if (!unknownFields.equals(other.unknownFields)) return false;
+        return true;
+      }
+
+      @java.lang.Override
+      public int hashCode() {
+        if (memoizedHashCode != 0) {
+          return memoizedHashCode;
+        }
+        int hash = 41;
+        hash = (19 * hash) + getDescriptor().hashCode();
+        if (hasId()) {
+          hash = (37 * hash) + ID_FIELD_NUMBER;
+          hash = (53 * hash) + getId().hashCode();
+        }
+        if (hasStatus()) {
+          hash = (37 * hash) + STATUS_FIELD_NUMBER;
+          hash = (53 * hash) + getStatus();
+        }
+        hash = (29 * hash) + unknownFields.hashCode();
+        memoizedHashCode = hash;
+        return hash;
+      }
+
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple parseFrom(
+          java.nio.ByteBuffer data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple parseFrom(
+          java.nio.ByteBuffer data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+
+      @java.lang.Override
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
+      }
+      public static Builder newBuilder(io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+      }
+      @java.lang.Override
+      public Builder toBuilder() {
+        return this == DEFAULT_INSTANCE
+            ? new Builder() : new Builder().mergeFrom(this);
+      }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+          // @@protoc_insertion_point(builder_implements:io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple)
+          io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTupleOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_InstanceTuple_descriptor;
+        }
+
+        @java.lang.Override
+        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_InstanceTuple_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.class, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.Builder.class);
+        }
+
+        // Construct using io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessageV3
+                  .alwaysUseFieldBuilders) {
+          }
+        }
+        @java.lang.Override
+        public Builder clear() {
+          super.clear();
+          id_ = "";
+          bitField0_ = (bitField0_ & ~0x00000001);
+          status_ = 0;
+          bitField0_ = (bitField0_ & ~0x00000002);
+          return this;
+        }
+
+        @java.lang.Override
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_InstanceTuple_descriptor;
+        }
+
+        @java.lang.Override
+        public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple getDefaultInstanceForType() {
+          return io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.getDefaultInstance();
+        }
+
+        @java.lang.Override
+        public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple build() {
+          io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        @java.lang.Override
+        public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple buildPartial() {
+          io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple result = new io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) != 0)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.id_ = id_;
+          if (((from_bitField0_ & 0x00000002) != 0)) {
+            result.status_ = status_;
+            to_bitField0_ |= 0x00000002;
+          }
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        @java.lang.Override
+        public Builder clone() {
+          return super.clone();
+        }
+        @java.lang.Override
+        public Builder setField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            java.lang.Object value) {
+          return super.setField(field, value);
+        }
+        @java.lang.Override
+        public Builder clearField(
+            com.google.protobuf.Descriptors.FieldDescriptor field) {
+          return super.clearField(field);
+        }
+        @java.lang.Override
+        public Builder clearOneof(
+            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+          return super.clearOneof(oneof);
+        }
+        @java.lang.Override
+        public Builder setRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index, java.lang.Object value) {
+          return super.setRepeatedField(field, index, value);
+        }
+        @java.lang.Override
+        public Builder addRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            java.lang.Object value) {
+          return super.addRepeatedField(field, value);
+        }
+        @java.lang.Override
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple) {
+            return mergeFrom((io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple other) {
+          if (other == io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.getDefaultInstance()) return this;
+          if (other.hasId()) {
+            bitField0_ |= 0x00000001;
+            id_ = other.id_;
+            onChanged();
+          }
+          if (other.hasStatus()) {
+            setStatus(other.getStatus());
+          }
+          this.mergeUnknownFields(other.unknownFields);
+          onChanged();
+          return this;
+        }
+
+        @java.lang.Override
+        public final boolean isInitialized() {
+          return true;
+        }
+
+        @java.lang.Override
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple) e.getUnfinishedMessage();
+            throw e.unwrapIOException();
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        private java.lang.Object id_ = "";
+        /**
+         * <code>optional string id = 1;</code>
+         * @return Whether the id field is set.
+         */
+        public boolean hasId() {
+          return ((bitField0_ & 0x00000001) != 0);
+        }
+        /**
+         * <code>optional string id = 1;</code>
+         * @return The id.
+         */
+        public java.lang.String getId() {
+          java.lang.Object ref = id_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              id_ = s;
+            }
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>optional string id = 1;</code>
+         * @return The bytes for id.
+         */
+        public com.google.protobuf.ByteString
+            getIdBytes() {
+          java.lang.Object ref = id_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            id_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>optional string id = 1;</code>
+         * @param value The id to set.
+         * @return This builder for chaining.
+         */
+        public Builder setId(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          id_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string id = 1;</code>
+         * @return This builder for chaining.
+         */
+        public Builder clearId() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          id_ = getDefaultInstance().getId();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string id = 1;</code>
+         * @param value The bytes for id to set.
+         * @return This builder for chaining.
+         */
+        public Builder setIdBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          id_ = value;
+          onChanged();
+          return this;
+        }
+
+        private int status_ ;
+        /**
+         * <code>optional int32 status = 2;</code>
+         * @return Whether the status field is set.
+         */
+        @java.lang.Override
+        public boolean hasStatus() {
+          return ((bitField0_ & 0x00000002) != 0);
+        }
+        /**
+         * <code>optional int32 status = 2;</code>
+         * @return The status.
+         */
+        @java.lang.Override
+        public int getStatus() {
+          return status_;
+        }
+        /**
+         * <code>optional int32 status = 2;</code>
+         * @param value The status to set.
+         * @return This builder for chaining.
+         */
+        public Builder setStatus(int value) {
+          bitField0_ |= 0x00000002;
+          status_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional int32 status = 2;</code>
+         * @return This builder for chaining.
+         */
+        public Builder clearStatus() {
+          bitField0_ = (bitField0_ & ~0x00000002);
+          status_ = 0;
+          onChanged();
+          return this;
+        }
+        @java.lang.Override
+        public final Builder setUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.setUnknownFields(unknownFields);
+        }
+
+        @java.lang.Override
+        public final Builder mergeUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.mergeUnknownFields(unknownFields);
+        }
+
+
+        // @@protoc_insertion_point(builder_scope:io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple)
+      }
+
+      // @@protoc_insertion_point(class_scope:io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple)
+      private static final io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple DEFAULT_INSTANCE;
+      static {
+        DEFAULT_INSTANCE = new io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple();
+      }
+
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+      }
+
+      @java.lang.Deprecated public static final com.google.protobuf.Parser<InstanceTuple>
+          PARSER = new com.google.protobuf.AbstractParser<InstanceTuple>() {
+        @java.lang.Override
+        public InstanceTuple parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new InstanceTuple(input, extensionRegistry);
+        }
+      };
+
+      public static com.google.protobuf.Parser<InstanceTuple> parser() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<InstanceTuple> getParserForType() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple getDefaultInstanceForType() {
+        return DEFAULT_INSTANCE;
+      }
+
+    }
+
+    public interface FinishedSubProcessesOrBuilder extends
+        // @@protoc_insertion_point(interface_extends:io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses)
+        com.google.protobuf.MessageOrBuilder {
+
+      /**
+       * <code>optional string process_id = 1;</code>
+       * @return Whether the processId field is set.
+       */
+      boolean hasProcessId();
+      /**
+       * <code>optional string process_id = 1;</code>
+       * @return The processId.
+       */
+      java.lang.String getProcessId();
+      /**
+       * <code>optional string process_id = 1;</code>
+       * @return The bytes for processId.
+       */
+      com.google.protobuf.ByteString
+          getProcessIdBytes();
+
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+       */
+      java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple> 
+          getInstancesList();
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+       */
+      io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple getInstances(int index);
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+       */
+      int getInstancesCount();
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+       */
+      java.util.List<? extends io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTupleOrBuilder> 
+          getInstancesOrBuilderList();
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+       */
+      io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTupleOrBuilder getInstancesOrBuilder(
+          int index);
+    }
+    /**
+     * Protobuf type {@code io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses}
+     */
+    public static final class FinishedSubProcesses extends
+        com.google.protobuf.GeneratedMessageV3 implements
+        // @@protoc_insertion_point(message_implements:io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses)
+        FinishedSubProcessesOrBuilder {
+    private static final long serialVersionUID = 0L;
+      // Use FinishedSubProcesses.newBuilder() to construct.
+      private FinishedSubProcesses(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+        super(builder);
+      }
+      private FinishedSubProcesses() {
+        processId_ = "";
+        instances_ = java.util.Collections.emptyList();
+      }
+
+      @java.lang.Override
+      @SuppressWarnings({"unused"})
+      protected java.lang.Object newInstance(
+          UnusedPrivateParameter unused) {
+        return new FinishedSubProcesses();
+      }
+
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+      getUnknownFields() {
+        return this.unknownFields;
+      }
+      private FinishedSubProcesses(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        this();
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 10: {
+                com.google.protobuf.ByteString bs = input.readBytes();
+                bitField0_ |= 0x00000001;
+                processId_ = bs;
+                break;
+              }
+              case 18: {
+                if (!((mutable_bitField0_ & 0x00000002) != 0)) {
+                  instances_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple>();
+                  mutable_bitField0_ |= 0x00000002;
+                }
+                instances_.add(
+                    input.readMessage(io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.PARSER, extensionRegistry));
+                break;
+              }
+              default: {
+                if (!parseUnknownField(
+                    input, unknownFields, extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e).setUnfinishedMessage(this);
+        } finally {
+          if (((mutable_bitField0_ & 0x00000002) != 0)) {
+            instances_ = java.util.Collections.unmodifiableList(instances_);
+          }
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_FinishedSubProcesses_descriptor;
+      }
+
+      @java.lang.Override
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_FinishedSubProcesses_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.class, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.Builder.class);
+      }
+
+      private int bitField0_;
+      public static final int PROCESS_ID_FIELD_NUMBER = 1;
+      private volatile java.lang.Object processId_;
+      /**
+       * <code>optional string process_id = 1;</code>
+       * @return Whether the processId field is set.
+       */
+      @java.lang.Override
+      public boolean hasProcessId() {
+        return ((bitField0_ & 0x00000001) != 0);
+      }
+      /**
+       * <code>optional string process_id = 1;</code>
+       * @return The processId.
+       */
+      @java.lang.Override
+      public java.lang.String getProcessId() {
+        java.lang.Object ref = processId_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            processId_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>optional string process_id = 1;</code>
+       * @return The bytes for processId.
+       */
+      @java.lang.Override
+      public com.google.protobuf.ByteString
+          getProcessIdBytes() {
+        java.lang.Object ref = processId_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          processId_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      public static final int INSTANCES_FIELD_NUMBER = 2;
+      private java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple> instances_;
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+       */
+      @java.lang.Override
+      public java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple> getInstancesList() {
+        return instances_;
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+       */
+      @java.lang.Override
+      public java.util.List<? extends io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTupleOrBuilder> 
+          getInstancesOrBuilderList() {
+        return instances_;
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+       */
+      @java.lang.Override
+      public int getInstancesCount() {
+        return instances_.size();
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+       */
+      @java.lang.Override
+      public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple getInstances(int index) {
+        return instances_.get(index);
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+       */
+      @java.lang.Override
+      public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTupleOrBuilder getInstancesOrBuilder(
+          int index) {
+        return instances_.get(index);
+      }
+
+      private byte memoizedIsInitialized = -1;
+      @java.lang.Override
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized == 1) return true;
+        if (isInitialized == 0) return false;
+
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      @java.lang.Override
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        if (((bitField0_ & 0x00000001) != 0)) {
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 1, processId_);
+        }
+        for (int i = 0; i < instances_.size(); i++) {
+          output.writeMessage(2, instances_.get(i));
+        }
+        unknownFields.writeTo(output);
+      }
+
+      @java.lang.Override
+      public int getSerializedSize() {
+        int size = memoizedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) != 0)) {
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, processId_);
+        }
+        for (int i = 0; i < instances_.size(); i++) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(2, instances_.get(i));
+        }
+        size += unknownFields.getSerializedSize();
+        memoizedSize = size;
+        return size;
+      }
+
+      @java.lang.Override
+      public boolean equals(final java.lang.Object obj) {
+        if (obj == this) {
+         return true;
+        }
+        if (!(obj instanceof io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses)) {
+          return super.equals(obj);
+        }
+        io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses other = (io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses) obj;
+
+        if (hasProcessId() != other.hasProcessId()) return false;
+        if (hasProcessId()) {
+          if (!getProcessId()
+              .equals(other.getProcessId())) return false;
+        }
+        if (!getInstancesList()
+            .equals(other.getInstancesList())) return false;
+        if (!unknownFields.equals(other.unknownFields)) return false;
+        return true;
+      }
+
+      @java.lang.Override
+      public int hashCode() {
+        if (memoizedHashCode != 0) {
+          return memoizedHashCode;
+        }
+        int hash = 41;
+        hash = (19 * hash) + getDescriptor().hashCode();
+        if (hasProcessId()) {
+          hash = (37 * hash) + PROCESS_ID_FIELD_NUMBER;
+          hash = (53 * hash) + getProcessId().hashCode();
+        }
+        if (getInstancesCount() > 0) {
+          hash = (37 * hash) + INSTANCES_FIELD_NUMBER;
+          hash = (53 * hash) + getInstancesList().hashCode();
+        }
+        hash = (29 * hash) + unknownFields.hashCode();
+        memoizedHashCode = hash;
+        return hash;
+      }
+
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses parseFrom(
+          java.nio.ByteBuffer data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses parseFrom(
+          java.nio.ByteBuffer data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input);
+      }
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return com.google.protobuf.GeneratedMessageV3
+            .parseWithIOException(PARSER, input, extensionRegistry);
+      }
+
+      @java.lang.Override
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder() {
+        return DEFAULT_INSTANCE.toBuilder();
+      }
+      public static Builder newBuilder(io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses prototype) {
+        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+      }
+      @java.lang.Override
+      public Builder toBuilder() {
+        return this == DEFAULT_INSTANCE
+            ? new Builder() : new Builder().mergeFrom(this);
+      }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+          // @@protoc_insertion_point(builder_implements:io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses)
+          io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcessesOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_FinishedSubProcesses_descriptor;
+        }
+
+        @java.lang.Override
+        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_FinishedSubProcesses_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.class, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.Builder.class);
+        }
+
+        // Construct using io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessageV3
+                  .alwaysUseFieldBuilders) {
+            getInstancesFieldBuilder();
+          }
+        }
+        @java.lang.Override
+        public Builder clear() {
+          super.clear();
+          processId_ = "";
+          bitField0_ = (bitField0_ & ~0x00000001);
+          if (instancesBuilder_ == null) {
+            instances_ = java.util.Collections.emptyList();
+            bitField0_ = (bitField0_ & ~0x00000002);
+          } else {
+            instancesBuilder_.clear();
+          }
+          return this;
+        }
+
+        @java.lang.Override
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_FinishedSubProcesses_descriptor;
+        }
+
+        @java.lang.Override
+        public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses getDefaultInstanceForType() {
+          return io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.getDefaultInstance();
+        }
+
+        @java.lang.Override
+        public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses build() {
+          io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        @java.lang.Override
+        public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses buildPartial() {
+          io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses result = new io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) != 0)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.processId_ = processId_;
+          if (instancesBuilder_ == null) {
+            if (((bitField0_ & 0x00000002) != 0)) {
+              instances_ = java.util.Collections.unmodifiableList(instances_);
+              bitField0_ = (bitField0_ & ~0x00000002);
+            }
+            result.instances_ = instances_;
+          } else {
+            result.instances_ = instancesBuilder_.build();
+          }
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        @java.lang.Override
+        public Builder clone() {
+          return super.clone();
+        }
+        @java.lang.Override
+        public Builder setField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            java.lang.Object value) {
+          return super.setField(field, value);
+        }
+        @java.lang.Override
+        public Builder clearField(
+            com.google.protobuf.Descriptors.FieldDescriptor field) {
+          return super.clearField(field);
+        }
+        @java.lang.Override
+        public Builder clearOneof(
+            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+          return super.clearOneof(oneof);
+        }
+        @java.lang.Override
+        public Builder setRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            int index, java.lang.Object value) {
+          return super.setRepeatedField(field, index, value);
+        }
+        @java.lang.Override
+        public Builder addRepeatedField(
+            com.google.protobuf.Descriptors.FieldDescriptor field,
+            java.lang.Object value) {
+          return super.addRepeatedField(field, value);
+        }
+        @java.lang.Override
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses) {
+            return mergeFrom((io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses other) {
+          if (other == io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.getDefaultInstance()) return this;
+          if (other.hasProcessId()) {
+            bitField0_ |= 0x00000001;
+            processId_ = other.processId_;
+            onChanged();
+          }
+          if (instancesBuilder_ == null) {
+            if (!other.instances_.isEmpty()) {
+              if (instances_.isEmpty()) {
+                instances_ = other.instances_;
+                bitField0_ = (bitField0_ & ~0x00000002);
+              } else {
+                ensureInstancesIsMutable();
+                instances_.addAll(other.instances_);
+              }
+              onChanged();
+            }
+          } else {
+            if (!other.instances_.isEmpty()) {
+              if (instancesBuilder_.isEmpty()) {
+                instancesBuilder_.dispose();
+                instancesBuilder_ = null;
+                instances_ = other.instances_;
+                bitField0_ = (bitField0_ & ~0x00000002);
+                instancesBuilder_ = 
+                  com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                     getInstancesFieldBuilder() : null;
+              } else {
+                instancesBuilder_.addAllMessages(other.instances_);
+              }
+            }
+          }
+          this.mergeUnknownFields(other.unknownFields);
+          onChanged();
+          return this;
+        }
+
+        @java.lang.Override
+        public final boolean isInitialized() {
+          return true;
+        }
+
+        @java.lang.Override
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses) e.getUnfinishedMessage();
+            throw e.unwrapIOException();
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        private java.lang.Object processId_ = "";
+        /**
+         * <code>optional string process_id = 1;</code>
+         * @return Whether the processId field is set.
+         */
+        public boolean hasProcessId() {
+          return ((bitField0_ & 0x00000001) != 0);
+        }
+        /**
+         * <code>optional string process_id = 1;</code>
+         * @return The processId.
+         */
+        public java.lang.String getProcessId() {
+          java.lang.Object ref = processId_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              processId_ = s;
+            }
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>optional string process_id = 1;</code>
+         * @return The bytes for processId.
+         */
+        public com.google.protobuf.ByteString
+            getProcessIdBytes() {
+          java.lang.Object ref = processId_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            processId_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>optional string process_id = 1;</code>
+         * @param value The processId to set.
+         * @return This builder for chaining.
+         */
+        public Builder setProcessId(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          processId_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string process_id = 1;</code>
+         * @return This builder for chaining.
+         */
+        public Builder clearProcessId() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          processId_ = getDefaultInstance().getProcessId();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string process_id = 1;</code>
+         * @param value The bytes for processId to set.
+         * @return This builder for chaining.
+         */
+        public Builder setProcessIdBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          processId_ = value;
+          onChanged();
+          return this;
+        }
+
+        private java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple> instances_ =
+          java.util.Collections.emptyList();
+        private void ensureInstancesIsMutable() {
+          if (!((bitField0_ & 0x00000002) != 0)) {
+            instances_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple>(instances_);
+            bitField0_ |= 0x00000002;
+           }
+        }
+
+        private com.google.protobuf.RepeatedFieldBuilderV3<
+            io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.Builder, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTupleOrBuilder> instancesBuilder_;
+
+        /**
+         * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+         */
+        public java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple> getInstancesList() {
+          if (instancesBuilder_ == null) {
+            return java.util.Collections.unmodifiableList(instances_);
+          } else {
+            return instancesBuilder_.getMessageList();
+          }
+        }
+        /**
+         * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+         */
+        public int getInstancesCount() {
+          if (instancesBuilder_ == null) {
+            return instances_.size();
+          } else {
+            return instancesBuilder_.getCount();
+          }
+        }
+        /**
+         * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+         */
+        public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple getInstances(int index) {
+          if (instancesBuilder_ == null) {
+            return instances_.get(index);
+          } else {
+            return instancesBuilder_.getMessage(index);
+          }
+        }
+        /**
+         * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+         */
+        public Builder setInstances(
+            int index, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple value) {
+          if (instancesBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureInstancesIsMutable();
+            instances_.set(index, value);
+            onChanged();
+          } else {
+            instancesBuilder_.setMessage(index, value);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+         */
+        public Builder setInstances(
+            int index, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.Builder builderForValue) {
+          if (instancesBuilder_ == null) {
+            ensureInstancesIsMutable();
+            instances_.set(index, builderForValue.build());
+            onChanged();
+          } else {
+            instancesBuilder_.setMessage(index, builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+         */
+        public Builder addInstances(io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple value) {
+          if (instancesBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureInstancesIsMutable();
+            instances_.add(value);
+            onChanged();
+          } else {
+            instancesBuilder_.addMessage(value);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+         */
+        public Builder addInstances(
+            int index, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple value) {
+          if (instancesBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureInstancesIsMutable();
+            instances_.add(index, value);
+            onChanged();
+          } else {
+            instancesBuilder_.addMessage(index, value);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+         */
+        public Builder addInstances(
+            io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.Builder builderForValue) {
+          if (instancesBuilder_ == null) {
+            ensureInstancesIsMutable();
+            instances_.add(builderForValue.build());
+            onChanged();
+          } else {
+            instancesBuilder_.addMessage(builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+         */
+        public Builder addInstances(
+            int index, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.Builder builderForValue) {
+          if (instancesBuilder_ == null) {
+            ensureInstancesIsMutable();
+            instances_.add(index, builderForValue.build());
+            onChanged();
+          } else {
+            instancesBuilder_.addMessage(index, builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+         */
+        public Builder addAllInstances(
+            java.lang.Iterable<? extends io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple> values) {
+          if (instancesBuilder_ == null) {
+            ensureInstancesIsMutable();
+            com.google.protobuf.AbstractMessageLite.Builder.addAll(
+                values, instances_);
+            onChanged();
+          } else {
+            instancesBuilder_.addAllMessages(values);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+         */
+        public Builder clearInstances() {
+          if (instancesBuilder_ == null) {
+            instances_ = java.util.Collections.emptyList();
+            bitField0_ = (bitField0_ & ~0x00000002);
+            onChanged();
+          } else {
+            instancesBuilder_.clear();
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+         */
+        public Builder removeInstances(int index) {
+          if (instancesBuilder_ == null) {
+            ensureInstancesIsMutable();
+            instances_.remove(index);
+            onChanged();
+          } else {
+            instancesBuilder_.remove(index);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+         */
+        public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.Builder getInstancesBuilder(
+            int index) {
+          return getInstancesFieldBuilder().getBuilder(index);
+        }
+        /**
+         * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+         */
+        public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTupleOrBuilder getInstancesOrBuilder(
+            int index) {
+          if (instancesBuilder_ == null) {
+            return instances_.get(index);  } else {
+            return instancesBuilder_.getMessageOrBuilder(index);
+          }
+        }
+        /**
+         * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+         */
+        public java.util.List<? extends io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTupleOrBuilder> 
+             getInstancesOrBuilderList() {
+          if (instancesBuilder_ != null) {
+            return instancesBuilder_.getMessageOrBuilderList();
+          } else {
+            return java.util.Collections.unmodifiableList(instances_);
+          }
+        }
+        /**
+         * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+         */
+        public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.Builder addInstancesBuilder() {
+          return getInstancesFieldBuilder().addBuilder(
+              io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.getDefaultInstance());
+        }
+        /**
+         * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+         */
+        public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.Builder addInstancesBuilder(
+            int index) {
+          return getInstancesFieldBuilder().addBuilder(
+              index, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.getDefaultInstance());
+        }
+        /**
+         * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.InstanceTuple instances = 2;</code>
+         */
+        public java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.Builder> 
+             getInstancesBuilderList() {
+          return getInstancesFieldBuilder().getBuilderList();
+        }
+        private com.google.protobuf.RepeatedFieldBuilderV3<
+            io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.Builder, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTupleOrBuilder> 
+            getInstancesFieldBuilder() {
+          if (instancesBuilder_ == null) {
+            instancesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+                io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTuple.Builder, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.InstanceTupleOrBuilder>(
+                    instances_,
+                    ((bitField0_ & 0x00000002) != 0),
+                    getParentForChildren(),
+                    isClean());
+            instances_ = null;
+          }
+          return instancesBuilder_;
+        }
+        @java.lang.Override
+        public final Builder setUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.setUnknownFields(unknownFields);
+        }
+
+        @java.lang.Override
+        public final Builder mergeUnknownFields(
+            final com.google.protobuf.UnknownFieldSet unknownFields) {
+          return super.mergeUnknownFields(unknownFields);
+        }
+
+
+        // @@protoc_insertion_point(builder_scope:io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses)
+      }
+
+      // @@protoc_insertion_point(class_scope:io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses)
+      private static final io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses DEFAULT_INSTANCE;
+      static {
+        DEFAULT_INSTANCE = new io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses();
+      }
+
+      public static io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses getDefaultInstance() {
+        return DEFAULT_INSTANCE;
+      }
+
+      @java.lang.Deprecated public static final com.google.protobuf.Parser<FinishedSubProcesses>
+          PARSER = new com.google.protobuf.AbstractParser<FinishedSubProcesses>() {
+        @java.lang.Override
+        public FinishedSubProcesses parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new FinishedSubProcesses(input, extensionRegistry);
+        }
+      };
+
+      public static com.google.protobuf.Parser<FinishedSubProcesses> parser() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<FinishedSubProcesses> getParserForType() {
+        return PARSER;
+      }
+
+      @java.lang.Override
+      public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses getDefaultInstanceForType() {
         return DEFAULT_INSTANCE;
       }
 
@@ -36140,6 +37861,46 @@ public final class AutomatikoMessages {
       return recoveryItem_ == null ? io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.RecoveryItem.getDefaultInstance() : recoveryItem_;
     }
 
+    public static final int FINISHED_SUBPROCESSES_FIELD_NUMBER = 34;
+    private java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses> finishedSubprocesses_;
+    /**
+     * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+     */
+    @java.lang.Override
+    public java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses> getFinishedSubprocessesList() {
+      return finishedSubprocesses_;
+    }
+    /**
+     * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+     */
+    @java.lang.Override
+    public java.util.List<? extends io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcessesOrBuilder> 
+        getFinishedSubprocessesOrBuilderList() {
+      return finishedSubprocesses_;
+    }
+    /**
+     * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+     */
+    @java.lang.Override
+    public int getFinishedSubprocessesCount() {
+      return finishedSubprocesses_.size();
+    }
+    /**
+     * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+     */
+    @java.lang.Override
+    public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses getFinishedSubprocesses(int index) {
+      return finishedSubprocesses_.get(index);
+    }
+    /**
+     * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+     */
+    @java.lang.Override
+    public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcessesOrBuilder getFinishedSubprocessesOrBuilder(
+        int index) {
+      return finishedSubprocesses_.get(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     @java.lang.Override
     public final boolean isInitialized() {
@@ -36249,6 +38010,9 @@ public final class AutomatikoMessages {
       }
       if (((bitField0_ & 0x00200000) != 0)) {
         output.writeInt64(33, endDate_);
+      }
+      for (int i = 0; i < finishedSubprocesses_.size(); i++) {
+        output.writeMessage(34, finishedSubprocesses_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -36375,6 +38139,10 @@ public final class AutomatikoMessages {
       if (((bitField0_ & 0x00200000) != 0)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(33, endDate_);
+      }
+      for (int i = 0; i < finishedSubprocesses_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(34, finishedSubprocesses_.get(i));
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -36524,6 +38292,8 @@ public final class AutomatikoMessages {
         if (!getRecoveryItem()
             .equals(other.getRecoveryItem())) return false;
       }
+      if (!getFinishedSubprocessesList()
+          .equals(other.getFinishedSubprocessesList())) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -36668,6 +38438,10 @@ public final class AutomatikoMessages {
         hash = (37 * hash) + RECOVERY_ITEM_FIELD_NUMBER;
         hash = (53 * hash) + getRecoveryItem().hashCode();
       }
+      if (getFinishedSubprocessesCount() > 0) {
+        hash = (37 * hash) + FINISHED_SUBPROCESSES_FIELD_NUMBER;
+        hash = (53 * hash) + getFinishedSubprocessesList().hashCode();
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -36805,6 +38579,7 @@ public final class AutomatikoMessages {
           getTagsFieldBuilder();
           getErrorsFieldBuilder();
           getRecoveryItemFieldBuilder();
+          getFinishedSubprocessesFieldBuilder();
         }
       }
       @java.lang.Override
@@ -36910,6 +38685,12 @@ public final class AutomatikoMessages {
           recoveryItemBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x80000000);
+        if (finishedSubprocessesBuilder_ == null) {
+          finishedSubprocesses_ = java.util.Collections.emptyList();
+          bitField1_ = (bitField1_ & ~0x00000001);
+        } else {
+          finishedSubprocessesBuilder_.clear();
+        }
         return this;
       }
 
@@ -36937,6 +38718,7 @@ public final class AutomatikoMessages {
       public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance buildPartial() {
         io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance result = new io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance(this);
         int from_bitField0_ = bitField0_;
+        int from_bitField1_ = bitField1_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
           to_bitField0_ |= 0x00000001;
@@ -37110,6 +38892,15 @@ public final class AutomatikoMessages {
             result.recoveryItem_ = recoveryItemBuilder_.build();
           }
           to_bitField0_ |= 0x00400000;
+        }
+        if (finishedSubprocessesBuilder_ == null) {
+          if (((bitField1_ & 0x00000001) != 0)) {
+            finishedSubprocesses_ = java.util.Collections.unmodifiableList(finishedSubprocesses_);
+            bitField1_ = (bitField1_ & ~0x00000001);
+          }
+          result.finishedSubprocesses_ = finishedSubprocesses_;
+        } else {
+          result.finishedSubprocesses_ = finishedSubprocessesBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -37477,6 +39268,32 @@ public final class AutomatikoMessages {
         if (other.hasRecoveryItem()) {
           mergeRecoveryItem(other.getRecoveryItem());
         }
+        if (finishedSubprocessesBuilder_ == null) {
+          if (!other.finishedSubprocesses_.isEmpty()) {
+            if (finishedSubprocesses_.isEmpty()) {
+              finishedSubprocesses_ = other.finishedSubprocesses_;
+              bitField1_ = (bitField1_ & ~0x00000001);
+            } else {
+              ensureFinishedSubprocessesIsMutable();
+              finishedSubprocesses_.addAll(other.finishedSubprocesses_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.finishedSubprocesses_.isEmpty()) {
+            if (finishedSubprocessesBuilder_.isEmpty()) {
+              finishedSubprocessesBuilder_.dispose();
+              finishedSubprocessesBuilder_ = null;
+              finishedSubprocesses_ = other.finishedSubprocesses_;
+              bitField1_ = (bitField1_ & ~0x00000001);
+              finishedSubprocessesBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getFinishedSubprocessesFieldBuilder() : null;
+            } else {
+              finishedSubprocessesBuilder_.addAllMessages(other.finishedSubprocesses_);
+            }
+          }
+        }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
@@ -37506,6 +39323,7 @@ public final class AutomatikoMessages {
         return this;
       }
       private int bitField0_;
+      private int bitField1_;
 
       private java.lang.Object processType_ = "";
       /**
@@ -41187,6 +43005,246 @@ public final class AutomatikoMessages {
           recoveryItem_ = null;
         }
         return recoveryItemBuilder_;
+      }
+
+      private java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses> finishedSubprocesses_ =
+        java.util.Collections.emptyList();
+      private void ensureFinishedSubprocessesIsMutable() {
+        if (!((bitField1_ & 0x00000001) != 0)) {
+          finishedSubprocesses_ = new java.util.ArrayList<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses>(finishedSubprocesses_);
+          bitField1_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.Builder, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcessesOrBuilder> finishedSubprocessesBuilder_;
+
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+       */
+      public java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses> getFinishedSubprocessesList() {
+        if (finishedSubprocessesBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(finishedSubprocesses_);
+        } else {
+          return finishedSubprocessesBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+       */
+      public int getFinishedSubprocessesCount() {
+        if (finishedSubprocessesBuilder_ == null) {
+          return finishedSubprocesses_.size();
+        } else {
+          return finishedSubprocessesBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+       */
+      public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses getFinishedSubprocesses(int index) {
+        if (finishedSubprocessesBuilder_ == null) {
+          return finishedSubprocesses_.get(index);
+        } else {
+          return finishedSubprocessesBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+       */
+      public Builder setFinishedSubprocesses(
+          int index, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses value) {
+        if (finishedSubprocessesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFinishedSubprocessesIsMutable();
+          finishedSubprocesses_.set(index, value);
+          onChanged();
+        } else {
+          finishedSubprocessesBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+       */
+      public Builder setFinishedSubprocesses(
+          int index, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.Builder builderForValue) {
+        if (finishedSubprocessesBuilder_ == null) {
+          ensureFinishedSubprocessesIsMutable();
+          finishedSubprocesses_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          finishedSubprocessesBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+       */
+      public Builder addFinishedSubprocesses(io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses value) {
+        if (finishedSubprocessesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFinishedSubprocessesIsMutable();
+          finishedSubprocesses_.add(value);
+          onChanged();
+        } else {
+          finishedSubprocessesBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+       */
+      public Builder addFinishedSubprocesses(
+          int index, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses value) {
+        if (finishedSubprocessesBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFinishedSubprocessesIsMutable();
+          finishedSubprocesses_.add(index, value);
+          onChanged();
+        } else {
+          finishedSubprocessesBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+       */
+      public Builder addFinishedSubprocesses(
+          io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.Builder builderForValue) {
+        if (finishedSubprocessesBuilder_ == null) {
+          ensureFinishedSubprocessesIsMutable();
+          finishedSubprocesses_.add(builderForValue.build());
+          onChanged();
+        } else {
+          finishedSubprocessesBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+       */
+      public Builder addFinishedSubprocesses(
+          int index, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.Builder builderForValue) {
+        if (finishedSubprocessesBuilder_ == null) {
+          ensureFinishedSubprocessesIsMutable();
+          finishedSubprocesses_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          finishedSubprocessesBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+       */
+      public Builder addAllFinishedSubprocesses(
+          java.lang.Iterable<? extends io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses> values) {
+        if (finishedSubprocessesBuilder_ == null) {
+          ensureFinishedSubprocessesIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, finishedSubprocesses_);
+          onChanged();
+        } else {
+          finishedSubprocessesBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+       */
+      public Builder clearFinishedSubprocesses() {
+        if (finishedSubprocessesBuilder_ == null) {
+          finishedSubprocesses_ = java.util.Collections.emptyList();
+          bitField1_ = (bitField1_ & ~0x00000001);
+          onChanged();
+        } else {
+          finishedSubprocessesBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+       */
+      public Builder removeFinishedSubprocesses(int index) {
+        if (finishedSubprocessesBuilder_ == null) {
+          ensureFinishedSubprocessesIsMutable();
+          finishedSubprocesses_.remove(index);
+          onChanged();
+        } else {
+          finishedSubprocessesBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+       */
+      public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.Builder getFinishedSubprocessesBuilder(
+          int index) {
+        return getFinishedSubprocessesFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+       */
+      public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcessesOrBuilder getFinishedSubprocessesOrBuilder(
+          int index) {
+        if (finishedSubprocessesBuilder_ == null) {
+          return finishedSubprocesses_.get(index);  } else {
+          return finishedSubprocessesBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+       */
+      public java.util.List<? extends io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcessesOrBuilder> 
+           getFinishedSubprocessesOrBuilderList() {
+        if (finishedSubprocessesBuilder_ != null) {
+          return finishedSubprocessesBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(finishedSubprocesses_);
+        }
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+       */
+      public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.Builder addFinishedSubprocessesBuilder() {
+        return getFinishedSubprocessesFieldBuilder().addBuilder(
+            io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+       */
+      public io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.Builder addFinishedSubprocessesBuilder(
+          int index) {
+        return getFinishedSubprocessesFieldBuilder().addBuilder(
+            index, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .io.automatiko.engine.workflow.marshalling.ProcessInstance.FinishedSubProcesses finished_subprocesses = 34;</code>
+       */
+      public java.util.List<io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.Builder> 
+           getFinishedSubprocessesBuilderList() {
+        return getFinishedSubprocessesFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.Builder, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcessesOrBuilder> 
+          getFinishedSubprocessesFieldBuilder() {
+        if (finishedSubprocessesBuilder_ == null) {
+          finishedSubprocessesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcesses.Builder, io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages.ProcessInstance.FinishedSubProcessesOrBuilder>(
+                  finishedSubprocesses_,
+                  ((bitField1_ & 0x00000001) != 0),
+                  getParentForChildren(),
+                  isClean());
+          finishedSubprocesses_ = null;
+        }
+        return finishedSubprocessesBuilder_;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -53121,6 +55179,16 @@ public final class AutomatikoMessages {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_ProcessInstanchChildren_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_InstanceTuple_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_InstanceTuple_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_FinishedSubProcesses_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_FinishedSubProcesses_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_RecoveryItem_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -53309,7 +55377,7 @@ public final class AutomatikoMessages {
       "atiko.engine.workflow.marshalling.Trigge" +
       "r\"T\n\013TriggerType\022\010\n\004CRON\020\000\022\014\n\010INTERVAL\020\001" +
       "\022\021\n\rPOINT_IN_TIME\020\002\022\032\n\026COMPOSITE_MAX_DUR" +
-      "ATION\020\003\"\024\n\013ProcessData*\005\010\n\020\310\001\"\241,\n\017Proces" +
+      "ATION\020\003\"\024\n\013ProcessData*\005\010\n\020\310\001\"\310.\n\017Proces" +
       "sInstance\022\024\n\014process_type\030\001 \001(\t\022\n\n\002id\030\002 " +
       "\001(\t\022\022\n\nprocess_id\030\003 \001(\t\022\027\n\017process_versi" +
       "on\030\037 \001(\t\022\r\n\005state\030\004 \001(\005\022\035\n\025node_instance" +
@@ -53344,164 +55412,171 @@ public final class AutomatikoMessages {
       "e.workflow.marshalling.ProcessInstance.E" +
       "rror\022^\n\rrecovery_item\030  \001(\0132G.io.automat" +
       "iko.engine.workflow.marshalling.ProcessI" +
-      "nstance.RecoveryItem\032:\n\027ProcessInstanchC" +
-      "hildren\022\022\n\nprocess_id\030\001 \001(\t\022\013\n\003ids\030\002 \003(\t" +
-      "\032w\n\014RecoveryItem\022\026\n\016transaction_id\030\001 \001(\t" +
-      "\022\017\n\007node_id\030\002 \001(\t\022\023\n\013instance_id\030\003 \001(\t\022\020" +
-      "\n\010timer_id\030\004 \001(\t\022\027\n\017state_timer_ids\030\005 \003(" +
-      "\t\032 \n\003Tag\022\n\n\002id\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\032^\n\005E" +
-      "rror\022\020\n\010error_id\030\037 \001(\t\022\025\n\rerror_node_id\030" +
-      "\031 \001(\t\022\025\n\rerror_message\030\032 \001(\t\022\025\n\rerror_de" +
-      "tails\030  \001(\t\032=\n\027SwimlaneContextInstance\022\020" +
-      "\n\010swimlane\030\001 \001(\t\022\020\n\010actor_id\030\002 \001(\t\032\270\002\n\014N" +
-      "odeInstance\022\n\n\002id\030\001 \001(\t\022\017\n\007node_id\030\002 \001(\003" +
-      "\022_\n\007content\030\004 \001(\0132N.io.automatiko.engine" +
-      ".workflow.marshalling.ProcessInstance.No" +
-      "deInstanceContent\022\r\n\005level\030\005 \001(\005\022\024\n\014sla_" +
-      "timer_id\030\006 \001(\t\022\024\n\014sla_due_date\030\007 \001(\003\022\026\n\016" +
-      "sla_compliance\030\010 \001(\005\022\024\n\014trigger_date\030\t \001" +
-      "(\003\022\024\n\014retry_job_id\030\n \001(\t\022\026\n\016retry_attemp" +
-      "ts\030\013 \001(\005\022\023\n\013node_def_id\030\014 \001(\t\0328\n\026Exclusi" +
-      "veGroupInstance\022\036\n\026group_node_instance_i" +
-      "d\030\001 \003(\t\032\206\031\n\023NodeInstanceContent\022Y\n\004type\030" +
-      "\001 \001(\0162K.io.automatiko.engine.workflow.ma" +
-      "rshalling.ProcessInstance.NodeInstanceTy" +
-      "pe\022l\n\010rule_set\030\002 \001(\0132Z.io.automatiko.eng" +
+      "nstance.RecoveryItem\022n\n\025finished_subproc" +
+      "esses\030\" \003(\0132O.io.automatiko.engine.workf" +
+      "low.marshalling.ProcessInstance.Finished" +
+      "SubProcesses\032:\n\027ProcessInstanchChildren\022" +
+      "\022\n\nprocess_id\030\001 \001(\t\022\013\n\003ids\030\002 \003(\t\032+\n\rInst" +
+      "anceTuple\022\n\n\002id\030\001 \001(\t\022\016\n\006status\030\002 \001(\005\032\207\001" +
+      "\n\024FinishedSubProcesses\022\022\n\nprocess_id\030\001 \001" +
+      "(\t\022[\n\tinstances\030\002 \003(\0132H.io.automatiko.en" +
+      "gine.workflow.marshalling.ProcessInstanc" +
+      "e.InstanceTuple\032w\n\014RecoveryItem\022\026\n\016trans" +
+      "action_id\030\001 \001(\t\022\017\n\007node_id\030\002 \001(\t\022\023\n\013inst" +
+      "ance_id\030\003 \001(\t\022\020\n\010timer_id\030\004 \001(\t\022\027\n\017state" +
+      "_timer_ids\030\005 \003(\t\032 \n\003Tag\022\n\n\002id\030\001 \001(\t\022\r\n\005v" +
+      "alue\030\002 \001(\t\032^\n\005Error\022\020\n\010error_id\030\037 \001(\t\022\025\n" +
+      "\rerror_node_id\030\031 \001(\t\022\025\n\rerror_message\030\032 " +
+      "\001(\t\022\025\n\rerror_details\030  \001(\t\032=\n\027SwimlaneCo" +
+      "ntextInstance\022\020\n\010swimlane\030\001 \001(\t\022\020\n\010actor" +
+      "_id\030\002 \001(\t\032\270\002\n\014NodeInstance\022\n\n\002id\030\001 \001(\t\022\017" +
+      "\n\007node_id\030\002 \001(\003\022_\n\007content\030\004 \001(\0132N.io.au" +
+      "tomatiko.engine.workflow.marshalling.Pro" +
+      "cessInstance.NodeInstanceContent\022\r\n\005leve" +
+      "l\030\005 \001(\005\022\024\n\014sla_timer_id\030\006 \001(\t\022\024\n\014sla_due" +
+      "_date\030\007 \001(\003\022\026\n\016sla_compliance\030\010 \001(\005\022\024\n\014t" +
+      "rigger_date\030\t \001(\003\022\024\n\014retry_job_id\030\n \001(\t\022" +
+      "\026\n\016retry_attempts\030\013 \001(\005\022\023\n\013node_def_id\030\014" +
+      " \001(\t\0328\n\026ExclusiveGroupInstance\022\036\n\026group_" +
+      "node_instance_id\030\001 \003(\t\032\206\031\n\023NodeInstanceC" +
+      "ontent\022Y\n\004type\030\001 \001(\0162K.io.automatiko.eng" +
       "ine.workflow.marshalling.ProcessInstance" +
-      ".NodeInstanceContent.RuleSetNode\022p\n\nhuma" +
-      "n_task\030\003 \001(\0132\\.io.automatiko.engine.work" +
-      "flow.marshalling.ProcessInstance.NodeIns" +
-      "tanceContent.HumanTaskNode\022n\n\twork_item\030" +
-      "\004 \001(\0132[.io.automatiko.engine.workflow.ma" +
-      "rshalling.ProcessInstance.NodeInstanceCo" +
-      "ntent.WorkItemNode\022r\n\013sub_process\030\005 \001(\0132" +
-      "].io.automatiko.engine.workflow.marshall" +
-      "ing.ProcessInstance.NodeInstanceContent." +
-      "SubProcessNode\022o\n\tmilestone\030\006 \001(\0132\\.io.a" +
-      "utomatiko.engine.workflow.marshalling.Pr" +
-      "ocessInstance.NodeInstanceContent.Milest" +
-      "oneNode\022g\n\005event\030\007 \001(\0132X.io.automatiko.e" +
+      ".NodeInstanceType\022l\n\010rule_set\030\002 \001(\0132Z.io" +
+      ".automatiko.engine.workflow.marshalling." +
+      "ProcessInstance.NodeInstanceContent.Rule" +
+      "SetNode\022p\n\nhuman_task\030\003 \001(\0132\\.io.automat" +
+      "iko.engine.workflow.marshalling.ProcessI" +
+      "nstance.NodeInstanceContent.HumanTaskNod" +
+      "e\022n\n\twork_item\030\004 \001(\0132[.io.automatiko.eng" +
+      "ine.workflow.marshalling.ProcessInstance" +
+      ".NodeInstanceContent.WorkItemNode\022r\n\013sub" +
+      "_process\030\005 \001(\0132].io.automatiko.engine.wo" +
+      "rkflow.marshalling.ProcessInstance.NodeI" +
+      "nstanceContent.SubProcessNode\022o\n\tmilesto" +
+      "ne\030\006 \001(\0132\\.io.automatiko.engine.workflow" +
+      ".marshalling.ProcessInstance.NodeInstanc" +
+      "eContent.MilestoneNode\022g\n\005event\030\007 \001(\0132X." +
+      "io.automatiko.engine.workflow.marshallin" +
+      "g.ProcessInstance.NodeInstanceContent.Ev" +
+      "entNode\022g\n\005timer\030\010 \001(\0132X.io.automatiko.e" +
       "ngine.workflow.marshalling.ProcessInstan" +
-      "ce.NodeInstanceContent.EventNode\022g\n\005time" +
-      "r\030\010 \001(\0132X.io.automatiko.engine.workflow." +
-      "marshalling.ProcessInstance.NodeInstance" +
-      "Content.TimerNode\022e\n\004join\030\t \001(\0132W.io.aut" +
-      "omatiko.engine.workflow.marshalling.Proc" +
-      "essInstance.NodeInstanceContent.JoinNode" +
-      "\022g\n\005state\030\n \001(\0132X.io.automatiko.engine.w" +
-      "orkflow.marshalling.ProcessInstance.Node" +
-      "InstanceContent.StateNode\022v\n\tcomposite\030\013" +
-      " \001(\0132c.io.automatiko.engine.workflow.mar" +
-      "shalling.ProcessInstance.NodeInstanceCon" +
-      "tent.CompositeContextNode\022l\n\010for_each\030\014 " +
-      "\001(\0132Z.io.automatiko.engine.workflow.mars" +
-      "halling.ProcessInstance.NodeInstanceCont" +
-      "ent.ForEachNode\022r\n\013async_event\030\r \001(\0132].i" +
-      "o.automatiko.engine.workflow.marshalling" +
-      ".ProcessInstance.NodeInstanceContent.Asy" +
-      "ncEventNode\032\351\001\n\013RuleSetNode\022\031\n\021timer_ins" +
-      "tance_id\030\001 \003(\t\022y\n\010mapEntry\030\002 \003(\0132g.io.au" +
-      "tomatiko.engine.workflow.marshalling.Pro" +
-      "cessInstance.NodeInstanceContent.RuleSet" +
-      "Node.TextMapEntry\022\027\n\017rule_flow_group\030\003 \001" +
-      "(\t\032+\n\014TextMapEntry\022\014\n\004name\030\001 \001(\t\022\r\n\005valu" +
-      "e\030\002 \001(\t\032\274\001\n\rHumanTaskNode\022\024\n\014work_item_i" +
-      "d\030\001 \001(\t\022\031\n\021timer_instance_id\030\002 \003(\t\022*\n\"er" +
-      "ror_handling_process_instance_id\030\003 \001(\t\022N" +
-      "\n\010workitem\030\004 \001(\0132<.io.automatiko.engine." +
-      "workflow.marshalling.HumanTaskWorkItem\032\262" +
-      "\001\n\014WorkItemNode\022\024\n\014work_item_id\030\001 \001(\t\022\031\n" +
-      "\021timer_instance_id\030\002 \003(\t\022*\n\"error_handli" +
-      "ng_process_instance_id\030\003 \001(\t\022E\n\010workitem" +
-      "\030\004 \001(\01323.io.automatiko.engine.workflow.m" +
-      "arshalling.WorkItem\032g\n\016SubProcessNode\022\033\n" +
-      "\023process_instance_id\030\001 \001(\t\022\031\n\021timer_inst" +
-      "ance_id\030\002 \003(\t\022\035\n\025process_instance_name\030\003" +
-      " \001(\t\032*\n\rMilestoneNode\022\031\n\021timer_instance_" +
-      "id\030\001 \003(\t\032\013\n\tEventNode\032\035\n\tTimerNode\022\020\n\010ti" +
-      "mer_id\030\001 \001(\t\032\261\001\n\010JoinNode\022t\n\007trigger\030\001 \003" +
-      "(\0132c.io.automatiko.engine.workflow.marsh" +
-      "alling.ProcessInstance.NodeInstanceConte" +
-      "nt.JoinNode.JoinTrigger\032/\n\013JoinTrigger\022\017" +
-      "\n\007node_id\030\001 \001(\003\022\017\n\007counter\030\002 \001(\005\032&\n\tStat" +
-      "eNode\022\031\n\021timer_instance_id\030\001 \003(\t\032\230\003\n\024Com" +
-      "positeContextNode\022\031\n\021timer_instance_id\030\002" +
-      " \003(\t\022E\n\010variable\030\003 \003(\01323.io.automatiko.e" +
-      "ngine.workflow.marshalling.Variable\022^\n\rn" +
-      "ode_instance\030\004 \003(\0132G.io.automatiko.engin" +
+      "ce.NodeInstanceContent.TimerNode\022e\n\004join" +
+      "\030\t \001(\0132W.io.automatiko.engine.workflow.m" +
+      "arshalling.ProcessInstance.NodeInstanceC" +
+      "ontent.JoinNode\022g\n\005state\030\n \001(\0132X.io.auto" +
+      "matiko.engine.workflow.marshalling.Proce" +
+      "ssInstance.NodeInstanceContent.StateNode" +
+      "\022v\n\tcomposite\030\013 \001(\0132c.io.automatiko.engi" +
+      "ne.workflow.marshalling.ProcessInstance." +
+      "NodeInstanceContent.CompositeContextNode" +
+      "\022l\n\010for_each\030\014 \001(\0132Z.io.automatiko.engin" +
       "e.workflow.marshalling.ProcessInstance.N" +
-      "odeInstance\022j\n\017exclusive_group\030\005 \003(\0132Q.i" +
-      "o.automatiko.engine.workflow.marshalling" +
-      ".ProcessInstance.ExclusiveGroupInstance\022" +
-      "R\n\017iterationLevels\030\006 \003(\01329.io.automatiko" +
-      ".engine.workflow.marshalling.IterationLe" +
-      "vel\032\244\002\n\013ForEachNode\022^\n\rnode_instance\030\001 \003" +
-      "(\0132G.io.automatiko.engine.workflow.marsh" +
-      "alling.ProcessInstance.NodeInstance\022E\n\010v" +
-      "ariable\030\002 \003(\01323.io.automatiko.engine.wor" +
-      "kflow.marshalling.Variable\022R\n\017iterationL" +
-      "evels\030\003 \003(\01329.io.automatiko.engine.workf" +
-      "low.marshalling.IterationLevel\022\032\n\022sequen" +
-      "tial_counter\030\004 \001(\005\032$\n\016AsyncEventNode\022\022\n\n" +
-      "event_type\030\001 \001(\t\"\276\002\n\020NodeInstanceType\022\021\n" +
-      "\rRULE_SET_NODE\020\000\022\023\n\017HUMAN_TASK_NODE\020\001\022\022\n" +
-      "\016WORK_ITEM_NODE\020\002\022\023\n\017SUBPROCESS_NODE\020\003\022\022" +
-      "\n\016MILESTONE_NODE\020\004\022\016\n\nEVENT_NODE\020\005\022\016\n\nTI" +
-      "MER_NODE\020\006\022\r\n\tJOIN_NODE\020\007\022\016\n\nSTATE_NODE\020" +
-      "\010\022\032\n\026COMPOSITE_CONTEXT_NODE\020\t\022\021\n\rFOR_EAC" +
-      "H_NODE\020\n\022\020\n\014DYNAMIC_NODE\020\013\022\031\n\025EVENT_SUBP" +
-      "ROCESS_NODE\020\014\022\024\n\020ASYNC_EVENT_NODE\020\r\022\024\n\020S" +
-      "UB_PROCESS_NODE\020\016\"R\n\010Variable\022\014\n\004name\030\001 " +
-      "\001(\t\022\026\n\016strategy_index\030\002 \001(\005\022\r\n\005value\030\003 \001" +
-      "(\014\022\021\n\tdata_type\030\004 \001(\t\"\255\002\n\010WorkItem\022\n\n\002id" +
-      "\030\001 \001(\t\022\034\n\024process_instances_id\030\002 \001(\t\022\014\n\004" +
-      "name\030\003 \001(\t\022\r\n\005state\030\004 \001(\005\022E\n\010variable\030\005 " +
-      "\003(\01323.io.automatiko.engine.workflow.mars" +
-      "halling.Variable\022\025\n\rdeployment_id\030\006 \001(\t\022" +
-      "\030\n\020node_instance_id\030\007 \001(\t\022\017\n\007node_id\030\010 \001" +
-      "(\003\022\020\n\010phase_id\030\t \001(\t\022\024\n\014phase_status\030\n \001" +
-      "(\t\022\022\n\nstart_date\030\013 \001(\003\022\025\n\rcomplete_date\030" +
-      "\014 \001(\003\"\227\004\n\021HumanTaskWorkItem\022\n\n\002id\030\001 \001(\t\022" +
-      "\034\n\024process_instances_id\030\002 \001(\t\022\014\n\004name\030\003 " +
-      "\001(\t\022\r\n\005state\030\004 \001(\005\022E\n\010variable\030\005 \003(\01323.i" +
-      "o.automatiko.engine.workflow.marshalling" +
-      ".Variable\022\025\n\rdeployment_id\030\006 \001(\t\022\030\n\020node" +
-      "_instance_id\030\007 \001(\t\022\017\n\007node_id\030\010 \001(\003\022\020\n\010p" +
-      "hase_id\030\t \001(\t\022\024\n\014phase_status\030\n \001(\t\022\022\n\ns" +
-      "tart_date\030\013 \001(\003\022\025\n\rcomplete_date\030\014 \001(\003\022\021" +
-      "\n\ttask_name\030\r \001(\t\022\030\n\020task_description\030\016 " +
-      "\001(\t\022\025\n\rtask_priority\030\017 \001(\t\022\024\n\014actual_own" +
-      "er\030\020 \001(\t\022\021\n\tpot_users\030\021 \003(\t\022\022\n\npot_group" +
-      "s\030\022 \003(\t\022\026\n\016excluded_users\030\023 \003(\t\022\023\n\013admin" +
-      "_users\030\024 \003(\t\022\024\n\014admin_groups\030\025 \003(\t\022\033\n\023ta" +
-      "sk_reference_name\030\026 \001(\t\"\360\002\n\014ProcessTimer" +
-      "\022T\n\005timer\030\001 \001(\0132E.io.automatiko.engine.w" +
-      "orkflow.marshalling.ProcessTimer.TimerIn" +
-      "stance\022C\n\007trigger\030\002 \001(\01322.io.automatiko." +
-      "engine.workflow.marshalling.Trigger\032\304\001\n\r" +
-      "TimerInstance\022\n\n\002id\030\001 \001(\003\022\020\n\010timer_id\030\002 " +
-      "\001(\t\022\r\n\005delay\030\003 \001(\003\022\016\n\006period\030\004 \001(\003\022\033\n\023pr" +
-      "ocess_instance_id\030\005 \001(\t\022\026\n\016activated_tim" +
-      "e\030\006 \001(\003\022\026\n\016last_triggered\030\007 \001(\003\022\023\n\013repea" +
-      "tLimit\030\010 \001(\005\022\024\n\014next_trigger\030\t \001(\003\"+\n\016It" +
-      "erationLevel\022\n\n\002id\030\001 \001(\t\022\r\n\005level\030\002 \001(\005\"" +
-      "Z\n\021VariableContainer\022E\n\010variable\030\001 \003(\01323" +
+      "odeInstanceContent.ForEachNode\022r\n\013async_" +
+      "event\030\r \001(\0132].io.automatiko.engine.workf" +
+      "low.marshalling.ProcessInstance.NodeInst" +
+      "anceContent.AsyncEventNode\032\351\001\n\013RuleSetNo" +
+      "de\022\031\n\021timer_instance_id\030\001 \003(\t\022y\n\010mapEntr" +
+      "y\030\002 \003(\0132g.io.automatiko.engine.workflow." +
+      "marshalling.ProcessInstance.NodeInstance" +
+      "Content.RuleSetNode.TextMapEntry\022\027\n\017rule" +
+      "_flow_group\030\003 \001(\t\032+\n\014TextMapEntry\022\014\n\004nam" +
+      "e\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\032\274\001\n\rHumanTaskNode" +
+      "\022\024\n\014work_item_id\030\001 \001(\t\022\031\n\021timer_instance" +
+      "_id\030\002 \003(\t\022*\n\"error_handling_process_inst" +
+      "ance_id\030\003 \001(\t\022N\n\010workitem\030\004 \001(\0132<.io.aut" +
+      "omatiko.engine.workflow.marshalling.Huma" +
+      "nTaskWorkItem\032\262\001\n\014WorkItemNode\022\024\n\014work_i" +
+      "tem_id\030\001 \001(\t\022\031\n\021timer_instance_id\030\002 \003(\t\022" +
+      "*\n\"error_handling_process_instance_id\030\003 " +
+      "\001(\t\022E\n\010workitem\030\004 \001(\01323.io.automatiko.en" +
+      "gine.workflow.marshalling.WorkItem\032g\n\016Su" +
+      "bProcessNode\022\033\n\023process_instance_id\030\001 \001(" +
+      "\t\022\031\n\021timer_instance_id\030\002 \003(\t\022\035\n\025process_" +
+      "instance_name\030\003 \001(\t\032*\n\rMilestoneNode\022\031\n\021" +
+      "timer_instance_id\030\001 \003(\t\032\013\n\tEventNode\032\035\n\t" +
+      "TimerNode\022\020\n\010timer_id\030\001 \001(\t\032\261\001\n\010JoinNode" +
+      "\022t\n\007trigger\030\001 \003(\0132c.io.automatiko.engine" +
+      ".workflow.marshalling.ProcessInstance.No" +
+      "deInstanceContent.JoinNode.JoinTrigger\032/" +
+      "\n\013JoinTrigger\022\017\n\007node_id\030\001 \001(\003\022\017\n\007counte" +
+      "r\030\002 \001(\005\032&\n\tStateNode\022\031\n\021timer_instance_i" +
+      "d\030\001 \003(\t\032\230\003\n\024CompositeContextNode\022\031\n\021time" +
+      "r_instance_id\030\002 \003(\t\022E\n\010variable\030\003 \003(\01323." +
+      "io.automatiko.engine.workflow.marshallin" +
+      "g.Variable\022^\n\rnode_instance\030\004 \003(\0132G.io.a" +
+      "utomatiko.engine.workflow.marshalling.Pr" +
+      "ocessInstance.NodeInstance\022j\n\017exclusive_" +
+      "group\030\005 \003(\0132Q.io.automatiko.engine.workf" +
+      "low.marshalling.ProcessInstance.Exclusiv" +
+      "eGroupInstance\022R\n\017iterationLevels\030\006 \003(\0132" +
+      "9.io.automatiko.engine.workflow.marshall" +
+      "ing.IterationLevel\032\244\002\n\013ForEachNode\022^\n\rno" +
+      "de_instance\030\001 \003(\0132G.io.automatiko.engine" +
+      ".workflow.marshalling.ProcessInstance.No" +
+      "deInstance\022E\n\010variable\030\002 \003(\01323.io.automa" +
+      "tiko.engine.workflow.marshalling.Variabl" +
+      "e\022R\n\017iterationLevels\030\003 \003(\01329.io.automati" +
+      "ko.engine.workflow.marshalling.Iteration" +
+      "Level\022\032\n\022sequential_counter\030\004 \001(\005\032$\n\016Asy" +
+      "ncEventNode\022\022\n\nevent_type\030\001 \001(\t\"\276\002\n\020Node" +
+      "InstanceType\022\021\n\rRULE_SET_NODE\020\000\022\023\n\017HUMAN" +
+      "_TASK_NODE\020\001\022\022\n\016WORK_ITEM_NODE\020\002\022\023\n\017SUBP" +
+      "ROCESS_NODE\020\003\022\022\n\016MILESTONE_NODE\020\004\022\016\n\nEVE" +
+      "NT_NODE\020\005\022\016\n\nTIMER_NODE\020\006\022\r\n\tJOIN_NODE\020\007" +
+      "\022\016\n\nSTATE_NODE\020\010\022\032\n\026COMPOSITE_CONTEXT_NO" +
+      "DE\020\t\022\021\n\rFOR_EACH_NODE\020\n\022\020\n\014DYNAMIC_NODE\020" +
+      "\013\022\031\n\025EVENT_SUBPROCESS_NODE\020\014\022\024\n\020ASYNC_EV" +
+      "ENT_NODE\020\r\022\024\n\020SUB_PROCESS_NODE\020\016\"R\n\010Vari" +
+      "able\022\014\n\004name\030\001 \001(\t\022\026\n\016strategy_index\030\002 \001" +
+      "(\005\022\r\n\005value\030\003 \001(\014\022\021\n\tdata_type\030\004 \001(\t\"\255\002\n" +
+      "\010WorkItem\022\n\n\002id\030\001 \001(\t\022\034\n\024process_instanc" +
+      "es_id\030\002 \001(\t\022\014\n\004name\030\003 \001(\t\022\r\n\005state\030\004 \001(\005" +
+      "\022E\n\010variable\030\005 \003(\01323.io.automatiko.engin" +
+      "e.workflow.marshalling.Variable\022\025\n\rdeplo" +
+      "yment_id\030\006 \001(\t\022\030\n\020node_instance_id\030\007 \001(\t" +
+      "\022\017\n\007node_id\030\010 \001(\003\022\020\n\010phase_id\030\t \001(\t\022\024\n\014p" +
+      "hase_status\030\n \001(\t\022\022\n\nstart_date\030\013 \001(\003\022\025\n" +
+      "\rcomplete_date\030\014 \001(\003\"\227\004\n\021HumanTaskWorkIt" +
+      "em\022\n\n\002id\030\001 \001(\t\022\034\n\024process_instances_id\030\002" +
+      " \001(\t\022\014\n\004name\030\003 \001(\t\022\r\n\005state\030\004 \001(\005\022E\n\010var" +
+      "iable\030\005 \003(\01323.io.automatiko.engine.workf" +
+      "low.marshalling.Variable\022\025\n\rdeployment_i" +
+      "d\030\006 \001(\t\022\030\n\020node_instance_id\030\007 \001(\t\022\017\n\007nod" +
+      "e_id\030\010 \001(\003\022\020\n\010phase_id\030\t \001(\t\022\024\n\014phase_st" +
+      "atus\030\n \001(\t\022\022\n\nstart_date\030\013 \001(\003\022\025\n\rcomple" +
+      "te_date\030\014 \001(\003\022\021\n\ttask_name\030\r \001(\t\022\030\n\020task" +
+      "_description\030\016 \001(\t\022\025\n\rtask_priority\030\017 \001(" +
+      "\t\022\024\n\014actual_owner\030\020 \001(\t\022\021\n\tpot_users\030\021 \003" +
+      "(\t\022\022\n\npot_groups\030\022 \003(\t\022\026\n\016excluded_users" +
+      "\030\023 \003(\t\022\023\n\013admin_users\030\024 \003(\t\022\024\n\014admin_gro" +
+      "ups\030\025 \003(\t\022\033\n\023task_reference_name\030\026 \001(\t\"\360" +
+      "\002\n\014ProcessTimer\022T\n\005timer\030\001 \001(\0132E.io.auto" +
+      "matiko.engine.workflow.marshalling.Proce" +
+      "ssTimer.TimerInstance\022C\n\007trigger\030\002 \001(\01322" +
       ".io.automatiko.engine.workflow.marshalli" +
-      "ng.Variable:\214\001\n\020process_instance\0226.io.au" +
-      "tomatiko.engine.workflow.marshalling.Pro" +
-      "cessData\030\n \003(\0132:.io.automatiko.engine.wo" +
-      "rkflow.marshalling.ProcessInstance:~\n\two" +
-      "rk_item\0226.io.automatiko.engine.workflow." +
-      "marshalling.ProcessData\030\013 \003(\01323.io.autom" +
-      "atiko.engine.workflow.marshalling.WorkIt" +
-      "em:H\n\010timer_id\0226.io.automatiko.engine.wo" +
-      "rkflow.marshalling.ProcessData\030\r \001(\003:\206\001\n" +
-      "\rprocess_timer\0226.io.automatiko.engine.wo" +
-      "rkflow.marshalling.ProcessData\030\014 \003(\01327.i" +
-      "o.automatiko.engine.workflow.marshalling" +
-      ".ProcessTimerBD\n.io.automatiko.engine.wo" +
-      "rkflow.marshalling.implB\022AutomatikoMessa" +
-      "ges"
+      "ng.Trigger\032\304\001\n\rTimerInstance\022\n\n\002id\030\001 \001(\003" +
+      "\022\020\n\010timer_id\030\002 \001(\t\022\r\n\005delay\030\003 \001(\003\022\016\n\006per" +
+      "iod\030\004 \001(\003\022\033\n\023process_instance_id\030\005 \001(\t\022\026" +
+      "\n\016activated_time\030\006 \001(\003\022\026\n\016last_triggered" +
+      "\030\007 \001(\003\022\023\n\013repeatLimit\030\010 \001(\005\022\024\n\014next_trig" +
+      "ger\030\t \001(\003\"+\n\016IterationLevel\022\n\n\002id\030\001 \001(\t\022" +
+      "\r\n\005level\030\002 \001(\005\"Z\n\021VariableContainer\022E\n\010v" +
+      "ariable\030\001 \003(\01323.io.automatiko.engine.wor" +
+      "kflow.marshalling.Variable:\214\001\n\020process_i" +
+      "nstance\0226.io.automatiko.engine.workflow." +
+      "marshalling.ProcessData\030\n \003(\0132:.io.autom" +
+      "atiko.engine.workflow.marshalling.Proces" +
+      "sInstance:~\n\twork_item\0226.io.automatiko.e" +
+      "ngine.workflow.marshalling.ProcessData\030\013" +
+      " \003(\01323.io.automatiko.engine.workflow.mar" +
+      "shalling.WorkItem:H\n\010timer_id\0226.io.autom" +
+      "atiko.engine.workflow.marshalling.Proces" +
+      "sData\030\r \001(\003:\206\001\n\rprocess_timer\0226.io.autom" +
+      "atiko.engine.workflow.marshalling.Proces" +
+      "sData\030\014 \003(\01327.io.automatiko.engine.workf" +
+      "low.marshalling.ProcessTimerBD\n.io.autom" +
+      "atiko.engine.workflow.marshalling.implB\022" +
+      "AutomatikoMessages"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -53572,51 +55647,63 @@ public final class AutomatikoMessages {
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor,
-        new java.lang.String[] { "ProcessType", "Id", "ProcessId", "ProcessVersion", "State", "NodeInstanceCounter", "ProcessXml", "ParentProcessInstanceId", "Description", "SignalCompletion", "DeploymentId", "CorrelationKey", "SlaTimerId", "SlaDueDate", "SlaCompliance", "RootProcessInstanceId", "StartDate", "RootProcessId", "ReferenceId", "Initiator", "ReferenceFromRoot", "EndDate", "SwimlaneContext", "NodeInstance", "Variable", "ExclusiveGroup", "CompletedNodeIds", "IterationLevels", "Children", "Tags", "Errors", "RecoveryItem", });
+        new java.lang.String[] { "ProcessType", "Id", "ProcessId", "ProcessVersion", "State", "NodeInstanceCounter", "ProcessXml", "ParentProcessInstanceId", "Description", "SignalCompletion", "DeploymentId", "CorrelationKey", "SlaTimerId", "SlaDueDate", "SlaCompliance", "RootProcessInstanceId", "StartDate", "RootProcessId", "ReferenceId", "Initiator", "ReferenceFromRoot", "EndDate", "SwimlaneContext", "NodeInstance", "Variable", "ExclusiveGroup", "CompletedNodeIds", "IterationLevels", "Children", "Tags", "Errors", "RecoveryItem", "FinishedSubprocesses", });
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_ProcessInstanchChildren_descriptor =
       internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(0);
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_ProcessInstanchChildren_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_ProcessInstanchChildren_descriptor,
         new java.lang.String[] { "ProcessId", "Ids", });
-    internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_RecoveryItem_descriptor =
+    internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_InstanceTuple_descriptor =
       internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(1);
+    internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_InstanceTuple_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_InstanceTuple_descriptor,
+        new java.lang.String[] { "Id", "Status", });
+    internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_FinishedSubProcesses_descriptor =
+      internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(2);
+    internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_FinishedSubProcesses_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_FinishedSubProcesses_descriptor,
+        new java.lang.String[] { "ProcessId", "Instances", });
+    internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_RecoveryItem_descriptor =
+      internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(3);
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_RecoveryItem_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_RecoveryItem_descriptor,
         new java.lang.String[] { "TransactionId", "NodeId", "InstanceId", "TimerId", "StateTimerIds", });
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_Tag_descriptor =
-      internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(2);
+      internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(4);
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_Tag_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_Tag_descriptor,
         new java.lang.String[] { "Id", "Value", });
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_Error_descriptor =
-      internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(3);
+      internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(5);
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_Error_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_Error_descriptor,
         new java.lang.String[] { "ErrorId", "ErrorNodeId", "ErrorMessage", "ErrorDetails", });
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_SwimlaneContextInstance_descriptor =
-      internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(4);
+      internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(6);
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_SwimlaneContextInstance_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_SwimlaneContextInstance_descriptor,
         new java.lang.String[] { "Swimlane", "ActorId", });
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_NodeInstance_descriptor =
-      internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(5);
+      internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(7);
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_NodeInstance_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_NodeInstance_descriptor,
         new java.lang.String[] { "Id", "NodeId", "Content", "Level", "SlaTimerId", "SlaDueDate", "SlaCompliance", "TriggerDate", "RetryJobId", "RetryAttempts", "NodeDefId", });
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_ExclusiveGroupInstance_descriptor =
-      internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(6);
+      internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(8);
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_ExclusiveGroupInstance_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_ExclusiveGroupInstance_descriptor,
         new java.lang.String[] { "GroupNodeInstanceId", });
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_NodeInstanceContent_descriptor =
-      internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(7);
+      internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_descriptor.getNestedTypes().get(9);
     internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_NodeInstanceContent_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_io_automatiko_engine_workflow_marshalling_ProcessInstance_NodeInstanceContent_descriptor,

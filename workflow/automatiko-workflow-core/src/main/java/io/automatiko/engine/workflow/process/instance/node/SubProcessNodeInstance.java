@@ -281,6 +281,8 @@ public class SubProcessNodeInstance extends StateBasedNodeInstance implements Ev
         removeEventListeners();
         ((ProcessInstanceImpl) getProcessInstance()).removeChild(processInstance.getProcessId(),
                 processInstance.getId());
+        ((ProcessInstanceImpl) getProcessInstance()).addFinishedSubProcess(processInstance.getProcess().getId(),
+                processInstance.getId(), processInstance.getState());
         handleOutMappings(processInstance);
         if (processInstance.getState() == ProcessInstance.STATE_ABORTED) {
             String faultName = processInstance.getOutcome() == null ? "" : processInstance.getOutcome();
