@@ -79,7 +79,10 @@ public class HumanTaskLifeCycleWithEmail extends BaseHumanTaskLifeCycle {
             return;
         }
 
-        String subject = "New task has been assigned to you (" + humanTask.getTaskName() + ")";
+        String subject = (String) humanTask.getParameters().get("EmailSubject");
+        if (subject == null || subject.trim().isEmpty()) {
+            subject = "New task has been assigned to you (" + humanTask.getTaskName() + ")";
+        }
 
         Template template = getTemplate(humanTask.getProcessInstance().getProcess(), humanTask);
         if (template == null) {

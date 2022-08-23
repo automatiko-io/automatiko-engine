@@ -57,7 +57,7 @@ public class UserTaskModelMetaData {
     private static final String TASK_NAME = "TaskName";
 
     protected static final List<String> INTERNAL_FIELDS = Arrays.asList(TASK_NAME, "Description", "NodeName", "ActorId",
-            "GroupId",
+            "GroupId", "EmailSubject", "FormName",
             "Priority", "Comment", "Skippable", "Content", "Locale", "Groups", "ExcludedUsers", "ExcludedOwnerId");
 
     private final String packageName;
