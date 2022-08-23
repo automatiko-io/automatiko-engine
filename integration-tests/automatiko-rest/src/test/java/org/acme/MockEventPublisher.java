@@ -1,8 +1,8 @@
 package org.acme;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.enterprise.context.ApplicationScoped;
 
@@ -16,7 +16,7 @@ import io.quarkus.arc.profile.IfBuildProfile;
 @IfBuildProfile("test")
 public class MockEventPublisher implements EventPublisher {
 
-    private static List<DataEvent<?>> events = new ArrayList<>();
+    private static List<DataEvent<?>> events = new CopyOnWriteArrayList<>();
 
     @Override
     public void publish(DataEvent<?> event) {
