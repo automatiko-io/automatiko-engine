@@ -142,6 +142,31 @@ of the user task assigned.
 
 |===
 
+=== Customize email subject for notifications
+
+Email subject that is sent for user task notifications is by default a fixed name 
+with following value:
+
+`New task has been assigned to you (NAME OF THE TASK)`
+
+That's not always desired and more tailored email subject is required. 
+This can be achieved on each user task level by setting the 
+`EmailSubject` data input to the value that should be used for 
+actual notification email subject.
+
+NOTE: The email subject can also be generated based on data object via expressions.
+
+=== Customize email templates
+
+In cases where email templates have to customized at runtime they can be provided via application 
+property that points to a folder where `*.html` files will be loaded at startup and registered.
+
+It can be given as environment variable `QUARKUS_AUTOMATIKO_TEMPLATES_FOLDER=/templates` or system property 
+`-Dquarkus.automatiko.templates.folder=/templates`
+
+Naming convention is the same as for creating templates as part of the source code.
+
+
 === Configure
 
 To enable user tasks email addon add following dependency to your service
