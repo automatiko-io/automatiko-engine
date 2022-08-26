@@ -3,7 +3,6 @@ package io.automatiko.engine.service;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,7 +28,7 @@ public class LatestEndpointFilter {
 
     String rootPath;
 
-    Map<String, Process<?>> processData = new LinkedHashMap<String, Process<?>>();
+    Instance<Process<?>> availableProcesses;
 
     @Inject
     public LatestEndpointFilter(Instance<Process<?>> availableProcesses,
@@ -37,8 +36,8 @@ public class LatestEndpointFilter {
             @ConfigProperty(name = "quarkus.automatiko.service-route-to-latest") Optional<Boolean> enabled) {
         this.rootPath = rootPathProp.orElse("/");
         this.enabled = enabled.orElse(false);
-        this.processData = availableProcesses == null ? Collections.emptyMap()
-                : availableProcesses.stream().collect(Collectors.toMap(p -> p.id(), p -> p));
+        this.availableProcesses = availableProcesses;
+
     }
 
     @ServerRequestFilter(preMatching = true)
@@ -59,6 +58,9 @@ public class LatestEndpointFilter {
             String processId = pathElements[1];
 
             LOGGER.debug("not versioned endpoint for process '{}'", processId);
+
+            Map<String, Process<?>> processData = availableProcesses == null ? Collections.emptyMap()
+                    : availableProcesses.stream().collect(Collectors.toMap(p -> p.id(), p -> p));
 
             if (processData.containsKey(processId)) {
                 LOGGER.debug("endpoint for process '{}' exists without version, using it", processId);
