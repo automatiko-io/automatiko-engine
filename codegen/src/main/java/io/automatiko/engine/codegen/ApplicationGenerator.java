@@ -125,7 +125,7 @@ public class ApplicationGenerator {
                             NodeList.nodeList(new ClassOrInterfaceType(null, EventPublisher.class.getCanonicalName()))),
                     "eventPublishers");
 
-            annotator.withConfigInjection(serviceField, "automatiko.service.url");
+            annotator.withConfigInjection(serviceField, "quarkus.automatiko.service-url");
         } else {
             eventPublishersDeclarator = new VariableDeclarator(
                     new ClassOrInterfaceType(null, new SimpleName(List.class.getCanonicalName()),
