@@ -38,6 +38,7 @@ import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
+import io.automatiko.engine.workflow.base.instance.impl.util.VariableUtil;
 import io.automatiko.engine.workflow.process.core.node.SubProcessNode;
 import io.automatiko.engine.workflow.process.executable.core.factory.SubProcessNodeFactory;
 import io.automatiko.engine.workflow.util.PatternConstants;
@@ -126,9 +127,11 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
                 String topLevelVariable = expression.split("\\.")[0];
                 Variable v = variableScope.findVariable(topLevelVariable);
 
-                if (actionBody.findFirst(VariableDeclarationExpr.class,
+                if (v != null && actionBody.findFirst(VariableDeclarationExpr.class,
                         vd -> vd.getVariable(0).getNameAsString().equals(v.getSanitizedName())).isEmpty()) {
                     actionBody.addStatement(makeAssignment(v));
+                } else {
+                    expression = expression.replace("\\\"", "\"");
                 }
                 actionBody.addStatement(
                         subProcessModel.callSetter("model", e.getKey(), dotNotationToGetExpression(expression)));
@@ -229,7 +232,7 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
             if (matcher.find()) {
 
                 String expression = matcher.group(1);
-                String topLevelVariable = expression.split("\\.")[0];
+                String topLevelVariable = VariableUtil.nameFromDotNotation(expression);
                 Map<String, String> dataOutputs = (Map<String, String>) subProcessNode.getMetaData("BPMN.OutputTypes");
                 Variable variable = new Variable();
                 variable.setName(topLevelVariable);
@@ -239,7 +242,7 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
                 stmts.addStatement(makeAssignment(variableScope.findVariable(topLevelVariable)));
                 stmts.addStatement(makeAssignmentFromModel(variable, e.getKey()));
 
-                stmts.addStatement(dotNotationToSetExpression(expression, e.getKey()));
+                stmts.addStatement(VariableUtil.transformDotNotation(expression, e.getKey()) + ";");
 
                 stmts.addStatement(new MethodCallExpr().setScope(new NameExpr(KCONTEXT_VAR)).setName("setVariable")
                         .addArgument(new StringLiteralExpr(topLevelVariable)).addArgument(topLevelVariable));

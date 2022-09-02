@@ -100,8 +100,12 @@ public class VariableUtil {
                 // considered ass add element to collection
                 expression.append("remove").append("(").append(object).append(")");
                 return expression.toString();
+            } else {
+                StringBuilder expression = new StringBuilder(value);
+                expression.append("=").append(object);
+
+                return expression.toString();
             }
-            return value;
         }
 
         String[] items = value.split("\\.");
