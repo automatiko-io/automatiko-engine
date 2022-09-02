@@ -163,6 +163,41 @@ public class WorkflowBuilder {
     }
 
     /**
+     * Aborts workflow instance inn case it is not completed within given duration expressed as ISO 8601 duration format.
+     * For example <code>P5D</code> stands for 5 days, which will abort workflow instance after 5 days from the starting time
+     * 
+     * @param isoExpession duration to wait before it is aborted
+     * @return the builder
+     */
+    public WorkflowBuilder abortAfter(String isoExpession) {
+        process.setMetaData("timeout", isoExpession);
+        return this;
+    }
+
+    /**
+     * Applies authorization policy that makes the instance only visible to users that currently participate in it.
+     * Participation is based on the fact that given user can be either initiator (user who started the instance) or
+     * being assigned to active user task within the workflow instance.
+     * 
+     * @return the builder
+     */
+    public WorkflowBuilder withParticipantsAccessPolicy() {
+        process.setMetaData("accessPolicy", "participants");
+        return this;
+    }
+
+    /**
+     * Applies authorization policy that makes the instance only visible to the initiator (user who started the instance)
+     * essentially making the instance private to that user
+     * 
+     * @return the builder
+     */
+    public WorkflowBuilder withInitiatorsAccessPolicy() {
+        process.setMetaData("accessPolicy", "initiator");
+        return this;
+    }
+
+    /**
      * Adds data object to the workflow definition and returns it so it can be used in expressions
      * 
      * @param type type of the data object
