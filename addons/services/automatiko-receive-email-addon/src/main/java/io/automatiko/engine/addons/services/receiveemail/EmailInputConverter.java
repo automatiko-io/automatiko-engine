@@ -13,7 +13,7 @@ import javax.mail.Address;
 import javax.mail.Message.RecipientType;
 
 import org.apache.camel.TypeConversionException;
-import org.apache.camel.attachment.Attachment;
+import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.component.mail.MailMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,26 +41,28 @@ public class EmailInputConverter implements InputConverter<EmailMessage> {
                 email.setSubject(mailMessage.getOriginalMessage().getSubject());
                 email.setBody(mailMessage.getBody(String.class));
 
-                Map<String, Attachment> attachments = mailMessage.getExchange().getProperty("CamelAttachmentObjects",
-                        Map.class);
-                if (attachments != null && attachments.size() > 0) {
-                    for (String name : attachments.keySet()) {
-                        DataHandler dh = attachments.get(name).getDataHandler();
-                        // get the file name
-                        String filename = dh.getName();
+                AttachmentMessage attachmentMessage = mailMessage.getExchange().getMessage(AttachmentMessage.class);
+                if (attachmentMessage != null) {
+                    Map<String, DataHandler> attachments = attachmentMessage.getAttachments();
+                    if (attachments != null && attachments.size() > 0) {
+                        for (String name : attachments.keySet()) {
+                            DataHandler dh = attachments.get(name);
+                            // get the file name
+                            String filename = dh.getName();
 
-                        // get the content and convert it to byte[]
+                            // get the content and convert it to byte[]
 
-                        try {
-                            byte[] data = mailMessage.getExchange().getContext().getTypeConverter()
-                                    .convertTo(byte[].class, dh.getInputStream());
+                            try {
+                                byte[] data = mailMessage.getExchange().getContext().getTypeConverter()
+                                        .convertTo(byte[].class, dh.getInputStream());
 
-                            email.addAttachment(
-                                    new io.automatiko.engine.addons.services.receiveemail.Attachment(filename, data));
-                        } catch (TypeConversionException | IOException e) {
-                            LOGGER.warn("Unexpected excheption while reading email attachment {}", filename, e);
+                                email.addAttachment(
+                                        new io.automatiko.engine.addons.services.receiveemail.Attachment(filename, data));
+                            } catch (TypeConversionException | IOException e) {
+                                LOGGER.warn("Unexpected excheption while reading email attachment {}", filename, e);
+                            }
+
                         }
-
                     }
                 }
 
