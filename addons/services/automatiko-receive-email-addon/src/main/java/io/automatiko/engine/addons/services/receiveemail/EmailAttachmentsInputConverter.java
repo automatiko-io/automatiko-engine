@@ -9,13 +9,12 @@ import javax.activation.DataHandler;
 import javax.enterprise.context.ApplicationScoped;
 
 import org.apache.camel.TypeConversionException;
-import org.apache.camel.attachment.Attachment;
+import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.component.mail.MailMessage;
 
 import io.automatiko.engine.api.io.InputConverter;
 import io.automatiko.engine.workflow.file.ByteArrayFile;
 
-@SuppressWarnings({ "unchecked" })
 @ApplicationScoped
 public class EmailAttachmentsInputConverter implements InputConverter<List<ByteArrayFile>> {
 
@@ -28,25 +27,27 @@ public class EmailAttachmentsInputConverter implements InputConverter<List<ByteA
 
             mailMessage.getMessageId();
 
-            Map<String, Attachment> attachments = mailMessage.getExchange().getProperty("CamelAttachmentObjects",
-                    Map.class);
-            if (attachments != null && attachments.size() > 0) {
-                for (String name : attachments.keySet()) {
-                    DataHandler dh = attachments.get(name).getDataHandler();
-                    // get the file name
-                    String filename = dh.getName();
+            AttachmentMessage attachmentMessage = mailMessage.getExchange().getMessage(AttachmentMessage.class);
+            if (attachmentMessage != null) {
+                Map<String, DataHandler> attachments = attachmentMessage.getAttachments();
+                if (attachments != null && attachments.size() > 0) {
+                    for (String name : attachments.keySet()) {
+                        DataHandler dh = attachments.get(name);
+                        // get the file name
+                        String filename = dh.getName();
 
-                    // get the content and convert it to byte[]
+                        // get the content and convert it to byte[]
 
-                    try {
-                        byte[] data = mailMessage.getExchange().getContext().getTypeConverter()
-                                .convertTo(byte[].class, dh.getInputStream());
+                        try {
+                            byte[] data = mailMessage.getExchange().getContext().getTypeConverter()
+                                    .convertTo(byte[].class, dh.getInputStream());
 
-                        files.add(new io.automatiko.engine.addons.services.receiveemail.Attachment(filename, data));
-                    } catch (TypeConversionException | IOException e) {
-                        e.printStackTrace();
+                            files.add(new io.automatiko.engine.addons.services.receiveemail.Attachment(filename, data));
+                        } catch (TypeConversionException | IOException e) {
+                            e.printStackTrace();
+                        }
+
                     }
-
                 }
             }
         }
