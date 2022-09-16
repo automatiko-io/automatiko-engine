@@ -20,7 +20,7 @@ public class EndNodeBuilder extends AbstractNodeBuilder {
         this.node.setMetaData("UniqueId", generateUiqueId(this.node));
         ((EndNode) this.node).setTerminate(terminate);
 
-        workflowBuilder.get().addNode(node);
+        workflowBuilder.container().addNode(node);
 
         contect();
     }

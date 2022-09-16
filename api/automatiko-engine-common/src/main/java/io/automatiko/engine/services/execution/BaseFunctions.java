@@ -4,9 +4,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.time.temporal.IsoFields;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -309,5 +311,13 @@ public class BaseFunctions {
         }
 
         return false;
+    }
+
+    public static String listToCommaDelimitedString(Collection<String> values) {
+        if (values == null) {
+            return null;
+        }
+
+        return values.stream().collect(Collectors.joining(","));
     }
 }

@@ -25,7 +25,7 @@ public class TimerNodeBuilder extends AbstractNodeBuilder {
         this.node.setMetaData("UniqueId", generateUiqueId(this.node));
 
         this.node.setTimer(timer);
-        workflowBuilder.get().addNode(node);
+        workflowBuilder.container().addNode(node);
 
         contect();
     }

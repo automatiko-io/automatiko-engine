@@ -20,6 +20,7 @@ import io.automatiko.engine.codegen.AbstractCodegenTest;
 import io.automatiko.engine.codegen.LambdaParser;
 import io.automatiko.engine.codegen.data.HelloService;
 import io.automatiko.engine.codegen.data.Person;
+import io.automatiko.engine.codegen.data.PersonWithList;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.builder.BuilderContext;
 import io.automatiko.engine.workflow.builder.ServiceNodeBuilder;
@@ -253,5 +254,273 @@ public class ServiceTaskAsCodeTest extends AbstractCodegenTest {
         Model result = (Model) processInstance.variables();
         assertThat(result.toMap()).hasSize(2).containsKeys("name", "greetings");
         assertThat(result.toMap().get("greetings")).isNotNull().asList().hasSize(0);
+    }
+
+    @Test
+    public void testBasicServiceProcessTaskRepeated() throws Exception {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("ServiceProcess", "test workflow as code")
+                .dataObject("input", List.class)
+                .dataObject("output", List.class);
+
+        builder.start("start here").then()
+                .log("execute script", "Hello world {}{}", "input", "\"!\"").then()
+                .printout("execute script", "\"Hello world \" + input").then();
+
+        ServiceNodeBuilder service = builder.service("greet");
+
+        service.toDataObject("outItem",
+                service.type(HelloService.class).hello(service.fromDataObject("item"))).repeat("input", "item", "output").then()
+                .end("that's it");
+
+        Application app = generateCode(List.of(builder.get()));
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("input", List.of("one", "two", "three"));
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(2).containsKeys("input", "output");
+
+        assertThat(result.toMap().get("output")).isNotNull().asList().contains("Hello one!", "Hello two!", "Hello three!");
+    }
+
+    @Test
+    public void testBasicServiceProcessTaskRepeatedWithNames() throws Exception {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("ServiceProcess", "test workflow as code")
+                .dataObject("input", List.class)
+                .dataObject("output", List.class);
+
+        builder.start("start here").then()
+                .log("execute script", "Hello world {}{}", "input", "\"!\"").then()
+                .printout("execute script", "\"Hello world \" + input").then();
+
+        ServiceNodeBuilder service = builder.service("greet");
+
+        service.toDataObject("greeting",
+                service.type(HelloService.class).hello(service.fromDataObject("name")))
+                .repeat("input", "name", "output", "greeting").then()
+                .end("that's it");
+
+        Application app = generateCode(List.of(builder.get()));
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("input", List.of("one", "two", "three"));
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(2).containsKeys("input", "output");
+
+        assertThat(result.toMap().get("output")).isNotNull().asList().contains("Hello one!", "Hello two!", "Hello three!");
+    }
+
+    @Test
+    public void testBasicServiceProcessTaskRepeatedInputOnly() throws Exception {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("ServiceProcess", "test workflow as code")
+                .dataObject("input", List.class);
+
+        builder.start("start here").then()
+                .log("execute script", "Hello world {}{}", "input", "\"!\"").then()
+                .printout("execute script", "\"Hello world \" + input").then();
+
+        ServiceNodeBuilder service = builder.service("greet");
+
+        service.repeat("input").type(HelloService.class).hello(service.fromDataObject("item"));
+        service.then().end("that's it");
+
+        Application app = generateCode(List.of(builder.get()));
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("input", List.of("one", "two", "three"));
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(1).containsKeys("input");
+    }
+
+    @Test
+    public void testBasicServiceProcessTaskRepeatedInputOnlyExpression() throws Exception {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("ServiceProcess", "test workflow as code")
+                .dataObject("input", List.class);
+
+        builder.start("start here").then()
+                .log("execute script", "Hello world {}{}", "input", "\"!\"").then()
+                .printout("execute script", "\"Hello world \" + input").then();
+
+        ServiceNodeBuilder service = builder.service("greet");
+
+        service.repeat(() -> java.util.List.of("one", "two", "three"), "name").type(HelloService.class)
+                .hello(service.fromDataObject("name"));
+        service.then().end("that's it");
+
+        Application app = generateCode(List.of(builder.get()));
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(1).containsKeys("input");
+    }
+
+    @Test
+    public void testBasicServiceProcessTaskRepeatedExpression() throws Exception {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("ServiceProcess", "test workflow as code")
+                .dataObject("input", List.class);
+
+        List<?> output = builder.dataObject(List.class, "output");
+
+        builder.start("start here").then()
+                .log("execute script", "Hello world {}{}", "input", "\"!\"").then()
+                .printout("execute script", "\"Hello world \" + input").then();
+
+        ServiceNodeBuilder service = builder.service("greet");
+
+        service.toDataObject("outItem",
+                service.type(HelloService.class).hello(service.fromDataObject("item")))
+                .repeat(() -> java.util.List.of("one", "two", "three"), () -> output).then()
+                .end("that's it");
+
+        Application app = generateCode(List.of(builder.get()));
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(2).containsKeys("input", "output");
+
+        assertThat(result.toMap().get("output")).isNotNull().asList().contains("Hello one!", "Hello two!", "Hello three!");
+    }
+
+    @Test
+    public void testBasicServiceProcessTaskRepeatedNestedExpression() throws Exception {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("ServiceProcess", "test workflow as code")
+                .dataObject("input", List.class);
+
+        PersonWithList person = builder.dataObject(PersonWithList.class, "person");
+
+        builder.start("start here").then()
+                .log("execute script", "Hello world {}{}", "input", "\"!\"").then()
+                .printout("execute script", "\"Hello world \" + input").then();
+
+        ServiceNodeBuilder service = builder.service("greet");
+
+        service.toDataObject("outItem",
+                service.type(HelloService.class).hello(service.fromDataObject("item")))
+                .repeat(() -> java.util.List.of("one", "two", "three"), () -> person.getStringList()).then()
+                .end("that's it");
+
+        Application app = generateCode(List.of(builder.get()));
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("person", new PersonWithList("test", 0, false, new ArrayList<>(), null, null, null));
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(2).containsKeys("input", "person");
+
+        assertThat(result.toMap().get("person")).isNotNull().extracting("stringList").asList().contains("Hello one!",
+                "Hello two!", "Hello three!");
+    }
+
+    @Test
+    public void testBasicServiceProcessTaskRepeatedMultipleArgs() throws Exception {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("ServiceProcess", "test workflow as code")
+                .dataObject("input", List.class)
+                .dataObject("output", List.class);
+
+        builder.start("start here").then()
+                .log("execute script", "Hello world {}{}", "input", "\"!\"").then()
+                .printout("execute script", "\"Hello world \" + input").then();
+
+        ServiceNodeBuilder service = builder.service("greet");
+
+        Person p = new Person();
+
+        service.toDataObject("outItem",
+                service.type(HelloService.class).helloOutput(service.expressionAsInput(() -> p.getName()),
+                        service.expressionAsInput(() -> p.getAge())))
+                .repeat("input", "p", "output").then()
+                .end("that's it");
+
+        Application app = generateCode(List.of(builder.get()));
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> process = app.processes().processById("ServiceProcess");
+
+        Model m = process.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("input", List.of(new Person("one", 10), new Person("two", 20), new Person("three", 30)));
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = process.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(2).containsKeys("input", "output");
+
+        assertThat(result.toMap().get("output")).isNotNull().asList().contains("Hello one 10!", "Hello two 20!",
+                "Hello three 30!");
     }
 }

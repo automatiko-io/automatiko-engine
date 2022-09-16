@@ -1,6 +1,8 @@
 package io.automatiko.engine.workflow.builder;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -8,9 +10,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
+import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
 import io.automatiko.engine.workflow.process.core.Node;
+import io.automatiko.engine.workflow.process.core.impl.NodeImpl;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
+import io.automatiko.engine.workflow.process.core.node.ForEachNode;
 import io.automatiko.engine.workflow.process.core.node.SubProcessNode;
 import io.automatiko.engine.workflow.process.executable.core.Metadata;
 
@@ -20,6 +25,8 @@ import io.automatiko.engine.workflow.process.executable.core.Metadata;
 public class SubWorkflowNodeBuilder extends AbstractNodeBuilder {
 
     private SubProcessNode node;
+
+    private ForEachNode forEachNode;
 
     public SubWorkflowNodeBuilder(String name, WorkflowBuilder workflowBuilder) {
         super(workflowBuilder);
@@ -41,7 +48,7 @@ public class SubWorkflowNodeBuilder extends AbstractNodeBuilder {
         this.node.setMetaData("BPMN.InputTypes", inputs);
         this.node.setMetaData("BPMN.OutputTypes", outputs);
 
-        workflowBuilder.get().addNode(node);
+        workflowBuilder.container().addNode(node);
 
         contect();
     }
@@ -52,7 +59,13 @@ public class SubWorkflowNodeBuilder extends AbstractNodeBuilder {
     }
 
     public SubWorkflowNodeBuilder dataObjectAsInput(String name, String inputName) {
-        Variable var = this.workflowBuilder.get().getVariableScope().findVariable(name);
+        Variable var;
+        if (forEachNode != null) {
+            var = ((VariableScope) forEachNode.getCompositeNode().getDefaultContext(VariableScope.VARIABLE_SCOPE))
+                    .findVariable(name);
+        } else {
+            var = this.workflowBuilder.get().getVariableScope().findVariable(name);
+        }
 
         if (var == null) {
             throw new IllegalArgumentException("Cannot find data object with '" + name + "' name");
@@ -115,8 +128,13 @@ public class SubWorkflowNodeBuilder extends AbstractNodeBuilder {
      * @return the builder
      */
     public SubWorkflowNodeBuilder outputToDataObject(String subworkflowDataObjectName, String parentWorkflowDataObjectName) {
-        Variable var = this.workflowBuilder.get().getVariableScope().findVariable(parentWorkflowDataObjectName);
-
+        Variable var;
+        if (forEachNode != null) {
+            var = ((VariableScope) forEachNode.getCompositeNode().getDefaultContext(VariableScope.VARIABLE_SCOPE))
+                    .findVariable(parentWorkflowDataObjectName);
+        } else {
+            var = this.workflowBuilder.get().getVariableScope().findVariable(parentWorkflowDataObjectName);
+        }
         if (var == null) {
             throw new IllegalArgumentException("Cannot find data object with '" + parentWorkflowDataObjectName + "' name");
         }
@@ -142,7 +160,13 @@ public class SubWorkflowNodeBuilder extends AbstractNodeBuilder {
     public SubWorkflowNodeBuilder toDataObjectField(String subworkflowDataObjectName, String parentWorkflowDataObjectName,
             String... fields) {
 
-        Variable var = this.workflowBuilder.get().getVariableScope().findVariable(parentWorkflowDataObjectName);
+        Variable var;
+        if (forEachNode != null) {
+            var = ((VariableScope) forEachNode.getCompositeNode().getDefaultContext(VariableScope.VARIABLE_SCOPE))
+                    .findVariable(parentWorkflowDataObjectName);
+        } else {
+            var = this.workflowBuilder.get().getVariableScope().findVariable(parentWorkflowDataObjectName);
+        }
 
         if (var == null) {
             throw new IllegalArgumentException("Cannot find data object with '" + parentWorkflowDataObjectName + "' name");
@@ -264,8 +288,208 @@ public class SubWorkflowNodeBuilder extends AbstractNodeBuilder {
         return this;
     }
 
+    /**
+     * Instructs to repeat this node based on the input collection. This will create new node for each element in the
+     * collection.
+     * <br/>
+     * The item will be named <code>item</code> and as such can be easily accessed by node data mapping<br/>
+     * 
+     * @param inputCollectionExpression expression that will deliver collection to repeat service on each item
+     * @return the builder
+     */
+    public SubWorkflowNodeBuilder repeat(Supplier<Collection<?>> inputCollectionExpression) {
+        return repeat("#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                + "}", "item", null, null);
+    }
+
+    /**
+     * Instructs to repeat this node based on the input collection and collect all results into the output collection.
+     * This will create new node for each element in the input collection.
+     * <br/>
+     * The input element will be named <code>item</code> and as such can be easily accessed by node data mapping<br/>
+     * The output element will be named <code>outItem</code> and as such can be easily accessed by node data output
+     * 
+     * @param inputCollectionExpression expression that will deliver collection to repeat service on each item
+     * @param outputCollectionExpression expression that will deliver collection that will be populated with results of calling
+     *        the service
+     * @return the builder
+     */
+    public SubWorkflowNodeBuilder repeat(Supplier<Collection<?>> inputCollectionExpression,
+            Supplier<Collection<?>> outputCollectionExpression) {
+        return repeat("#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                + "}", "item",
+                "#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                        + "}",
+                "outItem");
+    }
+
+    /**
+     * Instructs to repeat this node based on the input collection. This will create new node for each element in the
+     * collection.
+     * <br/>
+     * The item will be named as given with <code>inputName</code> and as such can be easily accessed by node data
+     * mapping<br/>
+     * 
+     * @param inputCollectionExpression expression that will deliver collection to repeat service on each item
+     * @return the builder
+     */
+    public SubWorkflowNodeBuilder repeat(Supplier<Collection<?>> inputCollectionExpression, String inputName) {
+        return repeat("#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                + "}", inputName, null, null);
+    }
+
+    /**
+     * Instructs to repeat this node based on the input collection and collect all results into the output collection.
+     * This will create new node for each element in the input collection.
+     * <br/>
+     * The input element will be named based on given <code>inputName</code> and as such can be easily accessed by node
+     * data mapping<br/>
+     * The output element will be named based on given <code>outputName</code> and as such can be easily accessed by
+     * node data output
+     * mapping<br/>
+     * 
+     * @param inputCollectionExpression expression that will deliver collection to repeat service on each item
+     * @param outputCollectionExpression expression that will deliver collection that will be populated with results of calling
+     *        the service
+     * @return the builder
+     */
+    public SubWorkflowNodeBuilder repeat(Supplier<Collection<?>> inputCollectionExpression, String inputName,
+            Supplier<Collection<?>> outputCollectionExpression, String outputName) {
+        return repeat("#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                + "}", inputName,
+                "#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                        + "}",
+                outputName);
+    }
+
+    /**
+     * Instructs to repeat this node based on the data object that is given via <code>dataObjectName</code>. That data object
+     * must
+     * be of type collection. This will create new node for each element in the
+     * collection.
+     * <br/>
+     * The item will be named <code>item</code> and as such can be easily accessed by node data mapping<br/>
+     * 
+     * @param dataObjectName name of the data object (of type collection) that should be used as input collection
+     * @return the builder
+     */
+    public SubWorkflowNodeBuilder repeat(String dataObjectName) {
+        return repeat(dataObjectName, "item", null, null);
+    }
+
+    /**
+     * Instructs to repeat this node based on the data object that is given via <code>dataObjectName</code>. That data object
+     * must
+     * be of type collection. This will create new node for each element in the
+     * collection.
+     * <br/>
+     * The item will be named as given by <code>inputName</code> and as such can be easily accessed by node data
+     * mapping<br/>
+     * 
+     * @param dataObjectName name of the data object (of type collection) that should be used as input collection
+     * @param inputName name of the item of the collection to be referenced by task
+     * @return the builder
+     */
+    public SubWorkflowNodeBuilder repeat(String dataObjectName, String inputName) {
+        return repeat(dataObjectName, inputName, null, null);
+    }
+
+    /**
+     * Instructs to repeat this node based on the data object that is given via <code>dataObjectName</code>. That data object
+     * must be of type collection. This will create new node for each element in the collection. At the end each result will be
+     * collected and added to the
+     * output collection that is represented by data object named <code>toDataObject</code>
+     * <br/>
+     * The item will be named as given by <code>inputName</code> and as such can be easily accessed by node data
+     * mapping<br/>
+     * 
+     * @param dataObjectName name of the data object (of type collection) that should be used as input collection
+     * @param inputName name of the item of the collection to be referenced by task
+     * @param toDataObject name of the data object that the results should be added to
+     * @return the builder the builder
+     */
+    public SubWorkflowNodeBuilder repeat(String dataObjectName, String inputName, String toDataObject) {
+        return repeat(dataObjectName, inputName, toDataObject, "outItem");
+    }
+
+    /**
+     * Instructs to repeat this node based on the data object that is given via <code>dataObjectName</code>. That data object
+     * must be of type collection. This will create new node for each element in the collection. At the end each result will be
+     * collected and added to the
+     * output collection that is represented by data object named <code>toDataObject</code>
+     * <br/>
+     * The item will be named as given by <code>inputName</code> and as such can be easily accessed by node data
+     * mapping<br/>
+     * 
+     * @param dataObjectName name of the data object (of type collection) that should be used as input collection
+     * @param inputName name of the item of the collection to be referenced by task
+     * @param toDataObject name of the data object that the results should be added to
+     * @param outputName name of the result of the execution that will be collected to the output collection
+     * @return the builder the builder
+     */
+    public SubWorkflowNodeBuilder repeat(String dataObjectName, String inputName, String toDataObject, String outputName) {
+        Node origNode = getNode();
+
+        workflowBuilder.container().removeNode(origNode);
+        new ArrayList<>(getNode().getIncomingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE)).forEach(conn -> {
+            getNode().removeIncomingConnection(NodeImpl.CONNECTION_DEFAULT_TYPE, conn);
+
+            ((Node) conn.getFrom()).removeOutgoingConnection(NodeImpl.CONNECTION_DEFAULT_TYPE, conn);
+        });
+
+        forEachNode = new ForEachNode();
+        forEachNode.setId(ids.incrementAndGet());
+        forEachNode.setName("Repeat of " + getNode().getName());
+        forEachNode.setMetaData("UniqueId", origNode.getMetaData().get("UniqueId"));
+        forEachNode.setCollectionExpression(dataObjectName);
+
+        forEachNode.setVariable(inputName, new ObjectDataType(resolveItemType(dataObjectName)));
+
+        if (toDataObject != null) {
+
+            forEachNode.setOutputVariable(outputName, new ObjectDataType(resolveItemType(toDataObject)));
+            forEachNode.setOutputCollectionExpression(toDataObject);
+        }
+
+        forEachNode.addNode(origNode);
+
+        VariableScope variableScope = ((VariableScope) forEachNode.getCompositeNode()
+                .getDefaultContext(VariableScope.VARIABLE_SCOPE));
+
+        for (DataAssociation in : ((SubProcessNode) origNode).getInAssociations()) {
+            String varName = in.getSources().get(0);
+            Variable var = workflowBuilder.get().getVariableScope().findVariable(varName);
+            if (var != null) {
+                variableScope.addVariable(var);
+            }
+        }
+
+        for (DataAssociation out : ((SubProcessNode) origNode).getOutAssociations()) {
+            String varName = out.getTarget();
+            Variable var = workflowBuilder.get().getVariableScope().findVariable(varName);
+            if (var != null) {
+                variableScope.addVariable(var);
+            }
+        }
+
+        forEachNode.linkIncomingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE, node.getId(),
+                NodeImpl.CONNECTION_DEFAULT_TYPE);
+        forEachNode.linkOutgoingConnections(node.getId(), NodeImpl.CONNECTION_DEFAULT_TYPE,
+                NodeImpl.CONNECTION_DEFAULT_TYPE);
+
+        workflowBuilder.container().addNode(forEachNode);
+
+        contect();
+
+        return this;
+    }
+
     @Override
     protected Node getNode() {
+        if (forEachNode != null) {
+            return forEachNode;
+        }
+
         return this.node;
     }
 
@@ -300,4 +524,5 @@ public class SubWorkflowNodeBuilder extends AbstractNodeBuilder {
         }
         return clazz.getCanonicalName();
     }
+
 }

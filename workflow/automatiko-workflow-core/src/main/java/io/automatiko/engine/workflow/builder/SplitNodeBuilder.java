@@ -22,7 +22,7 @@ public class SplitNodeBuilder extends AbstractNodeBuilder {
         this.node.setMetaData("UniqueId", generateUiqueId(this.node));
         this.node.setType(type);
 
-        workflowBuilder.get().addNode(node);
+        workflowBuilder.container().addNode(node);
 
         contect();
     }

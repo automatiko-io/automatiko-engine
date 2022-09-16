@@ -3,6 +3,7 @@ package io.automatiko.engine.workflow.builder;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
@@ -16,7 +17,9 @@ import io.automatiko.engine.workflow.base.core.impl.ParameterDefinitionImpl;
 import io.automatiko.engine.workflow.base.core.impl.WorkImpl;
 import io.automatiko.engine.workflow.base.core.timer.DateTimeUtils;
 import io.automatiko.engine.workflow.process.core.Node;
+import io.automatiko.engine.workflow.process.core.impl.NodeImpl;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
+import io.automatiko.engine.workflow.process.core.node.ForEachNode;
 import io.automatiko.engine.workflow.process.core.node.WorkItemNode;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
@@ -29,6 +32,8 @@ public class ServiceNodeBuilder extends AbstractNodeBuilder {
     private static final String SERVICE_TASK_TYPE = "Service Task";
 
     private WorkItemNode node;
+
+    private ForEachNode forEachNode;
 
     private List<BiConsumer<String, Class<?>>> inputDefs = new ArrayList<>();
 
@@ -47,7 +52,7 @@ public class ServiceNodeBuilder extends AbstractNodeBuilder {
         work.setName(SERVICE_TASK_TYPE);
         work.setParameter("implementation", "java");
 
-        workflowBuilder.get().addNode(node);
+        workflowBuilder.container().addNode(node);
 
         contect();
     }
@@ -413,8 +418,278 @@ public class ServiceNodeBuilder extends AbstractNodeBuilder {
         return this;
     }
 
+    /**
+     * Instructs to repeat this node based on the input collection. This will create new node for each element in the
+     * collection.
+     * <br/>
+     * The item will be named <code>item</code> and as such can be easily accessed by service node data mapping<br/>
+     * <code>
+     * ServiceNodeBuilder service = builder.service("greet");<br/>
+     * <br/>
+     * service.repeat(() -> java.util.List.of("John", "Mary", "Mike")).type(HelloService.class)<br/>
+     *             .hello(service.fromDataObject("item"));<br/>
+     * </code>
+     * <br/>
+     * Above example will execute the service method <code>hello</code> of type <code>HelloService</code> three times
+     * as the input collection returns list that consists of three names. Each name is then mapped to the service node
+     * via the <code>item</code> data object.
+     * 
+     * @param inputCollectionExpression expression that will deliver collection to repeat service on each item
+     * @return the builder
+     */
+    public ServiceNodeBuilder repeat(Supplier<Collection<?>> inputCollectionExpression) {
+        return repeat("#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                + "}", "item", null, null);
+    }
+
+    /**
+     * Instructs to repeat this node based on the input collection and collect all results into the output collection.
+     * This will create new node for each element in the input collection.
+     * <br/>
+     * The input element will be named <code>item</code> and as such can be easily accessed by service node data mapping<br/>
+     * The output element will be named <code>outItem</code> and as such can be easily accessed by service node data output
+     * mapping<br/>
+     * <code>
+     * ServiceNodeBuilder service = builder.service("greet");<br/>
+     * List<?> myOutputs = builder.dataObject(List.class, "myOutputs");<br/>
+     * <br/>
+     * service.toDataObject("outItem", service.type(HelloService.class).hello(service.fromDataObject("item")))
+     *           .repeat(() -> java.util.List.of("John", "Mary", "Mike"), () -> myOutputs).then()
+     *           .end("that's it");
+     * </code>
+     * <br/>
+     * Above example will execute the service method <code>hello</code> of type <code>HelloService</code> three times
+     * as the input collection returns list that consists of three names. Each name is then mapped to the service node
+     * via the <code>item</code> data object.
+     * 
+     * @param inputCollectionExpression expression that will deliver collection to repeat service on each item
+     * @param outputCollectionExpression expression that will deliver collection that will be populated with results of calling
+     *        the service
+     * @return the builder
+     */
+    public ServiceNodeBuilder repeat(Supplier<Collection<?>> inputCollectionExpression,
+            Supplier<Collection<?>> outputCollectionExpression) {
+        return repeat("#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                + "}", "item",
+                "#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                        + "}",
+                "outItem");
+    }
+
+    /**
+     * Instructs to repeat this node based on the input collection. This will create new node for each element in the
+     * collection.
+     * <br/>
+     * The item will be named as given with <code>inputName</code> and as such can be easily accessed by service node data
+     * mapping<br/>
+     * <code>
+     * ServiceNodeBuilder service = builder.service("greet");<br/>
+     * <br/>
+     * service.repeat(() -> java.util.List.of("John", "Mary", "Mike"), "name").type(HelloService.class)<br/>
+     *             .hello(service.fromDataObject("name"));<br/>
+     * </code>
+     * <br/>
+     * Above example will execute the service method <code>hello</code> of type <code>HelloService</code> three times
+     * as the input collection returns list that consists of three names. Each name is then mapped to the service node
+     * via the <code>item</code> data object.
+     * 
+     * @param inputCollectionExpression expression that will deliver collection to repeat service on each item
+     * @return the builder
+     */
+    public ServiceNodeBuilder repeat(Supplier<Collection<?>> inputCollectionExpression, String inputName) {
+        return repeat("#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                + "}", inputName, null, null);
+    }
+
+    /**
+     * Instructs to repeat this node based on the input collection and collect all results into the output collection.
+     * This will create new node for each element in the input collection.
+     * <br/>
+     * The input element will be named based on given <code>inputName</code> and as such can be easily accessed by service node
+     * data mapping<br/>
+     * The output element will be named based on given <code>outputName</code> and as such can be easily accessed by service
+     * node data output
+     * mapping<br/>
+     * <code>
+     * ServiceNodeBuilder service = builder.service("greet");<br/>
+     * List<?> myOutputs = builder.dataObject(List.class, "myOutputs");<br/>
+     * <br/>
+     * service.toDataObject("greeting", service.type(HelloService.class).hello(service.fromDataObject("name")))
+     *           .repeat(() -> java.util.List.of("John", "Mary", "Mike"), "name", () -> myOutputs, "greeting").then()
+     *           .end("that's it");
+     * </code>
+     * <br/>
+     * Above example will execute the service method <code>hello</code> of type <code>HelloService</code> three times
+     * as the input collection returns list that consists of three names. Each name is then mapped to the service node
+     * via the <code>item</code> data object.
+     * 
+     * @param inputCollectionExpression expression that will deliver collection to repeat service on each item
+     * @param outputCollectionExpression expression that will deliver collection that will be populated with results of calling
+     *        the service
+     * @return the builder
+     */
+    public ServiceNodeBuilder repeat(Supplier<Collection<?>> inputCollectionExpression, String inputName,
+            Supplier<Collection<?>> outputCollectionExpression, String outputName) {
+        return repeat("#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                + "}", inputName,
+                "#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                        + "}",
+                outputName);
+    }
+
+    /**
+     * Instructs to repeat this node based on the data object that is given via <code>dataObjectName</code>. That data object
+     * must
+     * be of type collection. This will create new node for each element in the
+     * collection.
+     * <br/>
+     * The item will be named <code>item</code> and as such can be easily accessed by service node data mapping<br/>
+     * <code>
+     * ServiceNodeBuilder service = builder.service("greet");<br/>
+     * <br/>
+     * service.repeat("myCollection").type(HelloService.class)<br/>
+     *             .hello(service.fromDataObject("item"));<br/>
+     * </code>
+     * <br/>
+     * Above example will execute the service method <code>hello</code> of type <code>HelloService</code> as many times as the
+     * input collection elements.
+     * Each element is then mapped to the service node via the <code>item</code> data object.
+     * 
+     * @param dataObjectName name of the data object (of type collection) that should be used as input collection
+     * @return the builder
+     */
+    public ServiceNodeBuilder repeat(String dataObjectName) {
+        return repeat(dataObjectName, "item", null, null);
+    }
+
+    /**
+     * Instructs to repeat this node based on the data object that is given via <code>dataObjectName</code>. That data object
+     * must
+     * be of type collection. This will create new node for each element in the
+     * collection.
+     * <br/>
+     * The item will be named as given by <code>inputName</code> and as such can be easily accessed by service node data
+     * mapping<br/>
+     * <code>
+     * ServiceNodeBuilder service = builder.service("greet");<br/>
+     * <br/>
+     * service.repeat("myCollection", "name").type(HelloService.class)<br/>
+     *             .hello(service.fromDataObject("name"));<br/>
+     * </code>
+     * <br/>
+     * Above example will execute the service method <code>hello</code> of type <code>HelloService</code> as many times as the
+     * input collection elements.
+     * Each element is then mapped to the service node via the <code>inputName</code> data object.
+     * 
+     * @param dataObjectName name of the data object (of type collection) that should be used as input collection
+     * @param inputName name of the item of the collection to be referenced by task
+     * @return the builder
+     */
+    public ServiceNodeBuilder repeat(String dataObjectName, String inputName) {
+        return repeat(dataObjectName, inputName, null, null);
+    }
+
+    /**
+     * Instructs to repeat this node based on the data object that is given via <code>dataObjectName</code>. That data object
+     * must be of type collection. This will create new node for each element in the collection. At the end each result will be
+     * collected and added to the
+     * output collection that is represented by data object named <code>toDataObject</code>
+     * <br/>
+     * The item will be named as given by <code>inputName</code> and as such can be easily accessed by service node data
+     * mapping<br/>
+     * <code>
+     * ServiceNodeBuilder service = builder.service("greet");<br/>
+     * <br/>
+     * service.toDataObject("outItem",
+     *          service.type(HelloService.class).hello(service.fromDataObject("item"))).repeat("myCollection", "name", "myOutputs").then()
+     *          .end("that's it");
+     * </code>
+     * <br/>
+     * Above example will execute the service method <code>hello</code> of type <code>HelloService</code> as many times as the
+     * input collection elements.
+     * Each element is then mapped to the service node via the <code>inputName</code> data object. Each result that is mapped
+     * via <code>outItem</code>
+     * is added to <code>myOutputs</code> data object
+     * 
+     * @param dataObjectName name of the data object (of type collection) that should be used as input collection
+     * @param inputName name of the item of the collection to be referenced by task
+     * @param toDataObject name of the data object that the results should be added to
+     * @return the builder the builder
+     */
+    public ServiceNodeBuilder repeat(String dataObjectName, String inputName, String toDataObject) {
+        return repeat(dataObjectName, inputName, toDataObject, "outItem");
+    }
+
+    /**
+     * Instructs to repeat this node based on the data object that is given via <code>dataObjectName</code>. That data object
+     * must be of type collection. This will create new node for each element in the collection. At the end each result will be
+     * collected and added to the
+     * output collection that is represented by data object named <code>toDataObject</code>
+     * <br/>
+     * The item will be named as given by <code>inputName</code> and as such can be easily accessed by service node data
+     * mapping<br/>
+     * <code>
+     * ServiceNodeBuilder service = builder.service("greet");<br/>
+     * <br/>
+     * service.toDataObject("greeting",
+     *          service.type(HelloService.class).hello(service.fromDataObject("item"))).repeat("myCollection", "name", "myOutputs", "greeting").then()
+     *          .end("that's it");
+     * </code>
+     * <br/>
+     * Above example will execute the service method <code>hello</code> of type <code>HelloService</code> as many times as the
+     * input collection elements.
+     * Each element is then mapped to the service node via the <code>inputName</code> data object. Each result that is mapped
+     * via <code>outItem</code>
+     * is added to <code>myOutputs</code> data object
+     * 
+     * @param dataObjectName name of the data object (of type collection) that should be used as input collection
+     * @param inputName name of the item of the collection to be referenced by task
+     * @param toDataObject name of the data object that the results should be added to
+     * @param outputName name of the result of the execution that will be collected to the output collection
+     * @return the builder the builder
+     */
+    public ServiceNodeBuilder repeat(String dataObjectName, String inputName, String toDataObject, String outputName) {
+        Node origNode = getNode();
+
+        workflowBuilder.container().removeNode(origNode);
+        new ArrayList<>(getNode().getIncomingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE)).forEach(conn -> {
+            getNode().removeIncomingConnection(NodeImpl.CONNECTION_DEFAULT_TYPE, conn);
+
+            ((Node) conn.getFrom()).removeOutgoingConnection(NodeImpl.CONNECTION_DEFAULT_TYPE, conn);
+        });
+
+        forEachNode = new ForEachNode();
+        forEachNode.setId(ids.incrementAndGet());
+        forEachNode.setName("Repeat of " + getNode().getName());
+        forEachNode.setMetaData("UniqueId", origNode.getMetaData().get("UniqueId"));
+        forEachNode.setCollectionExpression(dataObjectName);
+        forEachNode.setVariable(inputName, new ObjectDataType());
+
+        if (toDataObject != null) {
+            forEachNode.setOutputVariable(outputName, new ObjectDataType());
+            forEachNode.setOutputCollectionExpression(toDataObject);
+        }
+
+        forEachNode.addNode(origNode);
+
+        forEachNode.linkIncomingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE, node.getId(),
+                NodeImpl.CONNECTION_DEFAULT_TYPE);
+        forEachNode.linkOutgoingConnections(node.getId(), NodeImpl.CONNECTION_DEFAULT_TYPE,
+                NodeImpl.CONNECTION_DEFAULT_TYPE);
+
+        workflowBuilder.container().addNode(forEachNode);
+
+        contect();
+
+        return this;
+    }
+
     @Override
     protected Node getNode() {
+        if (forEachNode != null) {
+            return forEachNode;
+        }
+
         return this.node;
     }
 }

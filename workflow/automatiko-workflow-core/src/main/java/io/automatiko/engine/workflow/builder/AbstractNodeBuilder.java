@@ -4,8 +4,10 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.automatiko.engine.api.definition.process.Connection;
+import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.process.core.Node;
 import io.automatiko.engine.workflow.process.core.impl.ConnectionImpl;
+import io.automatiko.engine.workflow.process.core.node.ForEachNode;
 import io.automatiko.engine.workflow.process.core.node.Join;
 import io.automatiko.engine.workflow.process.core.node.Split;
 
@@ -39,7 +41,9 @@ public abstract class AbstractNodeBuilder {
 
         Node source = this.workflowBuilder.fetchFromContext();
         if (source != null) {
-            diagramItem(source, getNode());
+            if (!(getNode() instanceof ForEachNode)) {
+                diagramItem(source, getNode());
+            }
             ConnectionImpl connection = new ConnectionImpl(source,
                     io.automatiko.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE, getNode(),
                     io.automatiko.engine.workflow.process.core.Node.CONNECTION_DEFAULT_TYPE);
@@ -163,5 +167,19 @@ public abstract class AbstractNodeBuilder {
             workflowBuilder.joins.put(name, joinBuilder);
         }
         return joinBuilder;
+    }
+
+    protected Class<?> resolveItemType(String dataObjectName) {
+        String itemType = Object.class.getCanonicalName();
+        Variable itemVar = workflowBuilder.get().getVariableScope().findVariable(dataObjectName);
+        if (itemVar != null) {
+            itemType = (String) itemVar.getMetaData().getOrDefault("type", itemType);
+        }
+
+        try {
+            return Class.forName(itemType, false, Thread.currentThread().getContextClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("Cannot resolve type " + itemType);
+        }
     }
 }

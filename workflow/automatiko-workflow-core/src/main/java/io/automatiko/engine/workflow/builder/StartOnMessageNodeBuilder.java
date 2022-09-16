@@ -36,7 +36,7 @@ public class StartOnMessageNodeBuilder extends AbstractNodeBuilder {
 
         this.node.addTrigger(trigger);
 
-        workflowBuilder.get().addNode(node);
+        workflowBuilder.container().addNode(node);
     }
 
     /**

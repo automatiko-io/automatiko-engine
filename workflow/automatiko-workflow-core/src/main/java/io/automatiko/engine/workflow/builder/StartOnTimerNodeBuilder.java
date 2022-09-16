@@ -27,7 +27,7 @@ public class StartOnTimerNodeBuilder extends AbstractNodeBuilder {
         this.node.setMetaData(Metadata.TRIGGER_TYPE, "Timer");
         this.node.setTimer(timer);
 
-        workflowBuilder.get().addNode(node);
+        workflowBuilder.container().addNode(node);
     }
 
     /**

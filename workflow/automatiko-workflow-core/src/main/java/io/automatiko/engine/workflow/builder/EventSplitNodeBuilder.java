@@ -16,7 +16,7 @@ public class EventSplitNodeBuilder extends AbstractNodeBuilder {
         this.node.setMetaData("UniqueId", generateUiqueId(this.node));
         this.node.setType(Split.TYPE_XAND);
 
-        workflowBuilder.get().addNode(node);
+        workflowBuilder.container().addNode(node);
 
         contect();
     }
