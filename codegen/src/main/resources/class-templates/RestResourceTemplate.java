@@ -115,7 +115,7 @@ public class $Type$Resource {
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
             @Parameter(description = "Indicates if instance metadata should be included", required = false) @QueryParam("metadata") @DefaultValue("false") final boolean metadata,
-            @Parameter(description = "The input model for $name$ instance") $Type$Input resource) {
+            $Type$Input resource) {
         if (resource == null) {
             resource = new $Type$Input();
         }
@@ -403,7 +403,7 @@ public class $Type$Resource {
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
             @Parameter(description = "Indicates if instance metadata should be included", required = false) @QueryParam("metadata") @DefaultValue("false") final boolean metadata,
-            @Parameter(description = "Updates to the data model for $name$ instance", required = true) $Type$ resource) {
+            $Type$ resource) {
         
         String execMode = httpHeaders.getHeaderString("X-ATK-Mode");
 
@@ -553,7 +553,7 @@ public class $Type$Resource {
     public Collection<? extends Tag> add_tag_$name$(@PathParam("id") @Parameter(description = "Unique identifier of the instance", required = true) String id,             
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
-            @Parameter(description = "TagInstance content that should be associated with the $name$ instance", required = true) TagInstance resource) {
+            TagInstance resource) {
         identitySupplier.buildIdentityProvider(user, groups);
         return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
