@@ -288,6 +288,10 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
     }
 
     protected Expression dotNotationToGetExpression(String dotNotation) {
+        if (dotNotation.matches(".*\\(.*\\).*")) {
+            return new NameExpr(dotNotation);
+        }
+
         String defaultValue = null;
         if (dotNotation.contains(":")) {
 

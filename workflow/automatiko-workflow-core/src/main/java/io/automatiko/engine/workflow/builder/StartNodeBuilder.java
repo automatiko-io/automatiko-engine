@@ -18,7 +18,7 @@ public class StartNodeBuilder extends AbstractNodeBuilder {
         this.node.setName(name);
         this.node.setMetaData("UniqueId", generateUiqueId(this.node));
 
-        workflowBuilder.get().addNode(node);
+        workflowBuilder.container().addNode(node);
     }
 
     @Override

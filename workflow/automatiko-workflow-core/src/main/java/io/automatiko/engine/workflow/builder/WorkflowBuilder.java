@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
 import io.automatiko.engine.workflow.process.core.Node;
+import io.automatiko.engine.workflow.process.core.NodeContainer;
 import io.automatiko.engine.workflow.process.executable.core.ExecutableProcess;
 
 /**
@@ -27,6 +28,8 @@ public class WorkflowBuilder {
 
     protected final AtomicLong ids = new AtomicLong(0);
 
+    protected NodeContainer container;
+
     protected Node currentNode;
 
     protected AbstractNodeBuilder currentBuilder;
@@ -36,6 +39,7 @@ public class WorkflowBuilder {
     private WorkflowBuilder(ExecutableProcess process) {
         this.process = process;
         this.process.setMetaData("DiagramInfo", diagram);
+        this.container = this.process;
     }
 
     /**
@@ -208,6 +212,82 @@ public class WorkflowBuilder {
     public <T> T dataObject(Class<T> type, String name, String... tags) {
         dataObject(name, type, tags);
         return null;
+    }
+
+    /**
+     * Adds list data object to the workflow definition and returns it so it can be used in expressions
+     * 
+     * @param <T> data type of the list elements
+     * @param type type of the list elements
+     * @param name name of the data object
+     * @param tags optional tags
+     * @return return null as it only records the definition
+     */
+    public <T> List<T> listDataObject(Class<T> type, String name, String... tags) {
+        listDataObject(name, type, tags);
+        return null;
+    }
+
+    /**
+     * Adds list data object to the workflow definition and returns it so it can be used in expressions
+     * 
+     * @param name name of the data object
+     * @param type type of the list elements
+     * @param tags optional tags
+     * @return the builder
+     */
+    public WorkflowBuilder listDataObject(String name, Class<?> type, String... tags) {
+        Variable variable = new Variable();
+        variable.setId(name);
+        variable.setName(name);
+        variable.setType(new ObjectDataType(List.class, List.class.getCanonicalName() + "<" + type.getCanonicalName() + ">"));
+        variable.setMetaData("type", type.getCanonicalName());
+
+        if (tags != null && tags.length > 0) {
+            variable.setMetaData("tags", Stream.of(tags).collect(Collectors.joining(",")));
+        }
+
+        process.getVariableScope().getVariables().add(variable);
+        return this;
+    }
+
+    /**
+     * Adds parameterized data object to the workflow definition and returns it so it can be used in expressions
+     * 
+     * @param <T> data type
+     * @param type type of the data objects
+     * @param name name of the data object
+     * @param tags optional tags
+     * @return return null as it only records the definition
+     */
+    public <T> T dataObject(DataObjectType<?> type, String name, String... tags) {
+        dataObject(name, type, tags);
+        return null;
+    }
+
+    /**
+     * Adds parameterized data object to the workflow definition and returns it so it can be used in expressions
+     * 
+     * @param name name of the data object
+     * @param type type of the data objects
+     * @param tags optional tags
+     * @return the builder
+     */
+    public WorkflowBuilder dataObject(String name, DataObjectType<?> type, String... tags) {
+        Variable variable = new Variable();
+        variable.setId(name);
+        variable.setName(name);
+        variable.setType(
+                new ObjectDataType((Class<?>) type.getSuperRawType(),
+                        type.getSuperType().getTypeName()));
+        variable.setMetaData("type", type.getType().getTypeName());
+
+        if (tags != null && tags.length > 0) {
+            variable.setMetaData("tags", Stream.of(tags).collect(Collectors.joining(",")));
+        }
+
+        process.getVariableScope().getVariables().add(variable);
+        return this;
     }
 
     /**
@@ -427,6 +507,32 @@ public class WorkflowBuilder {
         return new SubWorkflowNodeBuilder(name, this);
     }
 
+    /**
+     * Adds an additional path node that allows to have separate workflow path
+     * that starts based on timer event
+     * 
+     * @param name name of the node
+     * @return the builder
+     */
+    public StartOnTimerNodeBuilder additionalPathOnTimer(String name) {
+        new AdditionalPathNodeBuilder(name, this);
+
+        return startOnTimer("on timeout");
+    }
+
+    /**
+     * Adds an additional path node that allows to have separate workflow path
+     * that starts based on incoming message
+     * 
+     * @param name name of the node
+     * @return the builder
+     */
+    public StartOnMessageNodeBuilder additionalPathOnMessage(String name) {
+        new AdditionalPathNodeBuilder(name, this);
+
+        return startOnMessage("on message");
+    }
+
     /*
      * Helper methods that are considered internal
      */
@@ -447,6 +553,9 @@ public class WorkflowBuilder {
         this.diagram.compute(source, (k, v) -> {
             if (v == null) {
                 v = new ArrayList<>();
+            }
+            if (v.contains(target)) {
+                v.remove(target);
             }
             v.add(target);
 
@@ -491,5 +600,13 @@ public class WorkflowBuilder {
         } catch (ClassNotFoundException e) {
             return null;
         }
+    }
+
+    protected NodeContainer container() {
+        return container;
+    }
+
+    protected void container(NodeContainer container) {
+        this.container = container;
     }
 }

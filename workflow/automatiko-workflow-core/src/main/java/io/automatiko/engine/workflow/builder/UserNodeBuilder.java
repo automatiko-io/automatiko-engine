@@ -1,5 +1,7 @@
 package io.automatiko.engine.workflow.builder;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -9,10 +11,13 @@ import java.util.stream.Stream;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.base.core.Work;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
+import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
 import io.automatiko.engine.workflow.base.core.impl.ParameterDefinitionImpl;
 import io.automatiko.engine.workflow.process.core.Node;
+import io.automatiko.engine.workflow.process.core.impl.NodeImpl;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
+import io.automatiko.engine.workflow.process.core.node.ForEachNode;
 import io.automatiko.engine.workflow.process.core.node.HumanTaskNode;
 import io.automatiko.engine.workflow.process.executable.core.Metadata;
 
@@ -22,6 +27,8 @@ import io.automatiko.engine.workflow.process.executable.core.Metadata;
 public class UserNodeBuilder extends AbstractNodeBuilder {
 
     private HumanTaskNode node;
+
+    private ForEachNode forEachNode;
 
     private Work work;
 
@@ -41,7 +48,7 @@ public class UserNodeBuilder extends AbstractNodeBuilder {
 
         this.work.setParameter("TaskName", toCamelCase(name));
 
-        workflowBuilder.get().addNode(node);
+        workflowBuilder.container().addNode(node);
 
         contect();
     }
@@ -58,6 +65,33 @@ public class UserNodeBuilder extends AbstractNodeBuilder {
     }
 
     /**
+     * Specifies users that should be eligible to claim and work on this task
+     * 
+     * @param users list of users
+     * @return the builder
+     */
+    public UserNodeBuilder users(Supplier<Collection<String>> users) {
+        this.work.setParameter("ActorId",
+                "#{listToCommaDelimitedString("
+                        + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                        + ")}");
+        return this;
+    }
+
+    /**
+     * Specifies user that should be eligible to claim and work on this task
+     * 
+     * @param user single user to be assigned or comma delimited list of users
+     * @return the builder
+     */
+    public UserNodeBuilder user(Supplier<String> users) {
+        this.work.setParameter("ActorId",
+                "#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                        + "}");
+        return this;
+    }
+
+    /**
      * Specifies groups that should be eligible to claim and work on this task
      * 
      * @param groups list of groups
@@ -69,6 +103,33 @@ public class UserNodeBuilder extends AbstractNodeBuilder {
     }
 
     /**
+     * Specifies groups that should be eligible to claim and work on this task
+     * 
+     * @param groups list of groups
+     * @return the builder
+     */
+    public UserNodeBuilder groups(Supplier<Collection<String>> users) {
+        this.work.setParameter("Groups",
+                "#{listToCommaDelimitedString("
+                        + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                        + ")}");
+        return this;
+    }
+
+    /**
+     * Specifies group that should be eligible to claim and work on this task
+     * 
+     * @param group single group to be assigned or comma delimited list of group
+     * @return the builder
+     */
+    public UserNodeBuilder group(Supplier<String> group) {
+        this.work.setParameter("Groups",
+                "#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                        + "}");
+        return this;
+    }
+
+    /**
      * Specifies what users should be excluded from being able to work on this task
      * 
      * @param users
@@ -76,6 +137,33 @@ public class UserNodeBuilder extends AbstractNodeBuilder {
      */
     public UserNodeBuilder excludedUsers(String... users) {
         this.work.setParameter("ExcludedUsers", Stream.of(users).collect(Collectors.joining(",")));
+        return this;
+    }
+
+    /**
+     * Specifies what users should be excluded from being able to work on this task
+     * 
+     * @param users
+     * @return the builder
+     */
+    public UserNodeBuilder excludedUsers(Supplier<Collection<String>> users) {
+        this.work.setParameter("ExcludedUsers",
+                "#{listToCommaDelimitedString("
+                        + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                        + ")}");
+        return this;
+    }
+
+    /**
+     * Specifies excluded user that should be excluded from being able to work on this task
+     * 
+     * @param excludedUser single excluded user to be excluded or comma delimited list of excluded user
+     * @return the builder
+     */
+    public UserNodeBuilder excludedUser(Supplier<String> excludedUser) {
+        this.work.setParameter("ExcludedUsers",
+                "#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                        + "}");
         return this;
     }
 
@@ -111,7 +199,13 @@ public class UserNodeBuilder extends AbstractNodeBuilder {
      * @return the builder
      */
     public UserNodeBuilder dataObjectAsInput(String name, String inputName) {
-        Variable var = this.workflowBuilder.get().getVariableScope().findVariable(name);
+        Variable var;
+        if (forEachNode != null) {
+            var = ((VariableScope) forEachNode.getCompositeNode().getDefaultContext(VariableScope.VARIABLE_SCOPE))
+                    .findVariable(name);
+        } else {
+            var = this.workflowBuilder.get().getVariableScope().findVariable(name);
+        }
 
         if (var == null) {
             throw new IllegalArgumentException("Cannot find data object with '" + name + "' name");
@@ -171,7 +265,13 @@ public class UserNodeBuilder extends AbstractNodeBuilder {
      * @return the builder
      */
     public UserNodeBuilder outputToDataObject(String name, String dataObjectName) {
-        Variable var = this.workflowBuilder.get().getVariableScope().findVariable(dataObjectName);
+        Variable var;
+        if (forEachNode != null) {
+            var = ((VariableScope) forEachNode.getCompositeNode().getDefaultContext(VariableScope.VARIABLE_SCOPE))
+                    .findVariable(dataObjectName);
+        } else {
+            var = this.workflowBuilder.get().getVariableScope().findVariable(dataObjectName);
+        }
 
         if (var == null) {
             throw new IllegalArgumentException("Cannot find data object with '" + dataObjectName + "' name");
@@ -291,8 +391,281 @@ public class UserNodeBuilder extends AbstractNodeBuilder {
         return this;
     }
 
+    /**
+     * Instructs to repeat this node based on the input collection. This will create new node for each element in the
+     * collection.
+     * <br/>
+     * The item will be named <code>item</code> and as such can be easily accessed by node data mapping<br/>
+     * <code>
+     * UserNodeBuilder user = builder.user("greet");<br/>
+     * <br/>
+     * user.repeat(() -> java.util.List.of("John", "Mary", "Mike")).user(() -> item).then()
+     *           .end("that's it");<br/>
+     * </code>
+     * <br/>
+     * Above example will create three tasks assigned to all users (John, Mary and Mike) and continue only when all of them
+     * completed their tasks.
+     * 
+     * @param inputCollectionExpression expression that will deliver collection to repeat user node on each item
+     * @return the builder
+     */
+    public UserNodeBuilder repeat(Supplier<Collection<?>> inputCollectionExpression) {
+        return repeat("#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                + "}", "item", null, null);
+    }
+
+    /**
+     * Instructs to repeat this node based on the input collection and collect all results into the output collection.
+     * This will create new node for each element in the input collection.
+     * <br/>
+     * The input element will be named <code>item</code> and as such can be easily accessed by service node data mapping<br/>
+     * The output element will be named <code>outItem</code> and as such can be easily accessed by service node data output
+     * mapping<br/>
+     * <code>
+     * UserNodeBuilder user = builder.user("greet");<br/>
+     * List<?> myOutputs = builder.dataObject(List.class, "myOutputs");<br/>
+     * <br/>
+     * user.repeat(() -> java.util.List.of("John", "Mary", "Mike"), () -> myOutputs).user(() -> item).then()
+     *           .end("that's it");
+     * </code>
+     * <br/>
+     * Above example will execute the service method <code>hello</code> of type <code>HelloService</code> three times
+     * as the input collection returns list that consists of three names. Each name is then mapped to the service node
+     * via the <code>item</code> data object.
+     * 
+     * @param inputCollectionExpression expression that will deliver collection to repeat service on each item
+     * @param outputCollectionExpression expression that will deliver collection that will be populated with results of calling
+     *        the service
+     * @return the builder
+     */
+    public UserNodeBuilder repeat(Supplier<Collection<?>> inputCollectionExpression,
+            Supplier<Collection<?>> outputCollectionExpression) {
+        return repeat("#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                + "}", "item",
+                "#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                        + "}",
+                "outItem");
+    }
+
+    /**
+     * Instructs to repeat this node based on the input collection. This will create new node for each element in the
+     * collection.
+     * <br/>
+     * The item will be named as given with <code>inputName</code> and as such can be easily accessed by service node data
+     * mapping<br/>
+     * <code>
+     * UserNodeBuilder user = builder.user("greet");<br/>
+     * <br/>
+     * user.repeat(() -> java.util.List.of("John", "Mary", "Mike"), "name").user(() -> name).then()
+     *           .end("that's it");<br/>
+     * </code>
+     * <br/>
+     * Above example will create user task as many times as the
+     * input collection elements. Each name is then mapped to the node
+     * via the <code>inputName</code> data object.
+     * 
+     * @param inputCollectionExpression expression that will deliver collection to repeat service on each item
+     * @param inputName name of the item of the collection
+     * @return the builder
+     */
+    public UserNodeBuilder repeat(Supplier<Collection<?>> inputCollectionExpression, String inputName) {
+        return repeat("#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                + "}", inputName, null, null);
+    }
+
+    /**
+     * Instructs to repeat this node based on the input collection and collect all results into the output collection.
+     * This will create new node for each element in the input collection.
+     * <br/>
+     * The input element will be named based on given <code>inputName</code> and as such can be easily accessed by service node
+     * data mapping<br/>
+     * The output element will be named based on given <code>outputName</code> and as such can be easily accessed by service
+     * node data output
+     * mapping<br/>
+     * <code>
+     * UserNodeBuilder user = builder.user("greet");<br/>
+     * List<?> myOutputs = builder.dataObject(List.class, "myOutputs");<br/>
+     * <br/>
+     * user.repeat(() -> java.util.List.of("John", "Mary", "Mike"), "name", () -> myOutputs, "greeting")
+     * .user(() -> name).outputToDataObject("value", "greeting").then()
+     *           .end("that's it");;
+     * </code>
+     * <br/>
+     * Above example will create user task as many times as the
+     * input collection elements. Each name is then mapped to the node
+     * via the <code>inputName</code> data object.
+     * 
+     * @param inputCollectionExpression expression that will deliver collection to repeat service on each item
+     * @param inputName name of the item of the collection
+     * @param outputCollectionExpression expression that will deliver collection that will be populated with results of calling
+     *        the service
+     * @param outputName name of the output from instance of the node to be collected
+     * @return the builder
+     */
+    public UserNodeBuilder repeat(Supplier<Collection<?>> inputCollectionExpression, String inputName,
+            Supplier<Collection<?>> outputCollectionExpression, String outputName) {
+        return repeat("#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                + "}", inputName,
+                "#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                        + "}",
+                outputName);
+    }
+
+    /**
+     * Instructs to repeat this node based on the data object that is given via <code>dataObjectName</code>. That data object
+     * must
+     * be of type collection. This will create new node for each element in the
+     * collection.
+     * <br/>
+     * The item will be named <code>item</code> and as such can be easily accessed by service node data mapping<br/>
+     * <code>
+     * UserNodeBuilder user = builder.user("greet");<br/>
+     * <br/>
+     * user.repeat("inputs")
+     *          .user(() -> item).then()
+     *          .end("that's it");<br/>
+     * </code>
+     * <br/>
+     * Above example will create user task as many times as the
+     * input collection elements.
+     * Each element is then mapped to the service node via the <code>item</code> data object.
+     * 
+     * @param dataObjectName name of the data object (of type collection) that should be used as input collection
+     * @return the builder
+     */
+    public UserNodeBuilder repeat(String dataObjectName) {
+        return repeat(dataObjectName, "item", null, null);
+    }
+
+    /**
+     * Instructs to repeat this node based on the data object that is given via <code>dataObjectName</code>. That data object
+     * must
+     * be of type collection. This will create new node for each element in the
+     * collection.
+     * <br/>
+     * The item will be named as given by <code>inputName</code> and as such can be easily accessed by node data
+     * mapping<br/>
+     * <code>
+     * UserNodeBuilder user = builder.user("greet");<br/>
+     * <br/>
+     * user.repeat("inputs", "name")
+     *          .user(() -> name).then()
+     *          .end("that's it");<br/>
+     * </code>
+     * <br/>
+     * Above example will create user task as many times as the
+     * input collection elements.
+     * Each element is then mapped to the service node via the <code>inputName</code> data object.
+     * 
+     * @param dataObjectName name of the data object (of type collection) that should be used as input collection
+     * @param inputName name of the item of the collection to be referenced by task
+     * @return the builder
+     */
+    public UserNodeBuilder repeat(String dataObjectName, String inputName) {
+        return repeat(dataObjectName, inputName, null, null);
+    }
+
+    /**
+     * Instructs to repeat this node based on the data object that is given via <code>dataObjectName</code>. That data object
+     * must be of type collection. This will create new node for each element in the collection. At the end each result will be
+     * collected and added to the
+     * output collection that is represented by data object named <code>toDataObject</code>
+     * <br/>
+     * The item will be named as given by <code>inputName</code> and as such can be easily accessed by node data
+     * mapping<br/>
+     * <code>
+     * UserNodeBuilder user = builder.user("greet");<br/>
+     * <br/>
+     * user.repeat("inputs", "name", "myOutputs")
+     *          .user(() -> name).outputToDataObject("value", "greeting").then()
+     *          .end("that's it");
+     * </code>
+     * <br/>
+     * Above example will create user task as many times as the
+     * input collection elements.
+     * Each element is then mapped to the node via the <code>inputName</code> data object. Each result that is mapped
+     * via <code>outItem</code>
+     * is added to <code>myOutputs</code> data object
+     * 
+     * @param dataObjectName name of the data object (of type collection) that should be used as input collection
+     * @param inputName name of the item of the collection to be referenced by task
+     * @param toDataObject name of the data object that the results should be added to
+     * @return the builder the builder
+     */
+    public UserNodeBuilder repeat(String dataObjectName, String inputName, String toDataObject) {
+        return repeat(dataObjectName, inputName, toDataObject, "outItem");
+    }
+
+    /**
+     * Instructs to repeat this node based on the data object that is given via <code>dataObjectName</code>. That data object
+     * must be of type collection. This will create new node for each element in the collection. At the end each result will be
+     * collected and added to the
+     * output collection that is represented by data object named <code>toDataObject</code>
+     * <br/>
+     * The item will be named as given by <code>inputName</code> and as such can be easily accessed by node data
+     * mapping<br/>
+     * <code>
+     * UserNodeBuilder user = builder.user("greet");<br/>
+     * <br/>
+     * user.repeat("inputs", "name", "myOutputs", "greeting")
+     *          .user(() -> name).outputToDataObject("value", "greeting").then()
+     *          .end("that's it");
+     * </code>
+     * <br/>
+     * Above example will create user task as many times as the
+     * input collection elements.
+     * Each element is then mapped to the node via the <code>inputName</code> data object. Each result that is mapped
+     * via <code>outputName</code>
+     * is added to <code>myOutputs</code> data object
+     * 
+     * @param dataObjectName name of the data object (of type collection) that should be used as input collection
+     * @param inputName name of the item of the collection to be referenced by task
+     * @param toDataObject name of the data object that the results should be added to
+     * @param outputName name of the result of the execution that will be collected to the output collection
+     * @return the builder the builder
+     */
+    public UserNodeBuilder repeat(String dataObjectName, String inputName, String toDataObject, String outputName) {
+        Node origNode = getNode();
+
+        workflowBuilder.container().removeNode(origNode);
+        new ArrayList<>(getNode().getIncomingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE)).forEach(conn -> {
+            getNode().removeIncomingConnection(NodeImpl.CONNECTION_DEFAULT_TYPE, conn);
+
+            ((Node) conn.getFrom()).removeOutgoingConnection(NodeImpl.CONNECTION_DEFAULT_TYPE, conn);
+        });
+
+        forEachNode = new ForEachNode();
+        forEachNode.setId(ids.incrementAndGet());
+        forEachNode.setName("Repeat of " + getNode().getName());
+        forEachNode.setMetaData("UniqueId", origNode.getMetaData().get("UniqueId"));
+        forEachNode.setCollectionExpression(dataObjectName);
+        forEachNode.setVariable(inputName, new ObjectDataType());
+
+        if (toDataObject != null) {
+            forEachNode.setOutputVariable(outputName, new ObjectDataType());
+            forEachNode.setOutputCollectionExpression(toDataObject);
+        }
+
+        forEachNode.addNode(origNode);
+
+        forEachNode.linkIncomingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE, node.getId(),
+                NodeImpl.CONNECTION_DEFAULT_TYPE);
+        forEachNode.linkOutgoingConnections(node.getId(), NodeImpl.CONNECTION_DEFAULT_TYPE,
+                NodeImpl.CONNECTION_DEFAULT_TYPE);
+
+        workflowBuilder.container().addNode(forEachNode);
+
+        contect();
+
+        return this;
+    }
+
     @Override
     protected Node getNode() {
+        if (forEachNode != null) {
+            return forEachNode;
+        }
+
         return this.node;
     }
 

@@ -27,6 +27,7 @@ import io.automatiko.engine.services.execution.BaseFunctions;
 import io.automatiko.engine.services.identity.StaticIdentityProvider;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.builder.BuilderContext;
+import io.automatiko.engine.workflow.builder.DataObjectType;
 import io.automatiko.engine.workflow.builder.WorkflowBuilder;
 
 public class CallActivityTaskAsCodeTest extends AbstractCodegenTest {
@@ -297,4 +298,214 @@ public class CallActivityTaskAsCodeTest extends AbstractCodegenTest {
         assertThat(result.toMap().get("data")).isNotNull().asList().hasSize(0);
     }
 
+    @Test
+    public void testBasicCallActivityTaskRepeat() throws Exception {
+        WorkflowBuilder builderSub = WorkflowBuilder.newWorkflow("UserTasksProcess", "test workflow with user task")
+                .dataObject("y", String.class);
+
+        Integer x = builderSub.dataObject(Integer.class, "x");
+
+        builderSub.start("start here").then().user("FirstTask").description("Hello #{todayDate()} task")
+                .dataObjectAsInput("y")
+                .literalAsInput("myNumber", 123)
+                .expressionAsInput("calculated", Integer.class, () -> x * 10)
+                .users("john").outputToDataObject("value", "y")
+                .then().end("done");
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("subworkflow", "test workflow with subworkflow")
+                .dataObject("a", Integer.class)
+                .dataObject("b", String.class);
+
+        String item = null;
+
+        builder.start("start here").then().subWorkflow("call other workflow").id("UserTasksProcess")
+                .literalAsInput("x", 100).expressionAsInput("y", String.class, () -> item)
+                .outputToDataObject("y", "b").outputToDataObject("x", "a")
+                .repeat(() -> java.util.List.of("one", "two"))
+                .then().end("done");
+        Application app = generateCode(List.of(builder.get(), builderSub.get()));
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("subworkflow");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("a", 10);
+        parameters.put("b", "b");
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        assertThat(processInstance.subprocesses()).hasSize(2);
+
+        List<WorkItem> workItems = processInstance.workItems(securityPolicy);
+        assertEquals(2, workItems.size());
+        assertEquals("firsttask", workItems.get(0).getName());
+
+        ProcessInstance<?> subProcessInstance = processInstance.subprocesses().iterator().next();
+
+        assertEquals("firsttask", workItems.get(0).getName());
+        assertEquals("Hello " + BaseFunctions.todayDate() + " task", workItems.get(0).getDescription());
+        assertThat(workItems.get(0).getParameters()).containsKey("y");
+
+        subProcessInstance.completeWorkItem(workItems.get(0).getId(), null, securityPolicy);
+
+        workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("firsttask", workItems.get(0).getName());
+        assertEquals("Hello " + BaseFunctions.todayDate() + " task", workItems.get(0).getDescription());
+        assertThat(workItems.get(0).getParameters()).containsKey("y");
+
+        subProcessInstance = processInstance.subprocesses().iterator().next();
+
+        subProcessInstance.completeWorkItem(workItems.get(0).getId(), null, securityPolicy);
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(2).containsKeys("a", "b");
+        assertThat(result.toMap().get("b")).isNotNull().isEqualTo("two");
+        assertThat(result.toMap().get("a")).isNotNull().isEqualTo(100);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testBasicCallActivityTaskRepeatWithOutput() throws Exception {
+        WorkflowBuilder builderSub = WorkflowBuilder.newWorkflow("UserTasksProcess", "test workflow with user task")
+                .dataObject("y", String.class)
+                .dataObject("x", Integer.class);
+
+        builderSub.start("start here").then().user("FirstTask").description("Hello #{todayDate()} task")
+                .dataObjectAsInput("y")
+                .dataObjectAsInput("x")
+                .users("john").outputToDataObject("value", "y")
+                .then().end("done");
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("subworkflow", "test workflow with subworkflow");
+
+        List<String> outputs = builder.dataObject(List.class, "outputs");
+
+        String item = "";
+
+        builder.start("start here").then().subWorkflow("call other workflow").id("UserTasksProcess")
+                .expressionAsInput("x", Integer.class, () -> item.hashCode())
+                .expressionAsInput("y", String.class, () -> item)
+                .repeat(() -> java.util.List.of("one", "two"), () -> outputs)
+                .outputToDataObject("y", "outItem")
+                .then().end("done");
+        Application app = generateCode(List.of(builder.get(), builderSub.get()));
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("subworkflow");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        assertThat(processInstance.subprocesses()).hasSize(2);
+
+        List<WorkItem> workItems = processInstance.workItems(securityPolicy);
+        assertEquals(2, workItems.size());
+        assertEquals("firsttask", workItems.get(0).getName());
+
+        ProcessInstance<?> subProcessInstance = processInstance.subprocesses().iterator().next();
+
+        assertEquals("firsttask", workItems.get(0).getName());
+        assertEquals("Hello " + BaseFunctions.todayDate() + " task", workItems.get(0).getDescription());
+        assertThat(workItems.get(0).getParameters()).containsKey("y");
+
+        subProcessInstance.completeWorkItem(workItems.get(0).getId(), Map.of("value", "one"), securityPolicy);
+
+        workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("firsttask", workItems.get(0).getName());
+        assertEquals("Hello " + BaseFunctions.todayDate() + " task", workItems.get(0).getDescription());
+        assertThat(workItems.get(0).getParameters()).containsKey("y");
+
+        subProcessInstance = processInstance.subprocesses().iterator().next();
+
+        subProcessInstance.completeWorkItem(workItems.get(0).getId(), Map.of("value", "two"), securityPolicy);
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(1).containsKeys("outputs");
+        assertThat(result.toMap().get("outputs")).isNotNull().asList().contains("one", "two");
+    }
+
+    @Test
+    public void testBasicCallActivityTaskRepeatWithOutputExpression() throws Exception {
+        WorkflowBuilder builderSub = WorkflowBuilder.newWorkflow("UserTasksProcess", "test workflow with user task")
+                .dataObject("y", String.class)
+                .dataObject("x", Integer.class);
+
+        builderSub.start("start here").then().user("FirstTask").description("Hello #{todayDate()} task")
+                .dataObjectAsInput("y")
+                .dataObjectAsInput("x")
+                .users("john").outputToDataObject("value", "y")
+                .then().end("done");
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("subworkflow", "test workflow with subworkflow")
+                .listDataObject("inputs", Person.class)
+                .dataObject("outputs", new DataObjectType<List<String>>() {
+                });
+
+        Person person = new Person();
+
+        builder.start("start here").then().subWorkflow("call other workflow").id("UserTasksProcess")
+                .expressionAsInput("x", Integer.class, () -> person.getAge())
+                .expressionAsInput("y", String.class, () -> person.getName())
+                .repeat("inputs", "person", "outputs", "updatedName")
+                .outputToDataObject("y", "updatedName")
+                .then().end("done");
+        Application app = generateCode(List.of(builder.get(), builderSub.get()));
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("subworkflow");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("inputs", java.util.List.of(new Person("john", 10), new Person("mary", 20)));
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        assertThat(processInstance.subprocesses()).hasSize(2);
+
+        List<WorkItem> workItems = processInstance.workItems(securityPolicy);
+        assertEquals(2, workItems.size());
+        assertEquals("firsttask", workItems.get(0).getName());
+
+        ProcessInstance<?> subProcessInstance = processInstance.subprocesses().iterator().next();
+
+        assertEquals("firsttask", workItems.get(0).getName());
+        assertEquals("Hello " + BaseFunctions.todayDate() + " task", workItems.get(0).getDescription());
+        assertThat(workItems.get(0).getParameters()).containsKey("y");
+
+        subProcessInstance.completeWorkItem(workItems.get(0).getId(), Map.of("value", "Johnny"), securityPolicy);
+
+        workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("firsttask", workItems.get(0).getName());
+        assertEquals("Hello " + BaseFunctions.todayDate() + " task", workItems.get(0).getDescription());
+        assertThat(workItems.get(0).getParameters()).containsKey("y");
+
+        subProcessInstance = processInstance.subprocesses().iterator().next();
+
+        subProcessInstance.completeWorkItem(workItems.get(0).getId(), Map.of("value", "Marrry"), securityPolicy);
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(2).containsKeys("inputs", "outputs");
+        assertThat(result.toMap().get("outputs")).isNotNull().asList().contains("Johnny", "Marrry");
+    }
 }

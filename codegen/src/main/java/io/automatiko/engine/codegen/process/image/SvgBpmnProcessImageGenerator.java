@@ -51,6 +51,7 @@ import io.automatiko.engine.workflow.process.core.impl.NodeImpl;
 import io.automatiko.engine.workflow.process.core.node.ActionNode;
 import io.automatiko.engine.workflow.process.core.node.BoundaryEventNode;
 import io.automatiko.engine.workflow.process.core.node.CompositeNode;
+import io.automatiko.engine.workflow.process.core.node.CompositeNode.CompositeNodeEnd;
 import io.automatiko.engine.workflow.process.core.node.EndNode;
 import io.automatiko.engine.workflow.process.core.node.EventNode;
 import io.automatiko.engine.workflow.process.core.node.EventSubProcessNode;
@@ -180,13 +181,19 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
 
             Map<String, mxICell> layedout = jgxAdapter.getVertexToCellMap();
 
-            Map<String, Node> nodesById = this.workFlowProcess.getNodesRecursively().stream()
-                    .collect(Collectors.toMap(n -> (String) n.getMetaData().get("UniqueId"), node -> node));
+            Map<String, Node> nodesById = this.workFlowProcess.getNodesRecursively().stream().map(n -> {
+                if (n instanceof ForEachNode) {
+                    return ((ForEachNode) n).getCompositeNode().getNodes()[0];
+                }
+                return n;
+            }).collect(Collectors.toMap(n -> (String) n.getMetaData().get("UniqueId"), node -> node, (k1, k2) -> k1));
 
             for (Entry<String, mxICell> node : layedout.entrySet()) {
 
                 Node found = nodesById.get(node.getKey());
-
+                if (found == null) {
+                    continue;
+                }
                 found.getMetaData().put("width", WIDTHS.getOrDefault(extractNodeClass(found), 200));
                 found.getMetaData().put("height", HEIGHTS.getOrDefault(extractNodeClass(found), 50));
 
@@ -213,6 +220,18 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
                     String toId = (String) conn.getTo().getMetaData().get("UniqueId");
                     mxICell to = layedout.get(toId);
 
+                    if (to == null) {
+                        if (conn.getTo() instanceof CompositeNodeEnd) {
+                            toId = (String) ((Node) ((Node) conn.getTo().getParentContainer()).getParentContainer())
+                                    .getOutgoingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE).get(0).getTo()
+                                    .getMetaData().get("UniqueId");
+                            to = layedout.get(toId);
+                        }
+                        if (to == null) {
+                            continue;
+                        }
+                    }
+
                     List<Integer> xs = new ArrayList<Integer>();
 
                     xs.add((Integer) found.getMetaData().get("x") + (Integer) found.getMetaData().get("width"));
@@ -225,6 +244,17 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
                             + (HEIGHTS.getOrDefault(extractNodeClass(conn.getTo()), 50) / 2));
                     conn.getMetaData().put("x", xs);
                     conn.getMetaData().put("y", ys);
+
+                    if (ys.size() == 2 && ys.get(0) != ys.get(1)) {
+                        if (found instanceof BoundaryEventNode) {
+                            xs.add(1, xs.get(1) - 30);
+                            ys.add(1, ys.get(0));
+                        } else {
+
+                            xs.add(1, xs.get(0) + 30);
+                            ys.add(1, ys.get(1));
+                        }
+                    }
                 }
 
             }

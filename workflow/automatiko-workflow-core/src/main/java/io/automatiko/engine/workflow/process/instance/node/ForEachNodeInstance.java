@@ -246,7 +246,20 @@ public class ForEachNodeInstance extends CompositeContextNodeInstance {
                             variableScopeInstance = (VariableScopeInstance) ((WorkflowProcessInstance) parent)
                                     .getContextInstance(VariableScope.VARIABLE_SCOPE);
                         }
-                        variableScopeInstance.setVariable(this, outputCollection, outputVariable);
+                        if (variableScopeInstance.getVariableScope().findVariable(outputCollection) != null) {
+
+                            variableScopeInstance.setVariable(this, outputCollection, outputVariable);
+                        } else {
+                            ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) getProcessInstance()
+                                    .getProcess())
+                                            .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                            Object value = evaluator.evaluate(outputCollection,
+                                    new ForEachNodeInstanceResolverFactory(this, tempVariables));
+
+                            if (value instanceof Collection) {
+                                ((Collection) value).addAll(outputVariable);
+                            }
+                        }
                     } else {
                         tempVariables.put(getForEachNode().getOutputVariableName(), outputVariable);
 

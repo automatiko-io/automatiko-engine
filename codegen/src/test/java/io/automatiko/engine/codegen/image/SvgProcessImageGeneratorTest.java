@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -155,6 +156,28 @@ public class SvgProcessImageGeneratorTest {
                 .end("that's it");
 
         service.onError("404").then().log("Not found", "Pet with id {} not found", "name").then().end("done");
+
+        SvgBpmnProcessImageGenerator generator = new SvgBpmnProcessImageGenerator(builder.get());
+
+        String svg = generator.generate();
+
+        assertThat(svg).isNotEmpty();
+
+        Files.write(Paths.get("target", "test.svg"), svg.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void testWorkflowAsCodeImageGenerationForEach() throws IOException {
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("UserTasksProcess", "test workflow with user task")
+                .dataObject("x", Integer.class)
+                .dataObject("y", String.class)
+                .dataObject("inputs", List.class);
+
+        builder.start("start here").then().user("FirstTask").description("Hello #{todayDate()} task")
+                .repeat("inputs")
+                .users("john").outputToDataObject("value", "item")
+                .then()
+                .end("done");
 
         SvgBpmnProcessImageGenerator generator = new SvgBpmnProcessImageGenerator(builder.get());
 

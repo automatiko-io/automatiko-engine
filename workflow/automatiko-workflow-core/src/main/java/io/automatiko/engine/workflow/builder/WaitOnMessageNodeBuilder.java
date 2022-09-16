@@ -38,7 +38,7 @@ public class WaitOnMessageNodeBuilder extends AbstractNodeBuilder {
         eventFilters.add(eventFilter);
         this.node.setEventFilters(eventFilters);
 
-        workflowBuilder.get().addNode(node);
+        workflowBuilder.container().addNode(node);
 
         contect();
     }

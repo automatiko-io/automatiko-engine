@@ -1,8 +1,17 @@
 package io.automatiko.engine.workflow.builder;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.function.Supplier;
+
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
+import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
+import io.automatiko.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
 import io.automatiko.engine.workflow.process.core.Node;
+import io.automatiko.engine.workflow.process.core.impl.NodeImpl;
 import io.automatiko.engine.workflow.process.core.node.ActionNode;
+import io.automatiko.engine.workflow.process.core.node.DataAssociation;
+import io.automatiko.engine.workflow.process.core.node.ForEachNode;
 import io.automatiko.engine.workflow.process.executable.core.Metadata;
 
 /**
@@ -11,6 +20,8 @@ import io.automatiko.engine.workflow.process.executable.core.Metadata;
 public class SendMessageNodeBuilder extends AbstractNodeBuilder {
 
     private ActionNode node;
+
+    private ForEachNode forEachNode;
 
     public SendMessageNodeBuilder(String name, WorkflowBuilder workflowBuilder) {
         super(workflowBuilder);
@@ -24,7 +35,7 @@ public class SendMessageNodeBuilder extends AbstractNodeBuilder {
         this.node.setMetaData(Metadata.TRIGGER_TYPE, "ProduceMessage");
         this.node.setMetaData("functionFlowContinue", "true");
 
-        workflowBuilder.get().addNode(node);
+        workflowBuilder.container().addNode(node);
 
         contect();
     }
@@ -70,7 +81,13 @@ public class SendMessageNodeBuilder extends AbstractNodeBuilder {
     public SendMessageNodeBuilder fromDataObject(String name) {
         if (name != null) {
 
-            Variable var = workflowBuilder.get().getVariableScope().findVariable(name);
+            Variable var;
+            if (forEachNode != null) {
+                var = ((VariableScope) forEachNode.getCompositeNode().getDefaultContext(VariableScope.VARIABLE_SCOPE))
+                        .findVariable(name);
+            } else {
+                var = this.workflowBuilder.get().getVariableScope().findVariable(name);
+            }
             if (var == null) {
                 throw new IllegalArgumentException("No data object with name '" + name + " found");
             }
@@ -147,8 +164,121 @@ public class SendMessageNodeBuilder extends AbstractNodeBuilder {
         return this;
     }
 
+    /**
+     * Instructs to repeat this node based on the input collection. This will create new node for each element in the
+     * collection.
+     * <br/>
+     * The item will be named <code>item</code> and as such can be easily accessed by node data mapping<br/>
+     * 
+     * @param inputCollectionExpression expression that will deliver collection to repeat service on each item
+     * @return the builder
+     */
+    public SendMessageNodeBuilder repeat(Supplier<Collection<?>> inputCollectionExpression) {
+        return repeat("#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                + "}", "item");
+    }
+
+    /**
+     * Instructs to repeat this node based on the input collection. This will create new node for each element in the
+     * collection.
+     * <br/>
+     * The item will be named as given with <code>inputName</code> and as such can be easily accessed by node data
+     * mapping<br/>
+     * 
+     * @param inputCollectionExpression expression that will deliver collection to repeat service on each item
+     * @return the builder
+     */
+    public SendMessageNodeBuilder repeat(Supplier<Collection<?>> inputCollectionExpression, String inputName) {
+        return repeat("#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                + "}", inputName);
+    }
+
+    /**
+     * Instructs to repeat this node based on the data object that is given via <code>dataObjectName</code>. That data object
+     * must
+     * be of type collection. This will create new node for each element in the
+     * collection.
+     * <br/>
+     * The item will be named <code>item</code> and as such can be easily accessed by node data mapping<br/>
+     * 
+     * @param dataObjectName name of the data object (of type collection) that should be used as input collection
+     * @return the builder
+     */
+    public SendMessageNodeBuilder repeat(String dataObjectName) {
+        return repeat(dataObjectName, "item");
+    }
+
+    /**
+     * Instructs to repeat this node based on the data object that is given via <code>dataObjectName</code>. That data object
+     * must
+     * be of type collection. This will create new node for each element in the
+     * collection.
+     * <br/>
+     * The item will be named as given by <code>inputName</code> and as such can be easily accessed by node data
+     * mapping<br/>
+     * 
+     * @param dataObjectName name of the data object (of type collection) that should be used as input collection
+     * @param inputName name of the item of the collection to be referenced by task
+     * @return the builder
+     */
+    public SendMessageNodeBuilder repeat(String dataObjectName, String inputName) {
+
+        Node origNode = getNode();
+
+        workflowBuilder.container().removeNode(origNode);
+        new ArrayList<>(getNode().getIncomingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE)).forEach(conn -> {
+            getNode().removeIncomingConnection(NodeImpl.CONNECTION_DEFAULT_TYPE, conn);
+
+            ((Node) conn.getFrom()).removeOutgoingConnection(NodeImpl.CONNECTION_DEFAULT_TYPE, conn);
+        });
+
+        forEachNode = new ForEachNode();
+        forEachNode.setId(ids.incrementAndGet());
+        forEachNode.setName("Repeat of " + getNode().getName());
+        forEachNode.setMetaData("UniqueId", origNode.getMetaData().get("UniqueId"));
+        forEachNode.setCollectionExpression(dataObjectName);
+
+        forEachNode.setVariable(inputName, new ObjectDataType(resolveItemType(dataObjectName)));
+
+        forEachNode.addNode(origNode);
+
+        VariableScope variableScope = ((VariableScope) forEachNode.getCompositeNode()
+                .getDefaultContext(VariableScope.VARIABLE_SCOPE));
+
+        for (DataAssociation in : ((ActionNode) origNode).getInAssociations()) {
+            String varName = in.getSources().get(0);
+            Variable var = workflowBuilder.get().getVariableScope().findVariable(varName);
+            if (var != null) {
+                variableScope.addVariable(var);
+            }
+        }
+
+        for (DataAssociation out : ((ActionNode) origNode).getOutAssociations()) {
+            String varName = out.getTarget();
+            Variable var = workflowBuilder.get().getVariableScope().findVariable(varName);
+            if (var != null) {
+                variableScope.addVariable(var);
+            }
+        }
+
+        forEachNode.linkIncomingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE, node.getId(),
+                NodeImpl.CONNECTION_DEFAULT_TYPE);
+        forEachNode.linkOutgoingConnections(node.getId(), NodeImpl.CONNECTION_DEFAULT_TYPE,
+                NodeImpl.CONNECTION_DEFAULT_TYPE);
+
+        workflowBuilder.container().addNode(forEachNode);
+
+        contect();
+
+        return this;
+    }
+
     @Override
     protected Node getNode() {
+        if (forEachNode != null) {
+            return forEachNode;
+        }
+
         return this.node;
     }
 }

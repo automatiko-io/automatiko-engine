@@ -24,7 +24,7 @@ public class EndWithMessageNodeBuilder extends AbstractNodeBuilder {
         this.node.setMetaData(Metadata.TRIGGER_REF, name);
         this.node.setMetaData(Metadata.TRIGGER_TYPE, "ProduceMessage");
 
-        workflowBuilder.get().addNode(node);
+        workflowBuilder.container().addNode(node);
 
         contect();
     }
