@@ -588,7 +588,8 @@ public class AutomatikoQuarkusProcessor {
 
                 String fqcn = clazz.name().toString();
 
-                LambdaParser.parseLambdas("src/main/java/" + fqcn.replace(".", "/") + ".java");
+                LambdaParser
+                        .parseLambdas(appPaths.getFirstProjectPath() + "/src/main/java/" + fqcn.replace(".", "/") + ".java");
 
                 try {
                     Class<?> builderClass = Class.forName(fqcn, true, Thread.currentThread().getContextClassLoader());
