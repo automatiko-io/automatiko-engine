@@ -21,6 +21,7 @@ import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.Sig;
 import io.automatiko.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
+import io.javaoperatorsdk.operator.api.reconciler.Cleaner;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
@@ -32,7 +33,7 @@ import io.fabric8.kubernetes.internal.KubernetesDeserializer;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 @ControllerConfiguration(namespaces=$ControllerParam$, name="$ProcessId$", generationAwareEventProcessing=$GenControllerParam$)
-public class Controller implements Reconciler<$DataType$> {
+public class Controller implements Reconciler<$DataType$>, Cleaner<$DataType$>  {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("MessageConsumer");
 
