@@ -16,6 +16,10 @@ public class StartOnTimerNodeBuilder extends AbstractNodeBuilder {
     private Timer timer;
 
     public StartOnTimerNodeBuilder(String name, WorkflowBuilder workflowBuilder) {
+        this(name, workflowBuilder, false);
+    }
+
+    public StartOnTimerNodeBuilder(String name, WorkflowBuilder workflowBuilder, boolean interrupting) {
         super(workflowBuilder);
         this.timer = new Timer();
         this.node = new StartNode();
@@ -23,6 +27,7 @@ public class StartOnTimerNodeBuilder extends AbstractNodeBuilder {
         this.node.setId(ids.incrementAndGet());
         this.node.setName(name);
         this.node.setMetaData("UniqueId", generateUiqueId(this.node));
+        this.node.setInterrupting(interrupting);
 
         this.node.setMetaData(Metadata.TRIGGER_TYPE, "Timer");
         this.node.setTimer(timer);

@@ -19,6 +19,11 @@ public class AdditionalPathNodeBuilder extends AbstractNodeBuilder {
         workflowBuilder.container(node);
     }
 
+    public AdditionalPathNodeBuilder event(String event) {
+        this.node.addEvent(event);
+        return this;
+    }
+
     public WorkflowBuilder end() {
         workflowBuilder.container(workflowBuilder.get());
         return workflowBuilder;

@@ -2,6 +2,8 @@ package io.automatiko.engine.workflow.builder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.event.EventFilter;
@@ -126,6 +128,92 @@ public class WaitOnMessageNodeBuilder extends AbstractNodeBuilder {
             node.addOutAssociation(new DataAssociation("event", name, null, null));
             node.setMetaData(Metadata.MESSAGE_TYPE, var.getType().getClassType().getCanonicalName());
         }
+        return this;
+    }
+
+    /**
+     * Maps the given value into a data object's field(s). Fields are accessed using getters and then set via setter method
+     * so it is expected that data object follow Java Bean convention.
+     * 
+     * If there are many fields given only the last one will be set with the value and other will be used to navigate to it
+     * Following method <code>toDataObjectField("person", "abc", "address", "street")</code>
+     * will essentially mean <code>person.getAddress().setStreet("abc")</code>
+     * 
+     * @param name name of the data object
+     * @param value value to be assigned
+     * @param fields fields in data object to be accessed and last one to be set
+     * @return the builder
+     */
+    public WaitOnMessageNodeBuilder toDataObjectField(String name, Object value, String... fields) {
+
+        String dotExpression = name;
+
+        if (fields != null && fields.length > 0) {
+            dotExpression = dotExpression + "." + Stream.of(fields).collect(Collectors.joining("."));
+        }
+        node.setVariableName(name);
+        DataAssociation out = new DataAssociation("event", "#{" + dotExpression + "}", null, null);
+        node.addOutAssociation(out);
+
+        node.setMetaData(Metadata.MESSAGE_TYPE, this.node.getMetaData().getOrDefault(Metadata.MESSAGE_TYPE, "Object"));
+        return this;
+    }
+
+    /**
+     * Appends given value to a list based data object (or its field(s) when set). Fields are accessed using getters and then
+     * set via setter method
+     * so it is expected that data object follow Java Bean convention.
+     * 
+     * If there are many fields given only the last one will be set with the value and other will be used to navigate to it
+     * Following method <code>appendToDataObjectField("person", "abc", "contact", "phones")</code>
+     * will essentially mean <code>person.getContact().getPhones.add("abc")</code>
+     * 
+     * @param name name of the data object
+     * @param value value to be assigned
+     * @param fields fields in data object to be accessed and last one to be set
+     * @return the builder
+     */
+    public WaitOnMessageNodeBuilder appendToDataObjectField(String name, String... fields) {
+
+        String dotExpression = name;
+
+        if (fields != null && fields.length > 0) {
+            dotExpression = dotExpression + "." + Stream.of(fields).collect(Collectors.joining("."));
+        }
+        dotExpression += "[+]";
+        node.setVariableName(name);
+        DataAssociation out = new DataAssociation("event", "#{" + dotExpression + "}", null, null);
+        node.addOutAssociation(out);
+        node.setMetaData(Metadata.MESSAGE_TYPE, this.node.getMetaData().getOrDefault(Metadata.MESSAGE_TYPE, "Object"));
+        return this;
+    }
+
+    /**
+     * Removes given value from a list based data object (or its field(s) when set). Fields are accessed using getters and then
+     * set via setter method
+     * so it is expected that data object follow Java Bean convention.
+     * 
+     * If there are many fields given only the last one will be set with the value and other will be used to navigate to it
+     * Following method <code>removeFromDataObjectField("person", "abc", "contact", "phones")</code>
+     * will essentially mean <code>person.getContact().getPhones.remove("abc")</code>
+     * 
+     * @param name name of the data object
+     * @param value value to be assigned
+     * @param fields fields in data object to be accessed and last one to be set
+     * @return the builder
+     */
+    public WaitOnMessageNodeBuilder removeFromDataObjectField(String name, String... fields) {
+
+        String dotExpression = name;
+
+        if (fields != null && fields.length > 0) {
+            dotExpression = dotExpression + "." + Stream.of(fields).collect(Collectors.joining("."));
+        }
+        dotExpression += "[-]";
+        node.setVariableName(name);
+        DataAssociation out = new DataAssociation("event", "#{" + dotExpression + "}", null, null);
+        node.addOutAssociation(out);
+        node.setMetaData(Metadata.MESSAGE_TYPE, this.node.getMetaData().getOrDefault(Metadata.MESSAGE_TYPE, "Object"));
         return this;
     }
 

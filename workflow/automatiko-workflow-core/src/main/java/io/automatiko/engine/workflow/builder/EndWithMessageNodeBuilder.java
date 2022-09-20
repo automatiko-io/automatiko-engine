@@ -1,6 +1,9 @@
 package io.automatiko.engine.workflow.builder;
 
+import java.util.function.Supplier;
+
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
+import io.automatiko.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
 import io.automatiko.engine.workflow.process.core.Node;
 import io.automatiko.engine.workflow.process.core.node.EndNode;
 import io.automatiko.engine.workflow.process.executable.core.Metadata;
@@ -77,6 +80,26 @@ public class EndWithMessageNodeBuilder extends AbstractNodeBuilder {
             node.setMetaData(Metadata.MAPPING_VARIABLE, name);
             node.setMetaData(Metadata.MESSAGE_TYPE, var.getType().getClassType().getCanonicalName());
         }
+        return this;
+    }
+
+    /**
+     * Creates data input based on given expression that will be evaluated at the service call
+     * 
+     * @param <T> type of data
+     * @param type type of the data the expression will return
+     * @param expression expression to be evaluated
+     * @return the builder
+     */
+    public <T> EndWithMessageNodeBuilder expressionAsInput(Class<T> type, Supplier<T> expression) {
+
+        ObjectDataType dataType = new ObjectDataType(type);
+
+        String source = "#{"
+                + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()) + "}";
+
+        node.setMetaData(Metadata.MAPPING_VARIABLE, source);
+        node.setMetaData(Metadata.MESSAGE_TYPE, dataType.getClassType().getCanonicalName());
         return this;
     }
 
