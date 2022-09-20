@@ -93,7 +93,9 @@ public class CDIDependencyInjectionAnnotator implements DependencyInjectionAnnot
                 .setType(void.class).setBody(body);
 
         method.addAndGetParameter("io.quarkus.runtime.StartupEvent", "event")
-                .addAnnotation("javax.enterprise.event.Observes");
+                .addAnnotation("javax.enterprise.event.Observes")
+                .addSingleMemberAnnotation("javax.annotation.Priority",
+                        new NameExpr("javax.interceptor.Interceptor.Priority.APPLICATION"));
 
         return method;
     }
