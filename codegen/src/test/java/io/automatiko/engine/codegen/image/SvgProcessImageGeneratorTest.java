@@ -188,6 +188,42 @@ public class SvgProcessImageGeneratorTest {
         Files.write(Paths.get("target", "test.svg"), svg.getBytes(StandardCharsets.UTF_8));
     }
 
+    @Test
+    public void testWorkflowAsCodeWithErrorAndAdditionalPathImageGeneration() throws IOException {
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("service", "Sample workflow calling service", "1")
+                .dataObject("name", Long.class, Variable.INPUT_TAG)
+                .dataObject("pet", Object.class, Variable.OUTPUT_TAG);
+
+        RestServiceNodeBuilder service = builder.start("start here").then()
+                .log("execute script", "Hello world").then()
+                .restService("get pet from the store");
+
+        service.toDataObject("pet",
+                service.openApi("api/swagger.json").operation("getPetById").fromDataObject("name")).then()
+                .end("that's it");
+
+        service.onError("404").then().log("Not found", "Pet with id {} not found", "name").then().end("done");
+
+        builder.additionalPathOnMessage("on message").topic("data").appendToDataObjectField("bucket").then()
+                .log("show bucket", "bucket is {}", "bucket").then().end("done");
+
+        builder.additionalPathOnMessage("second").topic("data").appendToDataObjectField("bucket").then()
+                .log("list bucket", "bucket is {}", "bucket").then().end("done");
+
+        ParallelSplitNodeBuilder psplit = builder.additionalPathOnTimer("on timeout").then().user("wait").then().user("second")
+                .thenParallelSplit("split");
+        psplit.then().user("one").then().end("done");
+        psplit.then().user("two").then().end("done");
+
+        SvgBpmnProcessImageGenerator generator = new SvgBpmnProcessImageGenerator(builder.get());
+
+        String svg = generator.generate();
+
+        assertThat(svg).isNotEmpty();
+
+        Files.write(Paths.get("target", "test.svg"), svg.getBytes(StandardCharsets.UTF_8));
+    }
+
     public void testGeneration(String processResource) throws IOException {
 
         BpmnProcessCompiler compiler = new BpmnProcessCompiler();

@@ -522,15 +522,43 @@ public class WorkflowBuilder {
 
     /**
      * Adds an additional path node that allows to have separate workflow path
+     * that starts based on timer event
+     * 
+     * @param name name of the node
+     * @param abortAfter indicates if the main workflow instance should be aborted once the additional path completes
+     * @return the builder
+     */
+    public StartOnTimerNodeBuilder additionalPathOnTimer(String name, boolean abortAfter) {
+        new AdditionalPathNodeBuilder(name, this);
+
+        return new StartOnTimerNodeBuilder(name, this, abortAfter);
+    }
+
+    /**
+     * Adds an additional path node that allows to have separate workflow path
      * that starts based on incoming message
      * 
      * @param name name of the node
      * @return the builder
      */
     public StartOnMessageNodeBuilder additionalPathOnMessage(String name) {
-        new AdditionalPathNodeBuilder(name, this);
+        new AdditionalPathNodeBuilder(name, this).event("Message-on_message_" + name);
 
-        return startOnMessage("on message");
+        return startOnMessage("on_message_" + name);
+    }
+
+    /**
+     * Adds an additional path node that allows to have separate workflow path
+     * that starts based on incoming message
+     * 
+     * @param name name of the node
+     * @param abortAfter indicates if the main workflow instance should be aborted once the additional path completes
+     * @return the builder
+     */
+    public StartOnMessageNodeBuilder additionalPathOnMessage(String name, boolean abortAfter) {
+        new AdditionalPathNodeBuilder(name, this).event("Message-on_message_" + name);
+
+        return new StartOnMessageNodeBuilder(name, this, abortAfter);
     }
 
     /*

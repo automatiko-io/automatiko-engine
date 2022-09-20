@@ -98,6 +98,26 @@ public class SendMessageNodeBuilder extends AbstractNodeBuilder {
     }
 
     /**
+     * Creates data input based on given expression that will be evaluated at the service call
+     * 
+     * @param <T> type of data
+     * @param type type of the data the expression will return
+     * @param expression expression to be evaluated
+     * @return the builder
+     */
+    public <T> SendMessageNodeBuilder expressionAsInput(Class<T> type, Supplier<T> expression) {
+
+        ObjectDataType dataType = new ObjectDataType(type);
+
+        String source = "#{"
+                + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()) + "}";
+
+        node.setMetaData(Metadata.MAPPING_VARIABLE, source);
+        node.setMetaData(Metadata.MESSAGE_TYPE, dataType.getClassType().getCanonicalName());
+        return this;
+    }
+
+    /**
      * NOTE: Applies to MQTT connector only<br/>
      * The topic expression to be used while sending message. It is used when the topic needs to be calculated and it is not
      * a constant that comes from the name of the node

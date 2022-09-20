@@ -292,6 +292,7 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
             return writer.toString();
         } catch (Throwable e) {
             LOGGER.warn("Unable to generate process image due to " + e.getMessage());
+            LOGGER.debug("Process image generation details", e);
             return null;
         }
     }
@@ -326,10 +327,15 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
 
                     buildNodeContainer(x(node), y(node), ((ForEachNode) node).getCompositeNode(), g2);
                 } else if (node instanceof CompositeNode) {
-                    buildSubprocessNode(x, y, (CompositeNode) node, g2);
-                    int sx = x(node);
-                    int sy = y(node);
-                    buildNodeContainer(sx, sy, (CompositeNode) node, g2);
+                    if (hasCoordinates(node)) {
+                        buildSubprocessNode(x, y, (CompositeNode) node, g2);
+                        int sx = x(node);
+                        int sy = y(node);
+
+                        buildNodeContainer(sx, sy, (CompositeNode) node, g2);
+                    } else {
+                        buildNodeContainer(x, y, (CompositeNode) node, g2);
+                    }
                 } else if (node instanceof RuleSetNode) {
                     buildBusinessRuleTaskNode(x, y, (RuleSetNode) node, g2);
                 } else if (node instanceof TimerNode) {
@@ -752,6 +758,14 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
     /*
      * Helper methods
      */
+
+    protected boolean hasCoordinates(Node node) {
+        if (node.getMetaData().containsKey("x") || node.getMetaData().containsKey("y")) {
+            return true;
+        }
+
+        return false;
+    }
 
     protected int x(Node node) {
         if (node instanceof ForEachNode) {
