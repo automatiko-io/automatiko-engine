@@ -18,9 +18,11 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import javax.annotation.Priority;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
+import javax.interceptor.Interceptor;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
@@ -84,7 +86,7 @@ public class FileSystemBasedJobService implements JobsService {
         this.scheduler = new ScheduledThreadPoolExecutor(threads, r -> new Thread(r, "automatiko-jobs-executor"));
     }
 
-    public void scheduleOnLoad(@Observes StartupEvent event) {
+    public void scheduleOnLoad(@Observes @Priority(Interceptor.Priority.LIBRARY_AFTER) StartupEvent event) {
         Path start = Paths.get(storage);
 
         try {

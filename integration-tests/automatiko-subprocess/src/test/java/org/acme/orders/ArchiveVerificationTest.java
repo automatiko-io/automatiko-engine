@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -21,6 +22,7 @@ public class ArchiveVerificationTest {
     
     @SuppressWarnings("unchecked")
     @Test
+    @Disabled
     public void testProcessExecutionWithArchive() {
 
         String addPayload = "{\"approver\" : \"john\", \"order\": {\"orderNumber\": \"12345\", \"shipped\": false, \"total\": 0}}";
