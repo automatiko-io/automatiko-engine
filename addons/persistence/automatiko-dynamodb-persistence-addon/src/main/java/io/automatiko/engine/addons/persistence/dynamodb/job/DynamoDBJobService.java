@@ -19,9 +19,11 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import javax.annotation.Priority;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
+import javax.interceptor.Interceptor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,7 +134,7 @@ public class DynamoDBJobService implements JobsService {
         this.loadScheduler = new ScheduledThreadPoolExecutor(1, r -> new Thread(r, "automatiko-jobs-loader"));
     }
 
-    public void start(@Observes StartupEvent event) {
+    public void start(@Observes @Priority(Interceptor.Priority.LIBRARY_AFTER) StartupEvent event) {
         loadScheduler.scheduleAtFixedRate(() -> {
             try {
                 long next = LocalDateTime.now().plus(Duration.ofMinutes(config.interval().orElse(10L)))
