@@ -375,6 +375,16 @@ public class WorkflowBuilder {
     }
 
     /**
+     * Adds an ending node with error
+     * 
+     * @param name name of the node
+     * @return the builder
+     */
+    public EndWithErrorNodeBuilder endWithError(String name) {
+        return new EndWithErrorNodeBuilder(name, false, this);
+    }
+
+    /**
      * Adds an expression node (aka script) that will allow to invoke expressions
      * 
      * @param name name of the node
