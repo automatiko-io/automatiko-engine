@@ -1,6 +1,7 @@
 
 package io.automatiko.engine.workflow.process.instance.node;
 
+import static io.automatiko.engine.workflow.base.core.context.variable.VariableScope.VARIABLE_SCOPE;
 import static io.automatiko.engine.workflow.process.executable.core.Metadata.UNIQUE_ID;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +42,7 @@ import io.automatiko.engine.workflow.process.instance.NodeInstanceContainer;
 import io.automatiko.engine.workflow.process.instance.impl.NodeInstanceImpl;
 import io.automatiko.engine.workflow.process.instance.impl.NodeInstanceResolverFactory;
 import io.automatiko.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
+import io.automatiko.engine.workflow.util.PatternConstants;
 
 /**
  * Runtime counterpart of a fault node.
@@ -194,17 +197,55 @@ public class FaultNodeInstance extends NodeInstanceImpl {
 
         } else if (faultVariable != null) {
 
-            VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
-                    VariableScope.VARIABLE_SCOPE, faultVariable);
-            if (variableScopeInstance != null) {
-                value = variableScopeInstance.getVariable(faultVariable);
+            Map<String, Object> replacements = new HashMap<>();
+            Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(faultVariable);
+            if (matcher.find()) {
+                String paramName = matcher.group(1);
+                String replacementKey = paramName;
+                String defaultValue = "";
+                if (paramName.contains(":")) {
+
+                    String[] items = paramName.split(":");
+                    paramName = items[0];
+                    defaultValue = items[1];
+                }
+                if (replacements.get(replacementKey) == null) {
+                    VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+                            VARIABLE_SCOPE, paramName);
+                    if (variableScopeInstance != null) {
+                        Object variableValue = variableScopeInstance.getVariable(paramName);
+                        value = variableValue == null ? defaultValue : variableValue;
+                    } else {
+                        try {
+                            ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcess) getProcessInstance()
+                                    .getProcess())
+                                            .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+                            Object variableValue = evaluator.evaluate(paramName, new NodeInstanceResolverFactory(this));
+                            value = variableValue == null ? defaultValue : variableValue;
+
+                        } catch (Throwable t) {
+                            logger.error("Could not find variable scope for variable {}", faultVariable);
+                            logger.error("when trying to execute fault node {}", getFaultNode().getName());
+                            logger.error("Continuing without setting value.");
+                        }
+                    }
+                }
+
             } else {
-                logger.error("Could not find variable scope for variable {}", faultVariable);
-                logger.error("when trying to execute fault node {}", getFaultNode().getName());
-                logger.error("Continuing without setting value.");
+
+                VariableScopeInstance variableScopeInstance = (VariableScopeInstance) resolveContextInstance(
+                        VariableScope.VARIABLE_SCOPE, faultVariable);
+                if (variableScopeInstance != null) {
+                    value = variableScopeInstance.getVariable(faultVariable);
+                } else {
+                    logger.error("Could not find variable scope for variable {}", faultVariable);
+                    logger.error("when trying to execute fault node {}", getFaultNode().getName());
+                    logger.error("Continuing without setting value.");
+                }
             }
         }
         return value;
+
     }
 
     protected void handleException(String faultName, ExceptionScopeInstance exceptionScopeInstance) {
