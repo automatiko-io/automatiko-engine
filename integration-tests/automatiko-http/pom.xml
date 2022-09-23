@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.automatiko.tests</groupId>
     <artifactId>integration-tests</artifactId>
-    <version>0.19.0</version>
+    <version>0.0.0-SNAPSHOT</version>
   </parent>
   <artifactId>automatiko-http</artifactId>
   <name>Automatiko :: Tests Suite :: HTTP messaging invocation sample</name>
