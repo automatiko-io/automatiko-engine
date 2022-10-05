@@ -61,7 +61,6 @@ import io.automatiko.engine.codegen.GeneratorContext;
 import io.automatiko.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatiko.engine.codegen.process.image.SvgBpmnProcessImageGenerator;
 import io.automatiko.engine.codegen.process.image.SvgProcessImageGenerator;
-import io.automatiko.engine.codegen.process.image.SvgServerlessProcessImageGenerator;
 import io.automatiko.engine.services.execution.BaseFunctions;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.AbstractProcess;
@@ -693,8 +692,7 @@ public class ProcessGenerator {
 
         if (isServiceProject()) {
 
-            SvgProcessImageGenerator imageGenerator = isServerlessWorkflow() ? new SvgServerlessProcessImageGenerator(process)
-                    : new SvgBpmnProcessImageGenerator(process);
+            SvgProcessImageGenerator imageGenerator = new SvgBpmnProcessImageGenerator(process);
             String svg = imageGenerator.generate();
 
             if (svg != null && !svg.isEmpty()) {

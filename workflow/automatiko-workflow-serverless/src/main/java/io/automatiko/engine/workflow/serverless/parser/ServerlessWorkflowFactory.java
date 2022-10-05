@@ -11,7 +11,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +53,7 @@ import io.automatiko.engine.workflow.process.core.node.ActionNode;
 import io.automatiko.engine.workflow.process.core.node.Assignment;
 import io.automatiko.engine.workflow.process.core.node.BoundaryEventNode;
 import io.automatiko.engine.workflow.process.core.node.CompositeContextNode;
+import io.automatiko.engine.workflow.process.core.node.CompositeNode;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
 import io.automatiko.engine.workflow.process.core.node.EndNode;
 import io.automatiko.engine.workflow.process.core.node.EventNode;
@@ -108,21 +111,17 @@ public class ServerlessWorkflowFactory {
         if (workflow.getId() != null && !workflow.getId().isEmpty()) {
             process.setId(workflow.getId());
         } else {
-            LOGGER.info("setting default id {}", DEFAULT_WORKFLOW_ID);
             process.setId(DEFAULT_WORKFLOW_ID);
         }
 
         if (workflow.getName() != null && !workflow.getName().isEmpty()) {
             process.setName(workflow.getName());
         } else {
-            LOGGER.info("setting default name {}", DEFAULT_WORKFLOW_NAME);
             process.setName(DEFAULT_WORKFLOW_NAME);
         }
 
         if (workflow.getVersion() != null && !workflow.getVersion().isEmpty()) {
             process.setVersion(workflow.getVersion());
-        } else {
-            LOGGER.info("no workflow version found.");
         }
 
         if (workflow.getMetadata() != null && workflow.getMetadata().get("package") != null) {
@@ -186,9 +185,9 @@ public class ServerlessWorkflowFactory {
     public StartNode startNode(long id, String name, NodeContainer nodeContainer) {
         StartNode startNode = new StartNode();
         startNode.setId(id);
-        startNode.setName(name);
+        startNode.setName(nameOrDefault(name, "Unnamed start"));
         startNode.setInterrupting(true);
-
+        startNode.setMetaData("UniqueId", generateUiqueId(startNode));
         nodeContainer.addNode(startNode);
 
         return startNode;
@@ -197,7 +196,8 @@ public class ServerlessWorkflowFactory {
     public ActionNode injectStateNode(long id, String name, NodeContainer nodeContainer, String dataToInject) {
         ActionNode actionNode = new ActionNode();
         actionNode.setId(id);
-        actionNode.setName(name);
+        actionNode.setName(nameOrDefault(name, "Unnamed inject"));
+        actionNode.setMetaData("UniqueId", generateUiqueId(actionNode));
         ConsequenceAction processAction = new ConsequenceAction(null,
                 "inject(context, " + escapeExpression(dataToInject) + ");");
 
@@ -218,7 +218,7 @@ public class ServerlessWorkflowFactory {
         ActionNode actionNode = new ActionNode();
         actionNode.setId(id);
         actionNode.setName(name);
-
+        actionNode.setMetaData("UniqueId", generateUiqueId(actionNode));
         String outputFilter = unwrapExpression(outputFilterString);
 
         ConsequenceAction processAction = new ConsequenceAction(null,
@@ -244,8 +244,8 @@ public class ServerlessWorkflowFactory {
             Action action) {
         ActionNode actionNode = new ActionNode();
         actionNode.setId(id);
-        actionNode.setName(name);
-
+        actionNode.setName(nameOrDefault(name, ""));
+        actionNode.setMetaData("UniqueId", generateUiqueId(actionNode));
         ActionDataFilter actionDataFilter = action.getActionDataFilter();
 
         StringBuilder functionArguments = new StringBuilder();
@@ -300,7 +300,7 @@ public class ServerlessWorkflowFactory {
         StartNode startNode = new StartNode();
         startNode.setId(id);
         startNode.setName(eventDefinition.getName());
-
+        startNode.setMetaData("UniqueId", generateUiqueId(startNode));
         startNode.setMetaData(Metadata.TRIGGER_MAPPING, DEFAULT_WORKFLOW_VAR);
         startNode.setMetaData(Metadata.TRIGGER_TYPE, "ConsumeMessage");
 
@@ -333,8 +333,6 @@ public class ServerlessWorkflowFactory {
         }
 
         startNode.addTrigger(trigger);
-
-        startNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
 
         if (eventDefinition.getMetadata() != null) {
             eventDefinition.getMetadata().forEach((k, v) -> startNode.setMetaData(k, v));
@@ -369,19 +367,20 @@ public class ServerlessWorkflowFactory {
     public EndNode endNode(long id, String name, boolean terminate, NodeContainer nodeContainer) {
         EndNode endNode = new EndNode();
         endNode.setId(id);
-        endNode.setName(name);
+        endNode.setName(nameOrDefault(name, "Unnamed end"));
         endNode.setTerminate(terminate);
-
+        endNode.setMetaData("UniqueId", generateUiqueId(endNode));
         nodeContainer.addNode(endNode);
+
         return endNode;
     }
 
     public EndNode compensateEndNode(long id, String name, NodeContainer nodeContainer) {
         EndNode endNode = new EndNode();
         endNode.setId(id);
-        endNode.setName(name);
+        endNode.setName(nameOrDefault(name, "Unnamed compensate"));
+        endNode.setMetaData("UniqueId", generateUiqueId(endNode));
 
-        endNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
         endNode.setMetaData(Metadata.TRIGGER_TYPE, "Compensation");
 
         nodeContainer.addNode(endNode);
@@ -392,7 +391,8 @@ public class ServerlessWorkflowFactory {
         EndNode endNode = new EndNode();
         endNode.setTerminate(false);
         endNode.setId(id);
-        endNode.setName(name);
+        endNode.setName(nameOrDefault(name, "Unnamed end"));
+        endNode.setMetaData("UniqueId", generateUiqueId(endNode));
 
         //currently support a single produce event
         if (!stateEnd.getProduceEvents().isEmpty()) {
@@ -421,12 +421,14 @@ public class ServerlessWorkflowFactory {
 
     public ActionNode produceMessageNode(long id, String name, Workflow workflow, ProduceEvent event,
             NodeContainer nodeContainer) {
-        ActionNode produceEventNode = new ActionNode();
-        produceEventNode.setId(id);
-        produceEventNode.setName(name);
 
         EventDefinition eventDef = WorkflowUtils.getDefinedProducedEvents(workflow).stream().filter(e -> e.getName().equals(
                 event.getEventRef())).findFirst().get();
+
+        ActionNode produceEventNode = new ActionNode();
+        produceEventNode.setId(id);
+        produceEventNode.setName(eventDef.getName());
+        produceEventNode.setMetaData("UniqueId", generateUiqueId(produceEventNode));
 
         produceEventNode.setMetaData(Metadata.TRIGGER_REF, eventDef.getName());
         produceEventNode.setMetaData(Metadata.TRIGGER_TYPE_ATTR, eventDef.getType());
@@ -460,8 +462,9 @@ public class ServerlessWorkflowFactory {
     public TimerNode timerNode(long id, String name, String delay, NodeContainer nodeContainer) {
         TimerNode timerNode = new TimerNode();
         timerNode.setId(id);
-        timerNode.setName(name);
+        timerNode.setName(nameOrDefault(name, "Unnamed sleep"));
         timerNode.setMetaData(Metadata.EVENT_TYPE, "timer");
+        timerNode.setMetaData("UniqueId", generateUiqueId(timerNode));
 
         Timer timer = new Timer();
         timer.setTimeType(Timer.TIME_DURATION);
@@ -477,10 +480,11 @@ public class ServerlessWorkflowFactory {
             NodeContainer nodeContainer) {
         SubProcessNode subProcessNode = new SubProcessNode();
         subProcessNode.setId(id);
-        subProcessNode.setName(name);
+        subProcessNode.setName(nameOrDefault(name, "Unnamed subflow"));
         subProcessNode.setProcessId(calledId);
         subProcessNode.setWaitForCompletion(waitForCompletion);
         subProcessNode.setIndependent(true);
+        subProcessNode.setMetaData("UniqueId", generateUiqueId(subProcessNode));
 
         VariableScope variableScope = new VariableScope();
         subProcessNode.addContext(variableScope);
@@ -529,6 +533,7 @@ public class ServerlessWorkflowFactory {
         ActionNode sendEventNode = new ActionNode();
         sendEventNode.setId(id);
         sendEventNode.setName(eventDefinition.getName());
+        sendEventNode.setMetaData("UniqueId", generateUiqueId(sendEventNode));
         sendEventNode.setMetaData(Metadata.TRIGGER_TYPE, "ProduceMessage");
         sendEventNode.setMetaData(Metadata.MAPPING_VARIABLE, DEFAULT_WORKFLOW_VAR);
         sendEventNode.setMetaData(Metadata.TRIGGER_REF, eventDefinition.getSource());
@@ -547,9 +552,9 @@ public class ServerlessWorkflowFactory {
     public ActionNode compensationEventNode(long id, String name, NodeContainer nodeContainer, ExecutableProcess process) {
         ActionNode compensationEventNode = new ActionNode();
         compensationEventNode.setId(id);
-        compensationEventNode.setName(name);
+        compensationEventNode.setName(nameOrDefault(name, "Unnamed compensation"));
+        compensationEventNode.setMetaData("UniqueId", generateUiqueId(compensationEventNode));
 
-        compensationEventNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
         ProcessInstanceCompensationAction pic = new ProcessInstanceCompensationAction("implicit:" + process.getId());
         ProcessAction processAction = new ProcessAction();
         processAction.setMetaData(ACTION, pic);
@@ -568,12 +573,12 @@ public class ServerlessWorkflowFactory {
         EventNode eventNode = new EventNode();
         eventNode.setId(id);
         eventNode.setName(eventDefinition.getName());
+        eventNode.setMetaData("UniqueId", generateUiqueId(eventNode));
 
         EventTypeFilter eventFilter = new EventTypeFilter();
         eventFilter.setType("Message-" + eventDefinition.getName());
         eventNode.addEventFilter(eventFilter);
 
-        eventNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
         eventNode.setMetaData(Metadata.TRIGGER_TYPE, "ConsumeMessage");
         eventNode.setMetaData(Metadata.TRIGGER_REF, eventDefinition.getName());
         eventNode.setMetaData(Metadata.EVENT_TYPE, "message");
@@ -620,9 +625,9 @@ public class ServerlessWorkflowFactory {
     public ActionNode scriptNode(long id, String name, String script, NodeContainer nodeContainer) {
         ActionNode scriptNode = new ActionNode();
         scriptNode.setId(id);
-        scriptNode.setName(name);
+        scriptNode.setName(nameOrDefault(name, "Unnamed action"));
+        scriptNode.setMetaData("UniqueId", generateUiqueId(scriptNode));
 
-        scriptNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
         ProcessAction processAction = new ProcessAction();
         processAction.setMetaData(ACTION, script);
         scriptNode.setAction(processAction);
@@ -643,8 +648,9 @@ public class ServerlessWorkflowFactory {
 
         WorkItemNode workItemNode = new WorkItemNode();
         workItemNode.setId(id);
-        workItemNode.setName(actionName);
-        workItemNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
+        workItemNode.setName(nameOrDefault(actionName, "Unnamed action"));
+        workItemNode.setMetaData("UniqueId", generateUiqueId(workItemNode));
+
         workItemNode.setMetaData("Type", SERVICE_TASK_TYPE);
         workItemNode.setMetaData("Implementation", "##WebService");
 
@@ -713,9 +719,9 @@ public class ServerlessWorkflowFactory {
     public CompositeContextNode subProcessNode(long id, String name, NodeContainer nodeContainer) {
         CompositeContextNode subProcessNode = new CompositeContextNode();
         subProcessNode.setId(id);
-        subProcessNode.setName(name);
+        subProcessNode.setName(nameOrDefault(name, "Unnamed state"));
         subProcessNode.setAutoComplete(true);
-        subProcessNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(subProcessNode.getId()));
+        subProcessNode.setMetaData("UniqueId", generateUiqueId(subProcessNode));
 
         JsonVariableScope variableScope = new JsonVariableScope();
         subProcessNode.addContext(variableScope);
@@ -729,9 +735,9 @@ public class ServerlessWorkflowFactory {
     public Split splitNode(long id, String name, int type, NodeContainer nodeContainer) {
         Split split = new Split();
         split.setId(id);
-        split.setName(name);
+        split.setName(nameOrDefault(name, "Unnamed split"));
         split.setType(type);
-        split.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
+        split.setMetaData("UniqueId", generateUiqueId(split));
 
         nodeContainer.addNode(split);
         return split;
@@ -740,9 +746,9 @@ public class ServerlessWorkflowFactory {
     public Split eventBasedSplit(long id, String name, NodeContainer nodeContainer) {
         Split split = new Split();
         split.setId(id);
-        split.setName(name);
+        split.setName(nameOrDefault(name, "Unnamed split"));
         split.setType(Split.TYPE_XAND);
-        split.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
+        split.setMetaData("UniqueId", generateUiqueId(split));
         split.setMetaData(EVENTBASED_PARAM, "true");
 
         nodeContainer.addNode(split);
@@ -752,9 +758,9 @@ public class ServerlessWorkflowFactory {
     public Join joinNode(long id, String name, int type, NodeContainer nodeContainer) {
         Join join = new Join();
         join.setId(id);
-        join.setName(name);
+        join.setName(nameOrDefault(name, "Unnamed join"));
         join.setType(type);
-        join.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
+        join.setMetaData("UniqueId", generateUiqueId(join));
 
         nodeContainer.addNode(join);
         return join;
@@ -763,7 +769,7 @@ public class ServerlessWorkflowFactory {
     public ConstraintImpl splitConstraint(String name, String type, String dialect, String constraint, int priority,
             boolean isDefault) {
         ConstraintImpl constraintImpl = new ConstraintImpl();
-        constraintImpl.setName(name);
+        constraintImpl.setName(nameOrDefault(name, "Unnamed split"));
         constraintImpl.setType(type);
         constraintImpl.setDialect(dialect);
         constraintImpl.setConstraint(constraint);
@@ -779,10 +785,11 @@ public class ServerlessWorkflowFactory {
         // then the ht node
         HumanTaskNode humanTaskNode = new HumanTaskNode();
         humanTaskNode.setId(id);
-        humanTaskNode.setName(name);
+        humanTaskNode.setName(nameOrDefault(name, "Unnamed user operation"));
         Work work = new WorkImpl();
         work.setName("Human Task");
         humanTaskNode.setWork(work);
+        humanTaskNode.setMetaData("UniqueId", generateUiqueId(humanTaskNode));
 
         work.setParameter("NodeName", name);
 
@@ -796,7 +803,8 @@ public class ServerlessWorkflowFactory {
     public BoundaryEventNode compensationBoundaryEventNode(long id, String name, ExecutableProcess process, Node attachToNode) {
         BoundaryEventNode boundaryEventNode = new BoundaryEventNode();
         boundaryEventNode.setId(id);
-        boundaryEventNode.setName(name);
+        boundaryEventNode.setName(nameOrDefault(name, "Unnamed compensation"));
+        boundaryEventNode.setMetaData("UniqueId", generateUiqueId(boundaryEventNode));
 
         EventTypeFilter filter = new EventTypeFilter();
         filter.setType("Compensation");
@@ -804,7 +812,6 @@ public class ServerlessWorkflowFactory {
 
         boundaryEventNode.setAttachedToNodeId(Long.toString(attachToNode.getId()));
 
-        boundaryEventNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
         boundaryEventNode.setMetaData("EventType", "compensation");
         boundaryEventNode.setMetaData("AttachedTo", Long.toString(attachToNode.getId()));
 
@@ -819,6 +826,7 @@ public class ServerlessWorkflowFactory {
 
         boundaryEventNode.setId(id);
         boundaryEventNode.setName(defs.stream().map(def -> def.getName()).collect(Collectors.joining("|")));
+        boundaryEventNode.setMetaData("UniqueId", generateUiqueId(boundaryEventNode));
 
         String errorCodes = defs.stream().map(def -> def.getCode()).collect(Collectors.joining(","));
         String attachedToId = (String) attachedTo.getMetaData().getOrDefault(UNIQUE_ID_PARAM,
@@ -829,7 +837,6 @@ public class ServerlessWorkflowFactory {
 
         boundaryEventNode.setAttachedToNodeId(attachedToId);
 
-        boundaryEventNode.setMetaData(UNIQUE_ID_PARAM, Long.toString(id));
         boundaryEventNode.setMetaData("EventType", "error");
         boundaryEventNode.setMetaData("ErrorEvent", errorCodes);
         boundaryEventNode.setMetaData("AttachedTo", attachedToId);
@@ -864,6 +871,21 @@ public class ServerlessWorkflowFactory {
             connection.setMetaData("association", true);
         }
 
+        if (from instanceof CompositeNode) {
+            appendDiagramItem(nodeContainer,
+                    (String) Stream.of(((CompositeNode) from).getNodes()).filter(n -> n instanceof EndNode).findFirst().get()
+                            .getMetaData().get("UniqueId"),
+                    (String) to.getMetaData().get("UniqueId"));
+        } else if (to instanceof CompositeNode) {
+            appendDiagramItem(nodeContainer,
+                    (String) from.getMetaData().get("UniqueId"),
+                    (String) Stream.of(((CompositeNode) to).getNodes()).filter(n -> n instanceof StartNode).findFirst().get()
+                            .getMetaData().get("UniqueId"));
+        } else {
+
+            appendDiagramItem(nodeContainer, (String) from.getMetaData().get("UniqueId"),
+                    (String) to.getMetaData().get("UniqueId"));
+        }
         return connection;
     }
 
@@ -930,5 +952,44 @@ public class ServerlessWorkflowFactory {
         }
 
         return "\"" + expression.replaceAll("\\\"", "\\\\\"") + "\"";
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void appendDiagramItem(NodeContainer nodeContainer, String source, String target) {
+        Process process = findProcess(nodeContainer);
+        Map<String, List<String>> diagram = (Map<String, List<String>>) process.getMetaData().get("DiagramInfo");
+
+        diagram.compute(source, (k, v) -> {
+            if (v == null) {
+                v = new ArrayList<>();
+            }
+            if (v.contains(target)) {
+                v.remove(target);
+            }
+            v.add(target);
+
+            return v;
+        });
+    }
+
+    private Process findProcess(NodeContainer nodeContainer) {
+        while (nodeContainer instanceof Node) {
+
+            nodeContainer = (NodeContainer) ((Node) nodeContainer).getParentContainer();
+
+        }
+        return (Process) nodeContainer;
+    }
+
+    protected String generateUiqueId(Node node) {
+        return UUID.nameUUIDFromBytes((node.getClass().getName() + "_" + node.getId()).getBytes()).toString();
+    }
+
+    protected String nameOrDefault(String name, String defaultName) {
+        if (name != null && !name.isEmpty()) {
+            return name;
+        }
+
+        return defaultName;
     }
 }

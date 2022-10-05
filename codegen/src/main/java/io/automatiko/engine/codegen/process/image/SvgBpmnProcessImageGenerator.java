@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 import javax.swing.SwingConstants;
@@ -117,7 +118,7 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
 
     public SvgBpmnProcessImageGenerator(WorkflowProcess workFlowProcess) {
         this.workFlowProcess = workFlowProcess;
-        createLayoutIfMissing();
+
     }
 
     @SuppressWarnings("unchecked")
@@ -185,12 +186,15 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
                 if (n instanceof ForEachNode) {
                     return ((ForEachNode) n).getCompositeNode().getNodes()[0];
                 }
+                if (n instanceof CompositeNode) {
+                    return ((CompositeNode) n).getNodes()[0];
+                }
                 return n;
             }).collect(Collectors.toMap(n -> (String) n.getMetaData().get("UniqueId"), node -> node, (k1, k2) -> k1));
 
-            for (Entry<String, mxICell> node : layedout.entrySet()) {
+            for (String node : sort(layedout.keySet())) {
 
-                Node found = nodesById.get(node.getKey());
+                Node found = nodesById.get(node);
                 if (found == null) {
                     continue;
                 }
@@ -201,64 +205,239 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
 
                     mxICell attachedTo = layedout.get(((BoundaryEventNode) found).getAttachedToNodeId());
 
-                    int x = Double.valueOf(attachedTo.getGeometry().getX()).intValue() + 20;
+                    if (attachedTo != null) {
+                        int x = Double.valueOf(attachedTo.getGeometry().getX()).intValue() + 20;
 
-                    x = x + (Integer) found.getMetaData().get("width") / 2;
+                        x = x + (Integer) found.getMetaData().get("width") / 2;
 
-                    int y = Double.valueOf(attachedTo.getGeometry().getY()).intValue() + 20;
-                    y = y + (Integer) found.getMetaData().get("height") - 10;
+                        int y = Double.valueOf(attachedTo.getGeometry().getY()).intValue() + 20;
+                        y = y + (Integer) found.getMetaData().get("height") - 10;
 
-                    found.getMetaData().put("x", x);
-                    found.getMetaData().put("y", y);
+                        found.getMetaData().put("x", x);
+                        found.getMetaData().put("y", y);
+                    } else {
+                        Node composite = processCompositeNode(((BoundaryEventNode) found).getAttachedToNodeId(), layedout);
+                        if (composite != null) {
+                            int x = x(composite);
+
+                            x = x + (Integer) composite.getMetaData().get("width") / 6;
+
+                            int y = y(composite);
+                            y = y + (Integer) composite.getMetaData().get("height") - 10;
+
+                            found.getMetaData().put("x", x);
+                            found.getMetaData().put("y", y);
+
+                            for (Connection conn : found.getOutgoingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE)) {
+
+                                followAndCreateCoordinatesForConnection(conn, layedout, composite);
+                            }
+                            continue;
+                        }
+                    }
                 } else {
-                    found.getMetaData().put("x", Double.valueOf(node.getValue().getGeometry().getX()).intValue() + 20);
-                    found.getMetaData().put("y", Double.valueOf(node.getValue().getGeometry().getY()).intValue() + 20);
+                    found.getMetaData().put("x", Double.valueOf(layedout.get(node).getGeometry().getX()).intValue() + 20);
+                    found.getMetaData().put("y", Double.valueOf(layedout.get(node).getGeometry().getY()).intValue() + 20);
                 }
 
                 for (Connection conn : found.getOutgoingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE)) {
 
-                    String toId = (String) conn.getTo().getMetaData().get("UniqueId");
-                    mxICell to = layedout.get(toId);
-
-                    if (to == null) {
-                        if (conn.getTo() instanceof CompositeNodeEnd) {
-                            toId = (String) ((Node) ((Node) conn.getTo().getParentContainer()).getParentContainer())
-                                    .getOutgoingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE).get(0).getTo()
-                                    .getMetaData().get("UniqueId");
-                            to = layedout.get(toId);
-                        }
-                        if (to == null) {
-                            continue;
-                        }
-                    }
-
-                    List<Integer> xs = new ArrayList<Integer>();
-
-                    xs.add((Integer) found.getMetaData().get("x") + (Integer) found.getMetaData().get("width"));
-                    xs.add(Double.valueOf(to.getGeometry().getX()).intValue() + 20);
-
-                    List<Integer> ys = new ArrayList<Integer>();
-
-                    ys.add((Integer) found.getMetaData().get("y") + ((Integer) found.getMetaData().get("height") / 2));
-                    ys.add(Double.valueOf(to.getGeometry().getY()).intValue() + 20
-                            + (HEIGHTS.getOrDefault(extractNodeClass(conn.getTo()), 50) / 2));
-                    conn.getMetaData().put("x", xs);
-                    conn.getMetaData().put("y", ys);
-
-                    if (ys.size() == 2 && ys.get(0) != ys.get(1)) {
-                        if (found instanceof BoundaryEventNode) {
-                            xs.add(1, xs.get(1) - 30);
-                            ys.add(1, ys.get(0));
-                        } else {
-
-                            xs.add(1, xs.get(0) + 30);
-                            ys.add(1, ys.get(1));
-                        }
-                    }
+                    createCoordinatesForConnection(conn, layedout, found);
                 }
 
             }
+
+            workFlowProcess.getNodesRecursively().stream()
+                    .filter(n -> n instanceof CompositeNode && !(n instanceof EventSubProcessNode))
+                    .forEach(n -> processCompositeNode(n, layedout));
         }
+    }
+
+    private void followAndCreateCoordinatesForConnection(Connection conn, Map<String, mxICell> layedout, Node found) {
+
+        Node node = conn.getTo();
+
+        node.getMetaData().put("x", x(node) + x(found));
+        node.getMetaData().put("y", y(node) + y(found) + height(found));
+
+        List<Integer> xs = new ArrayList<Integer>();
+
+        xs.add((Integer) conn.getFrom().getMetaData().get("x") + (Integer) conn.getFrom().getMetaData().get("width"));
+        xs.add(x(node));
+
+        List<Integer> ys = new ArrayList<Integer>();
+
+        ys.add((Integer) conn.getFrom().getMetaData().get("y") + ((Integer) conn.getFrom().getMetaData().get("height") / 2));
+        ys.add(y(node) + (height(node) / 2));
+        conn.getMetaData().put("x", xs);
+        conn.getMetaData().put("y", ys);
+
+        for (Connection conn2 : node.getOutgoingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE)) {
+
+            followAndCreateCoordinatesForConnection(conn2, layedout, found);
+        }
+    }
+
+    public List<String> sort(Set<String> ids) {
+        List<String> list = new ArrayList<>(ids);
+        list.sort((id1, id2) -> {
+
+            Node node1 = workFlowProcess.getNodesRecursively().stream()
+                    .filter(n -> n.getMetaData().getOrDefault("UniqueId", "").equals(id1))
+                    .findFirst().get();
+            Node node2 = workFlowProcess.getNodesRecursively().stream()
+                    .filter(n -> n.getMetaData().getOrDefault("UniqueId", "").equals(id2))
+                    .findFirst().get();
+
+            if (node1 instanceof BoundaryEventNode && node2 instanceof BoundaryEventNode) {
+                return 0;
+            } else if (node1 instanceof BoundaryEventNode && !(node2 instanceof BoundaryEventNode)) {
+                return 1;
+            } else if (!(node1 instanceof BoundaryEventNode) && node2 instanceof BoundaryEventNode) {
+                return -1;
+            } else {
+                return 0;
+            }
+
+        });
+
+        return list;
+    }
+
+    protected Node processCompositeNode(String id, Map<String, mxICell> layedout) {
+
+        Node node = workFlowProcess.getNodesRecursively().stream()
+                .filter(n -> n instanceof CompositeNode && n.getMetaData().getOrDefault("UniqueId", "").equals(id))
+                .findFirst().orElse(null);
+
+        if (node == null) {
+            return null;
+        }
+
+        return processCompositeNode(node, layedout);
+    }
+
+    protected Node processCompositeNode(Node node, Map<String, mxICell> layedout) {
+        if (hasCoordinates(node)) {
+            return node;
+        }
+        Node startNode = Stream.of(((CompositeNode) node).getNodes()).filter(n -> n instanceof StartNode)
+                .findFirst().orElse(null);
+        Node endNode = Stream.of(((CompositeNode) node).getNodes()).filter(n -> n instanceof EndNode).findFirst()
+                .orElse(null);
+
+        if (startNode == null || endNode == null) {
+            return null;
+        }
+
+        int x = x(startNode);
+        int y = y(startNode);
+
+        int minY = Stream.of(((CompositeNode) node).getNodes()).mapToInt(n -> y(n)).min().getAsInt();
+        int maxY = Stream.of(((CompositeNode) node).getNodes()).mapToInt(n -> y(n) + height(n)).min().getAsInt();
+
+        int compositeX = x - 30;
+        int compositeY = y - 50 - (maxY - minY) / 2;
+
+        int width = x(endNode) + width(endNode) - compositeX + 30;
+
+        node.getMetaData().put("x", compositeX);
+        node.getMetaData().put("y", compositeY);
+        node.getMetaData().put("width", width);
+        node.getMetaData().put("height", maxY - minY + 150);
+
+        for (Node n : ((CompositeNode) node).getNodes()) {
+            n.getMetaData().put("x", x(n) - compositeX);
+            n.getMetaData().put("y", y(n) - compositeY);
+
+        }
+
+        for (Connection conn : node.getOutgoingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE)) {
+            createCoordinatesForConnection(conn, layedout, node);
+        }
+
+        List<Node> incoming = node.getIncomingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE).stream()
+                .map(connection -> connection.getFrom()).collect(Collectors.toList());
+        incoming.forEach(n -> {
+            for (Connection conn : n.getOutgoingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE)) {
+                List<Integer> xs = new ArrayList<Integer>();
+
+                xs.add((Integer) n.getMetaData().get("x") + (Integer) n.getMetaData().get("width"));
+                xs.add(x(node));
+
+                List<Integer> ys = new ArrayList<Integer>();
+
+                ys.add((Integer) n.getMetaData().get("y") + ((Integer) n.getMetaData().get("height") / 2));
+                ys.add(y(node) + (height(node) / 2));
+                conn.getMetaData().put("x", xs);
+                conn.getMetaData().put("y", ys);
+
+                if (ys.size() == 2 && ys.get(0) != ys.get(1)) {
+                    if (node instanceof BoundaryEventNode) {
+                        xs.add(1, xs.get(1) - 30);
+                        ys.add(1, ys.get(0));
+                    } else {
+
+                        xs.add(1, xs.get(0) + 30);
+                        ys.add(1, ys.get(1));
+                    }
+                }
+            }
+        });
+        return node;
+    }
+
+    protected void createCoordinatesForConnection(Connection conn, Map<String, mxICell> layedout, Node node) {
+        createCoordinatesForConnection(conn, layedout, node, 0, 0);
+    }
+
+    protected void createCoordinatesForConnection(Connection conn, Map<String, mxICell> layedout, Node node, int addToX,
+            int addToY) {
+        String toId = (String) conn.getTo().getMetaData().get("UniqueId");
+        mxICell to = layedout.get(toId);
+
+        if (to == null) {
+            if (conn.getTo() instanceof CompositeNodeEnd) {
+                toId = (String) ((Node) ((Node) conn.getTo().getParentContainer()).getParentContainer())
+                        .getOutgoingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE).get(0).getTo()
+                        .getMetaData().get("UniqueId");
+                to = layedout.get(toId);
+            }
+            if (to == null) {
+                return;
+            }
+        }
+
+        List<Integer> xs = new ArrayList<Integer>();
+
+        xs.add((Integer) node.getMetaData().get("x") + (Integer) node.getMetaData().get("width"));
+        xs.add(Double.valueOf(to.getGeometry().getX()).intValue() + 20);
+
+        List<Integer> ys = new ArrayList<Integer>();
+
+        ys.add((Integer) node.getMetaData().get("y") + ((Integer) node.getMetaData().get("height") / 2));
+        ys.add(Double.valueOf(to.getGeometry().getY()).intValue() + 20
+                + (HEIGHTS.getOrDefault(extractNodeClass(conn.getTo()), 50) / 2));
+
+        if (ys.size() == 2 && ys.get(0) != ys.get(1)) {
+            if (node instanceof BoundaryEventNode) {
+                xs.add(1, xs.get(1) - 30);
+                ys.add(1, ys.get(0));
+            } else {
+
+                xs.add(1, xs.get(0) + 30);
+                ys.add(1, ys.get(1));
+            }
+        }
+
+        if (addToX > 0) {
+            xs = xs.stream().map(x -> x + addToX).collect(Collectors.toList());
+        }
+        if (addToY > 0) {
+            ys = ys.stream().map(y -> y + addToY).collect(Collectors.toList());
+        }
+        conn.getMetaData().put("x", xs);
+        conn.getMetaData().put("y", ys);
     }
 
     public Class<?> extractNodeClass(Node node) {
@@ -272,6 +451,8 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
     @Override
     public String generate() {
         try {
+            createLayoutIfMissing();
+
             SVGGraphics2D g2 = new SVGGraphics2D(2000, 1000);
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -292,7 +473,7 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
             return writer.toString();
         } catch (Throwable e) {
             LOGGER.warn("Unable to generate process image due to " + e.getMessage());
-            LOGGER.debug("Process image generation details", e);
+            LOGGER.info("Process image generation details", e);
             return null;
         }
     }
@@ -473,14 +654,10 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
         Ellipse2D.Double end = new Ellipse2D.Double(x, y, width, height);
         g2.draw(end);
         g2.setColor(new Color(255, 255, 255));
-        g2.fill(end);
 
         Ellipse2D.Double innerend = new Ellipse2D.Double(x + 5, y + 5, width - 10, height - 10);
         g2.setColor(new Color(0, 0, 0));
         g2.draw(innerend);
-        g2.setColor(new Color(255, 255, 255));
-        g2.fill(innerend);
-        g2.setColor(new Color(0, 0, 0));
 
         if ("message".equals(node.getMetaData().get("EventType"))) {
             drawCenteredIcon(g2, end.getBounds(), "MessageEventDefinition.png");

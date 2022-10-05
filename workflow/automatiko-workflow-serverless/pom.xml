@@ -70,10 +70,6 @@
     </dependency>
     <dependency>
       <groupId>io.serverlessworkflow</groupId>
-      <artifactId>serverlessworkflow-diagram</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.serverlessworkflow</groupId>
       <artifactId>serverlessworkflow-util</artifactId>
     </dependency>
 
