@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.codegen.process.image.SvgBpmnProcessImageGenerator;
 import io.automatiko.engine.services.io.ClassPathResource;
@@ -19,6 +20,7 @@ import io.automatiko.engine.workflow.bpmn2.BpmnProcessCompiler;
 import io.automatiko.engine.workflow.builder.ParallelSplitNodeBuilder;
 import io.automatiko.engine.workflow.builder.RestServiceNodeBuilder;
 import io.automatiko.engine.workflow.builder.WorkflowBuilder;
+import io.automatiko.engine.workflow.serverless.parser.ServerlessWorkflowParser;
 
 public class SvgProcessImageGeneratorTest {
 
@@ -216,6 +218,54 @@ public class SvgProcessImageGeneratorTest {
         psplit.then().user("two").then().end("done");
 
         SvgBpmnProcessImageGenerator generator = new SvgBpmnProcessImageGenerator(builder.get());
+
+        String svg = generator.generate();
+
+        assertThat(svg).isNotEmpty();
+
+        Files.write(Paths.get("target", "test.svg"), svg.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void testServerlessWorkflowImageGeneration() throws IOException {
+        ClassPathResource r = new ClassPathResource("serverless/newpatient.sw.json");
+        ServerlessWorkflowParser workflowParser = new ServerlessWorkflowParser();
+        Process p = workflowParser.parse(r.getReader());
+        ((WorkflowProcess) p).getMetaData().put("IsServerlessWorkflow", true);
+
+        SvgBpmnProcessImageGenerator generator = new SvgBpmnProcessImageGenerator(((WorkflowProcess) p));
+
+        String svg = generator.generate();
+
+        assertThat(svg).isNotEmpty();
+
+        Files.write(Paths.get("target", "test.svg"), svg.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void testServerlessWorkflowImageGenerationNoBoundary() throws IOException {
+        ClassPathResource r = new ClassPathResource("serverless/event-state-middle-greeting.sw.json");
+        ServerlessWorkflowParser workflowParser = new ServerlessWorkflowParser();
+        Process p = workflowParser.parse(r.getReader());
+        ((WorkflowProcess) p).getMetaData().put("IsServerlessWorkflow", true);
+
+        SvgBpmnProcessImageGenerator generator = new SvgBpmnProcessImageGenerator(((WorkflowProcess) p));
+
+        String svg = generator.generate();
+
+        assertThat(svg).isNotEmpty();
+
+        Files.write(Paths.get("target", "test.svg"), svg.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void testServerlessWorkflowImageGenerationSwitch() throws IOException {
+        ClassPathResource r = new ClassPathResource("serverless/parallel-state.sw.json");
+        ServerlessWorkflowParser workflowParser = new ServerlessWorkflowParser();
+        Process p = workflowParser.parse(r.getReader());
+        ((WorkflowProcess) p).getMetaData().put("IsServerlessWorkflow", true);
+
+        SvgBpmnProcessImageGenerator generator = new SvgBpmnProcessImageGenerator(((WorkflowProcess) p));
 
         String svg = generator.generate();
 

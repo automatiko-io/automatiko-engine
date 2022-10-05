@@ -1,0 +1,102 @@
+{
+  "id": "newpatient",
+  "name": "Onboard a new patient",
+  "description": "Adds a new Patient and assigns a doctor",
+  "specVersion": "0.8",
+  "start":"OnboardNewPatient",
+  "functions": [
+    {
+      "name": "storeNewPatient",
+      "operation": "api/swagger.json#add"
+    },
+    {
+      "name": "assignDoctor",
+      "operation": "api/swagger.json#assign"
+    }
+  ],
+  "retries": [
+    {
+      "name": "NotFoundStrategy",
+      "delay": "PT1S",
+      "maxAttempts": 3
+    }
+  ],
+  "errors": [
+    {
+      "name": "NotFound",
+      "code": "404"
+    }
+  ],
+  "events": [
+    {
+      "name": "CarBidEvent",
+      "type": "carBidMadeType",
+      "source": "carBidEventSource",
+      "kind" : "produced"
+    }
+  ],
+  "states":[
+    {
+      "name":"OnboardNewPatient",
+      "type":"operation",
+      "actions":[
+        {
+          "name": "store patient",
+          "functionRef": {
+            "refName": "storeNewPatient"
+          }
+        },
+        {
+          "name": "assign doctor",
+          "functionRef": {
+            "refName": "assignDoctor"
+          }
+        }
+      ],
+      "onErrors": [
+        {
+          "errorRef": "NotFound",          
+          "transition": {
+            "nextState":"AddNotFoundInfo",
+	      	"produceEvents" :  [{
+		       "eventRef": "CarBidEvent",
+		       "data": "${ . }"
+		   },{
+		       "eventRef": "CarBidEvent",
+		       "data": "${ {patient : .name} }"
+		   }]
+	      }         
+        }
+      ],
+      "end": {
+		    "terminate": true,
+		    "produceEvents": [{
+		        "eventRef": "CarBidEvent",
+		        "data": "${ .doctor }"
+		    }]
+		}
+    },
+    {
+      "name": "AddNotFoundInfo",
+      "type": "inject",
+      "data": {
+        "errormessage": "Invalid Patient Data"
+      },
+      "transition": {
+      	"nextState":"Done",
+      	"produceEvents" :  [{
+	       "eventRef": "CarBidEvent",
+	       "data": "${ . }"
+	   }]
+      }
+    },
+    {
+      "name": "Done",
+      "type": "inject",
+      "data": {
+        "completionMessage": "Failure"
+      },
+      "end": true
+    }
+  ]
+}
