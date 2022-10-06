@@ -37,4 +37,15 @@ public class EventSplitNodeBuilder extends AbstractNodeBuilder {
     protected Node getNode() {
         return this.node;
     }
+
+    /**
+     * Sets custom attribute for this node
+     * 
+     * @param name name of the attribute, must not be null
+     * @param value value of the attribute, must not be null
+     * @return the builder
+     */
+    public EventSplitNodeBuilder customAttribute(String name, Object value) {
+        return (EventSplitNodeBuilder) super.customAttribute(name, value);
+    }
 }

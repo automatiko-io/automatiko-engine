@@ -154,6 +154,20 @@ public class WorkflowBuilder {
     }
 
     /**
+     * Sets custom attribute for this workflow definition
+     * 
+     * @param name name of the attribute, must not be null
+     * @param value value of the attribute, must not be null
+     * @return the builder
+     */
+    public WorkflowBuilder customAttribute(String name, Object value) {
+        if (name != null && value != null) {
+            process.setMetaData(name, value);
+        }
+        return this;
+    }
+
+    /**
      * Adds tags to the workflow definition
      * 
      * @param tags non null tags to be assigned to the workflow definition

@@ -171,6 +171,17 @@ public class EndWithMessageNodeBuilder extends AbstractNodeBuilder {
     }
 
     /**
+     * Endpoint URI to be used when using Apache Camel integration
+     * 
+     * @param uri end point uri
+     * @return the builder
+     */
+    public EndWithMessageNodeBuilder endpointUri(String uri) {
+        node.setMetaData("url", uri);
+        return this;
+    }
+
+    /**
      * Completes given workflow path and returns the builder
      * 
      * @return the builder
@@ -182,5 +193,16 @@ public class EndWithMessageNodeBuilder extends AbstractNodeBuilder {
     @Override
     protected Node getNode() {
         return this.node;
+    }
+
+    /**
+     * Sets custom attribute for this node
+     * 
+     * @param name name of the attribute, must not be null
+     * @param value value of the attribute, must not be null
+     * @return the builder
+     */
+    public EndWithMessageNodeBuilder customAttribute(String name, Object value) {
+        return (EndWithMessageNodeBuilder) super.customAttribute(name, value);
     }
 }

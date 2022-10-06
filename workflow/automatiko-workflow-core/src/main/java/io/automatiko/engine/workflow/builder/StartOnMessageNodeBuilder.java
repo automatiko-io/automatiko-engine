@@ -113,6 +113,17 @@ public class StartOnMessageNodeBuilder extends AbstractNodeBuilder {
     }
 
     /**
+     * Endpoint URI to be used when using Apache Camel integration
+     * 
+     * @param uri end point uri
+     * @return the builder
+     */
+    public StartOnMessageNodeBuilder endpointUri(String uri) {
+        node.setMetaData("url", uri);
+        return this;
+    }
+
+    /**
      * Name of the data object the message payload should be mapped to
      * 
      * @param name data object name
@@ -222,6 +233,17 @@ public class StartOnMessageNodeBuilder extends AbstractNodeBuilder {
     @Override
     protected Node getNode() {
         return this.node;
+    }
+
+    /**
+     * Sets custom attribute for this node
+     * 
+     * @param name name of the attribute, must not be null
+     * @param value value of the attribute, must not be null
+     * @return the builder
+     */
+    public StartOnMessageNodeBuilder customAttribute(String name, Object value) {
+        return (StartOnMessageNodeBuilder) super.customAttribute(name, value);
     }
 
 }

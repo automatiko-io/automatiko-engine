@@ -153,6 +153,13 @@ public abstract class AbstractNodeBuilder {
         return thenJoin(name, Join.TYPE_AND);
     }
 
+    protected AbstractNodeBuilder customAttribute(String name, Object value) {
+        if (name != null && value != null) {
+            getNode().setMetaData(name, value);
+        }
+        return this;
+    }
+
     private JoinNodeBuilder thenJoin(String name, int type) {
         workflowBuilder.putOnContext(getNode());
         workflowBuilder.putBuilderOnContext(null);
