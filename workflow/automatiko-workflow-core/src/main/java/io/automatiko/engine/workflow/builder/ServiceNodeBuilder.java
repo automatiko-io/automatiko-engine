@@ -692,4 +692,15 @@ public class ServiceNodeBuilder extends AbstractNodeBuilder {
 
         return this.node;
     }
+
+    /**
+     * Sets custom attribute for this node
+     * 
+     * @param name name of the attribute, must not be null
+     * @param value value of the attribute, must not be null
+     * @return the builder
+     */
+    public ServiceNodeBuilder customAttribute(String name, Object value) {
+        return (ServiceNodeBuilder) super.customAttribute(name, value);
+    }
 }

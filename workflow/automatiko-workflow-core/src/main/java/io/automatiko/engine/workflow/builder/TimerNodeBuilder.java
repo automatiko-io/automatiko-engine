@@ -102,4 +102,15 @@ public class TimerNodeBuilder extends AbstractNodeBuilder {
     protected Node getNode() {
         return this.node;
     }
+
+    /**
+     * Sets custom attribute for this node
+     * 
+     * @param name name of the attribute, must not be null
+     * @param value value of the attribute, must not be null
+     * @return the builder
+     */
+    public TimerNodeBuilder customAttribute(String name, Object value) {
+        return (TimerNodeBuilder) super.customAttribute(name, value);
+    }
 }

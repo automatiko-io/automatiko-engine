@@ -25,4 +25,15 @@ public class JoinNodeBuilder extends AbstractNodeBuilder {
     protected Node getNode() {
         return this.node;
     }
+
+    /**
+     * Sets custom attribute for this node
+     * 
+     * @param name name of the attribute, must not be null
+     * @param value value of the attribute, must not be null
+     * @return the builder
+     */
+    public JoinNodeBuilder customAttribute(String name, Object value) {
+        return (JoinNodeBuilder) super.customAttribute(name, value);
+    }
 }

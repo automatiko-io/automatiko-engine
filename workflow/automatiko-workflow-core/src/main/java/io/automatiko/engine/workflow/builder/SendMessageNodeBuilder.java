@@ -185,6 +185,17 @@ public class SendMessageNodeBuilder extends AbstractNodeBuilder {
     }
 
     /**
+     * Endpoint URI to be used when using Apache Camel integration
+     * 
+     * @param uri end point uri
+     * @return the builder
+     */
+    public SendMessageNodeBuilder endpointUri(String uri) {
+        node.setMetaData("url", uri);
+        return this;
+    }
+
+    /**
      * Instructs to repeat this node based on the input collection. This will create new node for each element in the
      * collection.
      * <br/>
@@ -300,5 +311,16 @@ public class SendMessageNodeBuilder extends AbstractNodeBuilder {
         }
 
         return this.node;
+    }
+
+    /**
+     * Sets custom attribute for this node
+     * 
+     * @param name name of the attribute, must not be null
+     * @param value value of the attribute, must not be null
+     * @return the builder
+     */
+    public SendMessageNodeBuilder customAttribute(String name, Object value) {
+        return (SendMessageNodeBuilder) super.customAttribute(name, value);
     }
 }

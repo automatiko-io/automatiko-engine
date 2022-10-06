@@ -83,6 +83,17 @@ public class EndWithErrorNodeBuilder extends AbstractNodeBuilder {
         return this.node;
     }
 
+    /**
+     * Sets custom attribute for this node
+     * 
+     * @param name name of the attribute, must not be null
+     * @param value value of the attribute, must not be null
+     * @return the builder
+     */
+    public EndWithErrorNodeBuilder customAttribute(String name, Object value) {
+        return (EndWithErrorNodeBuilder) super.customAttribute(name, value);
+    }
+
     @SuppressWarnings("unchecked")
     private void addToDataInputs(String name, String type) {
         ((Map<String, String>) this.node.getMetaData(Metadata.DATA_INPUTS)).put(name, type);
