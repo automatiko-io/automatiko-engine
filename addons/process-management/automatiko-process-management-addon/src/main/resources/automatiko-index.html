@@ -8,15 +8,12 @@
 <!-- Optional JavaScript -->
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->
 
-<link rel="stylesheet"
-	href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-<script
-	src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script
-	src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-<script
-	src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/automatiko/css/bootstrap.min.css">
+<link rel="stylesheet" href="/automatiko/css/all.css">
+<script src="/automatiko/js/jquery.min.js"></script>
+<script src="/automatiko/js/popper.min.js"></script>
+<script src="/automatiko/js/bootstrap.min.js"></script>
+
 <!-- optional script that can allow to use more advanced authorization setup such as keycloak etc -->
 <script src="/js/automatiko-authorization.js"></script>
 
@@ -360,6 +357,7 @@
 	
 	let showProcessImage = function(src) {
 		$('#processImageDisplay').attr('src', src);
+		$('#processImageDisplayLink').attr('href', src);
 		$('#imageModal').modal();
 	}
 
@@ -376,6 +374,7 @@
 		$("#piImage").replaceWith(
 				'<object id="piImage" data="' + instanceData.image
 						+ '" height="400" width="90%"></object>');
+		$('#piImageLink').attr('href', instanceData.image);
 		
 		if (instanceData.state === 1 || instanceData.state === 5) { 
 		$("#piActions-abort").attr('onclick', 'abortInstance(\''
@@ -656,7 +655,7 @@
 									+ '</a>'
 									
 									+ '  </div>'
-									+ '<button type="button" class="btn btn-dark btn-sm float-right" title="Import workflow instance" data-toggle="modal" data-target="#uploadModal" onclick="selectProcessForImport(\'' + item.id +'\')"><i class="fa fa-upload"></i></button>'
+									+ '<button type="button" class="btn btn-dark btn-sm float-right" title="Import workflow instance" data-toggle="modal" data-target="#uploadModal" onclick="selectProcessForImport(\'' + item.id +'\')"><i class="fas fa-upload"></i></button>'
 									+ '</div>'									
 									+ '<div id="expanded_' + item.id +'"></div>'
 									+ '</div>');
@@ -778,6 +777,7 @@
 							<div class="col-12">
 								<object id="piImage" type="image/svg+xml" data="" height="400"
 									width="90%"> missing image </object>
+								<a id="piImageLink" href="#"  target="_blank"><span class="float-right" style="color:black">Open in new window&nbsp;</span></a>
 							</div>
 						</div>
 						<div class="row">
@@ -885,7 +885,9 @@
 				</div>
 				<div class="modal-body">
 					<img id="processImageDisplay" src="" alt="Missing process image" />
-				</div>						
+				</div>
+				<hr/>
+				<a id="processImageDisplayLink" href="#"  target="_blank"><span class="float-right" style="color:black">Open in new window&nbsp;</span></a>						
 			</div>
 		</div>
 	</div>
