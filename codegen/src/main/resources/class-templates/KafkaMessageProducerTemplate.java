@@ -5,11 +5,19 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
+import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.api.runtime.process.ProcessInstance;
+import io.automatiko.engine.api.workflow.ProcessInstanceInErrorException;
 import io.automatiko.engine.workflow.audit.BaseAuditEntry;
 import io.automatiko.engine.workflow.process.instance.WorkflowProcessInstance;
+import io.automatiko.engine.workflow.process.instance.impl.WorkflowProcessInstanceImpl;
 import io.automatiko.engine.api.audit.AuditEntry;
 import io.automatiko.engine.api.event.DataEvent;
 
@@ -47,8 +55,8 @@ public class MessageProducer {
 		
     }
     
-	public void produce(ProcessInstance pi, $Type$ eventData) {
-	    metrics.messageProduced(CONNECTOR, MESSAGE, pi.getProcess());
+	public void produce(ProcessInstance pi, NodeInstance nodeInstance, $Type$ eventData) {
+	    
 	    String key = key(pi);
 	    if (key == null) {
 	        key = ((WorkflowProcessInstance) pi).getCorrelationKey();
@@ -81,11 +89,35 @@ public class MessageProducer {
             metadata = builder.build();
         }
         
-        emitter.send(io.smallrye.reactive.messaging.kafka.KafkaRecord.of(key, log(key, marshall(pi, eventData))).addMetadata(metadata));
-
-        Supplier<AuditEntry> entry = () -> BaseAuditEntry.messaging(pi, CONNECTOR, MESSAGE, eventData)
-                .add("message", "Workflow instance sent message");
-        auditor.publish(entry);
+        CompletableFuture<Boolean> done = new CompletableFuture<>();
+        Supplier<CompletionStage<Void>> ack = () -> {
+            LOGGER.debug("Message {} was successfully publishing by connector {}", MESSAGE, CONNECTOR);
+            done.complete(true);
+            metrics.messageProduced(CONNECTOR, MESSAGE, pi.getProcess());
+            Supplier<AuditEntry> entry = () -> BaseAuditEntry.messaging(pi, CONNECTOR, MESSAGE, eventData).add("message",
+                    "Workflow instance sent message");
+            auditor.publish(entry);
+            return CompletableFuture.completedStage(null);
+        };
+        Function<Throwable, CompletionStage<Void>> nack = (t) -> {
+            LOGGER.debug("Message {} publishing by connector {} failed due to {} ", MESSAGE, CONNECTOR, t.getMessage());
+            ((WorkflowProcessInstanceImpl) pi)
+                    .setErrorState((io.automatiko.engine.workflow.process.instance.NodeInstance) nodeInstance, t);
+            done.complete(false);
+            metrics.messageProducedFailure(CONNECTOR, MESSAGE, pi.getProcess());
+            return CompletableFuture.completedStage(null);
+        };
+        
+        emitter.send(io.smallrye.reactive.messaging.kafka.KafkaRecord.of(key, log(key, marshall(pi, eventData))).withAck(ack).withNack(nack).addMetadata(metadata));
+        
+        try {
+            boolean success = done.toCompletableFuture().get(30, TimeUnit.SECONDS);
+            if (!success) {
+                throw new ProcessInstanceInErrorException(pi.getId());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed at sending message (connector=" + CONNECTOR + ", message=" + MESSAGE + ")", e);
+        }
     }
 	    
 	private String marshall(ProcessInstance pi, $Type$ eventData) {

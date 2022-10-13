@@ -4,6 +4,7 @@ package com.myspace.demo;
 import java.util.Optional;
 import java.util.TimeZone;
 
+import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.api.runtime.process.ProcessInstance;
 import io.automatiko.engine.workflow.process.instance.WorkflowProcessInstance;
 import io.automatiko.engine.api.event.DataEvent;
@@ -19,7 +20,7 @@ public class MessageProducer {
     @javax.inject.Inject
     EventSource eventSource;
     
-    public void produce(ProcessInstance pi, $Type$ eventData) {
+    public void produce(ProcessInstance pi, NodeInstance nodeInstance, $Type$ eventData) {
         
         eventSource.produce("$destination$", "$sourcePrefix$" + "/" + id(pi), marshall(pi, eventData), subject(pi));
     }

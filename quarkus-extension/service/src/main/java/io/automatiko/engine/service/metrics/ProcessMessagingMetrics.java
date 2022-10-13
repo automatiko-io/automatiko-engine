@@ -125,6 +125,22 @@ public class ProcessMessagingMetrics {
         counter.increment();
     }
 
+    public void messageProducedFailure(String connector, String message, Process process) {
+        if (!enabled.orElse(false)) {
+            return;
+        }
+
+        //"Displays total count of produced messages from given process"
+        Counter counter = registry.get().counter("automatiko.process.messages.produced.failed.count",
+                Arrays.asList(Tag.of("application", application.orElse("")), Tag.of("version", version.orElse("")),
+                        Tag.of("processId", process.getId()),
+                        Tag.of("processName", nonNull(process.getName())),
+                        Tag.of("processVersion", nonNull(process.getVersion())),
+                        Tag.of("message", message),
+                        Tag.of("connector", connector)));
+        counter.increment();
+    }
+
     private String nonNull(String value) {
         if (value == null) {
             return "";

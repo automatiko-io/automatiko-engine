@@ -56,6 +56,11 @@
       <artifactId>smallrye-reactive-messaging-in-memory</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>io.automatiko.quarkus</groupId>
+      <artifactId>automatiko-test-support</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <resources>
