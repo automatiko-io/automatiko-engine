@@ -16,38 +16,38 @@ import io.automatiko.engine.workflow.process.core.impl.ExtendedNodeImpl;
 
 public abstract class ExtendedNodeInstanceImpl extends NodeInstanceImpl {
 
-	private static final long serialVersionUID = 510l;
+    private static final long serialVersionUID = 510l;
 
-	public ExtendedNodeImpl getExtendedNode() {
-		return (ExtendedNodeImpl) getNode();
-	}
+    public ExtendedNodeImpl getExtendedNode() {
+        return (ExtendedNodeImpl) getNode();
+    }
 
-	public void internalTrigger(NodeInstance from, String type) {
-		triggerTime = new Date();
-		triggerEvent(EVENT_NODE_ENTER);
-	}
+    public void internalTrigger(NodeInstance from, String type) {
+        triggerTime = new Date();
+        triggerEvent(EVENT_NODE_ENTER);
+    }
 
-	public void triggerCompleted(boolean remove) {
-		triggerCompleted(CONNECTION_DEFAULT_TYPE, remove);
-	}
+    public void triggerCompleted(boolean remove) {
+        triggerCompleted(CONNECTION_DEFAULT_TYPE, remove);
+    }
 
-	public void triggerCompleted(String type, boolean remove) {
-		triggerEvent(EVENT_NODE_EXIT);
-		super.triggerCompleted(type, remove);
-	}
+    public void triggerCompleted(String type, boolean remove) {
+        triggerEvent(EVENT_NODE_EXIT);
+        super.triggerCompleted(type, remove);
+    }
 
-	protected void triggerEvent(String type) {
-		ExtendedNodeImpl extendedNode = getExtendedNode();
-		if (extendedNode == null) {
-			return;
-		}
-		List<ProcessAction> actions = extendedNode.getActions(type);
-		if (actions != null) {
-			for (ProcessAction processAction : actions) {
-				Action action = (Action) processAction.getMetaData(ACTION);
-				executeAction(action);
-			}
-		}
-	}
+    protected void triggerEvent(String type) {
+        ExtendedNodeImpl extendedNode = getExtendedNode();
+        if (extendedNode == null) {
+            return;
+        }
+        List<ProcessAction> actions = extendedNode.getActions(type);
+        if (actions != null) {
+            for (ProcessAction processAction : actions) {
+                Action action = (Action) processAction.getMetaData(ACTION);
+                executeAction(action);
+            }
+        }
+    }
 
 }

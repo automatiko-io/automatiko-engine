@@ -210,7 +210,9 @@ public class TriggerMetaData {
         }
 
         MethodCallExpr producerMethodCall = new MethodCallExpr(new NameExpr("producer_" + node.getId()), "produce")
-                .addArgument(new MethodCallExpr(new NameExpr("context"), "getProcessInstance")).addArgument(variable);
+                .addArgument(new MethodCallExpr(new NameExpr("context"), "getProcessInstance"))
+                .addArgument(new MethodCallExpr(new NameExpr("context"), "getNodeInstance"))
+                .addArgument(variable);
         actionBody.addStatement(producerMethodCall);
         return new LambdaExpr(new Parameter(new UnknownType(), KCONTEXT_VAR), // (kcontext) ->
                 actionBody);

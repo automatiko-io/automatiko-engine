@@ -1213,7 +1213,7 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
     }
 
     @Override
-    public String setErrorState(NodeInstance nodeInstanceInError, Exception e) {
+    public String setErrorState(NodeInstance nodeInstanceInError, Throwable e) {
         String errorId = UUID.randomUUID().toString();
         this.nodeIdInError = nodeInstanceInError.getNodeDefinitionId();
         Throwable rootException = getRootException(e);

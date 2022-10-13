@@ -27,6 +27,7 @@ import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.runtime.process.NodeInstance;
 import io.automatiko.engine.api.runtime.process.NodeInstanceContainer;
 import io.automatiko.engine.api.runtime.process.NodeInstanceState;
+import io.automatiko.engine.api.workflow.ProcessInstanceInErrorException;
 import io.automatiko.engine.workflow.base.core.Context;
 import io.automatiko.engine.workflow.base.core.ContextContainer;
 import io.automatiko.engine.workflow.base.core.context.ProcessContext;
@@ -289,6 +290,8 @@ public abstract class NodeInstanceImpl
         }
         try {
             internalTrigger(from, type);
+        } catch (ProcessInstanceInErrorException e) {
+            return;
         } catch (Exception e) {
             String errorId = captureError(e);
             internalChangeState(NodeInstanceState.Failed);
@@ -321,6 +324,8 @@ public abstract class NodeInstanceImpl
         context.setProcessInstance(getProcessInstance());
         try {
             action.execute(context);
+        } catch (ProcessInstanceInErrorException e) {
+            throw e;
         } catch (Exception e) {
             String exceptionName = e.getClass().getName();
             ExceptionScopeInstance exceptionScopeInstance = (ExceptionScopeInstance) resolveContextInstance(
