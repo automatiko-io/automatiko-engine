@@ -25,7 +25,6 @@ import io.automatiko.engine.api.event.DataEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 
-import org.acme.home.ClimateMessageProducer_10.MqttOutMessage;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
