@@ -97,4 +97,17 @@ public abstract class JsonModel implements Model {
     public void setMetadata(InstanceMetadata metadata) {
         data.set("metadata", MAPPER.valueToTree(metadata));
     }
+
+    public void addWorkflowdata(String name, JsonNode workflowData) {
+        if ("workflowdata".equals(name)) {
+            setWorkflowdata(workflowData);
+        } else {
+
+            data.set(name, workflowData);
+        }
+    }
+
+    public JsonNode getWorkflowdata(String name) {
+        return data.get(name);
+    }
 }

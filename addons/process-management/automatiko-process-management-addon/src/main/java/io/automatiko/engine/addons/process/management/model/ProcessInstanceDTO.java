@@ -6,6 +6,8 @@ public class ProcessInstanceDTO {
 
     private String id;
 
+    private String compositeId;
+
     private String businessKey;
 
     private String description;
@@ -22,7 +24,8 @@ public class ProcessInstanceDTO {
 
     }
 
-    public ProcessInstanceDTO(String id, String businessKey, String description, Collection<String> tags, boolean failed,
+    public ProcessInstanceDTO(String id, String parentId, String businessKey, String description, Collection<String> tags,
+            boolean failed,
             String processId, int state) {
         this.id = id;
         this.businessKey = businessKey;
@@ -31,6 +34,8 @@ public class ProcessInstanceDTO {
         this.failed = failed;
         this.processId = processId;
         this.state = state;
+        this.compositeId = parentId != null ? parentId + ":" + id : id;
+
     }
 
     public String getId() {
@@ -39,6 +44,14 @@ public class ProcessInstanceDTO {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getCompositeId() {
+        return compositeId;
+    }
+
+    public void setCompositeId(String compositeId) {
+        this.compositeId = compositeId;
     }
 
     public String getDescription() {

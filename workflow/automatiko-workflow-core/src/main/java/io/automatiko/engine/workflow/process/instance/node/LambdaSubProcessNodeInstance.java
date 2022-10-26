@@ -159,6 +159,8 @@ public class LambdaSubProcessNodeInstance extends StateBasedNodeInstance
             triggerCompleted();
         } else if (processInstance.status() == ProcessInstance.STATE_COMPLETED
                 || processInstance.status() == ProcessInstance.STATE_ABORTED) {
+            ((ProcessInstanceImpl) getProcessInstance()).addFinishedSubProcess(
+                    processInstance.process().id(), parentInstanceId + ":" + processInstance.id(), processInstance.status());
             triggerCompleted();
         } else {
             String subprocessInstanceId = parentInstanceId + ":" + processInstance.id();

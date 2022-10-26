@@ -1,0 +1,23 @@
+{
+  "id": "singlesubflow",
+  "name": "singlesubflow",
+  "specVersion": "0.8",
+  "version": "1.0",
+  "start":"SimpleSubFlow",
+  "states":[
+    {
+      "name":"SimpleSubFlow",
+      "type":"operation",
+      "actions": [
+        {
+          "subFlowRef": {
+            "workflowId": "swcalled"
+          }
+        }
+      ],
+      "end": {
+        "terminate": true
+      }
+    }
+  ]
+}

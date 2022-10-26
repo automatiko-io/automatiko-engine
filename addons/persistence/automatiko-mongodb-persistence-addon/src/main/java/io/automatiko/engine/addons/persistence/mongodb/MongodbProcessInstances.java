@@ -322,9 +322,15 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                         if (transactionLog.contains(process.id(), instance.id())) {
                             collection().insertOne(item);
                         } else {
+                            Document found = collection().find(eq(INSTANCE_ID_FIELD, resolvedId))
+                                    .projection(Projections.fields(Projections.include(INSTANCE_ID_FIELD))).first();
 
-                            throw new ConflictingVersionException("Process instance with id '" + instance.id()
-                                    + "' has older version than the stored one");
+                            if (found != null) {
+                                throw new ConflictingVersionException("Process instance with id '" + instance.id()
+                                        + "' has older version than the stored one");
+                            } else {
+                                collection().insertOne(item);
+                            }
                         }
                     }
                     Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)

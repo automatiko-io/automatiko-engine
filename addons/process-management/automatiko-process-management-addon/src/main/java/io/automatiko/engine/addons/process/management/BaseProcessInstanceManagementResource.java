@@ -259,6 +259,7 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
                 state = 5;
                 break;
             default:
+                state = Integer.parseInt(status);
                 break;
         }
         return state;

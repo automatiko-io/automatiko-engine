@@ -30,11 +30,11 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
+
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 
 import io.automatiko.engine.api.Functions;
 import io.automatiko.engine.api.definition.process.Process;
@@ -68,6 +68,7 @@ import io.automatiko.engine.workflow.compiler.canonical.TriggerMetaData;
 import io.automatiko.engine.workflow.compiler.canonical.UserTaskModelMetaData;
 import io.automatiko.engine.workflow.compiler.xml.SemanticModules;
 import io.automatiko.engine.workflow.compiler.xml.XmlProcessReader;
+import io.automatiko.engine.workflow.process.core.node.SubProcessNode;
 import io.automatiko.engine.workflow.serverless.parser.ServerlessWorkflowParser;
 
 /**
@@ -404,6 +405,18 @@ public class ProcessCodegen extends AbstractGenerator {
 
         // collect all process descriptors (exec model)
         for (Entry<String, WorkflowProcess> entry : processes.entrySet()) {
+
+            entry.getValue().getNodesRecursively().stream().filter(node -> node instanceof SubProcessNode).forEach(sp -> {
+                String processId = ((SubProcessNode) sp).getProcessId();
+                if (((SubProcessNode) sp).getProcessVersion() != null) {
+                    processId += "_" + ((SubProcessNode) sp).getProcessVersion();
+                }
+
+                WorkflowProcess sprocess = processes.get(processId);
+
+                ((SubProcessNode) sp).setMetaData("serverless", ProcessToExecModelGenerator.isServerlessWorkflow(sprocess));
+            });
+
             ProcessExecutableModelGenerator execModelGen = new ProcessExecutableModelGenerator(entry.getValue(),
                     execModelGenerator);
             String packageName = entry.getValue().getPackageName();
