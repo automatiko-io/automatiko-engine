@@ -527,6 +527,8 @@
 								+ '</span> &nbsp;';
 					});
 					
+					var instanceId = item.compositeId;
+					
 					var data = '<tr'
 					+ (item.failed ? ' class="bg-danger"' : '')
 					+ '>'
@@ -534,7 +536,7 @@
 							+ (++index + ((currentPage - 1) * 10))
 							+ '</th>'
 							+ ' <td>'
-							+ item.id
+							+ instanceId
 							+ '</td>'
 							+ ' <td>'
 							+ item.businessKey
@@ -546,11 +548,11 @@
 							+ tags
 							+ '</td>'
 							+ ' <td><button type="button" class="btn btn-sm btn-light" onclick="loadInstance(\''
-							+ processId + '\', \'' + item.id
+							+ processId + '\', \'' + instanceId
 							+ '\')"><i class="fa fa-info-circle"></i></button>';
 							if (item.state === 1 || item.state === 5) {
 								data += '&nbsp;&nbsp;<button type="button" class="btn btn-sm btn-danger" onclick="abortInstance(\''
-								+ processId + '\', \'' + item.id
+								+ processId + '\', \'' + instanceId
 								+ '\')"><i class="fa fa-trash"></i></button></td>';
 							}
 							data += '</td></tr>'

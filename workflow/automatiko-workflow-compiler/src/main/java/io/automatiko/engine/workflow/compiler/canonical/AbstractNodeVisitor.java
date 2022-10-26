@@ -159,6 +159,22 @@ public abstract class AbstractNodeVisitor<T extends Node> extends AbstractVisito
         return new ExpressionStmt(assignExpr);
     }
 
+    protected Statement makeAssignmentFromJsonModel(Variable v, String name) {
+        ClassOrInterfaceType jsonNodeType = parseClassOrInterfaceType("com.fasterxml.jackson.databind.JsonNode");
+        ClassOrInterfaceType type = parseClassOrInterfaceType(v.getType().getStringType());
+        // `type` `name` = (`type`) `model.get<Name>
+        AssignExpr assignExpr = new AssignExpr(new VariableDeclarationExpr(type, name),
+                new CastExpr(type,
+                        new MethodCallExpr(null, "fromJsonNode")
+                                .addArgument(new CastExpr(jsonNodeType,
+                                        new MethodCallExpr(new NameExpr("model"), "getWorkflowdata")
+                                                .addArgument(new StringLiteralExpr(name))))
+                                .addArgument(new NameExpr(type.asString() + ".class"))),
+                AssignExpr.Operator.ASSIGN);
+
+        return new ExpressionStmt(assignExpr);
+    }
+
     protected void addNodeMappings(WorkflowProcess process, Mappable node, BlockStmt body, String variableName) {
 
         boolean serverless = ProcessToExecModelGenerator.isServerlessWorkflow(process);

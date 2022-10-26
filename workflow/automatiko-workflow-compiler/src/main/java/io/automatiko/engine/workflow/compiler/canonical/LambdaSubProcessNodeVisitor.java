@@ -91,11 +91,11 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
                     .forEach(t -> t.setName(subProcessModelClassName));
 
             retValueExpression.findFirst(MethodDeclaration.class, m -> m.getNameAsString().equals("bind"))
-                    .ifPresent(m -> m.setBody(bind(variableScope, node, subProcessModel)));
+                    .ifPresent(m -> m.setBody(bind(variableScope, node, subProcessModel, process)));
             retValueExpression.findFirst(MethodDeclaration.class, m -> m.getNameAsString().equals("createInstance"))
                     .ifPresent(m -> m.setBody(createInstance(node, metadata)));
             retValueExpression.findFirst(MethodDeclaration.class, m -> m.getNameAsString().equals("unbind"))
-                    .ifPresent(m -> m.setBody(unbind(variableScope, node)));
+                    .ifPresent(m -> m.setBody(unbind(variableScope, node, process)));
             retValueExpression.findFirst(MethodDeclaration.class, m -> m.getNameAsString().equals("abortInstance"))
                     .ifPresent(m -> m.setBody(abortInstance(node, metadata)));
             retValueExpression.findFirst(MethodDeclaration.class, m -> m.getNameAsString().equals("findInstance"))
@@ -114,36 +114,122 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
         body.addStatement(getDoneMethod(getNodeId(node)));
     }
 
-    private BlockStmt bind(VariableScope variableScope, SubProcessNode subProcessNode, ModelMetaData subProcessModel) {
+    private BlockStmt bind(VariableScope variableScope, SubProcessNode subProcessNode, ModelMetaData subProcessModel,
+            WorkflowProcess process) {
         BlockStmt actionBody = new BlockStmt();
         actionBody.addStatement(subProcessModel.newInstance("model"));
 
-        for (Map.Entry<String, String> e : subProcessNode.getInMappings().entrySet()) {
-            // check if given mapping is an expression
-            Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(e.getValue());
-            if (matcher.find()) {
+        // checks if this (parent) process is serverless
+        boolean isServerless = ProcessToExecModelGenerator.isServerlessWorkflow(process);
+        // checks if the process to be called (child) is serverless
+        boolean isServerlessSP = (boolean) subProcessNode.getMetaData().getOrDefault("serverless", false);
 
-                String expression = matcher.group(1);
-                String topLevelVariable = expression.split("\\.")[0];
-                Variable v = variableScope.findVariable(topLevelVariable);
+        if (isServerlessSP) {
 
-                if (v != null && actionBody.findFirst(VariableDeclarationExpr.class,
-                        vd -> vd.getVariable(0).getNameAsString().equals(v.getSanitizedName())).isEmpty()) {
-                    actionBody.addStatement(makeAssignment(v));
-                } else {
-                    expression = expression.replace("\\\"", "\"");
+            if (isServerless) {
+                for (Map.Entry<String, String> e : subProcessNode.getInMappings().entrySet()) {
+                    // check if given mapping is an expression
+                    Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(e.getValue());
+                    if (matcher.find()) {
+
+                        String expression = matcher.group(1);
+                        String topLevelVariable = expression.split("\\.")[0];
+                        Variable v = variableScope.findVariable(topLevelVariable);
+
+                        if (v != null && actionBody.findFirst(VariableDeclarationExpr.class,
+                                vd -> vd.getVariable(0).getNameAsString().equals(v.getSanitizedName())).isEmpty()) {
+                            actionBody.addStatement(makeAssignment(v));
+                        } else {
+                            expression = expression.replace("\\\"", "\"");
+                        }
+                        actionBody.addStatement(
+                                subProcessModel.callSetter("model", e.getKey(), dotNotationToGetExpression(expression)));
+                    } else {
+
+                        Variable v = variableScope.findVariable(e.getValue());
+                        if (v != null) {
+                            if (actionBody.findFirst(VariableDeclarationExpr.class,
+                                    vd -> vd.getVariable(0).getNameAsString().equals(v.getSanitizedName())).isEmpty()) {
+                                actionBody.addStatement(makeAssignment(v));
+                            }
+                            actionBody.addStatement(subProcessModel.callSetter("model", e.getKey(), e.getValue()));
+                        }
+                    }
                 }
-                actionBody.addStatement(
-                        subProcessModel.callSetter("model", e.getKey(), dotNotationToGetExpression(expression)));
             } else {
 
-                Variable v = variableScope.findVariable(e.getValue());
-                if (v != null) {
-                    if (actionBody.findFirst(VariableDeclarationExpr.class,
-                            vd -> vd.getVariable(0).getNameAsString().equals(v.getSanitizedName())).isEmpty()) {
-                        actionBody.addStatement(makeAssignment(v));
+                for (Map.Entry<String, String> e : subProcessNode.getInMappings().entrySet()) {
+                    // check if given mapping is an expression
+                    Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(e.getValue());
+                    if (matcher.find()) {
+
+                        String expression = matcher.group(1);
+                        String topLevelVariable = expression.split("\\.")[0];
+                        Variable v = variableScope.findVariable(topLevelVariable);
+
+                        if (v != null && actionBody.findFirst(VariableDeclarationExpr.class,
+                                vd -> vd.getVariable(0).getNameAsString().equals(v.getSanitizedName())).isEmpty()) {
+                            actionBody.addStatement(makeAssignment(v));
+                        } else {
+                            expression = expression.replace("\\\"", "\"");
+                        }
+                        actionBody.addStatement(new MethodCallExpr(new NameExpr("model"), "addWorkflowdata")
+                                .addArgument(new StringLiteralExpr(e.getKey()))
+                                .addArgument(new MethodCallExpr(null, "toJsonNode")
+                                        .addArgument(dotNotationToGetExpression(expression))));
+
+                    } else {
+
+                        Variable v = variableScope.findVariable(e.getValue());
+                        if (v != null) {
+                            if (actionBody.findFirst(VariableDeclarationExpr.class,
+                                    vd -> vd.getVariable(0).getNameAsString().equals(v.getSanitizedName())).isEmpty()) {
+                                actionBody.addStatement(makeAssignment(v));
+                            }
+
+                            actionBody.addStatement(new MethodCallExpr(new NameExpr("model"), "addWorkflowdata")
+                                    .addArgument(new StringLiteralExpr(e.getKey()))
+                                    .addArgument(new MethodCallExpr(null, "toJsonNode")
+                                            .addArgument(new NameExpr(e.getValue()))));
+                        }
                     }
-                    actionBody.addStatement(subProcessModel.callSetter("model", e.getKey(), e.getValue()));
+                }
+            }
+        } else {
+            if (isServerless) {
+
+                actionBody.addStatement(new MethodCallExpr(null, "convertData")
+                        .addArgument(new MethodCallExpr(new NameExpr(KCONTEXT_VAR), "getVariables"))
+                        .addArgument(new NameExpr("model")));
+            } else {
+                for (Map.Entry<String, String> e : subProcessNode.getInMappings().entrySet()) {
+                    // check if given mapping is an expression
+                    Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(e.getValue());
+                    if (matcher.find()) {
+
+                        String expression = matcher.group(1);
+                        String topLevelVariable = expression.split("\\.")[0];
+                        Variable v = variableScope.findVariable(topLevelVariable);
+
+                        if (v != null && actionBody.findFirst(VariableDeclarationExpr.class,
+                                vd -> vd.getVariable(0).getNameAsString().equals(v.getSanitizedName())).isEmpty()) {
+                            actionBody.addStatement(makeAssignment(v));
+                        } else {
+                            expression = expression.replace("\\\"", "\"");
+                        }
+                        actionBody.addStatement(
+                                subProcessModel.callSetter("model", e.getKey(), dotNotationToGetExpression(expression)));
+                    } else {
+
+                        Variable v = variableScope.findVariable(e.getValue());
+                        if (v != null) {
+                            if (actionBody.findFirst(VariableDeclarationExpr.class,
+                                    vd -> vd.getVariable(0).getNameAsString().equals(v.getSanitizedName())).isEmpty()) {
+                                actionBody.addStatement(makeAssignment(v));
+                            }
+                            actionBody.addStatement(subProcessModel.callSetter("model", e.getKey(), e.getValue()));
+                        }
+                    }
                 }
             }
         }
@@ -222,37 +308,114 @@ public class LambdaSubProcessNodeVisitor extends AbstractNodeVisitor<SubProcessN
 
     }
 
-    private BlockStmt unbind(VariableScope variableScope, SubProcessNode subProcessNode) {
+    private BlockStmt unbind(VariableScope variableScope, SubProcessNode subProcessNode, WorkflowProcess process) {
         BlockStmt stmts = new BlockStmt();
+        // checks if this (parent) process is serverless
+        boolean isServerless = ProcessToExecModelGenerator.isServerlessWorkflow(process);
+        // checks if the process to be called (child) is serverless
+        boolean isServerlessSP = (boolean) subProcessNode.getMetaData().getOrDefault("serverless", false);
 
-        for (Map.Entry<String, String> e : subProcessNode.getOutMappings().entrySet()) {
+        if (isServerlessSP) {
+            if (isServerless) {
+                for (Map.Entry<String, String> e : subProcessNode.getOutMappings().entrySet()) {
 
-            // check if given mapping is an expression
-            Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(e.getValue());
-            if (matcher.find()) {
+                    // check if given mapping is an expression
+                    Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(e.getValue());
+                    if (matcher.find()) {
 
-                String expression = matcher.group(1);
-                String topLevelVariable = VariableUtil.nameFromDotNotation(expression);
-                Map<String, String> dataOutputs = (Map<String, String>) subProcessNode.getMetaData("BPMN.OutputTypes");
-                Variable variable = new Variable();
-                variable.setName(topLevelVariable);
-                variable.setType(
-                        new ObjectDataType(constructClass(dataOutputs.get(e.getKey())), dataOutputs.get(e.getKey())));
+                        String expression = matcher.group(1);
+                        String topLevelVariable = VariableUtil.nameFromDotNotation(expression);
+                        Map<String, String> dataOutputs = (Map<String, String>) subProcessNode.getMetaData("BPMN.OutputTypes");
+                        Variable variable = new Variable();
+                        variable.setName(topLevelVariable);
+                        variable.setType(
+                                new ObjectDataType(constructClass(dataOutputs.get(e.getKey())), dataOutputs.get(e.getKey())));
 
-                stmts.addStatement(makeAssignment(variableScope.findVariable(topLevelVariable)));
-                stmts.addStatement(makeAssignmentFromModel(variable, e.getKey()));
+                        stmts.addStatement(makeAssignment(variableScope.findVariable(topLevelVariable)));
+                        stmts.addStatement(makeAssignmentFromModel(variable, e.getKey()));
 
-                stmts.addStatement(VariableUtil.transformDotNotation(expression, e.getKey()) + ";");
+                        stmts.addStatement(VariableUtil.transformDotNotation(expression, e.getKey()) + ";");
 
-                stmts.addStatement(new MethodCallExpr().setScope(new NameExpr(KCONTEXT_VAR)).setName("setVariable")
-                        .addArgument(new StringLiteralExpr(topLevelVariable)).addArgument(topLevelVariable));
+                        stmts.addStatement(new MethodCallExpr().setScope(new NameExpr(KCONTEXT_VAR)).setName("setVariable")
+                                .addArgument(new StringLiteralExpr(topLevelVariable)).addArgument(topLevelVariable));
+                    } else {
+
+                        stmts.addStatement(makeAssignmentFromModel(variableScope.findVariable(e.getValue()), e.getKey()));
+                        stmts.addStatement(new MethodCallExpr().setScope(new NameExpr(KCONTEXT_VAR)).setName("setVariable")
+                                .addArgument(new StringLiteralExpr(e.getValue())).addArgument(e.getKey()));
+                    }
+
+                }
             } else {
+                for (Map.Entry<String, String> e : subProcessNode.getOutMappings().entrySet()) {
 
-                stmts.addStatement(makeAssignmentFromModel(variableScope.findVariable(e.getValue()), e.getKey()));
-                stmts.addStatement(new MethodCallExpr().setScope(new NameExpr(KCONTEXT_VAR)).setName("setVariable")
-                        .addArgument(new StringLiteralExpr(e.getValue())).addArgument(e.getKey()));
+                    // check if given mapping is an expression
+                    Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(e.getValue());
+                    if (matcher.find()) {
+
+                        String expression = matcher.group(1);
+                        String topLevelVariable = VariableUtil.nameFromDotNotation(expression);
+                        Map<String, String> dataOutputs = (Map<String, String>) subProcessNode.getMetaData("BPMN.OutputTypes");
+                        Variable variable = new Variable();
+                        variable.setName(topLevelVariable);
+                        variable.setType(
+                                new ObjectDataType(constructClass(dataOutputs.get(e.getKey())), dataOutputs.get(e.getKey())));
+
+                        stmts.addStatement(makeAssignment(variableScope.findVariable(topLevelVariable)));
+                        stmts.addStatement(makeAssignmentFromJsonModel(variable, e.getKey()));
+
+                        stmts.addStatement(VariableUtil.transformDotNotation(expression, e.getKey()) + ";");
+
+                        stmts.addStatement(new MethodCallExpr().setScope(new NameExpr(KCONTEXT_VAR)).setName("setVariable")
+                                .addArgument(new StringLiteralExpr(topLevelVariable)).addArgument(topLevelVariable));
+                    } else {
+
+                        stmts.addStatement(makeAssignmentFromJsonModel(variableScope.findVariable(e.getValue()), e.getKey()));
+                        stmts.addStatement(new MethodCallExpr().setScope(new NameExpr(KCONTEXT_VAR)).setName("setVariable")
+                                .addArgument(new StringLiteralExpr(e.getValue())).addArgument(e.getKey()));
+                    }
+
+                }
+
             }
 
+        } else {
+
+            if (isServerless) {
+                stmts.addStatement(new MethodCallExpr(null, "copyData")
+                        .addArgument(new MethodCallExpr(new NameExpr("model"), "toMap"))
+                        .addArgument(new NameExpr(KCONTEXT_VAR)));
+            } else {
+                for (Map.Entry<String, String> e : subProcessNode.getOutMappings().entrySet()) {
+
+                    // check if given mapping is an expression
+                    Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(e.getValue());
+                    if (matcher.find()) {
+
+                        String expression = matcher.group(1);
+                        String topLevelVariable = VariableUtil.nameFromDotNotation(expression);
+                        Map<String, String> dataOutputs = (Map<String, String>) subProcessNode.getMetaData("BPMN.OutputTypes");
+                        Variable variable = new Variable();
+                        variable.setName(topLevelVariable);
+                        variable.setType(
+                                new ObjectDataType(constructClass(dataOutputs.get(e.getKey())), dataOutputs.get(e.getKey())));
+
+                        stmts.addStatement(makeAssignment(variableScope.findVariable(topLevelVariable)));
+                        stmts.addStatement(makeAssignmentFromModel(variable, e.getKey()));
+
+                        stmts.addStatement(VariableUtil.transformDotNotation(expression, e.getKey()) + ";");
+
+                        stmts.addStatement(new MethodCallExpr().setScope(new NameExpr(KCONTEXT_VAR)).setName("setVariable")
+                                .addArgument(new StringLiteralExpr(topLevelVariable)).addArgument(topLevelVariable));
+                    } else {
+
+                        stmts.addStatement(makeAssignmentFromModel(variableScope.findVariable(e.getValue()), e.getKey()));
+                        stmts.addStatement(new MethodCallExpr().setScope(new NameExpr(KCONTEXT_VAR)).setName("setVariable")
+                                .addArgument(new StringLiteralExpr(e.getValue())).addArgument(e.getKey()));
+                    }
+
+                }
+            }
         }
 
         return stmts;

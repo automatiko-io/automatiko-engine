@@ -23,4 +23,8 @@ public class Patient {
         this.doctor = doctor;
     }
 
+    public void setDoctor(Doctor doctor) {
+        this.doctor = doctor;
+    }
+
 }

@@ -189,7 +189,8 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             return UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 process.instances().values(ProcessInstanceReadMode.READ_ONLY, mapStatus(status), page, size)
                         .forEach(pi -> collected
-                                .add(new ProcessInstanceDTO(pi.id(), pi.businessKey() == null ? "" : pi.businessKey(),
+                                .add(new ProcessInstanceDTO(pi.id(), pi.parentProcessInstanceId(),
+                                        pi.businessKey() == null ? "" : pi.businessKey(),
                                         pi.description(),
                                         pi.tags().values(),
                                         pi.errors().isPresent(), processId, pi.status())));
@@ -256,7 +257,9 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
                 details.setTags(pi.tags().values());
                 details.setVariables(pi.variables());
                 details.setSubprocesses(pi.subprocesses().stream()
-                        .map(spi -> new ProcessInstanceDTO(spi.id(), spi.businessKey(), spi.description(), spi.tags().values(),
+                        .map(spi -> new ProcessInstanceDTO(spi.id(), spi.parentProcessInstanceId(), spi.businessKey(),
+                                spi.description(),
+                                spi.tags().values(),
                                 spi.errors().isPresent(), spi.process().id(), spi.status()))
                         .collect(Collectors.toList()));
 
