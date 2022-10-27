@@ -66,7 +66,6 @@ import io.automatiko.engine.workflow.builder.WorkflowBuilder;
 import io.automatiko.engine.workflow.marshalling.impl.AutomatikoMessages;
 import io.automatiko.engine.workflow.process.executable.core.ExecutableProcess;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
-import io.quarkus.bootstrap.BootstrapDependencyProcessingException;
 import io.quarkus.bootstrap.classloading.ClassPathElement;
 import io.quarkus.bootstrap.classloading.MemoryClassPathElement;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
@@ -129,7 +128,7 @@ public class AutomatikoQuarkusProcessor {
             BuildProducer<GeneratedResourceBuildItem> resources,
             BuildProducer<ServiceProviderBuildItem> providerProducer,
             BuildProducer<TestListenerBuildItem> testListenerProducer)
-            throws Exception, BootstrapDependencyProcessingException {
+            throws Exception {
 
         testListenerProducer.produce(new TestListenerBuildItem(new TestListener() {
 
@@ -363,7 +362,7 @@ public class AutomatikoQuarkusProcessor {
             BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexClass,
             IndexView index, LaunchModeBuildItem launchMode,
             BuildProducer<NativeImageResourceBuildItem> resource, CurateOutcomeBuildItem curateOutcomeBuildItem)
-            throws Exception, BootstrapDependencyProcessingException {
+            throws Exception {
 
         ClassInfo persistenceClass = index.getClassByName(createDotName(persistenceFactoryClass));
         boolean usePersistence = persistenceClass != null;
