@@ -87,7 +87,8 @@ public class LatestEndpointFilter {
                         LOGGER.debug("Rerouting to selected version for process '{}' on relative path '{}'", processId,
                                 newPath);
 
-                        requestContext.setRequestUri(URI.create(newPath));
+                        requestContext.setRequestUri(
+                                URI.create(newPath + "?" + requestContext.getUriInfo().getRequestUri().getQuery()));
 
                         return;
                     }
@@ -114,7 +115,8 @@ public class LatestEndpointFilter {
                 String newPath = latestVersionPrefix + path;
                 LOGGER.debug("Rerouting to latest version for process '{}' on relative path '{}'", processId, newPath);
 
-                requestContext.setRequestUri(URI.create(newPath));
+                requestContext
+                        .setRequestUri(URI.create(newPath + "?" + requestContext.getUriInfo().getRequestUri().getQuery()));
             }
         }
     }
