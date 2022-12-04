@@ -29,23 +29,28 @@ public class AutomatikoConfig {
     };
 
     public PersistenceConfig persistence() {
-        return new PersistenceConfig();
+        return new PersistenceConfig() {
+        };
     }
 
     public JobsConfig jobs() {
-        return new JobsConfig();
+        return new JobsConfig() {
+        };
     }
 
     public SecurityConfig security() {
-        return new SecurityConfig();
+        return new SecurityConfig() {
+        };
     }
 
     public AsyncConfig async() {
-        return new AsyncConfig();
+        return new AsyncConfig() {
+        };
     }
 
     public FilesConfig files() {
-        return new FilesConfig();
+        return new FilesConfig() {
+        };
     }
 
     public AuditConfig audit() {

@@ -18,6 +18,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -32,6 +33,9 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import io.automatiko.engine.api.audit.Auditor;
+import io.automatiko.engine.api.config.CassandraPersistenceConfig;
+import io.automatiko.engine.api.config.DynamoDBPersistenceConfig;
+import io.automatiko.engine.api.config.MongodbPersistenceConfig;
 import io.automatiko.engine.api.uow.TransactionLogStore;
 import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 import io.automatiko.engine.codegen.AbstractGenerator;
@@ -217,12 +221,23 @@ public class PersistenceGenerator extends AbstractGenerator {
         persistenceProviderClazz.addConstructor(Keyword.PUBLIC);
 
         ConstructorDeclaration constructor = persistenceProviderClazz.addConstructor(Keyword.PUBLIC)
-                .addParameter("software.amazon.awssdk.services.dynamodb.DynamoDbClient", "dynamodb")
-                .addParameter("io.automatiko.engine.api.config.DynamoDBPersistenceConfig", "config");
+                .addParameter("software.amazon.awssdk.services.dynamodb.DynamoDbClient", "dynamodb");
+
+        Parameter createTables = new Parameter(new ClassOrInterfaceType(null, new SimpleName(Optional.class.getCanonicalName()),
+                NodeList.nodeList(new ClassOrInterfaceType(null, "Boolean"))), "createTables");
+        Parameter readCapacity = new Parameter(new ClassOrInterfaceType(null, new SimpleName(Optional.class.getCanonicalName()),
+                NodeList.nodeList(new ClassOrInterfaceType(null, "Long"))), "readCapacity");
+        Parameter writeCapacity = new Parameter(
+                new ClassOrInterfaceType(null, new SimpleName(Optional.class.getCanonicalName()),
+                        NodeList.nodeList(new ClassOrInterfaceType(null, "Long"))),
+                "writeCapacity");
+
+        constructor.addParameter(createTables).addParameter(readCapacity).addParameter(writeCapacity);
 
         BlockStmt body = new BlockStmt();
         ExplicitConstructorInvocationStmt superExp = new ExplicitConstructorInvocationStmt(false, null,
-                NodeList.nodeList(new NameExpr("dynamodb"), new NameExpr("config")));
+                NodeList.nodeList(new NameExpr("dynamodb"), new NameExpr("createTables"), new NameExpr("readCapacity"),
+                        new NameExpr("writeCapacity")));
         body.addStatement(superExp);
 
         constructor.setBody(body);
@@ -230,6 +245,10 @@ public class PersistenceGenerator extends AbstractGenerator {
         if (useInjection()) {
             annotator.withApplicationComponent(persistenceProviderClazz);
             annotator.withInjection(constructor);
+
+            annotator.withConfig(createTables, DynamoDBPersistenceConfig.CREATE_TABLES_KEY);
+            annotator.withConfig(readCapacity, DynamoDBPersistenceConfig.READ_CAPACITY_KEY);
+            annotator.withConfig(writeCapacity, DynamoDBPersistenceConfig.WRITE_CAPACITY_KEY);
 
             addCodecComponents(persistenceProviderClazz);
 
@@ -258,12 +277,23 @@ public class PersistenceGenerator extends AbstractGenerator {
         persistenceProviderClazz.addConstructor(Keyword.PUBLIC);
 
         ConstructorDeclaration constructor = persistenceProviderClazz.addConstructor(Keyword.PUBLIC)
-                .addParameter("com.datastax.oss.driver.api.core.CqlSession", "cqlSession")
-                .addParameter("io.automatiko.engine.api.config.CassandraPersistenceConfig", "config");
+                .addParameter("com.datastax.oss.driver.api.core.CqlSession", "cqlSession");
+
+        Parameter createKeyspace = new Parameter(
+                new ClassOrInterfaceType(null, new SimpleName(Optional.class.getCanonicalName()),
+                        NodeList.nodeList(new ClassOrInterfaceType(null, "Boolean"))),
+                "createKeyspace");
+        Parameter createTables = new Parameter(new ClassOrInterfaceType(null, new SimpleName(Optional.class.getCanonicalName()),
+                NodeList.nodeList(new ClassOrInterfaceType(null, "Boolean"))), "createTables");
+        Parameter keyspace = new Parameter(new ClassOrInterfaceType(null, new SimpleName(Optional.class.getCanonicalName()),
+                NodeList.nodeList(new ClassOrInterfaceType(null, "String"))), "keyspace");
+
+        constructor.addParameter(createKeyspace).addParameter(createTables).addParameter(keyspace);
 
         BlockStmt body = new BlockStmt();
         ExplicitConstructorInvocationStmt superExp = new ExplicitConstructorInvocationStmt(false, null,
-                NodeList.nodeList(new NameExpr("cqlSession"), new NameExpr("config")));
+                NodeList.nodeList(new NameExpr("cqlSession"), new NameExpr("createKeyspace"), new NameExpr("createTables"),
+                        new NameExpr("keyspace")));
         body.addStatement(superExp);
 
         constructor.setBody(body);
@@ -271,6 +301,10 @@ public class PersistenceGenerator extends AbstractGenerator {
         if (useInjection()) {
             annotator.withApplicationComponent(persistenceProviderClazz);
             annotator.withInjection(constructor);
+
+            annotator.withConfig(createKeyspace, CassandraPersistenceConfig.CREATE_KEYSPACE_KEY);
+            annotator.withConfig(createTables, CassandraPersistenceConfig.CREATE_TABLES_KEY);
+            annotator.withConfig(keyspace, CassandraPersistenceConfig.KEYSPACE_KEY);
 
             addCodecComponents(persistenceProviderClazz);
 
@@ -299,12 +333,16 @@ public class PersistenceGenerator extends AbstractGenerator {
         persistenceProviderClazz.addConstructor(Keyword.PUBLIC);
 
         ConstructorDeclaration constructor = persistenceProviderClazz.addConstructor(Keyword.PUBLIC)
-                .addParameter("com.mongodb.client.MongoClient", "mongoClient")
-                .addParameter("io.automatiko.engine.api.config.MongodbPersistenceConfig", "config");
+                .addParameter("com.mongodb.client.MongoClient", "mongoClient");
+
+        Parameter database = new Parameter(new ClassOrInterfaceType(null, new SimpleName(Optional.class.getCanonicalName()),
+                NodeList.nodeList(new ClassOrInterfaceType(null, "String"))), "database");
+
+        constructor.addParameter(database);
 
         BlockStmt body = new BlockStmt();
         ExplicitConstructorInvocationStmt superExp = new ExplicitConstructorInvocationStmt(false, null,
-                NodeList.nodeList(new NameExpr("mongoClient"), new NameExpr("config")));
+                NodeList.nodeList(new NameExpr("mongoClient"), new NameExpr("database")));
         body.addStatement(superExp);
 
         constructor.setBody(body);
@@ -312,6 +350,8 @@ public class PersistenceGenerator extends AbstractGenerator {
         if (useInjection()) {
             annotator.withApplicationComponent(persistenceProviderClazz);
             annotator.withInjection(constructor);
+
+            annotator.withConfig(database, MongodbPersistenceConfig.DATABASE_KEY);
 
             addCodecComponents(persistenceProviderClazz);
 

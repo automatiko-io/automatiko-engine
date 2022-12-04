@@ -4,6 +4,11 @@ import java.util.Optional;
 
 public class AuditConfig {
 
+    public static final String ENABLED_KEY = "quarkus.automatiko.audit.enabled";
+    public static final String INCLUDED_KEY = "quarkus.automatiko.audit.included";
+    public static final String EXCLUDED_KEY = "quarkus.automatiko.audit.excluded";
+    public static final String FORMAT_KEY = "quarkus.automatiko.audit.format";
+
     /**
      * Enables auditing, by default it is disabled
      */

@@ -1,12 +1,14 @@
 package io.automatiko.engine.quarkus.audit;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,28 +25,34 @@ public class AuditorImpl implements Auditor {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuditorImpl.class);
 
     private AuditStore store;
-    private AuditConfig config;
     private Application application;
     private AuditEntryFilter filter;
 
+    private boolean enabled;
+    private String format;
     private Set<String> includedTypes = new HashSet<>();
     private Set<String> excludedTypes = new HashSet<>();
 
     @Inject
-    public AuditorImpl(AuditStore store, AuditConfig config, Application application, AuditEntryFilter filter) {
+    public AuditorImpl(AuditStore store, Application application, AuditEntryFilter filter,
+            @ConfigProperty(name = AuditConfig.ENABLED_KEY) Optional<Boolean> enabled,
+            @ConfigProperty(name = AuditConfig.FORMAT_KEY) Optional<String> format,
+            @ConfigProperty(name = AuditConfig.INCLUDED_KEY) Optional<String> includes,
+            @ConfigProperty(name = AuditConfig.EXCLUDED_KEY) Optional<String> excludes) {
         this.store = store;
-        this.config = config;
+        this.enabled = enabled.orElse(false);
         this.application = application;
         this.filter = filter;
+        this.format = format.orElse("plain");
 
-        if (config.included().isPresent()) {
-            for (String included : config.included().get().split(",")) {
+        if (includes.isPresent()) {
+            for (String included : includes.get().split(",")) {
                 this.includedTypes.add(included.trim().toLowerCase());
             }
         }
 
-        if (config.excluded().isPresent()) {
-            for (String excluded : config.excluded().get().split(",")) {
+        if (excludes.isPresent()) {
+            for (String excluded : excludes.get().split(",")) {
                 this.excludedTypes.add(excluded.trim().toLowerCase());
             }
         }
@@ -52,7 +60,7 @@ public class AuditorImpl implements Auditor {
 
     @Override
     public void publish(Supplier<AuditEntry> entry) {
-        if (!config.enabled()) {
+        if (!enabled) {
             return;
         }
         AuditEntry auditEntry = entry.get();
@@ -71,7 +79,7 @@ public class AuditorImpl implements Auditor {
                 String uowIdentifier = application.unitOfWorkManager().currentUnitOfWork().identifier();
                 auditEntry.add("transactionId", uowIdentifier);
 
-                store.store(auditEntry, config.format().orElse("plain"));
+                store.store(auditEntry, format);
 
             } catch (Exception e) {
                 LOGGER.warn("Unable to store audit entry due to unexpected error", e);

@@ -4,6 +4,10 @@ import java.util.Optional;
 
 public class DynamoDBPersistenceConfig {
 
+    public static final String CREATE_TABLES_KEY = "quarkus.automatiko.persistence.dynamodb.create-tables";
+    public static final String READ_CAPACITY_KEY = "quarkus.automatiko.persistence.dynamodb.read-capacity";
+    public static final String WRITE_CAPACITY_KEY = "quarkus.automatiko.persistence.dynamodb.write-capacity";
+
     /**
      * Indicates if tables should be created during startup.
      */

@@ -4,6 +4,10 @@ import java.util.Optional;
 
 public class MongodbJobsConfig {
 
+    public static final String DATABASE_KEY = "quarkus.automatiko.jobs.mongodb.database";
+    public static final String INTERVAL_KEY = "quarkus.automatiko.jobs.mongodb.interval";
+    public static final String THREADS_KEY = "quarkus.automatiko.jobs.mongodb.threads";
+
     /**
      * Name of the data base to be used to create collections for jobs
      */

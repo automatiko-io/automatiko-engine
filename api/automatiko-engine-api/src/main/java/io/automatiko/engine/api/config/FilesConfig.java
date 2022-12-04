@@ -3,18 +3,22 @@ package io.automatiko.engine.api.config;
 public class FilesConfig {
 
     public FileSystemFilesConfig fs() {
-        return new FileSystemFilesConfig();
+        return new FileSystemFilesConfig() {
+        };
     }
 
     public S3FilesConfig s3() {
-        return new S3FilesConfig();
+        return new S3FilesConfig() {
+        };
     }
 
     public GoogleStorageFilesConfig googleStorage() {
-        return new GoogleStorageFilesConfig();
+        return new GoogleStorageFilesConfig() {
+        };
     }
 
     public MongodbFilesConfig mongodb() {
-        return new MongodbFilesConfig();
+        return new MongodbFilesConfig() {
+        };
     }
 }

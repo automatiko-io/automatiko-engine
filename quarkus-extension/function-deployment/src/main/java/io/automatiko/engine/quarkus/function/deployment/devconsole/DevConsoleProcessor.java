@@ -59,8 +59,8 @@ public class DevConsoleProcessor {
                         .append("/").append(mi.name()).append(" ");
 
                 SchemaFactory.typeToSchema(ctx,
-                        mi.parameters().get(0), Collections.emptyList());
-                Schema fSchema = ctx.getOpenApi().getComponents().getSchemas().get(mi.parameters().get(0).name().local());
+                        mi.parameters().get(0).type(), Collections.emptyList());
+                Schema fSchema = ctx.getOpenApi().getComponents().getSchemas().get(mi.parameters().get(0).name());
 
                 Map<String, Object> example = generator.generate(fSchema, ctx.getOpenApi());
 

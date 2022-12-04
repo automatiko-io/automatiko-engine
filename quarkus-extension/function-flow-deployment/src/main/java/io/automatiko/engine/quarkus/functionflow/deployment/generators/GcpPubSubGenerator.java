@@ -69,7 +69,7 @@ public class GcpPubSubGenerator implements Generator {
             if (f.target().kind().equals(Kind.METHOD)) {
                 MethodInfo mi = f.target().asMethod();
 
-                if (mi.declaringClass().annotations().get(generatedData) == null) {
+                if (!mi.declaringClass().hasDeclaredAnnotation(generatedData)) {
                     continue;
                 }
 
@@ -78,21 +78,21 @@ public class GcpPubSubGenerator implements Generator {
                         .value()).value().asString();
                 createCommands.add("gcloud eventarc triggers create " + mi.name()
                         + " --event-filters=\"type=google.cloud.pubsub.topic.v1.messagePublished\" --destination-run-service="
-                        + cob.getEffectiveModel().getAppArtifact().getArtifactId()
+                        + cob.getApplicationModel().getAppArtifact().getArtifactId()
                         + " --destination-run-path=/ --transport-topic=" + topic.substring(topic.lastIndexOf("/") + 1)
                         + " --location=us-central1");
 
                 deleteCommands.add("gcloud eventarc triggers delete " + mi.name() + " --location=us-central1");
 
                 boolean includeSubjectAttribute = false;
-                Type param = mi.parameters().get(0);
+                Type param = mi.parameters().get(0).type();
                 if (param instanceof ParameterizedType) {
                     param = ((ParameterizedType) param).arguments().get(0);
                     includeSubjectAttribute = true;
                 }
 
                 SchemaFactory.typeToSchema(ctx,
-                        mi.parameters().get(0), Collections.emptyList());
+                        mi.parameters().get(0).type(), Collections.emptyList());
                 Schema fSchema = ctx.getOpenApi().getComponents().getSchemas().get(param.name().local());
                 LOGGER.info(
                         "Function \"{}\" will accept POST requests on / endpoint with following payload ",
@@ -111,11 +111,11 @@ public class GcpPubSubGenerator implements Generator {
 
         String googleProjectId = "";
         for (ClassInfo clz : functionClasses) {
-            List<AnnotationInstance> genAnnotation = clz.annotations().get(generatedData);
+            AnnotationInstance genAnnotation = clz.declaredAnnotation(generatedData);
 
             if (genAnnotation != null) {
-                googleProjectId = genAnnotation.get(0).value("reference").asString();
-                String[] functionIds = genAnnotation.get(0).value().asStringArray();
+                googleProjectId = genAnnotation.value("reference").asString();
+                String[] functionIds = genAnnotation.value().asStringArray();
                 for (String functionId : functionIds) {
                     createCommands.add("gcloud pubsub topics create " + functionId + " --project=" + googleProjectId);
                     deleteCommands.add("gcloud pubsub topics delete " + functionId + " --project=" + googleProjectId);

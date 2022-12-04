@@ -5,11 +5,13 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseListener;
@@ -31,17 +33,30 @@ public class ElasticEventPublisher implements EventPublisher {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticEventPublisher.class);
 
-    RestClient restClient;
+    private RestClient restClient;
 
-    ObjectMapper mapper;
+    private ObjectMapper mapper;
 
-    ElasticEventsConfig config;
+    private Optional<Boolean> audit;
+
+    private Optional<Boolean> instance;
+
+    private Optional<Boolean> tasks;
+
+    private Optional<String> auditIndex;
 
     @Inject
-    public ElasticEventPublisher(RestClient restClient, ObjectMapper mapper, ElasticEventsConfig config) {
+    public ElasticEventPublisher(RestClient restClient, ObjectMapper mapper,
+            @ConfigProperty(name = ElasticEventsConfig.AUDIT_KEY) Optional<Boolean> audit,
+            @ConfigProperty(name = ElasticEventsConfig.INSTANCE_KEY) Optional<Boolean> instance,
+            @ConfigProperty(name = ElasticEventsConfig.TASKS_KEY) Optional<Boolean> tasks,
+            @ConfigProperty(name = ElasticEventsConfig.AUDIT_INDEX_KEY) Optional<String> auditIndex) {
         this.restClient = restClient;
         this.mapper = mapper;
-        this.config = config;
+        this.audit = audit;
+        this.instance = instance;
+        this.tasks = tasks;
+        this.auditIndex = auditIndex;
     }
 
     @Override
@@ -52,7 +67,7 @@ public class ElasticEventPublisher implements EventPublisher {
             if (event instanceof ProcessInstanceDataEvent) {
 
                 ProcessInstanceDataEvent pevent = (ProcessInstanceDataEvent) event;
-                if (config.instance().orElse(true)) {
+                if (instance.orElse(true)) {
                     Map<String, Object> metadata = new LinkedHashMap<>();
                     metadata.put("instanceId", pevent.getData().getId());
                     metadata.put("processId", pevent.getData().getProcessId());
@@ -82,8 +97,8 @@ public class ElasticEventPublisher implements EventPublisher {
 
                     sendRequest(request, event);
                 }
-                if (config.audit().orElse(false)) {
-                    String index = config.auditIndex().orElse("atk_audit");
+                if (audit.orElse(false)) {
+                    String index = auditIndex.orElse("atk_audit");
 
                     StringBuilder bulkRequestBody = new StringBuilder();
                     for (NodeInstanceEventBody nevent : pevent.getData().getNodeInstances()) {
@@ -115,7 +130,7 @@ public class ElasticEventPublisher implements EventPublisher {
 
                 }
 
-            } else if (event instanceof UserTaskInstanceDataEvent && config.tasks().orElse(true)) {
+            } else if (event instanceof UserTaskInstanceDataEvent && tasks.orElse(true)) {
 
                 UserTaskInstanceDataEvent uevent = (UserTaskInstanceDataEvent) event;
                 Set<String> potentialOwners = new LinkedHashSet<String>();

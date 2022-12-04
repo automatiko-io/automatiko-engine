@@ -3,12 +3,14 @@ package io.automatiko.engine.addons.events.ws;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.websocket.Session;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,21 +34,27 @@ public class WebSocketEventPublisher implements EventPublisher {
 
     private ObjectMapper json;
 
-    private WebsocketEventsConfig config;
+    private Optional<Boolean> instance;
+
+    private Optional<Boolean> tasks;
 
     @Inject
-    public WebSocketEventPublisher(ObjectMapper json, WebsocketEventsConfig config) {
+    public WebSocketEventPublisher(ObjectMapper json,
+            @ConfigProperty(name = WebsocketEventsConfig.INSTANCE_KEY) Optional<Boolean> instance,
+            @ConfigProperty(name = WebsocketEventsConfig.TASKS_KEY) Optional<Boolean> tasks) {
         this.json = json;
-        this.config = config;
+        this.instance = instance;
+        this.tasks = tasks;
+
     }
 
     @Override
     public void publish(DataEvent<?> event) {
 
-        if (event instanceof ProcessInstanceDataEvent && !config.instance().orElse(true)) {
+        if (event instanceof ProcessInstanceDataEvent && !instance.orElse(true)) {
             LOGGER.debug("Skipping process instance event as the publisher should not deal with instances");
             return;
-        } else if (event instanceof UserTaskInstanceDataEvent && !config.tasks().orElse(true)) {
+        } else if (event instanceof UserTaskInstanceDataEvent && !tasks.orElse(true)) {
             LOGGER.debug("Skipping user task event as the publisher should not deal with tasks");
             return;
         }

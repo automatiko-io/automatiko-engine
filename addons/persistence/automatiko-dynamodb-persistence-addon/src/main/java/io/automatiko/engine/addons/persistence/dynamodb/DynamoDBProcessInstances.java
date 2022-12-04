@@ -21,7 +21,6 @@ import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.audit.AuditEntry;
 import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.auth.AccessDeniedException;
-import io.automatiko.engine.api.config.DynamoDBPersistenceConfig;
 import io.automatiko.engine.api.uow.TransactionLog;
 import io.automatiko.engine.api.uow.TransactionLogStore;
 import io.automatiko.engine.api.workflow.ConflictingVersionException;
@@ -79,8 +78,6 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
     private final ProcessInstanceMarshaller marshaller;
     private final StoredDataCodec codec;
 
-    private final DynamoDBPersistenceConfig config;
-
     private DynamoDbClient dynamodb;
 
     private String tableName;
@@ -91,17 +88,27 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
 
     private Auditor auditor;
 
+    private Optional<Boolean> createTables;
+
+    private Optional<Long> readCapacity;
+
+    private Optional<Long> writeCapacity;
+
     public DynamoDBProcessInstances(Process<? extends Model> process, DynamoDbClient dynamodb,
-            DynamoDBPersistenceConfig config, StoredDataCodec codec, TransactionLogStore store, Auditor auditor) {
+            StoredDataCodec codec, TransactionLogStore store, Auditor auditor,
+            Optional<Boolean> createTables, Optional<Long> readCapacity, Optional<Long> writeCapacity) {
         this.process = process;
         this.marshaller = new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process));
-        this.config = config;
+
         this.dynamodb = dynamodb;
         this.tableName = process.id().toUpperCase();
         this.codec = codec;
         this.auditor = auditor;
+        this.createTables = createTables;
+        this.readCapacity = readCapacity;
+        this.writeCapacity = writeCapacity;
 
-        if (config.createTables().orElse(Boolean.TRUE)) {
+        if (this.createTables.orElse(Boolean.TRUE)) {
             createTable();
         }
         this.transactionLog = new TransactionLogImpl(store, new JacksonObjectMarshallingStrategy(process));
@@ -473,8 +480,8 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
                         .keyType(KeyType.HASH)
                         .build())
                 .provisionedThroughput(ProvisionedThroughput.builder()
-                        .readCapacityUnits(config.readCapacity().orElse(Long.valueOf(10)))
-                        .writeCapacityUnits(config.writeCapacity().orElse(Long.valueOf(10)))
+                        .readCapacityUnits(readCapacity.orElse(Long.valueOf(10)))
+                        .writeCapacityUnits(writeCapacity.orElse(Long.valueOf(10)))
                         .build())
                 .tableName(tableName)
                 .build();

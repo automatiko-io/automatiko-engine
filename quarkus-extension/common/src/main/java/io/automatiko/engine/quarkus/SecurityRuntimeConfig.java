@@ -3,12 +3,10 @@ package io.automatiko.engine.quarkus;
 import java.util.Optional;
 
 import io.automatiko.engine.api.config.SecurityConfig;
-import io.quarkus.arc.config.ConfigProperties;
 import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
-@ConfigProperties(prefix = "quarkus.automatiko.security")
 public class SecurityRuntimeConfig extends SecurityConfig {
 
     /**

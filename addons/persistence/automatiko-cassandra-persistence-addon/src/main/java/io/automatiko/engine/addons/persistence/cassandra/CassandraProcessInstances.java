@@ -48,7 +48,6 @@ import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.audit.AuditEntry;
 import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.auth.AccessDeniedException;
-import io.automatiko.engine.api.config.CassandraPersistenceConfig;
 import io.automatiko.engine.api.uow.TransactionLog;
 import io.automatiko.engine.api.uow.TransactionLogStore;
 import io.automatiko.engine.api.workflow.ConflictingVersionException;
@@ -81,8 +80,6 @@ public class CassandraProcessInstances implements MutableProcessInstances {
     private final ProcessInstanceMarshaller marshaller;
     private final StoredDataCodec codec;
 
-    private final CassandraPersistenceConfig config;
-
     private CqlSession cqlSession;
 
     private String tableName;
@@ -93,17 +90,26 @@ public class CassandraProcessInstances implements MutableProcessInstances {
 
     private Auditor auditor;
 
+    private Optional<Boolean> createKeyspace;
+
+    private Optional<Boolean> createTables;
+
+    private Optional<String> keyspace;
+
     public CassandraProcessInstances(Process<? extends Model> process, CqlSession cqlSession,
-            CassandraPersistenceConfig config, StoredDataCodec codec, TransactionLogStore store, Auditor auditor) {
+            StoredDataCodec codec, TransactionLogStore store, Auditor auditor,
+            Optional<Boolean> createKeyspace, Optional<Boolean> createTables, Optional<String> keyspace) {
         this.process = process;
         this.marshaller = new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process));
-        this.config = config;
         this.cqlSession = cqlSession;
         this.tableName = process.id().toUpperCase();
         this.codec = codec;
         this.auditor = auditor;
+        this.createKeyspace = createKeyspace;
+        this.createTables = createTables;
+        this.keyspace = keyspace;
 
-        if (config.createTables().orElse(Boolean.TRUE)) {
+        if (this.createTables.orElse(Boolean.TRUE)) {
             createTable();
         }
 
@@ -133,7 +139,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
         }
         LOGGER.debug("findById() called for instance {}", resolvedId);
 
-        Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName).column(CONTENT_FIELD)
+        Select select = selectFrom(keyspace.orElse("automatiko"), tableName).column(CONTENT_FIELD)
                 .column(VERSION_FIELD)
                 .whereColumn(INSTANCE_ID_FIELD).isEqualTo(literal(resolvedId))
                 .whereColumn(STATUS_FIELD).isEqualTo(literal(status));
@@ -174,7 +180,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
     @Override
     public Collection values(ProcessInstanceReadMode mode, int status, int page, int size) {
         LOGGER.debug("values() called");
-        Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName).column(CONTENT_FIELD)
+        Select select = selectFrom(keyspace.orElse("automatiko"), tableName).column(CONTENT_FIELD)
                 .column(VERSION_FIELD).whereColumn(STATUS_FIELD).isEqualTo(literal(status));
 
         ResultSet rs = cqlSession.execute(select.build());
@@ -204,7 +210,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
         List<Row> collected = new ArrayList<Row>();
         Set<String> distinct = new HashSet<String>();
 
-        Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName).column(INSTANCE_ID_FIELD)
+        Select select = selectFrom(keyspace.orElse("automatiko"), tableName).column(INSTANCE_ID_FIELD)
                 .column(CONTENT_FIELD)
                 .column(VERSION_FIELD)
                 .column(TAGS_FIELD)
@@ -247,7 +253,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
 
         Set<String> distinct = new HashSet<String>();
 
-        Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName).column(INSTANCE_ID_FIELD)
+        Select select = selectFrom(keyspace.orElse("automatiko"), tableName).column(INSTANCE_ID_FIELD)
                 .column(TAGS_FIELD)
                 .whereColumn(STATUS_FIELD).isEqualTo(literal(status));
 
@@ -272,7 +278,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
     @Override
     public Long size() {
         LOGGER.debug("size() called");
-        Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName)
+        Select select = selectFrom(keyspace.orElse("automatiko"), tableName)
                 .countAll();
 
         ResultSet rs = cqlSession.execute(select.build().setConsistencyLevel(ConsistencyLevel.LOCAL_ONE));
@@ -288,7 +294,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
             return true;
         }
         LOGGER.debug("exists() called for instance {}", resolvedId);
-        Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName).column(INSTANCE_ID_FIELD)
+        Select select = selectFrom(keyspace.orElse("automatiko"), tableName).column(INSTANCE_ID_FIELD)
                 .whereColumn(INSTANCE_ID_FIELD).isEqualTo(literal(id));
 
         ResultSet rs = cqlSession.execute(select.build());
@@ -318,7 +324,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
                 tags.add(instance.businessKey());
             }
 
-            Insert insert = insertInto(config.keyspace().orElse("automatiko"), tableName)
+            Insert insert = insertInto(keyspace.orElse("automatiko"), tableName)
                     .value(INSTANCE_ID_FIELD, literal(resolvedId))
                     .value(VERSION_FIELD, literal(((AbstractProcessInstance<?>) instance).getVersionTracker()))
                     .value(STATUS_FIELD, literal(((AbstractProcessInstance<?>) instance).status()))
@@ -377,7 +383,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
             tags.add(instance.businessKey());
         }
 
-        SimpleStatement statement = QueryBuilder.update(config.keyspace().orElse("automatiko"), tableName)
+        SimpleStatement statement = QueryBuilder.update(keyspace.orElse("automatiko"), tableName)
                 .setColumn(CONTENT_FIELD, bindMarker())
                 .setColumn(TAGS_FIELD, bindMarker())
                 .setColumn(VERSION_FIELD, literal(((AbstractProcessInstance<?>) instance).getVersionTracker() + 1))
@@ -396,7 +402,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
                 .bind(ByteBuffer.wrap(data), tags));
         if (!rs.wasApplied()) {
             if (transactionLog.contains(process.id(), instance.id())) {
-                Insert insert = insertInto(config.keyspace().orElse("automatiko"), tableName)
+                Insert insert = insertInto(keyspace.orElse("automatiko"), tableName)
                         .value(INSTANCE_ID_FIELD, literal(resolvedId))
                         .value(VERSION_FIELD, literal(((AbstractProcessInstance<?>) instance).getVersionTracker()))
                         .value(STATUS_FIELD, literal(((AbstractProcessInstance<?>) instance).status()))
@@ -440,7 +446,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
         cachedInstances.remove(resolvedId);
         cachedInstances.remove(id);
 
-        Delete deleteStatement = deleteFrom(config.keyspace().orElse("automatiko"), tableName).whereColumn(INSTANCE_ID_FIELD)
+        Delete deleteStatement = deleteFrom(keyspace.orElse("automatiko"), tableName).whereColumn(INSTANCE_ID_FIELD)
                 .isEqualTo(literal(resolvedId)).ifExists();
 
         cqlSession.execute(deleteStatement.build());
@@ -452,13 +458,13 @@ public class CassandraProcessInstances implements MutableProcessInstances {
 
     protected void createTable() {
 
-        if (config.createKeyspace().orElse(true)) {
-            CreateKeyspace createKs = createKeyspace(config.keyspace().orElse("automatiko")).ifNotExists()
+        if (createKeyspace.orElse(true)) {
+            CreateKeyspace createKs = createKeyspace(keyspace.orElse("automatiko")).ifNotExists()
                     .withSimpleStrategy(1);
             cqlSession.execute(createKs.build());
         }
 
-        CreateTable createTable = SchemaBuilder.createTable(config.keyspace().orElse("automatiko"), tableName)
+        CreateTable createTable = SchemaBuilder.createTable(keyspace.orElse("automatiko"), tableName)
                 .ifNotExists()
                 .withPartitionKey(INSTANCE_ID_FIELD, DataTypes.TEXT)
                 .withColumn(STATUS_FIELD, DataTypes.INT)
@@ -472,7 +478,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
         cqlSession.execute(createTable.build());
 
         CreateIndex index = SchemaBuilder.createIndex(tableName + "_STATUS_IDX").ifNotExists()
-                .onTable(config.keyspace().orElse("automatiko"), tableName).andColumn(STATUS_FIELD);
+                .onTable(keyspace.orElse("automatiko"), tableName).andColumn(STATUS_FIELD);
         cqlSession.execute(index.build());
     }
 
@@ -480,7 +486,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
         ((AbstractProcessInstance<?>) instance).internalRemoveProcessInstance(() -> {
 
             try {
-                Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName).column(CONTENT_FIELD)
+                Select select = selectFrom(keyspace.orElse("automatiko"), tableName).column(CONTENT_FIELD)
                         .whereColumn(INSTANCE_ID_FIELD).isEqualTo(literal(resolveId(instance.id(), instance)));
 
                 ResultSet rs = cqlSession.execute(select.build());

@@ -116,6 +116,14 @@ public interface DependencyInjectionAnnotator {
      * @param node node to be annotated
      * @param configKey name of the configuration property to be injected
      */
+    <T extends NodeWithAnnotations<?>> T withConfig(T node, String configKey);
+
+    /**
+     * Annotates given node with configuration parameter injection
+     *
+     * @param node node to be annotated
+     * @param configKey name of the configuration property to be injected
+     */
     <T extends NodeWithAnnotations<?>> T withConfigInjection(T node, String configKey);
 
     /**
