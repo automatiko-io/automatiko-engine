@@ -20,6 +20,7 @@ import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.Document;
 import org.bson.types.Binary;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +74,6 @@ public class MongodbProcessInstances implements MutableProcessInstances {
     private static final String EXPIRED_AT_FIELD = "piExpiredAtDate";
 
     private MongoClient mongoClient;
-    private MongodbPersistenceConfig config;
 
     private JacksonObjectMarshallingStrategy marshallingStrategy;
     private final Process<? extends Model> process;
@@ -88,16 +88,19 @@ public class MongodbProcessInstances implements MutableProcessInstances {
 
     private Auditor auditor;
 
+    private Optional<String> database;
+
     public MongodbProcessInstances(Process<? extends Model> process, MongoClient mongoClient,
-            MongodbPersistenceConfig config, StoredDataCodec codec, TransactionLogStore store, Auditor auditor) {
+            StoredDataCodec codec, TransactionLogStore store, Auditor auditor,
+            @ConfigProperty(name = MongodbPersistenceConfig.DATABASE_KEY) Optional<String> database) {
         this.process = process;
         this.marshallingStrategy = new JacksonObjectMarshallingStrategy(process);
         this.marshaller = new ProcessInstanceMarshaller(marshallingStrategy);
-        this.config = config;
         this.mongoClient = mongoClient;
         this.tableName = process.id();
         this.codec = codec;
         this.auditor = auditor;
+        this.database = database;
 
         // mark the marshaller that it should not serialize variables
         this.marshaller.addToEnvironment("_ignore_vars_", true);
@@ -397,7 +400,7 @@ public class MongodbProcessInstances implements MutableProcessInstances {
      */
 
     protected MongoCollection<Document> collection() {
-        MongoDatabase database = mongoClient.getDatabase(config.database().orElse("automatiko"));
+        MongoDatabase database = mongoClient.getDatabase(this.database.orElse("automatiko"));
         return database.getCollection(tableName);
     }
 

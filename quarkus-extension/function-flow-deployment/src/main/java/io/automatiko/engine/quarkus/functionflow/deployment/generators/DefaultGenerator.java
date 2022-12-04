@@ -77,7 +77,7 @@ public class DefaultGenerator implements Generator {
             if (f.target().kind().equals(Kind.METHOD)) {
                 MethodInfo mi = f.target().asMethod();
 
-                if (mi.declaringClass().annotations().get(generatedData) == null) {
+                if (!mi.declaringClass().hasDeclaredAnnotation(generatedData)) {
                     continue;
                 }
 
@@ -90,14 +90,14 @@ public class DefaultGenerator implements Generator {
                         .replaceAll("@@trigger@@", mi.annotation(mapping).value("trigger").asString())
                         .replaceAll("@@servicename@@", cob.getApplicationModel().getAppArtifact().getArtifactId()));
                 boolean includeSubjectAttribute = false;
-                Type param = mi.parameters().get(0);
+                Type param = mi.parameters().get(0).type();
                 if (param instanceof ParameterizedType) {
                     param = ((ParameterizedType) param).arguments().get(0);
                     includeSubjectAttribute = true;
                 }
 
                 SchemaFactory.typeToSchema(ctx,
-                        mi.parameters().get(0), Collections.emptyList());
+                        mi.parameters().get(0).type(), Collections.emptyList());
                 Schema fSchema = ctx.getOpenApi().getComponents().getSchemas().get(param.name().local());
                 LOGGER.info(
                         "Function \"{}\" will accept POST requests on / endpoint with following payload ",

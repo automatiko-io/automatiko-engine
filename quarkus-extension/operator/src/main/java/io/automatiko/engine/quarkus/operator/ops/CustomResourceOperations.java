@@ -15,13 +15,12 @@ public class CustomResourceOperations {
     @Inject
     KubernetesClient kube;
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({ "rawtypes" })
     public void updateCustomResource(CustomResource<?, ?> resource) {
 
-        Replaceable r = kube.resources(resource.getClass()).inNamespace(resource.getMetadata().getNamespace())
-                .withName(resource.getMetadata().getName())
+        Replaceable r = kube.resource(resource).inNamespace(resource.getMetadata().getNamespace())
                 .lockResourceVersion(resource.getMetadata().getResourceVersion());
-        r.replace(resource);
+        r.replace();
 
     }
 
@@ -35,7 +34,7 @@ public class CustomResourceOperations {
 
         fromServer.setStatus(resource.getStatus());
 
-        r.patchStatus(fromServer);
+        r.patchStatus();
 
     }
 

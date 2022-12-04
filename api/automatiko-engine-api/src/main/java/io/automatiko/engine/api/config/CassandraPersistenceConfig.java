@@ -4,6 +4,10 @@ import java.util.Optional;
 
 public class CassandraPersistenceConfig {
 
+    public static final String CREATE_KEYSPACE_KEY = "quarkus.automatiko.persistence.cassandra.create-keyspace";
+    public static final String CREATE_TABLES_KEY = "quarkus.automatiko.persistence.cassandra.create-tables";
+    public static final String KEYSPACE_KEY = "quarkus.automatiko.persistence.cassandra.keyspace";
+
     /**
      * Indicates if keyspace should be created during startup.
      */

@@ -12,7 +12,7 @@
 
   <properties>
     <quarkus.version>${version.io.quarkus}</quarkus.version>
-    <camel.version>1.3.0</camel.version>
+    <camel.version>${version.org.apache.camel.quarkus}</camel.version>
     <automatiko.version>${project.version}</automatiko.version>
     <surefire.version>${version.surefire.plugin}</surefire.version>
     <compiler.version>${version.compiler.plugin}</compiler.version>

@@ -28,6 +28,7 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.interceptor.Interceptor;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,24 +101,40 @@ public class CassandraJobService implements JobsService {
 
     protected final String tableName = "ATK_JOBS";
 
-    private CassandraJobsConfig config;
+    private Optional<Boolean> createKeyspace;
+
+    private Optional<Boolean> createTables;
+
+    private Optional<String> keyspace;
+
+    private Optional<Long> interval;
+
+    private Optional<Integer> threads;
 
     @Inject
-    public CassandraJobService(CqlSession cqlSession,
-            CassandraJobsConfig config,
-            Processes processes, Application application, Auditor auditor) {
+    public CassandraJobService(CqlSession cqlSession, Processes processes, Application application, Auditor auditor,
+            @ConfigProperty(name = CassandraJobsConfig.CREATE_KEYSPACE_KEY) Optional<Boolean> createKeyspace,
+            @ConfigProperty(name = CassandraJobsConfig.CREATE_TABLES_KEY) Optional<Boolean> createTables,
+            @ConfigProperty(name = CassandraJobsConfig.KEYSPACE_KEY) Optional<String> keyspace,
+            @ConfigProperty(name = CassandraJobsConfig.INTERVAL_KEY) Optional<Long> interval,
+            @ConfigProperty(name = CassandraJobsConfig.THREADS_KEY) Optional<Integer> threads) {
         this.cqlSession = cqlSession;
-        this.config = config;
+        this.createKeyspace = createKeyspace;
+        this.createTables = createTables;
+        this.keyspace = keyspace;
+        this.interval = interval;
+        this.threads = threads;
+
         processes.processIds().forEach(id -> mappedProcesses.put(id, processes.processById(id)));
 
-        if (config.createTables().orElse(Boolean.TRUE)) {
+        if (this.createTables.orElse(Boolean.TRUE)) {
             createTable();
         }
 
         this.unitOfWorkManager = application.unitOfWorkManager();
         this.auditor = auditor;
 
-        this.scheduler = new ScheduledThreadPoolExecutor(config.threads().orElse(1),
+        this.scheduler = new ScheduledThreadPoolExecutor(this.threads.orElse(1),
                 r -> new Thread(r, "automatiko-jobs-executor"));
         this.loadScheduler = new ScheduledThreadPoolExecutor(1, r -> new Thread(r, "automatiko-jobs-loader"));
     }
@@ -125,10 +142,10 @@ public class CassandraJobService implements JobsService {
     public void start(@Observes @Priority(Interceptor.Priority.LIBRARY_AFTER) StartupEvent event) {
         loadScheduler.scheduleAtFixedRate(() -> {
             try {
-                long next = LocalDateTime.now().plus(Duration.ofMinutes(config.interval().orElse(10L)))
+                long next = LocalDateTime.now().plus(Duration.ofMinutes(interval.orElse(10L)))
                         .atZone(ZoneId.systemDefault()).toInstant()
                         .toEpochMilli();
-                Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName).all()
+                Select select = selectFrom(keyspace.orElse("automatiko"), tableName).all()
                         .whereColumn(FIRE_AT_FIELD).isLessThan(literal(next)).allowFiltering();
 
                 ResultSet rs = cqlSession.execute(select.build());
@@ -176,7 +193,7 @@ public class CassandraJobService implements JobsService {
             } catch (Exception e) {
                 LOGGER.error("Error while loading jobs from cassandra", e);
             }
-        }, 1, config.interval().orElse(10L) * 60, TimeUnit.SECONDS);
+        }, 1, interval.orElse(10L) * 60, TimeUnit.SECONDS);
     }
 
     public void shutdown(@Observes ShutdownEvent event) {
@@ -190,7 +207,7 @@ public class CassandraJobService implements JobsService {
         LOGGER.debug("ScheduleProcessJob: {}", description);
         Insert insert;
         if (description.expirationTime().repeatInterval() != null) {
-            insert = insertInto(config.keyspace().orElse("automatiko"), tableName)
+            insert = insertInto(keyspace.orElse("automatiko"), tableName)
                     .value(INSTANCE_ID_FIELD, literal(description.id()))
                     .value(OWNER_DEF_ID_FIELD, literal(description.processId() + version(description.processVersion())))
                     .value(STATUS_FIELD, literal("scheduled"))
@@ -206,7 +223,7 @@ public class CassandraJobService implements JobsService {
 
             auditor.publish(entry);
         } else {
-            insert = insertInto(config.keyspace().orElse("automatiko"), tableName)
+            insert = insertInto(keyspace.orElse("automatiko"), tableName)
                     .value(INSTANCE_ID_FIELD, literal(description.id()))
                     .value(OWNER_DEF_ID_FIELD, literal(description.processId() + version(description.processVersion())))
                     .value(STATUS_FIELD, literal("scheduled"))
@@ -223,7 +240,7 @@ public class CassandraJobService implements JobsService {
         }
         cqlSession.execute(insert.build());
         if (description.expirationTime().get().toLocalDateTime()
-                .isBefore(LocalDateTime.now().plusMinutes(config.interval().orElse(10L)))) {
+                .isBefore(LocalDateTime.now().plusMinutes(interval.orElse(10L)))) {
 
             scheduledJobs.computeIfAbsent(description.id(), k -> {
                 return scheduler.schedule(processJobByDescription(description),
@@ -240,7 +257,7 @@ public class CassandraJobService implements JobsService {
         Insert insert;
         if (description.expirationTime().repeatInterval() != null) {
 
-            insert = insertInto(config.keyspace().orElse("automatiko"), tableName)
+            insert = insertInto(keyspace.orElse("automatiko"), tableName)
                     .value(INSTANCE_ID_FIELD, literal(description.id()))
                     .value(TRIGGER_TYPE_FIELD, literal(description.triggerType()))
                     .value(OWNER_DEF_ID_FIELD, literal(description.processId() + version(description.processVersion())))
@@ -258,7 +275,7 @@ public class CassandraJobService implements JobsService {
 
             auditor.publish(entry);
         } else {
-            insert = insertInto(config.keyspace().orElse("automatiko"), tableName)
+            insert = insertInto(keyspace.orElse("automatiko"), tableName)
                     .value(INSTANCE_ID_FIELD, literal(description.id()))
                     .value(TRIGGER_TYPE_FIELD, literal(description.triggerType()))
                     .value(OWNER_DEF_ID_FIELD, literal(description.processId() + version(description.processVersion())))
@@ -279,7 +296,7 @@ public class CassandraJobService implements JobsService {
         cqlSession.execute(insert.build());
 
         if (description.expirationTime().get().toLocalDateTime()
-                .isBefore(LocalDateTime.now().plusMinutes(config.interval().orElse(10L)))) {
+                .isBefore(LocalDateTime.now().plusMinutes(interval.orElse(10L)))) {
 
             scheduledJobs.computeIfAbsent(description.id(), k -> {
                 return log(description.id(), scheduler.schedule(
@@ -304,7 +321,7 @@ public class CassandraJobService implements JobsService {
 
     @Override
     public ZonedDateTime getScheduledTime(String id) {
-        Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName).column(FIRE_AT_FIELD)
+        Select select = selectFrom(keyspace.orElse("automatiko"), tableName).column(FIRE_AT_FIELD)
                 .whereColumn(INSTANCE_ID_FIELD).isEqualTo(literal(id));
 
         ResultSet rs = cqlSession.execute(select.build());
@@ -339,7 +356,7 @@ public class CassandraJobService implements JobsService {
 
     protected void removeScheduledJob(String id) {
         Supplier<AuditEntry> entry = () -> {
-            Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName)
+            Select select = selectFrom(keyspace.orElse("automatiko"), tableName)
                     .columns(EXPRESSION_FIELD, REPEAT_INTERVAL_FIELD, FIRE_LIMIT_FIELD, OWNER_DEF_ID_FIELD,
                             OWNER_INSTANCE_ID_FIELD, TRIGGER_TYPE_FIELD)
                     .whereColumn(INSTANCE_ID_FIELD).isEqualTo(literal(id));
@@ -365,14 +382,14 @@ public class CassandraJobService implements JobsService {
         };
 
         auditor.publish(entry);
-        Delete deleteStatement = deleteFrom(config.keyspace().orElse("automatiko"), tableName).whereColumn(INSTANCE_ID_FIELD)
+        Delete deleteStatement = deleteFrom(keyspace.orElse("automatiko"), tableName).whereColumn(INSTANCE_ID_FIELD)
                 .isEqualTo(literal(id)).ifExists();
 
         cqlSession.execute(deleteStatement.build());
     }
 
     protected void updateRepeatableJob(String id) {
-        Select select = selectFrom(config.keyspace().orElse("automatiko"), tableName).column(FIRE_AT_FIELD)
+        Select select = selectFrom(keyspace.orElse("automatiko"), tableName).column(FIRE_AT_FIELD)
                 .whereColumn(INSTANCE_ID_FIELD).isEqualTo(literal(id));
 
         ResultSet rs = cqlSession.execute(select.build());
@@ -385,7 +402,7 @@ public class CassandraJobService implements JobsService {
                     Instant.ofEpochMilli(job.getLong(FIRE_AT_FIELD)),
                     ZoneId.systemDefault());
 
-            SimpleStatement statement = QueryBuilder.update(config.keyspace().orElse("automatiko"), tableName)
+            SimpleStatement statement = QueryBuilder.update(keyspace.orElse("automatiko"), tableName)
                     .setColumn(STATUS_FIELD, literal("scheduled"))
                     .setColumn(FIRE_LIMIT_FIELD, literal(limit))
                     .setColumn(FIRE_AT_FIELD, literal(fireTime.plus(repeat, ChronoUnit.MILLIS).toInstant().toEpochMilli()))
@@ -439,13 +456,13 @@ public class CassandraJobService implements JobsService {
     }
 
     protected void createTable() {
-        if (config.createKeyspace().orElse(true)) {
-            CreateKeyspace createKs = createKeyspace(config.keyspace().orElse("automatiko")).ifNotExists()
+        if (createKeyspace.orElse(true)) {
+            CreateKeyspace createKs = createKeyspace(keyspace.orElse("automatiko")).ifNotExists()
                     .withSimpleStrategy(1);
             cqlSession.execute(createKs.build());
         }
 
-        CreateTable createTable = SchemaBuilder.createTable(config.keyspace().orElse("automatiko"), tableName)
+        CreateTable createTable = SchemaBuilder.createTable(keyspace.orElse("automatiko"), tableName)
                 .ifNotExists()
                 .withPartitionKey(INSTANCE_ID_FIELD, DataTypes.TEXT)
                 .withColumn(FIRE_AT_FIELD, DataTypes.BIGINT)
@@ -460,7 +477,7 @@ public class CassandraJobService implements JobsService {
         cqlSession.execute(createTable.build());
 
         CreateIndex index = SchemaBuilder.createIndex(tableName + "_IDX").ifNotExists()
-                .onTable(config.keyspace().orElse("automatiko"), tableName).andColumn(FIRE_AT_FIELD);
+                .onTable(keyspace.orElse("automatiko"), tableName).andColumn(FIRE_AT_FIELD);
         cqlSession.execute(index.build());
     }
 
@@ -490,7 +507,7 @@ public class CassandraJobService implements JobsService {
         public void run() {
             LOGGER.debug("Job {} started", id);
 
-            SimpleStatement statement = QueryBuilder.update(config.keyspace().orElse("automatiko"), tableName)
+            SimpleStatement statement = QueryBuilder.update(keyspace.orElse("automatiko"), tableName)
                     .setColumn(STATUS_FIELD, literal("taken"))
                     .whereColumn(INSTANCE_ID_FIELD).isEqualTo(literal(id))
                     .ifColumn(STATUS_FIELD).isEqualTo(literal("scheduled"))
@@ -569,7 +586,7 @@ public class CassandraJobService implements JobsService {
         @Override
         public void run() {
             LOGGER.debug("Job {} started", id);
-            SimpleStatement statement = QueryBuilder.update(config.keyspace().orElse("automatiko"), tableName)
+            SimpleStatement statement = QueryBuilder.update(keyspace.orElse("automatiko"), tableName)
                     .setColumn(STATUS_FIELD, literal("taken"))
                     .whereColumn(INSTANCE_ID_FIELD).isEqualTo(literal(id))
                     .ifColumn(STATUS_FIELD).isEqualTo(literal("scheduled"))

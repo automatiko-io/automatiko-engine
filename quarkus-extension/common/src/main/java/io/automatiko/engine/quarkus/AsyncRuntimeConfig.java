@@ -2,12 +2,10 @@ package io.automatiko.engine.quarkus;
 
 import io.automatiko.engine.api.config.AsyncCallbackConfig;
 import io.automatiko.engine.api.config.AsyncConfig;
-import io.quarkus.arc.config.ConfigProperties;
 import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
-@ConfigProperties(prefix = "quarkus.automatiko.async")
 public class AsyncRuntimeConfig extends AsyncConfig {
 
     /**

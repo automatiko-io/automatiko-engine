@@ -27,6 +27,7 @@ import javax.inject.Inject;
 import javax.interceptor.Interceptor;
 
 import org.bson.Document;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,20 +95,29 @@ public class MongodbJobService implements JobsService {
 
     protected final String tableName = "atk_jobs";
 
-    private MongodbJobsConfig config;
+    private Optional<String> database;
+
+    private Optional<Long> interval;
+
+    private Optional<Integer> threads;
 
     @Inject
     public MongodbJobService(MongoClient mongoClient,
-            MongodbJobsConfig config,
-            Processes processes, Application application, Auditor auditor) {
+            Processes processes, Application application, Auditor auditor,
+            @ConfigProperty(name = MongodbJobsConfig.DATABASE_KEY) Optional<String> database,
+            @ConfigProperty(name = MongodbJobsConfig.INTERVAL_KEY) Optional<Long> interval,
+            @ConfigProperty(name = MongodbJobsConfig.THREADS_KEY) Optional<Integer> threads) {
         this.mongoClient = mongoClient;
-        this.config = config;
+        this.database = database;
+        this.interval = interval;
+        this.threads = threads;
+
         processes.processIds().forEach(id -> mappedProcesses.put(id, processes.processById(id)));
 
         this.unitOfWorkManager = application.unitOfWorkManager();
         this.auditor = auditor;
 
-        this.scheduler = new ScheduledThreadPoolExecutor(config.threads().orElse(1),
+        this.scheduler = new ScheduledThreadPoolExecutor(this.threads.orElse(1),
                 r -> new Thread(r, "automatiko-jobs-executor"));
         this.loadScheduler = new ScheduledThreadPoolExecutor(1, r -> new Thread(r, "automatiko-jobs-loader"));
     }
@@ -119,7 +129,7 @@ public class MongodbJobService implements JobsService {
 
         loadScheduler.scheduleAtFixedRate(() -> {
             try {
-                long next = LocalDateTime.now().plus(Duration.ofMinutes(config.interval().orElse(10L)))
+                long next = LocalDateTime.now().plus(Duration.ofMinutes(interval.orElse(10L)))
                         .atZone(ZoneId.systemDefault()).toInstant()
                         .toEpochMilli();
 
@@ -167,7 +177,7 @@ public class MongodbJobService implements JobsService {
             } catch (Exception e) {
                 LOGGER.error("Error while loading jobs from cassandra", e);
             }
-        }, 1, config.interval().orElse(10L) * 60, TimeUnit.SECONDS);
+        }, 1, interval.orElse(10L) * 60, TimeUnit.SECONDS);
     }
 
     public void shutdown(@Observes ShutdownEvent event) {
@@ -213,7 +223,7 @@ public class MongodbJobService implements JobsService {
         }
         collection().insertOne(job);
         if (description.expirationTime().get().toLocalDateTime()
-                .isBefore(LocalDateTime.now().plusMinutes(config.interval().orElse(10L)))) {
+                .isBefore(LocalDateTime.now().plusMinutes(interval.orElse(10L)))) {
 
             scheduledJobs.computeIfAbsent(description.id(), k -> {
                 return scheduler.schedule(processJobByDescription(description),
@@ -268,7 +278,7 @@ public class MongodbJobService implements JobsService {
         collection().insertOne(job);
 
         if (description.expirationTime().get().toLocalDateTime()
-                .isBefore(LocalDateTime.now().plusMinutes(config.interval().orElse(10L)))) {
+                .isBefore(LocalDateTime.now().plusMinutes(interval.orElse(10L)))) {
 
             scheduledJobs.computeIfAbsent(description.id(), k -> {
                 return log(description.id(), scheduler.schedule(
@@ -421,7 +431,7 @@ public class MongodbJobService implements JobsService {
     }
 
     protected MongoCollection<Document> collection() {
-        MongoDatabase database = mongoClient.getDatabase(config.database().orElse("automatiko"));
+        MongoDatabase database = mongoClient.getDatabase(this.database.orElse("automatiko"));
         return database.getCollection(tableName);
     }
 

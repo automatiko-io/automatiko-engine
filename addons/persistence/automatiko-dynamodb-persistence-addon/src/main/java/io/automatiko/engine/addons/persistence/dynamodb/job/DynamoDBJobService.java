@@ -25,6 +25,7 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.interceptor.Interceptor;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,17 +112,34 @@ public class DynamoDBJobService implements JobsService {
 
     protected final String tableName = "ATK_JOBS";
 
-    private DynamoDBJobsConfig config;
+    private Optional<Boolean> createTables;
+
+    private Optional<Long> readCapacity;
+
+    private Optional<Long> writeCapacity;
+
+    private Optional<Long> interval;
+
+    private Optional<Integer> threads;
 
     @Inject
     public DynamoDBJobService(DynamoDbClient dynamodb,
-            DynamoDBJobsConfig config,
-            Processes processes, Application application, Auditor auditor) {
+            Processes processes, Application application, Auditor auditor,
+            @ConfigProperty(name = DynamoDBJobsConfig.CREATE_TABLES_KEY) Optional<Boolean> createTables,
+            @ConfigProperty(name = DynamoDBJobsConfig.READ_CAPACITY_KEY) Optional<Long> readCapacity,
+            @ConfigProperty(name = DynamoDBJobsConfig.WRITE_CAPACITY_KEY) Optional<Long> writeCapacity,
+            @ConfigProperty(name = DynamoDBJobsConfig.INTERVAL_KEY) Optional<Long> interval,
+            @ConfigProperty(name = DynamoDBJobsConfig.THREADS_KEY) Optional<Integer> threads) {
         this.dynamodb = dynamodb;
-        this.config = config;
+        this.createTables = createTables;
+        this.readCapacity = readCapacity;
+        this.writeCapacity = writeCapacity;
+        this.interval = interval;
+        this.threads = threads;
+
         processes.processIds().forEach(id -> mappedProcesses.put(id, processes.processById(id)));
 
-        if (config.createTables().orElse(Boolean.TRUE)) {
+        if (this.createTables.orElse(Boolean.TRUE)) {
             createTable();
         }
 
@@ -129,7 +147,7 @@ public class DynamoDBJobService implements JobsService {
 
         this.auditor = auditor;
 
-        this.scheduler = new ScheduledThreadPoolExecutor(config.threads().orElse(1),
+        this.scheduler = new ScheduledThreadPoolExecutor(this.threads.orElse(1),
                 r -> new Thread(r, "automatiko-jobs-executor"));
         this.loadScheduler = new ScheduledThreadPoolExecutor(1, r -> new Thread(r, "automatiko-jobs-loader"));
     }
@@ -137,7 +155,7 @@ public class DynamoDBJobService implements JobsService {
     public void start(@Observes @Priority(Interceptor.Priority.LIBRARY_AFTER) StartupEvent event) {
         loadScheduler.scheduleAtFixedRate(() -> {
             try {
-                long next = LocalDateTime.now().plus(Duration.ofMinutes(config.interval().orElse(10L)))
+                long next = LocalDateTime.now().plus(Duration.ofMinutes(interval.orElse(10L)))
                         .atZone(ZoneId.systemDefault()).toInstant()
                         .toEpochMilli();
                 Map<String, AttributeValue> attrValues = new HashMap<String, AttributeValue>();
@@ -191,7 +209,7 @@ public class DynamoDBJobService implements JobsService {
             } catch (Exception e) {
                 LOGGER.error("Error while loading jobs from dynamodb", e);
             }
-        }, 1, config.interval().orElse(10L) * 60, TimeUnit.SECONDS);
+        }, 1, interval.orElse(10L) * 60, TimeUnit.SECONDS);
     }
 
     public void shutdown(@Observes ShutdownEvent event) {
@@ -254,7 +272,7 @@ public class DynamoDBJobService implements JobsService {
 
         dynamodb.putItem(request);
         if (description.expirationTime().get().toLocalDateTime()
-                .isBefore(LocalDateTime.now().plusMinutes(config.interval().orElse(10L)))) {
+                .isBefore(LocalDateTime.now().plusMinutes(interval.orElse(10L)))) {
 
             scheduledJobs.computeIfAbsent(description.id(), k -> {
                 return scheduler.schedule(processJobByDescription(description),
@@ -327,7 +345,7 @@ public class DynamoDBJobService implements JobsService {
         dynamodb.putItem(request);
 
         if (description.expirationTime().get().toLocalDateTime()
-                .isBefore(LocalDateTime.now().plusMinutes(config.interval().orElse(10L)))) {
+                .isBefore(LocalDateTime.now().plusMinutes(interval.orElse(10L)))) {
 
             scheduledJobs.computeIfAbsent(description.id(), k -> {
                 return log(description.id(), scheduler.schedule(
@@ -547,8 +565,8 @@ public class DynamoDBJobService implements JobsService {
                         .keyType(KeyType.HASH)
                         .build())
                 .provisionedThroughput(ProvisionedThroughput.builder()
-                        .readCapacityUnits(config.readCapacity().orElse(Long.valueOf(10)))
-                        .writeCapacityUnits(config.writeCapacity().orElse(Long.valueOf(10)))
+                        .readCapacityUnits(readCapacity.orElse(Long.valueOf(10)))
+                        .writeCapacityUnits(writeCapacity.orElse(Long.valueOf(10)))
                         .build())
                 .tableName(tableName)
                 .build();

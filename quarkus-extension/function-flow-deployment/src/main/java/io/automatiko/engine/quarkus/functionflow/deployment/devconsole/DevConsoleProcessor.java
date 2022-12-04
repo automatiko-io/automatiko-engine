@@ -51,7 +51,7 @@ public class DevConsoleProcessor {
             if (f.target().kind().equals(Kind.METHOD)) {
                 MethodInfo mi = f.target().asMethod();
 
-                if (mi.declaringClass().classAnnotation(
+                if (mi.declaringClass().declaredAnnotation(
                         AutomatikoFunctionFlowProcessor.createDotName(Generated.class.getCanonicalName())) == null) {
                     continue;
                 }
@@ -66,13 +66,13 @@ public class DevConsoleProcessor {
                     }
                 }
                 boolean includeSubjectAttribute = false;
-                Type param = mi.parameters().get(0);
+                Type param = mi.parameters().get(0).type();
                 if (param instanceof ParameterizedType) {
                     param = ((ParameterizedType) param).arguments().get(0);
                     includeSubjectAttribute = true;
                 }
                 SchemaFactory.typeToSchema(ctx,
-                        mi.parameters().get(0), Collections.emptyList());
+                        mi.parameters().get(0).type(), Collections.emptyList());
                 Schema fSchema = ctx.getOpenApi().getComponents().getSchemas().get(param.name().local());
 
                 String payload = generator.generate(fSchema, ctx.getOpenApi());

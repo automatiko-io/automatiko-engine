@@ -1,11 +1,12 @@
 
 package io.automatiko.engine.addons.persistence;
 
+import java.util.Optional;
+
 import com.mongodb.client.MongoClient;
 
 import io.automatiko.engine.addons.persistence.mongodb.MongodbProcessInstances;
 import io.automatiko.engine.api.Model;
-import io.automatiko.engine.api.config.MongodbPersistenceConfig;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstancesFactory;
 
@@ -17,19 +18,20 @@ import io.automatiko.engine.api.workflow.ProcessInstancesFactory;
 public abstract class AbstractProcessInstancesFactory implements ProcessInstancesFactory {
 
     protected MongoClient mongoClient;
-    protected MongodbPersistenceConfig config;
+
+    protected Optional<String> database;
 
     public AbstractProcessInstancesFactory() {
     }
 
-    public AbstractProcessInstancesFactory(MongoClient mongoClient, MongodbPersistenceConfig config) {
+    public AbstractProcessInstancesFactory(MongoClient mongoClient, Optional<String> database) {
         this.mongoClient = mongoClient;
-        this.config = config;
+        this.database = database;
     }
 
     @SuppressWarnings("unchecked")
     public MongodbProcessInstances createProcessInstances(Process<?> process) {
-        return new MongodbProcessInstances((Process<? extends Model>) process, mongoClient, config, codec(),
-                transactionLogStore(), auditor());
+        return new MongodbProcessInstances((Process<? extends Model>) process, mongoClient, codec(),
+                transactionLogStore(), auditor(), database);
     }
 }

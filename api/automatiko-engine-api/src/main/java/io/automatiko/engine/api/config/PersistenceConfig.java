@@ -29,28 +29,32 @@ public class PersistenceConfig {
      * Configures database based persistence
      */
     public DatabasePersistenceConfig database() {
-        return new DatabasePersistenceConfig();
+        return new DatabasePersistenceConfig() {
+        };
     }
 
     /**
      * Configures dynamodb based persistence
      */
     public DynamoDBPersistenceConfig dynamodb() {
-        return new DynamoDBPersistenceConfig();
+        return new DynamoDBPersistenceConfig() {
+        };
     }
 
     /**
      * Configures cassandra based persistence
      */
     public CassandraPersistenceConfig cassandra() {
-        return new CassandraPersistenceConfig();
+        return new CassandraPersistenceConfig() {
+        };
     }
 
     /**
      * Configures MongoDB based persistence
      */
     public MongodbPersistenceConfig mongodb() {
-        return new MongodbPersistenceConfig();
+        return new MongodbPersistenceConfig() {
+        };
     }
 
     /**

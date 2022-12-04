@@ -3,6 +3,11 @@ package io.automatiko.engine.api.config;
 import java.util.Optional;
 
 public class CassandraJobsConfig {
+    public static final String CREATE_KEYSPACE_KEY = "quarkus.automatiko.jobs.cassandra.create-keyspace";
+    public static final String CREATE_TABLES_KEY = "quarkus.automatiko.jobs.cassandra.create-tables";
+    public static final String KEYSPACE_KEY = "quarkus.automatiko.jobs.cassandra.keyspace";
+    public static final String INTERVAL_KEY = "quarkus.automatiko.jobs.cassandra.interval";
+    public static final String THREADS_KEY = "quarkus.automatiko.jobs.cassandra.threads";
 
     /**
      * Indicates if keyspace should be created during startup.

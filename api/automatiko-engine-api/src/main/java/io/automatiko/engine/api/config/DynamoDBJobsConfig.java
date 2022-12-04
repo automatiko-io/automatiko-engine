@@ -4,6 +4,12 @@ import java.util.Optional;
 
 public class DynamoDBJobsConfig {
 
+    public static final String CREATE_TABLES_KEY = "quarkus.automatiko.jobs.dynamodb.create-tables";
+    public static final String READ_CAPACITY_KEY = "quarkus.automatiko.jobs.dynamodb.read-capacity";
+    public static final String WRITE_CAPACITY_KEY = "quarkus.automatiko.jobs.dynamodb.write-capacity";
+    public static final String INTERVAL_KEY = "quarkus.automatiko.jobs.dynamodb.interval";
+    public static final String THREADS_KEY = "quarkus.automatiko.jobs.dynamodb.threads";
+
     /**
      * Indicates if tables should be created during startup.
      */

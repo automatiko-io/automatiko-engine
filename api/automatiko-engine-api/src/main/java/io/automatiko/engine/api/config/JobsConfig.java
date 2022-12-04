@@ -27,20 +27,23 @@ public class JobsConfig {
      * Configures dynamodb based jobs service
      */
     public DynamoDBJobsConfig dynamodb() {
-        return new DynamoDBJobsConfig();
+        return new DynamoDBJobsConfig() {
+        };
     }
 
     /**
      * Configures cassandra based jobs service
      */
     public CassandraJobsConfig cassandra() {
-        return new CassandraJobsConfig();
+        return new CassandraJobsConfig() {
+        };
     }
 
     /**
      * Configures MongoDB based jobs service
      */
     public MongodbJobsConfig mongodb() {
-        return new MongodbJobsConfig();
+        return new MongodbJobsConfig() {
+        };
     }
 }
