@@ -1,0 +1,48 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.automatiko.addons</groupId>
+    <artifactId>process-management</artifactId>
+    <version>0.0.0-SNAPSHOT</version>
+  </parent>
+ 
+  <artifactId>automatiko-error-management-addon</artifactId>
+  <name>Automatiko Engine :: Add-Ons :: Error Management</name>
+  <description>Management of process instance errors for Automatiko Engine</description>
+  
+  <properties>
+    <java.module.name>io.automatiko.addons.management.error</java.module.name>
+  </properties>
+  
+  <dependencies>
+    <dependency>
+      <groupId>io.automatiko.engine</groupId>
+      <artifactId>automatiko-engine-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.automatiko.workflow</groupId>
+      <artifactId>automatiko-workflow-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-core</artifactId>
+    </dependency>      
+  </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jboss.jandex</groupId>
+        <artifactId>jandex-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>make-index</id>
+            <goals>
+              <goal>jandex</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

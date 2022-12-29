@@ -5,6 +5,7 @@ import java.util.Optional;
 import io.automatiko.engine.api.config.AsyncConfig;
 import io.automatiko.engine.api.config.AuditConfig;
 import io.automatiko.engine.api.config.AutomatikoConfig;
+import io.automatiko.engine.api.config.ErrorRecoveryConfig;
 import io.automatiko.engine.api.config.FilesConfig;
 import io.automatiko.engine.api.config.JobsConfig;
 import io.automatiko.engine.api.config.PersistenceConfig;
@@ -91,6 +92,12 @@ public class AutomatikoRuntimeConfig extends AutomatikoConfig {
     @ConfigItem
     public AuditRuntimeConfig audit;
 
+    /**
+     * Configures error recovery support
+     */
+    @ConfigItem
+    public ErrorRecoveryRuntimeConfig errorRecovery;
+
     @Override
     public Optional<String> serviceUrl() {
         return serviceUrl;
@@ -149,5 +156,10 @@ public class AutomatikoRuntimeConfig extends AutomatikoConfig {
     @Override
     public AuditConfig audit() {
         return audit;
+    }
+
+    @Override
+    public ErrorRecoveryConfig errorRecovery() {
+        return errorRecovery;
     }
 }

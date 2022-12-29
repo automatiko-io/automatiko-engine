@@ -140,7 +140,7 @@ public class $Type$GraphQLResource {
     
     @Mutation("delete_$name$$prefix$")
     @Description("Deletes $name$ $prefix$ instance with given id")
-    public $Type$Output delete_$name$(@Name("id") final String id, 
+    public $Type$Output delete_$name$(@Name("id") final String id, @Name("status") @DefaultValue("active") final String status,
             @Name("user") final String user, 
             @Name("groups") final List<String> groups) {
         identitySupplier.buildIdentityProvider(user, groups);
@@ -148,7 +148,7 @@ public class $Type$GraphQLResource {
              
             ProcessInstance<$Type$> pi = process.instances().findById(id, ProcessInstance.STATE_ACTIVE, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE).orElse(null);
             if (pi == null) {
-                pi = process.instances().findById(id, ProcessInstance.STATE_ERROR, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+                pi = process.instances().findById(id, mapStatus(status), io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             }
             tracing(pi);
             pi.abort();            
@@ -159,7 +159,7 @@ public class $Type$GraphQLResource {
      
     @Mutation("update_model_$name$$prefix$")
     @Description("Updates data of $name$ instance with given id")
-    public $Type$Output update_model_$name$(@Name("id")  String id, 
+    public $Type$Output update_model_$name$(@Name("id")  String id, @Name("status") @DefaultValue("active") final String status, 
             @Name("user") final String user, 
             @Name("groups") final List<String> groups, @Name("data") $Type$ resource) {
         
@@ -167,7 +167,7 @@ public class $Type$GraphQLResource {
         identitySupplier.buildIdentityProvider(null, null);
         return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
-                    .findById(id)
+                    .findById(id, mapStatus(status), io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE)
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             tracing(pi);
             pi.updateVariables(resource);

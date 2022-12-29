@@ -256,7 +256,8 @@ public class $Type$Resource {
     @Path("$prefix$/$name$/{id_$name$}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateModel_$name$(@Context HttpHeaders httpHeaders, @PathParam("id") String id, @PathParam("id_$name$") String id_$name$, 
+    public Response updateModel_$name$(@Context HttpHeaders httpHeaders, @PathParam("id") String id, @PathParam("id_$name$") String id_$name$,
+            @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {"active", "error"})) @QueryParam("status") @DefaultValue("active") final String status,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
             @Parameter(description = "Indicates if instance metadata should be included", required = false) @QueryParam("metadata") @DefaultValue("false") final boolean metadata,
@@ -275,7 +276,7 @@ public class $Type$Resource {
                 IdentityProvider.set(identity);
                 io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                     ProcessInstance<$Type$> pi = subprocess_$name$.instances()
-                            .findById($parentprocessid$ + ":" + id_$name$)
+                            .findById($parentprocessid$ + ":" + id_$name$, mapStatus(status), io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE)
                             .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
                     tracing(pi);
                     pi.updateVariables(resource);
@@ -296,7 +297,7 @@ public class $Type$Resource {
             identitySupplier.buildIdentityProvider(user, groups);
             return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
                 ProcessInstance<$Type$> pi = subprocess_$name$.instances()
-                        .findById($parentprocessid$ + ":" + id_$name$)
+                        .findById($parentprocessid$ + ":" + id_$name$, mapStatus(status), io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE)
                         .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
                 tracing(pi);
                 pi.updateVariables(resource);

@@ -18,6 +18,7 @@
 
   <modules>
     <module>automatiko-process-management-addon</module>
+    <module>automatiko-error-management-addon</module>
   </modules>
 
   <dependencyManagement>

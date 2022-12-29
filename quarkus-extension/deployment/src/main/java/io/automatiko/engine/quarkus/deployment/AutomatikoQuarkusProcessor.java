@@ -70,7 +70,6 @@ import io.quarkus.bootstrap.classloading.ClassPathElement;
 import io.quarkus.bootstrap.classloading.MemoryClassPathElement;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
 import io.quarkus.bootstrap.model.ApplicationModel;
-import io.quarkus.bootstrap.model.PathsCollection;
 import io.quarkus.deployment.ApplicationArchive;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -93,6 +92,7 @@ import io.quarkus.deployment.index.IndexingUtil;
 import io.quarkus.deployment.pkg.PackageConfig;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.quarkus.maven.dependency.ResolvedDependency;
+import io.quarkus.paths.PathCollection;
 import io.quarkus.runtime.LaunchMode;
 
 public class AutomatikoQuarkusProcessor {
@@ -161,17 +161,17 @@ public class AutomatikoQuarkusProcessor {
                     .getAnnotations(createDotName(workflowsAnnotationClass)).stream()
                     .map(a -> a.target().asClass().name().toString()).collect(Collectors.toList());
 
-            if (liveReload.getChangeInformation().getAddedClasses().stream()
+            if (liveReload.getChangeInformation() != null && (liveReload.getChangeInformation().getAddedClasses().stream()
                     .anyMatch(clazz -> workflowBuilderClasses.contains(clazz))
                     || liveReload.getChangeInformation().getChangedClasses().stream()
-                            .anyMatch(clazz -> workflowBuilderClasses.contains(clazz))) {
+                            .anyMatch(clazz -> workflowBuilderClasses.contains(clazz)))) {
                 onlyCodeAssets = true;
             } else {
                 return;
             }
         }
 
-        AppPaths appPaths = new AppPaths(root.getPaths());
+        AppPaths appPaths = new AppPaths(root.getResolvedPaths());
 
         ApplicationGenerator appGen = createApplicationGenerator(config, appPaths, archivesIndex,
                 curateOutcomeBuildItem.getApplicationModel(), onlyCodeAssets);
@@ -731,7 +731,7 @@ public class AutomatikoQuarkusProcessor {
 
         private boolean isJar = false;
 
-        private AppPaths(PathsCollection paths) {
+        private AppPaths(PathCollection paths) {
             for (Path path : paths) {
                 PathType pathType = getPathType(path);
                 switch (pathType) {
