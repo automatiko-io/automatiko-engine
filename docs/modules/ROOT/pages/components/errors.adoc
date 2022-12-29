@@ -121,3 +121,51 @@ error handling and retries.
 
 TIP: When using process management addon there is an instance visualization
 that will mark activities that are in retry with a warning icon.
+
+== Automatic error recovery
+
+During execution, unhandled errors will put workflow instance into an error state. This means that it requires additional 
+action to resolve the error and resume execution. There are two possible ways of recovering from error state:
+
+- retry the failed node
+- skip the failed node
+
+Retry means that the same node will be executed once again. Depending on the error, retry might already resolve the problem
+(in case it was an temporary problem like lost network connection or similar). But in other situations it might require additional 
+action to be performed - like updating data objects of the workflow instance.
+
+On the other hand, skipping means that the failed node won't be executed at all and execution will be resumed from the next node 
+in the workflow definition.
+
+Automatiko comes with an addon that aims at automating error recovery based on time scoped retry mechanism.
+Each failed instance will be scheduled for automatic retry which by default will
+
+- run every 30 seconds
+- attempt to retry it at most 10 times
+
+IMPORTANT: It's important to note that automatic error recovery does not perform any other action that retry of the failed node.
+
+=== Use it
+
+First of all, a dependency to `automatiko-error-management-addon` needs to be added to the project.
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-error-management-addon</artifactId>
+</dependency>
+----
+
+Following are parameters that can configure this addon to have more control on how it behaves
+
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.automatiko.error-recovery.delay|QUARKUS_AUTOMATIKO_ERROR_RECOVERY_DELAY|Specifies delays for error recovery attempts as ISO 8601 period format|Yes|PT30S|No
+|quarkus.automatiko.error-recovery.excluded|QUARKUS_AUTOMATIKO_ERROR_RECOVERY_EXCLUDED|Specifies comma separated package names (of workflows) to be excluded from error recovery|Yes||No
+|quarkus.automatiko.error-recovery.max-increment-attempts|QUARKUS_AUTOMATIKO_ERROR_RECOVERY_MAX_INCREMENT_ATTEMPTS|Specifies maximum number of recovery attempts|Yes|10|No
+|quarkus.automatiko.error-recovery.ignored-error-codes|QUARKUS_AUTOMATIKO_ERROR_RECOVERY_IGNORED_ERROR_CODES|Specifies comma separated error codes that should be ignored from error recovery|Yes||No
+|quarkus.automatiko.error-recovery.increment-factor|QUARKUS_AUTOMATIKO_ERROR_RECOVERY_INCREMENT_FACTOR|Specifies increment factor in gradually increase the delay between attempts. Expected values are from 0.1 to 1.0|Yes|1.0|No
+
+|====

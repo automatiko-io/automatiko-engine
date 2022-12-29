@@ -44,10 +44,10 @@ to visualize your running service
 There are multiple paths that can be taken during given order
 
 Process individual text files
-image::document-processor-txt.png[]
+image:document-processor-txt.png[]
 
 Process archives and delegates to individual file processing for every item found in the archive
-image::document-processor-zip.png[]
+image:document-processor-zip.png[]
 
 === The happy path
 

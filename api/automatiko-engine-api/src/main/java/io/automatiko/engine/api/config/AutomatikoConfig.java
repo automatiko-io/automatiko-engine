@@ -56,4 +56,8 @@ public class AutomatikoConfig {
     public AuditConfig audit() {
         return new AuditConfig();
     }
+
+    public ErrorRecoveryConfig errorRecovery() {
+        return new ErrorRecoveryConfig();
+    }
 }

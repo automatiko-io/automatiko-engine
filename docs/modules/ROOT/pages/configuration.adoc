@@ -159,6 +159,18 @@ Following are set of configuration parameters that can be used to configure Auto
 
 |====
 
+.Error recovery configuration parameters
+|====
+|Property name|Environment variable|Description|Required|Default value|BuildTime only
+
+|quarkus.automatiko.error-recovery.delay|QUARKUS_AUTOMATIKO_ERROR_RECOVERY_DELAY|Specifies delays for error recovery attempts as ISO 8601 period format|Yes|PT30S|No
+|quarkus.automatiko.error-recovery.excluded|QUARKUS_AUTOMATIKO_ERROR_RECOVERY_EXCLUDED|Specifies comma separated package names (of workflows) to be excluded from error recovery|Yes||No
+|quarkus.automatiko.error-recovery.max-increment-attempts|QUARKUS_AUTOMATIKO_ERROR_RECOVERY_MAX_INCREMENT_ATTEMPTS|Specifies maximum number of recovery attempts|Yes|10|No
+|quarkus.automatiko.error-recovery.ignored-error-codes|QUARKUS_AUTOMATIKO_ERROR_RECOVERY_IGNORED_ERROR_CODES|Specifies comma separated error codes that should be ignored from error recovery|Yes||No
+|quarkus.automatiko.error-recovery.increment-factor|QUARKUS_AUTOMATIKO_ERROR_RECOVERY_INCREMENT_FACTOR|Specifies increment factor in gradually increase the delay between attempts. Expected values are from 0.1 to 1.0|Yes|1.0|No
+
+|====
+
 == Instructions during build
 
 NOTE: Automatiko also predefines several configuration to simplify use. These configuration options are logged as part of the build process
