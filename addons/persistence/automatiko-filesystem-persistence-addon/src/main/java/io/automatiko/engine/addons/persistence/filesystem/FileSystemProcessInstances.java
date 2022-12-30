@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -65,6 +66,12 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     public static final String PI_END_DATE = "ProcessInstanceEndDate";
     public static final String PI_EXPIRED_AT_DATE = "ProcessInstanceExpiredAtDate";
 
+    private static final int DEFAULT_LOCK_TIMEOUT = 60 * 1000;
+
+    private static final int DEFAULT_LOCK_LIMIT = 5000;
+
+    private static final int DEFAULT_LOCK_WAIT = 100;
+
     private boolean useCompositeIdForSubprocess = true;
 
     private Process<?> process;
@@ -82,10 +89,19 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 
     private Indexer indexer;
 
+    private int configuredLockTimeout = DEFAULT_LOCK_TIMEOUT;
+
+    private int configuredLockLimit = DEFAULT_LOCK_LIMIT;
+
+    private int configuredLockWait = DEFAULT_LOCK_WAIT;
+
     public FileSystemProcessInstances(Process<?> process, Path storage, StoredDataCodec codec, TransactionLogStore store,
-            Auditor auditor) {
+            Auditor auditor, Optional<Integer> lockTimeout, Optional<Integer> lockLimit, Optional<Integer> lockWait) {
         this(process, storage, new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process)), codec, store,
                 auditor);
+        this.configuredLockTimeout = lockTimeout.orElse(DEFAULT_LOCK_TIMEOUT);
+        this.configuredLockLimit = lockLimit.orElse(DEFAULT_LOCK_LIMIT);
+        this.configuredLockWait = lockWait.orElse(DEFAULT_LOCK_WAIT);
     }
 
     public FileSystemProcessInstances(Process<?> process, Path storage, boolean useCompositeIdForSubprocess,
@@ -172,10 +188,27 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
                 || Integer.parseInt(getMetadata(processInstanceStorage, PI_STATUS)) != status) {
             return Optional.empty();
         }
-        byte[] data = readBytesFromFile(processInstanceStorage);
-        return Optional.of(audit(
-                mode == MUTABLE ? marshaller.unmarshallProcessInstance(data, process, getVersionTracker(processInstanceStorage))
-                        : marshaller.unmarshallReadOnlyProcessInstance(data, process)));
+        byte[] data;
+
+        switch (mode) {
+            case MUTABLE:
+                data = readBytesFromFile(processInstanceStorage);
+                return Optional
+                        .of(marshaller.unmarshallProcessInstance(data, process, getVersionTracker(processInstanceStorage)));
+            case MUTABLE_WITH_LOCK:
+                acquireLock(resolvedId);
+                try {
+                    data = readBytesFromFile(processInstanceStorage);
+                    return Optional
+                            .of(marshaller.unmarshallProcessInstance(data, process, getVersionTracker(processInstanceStorage)));
+                } catch (Throwable e) {
+                    releaseLock(resolvedId);
+                }
+            default:
+                data = readBytesFromFile(processInstanceStorage);
+                return Optional.of(marshaller.unmarshallReadOnlyProcessInstance(data, process));
+
+        }
 
     }
 
@@ -239,7 +272,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             if (Files.exists(processInstanceStorage)) {
                 throw new ProcessInstanceDuplicatedException(id);
             }
-
+            acquireLock(resolvedId);
             cachedInstances.remove(resolvedId);
             cachedInstances.remove(id);
 
@@ -294,6 +327,9 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             Files.deleteIfExists(processInstanceMetadataStorage);
 
             indexer.remove(resolvedId, instance);
+
+            releaseLock(resolvedId);
+
             Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
                     .add("message", "Workflow instance deleted from the file system based data store");
 
@@ -356,7 +392,14 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             disconnect(processInstanceStorage, instance);
         } catch (IOException e) {
             throw new RuntimeException("Unable to store process instance with id " + instance.id(), e);
+        } finally {
+            releaseLock(resolvedId);
         }
+    }
+
+    @Override
+    public void release(String id, ProcessInstance pi) {
+        releaseLock(resolveId(id, pi));
     }
 
     protected byte[] readBytesFromFile(Path processInstanceStorage) {
@@ -552,4 +595,74 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         return instance;
     }
 
+    protected void acquireLock(String id) {
+
+        Path processInstanceLock = Paths.get(storage.toString(), "." + id + ".lock");
+
+        try {
+            Files.createFile(processInstanceLock);
+
+        } catch (FileAlreadyExistsException e) {
+            try {
+                try {
+                    Files.createFile(processInstanceLock);
+
+                } catch (FileAlreadyExistsException e2) {
+                    if (Files.exists(processInstanceLock)) {
+                        synchronized (this) {
+                            if (Files.exists(processInstanceLock)) {
+                                long value = System.currentTimeMillis() - configuredLockTimeout;
+                                // first check if the lock file is not overdue
+
+                                if (Files.getLastModifiedTime(processInstanceLock).toMillis() < value) {
+                                    // if so recreate it
+                                    Files.delete(processInstanceLock);
+                                    Files.createFile(processInstanceLock);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+
+                    // in case lock is not overdue then wait for it to be removed
+                    int limit = 0;
+                    while (true) {
+                        if (limit > configuredLockLimit) {
+                            throw new IllegalStateException(
+                                    "Unable to aquire lock on process instance (" + id + ") within " + limit + " ms");
+                        }
+
+                        try {
+                            Thread.sleep(configuredLockWait);
+                        } catch (InterruptedException ex) {
+                        }
+
+                        limit += configuredLockWait;
+                        try {
+                            Files.createFile(processInstanceLock);
+                            break;
+                        } catch (FileAlreadyExistsException ex) {
+
+                        }
+                    }
+                }
+
+            } catch (IOException e1) {
+
+                throw new UncheckedIOException(e1);
+            }
+        } catch (IOException e1) {
+            throw new UncheckedIOException(e1);
+        }
+
+    }
+
+    protected void releaseLock(String resolvedId) {
+        try {
+            Path processInstanceLock = Paths.get(storage.toString(), "." + resolvedId + ".lock");
+            Files.deleteIfExists(processInstanceLock);
+        } catch (IOException e1) {
+            throw new UncheckedIOException(e1);
+        }
+    }
 }

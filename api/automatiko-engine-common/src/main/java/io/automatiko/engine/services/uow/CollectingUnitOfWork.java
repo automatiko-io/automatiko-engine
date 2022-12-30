@@ -235,6 +235,11 @@ public class CollectingUnitOfWork implements UnitOfWork {
             return collected;
         }
 
+        @Override
+        public void release(String id, ProcessInstance pi) {
+            delegate.release(id, pi);
+        }
+
         protected void addToCache(String id, ProcessInstance<?> pi) {
             local.put(id, pi);
 

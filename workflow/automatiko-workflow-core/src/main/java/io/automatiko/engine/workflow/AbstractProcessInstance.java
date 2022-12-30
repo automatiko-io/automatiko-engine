@@ -323,7 +323,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         io.automatiko.engine.api.runtime.process.ProcessInstance processInstance = this.getProcessRuntime()
                 .startProcessInstance(this.id, trigger, data);
         syncProcessInstance((WorkflowProcessInstance) processInstance);
-        addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).create(pi.id(), pi));
+        addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).create(pi.id(), pi),
+                pi -> ((MutableProcessInstances<T>) process.instances()).release(pi.id(), pi));
 
         unbind(variables, processInstance.getVariables());
         if (this.processInstance != null) {
@@ -336,6 +337,12 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     protected void addToUnitOfWork(Consumer<ProcessInstance<T>> action) {
         ((InternalProcessRuntime) getProcessRuntime()).getUnitOfWorkManager().currentUnitOfWork()
                 .intercept(new ProcessInstanceWorkUnit(this, action));
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    protected void addToUnitOfWork(Consumer<ProcessInstance<T>> action, Consumer<ProcessInstance<T>> aborAction) {
+        ((InternalProcessRuntime) getProcessRuntime()).getUnitOfWorkManager().currentUnitOfWork()
+                .intercept(new ProcessInstanceWorkUnit(this, action, aborAction));
     }
 
     public void abort() {
@@ -351,10 +358,12 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         // apply end of instance strategy on completion
         process.endOfInstanceStrategy().perform(this);
         if (process.endOfInstanceStrategy().shouldInstanceBeUpdated()) {
-            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
+            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi),
+                    pi -> ((MutableProcessInstances<T>) process.instances()).release(pi.id(), pi));
         }
         if (process.endOfInstanceStrategy().shouldInstanceBeRemoved()) {
-            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi));
+            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi),
+                    pi -> ((MutableProcessInstances<T>) process.instances()).release(pi.id(), pi));
         }
         unlock(true);
 
@@ -491,7 +500,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
             synchronized (this) {
                 ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi);
             }
-        });
+        }, pi -> ((MutableProcessInstances<T>) process.instances()).release(pi.id(), pi));
         unlock(false);
         removeOnFinish();
 
@@ -532,7 +541,8 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         ((WorkflowProcessInstanceImpl) processInstance).setMetaData("AutomatikProcessInstance", this);
         triggerNode(nodeId);
         syncProcessInstance((WorkflowProcessInstance) processInstance);
-        addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
+        addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi),
+                pi -> ((MutableProcessInstances<T>) process.instances()).release(pi.id(), pi));
         unlock(false);
         unbind(variables, processInstance.getVariables());
         if (processInstance != null) {
@@ -654,76 +664,93 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     @Override
     public void completeWorkItem(String id, Map<String, Object> variables, Policy<?>... policies) {
         lock();
-        processInstance();
-        String[] fragments = id.split("/");
+        try {
+            processInstance();
+            String[] fragments = id.split("/");
 
-        if (fragments.length > 1) {
-            // comes from subprocess
-            subprocesses().stream()
-                    .filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
-                    .findFirst().ifPresent(pi -> pi.completeWorkItem(fragments[3], variables, policies));
-        } else {
+            if (fragments.length > 1) {
+                // comes from subprocess
+                subprocesses().stream()
+                        .filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
+                        .findFirst().ifPresent(pi -> pi.completeWorkItem(fragments[3], variables, policies));
+            } else {
 
-            this.getProcessRuntime().getWorkItemManager().completeWorkItem(id, variables, policies);
-            removeOnFinish();
+                this.getProcessRuntime().getWorkItemManager().completeWorkItem(id, variables, policies);
+                removeOnFinish();
+            }
+        } catch (Exception e) {
+            ((MutableProcessInstances<T>) process.instances()).release(id(), this);
+            throw e;
         }
-
     }
 
     @Override
     public void abortWorkItem(String id, Policy<?>... policies) {
         lock();
-        processInstance();
-        String[] fragments = id.split("/");
+        try {
+            processInstance();
+            String[] fragments = id.split("/");
 
-        if (fragments.length > 1) {
-            // comes from subprocess
-            subprocesses().stream()
-                    .filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
-                    .findFirst().ifPresent(pi -> pi.abortWorkItem(fragments[3], policies));
-        } else {
+            if (fragments.length > 1) {
+                // comes from subprocess
+                subprocesses().stream()
+                        .filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
+                        .findFirst().ifPresent(pi -> pi.abortWorkItem(fragments[3], policies));
+            } else {
 
-            this.getProcessRuntime().getWorkItemManager().abortWorkItem(id, policies);
-            removeOnFinish();
+                this.getProcessRuntime().getWorkItemManager().abortWorkItem(id, policies);
+                removeOnFinish();
+            }
+        } catch (Exception e) {
+            ((MutableProcessInstances<T>) process.instances()).release(id(), this);
+            throw e;
         }
-
     }
 
     @Override
     public void failWorkItem(String id, Throwable error) {
         lock();
-        processInstance();
-        String[] fragments = id.split("/");
+        try {
+            processInstance();
+            String[] fragments = id.split("/");
 
-        if (fragments.length > 1) {
-            // comes from subprocess
-            subprocesses().stream()
-                    .filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
-                    .findFirst().ifPresent(pi -> pi.failWorkItem(fragments[3], error));
-        } else {
+            if (fragments.length > 1) {
+                // comes from subprocess
+                subprocesses().stream()
+                        .filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
+                        .findFirst().ifPresent(pi -> pi.failWorkItem(fragments[3], error));
+            } else {
 
-            this.getProcessRuntime().getWorkItemManager().failWorkItem(id, error);
-            removeOnFinish();
+                this.getProcessRuntime().getWorkItemManager().failWorkItem(id, error);
+                removeOnFinish();
+            }
+        } catch (Exception e) {
+            ((MutableProcessInstances<T>) process.instances()).release(id(), this);
+            throw e;
         }
     }
 
     @Override
     public void transitionWorkItem(String id, Transition<?> transition) {
         lock();
-        processInstance();
-        String[] fragments = id.split("/");
+        try {
+            processInstance();
+            String[] fragments = id.split("/");
 
-        if (fragments.length > 1) {
-            // comes from subprocess
-            subprocesses().stream()
-                    .filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
-                    .findFirst().ifPresent(pi -> pi.transitionWorkItem(fragments[3], transition));
-        } else {
+            if (fragments.length > 1) {
+                // comes from subprocess
+                subprocesses().stream()
+                        .filter(pi -> pi.process().id().equals(fragments[0]) && pi.id().equals(fragments[1]))
+                        .findFirst().ifPresent(pi -> pi.transitionWorkItem(fragments[3], transition));
+            } else {
 
-            this.getProcessRuntime().getWorkItemManager().transitionWorkItem(id, transition);
-            removeOnFinish();
+                this.getProcessRuntime().getWorkItemManager().transitionWorkItem(id, transition);
+                removeOnFinish();
+            }
+        } catch (Exception e) {
+            ((MutableProcessInstances<T>) process.instances()).release(id(), this);
+            throw e;
         }
-
     }
 
     @Override
@@ -927,17 +954,20 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
             // apply end of instance strategy on completion
             process.endOfInstanceStrategy().perform(this);
             if (process.endOfInstanceStrategy().shouldInstanceBeUpdated()) {
-                addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
+                addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi),
+                        pi -> ((MutableProcessInstances<T>) process.instances()).release(pi.id(), pi));
             }
             if (process.endOfInstanceStrategy().shouldInstanceBeRemoved()) {
-                addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi));
+                addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi),
+                        pi -> ((MutableProcessInstances<T>) process.instances()).release(pi.id(), pi));
             }
             unlock(true);
 
         } else {
             syncProcessInstance((WorkflowProcessInstance) processInstance);
             unbind(this.variables, processInstance().getVariables());
-            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi));
+            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi),
+                    pi -> ((MutableProcessInstances<T>) process.instances()).release(pi.id(), pi));
             unlock(false);
         }
 

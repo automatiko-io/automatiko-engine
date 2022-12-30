@@ -64,7 +64,7 @@ public class $Type$MessageConsumer {
             	String correlation = correlationPayload(eventData, msg);
             	if (correlation != null) {
             		LOGGER.debug("Correlation ({}) is set, attempting to find if there is matching instance already active", correlation);
-            		Collection possiblyFound = process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE, correlation);
+            		Collection possiblyFound = process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE_WITH_LOCK, correlation);
                     if (!possiblyFound.isEmpty()) {
                         metrics.messageConsumed(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
                         possiblyFound.forEach(pi -> {
@@ -84,7 +84,7 @@ public class $Type$MessageConsumer {
                     
                     	pi.start(trigger, null, eventData);
                     } catch (ProcessInstanceDuplicatedException e) {
-                    	ProcessInstance<$Type$> pi = process.instances().findById(correlation).get();
+                    	ProcessInstance<$Type$> pi = process.instances().findById(correlation, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE_WITH_LOCK).get();
                     	pi.send(Sig.of(trigger, eventData));
                     }
             	} else {

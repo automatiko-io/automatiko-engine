@@ -28,10 +28,6 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.interceptor.Interceptor;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -47,6 +43,10 @@ import com.datastax.oss.driver.api.querybuilder.schema.CreateKeyspace;
 import com.datastax.oss.driver.api.querybuilder.schema.CreateTable;
 import com.datastax.oss.driver.api.querybuilder.select.Select;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.audit.AuditEntry;
@@ -61,6 +61,7 @@ import io.automatiko.engine.api.jobs.ProcessJobDescription;
 import io.automatiko.engine.api.uow.UnitOfWorkManager;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
+import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.api.workflow.Processes;
 import io.automatiko.engine.services.time.TimerInstance;
 import io.automatiko.engine.services.uow.UnitOfWorkExecutor;
@@ -534,7 +535,7 @@ public class CassandraJobService implements JobsService {
                 auditor.publish(entry);
                 UnitOfWorkExecutor.executeInUnitOfWork(unitOfWorkManager, () -> {
                     Optional<? extends ProcessInstance<?>> processInstanceFound = process.instances()
-                            .findById(processInstanceId);
+                            .findById(processInstanceId, ProcessInstanceReadMode.MUTABLE_WITH_LOCK);
                     if (processInstanceFound.isPresent()) {
                         ProcessInstance<?> processInstance = processInstanceFound.get();
                         String[] ids = id.split("_");

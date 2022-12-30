@@ -41,6 +41,7 @@ import io.automatiko.engine.api.jobs.ProcessJobDescription;
 import io.automatiko.engine.api.uow.UnitOfWorkManager;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
+import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.api.workflow.Processes;
 import io.automatiko.engine.services.time.TimerInstance;
 import io.automatiko.engine.services.uow.UnitOfWorkExecutor;
@@ -378,7 +379,7 @@ public class DatabaseJobService implements JobsService {
             auditor.publish(entry);
             UnitOfWorkExecutor.executeInUnitOfWork(unitOfWorkManager, () -> {
                 Optional<? extends ProcessInstance<?>> processInstanceFound = process.instances()
-                        .findById(processInstanceId);
+                        .findById(processInstanceId, ProcessInstanceReadMode.MUTABLE_WITH_LOCK);
                 if (processInstanceFound.isPresent()) {
                     ProcessInstance<?> processInstance = processInstanceFound.get();
                     String[] ids = id.split("_");

@@ -22,9 +22,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -41,6 +38,9 @@ import com.datastax.oss.driver.api.querybuilder.schema.CreateIndex;
 import com.datastax.oss.driver.api.querybuilder.schema.CreateKeyspace;
 import com.datastax.oss.driver.api.querybuilder.schema.CreateTable;
 import com.datastax.oss.driver.api.querybuilder.select.Select;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.addons.persistence.common.JacksonObjectMarshallingStrategy;
 import io.automatiko.engine.addons.persistence.common.tlog.TransactionLogImpl;
@@ -155,7 +155,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
                     versionTracker = row.getLong(VERSION_FIELD);
                 }
                 return Optional
-                        .of(audit(mode == MUTABLE
+                        .of(audit(mode == MUTABLE || mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK
                                 ? marshaller.unmarshallProcessInstance(content, process, versionTracker)
                                 : marshaller.unmarshallReadOnlyProcessInstance(content, process)));
             }
@@ -167,7 +167,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
             byte[] content = ByteUtils.getArray(row.getByteBuffer(CONTENT_FIELD));
 
             return Optional
-                    .of(audit(mode == MUTABLE
+                    .of(audit(mode == MUTABLE || mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK
                             ? marshaller.unmarshallProcessInstance(codec.decode(content), process, row.getLong(VERSION_FIELD))
                             : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process)));
 
@@ -189,7 +189,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
             try {
                 byte[] content = ByteUtils.getArray(item.getByteBuffer(CONTENT_FIELD));
 
-                return audit(mode == MUTABLE
+                return audit(mode == MUTABLE || mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK
                         ? marshaller.unmarshallProcessInstance(codec.decode(content), process, item.getLong(VERSION_FIELD))
                         : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process));
             } catch (AccessDeniedException e) {
@@ -235,7 +235,7 @@ public class CassandraProcessInstances implements MutableProcessInstances {
             try {
                 byte[] content = ByteUtils.getArray(item.getByteBuffer(CONTENT_FIELD));
 
-                return audit(mode == MUTABLE
+                return audit(mode == MUTABLE || mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK
                         ? marshaller.unmarshallProcessInstance(codec.decode(content), process, item.getLong(VERSION_FIELD))
                         : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process));
             } catch (AccessDeniedException e) {

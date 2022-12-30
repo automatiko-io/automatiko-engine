@@ -155,7 +155,7 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
                     versionTracker = Long.parseLong(returnedItem.get(VERSION_FIELD).n());
                 }
                 return Optional
-                        .of(audit(mode == MUTABLE
+                        .of(audit(mode == MUTABLE || mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK
                                 ? marshaller.unmarshallProcessInstance(content, process, versionTracker)
                                 : marshaller.unmarshallReadOnlyProcessInstance(content, process)));
             }
@@ -166,7 +166,7 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
         if (returnedItem != null && Integer.parseInt(returnedItem.get(STATUS_FIELD).n()) == status) {
             byte[] content = returnedItem.get(CONTENT_FIELD).b().asByteArray();
 
-            return Optional.of(audit(mode == MUTABLE
+            return Optional.of(audit(mode == MUTABLE || mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK
                     ? marshaller.unmarshallProcessInstance(codec.decode(content), process,
                             Long.parseLong(returnedItem.get(VERSION_FIELD).n()))
                     : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process)));
@@ -196,8 +196,9 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
             try {
                 byte[] content = item.get(CONTENT_FIELD).b().asByteArray();
 
-                return audit(mode == MUTABLE ? marshaller.unmarshallProcessInstance(codec.decode(content), process,
-                        Long.parseLong(item.get(VERSION_FIELD).n()))
+                return audit(mode == MUTABLE || mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK
+                        ? marshaller.unmarshallProcessInstance(codec.decode(content), process,
+                                Long.parseLong(item.get(VERSION_FIELD).n()))
                         : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process));
             } catch (AccessDeniedException e) {
                 return null;
@@ -233,8 +234,9 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
             try {
                 byte[] content = item.get(CONTENT_FIELD).b().asByteArray();
 
-                return audit(mode == MUTABLE ? marshaller.unmarshallProcessInstance(codec.decode(content), process,
-                        Long.parseLong(item.get(VERSION_FIELD).n()))
+                return audit(mode == MUTABLE || mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK
+                        ? marshaller.unmarshallProcessInstance(codec.decode(content), process,
+                                Long.parseLong(item.get(VERSION_FIELD).n()))
                         : marshaller.unmarshallReadOnlyProcessInstance(codec.decode(content), process));
             } catch (AccessDeniedException e) {
                 return null;

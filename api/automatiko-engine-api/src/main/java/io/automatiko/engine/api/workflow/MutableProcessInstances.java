@@ -77,4 +77,8 @@ public interface MutableProcessInstances<T> extends ProcessInstances<T> {
     ExportedProcessInstance exportInstance(ProcessInstance<?> instance, boolean abort);
 
     ProcessInstance<T> importInstance(ExportedProcessInstance instance, Process<T> process);
+
+    default void release(String id, ProcessInstance<T> pi) {
+
+    }
 }

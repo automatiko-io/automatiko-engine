@@ -56,7 +56,7 @@ public class $Type$MessageConsumer {
                     	String correlation = correlationEvent(eventData, msg);
                     	if (correlation != null) {
                     		LOGGER.debug("Correlation ({}) is set, attempting to find if there is matching instance already active", correlation);
-                    		Optional possiblyFound = process.instances().findById(correlation);
+                    		Optional possiblyFound = process.instances().findById(correlation, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE_WITH_LOCK);
                     		if (possiblyFound.isPresent()) {
                     			ProcessInstance pInstance = (ProcessInstance) possiblyFound.get();
                     			LOGGER.debug("Found process instance {} matching correlation {}, signaling instead of starting new instance", pInstance.id(), correlation);
@@ -71,7 +71,7 @@ public class $Type$MessageConsumer {
                     		ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
                     		pi.start(trigger, null, eventData.getData());
                     	} catch (ProcessInstanceDuplicatedException e) {
-                        	ProcessInstance<$Type$> pi = process.instances().findById(correlation).get();
+                        	ProcessInstance<$Type$> pi = process.instances().findById(correlation, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE_WITH_LOCK).get();
                         	pi.send(Sig.of(trigger, eventData.getData()));
                         }
                         
@@ -85,7 +85,7 @@ public class $Type$MessageConsumer {
                 	String correlation = correlationPayload(eventData, msg);
                 	if (correlation != null) {
                 		LOGGER.debug("Correlation ({}) is set, attempting to find if there is matching instance already active", correlation);
-                		Optional possiblyFound = process.instances().findById(correlation);
+                		Optional possiblyFound = process.instances().findById(correlation, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE_WITH_LOCK);
                 		if (possiblyFound.isPresent()) {
                 			ProcessInstance pInstance = (ProcessInstance) possiblyFound.get();
                 			LOGGER.debug("Found process instance {} matching correlation {}, signaling instead of starting new instance", pInstance.id(), correlation);
@@ -99,7 +99,7 @@ public class $Type$MessageConsumer {
                     	ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
                     	pi.start(trigger, null, eventData);
                     } catch (ProcessInstanceDuplicatedException e) {
-                    	ProcessInstance<$Type$> pi = process.instances().findById(correlation).get();
+                    	ProcessInstance<$Type$> pi = process.instances().findById(correlation, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE_WITH_LOCK).get();
                     	pi.send(Sig.of(trigger, eventData));
                     }
                     
