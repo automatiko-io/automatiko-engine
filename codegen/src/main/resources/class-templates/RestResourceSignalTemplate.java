@@ -65,7 +65,7 @@ public class $Type$Resource {
             CompletableFuture.runAsync(() -> {
                 IdentityProvider.set(identity);
                 io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-                    ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+                    ProcessInstance<$Type$> pi = process.instances().findById(id, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE_WITH_LOCK).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
                     tracing(pi);
                     pi.send(Sig.of("$signalName$", data));
                     Object result = pi.abortCode() != null ? pi.abortData() : getModel(pi, metadata);
@@ -84,7 +84,7 @@ public class $Type$Resource {
         
             identitySupplier.buildIdentityProvider(user, groups);
             return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
-                ProcessInstance<$Type$> pi = process.instances().findById(id).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
+                ProcessInstance<$Type$> pi = process.instances().findById(id, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE_WITH_LOCK).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
                 tracing(pi);
                 pi.send(Sig.of("$signalName$", data));
 

@@ -348,7 +348,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             Process<?> process = processData.get(processId);
 
             Optional<ProcessInstance<?>> instance = (Optional<ProcessInstance<?>>) process.instances().findById(instanceId,
-                    mapStatus(status), ProcessInstanceReadMode.MUTABLE);
+                    mapStatus(status), ProcessInstanceReadMode.MUTABLE_WITH_LOCK);
 
             if (instance.isEmpty()) {
                 throw new ProcessInstanceNotFoundException(instanceId);

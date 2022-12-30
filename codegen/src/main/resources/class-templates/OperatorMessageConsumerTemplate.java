@@ -62,7 +62,7 @@ public class Controller implements Reconciler<$DataType$>, Cleaner<$DataType$>  
                     
                     if (possiblyFound.isEmpty()) {
                         possiblyFound = (Optional<? extends ProcessInstance>) process.instances()
-                                .findById(correlation, ProcessInstance.STATE_ERROR, ProcessInstanceReadMode.MUTABLE);
+                                .findById(correlation, ProcessInstance.STATE_ERROR, ProcessInstanceReadMode.MUTABLE_WITH_LOCK);
                     }
     
                     possiblyFound.ifPresent(pi -> {
@@ -109,7 +109,7 @@ public class Controller implements Reconciler<$DataType$>, Cleaner<$DataType$>  
                             correlation);
     
                     Optional<? extends ProcessInstance> possiblyFound = (Optional<? extends ProcessInstance>) process.instances()
-                            .findById(correlation);
+                            .findById(correlation, ProcessInstanceReadMode.MUTABLE_WITH_LOCK);
                     if (possiblyFound.isPresent()) {
                         ProcessInstance pInstance = (ProcessInstance) possiblyFound.get();
                         LOGGER.debug(

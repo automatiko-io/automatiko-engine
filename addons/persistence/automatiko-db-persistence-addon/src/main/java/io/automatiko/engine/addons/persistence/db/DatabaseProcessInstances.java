@@ -1,6 +1,7 @@
 package io.automatiko.engine.addons.persistence.db;
 
 import static io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE;
+import static io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE_WITH_LOCK;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -9,6 +10,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import javax.persistence.LockModeType;
 import javax.persistence.OptimisticLockException;
 
 import org.hibernate.StaleObjectStateException;
@@ -80,7 +82,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
         String resolvedId = resolveId(id);
 
         Optional<ProcessInstanceEntity> found = (Optional<ProcessInstanceEntity>) JpaOperations.INSTANCE.findByIdOptional(type,
-                resolvedId);
+                resolvedId, determineLockMode(mode));
 
         if (status == ProcessInstance.STATE_RECOVERING) {
             byte[] content = this.transactionLog.readContent(process.id(), resolvedId);
@@ -126,6 +128,13 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
         }
     }
 
+    private LockModeType determineLockMode(ProcessInstanceReadMode mode) {
+        if (mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK) {
+            return LockModeType.PESSIMISTIC_WRITE;
+        }
+        return null;
+    }
+
     @Override
     public Collection<? extends ProcessInstance<ProcessInstanceEntity>> findByIdOrTag(ProcessInstanceReadMode mode,
             int status, String... values) {
@@ -133,6 +142,10 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
                 .stream(type, "state = ?1 and (id in (?2) or (?2) in elements(tags)) ", status, Arrays.asList(values))
                 .map(e -> {
                     try {
+                        if (mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK) {
+                            JpaOperations.INSTANCE.getEntityManager().lock(e, determineLockMode(mode));
+                        }
+
                         return audit(unmarshallInstance(mode, ((ProcessInstanceEntity) e)));
                     } catch (AccessDeniedException ex) {
                         return null;
@@ -160,6 +173,9 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
                 .stream()
                 .map(e -> {
                     try {
+                        if (mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK) {
+                            JpaOperations.INSTANCE.getEntityManager().lock(e, determineLockMode(mode));
+                        }
                         return audit(unmarshallInstance(mode, ((ProcessInstanceEntity) e)));
                     } catch (AccessDeniedException ex) {
                         return null;
@@ -278,7 +294,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
     protected ProcessInstance<ProcessInstanceEntity> unmarshallInstance(ProcessInstanceReadMode mode,
             ProcessInstanceEntity entity) {
         ProcessInstance<ProcessInstanceEntity> pi;
-        if (mode == MUTABLE) {
+        if (mode == MUTABLE || mode == MUTABLE_WITH_LOCK) {
             WorkflowProcessInstance wpi = marshaller.unmarshallWorkflowProcessInstance(codec.decode(entity.content), process);
             entity.toMap().forEach((k, v) -> {
                 if (v != null) {

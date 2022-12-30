@@ -37,7 +37,7 @@ public class $Type$Resource {
                 } else {
                     combinedId = $parentprocessid$ + ":" + id_$name$;
                 }
-                ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById(combinedId).orElseThrow(() -> new ProcessInstanceNotFoundException(id_$name$));
+                ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById(combinedId, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE_WITH_LOCK).orElseThrow(() -> new ProcessInstanceNotFoundException(id_$name$));
                 tracing(pi);
                 io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, model.toMap(), io.automatiko.engine.api.auth.IdentityProvider.get());
                 pi.transitionWorkItem(workItemId, transition);
@@ -102,7 +102,7 @@ public class $Type$Resource {
                 } else {
                     combinedId = $parentprocessid$ + ":" + id_$name$;
                 }
-                ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById(combinedId).orElseThrow(() -> new ProcessInstanceNotFoundException(id_$name$));
+                ProcessInstance<$Type$> pi = subprocess_$name$.instances().findById(combinedId, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE_WITH_LOCK).orElseThrow(() -> new ProcessInstanceNotFoundException(id_$name$));
                 tracing(pi);
                 io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition transition = new io.automatiko.engine.workflow.base.instance.impl.humantask.HumanTaskTransition(phase, null, io.automatiko.engine.api.auth.IdentityProvider.get());
                 pi.transitionWorkItem(workItemId, transition);

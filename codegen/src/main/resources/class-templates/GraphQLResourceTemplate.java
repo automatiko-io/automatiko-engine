@@ -146,10 +146,7 @@ public class $Type$GraphQLResource {
         identitySupplier.buildIdentityProvider(user, groups);
         return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
              
-            ProcessInstance<$Type$> pi = process.instances().findById(id, ProcessInstance.STATE_ACTIVE, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE).orElse(null);
-            if (pi == null) {
-                pi = process.instances().findById(id, mapStatus(status), io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE).orElseThrow(() -> new ProcessInstanceNotFoundException(id));
-            }
+            ProcessInstance<$Type$> pi = process.instances().findById(id, mapStatus(status), io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE_WITH_LOCK).orElseThrow(() -> new ProcessInstanceNotFoundException(id));            
             tracing(pi);
             pi.abort();            
             return getModel(pi);
@@ -167,7 +164,7 @@ public class $Type$GraphQLResource {
         identitySupplier.buildIdentityProvider(null, null);
         return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             ProcessInstance<$Type$> pi = process.instances()
-                    .findById(id, mapStatus(status), io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE)
+                    .findById(id, mapStatus(status), io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE_WITH_LOCK)
                     .orElseThrow(() -> new ProcessInstanceNotFoundException(id));
             tracing(pi);
             pi.updateVariables(resource);

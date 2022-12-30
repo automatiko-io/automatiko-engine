@@ -21,17 +21,27 @@ public abstract class AbstractProcessInstancesFactory implements ProcessInstance
 
     protected Optional<String> database;
 
+    protected Optional<Integer> lockTimeout;
+
+    protected Optional<Integer> lockLimit;
+
+    protected Optional<Integer> lockWait;
+
     public AbstractProcessInstancesFactory() {
     }
 
-    public AbstractProcessInstancesFactory(MongoClient mongoClient, Optional<String> database) {
+    public AbstractProcessInstancesFactory(MongoClient mongoClient, Optional<String> database, Optional<Integer> lockTimeout,
+            Optional<Integer> lockLimit, Optional<Integer> lockWait) {
         this.mongoClient = mongoClient;
         this.database = database;
+        this.lockTimeout = lockTimeout;
+        this.lockLimit = lockLimit;
+        this.lockWait = lockWait;
     }
 
     @SuppressWarnings("unchecked")
     public MongodbProcessInstances createProcessInstances(Process<?> process) {
         return new MongodbProcessInstances((Process<? extends Model>) process, mongoClient, codec(),
-                transactionLogStore(), auditor(), database);
+                transactionLogStore(), auditor(), database, lockTimeout, lockLimit, lockWait);
     }
 }

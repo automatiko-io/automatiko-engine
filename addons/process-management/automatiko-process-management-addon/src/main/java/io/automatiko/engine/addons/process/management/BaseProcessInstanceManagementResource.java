@@ -199,7 +199,7 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
 
         return UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             Optional<? extends ProcessInstance<?>> processInstanceFound = process.instances()
-                    .findById(processInstanceId, ProcessInstance.STATE_ERROR, ProcessInstanceReadMode.MUTABLE);
+                    .findById(processInstanceId, ProcessInstance.STATE_ERROR, ProcessInstanceReadMode.MUTABLE_WITH_LOCK);
             if (processInstanceFound.isPresent()) {
                 ProcessInstance<?> processInstance = processInstanceFound.get();
 
@@ -226,7 +226,7 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
         }
         return UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             Optional<? extends ProcessInstance<?>> processInstanceFound = process.instances()
-                    .findById(processInstanceId, mapStatus(status), ProcessInstanceReadMode.MUTABLE);
+                    .findById(processInstanceId, mapStatus(status), ProcessInstanceReadMode.MUTABLE_WITH_LOCK);
             if (processInstanceFound.isPresent()) {
                 ProcessInstance<?> processInstance = processInstanceFound.get();
 

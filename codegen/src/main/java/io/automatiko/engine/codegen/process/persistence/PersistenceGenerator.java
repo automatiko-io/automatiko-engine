@@ -20,12 +20,16 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.AssignExpr.Operator;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExplicitConstructorInvocationStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
@@ -35,6 +39,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.config.CassandraPersistenceConfig;
 import io.automatiko.engine.api.config.DynamoDBPersistenceConfig;
+import io.automatiko.engine.api.config.FileSystemPersistenceConfig;
 import io.automatiko.engine.api.config.MongodbPersistenceConfig;
 import io.automatiko.engine.api.uow.TransactionLogStore;
 import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
@@ -62,8 +67,6 @@ public class PersistenceGenerator extends AbstractGenerator {
     private static final String TRANSACTION_LOG_STORE_NAME = "transactionLogStore";
 
     private static final String AUDITOR_NAME = "auditor";
-
-    private static final String PERSISTENCE_FS_PATH_PROP = "quarkus.automatiko.persistence.filesystem.path";
 
     private final File targetDirectory;
     private final Collection<?> modelClasses;
@@ -144,8 +147,45 @@ public class PersistenceGenerator extends AbstractGenerator {
         CompilationUnit compilationUnit = new CompilationUnit("io.automatiko.engine.addons.persistence.impl");
         compilationUnit.getTypes().add(persistenceProviderClazz);
 
+        ConstructorDeclaration constructor = persistenceProviderClazz.addConstructor(Keyword.PUBLIC);
+
+        Parameter path = new Parameter(new ClassOrInterfaceType(null, new SimpleName(Optional.class.getCanonicalName()),
+                NodeList.nodeList(new ClassOrInterfaceType(null, "String"))), PATH_NAME);
+
+        Parameter configuredLockTimeout = new Parameter(
+                new ClassOrInterfaceType(null, new SimpleName(Optional.class.getCanonicalName()),
+                        NodeList.nodeList(new ClassOrInterfaceType(null, "Integer"))),
+                "configuredLockTimeout");
+        Parameter configuredLockLimit = new Parameter(
+                new ClassOrInterfaceType(null, new SimpleName(Optional.class.getCanonicalName()),
+                        NodeList.nodeList(new ClassOrInterfaceType(null, "Integer"))),
+                "configuredLockLimit");
+        Parameter configuredLockWait = new Parameter(
+                new ClassOrInterfaceType(null, new SimpleName(Optional.class.getCanonicalName()),
+                        NodeList.nodeList(new ClassOrInterfaceType(null, "Integer"))),
+                "configuredLockWait");
+
+        constructor.addParameter(path);
+        constructor.addParameter(configuredLockTimeout);
+        constructor.addParameter(configuredLockLimit);
+        constructor.addParameter(configuredLockWait);
+
+        BlockStmt body = new BlockStmt();
+        ExplicitConstructorInvocationStmt superExp = new ExplicitConstructorInvocationStmt(false, null,
+                NodeList.nodeList(new NameExpr("configuredLockTimeout"), new NameExpr("configuredLockLimit"),
+                        new NameExpr("configuredLockWait")));
+        body.addStatement(superExp);
+        body.addStatement(new AssignExpr(new FieldAccessExpr(new ThisExpr(), "path"), new NameExpr("path"), Operator.ASSIGN));
+
+        constructor.setBody(body);
+
         if (useInjection()) {
             annotator.withApplicationComponent(persistenceProviderClazz);
+
+            annotator.withConfig(path, FileSystemPersistenceConfig.PATH_KEY);
+            annotator.withConfig(configuredLockTimeout, FileSystemPersistenceConfig.LOCK_TIMEOUT_KEY);
+            annotator.withConfig(configuredLockLimit, FileSystemPersistenceConfig.LOCK_LIMIT_KEY);
+            annotator.withConfig(configuredLockWait, FileSystemPersistenceConfig.LOCK_WAIT_KEY);
 
             FieldDeclaration pathField = new FieldDeclaration()
                     .addVariable(
@@ -155,7 +195,7 @@ public class PersistenceGenerator extends AbstractGenerator {
                                             NodeList.nodeList(
                                                     new ClassOrInterfaceType(null, String.class.getCanonicalName()))))
                                     .setName(PATH_NAME));
-            annotator.withConfigInjection(pathField, PERSISTENCE_FS_PATH_PROP);
+
             // allow to inject path for the file system storage
             BlockStmt pathMethodBody = new BlockStmt();
             pathMethodBody.addStatement(new ReturnStmt(
@@ -338,11 +378,29 @@ public class PersistenceGenerator extends AbstractGenerator {
         Parameter database = new Parameter(new ClassOrInterfaceType(null, new SimpleName(Optional.class.getCanonicalName()),
                 NodeList.nodeList(new ClassOrInterfaceType(null, "String"))), "database");
 
+        Parameter configuredLockTimeout = new Parameter(
+                new ClassOrInterfaceType(null, new SimpleName(Optional.class.getCanonicalName()),
+                        NodeList.nodeList(new ClassOrInterfaceType(null, "Integer"))),
+                "configuredLockTimeout");
+        Parameter configuredLockLimit = new Parameter(
+                new ClassOrInterfaceType(null, new SimpleName(Optional.class.getCanonicalName()),
+                        NodeList.nodeList(new ClassOrInterfaceType(null, "Integer"))),
+                "configuredLockLimit");
+        Parameter configuredLockWait = new Parameter(
+                new ClassOrInterfaceType(null, new SimpleName(Optional.class.getCanonicalName()),
+                        NodeList.nodeList(new ClassOrInterfaceType(null, "Integer"))),
+                "configuredLockWait");
+
         constructor.addParameter(database);
+        constructor.addParameter(configuredLockTimeout);
+        constructor.addParameter(configuredLockLimit);
+        constructor.addParameter(configuredLockWait);
 
         BlockStmt body = new BlockStmt();
         ExplicitConstructorInvocationStmt superExp = new ExplicitConstructorInvocationStmt(false, null,
-                NodeList.nodeList(new NameExpr("mongoClient"), new NameExpr("database")));
+                NodeList.nodeList(new NameExpr("mongoClient"), new NameExpr("database"),
+                        new NameExpr("configuredLockTimeout"), new NameExpr("configuredLockLimit"),
+                        new NameExpr("configuredLockWait")));
         body.addStatement(superExp);
 
         constructor.setBody(body);
@@ -352,6 +410,9 @@ public class PersistenceGenerator extends AbstractGenerator {
             annotator.withInjection(constructor);
 
             annotator.withConfig(database, MongodbPersistenceConfig.DATABASE_KEY);
+            annotator.withConfig(configuredLockTimeout, MongodbPersistenceConfig.LOCK_TIMEOUT_KEY);
+            annotator.withConfig(configuredLockLimit, MongodbPersistenceConfig.LOCK_LIMIT_KEY);
+            annotator.withConfig(configuredLockWait, MongodbPersistenceConfig.LOCK_WAIT_KEY);
 
             addCodecComponents(persistenceProviderClazz);
 
