@@ -200,6 +200,8 @@ public class $Type$Resource {
             @Parameter(description = "Status of the process instance", required = false, schema = @Schema(enumeration = {"active", "completed", "aborted", "error"})) @QueryParam("status") @DefaultValue("active") final String status,
             @Parameter(description = "Pagination - page to start on", required = false) @QueryParam(value = "page") @DefaultValue("1") int page,
             @Parameter(description = "Pagination - number of items to return", required = false) @QueryParam(value = "size") @DefaultValue("10") int size,
+            @Parameter(description = "Sorting - name of the field to sort by (description, startDate, endDate, businessKey)", required = false) @QueryParam(value = "sortBy") String sortBy,
+            @Parameter(description = "Sorting - direction of sorting ascending or descending", required = false) @QueryParam(value = "sortAsc") @DefaultValue("true") boolean sortAsc,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
             @Parameter(description = "Indicates if instance metadata should be included", required = false) @QueryParam("metadata") @DefaultValue("false") final boolean metadata) {
@@ -207,13 +209,25 @@ public class $Type$Resource {
             identitySupplier.buildIdentityProvider(user, groups);
             return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             if (tags != null && !tags.isEmpty()) {
-                return process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, mapStatus(status), tags.toArray(String[]::new)).stream()
+                if (sortBy != null && !sortBy.trim().isEmpty()) {
+                    return process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, mapStatus(status), sortBy, sortAsc, tags.toArray(String[]::new)).stream()
+                            .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), metadata ? pi.metadata() : null))
+                            .collect(Collectors.toList());
+                } else {
+                    return process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, mapStatus(status), tags.toArray(String[]::new)).stream()
                         .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), metadata ? pi.metadata() : null))
                         .collect(Collectors.toList());
+                }
             } else {
-                return process.instances().values(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, mapStatus(status), page, size).stream()
+                if (sortBy != null && !sortBy.trim().isEmpty()) {
+                    return process.instances().values(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, mapStatus(status), page, size, sortBy, sortAsc).stream()
+                            .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), metadata ? pi.metadata() : null))
+                            .collect(Collectors.toList());
+                } else {
+                    return process.instances().values(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, mapStatus(status), page, size).stream()
                     .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), metadata ? pi.metadata() : null))
                     .collect(Collectors.toList());
+                }
             }
         });
     }

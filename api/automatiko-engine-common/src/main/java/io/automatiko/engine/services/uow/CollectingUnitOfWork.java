@@ -282,6 +282,17 @@ public class CollectingUnitOfWork implements UnitOfWork {
         public Collection locateByIdOrTag(int status, String... values) {
             return delegate.locateByIdOrTag(status, values);
         }
+
+        @Override
+        public Collection values(ProcessInstanceReadMode mode, int status, int page, int size, String sortBy, boolean sortAsc) {
+            return delegate.values(mode, status, page, size, sortBy, sortAsc);
+        }
+
+        @Override
+        public Collection findByIdOrTag(ProcessInstanceReadMode mode, int status, String sortBy, boolean sortAsc,
+                String... values) {
+            return delegate.findByIdOrTag(mode, status, sortBy, sortAsc, values);
+        }
     }
 
 }

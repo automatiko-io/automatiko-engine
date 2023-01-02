@@ -46,7 +46,7 @@ public class VerificationTest {
         given()
             .accept(ContentType.JSON)
         .when()
-            .get("/scripts")
+            .get("/scripts?sortAsc=true&sortBy=businessKey")
         .then().statusCode(200)
             .body("$.size()", is(1));
         
@@ -93,7 +93,7 @@ public class VerificationTest {
         given()
             .accept(ContentType.JSON)
         .when()
-            .get("/scripts")
+            .get("/scripts?sortAsc=true&sortBy=startDate")
         .then().statusCode(200)
             .body("$.size()", is(1));
         
@@ -171,7 +171,7 @@ public class VerificationTest {
         given()
             .accept(ContentType.JSON)
         .when()
-            .get("/scripts")
+            .get("/scripts?sortAsc=true&sortBy=variables.name")
         .then().statusCode(200)
             .body("$.size()", is(1));
         
