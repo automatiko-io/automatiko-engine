@@ -15,6 +15,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -234,6 +236,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         return collected;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Collection findByIdOrTag(ProcessInstanceReadMode mode, int status, String sortBy, boolean sortAsc,
             String... values) {
@@ -255,7 +258,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             for (String id : found) {
                 Path processInstanceStorage = Paths.get(storage.toString(), id);
                 String metadataSort = getMetadata(processInstanceStorage, sortKey);
-                sortingValues.add(new SortItem(metadataSort, id));
+                sortingValues.add(new SortItem(adjustTypeSortKey(sortBy, metadataSort), id));
             }
         }
 
@@ -303,6 +306,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         return collected;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Collection values(ProcessInstanceReadMode mode, int status, int page, int size, String sortBy, boolean sortAsc) {
         String sortKey = adjustSortKey(sortBy);
@@ -316,34 +320,38 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
                 .map(instance -> instance.id()).collect(Collectors.toSet());
         List<SortItem> sortingValues = new ArrayList<>();
         if (sortKey.equals("id")) {
-            found.stream().skip(calculatePage(page, size)).limit(size).forEach(itemId -> {
+            found.stream().forEach(itemId -> {
                 sortingValues.add(new SortItem(itemId, itemId));
             });
 
         } else {
-            found.stream().skip(calculatePage(page, size)).limit(size).forEach(itemId -> {
+            found.stream().forEach(itemId -> {
                 Path processInstanceStorage = Paths.get(storage.toString(), itemId);
                 String metadataSort = getMetadata(processInstanceStorage, sortKey);
-                sortingValues.add(new SortItem(metadataSort, itemId));
+                sortingValues.add(new SortItem(adjustTypeSortKey(sortBy, metadataSort), itemId));
             });
         }
 
         sortingValues.sort((one, two) -> {
-            return one.key.compareTo(two.key);
+            if (one.key != null && two.key != null) {
+                return one.key.compareTo(two.key);
+            } else {
+                return -1;
+            }
         });
 
         if (!sortAsc) {
             Collections.reverse(sortingValues);
         }
 
-        for (SortItem item : sortingValues) {
+        sortingValues.stream().skip(calculatePage(page, size)).limit(size).forEach(item -> {
             try {
                 findById(item.id, status, mode).ifPresent(pi -> collected.add(pi));
             } catch (AccessDeniedException e) {
 
             }
 
-        }
+        });
         return collected;
     }
 
@@ -366,7 +374,11 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             acquireLock(resolvedId);
             cachedInstances.remove(resolvedId);
             cachedInstances.remove(id);
-
+            try {
+                Files.write(processInstanceStorage, new byte[0]);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
             storeProcessInstance(resolvedId, processInstanceStorage, instance);
 
             Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
@@ -450,6 +462,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
                 throw new ConflictingVersionException("Process instance with id '" + instance.id()
                         + "' has older version than the stored one (" + instanceVersion + " != " + storedVersion + ")");
             }
+
             // first store the version of the instance for conflict tracking
             setMetadata(processInstanceStorage, PI_VERSION, String.valueOf(instanceVersion + 1));
             // then store the instance and other metadata
@@ -489,6 +502,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void release(String id, ProcessInstance pi) {
         releaseLock(resolveId(id, pi));
@@ -555,7 +569,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 
     public String getMetadata(Path file, String key) {
 
-        if (supportsUserDefinedAttributes(file)) {
+        if (supportsUserDefinedAttributes(file) && !dotFileMetadataExists(file)) {
             UserDefinedFileAttributeView view = Files.getFileAttributeView(file, UserDefinedFileAttributeView.class);
             try {
                 ByteBuffer bb = ByteBuffer.allocate(view.size(key));
@@ -563,7 +577,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
                 bb.flip();
                 return Charset.defaultCharset().decode(bb).toString();
             } catch (IOException e) {
-                return null;
+                return getDotFileMetadata(file.toFile()).get(key);
             }
         } else {
             return getDotFileMetadata(file.toFile()).get(key);
@@ -614,6 +628,14 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         } catch (IOException e) {
             return Collections.emptyMap();
         }
+    }
+
+    protected boolean dotFileMetadataExists(Path instancePath) {
+
+        File file = instancePath.toFile();
+        File metadataDotFile = new File(file.getParent(), "._metadata_" + file.getName());
+
+        return metadataDotFile.exists();
     }
 
     protected boolean setDotFileMetadata(File file, String key, String value) {
@@ -775,14 +797,44 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         }
     }
 
+    protected Comparable adjustTypeSortKey(String sortBy, Object value) {
+        if (value == null) {
+            return null;
+        }
+
+        switch (sortBy) {
+            case ID_SORT_KEY:
+            case DESC_SORT_KEY:
+            case BUSINESS_KEY_SORT_KEY:
+                return (String) value;
+
+            case START_DATE_SORT_KEY:
+            case END_DATE_SORT_KEY:
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+
+                try {
+                    return sdf.parse(value.toString());
+                } catch (ParseException e) {
+                }
+
+            default:
+                return null;
+        }
+    }
+
     private class SortItem {
-        public SortItem(String metadataSort, String id) {
+        public SortItem(Comparable metadataSort, String id) {
             this.key = metadataSort;
             this.id = id;
         }
 
-        private String key;
+        private Comparable key;
 
         private String id;
+
+        @Override
+        public String toString() {
+            return "SortItem [key=" + key + "]";
+        }
     }
 }
