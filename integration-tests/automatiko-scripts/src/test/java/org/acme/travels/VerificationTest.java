@@ -134,7 +134,7 @@ public class VerificationTest {
         given()
             .accept(ContentType.JSON)
         .when()
-            .get("/scripts?user=mary")
+            .get("/scripts?user=mary&sortAsc=true&sortBy=startDate")
         .then().statusCode(200)
             .body("$.size()", is(1));
  
@@ -284,7 +284,7 @@ public class VerificationTest {
         given()
             .accept(ContentType.JSON)
         .when()
-            .get("/scripts?user=mary&metadata=true")
+            .get("/scripts?user=mary&metadata=true&sortAsc=false&sortBy=businessKey")
         .then().statusCode(200)
             .body("$.size()", is(1),
                     "[0].metadata.description", equalTo("Simple script handling workflow for mary"),

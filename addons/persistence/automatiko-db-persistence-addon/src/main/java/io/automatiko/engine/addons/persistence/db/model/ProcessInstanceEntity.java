@@ -50,7 +50,7 @@ public abstract class ProcessInstanceEntity extends PanacheEntityBase implements
 
     @Column(name = "ATK_END_DATE")
     @JsonIgnore
-    public Date endtDate;
+    public Date endDate;
 
     @Column(name = "ATK_EXPIRED_AT_DATE")
     @JsonIgnore

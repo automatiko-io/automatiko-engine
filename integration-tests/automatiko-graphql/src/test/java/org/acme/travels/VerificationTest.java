@@ -81,7 +81,7 @@ public class VerificationTest {
                 .body("data.create_scripts.id", notNullValue(), "data.create_scripts.name", equalTo("mary"), "data.create_scripts.message", nullValue());
         
        
-        String getInstances = "{\"query\":\"query {get_all_scripts(user: \\\"john\\\") {id,name,message}}\\n\",\"variables\":null}";
+        String getInstances = "{\"query\":\"query {get_all_scripts(user: \\\"john\\\", sortBy:\\\"businessKey\\\", sortAsc:true) {id,name,message}}\\n\",\"variables\":null}";
         
         given()
         .contentType(ContentType.JSON)
@@ -134,7 +134,7 @@ public class VerificationTest {
                 .body("data.create_scripts.id", notNullValue(), "data.create_scripts.name", equalTo("mary"), "data.create_scripts.message", nullValue());
         
        
-        String getInstances = "{\"query\":\"query {get_all_scripts(user: \\\"john\\\") {id,name,message}}\\n\",\"variables\":null}";
+        String getInstances = "{\"query\":\"query {get_all_scripts(user: \\\"john\\\", sortBy:\\\"startDate\\\", sortAsc:false) {id,name,message}}\\n\",\"variables\":null}";
         
         given()
         .contentType(ContentType.JSON)

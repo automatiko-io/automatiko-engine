@@ -136,6 +136,29 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
     }
 
     @Override
+    public Collection<? extends ProcessInstance<ProcessInstanceEntity>> findByIdOrTag(ProcessInstanceReadMode mode, int status,
+            String sortBy, boolean sortAsc, String... values) {
+        return JpaOperations.INSTANCE
+                .stream(type,
+                        "state = ?1 and (id in (?2) or (?2) in elements(tags)) order by " + adjustSortKey(sortBy)
+                                + (sortAsc ? " asc" : " desc"),
+                        status, Arrays.asList(values))
+                .map(e -> {
+                    try {
+                        if (mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK) {
+                            JpaOperations.INSTANCE.getEntityManager().lock(e, determineLockMode(mode));
+                        }
+
+                        return audit(unmarshallInstance(mode, ((ProcessInstanceEntity) e)));
+                    } catch (AccessDeniedException ex) {
+                        return null;
+                    }
+                })
+                .filter(pi -> pi != null)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public Collection<? extends ProcessInstance<ProcessInstanceEntity>> findByIdOrTag(ProcessInstanceReadMode mode,
             int status, String... values) {
         return JpaOperations.INSTANCE
@@ -152,7 +175,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
                     }
                 })
                 .filter(pi -> pi != null)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
 
     }
 
@@ -170,6 +193,27 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
     public Collection<ProcessInstance<ProcessInstanceEntity>> values(ProcessInstanceReadMode mode, int status, int page,
             int size) {
         return JpaOperations.INSTANCE.find(type, "state = ?1 ", status).page(calculatePage(page, size), size)
+                .stream()
+                .map(e -> {
+                    try {
+                        if (mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK) {
+                            JpaOperations.INSTANCE.getEntityManager().lock(e, determineLockMode(mode));
+                        }
+                        return audit(unmarshallInstance(mode, ((ProcessInstanceEntity) e)));
+                    } catch (AccessDeniedException ex) {
+                        return null;
+                    }
+                })
+                .filter(pi -> pi != null)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<ProcessInstance<ProcessInstanceEntity>> values(ProcessInstanceReadMode mode, int status, int page,
+            int size, String sortBy, boolean sortAsc) {
+        return JpaOperations.INSTANCE
+                .find(type, "state = ?1  order by " + adjustSortKey(sortBy) + (sortAsc ? " asc" : " desc"), status)
+                .page(calculatePage(page, size), size)
                 .stream()
                 .map(e -> {
                     try {
@@ -248,7 +292,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
             entity.processName = instance.process().name();
             entity.processVersion = instance.process().version();
             entity.startDate = instance.startDate();
-            entity.endtDate = instance.endDate();
+            entity.endDate = instance.endDate();
             entity.expiredAtDate = instance.expiresAtDate();
             entity.state = instance.status();
 
@@ -357,5 +401,22 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
         auditor.publish(entry);
 
         return instance;
+    }
+
+    protected String adjustSortKey(String sortBy) {
+        switch (sortBy) {
+            case ID_SORT_KEY:
+                return "entityId";
+            case DESC_SORT_KEY:
+                return "name";
+            case START_DATE_SORT_KEY:
+                return "startDate";
+            case END_DATE_SORT_KEY:
+                return "endDate";
+            case BUSINESS_KEY_SORT_KEY:
+                return "businessKey";
+            default:
+                return sortBy;
+        }
     }
 }

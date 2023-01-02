@@ -4,11 +4,14 @@ import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.in;
 import static com.mongodb.client.model.Filters.or;
+import static com.mongodb.client.model.Sorts.ascending;
+import static com.mongodb.client.model.Sorts.descending;
 import static io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE;
 import static io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE_WITH_LOCK;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -77,6 +80,8 @@ public class MongodbProcessInstances implements MutableProcessInstances {
     private static final String START_DATE_FIELD = "piStartDate";
     private static final String END_DATE_FIELD = "piEndDate";
     private static final String EXPIRED_AT_FIELD = "piExpiredAtDate";
+    private static final String BUSINESS_KEY_FIELD = "businessKey";
+    private static final String INSTANCE_DESC_FIELD = "instanceName";
     private static final String LOCK_FIELD = "lockStamp";
 
     private static final int DEFAULT_LOCK_TIMEOUT = 60 * 1000;
@@ -189,8 +194,37 @@ public class MongodbProcessInstances implements MutableProcessInstances {
     }
 
     @Override
+    public Collection values(ProcessInstanceReadMode mode, int status, int page, int size, String sortBy, boolean sortAsc) {
+        Collection found = new ArrayList<>();
+        if (mode.equals(ProcessInstanceReadMode.MUTABLE_WITH_LOCK)) {
+            collection().find(eq(STATUS_FIELD, status))
+                    .sort(sortAsc ? ascending(adjustSortKey(sortBy)) : descending(adjustSortKey(sortBy)))
+                    .projection(Projections
+                            .fields(Projections.include(INSTANCE_ID_FIELD, CONTENT_FIELD, VERSION_FIELD, VARIABLES_FIELD)))
+                    .skip(calculatePage(page, size))
+                    .limit(size)
+                    .forEach(item -> {
+                        found.add(audit(unmarshallInstance(mode, item)));
+                        Document locked = findAndLock(item.getString(INSTANCE_ID_FIELD));
+
+                        found.add(unmarshallInstance(mode, locked));
+                    });
+        } else {
+
+            collection().find(eq(STATUS_FIELD, status))
+                    .sort(sortAsc ? ascending(adjustSortKey(sortBy)) : descending(adjustSortKey(sortBy)))
+                    .projection(Projections
+                            .fields(Projections.include(INSTANCE_ID_FIELD, CONTENT_FIELD, VERSION_FIELD, VARIABLES_FIELD)))
+                    .skip(calculatePage(page, size))
+                    .limit(size)
+                    .forEach(item -> found.add(audit(unmarshallInstance(mode, item))));
+        }
+        return found;
+    }
+
+    @Override
     public Collection values(ProcessInstanceReadMode mode, int status, int page, int size) {
-        Collection found = new HashSet<>();
+        Collection found = new ArrayList<>();
         if (mode.equals(ProcessInstanceReadMode.MUTABLE_WITH_LOCK)) {
             collection().find(eq(STATUS_FIELD, status))
                     .projection(Projections
@@ -216,8 +250,33 @@ public class MongodbProcessInstances implements MutableProcessInstances {
     }
 
     @Override
+    public Collection findByIdOrTag(ProcessInstanceReadMode mode, int status, String sortBy, boolean sortAsc,
+            String... values) {
+        Collection found = new ArrayList<>();
+        if (mode.equals(ProcessInstanceReadMode.MUTABLE_WITH_LOCK)) {
+            collection().find(and(in(TAGS_FIELD, values), eq(STATUS_FIELD, status)))
+                    .sort(sortAsc ? ascending(adjustSortKey(sortBy)) : descending(adjustSortKey(sortBy)))
+                    .projection(Projections
+                            .fields(Projections.include(INSTANCE_ID_FIELD, CONTENT_FIELD, VERSION_FIELD, VARIABLES_FIELD)))
+                    .forEach(item -> {
+                        Document locked = findAndLock(item.getString(INSTANCE_ID_FIELD));
+
+                        found.add(unmarshallInstance(mode, locked));
+                    });
+        } else {
+
+            collection().find(and(in(TAGS_FIELD, values), eq(STATUS_FIELD, status)))
+                    .sort(sortAsc ? ascending(adjustSortKey(sortBy)) : descending(adjustSortKey(sortBy)))
+                    .projection(Projections
+                            .fields(Projections.include(INSTANCE_ID_FIELD, CONTENT_FIELD, VERSION_FIELD, VARIABLES_FIELD)))
+                    .forEach(item -> found.add(audit(unmarshallInstance(mode, item))));
+        }
+        return found;
+    }
+
+    @Override
     public Collection findByIdOrTag(ProcessInstanceReadMode mode, int status, String... values) {
-        Collection found = new HashSet<>();
+        Collection found = new ArrayList<>();
         if (mode.equals(ProcessInstanceReadMode.MUTABLE_WITH_LOCK)) {
             collection().find(and(in(TAGS_FIELD, values), eq(STATUS_FIELD, status)))
                     .projection(Projections
@@ -292,6 +351,8 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                         .append(CONTENT_FIELD, data)
                         .append(STATUS_FIELD, instance.status())
                         .append(TAGS_FIELD, tags)
+                        .append(BUSINESS_KEY_FIELD, instance.businessKey())
+                        .append(INSTANCE_DESC_FIELD, instance.description())
                         .append(VERSION_FIELD, ((AbstractProcessInstance<?>) instance).getVersionTracker())
                         .append(VARIABLES_FIELD, variables)
                         .append(START_DATE_FIELD, instance.startDate());
@@ -358,6 +419,8 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                         .append(CONTENT_FIELD, data)
                         .append(STATUS_FIELD, instance.status())
                         .append(TAGS_FIELD, tags)
+                        .append(BUSINESS_KEY_FIELD, instance.businessKey())
+                        .append(INSTANCE_DESC_FIELD, instance.description())
                         .append(VERSION_FIELD, ((AbstractProcessInstance<?>) instance).getVersionTracker())
                         .append(VARIABLES_FIELD, variables)
                         .append(START_DATE_FIELD, instance.startDate());
@@ -601,5 +664,22 @@ public class MongodbProcessInstances implements MutableProcessInstances {
         }
 
         return locked;
+    }
+
+    protected String adjustSortKey(String sortBy) {
+        switch (sortBy) {
+            case ID_SORT_KEY:
+                return INSTANCE_ID_FIELD;
+            case DESC_SORT_KEY:
+                return INSTANCE_DESC_FIELD;
+            case START_DATE_SORT_KEY:
+                return START_DATE_FIELD;
+            case END_DATE_SORT_KEY:
+                return END_DATE_FIELD;
+            case BUSINESS_KEY_SORT_KEY:
+                return BUSINESS_KEY_FIELD;
+            default:
+                return sortBy;
+        }
     }
 }

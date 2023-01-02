@@ -51,7 +51,7 @@ public class VerificationTest {
         given()
             .accept(ContentType.JSON)
         .when()
-            .get("/v1/omboarding")
+            .get("/v1/omboarding?sortAsc=true&sortBy=businessKey")
         .then().statusCode(200)
             .body("$.size()", is(1));
         
@@ -186,7 +186,7 @@ public class VerificationTest {
         given()
             .accept(ContentType.JSON)
         .when()
-            .get("/v2/omboarding")
+            .get("/v2/omboarding?sortAsc=true&sortBy=startDate")
         .then().statusCode(200)
             .body("$.size()", is(1));
         

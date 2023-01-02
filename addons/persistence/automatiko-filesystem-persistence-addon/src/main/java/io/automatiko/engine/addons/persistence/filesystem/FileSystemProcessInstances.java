@@ -16,10 +16,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -65,6 +67,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     public static final String PI_START_DATE = "ProcessInstanceStartDate";
     public static final String PI_END_DATE = "ProcessInstanceEndDate";
     public static final String PI_EXPIRED_AT_DATE = "ProcessInstanceExpiredAtDate";
+    public static final String PI_BUSINESS_KEY = "ProcessInstanceKey";
 
     private static final int DEFAULT_LOCK_TIMEOUT = 60 * 1000;
 
@@ -232,6 +235,50 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     }
 
     @Override
+    public Collection findByIdOrTag(ProcessInstanceReadMode mode, int status, String sortBy, boolean sortAsc,
+            String... values) {
+        String sortKey = adjustSortKey(sortBy);
+        if (sortKey == null) {
+            return findByIdOrTag(mode, status, values);
+        }
+
+        Set collected = new LinkedHashSet<>();
+
+        Set<String> found = indexer.instances(status, 0, Integer.MAX_VALUE).stream()
+                .filter(instance -> instance.match(values)).map(instance -> instance.id()).collect(Collectors.toSet());
+        List<SortItem> sortingValues = new ArrayList<>();
+        if (sortKey.equals("id")) {
+            for (String id : found) {
+                sortingValues.add(new SortItem(id, id));
+            }
+        } else {
+            for (String id : found) {
+                Path processInstanceStorage = Paths.get(storage.toString(), id);
+                String metadataSort = getMetadata(processInstanceStorage, sortKey);
+                sortingValues.add(new SortItem(metadataSort, id));
+            }
+        }
+
+        sortingValues.sort((one, two) -> {
+            return one.key.compareTo(two.key);
+        });
+
+        if (!sortAsc) {
+            Collections.reverse(sortingValues);
+        }
+
+        for (SortItem item : sortingValues) {
+            try {
+                findById(item.id, status, mode).ifPresent(pi -> collected.add(pi));
+            } catch (AccessDeniedException e) {
+
+            }
+
+        }
+        return collected;
+    }
+
+    @Override
     public Collection locateByIdOrTag(int status, String... values) {
         Set<String> collected = indexer.instances(status, 0, Integer.MAX_VALUE).stream()
                 .filter(instance -> instance.match(values)).map(instance -> instance.id()).collect(Collectors.toSet());
@@ -252,6 +299,50 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             } catch (AccessDeniedException e) {
 
             }
+        }
+        return collected;
+    }
+
+    @Override
+    public Collection values(ProcessInstanceReadMode mode, int status, int page, int size, String sortBy, boolean sortAsc) {
+        String sortKey = adjustSortKey(sortBy);
+        if (sortKey == null) {
+            return values(mode, status, page, size);
+        }
+
+        Set collected = new LinkedHashSet<>();
+
+        Set<String> found = indexer.instances(status, 0, Integer.MAX_VALUE).stream()
+                .map(instance -> instance.id()).collect(Collectors.toSet());
+        List<SortItem> sortingValues = new ArrayList<>();
+        if (sortKey.equals("id")) {
+            found.stream().skip(calculatePage(page, size)).limit(size).forEach(itemId -> {
+                sortingValues.add(new SortItem(itemId, itemId));
+            });
+
+        } else {
+            found.stream().skip(calculatePage(page, size)).limit(size).forEach(itemId -> {
+                Path processInstanceStorage = Paths.get(storage.toString(), itemId);
+                String metadataSort = getMetadata(processInstanceStorage, sortKey);
+                sortingValues.add(new SortItem(metadataSort, itemId));
+            });
+        }
+
+        sortingValues.sort((one, two) -> {
+            return one.key.compareTo(two.key);
+        });
+
+        if (!sortAsc) {
+            Collections.reverse(sortingValues);
+        }
+
+        for (SortItem item : sortingValues) {
+            try {
+                findById(item.id, status, mode).ifPresent(pi -> collected.add(pi));
+            } catch (AccessDeniedException e) {
+
+            }
+
         }
         return collected;
     }
@@ -364,6 +455,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
             // then store the instance and other metadata
             Files.write(processInstanceStorage, data);
             setMetadata(processInstanceStorage, PI_DESCRIPTION, instance.description());
+            setMetadata(processInstanceStorage, PI_BUSINESS_KEY, instance.businessKey());
             setMetadata(processInstanceStorage, PI_STATUS, String.valueOf(instance.status()));
 
             if (instance.parentProcessInstanceId() == null) {
@@ -664,5 +756,33 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         } catch (IOException e1) {
             throw new UncheckedIOException(e1);
         }
+    }
+
+    protected String adjustSortKey(String sortBy) {
+        switch (sortBy) {
+            case ID_SORT_KEY:
+                return "id";
+            case DESC_SORT_KEY:
+                return PI_DESCRIPTION;
+            case START_DATE_SORT_KEY:
+                return PI_START_DATE;
+            case END_DATE_SORT_KEY:
+                return PI_END_DATE;
+            case BUSINESS_KEY_SORT_KEY:
+                return PI_BUSINESS_KEY;
+            default:
+                return null;
+        }
+    }
+
+    private class SortItem {
+        public SortItem(String metadataSort, String id) {
+            this.key = metadataSort;
+            this.id = id;
+        }
+
+        private String key;
+
+        private String id;
     }
 }

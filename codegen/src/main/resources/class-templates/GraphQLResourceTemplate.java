@@ -104,19 +104,31 @@ public class $Type$GraphQLResource {
     @Query("get_all_$name$$prefix$")
     @Description("Retrieves instances of $name$ $prefix$")
     public List<$Type$Output> getAll_$name$(@Name("tags") final List<String> tags, @Name("status") @DefaultValue("active") final String status, @Name("page") @DefaultValue("1") int page, @Name("size") @DefaultValue("10") int size, 
-            @Name("user") final String user, 
+            @Name("sortBy") final String sortBy, @Name("sortAsc") @DefaultValue("true") final Boolean sortAsc, @Name("user") final String user, 
             @Name("groups") final List<String> groups) {
         
             identitySupplier.buildIdentityProvider(user, groups);
             return io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             if (tags != null && !tags.isEmpty()) {
-                return process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, mapStatus(status), tags.toArray(String[]::new)).stream()
+                if (sortBy != null && !sortBy.trim().isEmpty()) {
+                    return process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, mapStatus(status), sortBy, sortAsc, tags.toArray(String[]::new)).stream()
+                            .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), pi))
+                            .collect(Collectors.toList());
+                } else {
+                    return process.instances().findByIdOrTag(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, mapStatus(status), tags.toArray(String[]::new)).stream()
                         .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), pi))
                         .collect(Collectors.toList());
+                }
             } else {
-                return process.instances().values(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, mapStatus(status), page, size).stream()
+                if (sortBy != null && !sortBy.trim().isEmpty()) {
+                    return process.instances().values(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, mapStatus(status), page, size, sortBy, sortAsc).stream()
+                            .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), pi))
+                            .collect(Collectors.toList());
+                } else {
+                    return process.instances().values(io.automatiko.engine.api.workflow.ProcessInstanceReadMode.READ_ONLY, mapStatus(status), page, size).stream()
                     .map(pi -> mapOutput(new $Type$Output(), pi.variables(), pi.businessKey(), pi))
                     .collect(Collectors.toList());
+                }
             }
         });
     }
