@@ -12,6 +12,7 @@ import javax.inject.Singleton;
 
 import io.automatiko.addons.fault.tolerance.CircuitClosedEvent;
 import io.smallrye.faulttolerance.FaultToleranceOperationProvider;
+import io.smallrye.faulttolerance.SpecCompatibility;
 import io.smallrye.faulttolerance.config.FaultToleranceOperation;
 import io.smallrye.faulttolerance.core.FaultToleranceStrategy;
 import io.smallrye.faulttolerance.internal.InterceptionPoint;
@@ -26,7 +27,9 @@ public class AutomatikoStrategyCache extends StrategyCache {
     Set<String> circuitBreakers = new HashSet<>();
 
     @Inject
-    public AutomatikoStrategyCache(Event<CircuitClosedEvent> events, FaultToleranceOperationProvider operationProvider) {
+    public AutomatikoStrategyCache(Event<CircuitClosedEvent> events, FaultToleranceOperationProvider operationProvider,
+            SpecCompatibility specCompatibility) {
+        super(specCompatibility);
         this.events = events;
         this.operationProvider = operationProvider;
     }
