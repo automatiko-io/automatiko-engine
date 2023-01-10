@@ -15,15 +15,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -240,39 +236,18 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     @Override
     public Collection findByIdOrTag(ProcessInstanceReadMode mode, int status, String sortBy, boolean sortAsc,
             String... values) {
-        String sortKey = adjustSortKey(sortBy);
-        if (sortKey == null) {
+        if (sortBy == null) {
             return findByIdOrTag(mode, status, values);
         }
 
         Set collected = new LinkedHashSet<>();
 
-        Set<String> found = indexer.instances(status, 0, Integer.MAX_VALUE).stream()
-                .filter(instance -> instance.match(values)).map(instance -> instance.id()).collect(Collectors.toSet());
-        List<SortItem> sortingValues = new ArrayList<>();
-        if (sortKey.equals("id")) {
-            for (String id : found) {
-                sortingValues.add(new SortItem(id, id));
-            }
-        } else {
-            for (String id : found) {
-                Path processInstanceStorage = Paths.get(storage.toString(), id);
-                String metadataSort = getMetadata(processInstanceStorage, sortKey);
-                sortingValues.add(new SortItem(adjustTypeSortKey(sortBy, metadataSort), id));
-            }
-        }
+        Collection<String> found = indexer.instances(status, 0, Integer.MAX_VALUE, sortBy, sortAsc).stream()
+                .filter(instance -> instance.match(values)).map(instance -> instance.id()).collect(Collectors.toList());
 
-        sortingValues.sort((one, two) -> {
-            return one.key.compareTo(two.key);
-        });
-
-        if (!sortAsc) {
-            Collections.reverse(sortingValues);
-        }
-
-        for (SortItem item : sortingValues) {
+        for (String id : found) {
             try {
-                findById(item.id, status, mode).ifPresent(pi -> collected.add(pi));
+                findById(id, status, mode).ifPresent(pi -> collected.add(pi));
             } catch (AccessDeniedException e) {
 
             }
@@ -293,8 +268,8 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     public Collection values(ProcessInstanceReadMode mode, int status, int page, int size) {
         Set collected = new LinkedHashSet<>();
 
-        Set<String> found = indexer.instances(status, page, size).stream()
-                .map(instance -> instance.id()).collect(Collectors.toSet());
+        Collection<String> found = indexer.instances(status, page, size).stream()
+                .map(instance -> instance.id()).collect(Collectors.toList());
 
         for (String id : found) {
             try {
@@ -309,49 +284,21 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
     @SuppressWarnings("unchecked")
     @Override
     public Collection values(ProcessInstanceReadMode mode, int status, int page, int size, String sortBy, boolean sortAsc) {
-        String sortKey = adjustSortKey(sortBy);
-        if (sortKey == null) {
+        if (sortBy == null) {
             return values(mode, status, page, size);
         }
 
         Set collected = new LinkedHashSet<>();
 
-        Set<String> found = indexer.instances(status, 0, Integer.MAX_VALUE).stream()
-                .map(instance -> instance.id()).collect(Collectors.toSet());
-        List<SortItem> sortingValues = new ArrayList<>();
-        if (sortKey.equals("id")) {
-            found.stream().forEach(itemId -> {
-                sortingValues.add(new SortItem(itemId, itemId));
-            });
+        Collection<IndexedInstance> found = indexer.instances(status, page, size, sortBy, sortAsc);
 
-        } else {
-            found.stream().forEach(itemId -> {
-                Path processInstanceStorage = Paths.get(storage.toString(), itemId);
-                String metadataSort = getMetadata(processInstanceStorage, sortKey);
-                sortingValues.add(new SortItem(adjustTypeSortKey(sortBy, metadataSort), itemId));
-            });
-        }
-
-        sortingValues.sort((one, two) -> {
-            if (one.key != null && two.key != null) {
-                return one.key.compareTo(two.key);
-            } else {
-                return -1;
-            }
-        });
-
-        if (!sortAsc) {
-            Collections.reverse(sortingValues);
-        }
-
-        sortingValues.stream().skip(calculatePage(page, size)).limit(size).forEach(item -> {
+        for (IndexedInstance id : found) {
             try {
-                findById(item.id, status, mode).ifPresent(pi -> collected.add(pi));
+                findById(id.id(), status, mode).ifPresent(pi -> collected.add(pi));
             } catch (AccessDeniedException e) {
 
             }
-
-        });
+        }
         return collected;
     }
 
@@ -492,7 +439,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
                 }
             }
 
-            indexer.index(resolvedId, instance.status(), instance.businessKey(), instance.tags().values());
+            indexer.index(resolvedId, instance.status(), instance.businessKey(), instance.tags().values(), instance);
 
             disconnect(processInstanceStorage, instance);
         } catch (IOException e) {
@@ -780,61 +727,4 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         }
     }
 
-    protected String adjustSortKey(String sortBy) {
-        switch (sortBy) {
-            case ID_SORT_KEY:
-                return "id";
-            case DESC_SORT_KEY:
-                return PI_DESCRIPTION;
-            case START_DATE_SORT_KEY:
-                return PI_START_DATE;
-            case END_DATE_SORT_KEY:
-                return PI_END_DATE;
-            case BUSINESS_KEY_SORT_KEY:
-                return PI_BUSINESS_KEY;
-            default:
-                return null;
-        }
-    }
-
-    protected Comparable adjustTypeSortKey(String sortBy, Object value) {
-        if (value == null) {
-            return null;
-        }
-
-        switch (sortBy) {
-            case ID_SORT_KEY:
-            case DESC_SORT_KEY:
-            case BUSINESS_KEY_SORT_KEY:
-                return (String) value;
-
-            case START_DATE_SORT_KEY:
-            case END_DATE_SORT_KEY:
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-
-                try {
-                    return sdf.parse(value.toString());
-                } catch (ParseException e) {
-                }
-
-            default:
-                return null;
-        }
-    }
-
-    private class SortItem {
-        public SortItem(Comparable metadataSort, String id) {
-            this.key = metadataSort;
-            this.id = id;
-        }
-
-        private Comparable key;
-
-        private String id;
-
-        @Override
-        public String toString() {
-            return "SortItem [key=" + key + "]";
-        }
-    }
 }
