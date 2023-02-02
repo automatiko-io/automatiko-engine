@@ -488,22 +488,26 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         if (!this.process.accessPolicy().canUpdateInstance(IdentityProvider.get(), this)) {
             throw new AccessDeniedException("Access is denied to update instance " + this.id);
         }
-        processInstance();
-        Map<String, Object> map = bind(updates);
+        try {
+            processInstance();
+            Map<String, Object> map = bind(updates);
 
-        for (Entry<String, Object> entry : map.entrySet()) {
-            ((WorkflowProcessInstance) processInstance()).setVariable(entry.getKey(), entry.getValue());
-        }
-        syncProcessInstance(((WorkflowProcessInstance) processInstance()));
-        unbind(this.variables, processInstance().getVariables());
-        addToUnitOfWork(pi -> {
-            synchronized (this) {
-                ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi);
+            for (Entry<String, Object> entry : map.entrySet()) {
+                ((WorkflowProcessInstance) processInstance()).setVariable(entry.getKey(), entry.getValue());
             }
-        }, pi -> ((MutableProcessInstances<T>) process.instances()).release(pi.id(), pi));
-        unlock(false);
-        removeOnFinish();
-
+            syncProcessInstance(((WorkflowProcessInstance) processInstance()));
+            unbind(this.variables, processInstance().getVariables());
+            addToUnitOfWork(pi -> {
+                synchronized (this) {
+                    ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi);
+                }
+            }, pi -> ((MutableProcessInstances<T>) process.instances()).release(pi.id(), pi));
+            unlock(false);
+            removeOnFinish();
+        } catch (Throwable e) {
+            ((MutableProcessInstances<T>) process.instances()).release(id(), this);
+            throw e;
+        }
     }
 
     @Override
@@ -678,7 +682,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                 this.getProcessRuntime().getWorkItemManager().completeWorkItem(id, variables, policies);
                 removeOnFinish();
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             ((MutableProcessInstances<T>) process.instances()).release(id(), this);
             throw e;
         }
@@ -701,7 +705,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                 this.getProcessRuntime().getWorkItemManager().abortWorkItem(id, policies);
                 removeOnFinish();
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             ((MutableProcessInstances<T>) process.instances()).release(id(), this);
             throw e;
         }
@@ -724,7 +728,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                 this.getProcessRuntime().getWorkItemManager().failWorkItem(id, error);
                 removeOnFinish();
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             ((MutableProcessInstances<T>) process.instances()).release(id(), this);
             throw e;
         }
@@ -747,7 +751,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
                 this.getProcessRuntime().getWorkItemManager().transitionWorkItem(id, transition);
                 removeOnFinish();
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             ((MutableProcessInstances<T>) process.instances()).release(id(), this);
             throw e;
         }
