@@ -11,7 +11,7 @@ Java DSL follows fluent API pattern to provide easy to write and easy to read do
 to express the workflow definition. At the same time it aims at building fully type based so all 
 code that is going to be executed by workflow is given as code rather than string representation of it.
 
-NOTE: All described examples below can be found in https://github.com/automatiko-io/automatiko-examples/workflows-java-dsl[Automatiko Examples repository]
+NOTE: All described examples below can be found in https://github.com/automatiko-io/automatiko-examples/tree/main/workflows-java-dsl[Automatiko Examples repository]
 
 == Required software
 
