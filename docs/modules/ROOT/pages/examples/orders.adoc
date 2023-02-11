@@ -30,7 +30,7 @@ a spotify kafka container image can be handy, visit
 link:https://hub.docker.com/r/spotify/kafka/[Docker Hub] for details
 
 once this is done you can see the fully described service at
- link:http://localhost:8080/swagger-ui/#/[]
+ link:http://localhost:8080/q/swagger-ui/#/[]
 
 TIP: You can open your browser link:http://localhost:8080/management/processes/ui[]
 to visualize your running service
