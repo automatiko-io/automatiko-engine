@@ -284,7 +284,7 @@ And then open the service via minikube
 
 
 once this is done you can see the fully described service at
- link:http://localhost:PORT/swagger-ui/#/[]
+ link:http://localhost:PORT/q/swagger-ui/#/[]
 
 TIP: You can open your browser link:http://localhost:PORT/management/processes/ui[]
 to visualize your running service

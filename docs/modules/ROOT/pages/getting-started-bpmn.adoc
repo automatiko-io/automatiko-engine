@@ -150,7 +150,7 @@ folder of your project
 `mvn clean quarkus:dev`
 
 This will launch (after sometime when executed for the first time...) a service
-that will have REST api available at link:http://localhost:8080/swagger-ui[]
+that will have REST api available at link:http://localhost:8080/q/swagger-ui[]
 
 At this point you can use swagger ui to try out your newly built service
 from the workflow.
