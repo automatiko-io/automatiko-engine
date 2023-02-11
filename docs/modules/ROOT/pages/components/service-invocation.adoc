@@ -5,7 +5,7 @@ One of the most common tasks in workflows is *service task*. This task is respon
 There might be various types of operations such as
 
 * java method in one of the service classes of the project itself
-* ReST call to remote service
+* REST call to remote service
 
 These operations are configured as a service tasks and invoked by the workflow engine. 
 
@@ -106,7 +106,7 @@ There is no need to make any modifications on the workflow definition to make us
 As opposed to local services, workflows in many cases need to interact with outside world. Especially 
 common when implementing orchestration based service where coordination of various external systems is a key.
 
-To make this possible, service tasks allow to invoke ReST services based on OpenAPI service description.
+To make this possible, service tasks allow to invoke REST services based on OpenAPI service description.
 
 Main part required for this use case is the OpenAPI service description that is either locally 
 (inside the project's resource folder `src/main/resources`) or remotely (accessible over the http(s) protocol).
@@ -126,7 +126,7 @@ Once interfaces and their operations are defined, service tasks can reference th
 
 image:rest-service-def.png[]
 
-IMPORTANT: Note that ReST service when being referenced needs to select the `webservice` as implementation
+IMPORTANT: Note that REST service when being referenced needs to select the `webservice` as implementation
 
 Lastly service operations can require inputs and might produce outputs. These 
 can be mapped to and from workflow instance variables via `IO parameters` of
@@ -139,15 +139,15 @@ Where
 * Input Data Mapping corresponds to operation arguments
 * Output Data Mapping corresponds to returned value from the operation
 
-This is all that it takes to invoke a ReST service operation from within workflow.
+This is all that it takes to invoke a REST service operation from within workflow.
 
 === Asynchronous service invocation
 
-Similar to local service calls, ReST service invocation can also be made asynchronous. Here it is 
-even more important as going to remote ReST service over the network is certainly a blocking operation
+Similar to local service calls, REST service invocation can also be made asynchronous. Here it is 
+even more important as going to remote REST service over the network is certainly a blocking operation
 with no clear information how fast or how slow it can be.
 
-To make the ReST operation asynchronous, workflow definition must declare that on the interface operation level
+To make the REST operation asynchronous, workflow definition must declare that on the interface operation level
 as additional parameter on top of the operation name e.g. `createUser?mode=async`
 
 image:rest-async-service-declaration.png[]
