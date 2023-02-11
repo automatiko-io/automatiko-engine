@@ -75,7 +75,7 @@ image::errors-throw.png[]
 
 Such `error end events` use the same error definition as described above.
 
-IMPORTANT: Errors based on `error end events` are part of service interface (ReST and GraphQL)
+IMPORTANT: Errors based on `error end events` are part of service interface (REST and GraphQL)
 and will then use `error code` as response code or message to provide valuable information to the
 consumers of the service.
 
