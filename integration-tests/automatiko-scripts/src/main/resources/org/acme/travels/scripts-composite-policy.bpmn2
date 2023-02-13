@@ -14,11 +14,11 @@
   <bpmn2:itemDefinition id="ItemDefinition_11" isCollection="false" structureRef="Object"/>
   <bpmn2:itemDefinition id="ItemDefinition_12" isCollection="false" structureRef="Object"/>
   <bpmn2:itemDefinition id="ItemDefinition_13" isCollection="false" structureRef="Object"/>
-  <bpmn2:process id="onlyLocalhost" tns:packageName="org.acme.travels" name="Instances from localhost only" isExecutable="true" processType="Public">
-    <bpmn2:documentation id="Documentation_1"><![CDATA[Basic version of hello world type of processing that allows  instances from localhost only - illustrates use of custom access policies]]></bpmn2:documentation>
+  <bpmn2:process id="composite" tns:packageName="org.acme.travels" name="Use of composite access policy" isExecutable="true" processType="Public">
+    <bpmn2:documentation id="Documentation_1"><![CDATA[Basic version of hello world type of processing - illustrates use of composite access policies]]></bpmn2:documentation>
     <bpmn2:extensionElements>
       <tns:metaData name="accessPolicy">
-        <tns:metaValue><![CDATA[localHostOnly]]></tns:metaValue>
+        <tns:metaValue><![CDATA[composite:participants,localHostOnly]]></tns:metaValue>
       </tns:metaData>
       <tns:metaData name="description">
         <tns:metaValue><![CDATA[Simple script handling workflow for #{name}]]></tns:metaValue>
@@ -138,7 +138,7 @@
     <bpmn2:sequenceFlow id="SequenceFlow_6" tns:priority="1" sourceRef="UserTask_1" targetRef="EndEvent_2"/>
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_Process_1" bpmnElement="onlyLocalhost">
+    <bpmndi:BPMNPlane id="BPMNPlane_Process_1" bpmnElement="composite">
       <bpmndi:BPMNShape id="BPMNShape_StartEvent_1" bpmnElement="StartEvent_1">
         <dc:Bounds height="36.0" width="36.0" x="60.0" y="45.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_1" labelStyle="BPMNLabelStyle_1">

@@ -58,7 +58,7 @@ public class LocalHostOnlyAccessPolicy<T> implements NamedAccessPolicy<ProcessIn
     }
 
     @Override
-    public String identifer() {
+    public String identifier() {
         return "localHostOnly";
     }
 

@@ -663,5 +663,54 @@ public class VerificationTest {
             .body("$.size()", is(0));
         
     }
+    
+    @Test
+    public void testProcessWithCompositeAccessPolicySuccess() {
+
+        String addPayload = "{\"name\" : \"john\"}";
+        given()
+                    .contentType(ContentType.JSON)
+                    .accept(ContentType.JSON)
+                    .body(addPayload)
+                    .when()
+                        .post("/composite")
+                    .then()
+                        //.log().body(true)
+                        .statusCode(200)
+                        .body("id", notNullValue(), "name", equalTo("john"), "message", equalTo("Hello john"), "lastName", nullValue());
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/composite")
+        .then().statusCode(200)
+            .body("$.size()", is(0));
+        
+    }
+    
+    @Test
+    public void testProcessWithCompositeAccessPolicyAccessDenied() {
+
+        String addPayload = "{\"name\" : \"john\"}";
+        given()
+                    .contentType(ContentType.JSON)
+                    .accept(ContentType.JSON)
+                    .header("host", "customhost")
+                    .body(addPayload)
+                    .when()
+                        .post("/composite")
+                    .then()
+                        //.log().body(true)
+                        .statusCode(403)
+                        .body("message", equalTo("Access is denied to create new instance of process Use of composite access policy"));
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/composite")
+        .then().statusCode(200)
+            .body("$.size()", is(0));
+        
+    }
  // @formatter:on
 }

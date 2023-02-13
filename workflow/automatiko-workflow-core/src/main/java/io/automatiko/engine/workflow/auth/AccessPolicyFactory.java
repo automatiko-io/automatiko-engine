@@ -15,23 +15,35 @@ public class AccessPolicyFactory {
         if (identifier == null) {
             return new AllowAllAccessPolicy();
         }
+        String[] options = new String[0];
+        if (identifier.contains(":")) {
+            String[] idWithOptions = identifier.split(":");
+            identifier = idWithOptions[0];
+            options = idWithOptions[1].split(",");
+        }
+
         AccessPolicy<ProcessInstance<T>> policy = (AccessPolicy<ProcessInstance<T>>) REGISTERED.get(identifier);
 
         if (policy == null) {
-            switch (identifier) {
+            switch (identifier.toLowerCase()) {
                 case "participants":
                     policy = new ParticipantsAccessPolicy();
                     break;
                 case "initiator":
                     policy = new InitiatorAccessPolicy();
                     break;
+                case "composite":
+                    policy = new CompositeAccessPolicy(options);
+                    break;
 
                 default:
-                    policy = new AllowAllAccessPolicy();
+                    policy = null;
                     break;
             }
         }
-
+        if (policy == null) {
+            throw new IllegalArgumentException("No access policy was found with identifier '" + identifier + "'");
+        }
         return policy;
     }
 
