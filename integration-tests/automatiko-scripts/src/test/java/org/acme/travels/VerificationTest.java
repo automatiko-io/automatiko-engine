@@ -614,5 +614,54 @@ public class VerificationTest {
                 .body("$.size()", is(0));
                 
     }
+    
+    @Test
+    public void testProcessWithCustomAccessPolicySuccess() {
+
+        String addPayload = "{\"name\" : \"john\"}";
+        given()
+                    .contentType(ContentType.JSON)
+                    .accept(ContentType.JSON)
+                    .body(addPayload)
+                    .when()
+                        .post("/onlyLocalhost")
+                    .then()
+                        //.log().body(true)
+                        .statusCode(200)
+                        .body("id", notNullValue(), "name", equalTo("john"), "message", equalTo("Hello john"), "lastName", nullValue());
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/onlyLocalhost")
+        .then().statusCode(200)
+            .body("$.size()", is(0));
+        
+    }
+    
+    @Test
+    public void testProcessWithCustomAccessPolicyAccessDenied() {
+
+        String addPayload = "{\"name\" : \"john\"}";
+        given()
+                    .contentType(ContentType.JSON)
+                    .accept(ContentType.JSON)
+                    .header("host", "customhost")
+                    .body(addPayload)
+                    .when()
+                        .post("/onlyLocalhost")
+                    .then()
+                        //.log().body(true)
+                        .statusCode(403)
+                        .body("message", equalTo("Access is denied to create new instance of process Instances from localhost only"));
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/onlyLocalhost")
+        .then().statusCode(200)
+            .body("$.size()", is(0));
+        
+    }
  // @formatter:on
 }
