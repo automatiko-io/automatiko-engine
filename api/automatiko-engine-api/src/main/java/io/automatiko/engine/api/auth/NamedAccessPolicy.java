@@ -9,5 +9,5 @@ package io.automatiko.engine.api.auth;
  */
 public interface NamedAccessPolicy<T> extends AccessPolicy<T> {
 
-    String identifer();
+    String identifier();
 }

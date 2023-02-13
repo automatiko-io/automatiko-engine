@@ -34,15 +34,15 @@ public class AccessPolicyRegister {
     public void registerAvailablePolicies(
             @Observes @Priority(javax.interceptor.Interceptor.Priority.LIBRARY_BEFORE) StartupEvent event) {
         for (NamedAccessPolicy<ProcessInstance<?>> policy : accessPolicies) {
-            AccessPolicyFactory.register(policy.identifer(), policy);
-            LOGGER.info("Registering access policy {} with identifer '{}'", policy, policy.identifer());
+            AccessPolicyFactory.register(policy.identifier(), policy);
+            LOGGER.info("Registering access policy {} with identifer '{}'", policy, policy.identifier());
         }
     }
 
     public void unregisterAvailablePolicies(@Observes ShutdownEvent event) {
         for (NamedAccessPolicy<ProcessInstance<?>> policy : accessPolicies) {
-            AccessPolicyFactory.unregister(policy.identifer());
-            LOGGER.info("Unregistering access policy with identifer '{}'", policy.identifer());
+            AccessPolicyFactory.unregister(policy.identifier());
+            LOGGER.info("Unregistering access policy with identifer '{}'", policy.identifier());
         }
     }
 }
