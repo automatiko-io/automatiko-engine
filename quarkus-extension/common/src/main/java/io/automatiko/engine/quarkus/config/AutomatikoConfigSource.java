@@ -55,13 +55,14 @@ public class AutomatikoConfigSource implements ConfigSource {
         return NAME;
     }
 
-    private void load() {
+    private synchronized void load() {
         if (found == null) {
             try {
                 ServiceLoader<AutomatikoConfigProperties> loader = ServiceLoader.load(AutomatikoConfigProperties.class);
-                found = StreamSupport.stream(loader.spliterator(), false).collect(Collectors.toList());
+                List<AutomatikoConfigProperties> tmp = StreamSupport.stream(loader.spliterator(), false)
+                        .collect(Collectors.toList());
 
-                found.add(new AutomatikoConfigProperties() {
+                tmp.add(new AutomatikoConfigProperties() {
                     private Map<String, String> values = new LinkedHashMap<>();
 
                     @Override
@@ -81,6 +82,7 @@ public class AutomatikoConfigSource implements ConfigSource {
                         return values;
                     }
                 });
+                found = tmp;
             } catch (Throwable e) {
             }
         }
