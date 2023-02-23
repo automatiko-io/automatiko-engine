@@ -3,8 +3,8 @@ package io.automatiko.addon.files.googlestorage;
 import java.util.Collection;
 import java.util.Map.Entry;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import io.automatiko.engine.api.event.process.DefaultProcessEventListener;
 import io.automatiko.engine.api.event.process.ProcessCompletedEvent;

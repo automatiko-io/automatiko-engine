@@ -2,7 +2,7 @@ package org.acme.orders;
 
 import java.util.Random;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import org.acme.orders.demo.Order;
 

@@ -1,7 +1,7 @@
 
 package io.automatiko.engine.workflow.bpmn2.objects;
 
-@javax.xml.bind.annotation.XmlRootElement
+@jakarta.xml.bind.annotation.XmlRootElement
 public class NotAvailableGoodsReport implements java.io.Serializable {
 
 	static final long serialVersionUID = 1L;

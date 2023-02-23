@@ -264,6 +264,7 @@ public class OpenAPIClientGenerator {
                 this.templateProcessor = new TemplateProcessor() {
 
                     public File writeToFile(String filename, String contents) throws IOException {
+
                         if (filename.endsWith(".java")) {
                             // remove the absolute path prefix that is based on java tmp dir
                             String name = filename.substring(TEMP_PATH.length(), filename.lastIndexOf(".")).replaceAll("/",
@@ -290,6 +291,9 @@ public class OpenAPIClientGenerator {
                                                         .startsWith("io.automatiko.engine.app.rest.model"))
                                                 .forEach(i -> usedTypes.add(i.getNameAsString()));
                                     }
+                                    // remove javax.annotation.Generated that is added by openapi tools generator
+                                    Optional<AnnotationExpr> generated = template.getAnnotationByName("Generated");
+                                    generated.ifPresent(an -> an.removeForced());
 
                                     Optional<AnnotationExpr> p = template.getAnnotationByName("Path");
 

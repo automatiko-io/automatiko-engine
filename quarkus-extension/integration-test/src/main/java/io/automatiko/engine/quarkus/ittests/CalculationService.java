@@ -3,7 +3,7 @@ package io.automatiko.engine.quarkus.ittests;
 
 import java.util.Random;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class CalculationService {

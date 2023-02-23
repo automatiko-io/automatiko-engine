@@ -1,7 +1,7 @@
 package io.automatiko.engine.quarkus.encrypt;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Produces;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
 
 import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 import io.quarkus.arc.DefaultBean;

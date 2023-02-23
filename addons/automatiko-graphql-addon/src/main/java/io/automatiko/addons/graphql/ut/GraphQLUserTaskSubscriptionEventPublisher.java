@@ -1,7 +1,7 @@
 package io.automatiko.addons.graphql.ut;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import io.automatiko.addons.graphql.GraphQLEventPublisher;
 import io.automatiko.addons.graphql.GraphQLSubscriptionEventPublisher;

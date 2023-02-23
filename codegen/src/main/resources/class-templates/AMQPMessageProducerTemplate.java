@@ -39,15 +39,15 @@ public class MessageProducer {
     
     Optional<Boolean> useCloudEventsBinary = Optional.of(false);
     
-    javax.enterprise.inject.Instance<io.automatiko.engine.api.io.OutputConverter<$Type$, String>> converter;    
+    jakarta.enterprise.inject.Instance<io.automatiko.engine.api.io.OutputConverter<$Type$, String>> converter;    
     
-    @javax.inject.Inject
+    @jakarta.inject.Inject
     ObjectMapper json;
     
-    @javax.inject.Inject
+    @jakarta.inject.Inject
     io.automatiko.engine.service.metrics.ProcessMessagingMetrics metrics;
     
-    @javax.inject.Inject
+    @jakarta.inject.Inject
     io.automatiko.engine.api.audit.Auditor auditor;
 
     public void configure() {

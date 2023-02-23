@@ -21,13 +21,13 @@ public class CDIDependencyInjectionAnnotator implements DependencyInjectionAnnot
 
     @Override
     public <T extends NodeWithAnnotations<?>> T withNamed(T node, String name) {
-        node.addAnnotation(new SingleMemberAnnotationExpr(new Name("javax.inject.Named"), new StringLiteralExpr(name)));
+        node.addAnnotation(new SingleMemberAnnotationExpr(new Name("jakarta.inject.Named"), new StringLiteralExpr(name)));
         return node;
     }
 
     @Override
     public <T extends NodeWithAnnotations<?>> T withApplicationComponent(T node) {
-        node.addAnnotation("javax.enterprise.context.ApplicationScoped");
+        node.addAnnotation("jakarta.enterprise.context.ApplicationScoped");
         return node;
     }
 
@@ -38,7 +38,7 @@ public class CDIDependencyInjectionAnnotator implements DependencyInjectionAnnot
 
     @Override
     public <T extends NodeWithAnnotations<?>> T withSingletonComponent(T node) {
-        node.addAnnotation("javax.inject.Singleton");
+        node.addAnnotation("jakarta.inject.Singleton");
         return node;
     }
 
@@ -49,7 +49,7 @@ public class CDIDependencyInjectionAnnotator implements DependencyInjectionAnnot
 
     @Override
     public <T extends NodeWithAnnotations<?>> T withInjection(T node) {
-        node.addAnnotation("javax.inject.Inject");
+        node.addAnnotation("jakarta.inject.Inject");
         return node;
     }
 
@@ -93,16 +93,16 @@ public class CDIDependencyInjectionAnnotator implements DependencyInjectionAnnot
                 .setType(void.class).setBody(body);
 
         method.addAndGetParameter("io.quarkus.runtime.StartupEvent", "event")
-                .addAnnotation("javax.enterprise.event.Observes")
-                .addSingleMemberAnnotation("javax.annotation.Priority",
-                        new NameExpr("javax.interceptor.Interceptor.Priority.APPLICATION"));
+                .addAnnotation("jakarta.enterprise.event.Observes")
+                .addSingleMemberAnnotation("jakarta.annotation.Priority",
+                        new NameExpr("jakarta.interceptor.Interceptor.Priority.APPLICATION"));
 
         return method;
     }
 
     @Override
     public String optionalInstanceInjectionType() {
-        return "javax.enterprise.inject.Instance";
+        return "jakarta.enterprise.inject.Instance";
     }
 
     @Override
@@ -128,7 +128,7 @@ public class CDIDependencyInjectionAnnotator implements DependencyInjectionAnnot
 
     @Override
     public String applicationComponentType() {
-        return "javax.enterprise.context.ApplicationScoped";
+        return "jakarta.enterprise.context.ApplicationScoped";
     }
 
     @Override

@@ -5,15 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.activation.DataHandler;
-import javax.enterprise.context.ApplicationScoped;
-
 import org.apache.camel.TypeConversionException;
 import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.component.mail.MailMessage;
 
 import io.automatiko.engine.api.io.InputConverter;
 import io.automatiko.engine.workflow.file.ByteArrayFile;
+import jakarta.activation.DataHandler;
+import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class EmailAttachmentsInputConverter implements InputConverter<List<ByteArrayFile>> {

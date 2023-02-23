@@ -39,7 +39,7 @@
     </dependency>
 
 
-    <!-- automatik -->
+    <!-- automatiko -->
     <dependency>
       <groupId>io.automatiko.quarkus</groupId>
       <artifactId>automatiko-common</artifactId>
@@ -47,12 +47,11 @@
     <dependency>
       <groupId>io.automatiko.build</groupId>
       <artifactId>automatiko-engine-codegen</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.validation</groupId>
-          <artifactId>validation-api</artifactId>
-        </exclusion>
-      </exclusions>
+    </dependency>
+    <!-- code generation for executable model -->
+    <dependency>
+      <groupId>com.github.javaparser</groupId>
+      <artifactId>javaparser-core</artifactId>
     </dependency>
 
 

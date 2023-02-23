@@ -117,7 +117,7 @@ public class ApplicationGenerator {
 
             cls.findFirst(MethodDeclaration.class, md -> md.getNameAsString().equals("setup"))
                     .orElseThrow(() -> new RuntimeException("setup method template not found"))
-                    .addAnnotation("javax.annotation.PostConstruct");
+                    .addAnnotation("jakarta.annotation.PostConstruct");
 
             annotator.withOptionalInjection(eventPublishersFieldDeclaration);
             eventPublishersDeclarator = new VariableDeclarator(

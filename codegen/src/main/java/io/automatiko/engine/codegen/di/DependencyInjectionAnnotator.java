@@ -160,7 +160,7 @@ public interface DependencyInjectionAnnotator {
                 rolesExpr.add(new StringLiteralExpr(role.trim()));
             }
 
-            node.addAnnotation(new SingleMemberAnnotationExpr(new Name("javax.annotation.security.RolesAllowed"),
+            node.addAnnotation(new SingleMemberAnnotationExpr(new Name("jakarta.annotation.security.RolesAllowed"),
                     new ArrayInitializerExpr(NodeList.nodeList(rolesExpr))));
         }
         return node;

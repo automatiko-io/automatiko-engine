@@ -7,10 +7,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.activation.DataHandler;
-import javax.enterprise.context.ApplicationScoped;
-import javax.mail.Address;
-import javax.mail.Message.RecipientType;
+import jakarta.activation.DataHandler;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.mail.Address;
+import jakarta.mail.Message.RecipientType;
 
 import org.apache.camel.TypeConversionException;
 import org.apache.camel.attachment.AttachmentMessage;

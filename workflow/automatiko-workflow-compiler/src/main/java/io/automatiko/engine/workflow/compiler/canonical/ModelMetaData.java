@@ -175,12 +175,12 @@ public class ModelMetaData {
 
         if (asEntity) {
             modelClass.addExtendedType("io.automatiko.engine.addons.persistence.db.model.ProcessInstanceEntity");
-            modelClass.addAnnotation(new NormalAnnotationExpr(new Name("javax.persistence.Entity"),
+            modelClass.addAnnotation(new NormalAnnotationExpr(new Name("jakarta.persistence.Entity"),
                     NodeList.nodeList(new MemberValuePair("name",
                             new StringLiteralExpr(camelToSnake(processId.toUpperCase() + version(version).toUpperCase()))))));
 
             modelClass.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("metadata"))
-                    .forEach(fd -> fd.addAnnotation("javax.persistence.Transient"));
+                    .forEach(fd -> fd.addAnnotation("jakarta.persistence.Transient"));
         }
 
         if (supportsOpenApi) {
@@ -255,7 +255,7 @@ public class ModelMetaData {
                     NodeList.nodeList(new MemberValuePair("value", new StringLiteralExpr(varName)))));
 
             if (asEntity && tags.contains(Variable.TRANSIENT_TAG)) {
-                fd.addAnnotation("javax.persistence.Transient");
+                fd.addAnnotation("jakarta.persistence.Transient");
             }
 
             if (supportsOpenApi) {
@@ -341,34 +341,34 @@ public class ModelMetaData {
             NodeList<Expression> cascade;
             if (removeAtCompletion) {
                 cascade = NodeList.nodeList(
-                        new NameExpr("javax.persistence.CascadeType.ALL"));
+                        new NameExpr("jakarta.persistence.CascadeType.ALL"));
             } else {
                 cascade = NodeList.nodeList(
-                        new NameExpr("javax.persistence.CascadeType.PERSIST"),
-                        new NameExpr("javax.persistence.CascadeType.MERGE"),
-                        new NameExpr("javax.persistence.CascadeType.REFRESH"),
-                        new NameExpr("javax.persistence.CascadeType.DETACH"));
+                        new NameExpr("jakarta.persistence.CascadeType.PERSIST"),
+                        new NameExpr("jakarta.persistence.CascadeType.MERGE"),
+                        new NameExpr("jakarta.persistence.CascadeType.REFRESH"),
+                        new NameExpr("jakarta.persistence.CascadeType.DETACH"));
             }
 
             Type type = fd.getVariable(0).getType();
             if (type.isArrayType() || Collection.class.isAssignableFrom(dataType.getClassType())) {
-                fd.addAnnotation(new NormalAnnotationExpr(new Name("javax.persistence.OneToMany"),
+                fd.addAnnotation(new NormalAnnotationExpr(new Name("jakarta.persistence.OneToMany"),
                         NodeList.nodeList(
                                 new MemberValuePair("cascade",
                                         new ArrayInitializerExpr(cascade)),
-                                new MemberValuePair("fetch", new NameExpr("javax.persistence.FetchType.EAGER")))));
+                                new MemberValuePair("fetch", new NameExpr("jakarta.persistence.FetchType.EAGER")))));
 
             } else if (dataType.getClassType() != null && Stream.of(dataType.getClassType().getAnnotations())
-                    .anyMatch(a -> a.annotationType().getName().equals("javax.persistence.Entity"))) {
-                fd.addAnnotation(new NormalAnnotationExpr(new Name("javax.persistence.OneToOne"),
+                    .anyMatch(a -> a.annotationType().getName().equals("jakarta.persistence.Entity"))) {
+                fd.addAnnotation(new NormalAnnotationExpr(new Name("jakarta.persistence.OneToOne"),
                         NodeList.nodeList(
                                 new MemberValuePair("cascade",
                                         new ArrayInitializerExpr(cascade)),
-                                new MemberValuePair("fetch", new NameExpr("javax.persistence.FetchType.EAGER")))));
-                fd.addAnnotation(new NormalAnnotationExpr(new Name("javax.persistence.JoinColumn"),
+                                new MemberValuePair("fetch", new NameExpr("jakarta.persistence.FetchType.EAGER")))));
+                fd.addAnnotation(new NormalAnnotationExpr(new Name("jakarta.persistence.JoinColumn"),
                         NodeList.nodeList()));
             } else {
-                fd.addAnnotation(new NormalAnnotationExpr(new Name("javax.persistence.Column"),
+                fd.addAnnotation(new NormalAnnotationExpr(new Name("jakarta.persistence.Column"),
                         NodeList.nodeList(new MemberValuePair("name",
                                 new StringLiteralExpr(camelToSnake(fd.getVariable(0).getNameAsString().toUpperCase()))))));
             }

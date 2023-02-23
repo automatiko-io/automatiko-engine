@@ -1,10 +1,9 @@
 package io.automatiko.engine.addons.persistence.db;
 
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
-
 import io.automatiko.engine.api.event.EventManager;
 import io.automatiko.engine.services.uow.CollectingUnitOfWork;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.UserTransaction;
 
 public class TransactionalUnitOfWork extends CollectingUnitOfWork {
 

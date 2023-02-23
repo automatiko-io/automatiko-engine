@@ -1,6 +1,6 @@
 package com.sample.extras;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.sample.Ticket;
 

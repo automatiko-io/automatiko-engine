@@ -2,8 +2,8 @@ package io.automatiko.addons.graphql;
 
 import java.util.function.Function;
 
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
 
 import io.automatiko.addons.graphql.internal.SecurityAwareBroadcastProcessor;
 import io.automatiko.engine.api.event.DataEvent;

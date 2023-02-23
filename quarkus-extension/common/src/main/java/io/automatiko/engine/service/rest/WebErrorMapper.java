@@ -23,13 +23,13 @@ public class WebErrorMapper implements Function<Throwable, Throwable> {
             if (handledCodes.contains(errorCode)) {
                 return new HandledServiceExecutionError((WorkItemExecutionError) error);
             }
-        } else if (error instanceof javax.ws.rs.WebApplicationException) {
-            javax.ws.rs.WebApplicationException wex = (javax.ws.rs.WebApplicationException) error;
+        } else if (error instanceof jakarta.ws.rs.WebApplicationException) {
+            jakarta.ws.rs.WebApplicationException wex = (jakarta.ws.rs.WebApplicationException) error;
             return new io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError(wex.getMessage(),
                     String.valueOf(wex.getResponse().getStatus()),
                     io.automatiko.engine.services.utils.IoUtils.valueOf(wex.getResponse().getEntity()));
-        } else if (error instanceof javax.ws.rs.ProcessingException) {
-            javax.ws.rs.ProcessingException ex = (javax.ws.rs.ProcessingException) error;
+        } else if (error instanceof jakarta.ws.rs.ProcessingException) {
+            jakarta.ws.rs.ProcessingException ex = (jakarta.ws.rs.ProcessingException) error;
             return new io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError("503", ex.getMessage(), ex);
         }
 

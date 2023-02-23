@@ -68,7 +68,7 @@ public class AutomatikoConfigSource implements ConfigSource {
                     @Override
                     public String getProperty(String name) {
                         if ("mp.openapi.extensions.smallrye.operationIdStrategy".equals(name)) {
-                            return "METHOD";
+                            return "CLASS_METHOD";
                         }
                         return null;
                     }
@@ -76,7 +76,7 @@ public class AutomatikoConfigSource implements ConfigSource {
                     @Override
                     public Map<String, String> getProperties() {
                         if (values.isEmpty()) {
-                            values.put("mp.openapi.extensions.smallrye.operationIdStrategy", "METHOD");
+                            values.put("mp.openapi.extensions.smallrye.operationIdStrategy", "CLASS_METHOD");
                         }
 
                         return values;

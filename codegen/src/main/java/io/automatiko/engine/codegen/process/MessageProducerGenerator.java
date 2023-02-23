@@ -273,7 +273,7 @@ public class MessageProducerGenerator {
                     }
                 });
         template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("configure"))
-                .forEach(md -> md.addAnnotation("javax.annotation.PostConstruct"));
+                .forEach(md -> md.addAnnotation("jakarta.annotation.PostConstruct"));
         template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("marshall"))
                 .forEach(md -> {
                     md.getParameters().stream().filter(p -> p.getNameAsString().equals(EVENT_DATA_VAR))

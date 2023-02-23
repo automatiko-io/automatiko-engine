@@ -33,9 +33,9 @@ public class $Type$MessageConsumer {
     
     Optional<Boolean> useCloudEvents = Optional.of(false);
     
-    javax.enterprise.inject.Instance<io.automatiko.engine.api.io.InputConverter<$DataType$>> converter;
+    jakarta.enterprise.inject.Instance<io.automatiko.engine.api.io.InputConverter<$DataType$>> converter;
     
-    @javax.inject.Inject
+    @jakarta.inject.Inject
     io.automatiko.engine.service.metrics.ProcessMessagingMetrics metrics;
 
     public void configure() {

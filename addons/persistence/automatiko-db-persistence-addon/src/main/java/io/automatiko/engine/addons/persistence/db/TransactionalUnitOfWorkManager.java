@@ -1,11 +1,10 @@
 package io.automatiko.engine.addons.persistence.db;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.transaction.UserTransaction;
-
 import io.automatiko.engine.services.uow.DefaultUnitOfWorkManager;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.UserTransaction;
 
 @ApplicationScoped
 public class TransactionalUnitOfWorkManager extends DefaultUnitOfWorkManager {

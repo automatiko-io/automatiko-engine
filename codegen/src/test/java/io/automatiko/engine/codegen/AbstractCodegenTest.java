@@ -170,7 +170,7 @@ public class AbstractCodegenTest {
     }
 
     private boolean hasClassAvailable(String className) {
-        if (className.equals("javax.ws.rs.Path") && testService) {
+        if (className.equals("jakarta.ws.rs.Path") && testService) {
             return true;
         }
         if (className.equals("io.quarkus.funqy.Funq") && testFunction) {

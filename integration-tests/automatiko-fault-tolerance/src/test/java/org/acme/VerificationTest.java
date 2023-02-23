@@ -6,7 +6,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.acme.service.FragileService;
 import org.junit.jupiter.api.BeforeEach;

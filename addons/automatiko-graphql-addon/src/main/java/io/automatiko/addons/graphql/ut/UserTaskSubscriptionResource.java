@@ -12,7 +12,7 @@ import io.automatiko.engine.api.auth.IdentitySupplier;
 import io.smallrye.graphql.api.Subscription;
 import io.smallrye.mutiny.Multi;
 
-@javax.enterprise.context.ApplicationScoped
+@jakarta.enterprise.context.ApplicationScoped
 @Description("Dedicated GraphQL API to user tasks for the complete service")
 @GraphQLApi
 public class UserTaskSubscriptionResource {
@@ -21,7 +21,7 @@ public class UserTaskSubscriptionResource {
 
     IdentitySupplier identitySupplier;
 
-    @javax.inject.Inject
+    @jakarta.inject.Inject
     public void $Type$GraphQLResource(IdentitySupplier identitySupplier,
             GraphQLUserTaskSubscriptionEventPublisher subscriptionPublisher) {
         this.identitySupplier = identitySupplier;
@@ -34,6 +34,6 @@ public class UserTaskSubscriptionResource {
             @Name("user") @DefaultValue("") final String user,
             @Name("groups") final List<String> groups) {
         identitySupplier.buildIdentityProvider(user, groups);
-        return subscriptionPublisher.userTask().onSubscribe().invoke(() -> IdentityProvider.set(null));
+        return subscriptionPublisher.userTask().onSubscription().invoke(() -> IdentityProvider.set(null));
     }
 }
