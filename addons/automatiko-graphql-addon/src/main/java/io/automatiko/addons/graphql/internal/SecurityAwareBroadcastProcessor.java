@@ -4,12 +4,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Flow.Processor;
+import java.util.concurrent.Flow.Subscriber;
+import java.util.concurrent.Flow.Subscription;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-
-import org.reactivestreams.Processor;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.SecurityPolicy;
@@ -107,6 +106,11 @@ public class SecurityAwareBroadcastProcessor<T> extends AbstractMulti<T> impleme
             return;
         }
         current.remove(sub);
+    }
+
+    @Override
+    public void subscribe(Subscriber<? super T> s) {
+
     }
 
     @Override

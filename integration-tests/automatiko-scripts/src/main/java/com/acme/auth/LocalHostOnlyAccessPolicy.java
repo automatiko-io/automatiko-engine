@@ -2,8 +2,8 @@ package com.acme.auth;
 
 import java.util.Set;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.NamedAccessPolicy;

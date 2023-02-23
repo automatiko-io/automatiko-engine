@@ -4,9 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 
 import io.automatiko.engine.api.workflow.VariableAugmentor;
 import io.automatiko.engine.workflow.base.instance.context.variable.DefaultVariableInitializer;

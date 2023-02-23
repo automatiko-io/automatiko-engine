@@ -35,7 +35,7 @@ public abstract class AbstractGenerator implements Generator {
     }
 
     public boolean isServiceProject() {
-        return context.getBuildContext().hasClassAvailable("javax.ws.rs.Path") || onClasspath("javax.ws.rs.Path");
+        return context.getBuildContext().hasClassAvailable("jakarta.ws.rs.Path") || onClasspath("jakarta.ws.rs.Path");
     }
 
     public boolean isFunctionProject() {

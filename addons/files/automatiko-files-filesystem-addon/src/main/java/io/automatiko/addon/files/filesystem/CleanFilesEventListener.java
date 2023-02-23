@@ -1,7 +1,7 @@
 package io.automatiko.addon.files.filesystem;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import io.automatiko.engine.api.event.process.DefaultProcessEventListener;
 import io.automatiko.engine.api.event.process.ProcessCompletedEvent;

@@ -15,9 +15,9 @@ import io.automatiko.engine.api.event.EventSource;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class MessageProducer {
     
-    javax.enterprise.inject.Instance<io.automatiko.engine.api.io.OutputConverter<$Type$, Object>> converter;    
+    jakarta.enterprise.inject.Instance<io.automatiko.engine.api.io.OutputConverter<$Type$, Object>> converter;    
     
-    @javax.inject.Inject
+    @jakarta.inject.Inject
     EventSource eventSource;
     
     public void produce(ProcessInstance pi, NodeInstance nodeInstance, $Type$ eventData) {

@@ -776,7 +776,7 @@ public class ProcessGenerator {
     }
 
     public boolean isServiceProject() {
-        return context.getBuildContext().hasClassAvailable("javax.ws.rs.Path") || onClasspath("javax.ws.rs.Path");
+        return context.getBuildContext().hasClassAvailable("jakarta.ws.rs.Path") || onClasspath("jakarta.ws.rs.Path");
     }
 
     protected boolean onClasspath(String clazz) {

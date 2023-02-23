@@ -1,10 +1,10 @@
 package io.automatiko.engine.service.auth;
 
-import javax.annotation.Priority;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class AccessPolicyRegister {
     }
 
     public void registerAvailablePolicies(
-            @Observes @Priority(javax.interceptor.Interceptor.Priority.LIBRARY_BEFORE) StartupEvent event) {
+            @Observes @Priority(jakarta.interceptor.Interceptor.Priority.LIBRARY_BEFORE) StartupEvent event) {
         for (NamedAccessPolicy<ProcessInstance<?>> policy : accessPolicies) {
             AccessPolicyFactory.register(policy.identifier(), policy);
             LOGGER.info("Registering access policy {} with identifer '{}'", policy, policy.identifier());

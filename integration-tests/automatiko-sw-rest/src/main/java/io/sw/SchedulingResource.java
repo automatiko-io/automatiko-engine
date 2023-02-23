@@ -1,13 +1,17 @@
 package io.sw;
 
-import javax.print.Doc;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Set;
+
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 @Path("/schedule")
 @Produces(MediaType.APPLICATION_JSON)
@@ -34,7 +38,7 @@ public class SchedulingResource {
             patient.doctor = matchOnCondition(patient);
             assignedPatients.add(patient);
             return Response.ok(patient).build();
-        } catch(Exception e) {
+        } catch (Exception e) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
     }

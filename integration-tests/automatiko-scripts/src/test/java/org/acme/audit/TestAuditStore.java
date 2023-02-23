@@ -3,7 +3,7 @@ package org.acme.audit;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import io.automatiko.engine.api.audit.AuditEntry;
 import io.automatiko.engine.quarkus.audit.LoggerAuditStore;

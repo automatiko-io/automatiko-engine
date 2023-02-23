@@ -10,8 +10,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import javax.persistence.LockModeType;
-import javax.persistence.OptimisticLockException;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.OptimisticLockException;
 
 import org.hibernate.StaleObjectStateException;
 import org.slf4j.Logger;

@@ -2,7 +2,7 @@ package io.automatiko.engine.quarkus.encrypt;
 
 import java.util.Base64;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 import io.quarkus.arc.properties.IfBuildProperty;

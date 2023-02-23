@@ -395,7 +395,7 @@ public abstract class AbstractResourceGenerator {
 
                         if (cloned.getParameterByName(paramName).isEmpty()) {
                             cloned.addParameter(new Parameter().setName(paramName).setType(String.class)
-                                    .addAnnotation(new SingleMemberAnnotationExpr(new Name("javax.ws.rs.PathParam"),
+                                    .addAnnotation(new SingleMemberAnnotationExpr(new Name("jakarta.ws.rs.PathParam"),
                                             new StringLiteralExpr(paramName))));
 
                         }

@@ -3,8 +3,8 @@ package io.automatiko.engine.addons.services.receiveemail;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.activation.DataHandler;
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.activation.DataHandler;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import org.apache.camel.TypeConversionException;
 import org.apache.camel.attachment.AttachmentMessage;

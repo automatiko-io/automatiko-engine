@@ -37,7 +37,7 @@ public class $Type$Resource {
     @Path("$prefix$/$name$/{id_$name$}/$taskName$")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public javax.ws.rs.core.Response signal(@Context HttpHeaders httpHeaders, @PathParam("id") String id, @PathParam("id_$name$") String id_$name$,
+    public jakarta.ws.rs.core.Response signal(@Context HttpHeaders httpHeaders, @PathParam("id") String id, @PathParam("id_$name$") String id_$name$,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
             @Parameter(description = "Indicates if instance metadata should be included", required = false) @QueryParam("metadata") @DefaultValue("false") final boolean metadata) {
@@ -89,11 +89,11 @@ public class $Type$Resource {
                 pi.send(Sig.of("$taskNodeName$", java.util.Collections.emptyMap()));
                 java.util.Optional<WorkItem> task = pi.workItems().stream().filter(wi -> wi.getName().equals("$taskName$")).findFirst();
                 if(task.isPresent()) {
-                    return javax.ws.rs.core.Response.ok(getSubModel_$name$(pi, metadata))
+                    return jakarta.ws.rs.core.Response.ok(getSubModel_$name$(pi, metadata))
                             .header("Link", "</" + id + "/$taskName$/" + task.get().getId() + ">; rel='instance'")
                             .build();
                 }
-                return javax.ws.rs.core.Response.status(javax.ws.rs.core.Response.Status.NOT_FOUND).build();
+                return jakarta.ws.rs.core.Response.status(jakarta.ws.rs.core.Response.Status.NOT_FOUND).build();
             });
         }
     }

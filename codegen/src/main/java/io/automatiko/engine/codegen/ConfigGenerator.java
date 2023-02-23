@@ -107,7 +107,7 @@ public class ConfigGenerator {
 		MethodDeclaration initMethod = generateInitMethod();
 		if (useInjection()) {
 			annotator.withSingletonComponent(cls);
-			initMethod.addAnnotation("javax.annotation.PostConstruct");
+			initMethod.addAnnotation("jakarta.annotation.PostConstruct");
 		} else {
 			cls.addConstructor(Keyword.PUBLIC)
 					.setBody(new BlockStmt().addStatement(new MethodCallExpr(new ThisExpr(), "init")));

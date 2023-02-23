@@ -2,8 +2,8 @@ package io.automatiko.engine.quarkus.audit;
 
 import java.util.function.Supplier;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import io.automatiko.engine.api.audit.AuditEntry;
 import io.automatiko.engine.api.audit.Auditor;

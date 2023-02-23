@@ -33,15 +33,15 @@ public class MessageProducer {
     
     org.eclipse.microprofile.reactive.messaging.Emitter<CamelOutMessage> emitter;
 
-    javax.enterprise.inject.Instance<io.automatiko.engine.api.io.OutputConverter<$Type$, Object>> converter;    
+    jakarta.enterprise.inject.Instance<io.automatiko.engine.api.io.OutputConverter<$Type$, Object>> converter;    
     
-    @javax.inject.Inject
+    @jakarta.inject.Inject
     ObjectMapper json;
     
-    @javax.inject.Inject
+    @jakarta.inject.Inject
     io.automatiko.engine.service.metrics.ProcessMessagingMetrics metrics;
     
-    @javax.inject.Inject
+    @jakarta.inject.Inject
     io.automatiko.engine.api.audit.Auditor auditor;
 
     public void configure() {

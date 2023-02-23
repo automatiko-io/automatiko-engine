@@ -1,10 +1,9 @@
 package io.automatiko.engine.addons.persistence.db;
 
-import javax.transaction.UserTransaction;
-
 import io.automatiko.engine.api.event.EventManager;
 import io.automatiko.engine.api.uow.UnitOfWork;
 import io.automatiko.engine.api.uow.UnitOfWorkFactory;
+import jakarta.transaction.UserTransaction;
 
 public class TransactionalUnitOfWorkFactory implements UnitOfWorkFactory {
 

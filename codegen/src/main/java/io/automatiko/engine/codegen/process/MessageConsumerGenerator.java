@@ -302,7 +302,7 @@ public class MessageConsumerGenerator {
 
         template.findAll(ClassOrInterfaceType.class).forEach(cls -> interpolateTypes(cls, dataClazzName));
         template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("configure"))
-                .forEach(md -> md.addAnnotation("javax.annotation.PostConstruct"));
+                .forEach(md -> md.addAnnotation("jakarta.annotation.PostConstruct"));
         template.findAll(MethodDeclaration.class).stream()
                 .filter(md -> md.getNameAsString().equals("consume") || md.getNameAsString().equals("cleanup")
                         || md.getNameAsString().equals("reconcile"))

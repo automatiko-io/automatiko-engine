@@ -3,8 +3,8 @@ package io.automatiko.addon.files.filesystem;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import io.automatiko.engine.api.workflow.Variable;
 import io.automatiko.engine.api.workflow.VariableAugmentor;

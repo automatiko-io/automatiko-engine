@@ -274,7 +274,7 @@ public class ServiceTaskDescriptor {
                                     .addArgument(new MethodCallExpr(
                                             new MethodCallExpr(new NameExpr("wex"), "getResponse"), "getEntity"))))));
             CatchClause catchClause = new CatchClause(
-                    new Parameter(new ClassOrInterfaceType(null, "javax.ws.rs.WebApplicationException"), "wex"),
+                    new Parameter(new ClassOrInterfaceType(null, "jakarta.ws.rs.WebApplicationException"), "wex"),
                     catchbody);
 
             BlockStmt unavailablecatchbody = new BlockStmt();
@@ -286,7 +286,7 @@ public class ServiceTaskDescriptor {
                                     new NameExpr("ex"), "getMessage"),
                             new NameExpr("ex")))));
             CatchClause unavailablecatchClause = new CatchClause(
-                    new Parameter(new ClassOrInterfaceType(null, "javax.ws.rs.ProcessingException"), "ex"),
+                    new Parameter(new ClassOrInterfaceType(null, "jakarta.ws.rs.ProcessingException"), "ex"),
                     unavailablecatchbody);
 
             TryStmt trystmt = new TryStmt(executeWorkItemBody, NodeList.nodeList(catchClause, unavailablecatchClause), null);

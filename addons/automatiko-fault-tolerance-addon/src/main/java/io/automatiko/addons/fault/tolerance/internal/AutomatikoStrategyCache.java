@@ -5,10 +5,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import javax.enterprise.event.Event;
-import javax.enterprise.inject.Alternative;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.enterprise.event.Event;
+import jakarta.enterprise.inject.Alternative;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import io.automatiko.addons.fault.tolerance.CircuitClosedEvent;
 import io.smallrye.faulttolerance.FaultToleranceOperationProvider;

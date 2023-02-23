@@ -1,8 +1,8 @@
 package io.automatiko.engine.quarkus;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.Produces;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.Produces;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 

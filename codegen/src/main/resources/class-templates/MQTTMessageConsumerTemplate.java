@@ -32,12 +32,12 @@ public class $Type$MessageConsumer {
 
     Application application;
     
-    javax.enterprise.inject.Instance<io.automatiko.engine.api.io.InputConverter<$DataType$>> converter;
+    jakarta.enterprise.inject.Instance<io.automatiko.engine.api.io.InputConverter<$DataType$>> converter;
   
-    @javax.inject.Inject
+    @jakarta.inject.Inject
     ObjectMapper json;
     
-    @javax.inject.Inject
+    @jakarta.inject.Inject
     io.automatiko.engine.service.metrics.ProcessMessagingMetrics metrics;
 
     public void configure() {

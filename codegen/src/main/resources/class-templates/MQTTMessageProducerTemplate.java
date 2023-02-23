@@ -37,15 +37,15 @@ public class MessageProducer {
     @io.smallrye.reactive.messaging.annotations.Broadcast(0)
     org.eclipse.microprofile.reactive.messaging.Emitter<byte[]> emitter;
     
-    javax.enterprise.inject.Instance<io.automatiko.engine.api.io.OutputConverter<$Type$, byte[]>> converter;    
+    jakarta.enterprise.inject.Instance<io.automatiko.engine.api.io.OutputConverter<$Type$, byte[]>> converter;    
     
-    @javax.inject.Inject
+    @jakarta.inject.Inject
     ObjectMapper json;
     
-    @javax.inject.Inject
+    @jakarta.inject.Inject
     io.automatiko.engine.service.metrics.ProcessMessagingMetrics metrics;
     
-    @javax.inject.Inject
+    @jakarta.inject.Inject
     io.automatiko.engine.api.audit.Auditor auditor;
 
     public void configure() {

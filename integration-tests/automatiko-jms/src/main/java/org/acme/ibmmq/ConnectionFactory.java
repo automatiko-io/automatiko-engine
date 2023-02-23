@@ -1,7 +1,7 @@
 //package org.acme.ibmmq;
 //
-//import javax.enterprise.context.ApplicationScoped;
-//import javax.enterprise.inject.Produces;
+//import jakarta.enterprise.context.ApplicationScoped;
+//import jakarta.enterprise.inject.Produces;
 //
 //import com.ibm.msg.client.jms.JmsConnectionFactory;
 //import com.ibm.msg.client.jms.JmsFactoryFactory;

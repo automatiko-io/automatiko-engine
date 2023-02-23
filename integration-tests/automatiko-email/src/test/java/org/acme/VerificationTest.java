@@ -10,11 +10,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-import javax.enterprise.inject.Any;
-import javax.inject.Inject;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.component.mail.MailMessage;
 import org.junit.jupiter.api.Test;
@@ -23,8 +18,12 @@ import org.mockito.Mockito;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import io.smallrye.reactive.messaging.camel.CamelMessage;
-import io.smallrye.reactive.messaging.providers.connectors.InMemoryConnector;
-import io.smallrye.reactive.messaging.providers.connectors.InMemorySource;
+import io.smallrye.reactive.messaging.memory.InMemoryConnector;
+import io.smallrye.reactive.messaging.memory.InMemorySource;
+import jakarta.enterprise.inject.Any;
+import jakarta.inject.Inject;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
 
 @QuarkusTest
 public class VerificationTest {

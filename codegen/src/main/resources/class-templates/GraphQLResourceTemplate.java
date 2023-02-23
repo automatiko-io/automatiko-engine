@@ -11,7 +11,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import javax.json.JsonValue.ValueType;
+import jakarta.json.JsonValue.ValueType;
 
 import org.eclipse.microprofile.graphql.GraphQLApi;
 import org.eclipse.microprofile.graphql.Description;
@@ -44,7 +44,7 @@ import io.automatiko.engine.workflow.base.instance.TagInstance;
 import io.automatiko.engine.service.auth.HttpAuthSupport;
 import io.automatiko.addons.graphql.GraphQLProcessSubscriptionEventPublisher;
 
-@javax.enterprise.context.ApplicationScoped
+@jakarta.enterprise.context.ApplicationScoped
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @Description("$processdocumentation$")
 @GraphQLApi
@@ -61,8 +61,8 @@ public class $Type$GraphQLResource {
     
     Context context;
     
-    @javax.inject.Inject
-    public $ResourceType$(Context context, Application application, @javax.inject.Named("$id$$version$") Process<$Type$> process, IdentitySupplier identitySupplier, GraphQLProcessSubscriptionEventPublisher subscriptionPublisher) {
+    @jakarta.inject.Inject
+    public $ResourceType$(Context context, Application application, @jakarta.inject.Named("$id$$version$") Process<$Type$> process, IdentitySupplier identitySupplier, GraphQLProcessSubscriptionEventPublisher subscriptionPublisher) {
         this.context = context;
         this.application = application;
         this.process = process;
@@ -209,7 +209,7 @@ public class $Type$GraphQLResource {
             @Name("groups")  @DefaultValue("[]") final List<String> groups) {
         
         identitySupplier.buildIdentityProvider(user, groups);
-        return subscriptionPublisher.created($Type$Output.class).onSubscribe().invoke(() -> IdentityProvider.set(null));
+        return subscriptionPublisher.created($Type$Output.class).onSubscription().invoke(() -> IdentityProvider.set(null));
         
     }
     
@@ -220,7 +220,7 @@ public class $Type$GraphQLResource {
             @Name("groups") final List<String> groups) {
         
         identitySupplier.buildIdentityProvider(user, groups);
-        return subscriptionPublisher.completed($Type$Output.class).onSubscribe().invoke(() -> IdentityProvider.set(null)); 
+        return subscriptionPublisher.completed($Type$Output.class).onSubscription().invoke(() -> IdentityProvider.set(null)); 
     }
     
     
@@ -230,7 +230,7 @@ public class $Type$GraphQLResource {
             @Name("groups") final List<String> groups) {
         
         identitySupplier.buildIdentityProvider(user, groups);
-        return subscriptionPublisher.aborted($Type$Output.class).onSubscribe().invoke(() -> IdentityProvider.set(null)); 
+        return subscriptionPublisher.aborted($Type$Output.class).onSubscription().invoke(() -> IdentityProvider.set(null)); 
     }
     
     
@@ -240,7 +240,7 @@ public class $Type$GraphQLResource {
             @Name("groups") final List<String> groups) {
         
         identitySupplier.buildIdentityProvider(user, groups);
-        return subscriptionPublisher.inError($Type$Output.class).onSubscribe().invoke(() -> IdentityProvider.set(null)); 
+        return subscriptionPublisher.inError($Type$Output.class).onSubscription().invoke(() -> IdentityProvider.set(null)); 
     }
     
     
@@ -250,7 +250,7 @@ public class $Type$GraphQLResource {
             @Name("groups") final List<String> groups) {
         
         identitySupplier.buildIdentityProvider(user, groups);
-        return subscriptionPublisher.changed($Type$Output.class).onSubscribe().invoke(() -> IdentityProvider.set(null)); 
+        return subscriptionPublisher.changed($Type$Output.class).onSubscription().invoke(() -> IdentityProvider.set(null)); 
     }
     
     protected $Type$Output getModel(ProcessInstance<$Type$> pi) {

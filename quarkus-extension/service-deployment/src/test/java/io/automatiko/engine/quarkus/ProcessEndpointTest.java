@@ -3,7 +3,7 @@ package io.automatiko.engine.quarkus;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.hasKey;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
