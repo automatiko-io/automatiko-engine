@@ -81,17 +81,14 @@
     <dependency>
       <groupId>org.jfree</groupId>
       <artifactId>org.jfree.svg</artifactId>
-      <version>4.1</version>
     </dependency>
     <dependency>
       <groupId>org.jgrapht</groupId>
       <artifactId>jgrapht-io</artifactId>
-      <version>1.5.1</version>
     </dependency>
     <dependency>
       <groupId>org.jgrapht</groupId>
       <artifactId>jgrapht-ext</artifactId>
-      <version>1.5.1</version>
     </dependency>
 
     <!-- image metadata handling -->
