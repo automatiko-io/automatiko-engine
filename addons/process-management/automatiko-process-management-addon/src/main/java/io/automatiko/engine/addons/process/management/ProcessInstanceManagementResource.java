@@ -155,7 +155,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
                 }
 
                 collected.add(new ProcessDTO(id, process.version(), process.name(),
-                        (String) ((AbstractProcess<?>) process).process().getMetaData().get("Documentation"),
+                        process.description(),
                         (serviceUrl == null ? ""
                                 : serviceUrl) + "/" + pathprefix + ((AbstractProcess<?>) process).process().getId()
                                 + "/image",

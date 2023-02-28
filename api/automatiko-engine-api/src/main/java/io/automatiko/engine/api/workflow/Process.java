@@ -29,6 +29,8 @@ public interface Process<T> {
 
     String name();
 
+    String description();
+
     String version();
 
     void activate();

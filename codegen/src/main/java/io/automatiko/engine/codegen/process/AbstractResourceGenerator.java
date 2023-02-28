@@ -17,6 +17,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier.Keyword;
 import com.github.javaparser.ast.NodeList;
@@ -41,9 +44,6 @@ import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.definition.process.Node;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
@@ -362,6 +362,9 @@ public abstract class AbstractResourceGenerator {
             Optional<MethodDeclaration> createResourceMethod = template.findAll(MethodDeclaration.class).stream()
                     .filter(md -> md.getNameAsString().equals("create_" + processName)).findFirst();
             createResourceMethod.ifPresent(template::remove);
+            Optional<MethodDeclaration> createResourceFormMethod = template.findAll(MethodDeclaration.class).stream()
+                    .filter(md -> md.getNameAsString().equals("create_" + processName + "_form")).findFirst();
+            createResourceFormMethod.ifPresent(template::remove);
         } else {
             Collection<FaultNode> errors = ProcessNodeLocator.findFaultNodes(process);
             if (!errors.isEmpty()) {

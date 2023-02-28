@@ -152,6 +152,11 @@ public class BpmnProcessInstance extends AbstractProcessInstance<BpmnVariables> 
                 }
 
                 @Override
+                public String description() {
+                    return null;
+                }
+
+                @Override
                 public String version() {
                     return null;
                 }

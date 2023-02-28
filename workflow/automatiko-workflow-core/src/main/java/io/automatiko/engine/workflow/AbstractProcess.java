@@ -116,6 +116,11 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
     }
 
     @Override
+    public String description() {
+        return (String) process().getMetaData().get("Documentation");
+    }
+
+    @Override
     public String version() {
         return process().getVersion();
     }
