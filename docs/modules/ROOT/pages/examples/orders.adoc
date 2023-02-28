@@ -21,13 +21,13 @@ WARNING: Note that this example is currently not equipped with user facing UI
 == Run it
 
 The only thing that is needed is Apache Kafka running that will be accessible.
-It needs to be given as part of run command via environment variable `KAFKA_SERVERS`
+It needs to be given as part of run command via environment variable `KAFKA_BOOTSTRAP_SERVERS`
 
-`docker run -e KAFKA_SERVERS=KAFKA_HOST:9092 -p 8080:8080 automatiko/event-streams-orders`
+`docker run -e KAFKA_BOOTSTRAP_SERVERS=KAFKA_HOST:9092 -p 8080:8080 automatiko/event-streams-orders`
 
 NOTE: To get quickly a running instance of Apache Kafka to run the tests
-a spotify kafka container image can be handy, visit
-link:https://hub.docker.com/r/spotify/kafka/[Docker Hub] for details
+a Redpanda container image can be handy, visit
+link:https://docs.redpanda.com/docs/get-started/quick-start/?quickstart=docker#deploy-redpanda[Redpanda installation] for details
 
 once this is done you can see the fully described service at
  link:http://localhost:8080/q/swagger-ui/#/[]
