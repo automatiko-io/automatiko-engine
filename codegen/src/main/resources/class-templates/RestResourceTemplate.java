@@ -42,6 +42,7 @@ import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.ProcessInstanceExecutionException;
 import io.automatiko.engine.api.workflow.ProcessInstanceNotFoundException;
+import io.automatiko.engine.api.workflow.ui.FormProvider;
 import io.automatiko.engine.api.runtime.process.WorkItemNotFoundException;
 import io.automatiko.engine.api.workflow.Tag;
 import io.automatiko.engine.api.workflow.ProcessImageNotFoundException;
@@ -71,11 +72,14 @@ public class $Type$Resource {
     
     HttpAuthSupport httpAuth = new HttpAuthSupport();
     
+    FormProvider formProvider;
+    
     @javax.inject.Inject
-    public $ResourceType$(Application application, @javax.inject.Named("$id$$version$") Process<$Type$> process, IdentitySupplier identitySupplier) {
+    public $ResourceType$(Application application, @javax.inject.Named("$id$$version$") Process<$Type$> process, IdentitySupplier identitySupplier, FormProvider formProvider) {
         this.application = application;
         this.process = process;
-        this.identitySupplier = identitySupplier;    
+        this.identitySupplier = identitySupplier;
+        this.formProvider = formProvider;
     }
 
     @APIResponses(
@@ -178,6 +182,26 @@ public class $Type$Resource {
                 return builder.build();
             });
         }
+    }
+        
+    @Operation(hidden = true, 
+        summary = "Creates new instance of $name$")
+    @GET()
+    @Produces(MediaType.TEXT_HTML)        
+    public Response create_$name$_form(@Context HttpHeaders httpHeaders,  
+            @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user, 
+            @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups) {
+
+        identitySupplier.buildIdentityProvider(user, groups);
+        try {
+            
+            ResponseBuilder builder = Response.ok().entity(formProvider.form(process));
+            
+            return builder.build();
+        } finally {
+            IdentityProvider.set(null);
+        }
+        
     }
 
     @APIResponses(

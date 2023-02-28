@@ -92,6 +92,39 @@ To enable user tasks management addon add following dependency to your service
 </dependency>
 ----
 
+== Start process forms
+
+As part of user task management addon, forms to start instances can also be provided. It works in exactly the same way as user tasks forms 
+- based on template files. Templates must be named in following way:
+
+- `{processid}.html` where `processid` is the identifier used for process definition
+- `{processid}_{version}.html` where `processid` is the identifier used for process definition and `version` of the process definition if version is used
+- `org/acme/test/{processid}.html` where `org/acme/test` is the package name used for process definition transformed to a path (`org.acme.test`)
+
+TIP: Using package names allows to have better structure of template files in case of any workflows exist in given project.
+
+Templates can reference following parameters to provide more tailored forms
+
+|===
+|Name| Description
+
+|id | unique identifier of the process definition
+|name | name of the process definition
+|description | optional description of the process definition
+|version | version of the process definition
+|url | url where the data should be send (posted) to start new instance
+
+|===
+
+When the addon is used and form template is not defined for given workflow then a default form is returned. Default forms are 
+for information only and do not allow to submit. Users can change the default templates providing template files with following
+names:
+
+- `workflow-not-found.html` - to provide a form when no dedicate template for workflow exists
+- `workflow-not-authorized.html` - to provide a form when user is not authorized to create instances of given workflow
+
+Same parameters are available to default templates as described above, with one exception that `url` is not given for not authorized 
+form.
 
 == User tasks email notifications
 

@@ -153,6 +153,11 @@ public class ServerlessProcessInstance extends AbstractProcessInstance<Serverles
                 }
 
                 @Override
+                public String description() {
+                    return null;
+                }
+
+                @Override
                 public String version() {
                     return null;
                 }

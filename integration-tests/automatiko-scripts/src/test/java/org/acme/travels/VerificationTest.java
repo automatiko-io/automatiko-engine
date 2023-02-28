@@ -1,6 +1,8 @@
 package org.acme.travels;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -710,6 +712,39 @@ public class VerificationTest {
             .get("/composite")
         .then().statusCode(200)
             .body("$.size()", is(0));
+        
+    }
+    
+    @Test
+    public void testProcessForms() {
+
+        given()
+            .accept(ContentType.HTML)
+        .when()
+            .get("/scripts")
+        .then().statusCode(200)
+            .body(containsString("<p>Create new instance of scripts</p>"));
+        
+        given()
+            .accept(ContentType.HTML)
+        .when()
+            .get("/v2/scripts")
+        .then().statusCode(200)
+            .body(containsString("<p>Create new instance of scripts latest</p>"));
+        
+        given()
+            .accept(ContentType.HTML)
+        .when()
+            .get("/v1/users")
+        .then().statusCode(200)
+            .body(containsString("<p>Create new instance of Users</p>"));
+        
+        given()
+            .accept(ContentType.HTML)
+        .when()
+            .get("/v1/scripts")
+        .then().statusCode(200)
+            .body(containsString("Form not found"));        
         
     }
  // @formatter:on
