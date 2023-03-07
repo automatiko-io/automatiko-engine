@@ -250,6 +250,18 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
+      
+      <dependency>
+        <groupId>io.automatiko.addons</groupId>
+        <artifactId>automatiko-user-tasks-notification</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.addons</groupId>
+        <artifactId>automatiko-user-tasks-notification</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
 
       <dependency>
         <groupId>io.automatiko.addons</groupId>
@@ -262,6 +274,30 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
+      
+      <dependency>
+        <groupId>io.automatiko.addons</groupId>
+        <artifactId>automatiko-user-tasks-slack-addon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.addons</groupId>
+        <artifactId>automatiko-user-tasks-slack-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>
+      
+      <dependency>
+        <groupId>io.automatiko.addons</groupId>
+        <artifactId>automatiko-user-tasks-teams-addon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.automatiko.addons</groupId>
+        <artifactId>automatiko-user-tasks-teams-addon</artifactId>
+        <version>${project.version}</version>
+        <classifier>sources</classifier>
+      </dependency>            
 
       <dependency>
         <groupId>io.automatiko.addons</groupId>

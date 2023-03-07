@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- origin at X=0.0 Y=0.0 -->
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:java="http://www.java.com/javaTypes" xmlns:tns="https://automatiko.io" xmlns="https://automatiko.io" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatiko.io automatiko.xsd" id="Definition" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="2.0.0" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="https://automatiko.io" typeLanguage="http://www.java.com/javaTypes">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:java="http://www.java.com/javaTypes" xmlns:tns="https://automatiko.io" xmlns="https://automatiko.io" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatiko.io automatiko.xsd" id="Definition" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="2.2.0" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="https://automatiko.io" typeLanguage="http://www.java.com/javaTypes">
   <bpmn2:itemDefinition id="ItemDefinition_9" isCollection="false" structureRef="java.lang.String"/>
   <bpmn2:itemDefinition id="ItemDefinition_1" isCollection="false" structureRef="java.lang.Integer"/>
   <bpmn2:itemDefinition id="ItemDefinition_2" isCollection="false" structureRef="java.lang.Boolean"/>
@@ -26,6 +26,22 @@
   <bpmn2:itemDefinition id="ItemDefinition_170" isCollection="false" structureRef="Object"/>
   <bpmn2:itemDefinition id="ItemDefinition_206" isCollection="false" structureRef="Object"/>
   <bpmn2:itemDefinition id="ItemDefinition_207" isCollection="false" structureRef="Object"/>
+  <bpmn2:itemDefinition id="ItemDefinition_18" isCollection="false" structureRef="Object"/>
+  <bpmn2:itemDefinition id="ItemDefinition_19" isCollection="false" structureRef="Object"/>
+  <bpmn2:itemDefinition id="ItemDefinition_20" isCollection="false" structureRef="Object"/>
+  <bpmn2:itemDefinition id="ItemDefinition_21" isCollection="false" structureRef="Object"/>
+  <bpmn2:itemDefinition id="ItemDefinition_22" isCollection="false"/>
+  <bpmn2:itemDefinition id="ItemDefinition_23" isCollection="false"/>
+  <bpmn2:itemDefinition id="ItemDefinition_24" isCollection="false"/>
+  <bpmn2:itemDefinition id="ItemDefinition_25" isCollection="false"/>
+  <bpmn2:itemDefinition id="ItemDefinition_26" isCollection="false"/>
+  <bpmn2:itemDefinition id="ItemDefinition_27" isCollection="false"/>
+  <bpmn2:itemDefinition id="ItemDefinition_28" isCollection="false"/>
+  <bpmn2:itemDefinition id="ItemDefinition_29" isCollection="false"/>
+  <bpmn2:itemDefinition id="ItemDefinition_30" isCollection="false" structureRef="Object"/>
+  <bpmn2:itemDefinition id="ItemDefinition_31" isCollection="false" structureRef="Object"/>
+  <bpmn2:itemDefinition id="ItemDefinition_32" isCollection="false" structureRef="Object"/>
+  <bpmn2:itemDefinition id="ItemDefinition_33" isCollection="false" structureRef="Object"/>
   <bpmn2:process id="users" tns:packageName="org.acme.travels" tns:version="1" name="Users" isExecutable="true" processType="Public">
     <bpmn2:documentation id="Documentation_1"><![CDATA[A workflow testing use of identity functions within the workflow definition version 1]]></bpmn2:documentation>
     <bpmn2:extensionElements>
@@ -57,6 +73,9 @@
         <tns:metaData name="elementname">
           <tns:metaValue><![CDATA[Approve task]]></tns:metaValue>
         </tns:metaData>
+        <tns:metaData name="teams-channel">
+          <tns:metaValue><![CDATA[test]]></tns:metaValue>
+        </tns:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_7</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_8</bpmn2:outgoing>
@@ -65,12 +84,14 @@
         <bpmn2:dataInput id="DataInput_6" itemSubjectRef="ItemDefinition_9" name="name"/>
         <bpmn2:dataInput id="DataInput_7" itemSubjectRef="ItemDefinition_9" name="message"/>
         <bpmn2:dataInput id="DataInput_8" itemSubjectRef="ItemDefinition_2" name="admin"/>
+        <bpmn2:dataInput id="DataInput_17" itemSubjectRef="ItemDefinition_30" name="Description"/>
         <bpmn2:dataOutput id="DataOutput_1" itemSubjectRef="ItemDefinition_9" name="message"/>
         <bpmn2:inputSet id="_InputSet_2">
           <bpmn2:dataInputRefs>DataInput_1</bpmn2:dataInputRefs>
           <bpmn2:dataInputRefs>DataInput_6</bpmn2:dataInputRefs>
           <bpmn2:dataInputRefs>DataInput_7</bpmn2:dataInputRefs>
           <bpmn2:dataInputRefs>DataInput_8</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_17</bpmn2:dataInputRefs>
         </bpmn2:inputSet>
         <bpmn2:outputSet id="OutputSet_1" name="Output Set">
           <bpmn2:dataOutputRefs>DataOutput_1</bpmn2:dataOutputRefs>
@@ -99,6 +120,13 @@
         <bpmn2:assignment id="Assignment_3">
           <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_9">#{identityHasRole(&quot;admin&quot;)}</bpmn2:from>
           <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_7">DataInput_8</bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_5">
+        <bpmn2:targetRef>DataInput_17</bpmn2:targetRef>
+        <bpmn2:assignment id="Assignment_4">
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_10">A fancy description of a user task.</bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_4">DataInput_17</bpmn2:to>
         </bpmn2:assignment>
       </bpmn2:dataInputAssociation>
       <bpmn2:dataOutputAssociation id="DataOutputAssociation_1">

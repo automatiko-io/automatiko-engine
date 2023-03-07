@@ -44,7 +44,9 @@ public class FileSystemTemplateLoader implements TemplateLoader {
             return;
         }
 
-        File[] templates = new File(templateFolder).listFiles(f -> f.getName().toLowerCase().endsWith(".html"));
+        File[] templates = new File(templateFolder)
+                .listFiles(f -> f.getName().toLowerCase().endsWith(".html") || f.getName().toLowerCase().endsWith(".txt")
+                        || f.getName().toLowerCase().endsWith(".qute"));
 
         if (templates != null) {
             for (File template : templates) {
@@ -64,7 +66,7 @@ public class FileSystemTemplateLoader implements TemplateLoader {
 
     private String templateId(File template) {
         String name = template.getName();
-        // remove the extension .html
-        return name.substring(0, name.length() - 5);
+        // remove the extension .html, .txt, .qute
+        return name.substring(0, name.lastIndexOf("."));
     }
 }

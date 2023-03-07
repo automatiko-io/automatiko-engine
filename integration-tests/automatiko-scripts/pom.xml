@@ -61,6 +61,16 @@
       <groupId>io.automatiko.addons</groupId>
       <artifactId>automatiko-user-tasks-email-addon</artifactId>
     </dependency>
+    
+    <dependency>
+      <groupId>io.automatiko.addons</groupId>
+      <artifactId>automatiko-user-tasks-teams-addon</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>io.automatiko.addons</groupId>
+      <artifactId>automatiko-user-tasks-slack-addon</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>io.quarkus</groupId>

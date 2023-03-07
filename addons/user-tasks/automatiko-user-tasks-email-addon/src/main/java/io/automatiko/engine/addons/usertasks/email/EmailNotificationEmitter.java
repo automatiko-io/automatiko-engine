@@ -10,28 +10,30 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.automatiko.engine.addons.usertasks.notification.NotificationEmitter;
 import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.runtime.process.HumanTaskWorkItem;
 import io.automatiko.engine.api.runtime.process.WorkItem;
-import io.automatiko.engine.api.runtime.process.WorkItemManager;
 import io.automatiko.engine.api.workflow.workitem.LifeCyclePhase;
-import io.automatiko.engine.api.workflow.workitem.Transition;
-import io.automatiko.engine.workflow.base.instance.impl.humantask.BaseHumanTaskLifeCycle;
 import io.automatiko.engine.workflow.base.instance.impl.workitem.Active;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import io.quarkus.qute.Engine;
 import io.quarkus.qute.Template;
 
-public class HumanTaskLifeCycleWithEmail extends BaseHumanTaskLifeCycle {
-
+@ApplicationScoped
+public class EmailNotificationEmitter implements NotificationEmitter {
     private static final String DEFAULT_TEMPLATE = "default-usertask-email";
     private static final String TEMPLATE_SUFFIX = "-email";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HumanTaskLifeCycleWithEmail.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EmailNotificationEmitter.class);
 
     private Mailer mailer;
 
@@ -41,8 +43,9 @@ public class HumanTaskLifeCycleWithEmail extends BaseHumanTaskLifeCycle {
 
     private String serviceUrl;
 
-    public HumanTaskLifeCycleWithEmail(Mailer mailer, EmailAddressResolver emailAddressResolver, Engine engine,
-            Optional<String> serviceUrl) {
+    @Inject
+    public EmailNotificationEmitter(Mailer mailer, EmailAddressResolver emailAddressResolver, Engine engine,
+            @ConfigProperty(name = "quarkus.automatiko.service-url") Optional<String> serviceUrl) {
         this.mailer = mailer;
         this.emailAddressResolver = emailAddressResolver;
         this.engine = engine;
@@ -50,16 +53,10 @@ public class HumanTaskLifeCycleWithEmail extends BaseHumanTaskLifeCycle {
     }
 
     @Override
-    public Map<String, Object> transitionTo(WorkItem workItem, WorkItemManager manager,
-            Transition<Map<String, Object>> transition) {
-        Map<String, Object> data = super.transitionTo(workItem, manager, transition);
-        LifeCyclePhase targetPhase = phaseById(transition.phase());
-
-        if (targetPhase.id().equals(Active.ID)) {
+    public void notify(LifeCyclePhase phase, Map<String, Object> data, WorkItem workItem) {
+        if (phase.id().equals(Active.ID)) {
             sendEmail(workItem);
         }
-
-        return data;
     }
 
     private void sendEmail(WorkItem workItem) {
@@ -95,6 +92,7 @@ public class HumanTaskLifeCycleWithEmail extends BaseHumanTaskLifeCycle {
         templateData.put("taskId", humanTask.getId());
         templateData.put("instanceId", humanTask.getProcessInstanceId());
         templateData.put("processId", humanTask.getProcessInstance().getProcessId());
+        templateData.put("processName", humanTask.getProcessInstance().getProcessName());
         templateData.put("inputs", humanTask.getParameters());
 
         int count = 0;
@@ -161,5 +159,10 @@ public class HumanTaskLifeCycleWithEmail extends BaseHumanTaskLifeCycle {
             return "_" + version.replaceAll("\\.", "_");
         }
         return "";
+    }
+
+    @Override
+    public String toString() {
+        return "EmailNotificationEmitter";
     }
 }
