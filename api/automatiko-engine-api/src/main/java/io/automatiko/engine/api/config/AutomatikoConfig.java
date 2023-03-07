@@ -60,4 +60,8 @@ public class AutomatikoConfig {
     public ErrorRecoveryConfig errorRecovery() {
         return new ErrorRecoveryConfig();
     }
+
+    public NotificationsConfig notifications() {
+        return new NotificationsConfig();
+    }
 }

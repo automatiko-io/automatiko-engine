@@ -1,0 +1,25 @@
+\{
+  "@type": "MessageCard",
+  "@context": "http://schema.org/extensions",
+  "themeColor": "0076D7",
+  "summary": "Task assigned - {name}",
+  "sections": [
+    \{
+      "activityTitle": "Task assigned - {name}",
+      "activitySubtitle": "{description}",
+      "markdown": true
+    \}
+  ],
+  "potentialAction": [    
+    \{
+      "@type": "OpenUri",
+      "name": "View task details",
+      "targets": [
+        \{
+          "os": "default",
+          "uri": "{link}"
+        \}
+      ]
+    \}
+  ]
+\}

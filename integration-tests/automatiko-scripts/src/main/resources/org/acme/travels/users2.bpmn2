@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- origin at X=0.0 Y=0.0 -->
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:java="http://www.java.com/javaTypes" xmlns:tns="https://automatiko.io" xmlns="https://automatiko.io" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatiko.io automatiko.xsd" id="Definition" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="2.0.0" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="https://automatiko.io" typeLanguage="http://www.java.com/javaTypes">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:java="http://www.java.com/javaTypes" xmlns:tns="https://automatiko.io" xmlns="https://automatiko.io" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd https://automatiko.io automatiko.xsd" id="Definition" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="2.2.0" expressionLanguage="http://www.mvel.org/2.0" targetNamespace="https://automatiko.io" typeLanguage="http://www.java.com/javaTypes">
   <bpmn2:itemDefinition id="ItemDefinition_9" isCollection="false" structureRef="java.lang.String"/>
   <bpmn2:itemDefinition id="ItemDefinition_1" isCollection="false" structureRef="java.lang.Integer"/>
   <bpmn2:itemDefinition id="ItemDefinition_2" isCollection="false" structureRef="java.lang.Boolean"/>
@@ -26,6 +26,10 @@
   <bpmn2:itemDefinition id="ItemDefinition_170" isCollection="false" structureRef="Object"/>
   <bpmn2:itemDefinition id="ItemDefinition_206" isCollection="false" structureRef="Object"/>
   <bpmn2:itemDefinition id="ItemDefinition_207" isCollection="false" structureRef="Object"/>
+  <bpmn2:itemDefinition id="ItemDefinition_18" isCollection="false" structureRef="Object"/>
+  <bpmn2:itemDefinition id="ItemDefinition_19" isCollection="false" structureRef="Object"/>
+  <bpmn2:itemDefinition id="ItemDefinition_20" isCollection="false" structureRef="Object"/>
+  <bpmn2:itemDefinition id="ItemDefinition_21" isCollection="false" structureRef="Object"/>
   <bpmn2:process id="users" tns:packageName="org.acme.travels" tns:version="2" name="Users" isExecutable="true" processType="Public">
     <bpmn2:documentation id="Documentation_1"><![CDATA[A workflow testing use of identity functions within the workflow definition version 2]]></bpmn2:documentation>
     <bpmn2:extensionElements>
@@ -56,6 +60,9 @@
       <bpmn2:extensionElements>
         <tns:metaData name="elementname">
           <tns:metaValue><![CDATA[Approve task]]></tns:metaValue>
+        </tns:metaData>
+        <tns:metaData name="slack-channel">
+          <tns:metaValue><![CDATA[test]]></tns:metaValue>
         </tns:metaData>
       </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_7</bpmn2:incoming>

@@ -1,0 +1,18 @@
+\{
+	"blocks": [
+		\{
+			"type": "section",
+			"text": \{
+				"type": "mrkdwn",
+				"text": "Process '{processName}' requires user action on instance {instanceId}"
+			\}
+		\},
+		\{
+			"type": "section",
+			"text": \{
+				"type": "mrkdwn",
+				"text": "A new task ({name}) has been assigned\n\n<{link}|View task details>"
+			\}
+		\}
+	]
+\}

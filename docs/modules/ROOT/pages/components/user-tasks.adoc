@@ -10,6 +10,8 @@ Automatiko comes with following addons that help with user tasks within workflow
 
 * automatiko-user-tasks-management-addon
 * automatiko-user-tasks-email-addon
+* automatiko-user-tasks-slack-addon
+* automatiko-user-tasks-teams-addon
 
 == User tasks management
 
@@ -170,6 +172,7 @@ of the user task assigned.
 |taskId | unique identifier of the task instance
 |instanceId | unique identifier of the workflow instance task belongs to
 |processId | identifier of the workflow definition user task belongs to
+|processName | name of the workflow definition user task belongs to
 |inputs | current data set for the user task - in form of a Map
 |link | direct and absolute link to the form for user task
 
@@ -189,31 +192,6 @@ actual notification email subject.
 
 NOTE: The email subject can also be generated based on data object via expressions.
 
-=== Customize email templates
-
-In cases where email templates have to customized at runtime they can be provided via application 
-property that points to a folder where `*.html` files will be loaded at startup and registered.
-
-It can be given as environment variable `QUARKUS_AUTOMATIKO_TEMPLATES_FOLDER=/templates` or system property 
-`-Dquarkus.automatiko.templates.folder=/templates`
-
-Naming convention is the same as for creating templates as part of the source code.
-
-
-=== Configure
-
-To enable user tasks email addon add following dependency to your service
-
-[source,xml]
-----
-<dependency>
-  <groupId>io.automatiko.addons</groupId>
-  <artifactId>automatiko-user-tasks-email-addon</artifactId>
-</dependency>
-----
-
-In addition to that there must be configuration of your email server also provided. Usually this is set in
-`application.properties` of your service but can also be given as system properties or environment variables
 
 [source,plain]
 ----
@@ -242,4 +220,220 @@ to provide custom implementation of `io.automatiko.engine.addons.usertasks.email
 is responsible for resolving user and groups to their email addresses.
 You can also use that interface to suppress sending emails for certain users and/or groups.
 
+== User tasks slack notifications
+
+Similar to email notifications, slack messages can also be used as notifications for user tasks. Slack integration is based on 
+link:https://www.google.com/search?client=safari&rls=en&q=slack+incoming+webhook&ie=UTF-8&oe=UTF-8[incoming webhooks feature in Slack] and allows to send messages to given channel.
+
+To be able to use slack integration, the channel (as name) needs to be specified on user task via custom attributes. The custom attribute 
+is called `slack-channel`
+
+The content of the message that will be posted to the Slack channel can be made user task specific as it is based on templates.
+
+Naming convention of the template files is as follows
+
+* task name property defined on the user task with suffix `-slack.txt`
+* name of the user task with suffix `-slack.txt`
+* workflow identifier with task name property defined on the user task with suffix `-slack.txt`
+* workflow identifier with name of the user task with suffix `-slack.txt`
+
+For example when you have a task named `My Task` that has task name property `approval` within workflow with id 'vacations'
+ then you can create following template files that will be found
+
+* `approval-slack.txt`
+* `vacations.approval-slack.txt`
+* `My Task-slack.txt`
+* `vacations.My Task-slack.txt`
+
+There might be some special cases where extra information should be included but by default notifications via slack
+aim at not exposing too much of the task context like input information.
+
+Since these files are considered to be templates there are several variables given that will represent various data 
+of the user task assigned.
+
+|===
+|Name| Description
+
+|name | name of the user task
+|description | description of the user task (can be null or empty)
+|taskId | unique identifier of the task instance
+|instanceId | unique identifier of the workflow instance task belongs to
+|processId | identifier of the workflow definition user task belongs to
+|processName | name of the workflow definition user task belongs to
+|inputs | current data set for the user task - in form of a Map
+|link | direct and absolute link to the form for user task
+
+|===
+
+IMPORTANT: Since the template for Slack is JSON based, the regular parts of the JSON structure `{` and `}` must be escaped in the template with `\{` and `\}`.
+
+.Example of Slack template
+[source,plain]
+----
+\{
+	"blocks": [
+		\{
+			"type": "section",
+			"text": \{
+				"type": "mrkdwn",
+				"text": "Process '{processName}' requires user action on instance {instanceId}"
+			\}
+		\},
+		\{
+			"type": "section",
+			"text": \{
+				"type": "mrkdwn",
+				"text": "A new task ({name}) has been assigned\n\n<{link}|View task details>"
+			\}
+		\}
+	]
+\}
+----
+
+
+=== Configure
+
+To enable user tasks slack addon add following dependency to your service
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-user-tasks-slack-addon</artifactId>
+</dependency>
+----
+
+In addition to that there must be configuration of your slack channels webhook urls. Usually this is set in
+`application.properties` of your service but can also be given as system properties or environment variables
+
+[source,plain]
+----
+quarkus.automatiko.notifications.slack.test=https://hooks.slack.com......
+quarkus.automatiko.notifications.slack.another=https://hooks.slack.com......
+quarkus.automatiko.notifications.slack.onemore=https://hooks.slack.com......
+----
+
+NOTE: There can be many channels defined and the names of the channels in `application.properties` file (e.g. `test`, `another`) are those that should be
+referenced in the user task custom attributes via `slack-channel`. This provides an abstraction layer on top of real channel names
+
+== User tasks teams notifications
+
+Similar to slack notifications, Microsoft Teams messages can also be used as notifications for user tasks. Teams integration is based on 
+link:https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook?tabs=dotnet[incoming webhooks feature in MS Teams] and allows to send messages to given channel.
+
+To be able to use teams integration, the channel (as name) needs to be specified on user task via custom attributes. The custom attribute 
+is called `teams-channel`
+
+The content of the message that will be posted to the Teams channel can be made user task specific as it is based on templates.
+
+Naming convention of the template files is as follows
+
+* task name property defined on the user task with suffix `-teams.txt`
+* name of the user task with suffix `-teams.txt`
+* workflow identifier with task name property defined on the user task with suffix `-teams.txt`
+* workflow identifier with name of the user task with suffix `-teams.txt`
+
+For example when you have a task named `My Task` that has task name property `approval` within workflow with id 'vacations'
+ then you can create following template files that will be found
+
+* `approval-teams.txt`
+* `vacations.approval-teams.txt`
+* `My Task-teams.txt`
+* `vacations.My Task-teams.txt`
+
+There might be some special cases where extra information should be included but by default notifications via teams
+aim at not exposing too much of the task context like input information.
+
+Since these files are considered to be templates there are several variables given that will represent various data 
+of the user task assigned.
+
+|===
+|Name| Description
+
+|name | name of the user task
+|description | description of the user task (can be null or empty)
+|taskId | unique identifier of the task instance
+|instanceId | unique identifier of the workflow instance task belongs to
+|processId | identifier of the workflow definition user task belongs to
+|processName | name of the workflow definition user task belongs to
+|inputs | current data set for the user task - in form of a Map
+|link | direct and absolute link to the form for user task
+
+|===
+
+IMPORTANT: Since the template for MS Teams is JSON based, the regular parts of the JSON structure `{` and `}` must be escaped in the template with `\{` and `\}`.
+
+.Example of MS Teams template
+[source,plain]
+----
+\{
+  "@type": "MessageCard",
+  "@context": "http://schema.org/extensions",
+  "themeColor": "0076D7",
+  "summary": "Task assigned - {name}",
+  "sections": [
+    \{
+      "activityTitle": "Task assigned - {name}",
+      "activitySubtitle": "{description}",
+      "markdown": true
+    \}
+  ],
+  "potentialAction": [    
+    \{
+      "@type": "OpenUri",
+      "name": "View task details",
+      "targets": [
+        \{
+          "os": "default",
+          "uri": "{link}"
+        \}
+      ]
+    \}
+  ]
+\}
+----
+
+
+=== Configure
+
+To enable user tasks teams addon add following dependency to your service
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-user-tasks-teams-addon</artifactId>
+</dependency>
+----
+
+In addition to that there must be configuration of your teams channels webhook urls. Usually this is set in
+`application.properties` of your service but can also be given as system properties or environment variables
+
+[source,plain]
+----
+quarkus.automatiko.notifications.teams.test=https://mycompany.webhook.office.com/webhook......
+quarkus.automatiko.notifications.teams.another=https://mycompany.webhook.office.com/webhook......
+quarkus.automatiko.notifications.teams.onemore=https://mycompany.webhook.office.com/webhook......
+----
+
+NOTE: There can be many channels defined and the names of the channels in `application.properties` file (e.g. `test`, `another`) are those that should be
+referenced in the user task custom attributes via `teams-channel`. This provides an abstraction layer on top of real channel names
+
+== Customize templates
+
+In cases where (email, slack, teams) templates have to customized at runtime they can be provided via application 
+property that points to a folder where `*.html` or `*.txt` files will be loaded at startup and registered.
+
+It can be given as environment variable `QUARKUS_AUTOMATIKO_TEMPLATES_FOLDER=/templates` or system property 
+`-Dquarkus.automatiko.templates.folder=/templates`
+
+Naming convention is the same as for creating templates as part of the source code.
+
+== Custom notification
+
+Users can build custom notifications by implementing a `io.automatiko.engine.addons.usertasks.notification.NotificationEmitter` interface.
+
+This interface is located in `io.automatiko.addons:automatiko-user-tasks-notification`
+
+The implementation must be a CDI bean so it can be discovered and registered automatically.
  

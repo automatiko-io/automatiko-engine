@@ -16,5 +16,8 @@
   <modules>
     <module>automatiko-user-tasks-email-addon</module>
     <module>automatiko-user-tasks-management-addon</module>
+    <module>automatiko-user-tasks-notification</module>
+    <module>automatiko-user-tasks-slack-addon</module>
+    <module>automatiko-user-tasks-teams-addon</module>
   </modules>
 </project>

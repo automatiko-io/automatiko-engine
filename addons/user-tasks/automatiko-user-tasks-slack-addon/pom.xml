@@ -1,19 +1,16 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.automatiko.addons</groupId>
     <artifactId>user-tasks</artifactId>
     <version>0.0.0-SNAPSHOT</version>
   </parent>
-  <groupId>io.automatiko.addons</groupId>
-  <artifactId>automatiko-user-tasks-email-addon</artifactId>
-  <name>Automatiko Engine :: Add-Ons :: User Tasks :: Email</name>
-  <description>User Task Email AddOn for Automatiko Engine</description>
+  <artifactId>automatiko-user-tasks-slack-addon</artifactId>
+  <name>Automatiko Engine :: Add-Ons :: User Tasks :: Slack</name>
+  <description>User Task Slack AddOn for Automatiko Engine</description>
 
   <properties>
-    <java.module.name>io.automatiko.addons.user-tasks.email</java.module.name>
+    <java.module.name>io.automatiko.addons.user-tasks.slack</java.module.name>
   </properties>
 
   <dependencies>
@@ -31,7 +28,11 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-mailer</artifactId>
+      <artifactId>quarkus-rest-client-reactive</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-resteasy-reactive-qute</artifactId>
     </dependency>
   </dependencies>
 </project>

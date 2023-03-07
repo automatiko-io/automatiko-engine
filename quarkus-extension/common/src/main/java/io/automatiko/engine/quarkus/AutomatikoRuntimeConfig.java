@@ -8,6 +8,7 @@ import io.automatiko.engine.api.config.AutomatikoConfig;
 import io.automatiko.engine.api.config.ErrorRecoveryConfig;
 import io.automatiko.engine.api.config.FilesConfig;
 import io.automatiko.engine.api.config.JobsConfig;
+import io.automatiko.engine.api.config.NotificationsConfig;
 import io.automatiko.engine.api.config.PersistenceConfig;
 import io.automatiko.engine.api.config.SecurityConfig;
 import io.quarkus.runtime.annotations.ConfigItem;
@@ -98,6 +99,12 @@ public class AutomatikoRuntimeConfig extends AutomatikoConfig {
     @ConfigItem
     public ErrorRecoveryRuntimeConfig errorRecovery;
 
+    /**
+     * Configures notification support
+     */
+    @ConfigItem
+    public NotificationRuntimeConfig notifications;
+
     @Override
     public Optional<String> serviceUrl() {
         return serviceUrl;
@@ -161,5 +168,10 @@ public class AutomatikoRuntimeConfig extends AutomatikoConfig {
     @Override
     public ErrorRecoveryConfig errorRecovery() {
         return errorRecovery;
+    }
+
+    @Override
+    public NotificationsConfig notifications() {
+        return notifications;
     }
 }
