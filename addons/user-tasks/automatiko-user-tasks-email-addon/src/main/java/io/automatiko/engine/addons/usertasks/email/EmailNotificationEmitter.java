@@ -54,6 +54,10 @@ public class EmailNotificationEmitter implements NotificationEmitter {
 
     @Override
     public void notify(LifeCyclePhase phase, Map<String, Object> data, WorkItem workItem) {
+        if (isDisabled(workItem)) {
+            LOGGER.debug("Notifications are disabled");
+            return;
+        }
         if (phase.id().equals(Active.ID)) {
             sendEmail(workItem);
         }
