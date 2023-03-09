@@ -13,6 +13,10 @@ Automatiko comes with following addons that help with user tasks within workflow
 * automatiko-user-tasks-slack-addon
 * automatiko-user-tasks-teams-addon
 
+
+TIP: Regardless of type of notifications it can be disabled globally by setting (`QUARKUS_AUTOMATIKO_NOTIFICATIONS_DISABLED=true`)
+or on each user task via custom attribute called `notification` with value set to `disabled`
+
 == User tasks management
 
 User task management addon brings basic support for displaying user focused information about tasks assigned 

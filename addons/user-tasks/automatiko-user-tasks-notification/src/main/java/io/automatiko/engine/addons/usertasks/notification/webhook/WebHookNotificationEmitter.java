@@ -8,15 +8,20 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.addons.usertasks.notification.NotificationEmitter;
 import io.automatiko.engine.api.definition.process.Process;
 import io.automatiko.engine.api.runtime.process.HumanTaskWorkItem;
 import io.automatiko.engine.api.runtime.process.WorkItem;
+import io.automatiko.engine.workflow.base.instance.impl.util.VariableUtil;
 import io.quarkus.qute.Engine;
 import io.quarkus.qute.Template;
 
 public abstract class WebHookNotificationEmitter<T> implements NotificationEmitter {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebHookNotificationEmitter.class);
 
     private Map<String, T> webHooks = new ConcurrentHashMap<>();
 
@@ -115,4 +120,18 @@ public abstract class WebHookNotificationEmitter<T> implements NotificationEmitt
     }
 
     protected abstract T buildConnector(String webhookUrl);
+
+    protected String getMetadataValue(String name, WorkItem workItem) {
+        String value = (String) workItem.getNodeInstance().getNode().getMetaData().get(name);
+        LOGGER.debug("Value (orig) from metadata '{}'", value);
+        if (value == null || value.trim().isEmpty()) {
+            return value;
+        }
+
+        value = VariableUtil.resolveVariable(value, workItem.getNodeInstance());
+
+        LOGGER.debug("Value (resolved) from metadata '{}'", value);
+
+        return value;
+    }
 }

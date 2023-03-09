@@ -41,9 +41,15 @@ public class SlackNotificationEmitter extends WebHookNotificationEmitter<SlackIn
 
     @Override
     public void notify(LifeCyclePhase phase, Map<String, Object> data, WorkItem workItem) {
+        if (isDisabled(workItem)) {
+            LOGGER.debug("Notifications are disabled");
+            return;
+        }
+
         if (phase.id().equals(Active.ID)) {
             HumanTaskWorkItem humanTask = (HumanTaskWorkItem) workItem;
-            String channel = (String) workItem.getNodeInstance().getNode().getMetaData().get("slack-channel");
+
+            String channel = getMetadataValue("slack-channel", workItem);
 
             if (channel == null || channel.trim().isEmpty()) {
                 LOGGER.debug("No slack channel defined for task {} in process {}, ignoring slack notification",
