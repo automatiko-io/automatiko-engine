@@ -30,7 +30,7 @@ of Eclipse BPMN2 Modeller. Thus it requires Eclipse IDE to run this editor.
 Get Eclipse from link:https://www.eclipse.org/eclipseide/[Eclipse IDE] website
 
 Once Eclipse is up and running install Automatiko BPMN modeller from following
-link:https://github.com/automatiko-io/bpmn2-modeler/releases/download/2.0.0/org.eclipse.bpmn2.modeler.updatesite-2.0.0.zip[update site]
+link:https://github.com/automatiko-io/bpmn2-modeler/releases/latest[update site]
 
 Steps to install Automatiko BPMN modeler
 
