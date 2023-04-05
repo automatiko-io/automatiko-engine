@@ -10,9 +10,6 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import jakarta.persistence.LockModeType;
-import jakarta.persistence.OptimisticLockException;
-
 import org.hibernate.StaleObjectStateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,12 +39,15 @@ import io.automatiko.engine.workflow.base.instance.context.variable.VariableScop
 import io.automatiko.engine.workflow.base.instance.impl.ProcessInstanceImpl;
 import io.automatiko.engine.workflow.marshalling.ProcessInstanceMarshaller;
 import io.quarkus.hibernate.orm.panache.runtime.JpaOperations;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.OptimisticLockException;
 
 public class DatabaseProcessInstances implements MutableProcessInstances<ProcessInstanceEntity> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseProcessInstances.class);
 
     private final Process<? extends ProcessInstanceEntity> process;
+    private final String entityName;
     private final ProcessInstanceMarshaller marshaller;
     private final StoredDataCodec codec;
 
@@ -60,6 +60,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
     public DatabaseProcessInstances(Process<? extends ProcessInstanceEntity> process, StoredDataCodec codec,
             TransactionLogStore store, Auditor auditor) {
         this.process = process;
+        this.entityName = camelToSnake(process.id().toUpperCase());
         this.marshaller = new ProcessInstanceMarshaller(new JacksonObjectMarshallingStrategy(process));
         this.codec = codec;
         this.auditor = auditor;
@@ -140,7 +141,9 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
             String sortBy, boolean sortAsc, String... values) {
         return JpaOperations.INSTANCE
                 .stream(type,
-                        "state = ?1 and (id in (?2) or (?2) in elements(tags)) order by " + adjustSortKey(sortBy)
+                        "select e from " + entityName
+                                + " e JOIN e.tags t where e.state = ?1 and t in (?2) order by "
+                                + adjustSortKey(sortBy)
                                 + (sortAsc ? " asc" : " desc"),
                         status, Arrays.asList(values))
                 .map(e -> {
@@ -162,7 +165,8 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
     public Collection<? extends ProcessInstance<ProcessInstanceEntity>> findByIdOrTag(ProcessInstanceReadMode mode,
             int status, String... values) {
         return JpaOperations.INSTANCE
-                .stream(type, "state = ?1 and (id in (?2) or (?2) in elements(tags)) ", status, Arrays.asList(values))
+                .stream(type, "select e from " + entityName + " e JOIN e.tags t where e.state = ?1 and t in (?2) ",
+                        status, Arrays.asList(values))
                 .map(e -> {
                     try {
                         if (mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK) {
@@ -182,7 +186,8 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
     @Override
     public Collection<String> locateByIdOrTag(int status, String... values) {
         return JpaOperations.INSTANCE
-                .stream(type, "state = ?1 and (id in (?2) or (?2) in elements(tags)) ", status, Arrays.asList(values))
+                .stream(type, "select e from " + entityName + " e JOIN e.tags t where e.state = ?1 and t in (?2) ",
+                        status, Arrays.asList(values))
                 .map(e -> {
                     return ((ProcessInstanceEntity) e).entityId;
                 })
@@ -418,5 +423,16 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
             default:
                 return sortBy;
         }
+    }
+
+    protected String camelToSnake(String str) {
+        // Regular Expression 
+        String regex = "([a-z])([A-Z]+)";
+
+        // Replacement string 
+        String replacement = "$1_$2";
+        str = str.replaceAll(regex, replacement).toUpperCase();
+
+        return str;
     }
 }

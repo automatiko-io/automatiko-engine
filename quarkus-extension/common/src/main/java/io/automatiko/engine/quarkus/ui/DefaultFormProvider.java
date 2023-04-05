@@ -1,6 +1,6 @@
 package io.automatiko.engine.quarkus.ui;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ui.FormProvider;

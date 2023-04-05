@@ -72,7 +72,7 @@ public class DevConsoleProcessor {
                     includeSubjectAttribute = true;
                 }
                 SchemaFactory.typeToSchema(ctx,
-                        mi.parameters().get(0).type(), Collections.emptyList());
+                        mi.parameters().get(0).type(), null, Collections.emptyList());
                 Schema fSchema = ctx.getOpenApi().getComponents().getSchemas().get(param.name().local());
 
                 String payload = generator.generate(fSchema, ctx.getOpenApi());

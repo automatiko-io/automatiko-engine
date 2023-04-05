@@ -439,7 +439,7 @@ public class ModelMetaData {
 
         // Replacement string 
         String replacement = "$1_$2";
-        str = str.replaceAll(regex, replacement).toUpperCase();
+        str = str.replaceAll(regex, replacement).toUpperCase().replace("__", "_");
 
         return str;
     }

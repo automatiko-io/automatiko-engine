@@ -4,6 +4,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import io.automatiko.engine.api.Model;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.FetchType;
@@ -11,11 +15,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Version;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import io.automatiko.engine.api.Model;
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
 @MappedSuperclass
 public abstract class ProcessInstanceEntity extends PanacheEntityBase implements Model {
