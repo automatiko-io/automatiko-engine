@@ -97,7 +97,7 @@ public class DefaultGenerator implements Generator {
                 }
 
                 SchemaFactory.typeToSchema(ctx,
-                        mi.parameters().get(0).type(), Collections.emptyList());
+                        mi.parameters().get(0).type(), null, Collections.emptyList());
                 Schema fSchema = ctx.getOpenApi().getComponents().getSchemas().get(param.name().local());
                 LOGGER.info(
                         "Function \"{}\" will accept POST requests on / endpoint with following payload ",
