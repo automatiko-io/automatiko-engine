@@ -39,12 +39,12 @@
     <dependency>
       <groupId>org.apache.camel.quarkus</groupId>
       <artifactId>camel-quarkus-smallrye-reactive-messaging</artifactId>
-      <version>3.0.0-SNAPSHOT</version>
+      <version>${version.org.apache.camel.quarkus}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.camel.quarkus</groupId>
       <artifactId>camel-quarkus-mail</artifactId>
-      <version>3.0.0-SNAPSHOT</version>
+      <version>${version.org.apache.camel.quarkus}</version>
     </dependency>
     
     <!-- test -->

@@ -131,26 +131,26 @@ public class GcpPubSubGenerator implements Generator {
         createCommands.add("");
         deleteCommands.add("");
 
-        createCommands.add("gcloud run deploy " + cob.getEffectiveModel().getAppArtifact().getArtifactId()
+        createCommands.add("gcloud run deploy " + cob.getApplicationModel().getAppArtifact().getArtifactId()
                 + " --platform=managed --image=gcr.io/" + googleProjectId + "/"
-                + System.getProperty("user.name") + "/" + cob.getEffectiveModel().getAppArtifact().getArtifactId() + ":"
-                + cob.getEffectiveModel().getAppArtifact().getVersion()
+                + System.getProperty("user.name") + "/" + cob.getApplicationModel().getAppArtifact().getArtifactId() + ":"
+                + cob.getApplicationModel().getAppArtifact().getVersion()
                 + " --region=us-central1");
 
-        deleteCommands.add("gcloud run services delete " + cob.getEffectiveModel().getAppArtifact().getArtifactId()
+        deleteCommands.add("gcloud run services delete " + cob.getApplicationModel().getAppArtifact().getArtifactId()
                 + " --region=us-central1");
 
         Path filePath = Paths.get(directory.toString(),
-                "deploy-" + cob.getEffectiveModel().getAppArtifact().getArtifactId() + "-"
-                        + cob.getEffectiveModel().getAppArtifact().getVersion() + ".txt");
+                "deploy-" + cob.getApplicationModel().getAppArtifact().getArtifactId() + "-"
+                        + cob.getApplicationModel().getAppArtifact().getVersion() + ".txt");
         Files.write(
                 filePath,
                 createCommands.stream().collect(Collectors.joining(System.lineSeparator())).getBytes(StandardCharsets.UTF_8));
 
         LOGGER.info("Complete deployment file is located at {}", filePath.toAbsolutePath());
         filePath = Paths.get(directory.toString(),
-                "undeploy-" + cob.getEffectiveModel().getAppArtifact().getArtifactId() + "-"
-                        + cob.getEffectiveModel().getAppArtifact().getVersion() + ".txt");
+                "undeploy-" + cob.getApplicationModel().getAppArtifact().getArtifactId() + "-"
+                        + cob.getApplicationModel().getAppArtifact().getVersion() + ".txt");
         Files.write(
                 filePath,
                 deleteCommands.stream().collect(Collectors.joining(System.lineSeparator())).getBytes(StandardCharsets.UTF_8));

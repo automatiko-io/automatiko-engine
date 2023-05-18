@@ -2,16 +2,15 @@ package com.acme.auth;
 
 import java.util.Set;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.NamedAccessPolicy;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.vertx.core.http.HttpServerRequest;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
 
-@ApplicationScoped
+@Dependent
 public class LocalHostOnlyAccessPolicy<T> implements NamedAccessPolicy<ProcessInstance<T>> {
 
     @Inject
