@@ -10,13 +10,12 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.drools.core.impl.InternalKnowledgeBase;
 import org.drools.core.io.impl.ByteArrayResource;
 import org.drools.core.io.impl.ClassPathResource;
 import org.drools.core.io.impl.FileSystemResource;
+import org.drools.kiesession.rulebase.InternalKnowledgeBase;
 import org.kie.api.io.ResourceConfiguration;
 import org.kie.api.io.ResourceWithConfiguration;
-import org.kie.api.runtime.KieRuntimeFactory;
 import org.kie.dmn.api.core.DMNCompiler;
 import org.kie.dmn.api.core.DMNModel;
 import org.kie.dmn.api.core.DMNRuntime;
@@ -195,11 +194,6 @@ public class DmnRuntimeProvider {
 
         @Override
         public InternalKnowledgeBase getInternalKnowledgeBase() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public KieRuntimeFactory getKieRuntimeFactory(String kieBaseName) {
             throw new UnsupportedOperationException();
         }
     }

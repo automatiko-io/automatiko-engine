@@ -11,15 +11,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.inject.Inject;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.MockMailbox;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import io.vertx.ext.mail.MailMessage;
+import jakarta.inject.Inject;
 
 @QuarkusTest
 public class VerificationTest {
@@ -69,14 +68,14 @@ public class VerificationTest {
                 .statusCode(200)
                 .body("id", equalTo("test"), "extracted", nullValue());
         
-        List<Mail> sent = mailbox.getMessagesSentTo("john@email.com");
+        List<MailMessage> sent = mailbox.getMailMessagesSentTo("john@email.com");
         assertEquals(1, sent.size());
-        Mail actual = sent.get(0);
+        MailMessage actual = sent.get(0);
         assertTrue(actual.getHtml().contains("<h1>Hello john</h1>"));
         assertEquals("Notification", actual.getSubject());
-        assertEquals(1, actual.getAttachments().size());
-        assertEquals("application/zip", actual.getAttachments().get(0).getContentType());
-        assertEquals("documents.zip", actual.getAttachments().get(0).getName());
+        assertEquals(1, actual.getAttachment().size());
+        assertEquals("application/zip", actual.getAttachment().get(0).getContentType());
+        assertEquals("documents.zip", actual.getAttachment().get(0).getName());
         
         given()
             .accept(ContentType.JSON)

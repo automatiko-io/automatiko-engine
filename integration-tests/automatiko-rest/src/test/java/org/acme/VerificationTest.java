@@ -31,7 +31,7 @@ public class VerificationTest {
             .when()
                 .post("/users")
             .then()
-                //.log().body(true)
+                .log().body(true)
                 .statusCode(200)
                 .body("id", notNullValue(), "user", notNullValue(), "pet", notNullValue());
         
