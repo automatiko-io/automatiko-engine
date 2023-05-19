@@ -360,7 +360,7 @@ public class ModelMetaData {
 
             } else if (dataType.getClassType() != null && Stream.of(dataType.getClassType().getAnnotations())
                     .anyMatch(a -> a.annotationType().getName().equals("jakarta.persistence.Entity"))) {
-                fd.addAnnotation(new NormalAnnotationExpr(new Name("jakarta.persistence.OneToOne"),
+                fd.addAnnotation(new NormalAnnotationExpr(new Name("jakarta.persistence.ManyToOne"),
                         NodeList.nodeList(
                                 new MemberValuePair("cascade",
                                         new ArrayInitializerExpr(cascade)),
