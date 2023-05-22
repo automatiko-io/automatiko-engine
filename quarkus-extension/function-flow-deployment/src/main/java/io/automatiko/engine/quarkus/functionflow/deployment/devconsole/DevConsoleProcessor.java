@@ -27,6 +27,8 @@ import io.quarkus.deployment.IsDevelopment;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.devconsole.spi.DevConsoleTemplateInfoBuildItem;
+import io.quarkus.devui.spi.page.CardPageBuildItem;
+import io.quarkus.devui.spi.page.Page;
 import io.smallrye.openapi.runtime.io.schema.SchemaFactory;
 import io.smallrye.openapi.runtime.scanner.SchemaRegistry;
 import io.smallrye.openapi.runtime.scanner.spi.AnnotationScannerContext;
@@ -35,6 +37,28 @@ public class DevConsoleProcessor {
 
     @BuildStep(onlyIf = IsDevelopment.class)
     public DevConsoleTemplateInfoBuildItem collectWorkflowInfo(CombinedIndexBuildItem index) throws Exception {
+
+        return new DevConsoleTemplateInfoBuildItem("workflowFunctionFlowInfos", getInfo(index));
+    }
+
+    @BuildStep(onlyIf = IsDevelopment.class)
+    CardPageBuildItem create(CombinedIndexBuildItem index) throws Exception {
+        CardPageBuildItem cardPageBuildItem = new CardPageBuildItem();
+
+        List<WorkflowFunctionFlowInfo> info = getInfo(index);
+
+        cardPageBuildItem.addPage(Page.webComponentPageBuilder()
+                .icon("font-awesome-solid:diagram-project")
+                .componentLink("qwc-automatiko-function-flow.js")
+                .title("Function Flows")
+                .staticLabel(String.valueOf(info.size())));
+
+        cardPageBuildItem.addBuildTimeData("functionFlows", info);
+
+        return cardPageBuildItem;
+    }
+
+    protected List<WorkflowFunctionFlowInfo> getInfo(CombinedIndexBuildItem index) {
 
         Optional<String> host = Optional.of("localhost");
         Optional<Integer> port = Optional.of(8080);
@@ -116,7 +140,7 @@ public class DevConsoleProcessor {
 
                 binaryInstructions.append("\nPOST payload:").append("\n");
                 binaryInstructions.append(payload).append("\n");
-                curlBinary.append("-d \"").append(payload.replaceAll("\"", "\\\\\\\\\"").replaceAll("\\s+", "")).append("\"");
+                curlBinary.append("-d \"").append(payload.replaceAll("\"", "\\\\\\\"").replaceAll("\\s+", "")).append("\"");
 
                 StringBuilder curlStructured = new StringBuilder("curl -X POST http://").append(host.get()).append(":")
                         .append(port.get())
@@ -140,7 +164,7 @@ public class DevConsoleProcessor {
                 structuredPayload.append(payload);
                 structuredPayload.append("}");
 
-                curlStructured.append(structuredPayload.toString().replaceAll("\"", "\\\\\\\\\"").replaceAll("\\s+", ""));
+                curlStructured.append(structuredPayload.toString().replaceAll("\"", "\\\\\\\"").replaceAll("\\s+", ""));
                 curlStructured.append("\"");
 
                 StringBuilder structuredInstructions = new StringBuilder();
@@ -170,6 +194,6 @@ public class DevConsoleProcessor {
         }
         SchemaRegistry.remove();
 
-        return new DevConsoleTemplateInfoBuildItem("workflowFunctionFlowInfos", infos);
+        return infos;
     }
 }

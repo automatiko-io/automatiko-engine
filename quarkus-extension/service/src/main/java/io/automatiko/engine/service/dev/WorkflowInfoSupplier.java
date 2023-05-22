@@ -4,14 +4,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-import jakarta.enterprise.inject.Any;
-import jakarta.enterprise.util.AnnotationLiteral;
-import jakarta.enterprise.util.TypeLiteral;
-
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.workflow.AbstractProcess;
 import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 import io.quarkus.arc.Arc;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.util.AnnotationLiteral;
+import jakarta.enterprise.util.TypeLiteral;
 
 public class WorkflowInfoSupplier implements Supplier<Collection<WorkflowInfo>> {
 

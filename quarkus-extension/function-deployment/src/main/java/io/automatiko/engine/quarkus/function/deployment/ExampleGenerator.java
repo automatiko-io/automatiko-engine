@@ -42,13 +42,15 @@ public class ExampleGenerator {
 
         Map<String, Object> kv = new LinkedHashMap<>();
 
-        for (Entry<String, Schema> prop : property.getProperties().entrySet()) {
+        if (property != null) {
+            for (Entry<String, Schema> prop : property.getProperties().entrySet()) {
 
-            Object example = resolvePropertyToExample(prop.getKey(), prop.getValue(), processedModels, openApi);
-            if (example != null) {
+                Object example = resolvePropertyToExample(prop.getKey(), prop.getValue(), processedModels, openApi);
+                if (example != null) {
 
-                kv.put(prop.getKey(), example);
+                    kv.put(prop.getKey(), example);
 
+                }
             }
         }
         return kv;
