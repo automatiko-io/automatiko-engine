@@ -13,6 +13,7 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget.Kind;
 import org.jboss.jandex.MethodInfo;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.automatiko.engine.function.dev.WorkflowFunctionInfo;
@@ -22,6 +23,8 @@ import io.quarkus.deployment.IsDevelopment;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.devconsole.spi.DevConsoleTemplateInfoBuildItem;
+import io.quarkus.devui.spi.page.CardPageBuildItem;
+import io.quarkus.devui.spi.page.Page;
 import io.smallrye.openapi.runtime.io.schema.SchemaFactory;
 import io.smallrye.openapi.runtime.scanner.SchemaRegistry;
 import io.smallrye.openapi.runtime.scanner.spi.AnnotationScannerContext;
@@ -30,6 +33,28 @@ public class DevConsoleProcessor {
 
     @BuildStep(onlyIf = IsDevelopment.class)
     public DevConsoleTemplateInfoBuildItem collectWorkflowInfo(CombinedIndexBuildItem index) throws Exception {
+
+        return new DevConsoleTemplateInfoBuildItem("workflowFunctionInfos", getInfo(index));
+    }
+
+    @BuildStep(onlyIf = IsDevelopment.class)
+    CardPageBuildItem create(CombinedIndexBuildItem index) throws Exception {
+        CardPageBuildItem cardPageBuildItem = new CardPageBuildItem();
+
+        List<WorkflowFunctionInfo> info = getInfo(index);
+
+        cardPageBuildItem.addPage(Page.webComponentPageBuilder()
+                .icon("font-awesome-solid:diagram-project")
+                .componentLink("qwc-automatiko-functions.js")
+                .title("Functions")
+                .staticLabel(String.valueOf(info.size())));
+
+        cardPageBuildItem.addBuildTimeData("functions", info);
+
+        return cardPageBuildItem;
+    }
+
+    protected List<WorkflowFunctionInfo> getInfo(CombinedIndexBuildItem index) throws JsonProcessingException {
         Optional<String> host = Optional
                 .of(ConfigProvider.getConfig().getOptionalValue("quarkus.http.host", String.class).orElse("localhost"));
         Optional<Integer> port = Optional
@@ -51,16 +76,17 @@ public class DevConsoleProcessor {
                 // create function trigger descriptor for every found function
 
                 StringBuilder curlGet = new StringBuilder("curl -X GET http://").append(host.get()).append(":")
-                        .append(port.get()).append(path)
+                        .append(port.get()).append(path.endsWith("/") ? "" : path)
                         .append("/").append(mi.name()).append("?");
 
                 StringBuilder curlPost = new StringBuilder("curl -X POST http://").append(host.get()).append(":")
-                        .append(port.get()).append(path)
+                        .append(port.get()).append(path.endsWith("/") ? "" : path)
                         .append("/").append(mi.name()).append(" ");
 
                 SchemaFactory.typeToSchema(ctx,
                         mi.parameters().get(0).type(), null, Collections.emptyList());
-                Schema fSchema = ctx.getOpenApi().getComponents().getSchemas().get(mi.parameters().get(0).name());
+                Schema fSchema = ctx.getOpenApi().getComponents().getSchemas()
+                        .get(mi.parameters().get(0).type().name().local());
 
                 Map<String, Object> example = generator.generate(fSchema, ctx.getOpenApi());
 
@@ -73,8 +99,8 @@ public class DevConsoleProcessor {
                 curlGet.append(getInstructions.deleteCharAt(getInstructions.length() - 1).toString());
 
                 curlPost.append("-d \"")
-                        .append(putInstructions.toString().replaceAll("\"", "\\\\\\\\\"").replaceAll("\\s+", "")).append("\"");
-                infos.add(new WorkflowFunctionInfo(mi.name(), path + "/" + mi.name(),
+                        .append(putInstructions.toString().replaceAll("\"", "\\\\\\\"").replaceAll("\\s+", "")).append("\"");
+                infos.add(new WorkflowFunctionInfo(mi.name(), path.endsWith("/") ? path + mi.name() : path + "/" + mi.name(),
                         getInstructions.deleteCharAt(getInstructions.length() - 1).toString(),
                         curlGet.toString(),
                         putInstructions,
@@ -83,6 +109,6 @@ public class DevConsoleProcessor {
         }
         SchemaRegistry.remove();
 
-        return new DevConsoleTemplateInfoBuildItem("workflowFunctionInfos", infos);
+        return infos;
     }
 }
