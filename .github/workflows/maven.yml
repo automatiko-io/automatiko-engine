@@ -13,16 +13,13 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: [11, 17]
 
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK
       uses: actions/setup-java@v3
       with:
-        java-version: ${{ matrix.java }}
+        java-version: 17
         distribution: 'temurin'
         cache: 'maven'
     - name: Build with Maven
