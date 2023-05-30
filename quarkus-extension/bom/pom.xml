@@ -34,9 +34,9 @@
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>io.quarkus.platform</groupId>
+        <groupId>io.quarkiverse.amazonservices</groupId>
         <artifactId>quarkus-amazon-services-bom</artifactId>
-        <version>${version.io.quarkus}</version>
+        <version>${version.io.quarkiverse.amazonservices}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
