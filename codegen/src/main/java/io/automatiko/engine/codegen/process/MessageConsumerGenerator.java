@@ -95,7 +95,7 @@ public class MessageConsumerGenerator {
         this.messageDataEventClassName = messageDataEventClassName;
 
         this.namespaces = (String) trigger.getContext("namespaces",
-                (String) process.getMetaData().getOrDefault("namespaces", ""));
+                (String) process.getMetaData().getOrDefault("namespaces", "JOSDK_ALL_NAMESPACES"));
     }
 
     public MessageConsumerGenerator withDependencyInjection(DependencyInjectionAnnotator annotator) {
