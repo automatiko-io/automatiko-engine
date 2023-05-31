@@ -114,7 +114,7 @@
     <version.org.eclipse.microprofile.config>3.0.3</version.org.eclipse.microprofile.config>
     <version.org.eclipse.microprofile.openapi>3.1</version.org.eclipse.microprofile.openapi>
 
-    <version.io.javaoperatorsdk>6.0.1</version.io.javaoperatorsdk>
+    <version.io.javaoperatorsdk>6.1.0</version.io.javaoperatorsdk>
     <version.io.quarkiverse.googlecloudservices>2.0.0</version.io.quarkiverse.googlecloudservices>
     <version.com.datastax.oss.quarkus>1.2.0</version.com.datastax.oss.quarkus>
     <version.com.datastax.oss>4.15.0</version.com.datastax.oss>
