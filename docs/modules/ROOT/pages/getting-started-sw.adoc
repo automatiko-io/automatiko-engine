@@ -163,8 +163,8 @@ needed to build fully featured services based on workflow definitions.
 
 Following are the required software before you can get started with Automatiko
 
-- Java (version 11 or higher)
-- Apache Maven (version 3.6.3 or higher)
+- Java (version 17 or higher)
+- Apache Maven (version 3.8 or higher)
 
 In addition, following are good to have though they are not mandatory
 

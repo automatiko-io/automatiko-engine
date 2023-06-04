@@ -1,0 +1,14 @@
+= Migrate to 0.30.0
+
+
+== Quarkus 3.1.0
+
+Automatiko with version 0.30.0 has moved to new mejor version of Quarkus (3.1.0) and by that there is a need to execute migration
+that among other things will move `javax.` packages to `jakarta.` for Jakarta EE code.
+
+Best is to follow https://github.com/quarkusio/quarkus/wiki/Migration-Guide-3.0[Quarkus official migration guide] as there is no code changes from pure Automatiko stand point.
+
+== Java 17
+
+With 0.30.0 release Automatiko moved to Java 17 to take advantage of various improvements and to adjust with Apache Camel which is also important
+part of Automatiko and integration scenarios.

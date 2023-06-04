@@ -91,7 +91,7 @@ And then deployed to your Google Cloud project using `gcloud`
 ----
 gcloud functions deploy automatiko-user-registration-example \
   --entry-point=io.quarkus.gcp.functions.http.QuarkusHttpFunction \
-  --runtime=java11 --trigger-http --source=target/deployment
+  --runtime=java17 --trigger-http --source=target/deployment
 ----
 
 This command will give you as output a `httpsTrigger.url` that points to your function.
