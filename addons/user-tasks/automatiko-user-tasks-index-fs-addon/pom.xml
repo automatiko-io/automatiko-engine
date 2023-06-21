@@ -1,0 +1,56 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>io.automatiko.addons</groupId>
+		<artifactId>user-tasks</artifactId>
+		<version>0.0.0-SNAPSHOT</version>
+	</parent>
+	<groupId>io.automatiko.addons</groupId>
+	<artifactId>automatiko-user-tasks-index-fs-addon</artifactId>
+	<name>Automatiko Engine :: Add-Ons :: User Tasks :: Index :: FileSystem</name>
+	<description>User task index based on file system AddOn for Automatiko Engine</description>
+	<properties>
+		<java.module.name>io.automatiko.addons.usertasks.index.filesystem</java.module.name>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>io.automatiko.engine</groupId>
+			<artifactId>automatiko-engine-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.automatiko.engine</groupId>
+			<artifactId>automatiko-engine-common</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.automatiko.workflow</groupId>
+			<artifactId>automatiko-workflow-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.automatiko.addons</groupId>
+			<artifactId>automatiko-user-tasks-index</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>io.quarkiverse.jdbc</groupId>
+		    <artifactId>quarkus-jdbc-sqlite</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.googlecode.cqengine</groupId>
+			<artifactId>cqengine</artifactId>
+			<exclusions>
+			  <exclusion>
+			    <groupId>de.javakaffee</groupId>
+			    <artifactId>kryo-serializers</artifactId>
+			  </exclusion>
+			</exclusions>
+		</dependency>
+	</dependencies>
+
+</project>

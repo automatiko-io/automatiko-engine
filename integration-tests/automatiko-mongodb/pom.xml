@@ -51,6 +51,16 @@
       <groupId>io.automatiko.addons</groupId>
       <artifactId>automatiko-process-management-addon</artifactId>
     </dependency>
+    
+    <dependency>
+      <groupId>io.automatiko.addons</groupId>
+      <artifactId>automatiko-user-tasks-management-addon</artifactId>
+    </dependency>    
+    
+    <dependency>
+      <groupId>io.automatiko.addons</groupId>
+      <artifactId>automatiko-user-tasks-index-mongodb-addon</artifactId>
+	</dependency>
 
     <dependency>
       <groupId>io.quarkus</groupId>

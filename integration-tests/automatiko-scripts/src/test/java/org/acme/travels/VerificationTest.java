@@ -2,7 +2,6 @@ package org.acme.travels;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -13,14 +12,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.inject.Inject;
-
 import org.acme.audit.TestAuditStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import jakarta.inject.Inject;
 
 @QuarkusTest
 public class VerificationTest {
@@ -176,6 +174,28 @@ public class VerificationTest {
                 .statusCode(200)
                 .body("id", notNullValue(), "name", equalTo("john"), "message", nullValue(), "lastName", nullValue())
                 .extract().path("id");
+        
+        // check if tasks exist in the index
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/index/usertasks?user=mary&group=admin")
+        .then().statusCode(200)
+            .body("$.size()", is(1));       
+    
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/index/usertasks")
+        .then().statusCode(200)
+            .body("$.size()", is(0));
+        // check index by using custom query
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/index/usertasks/queries/byprocess?pid=users&user=mary&group=admin")
+        .then().statusCode(200)
+            .body("$.size()", is(1));
         
         given()
             .accept(ContentType.JSON)

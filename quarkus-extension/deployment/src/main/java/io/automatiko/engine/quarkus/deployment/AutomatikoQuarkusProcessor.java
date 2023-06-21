@@ -2,21 +2,25 @@ package io.automatiko.engine.quarkus.deployment;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URI;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -90,6 +94,7 @@ import io.quarkus.deployment.dev.testing.TestListenerBuildItem;
 import io.quarkus.deployment.dev.testing.TestRunListener;
 import io.quarkus.deployment.index.IndexingUtil;
 import io.quarkus.deployment.pkg.PackageConfig;
+import io.quarkus.deployment.pkg.PackageConfig.BuiltInType;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.quarkus.maven.dependency.ResolvedDependency;
 import io.quarkus.paths.PathCollection;
@@ -330,6 +335,25 @@ public class AutomatikoQuarkusProcessor {
         reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
                 String.class.getCanonicalName()));
 
+        try {
+            Enumeration<URL> reflectionConfigs = Thread.currentThread().getContextClassLoader()
+                    .getResources("automatiko.reflection.classes");
+
+            while (reflectionConfigs.hasMoreElements()) {
+                URL url = (URL) reflectionConfigs.nextElement();
+
+                try (InputStream in = url.openStream(); Scanner scanner = new Scanner(in);) {
+
+                    while (scanner.hasNextLine()) {
+                        reflectiveClass.produce(
+                                ReflectiveClassBuildItem.builder(scanner.nextLine()).build());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Unexpected error while reading reflection config files", e);
+        }
+
     }
 
     @BuildStep
@@ -484,7 +508,7 @@ public class AutomatikoQuarkusProcessor {
                 sources.add(new SourceCode(fileName, new String(entry.contents())));
 
                 String location = generatedClassesDir;
-                if (launchMode == LaunchMode.DEVELOPMENT || config.type.equals(PackageConfig.MUTABLE_JAR)) {
+                if (launchMode == LaunchMode.DEVELOPMENT || config.type.equals(BuiltInType.MUTABLE_JAR.getValue())) {
                     location = Paths.get(buildDir.toString()).toString();
 
                 }

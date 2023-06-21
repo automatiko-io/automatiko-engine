@@ -18,6 +18,10 @@
     <module>automatiko-user-tasks-management-addon</module>
     <module>automatiko-user-tasks-notification</module>
     <module>automatiko-user-tasks-slack-addon</module>
-    <module>automatiko-user-tasks-teams-addon</module>
+    <module>automatiko-user-tasks-teams-addon</module>    
+    <module>automatiko-user-tasks-index</module>
+    <module>automatiko-user-tasks-index-fs-addon</module>
+    <module>automatiko-user-tasks-index-mongodb-addon</module>
+    <module>automatiko-user-tasks-index-db-addon</module>
   </modules>
 </project>

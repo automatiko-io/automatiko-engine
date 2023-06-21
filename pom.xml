@@ -121,6 +121,9 @@
     <version.org.apache.camel.quarkus>3.0.0-M2</version.org.apache.camel.quarkus>
     <version.io.quarkiverse.reactivemessaging.http>2.0.1</version.io.quarkiverse.reactivemessaging.http>
     <version.io.quarkiverse.amazonservices>2.3.0</version.io.quarkiverse.amazonservices>
+    <version.io.quarkiverse.jdbc-sqlite>3.0.5</version.io.quarkiverse.jdbc-sqlite>
+    <version.com.googlecode.cqengine>3.6.0</version.com.googlecode.cqengine>
+    <version.com.esotericsoftware.kryo>5.5.0</version.com.esotericsoftware.kryo>
 
     <version.com.cronutils>9.1.6</version.com.cronutils>
 
@@ -340,6 +343,23 @@
         <artifactId>jgrapht-ext</artifactId>
         <version>${version.org.jgrapht}</version>
       </dependency>
+      
+      <!-- user task index for file system-->
+  	  <dependency>
+	    <groupId>io.quarkiverse.jdbc</groupId>
+	    <artifactId>quarkus-jdbc-sqlite</artifactId>
+	    <version>${version.io.quarkiverse.jdbc-sqlite}</version>
+	  </dependency>
+	  <dependency>
+		<groupId>com.googlecode.cqengine</groupId>
+		<artifactId>cqengine</artifactId>
+		<version>${version.com.googlecode.cqengine}</version>
+	  </dependency>
+      <dependency>
+	    <groupId>com.esotericsoftware</groupId>
+	    <artifactId>kryo</artifactId>
+	    <version>${version.com.esotericsoftware.kryo}</version>
+	  </dependency>
 
       <dependency>
         <groupId>org.junit.jupiter</groupId>

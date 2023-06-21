@@ -51,6 +51,37 @@ public class SubprocessVerificationTest {
             .statusCode(200)
             .body("$.size()", is(1));  
         
+        // check if tasks exist in the index
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/index/usertasks?user=john")
+        .then().statusCode(200)
+            .body("$.size()", is(1));
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/index/usertasks")
+        .then().statusCode(200)
+            .body("$.size()", is(0));
+        
+        
+        // check index by using custom query
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/index/usertasks/queries/orderAmount?amount=0.2&user=john")
+        .then().statusCode(200)
+            .body("$.size()", is(1));
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/index/usertasks/queries/orderAmount?amount=0.5&user=john")
+        .then().statusCode(200)
+            .body("$.size()", is(0));
+        
         // and one task coming from it
         List<Map<String, String>> taskInfo = given()
                 .accept(ContentType.JSON)
@@ -85,6 +116,22 @@ public class SubprocessVerificationTest {
         .then()
             .statusCode(200)
             .body("$.size()", is(1));  
+        
+        // check if tasks exist in the index
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/index/usertasks?user=john")
+        .then().statusCode(200)
+            .body("$.size()", is(1));
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/index/usertasks")
+        .then().statusCode(200)
+            .body("$.size()", is(0));
+
         
         taskInfo = given()
                 .accept(ContentType.JSON)
