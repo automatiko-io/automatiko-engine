@@ -10,9 +10,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +24,8 @@ import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import io.quarkus.qute.Engine;
 import io.quarkus.qute.Template;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class EmailNotificationEmitter implements NotificationEmitter {
@@ -126,10 +125,10 @@ public class EmailNotificationEmitter implements NotificationEmitter {
         }
         // send emails asynchronously
         CompletableFuture.runAsync(() -> {
-            for (String to : addresses.values()) {
-                mailer.send(emails);
-                LOGGER.debug("Email sent to {} with new assigned task {}", to, humanTask.getName());
-            }
+
+            mailer.send(emails);
+            LOGGER.debug("Email sent to {} with new assigned task {}", addresses.values(), humanTask.getName());
+
         });
 
     }
