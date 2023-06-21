@@ -203,6 +203,7 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
         if (!workItemNode.isWaitForCompletion()) {
             triggerCompleted();
         }
+
         this.workItemId = workItem.getId();
     }
 
@@ -837,11 +838,12 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
 
     public String buildReferenceId() {
         StringBuilder builder = new StringBuilder();
-        builder.append("/" + getProcessInstance().getReferenceFromRoot())
-                .append(sanitizeName((String) getWorkItem().getParameters().getOrDefault("TaskName", getNodeName())))
-                .append("/")
-                .append(getWorkItem().getId());
-
+        if (getWorkItem() != null) {
+            builder.append("/" + getProcessInstance().getReferenceFromRoot())
+                    .append(sanitizeName((String) getWorkItem().getParameters().getOrDefault("TaskName", getNodeName())))
+                    .append("/")
+                    .append(getWorkItem().getId());
+        }
         return builder.toString();
     }
 

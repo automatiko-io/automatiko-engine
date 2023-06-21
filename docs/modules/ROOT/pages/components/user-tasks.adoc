@@ -12,6 +12,9 @@ Automatiko comes with following addons that help with user tasks within workflow
 * automatiko-user-tasks-email-addon
 * automatiko-user-tasks-slack-addon
 * automatiko-user-tasks-teams-addon
+* automatiko-user-tasks-index-fs-addon
+* automatiko-user-tasks-index-db-addon
+* automatiko-user-tasks-index-mongodb-addon
 
 
 TIP: Regardless of type of notifications it can be disabled globally by setting (`QUARKUS_AUTOMATIKO_NOTIFICATIONS_DISABLED=true`)
@@ -441,3 +444,261 @@ This interface is located in `io.automatiko.addons:automatiko-user-tasks-notific
 
 The implementation must be a CDI bean so it can be discovered and registered automatically.
  
+== User tasks index
+
+User task index allows to collect all user tasks created within given service and expose it for queries. Most common 
+use case is to find tasks assigned to given user, taking into consideration:
+
+* tasks assigned to users
+* tasks assigned to groups 
+* tasks excluding users
+
+In addition to that, task information can also be targeted as filter criteria.
+
+Out of the box filter criteria are
+
+* `name` - name of the task, partial match
+* `description` - description of the task, partial match
+* `state` - state of the task (Ready, Completed, Aborted)
+* `priority` - priority of the task, partial match
+
+Additional queries can be defined as custom that will provide more specific ways of searching for tasks. Such as taking into
+account other task properties or even inputs and outputs of the tasks. Though this is dependent on the type of storage used.
+This concept is known as `CustomQueryBuilder` and is described in details in each supported index addon.
+
+Result can also be sorted either ascending or descending by task fields.
+
+Once addon is added to the service, it will expose additional REST endpoint under `/index/usertasks` with following methods:
+
+* find tasks by filter criteria
+* find task by id
+* query with custom queries
+
+
+User tasks are kept in the index according to instance end configuration. Instance end property can be set to 
+
+- remove - (default) that removes process instances upon its completion
+- keep - to keep instances in the storage after they are completed
+- archive - to archive process instances upon their completion
+
+Index will be default remove tasks that are completed to keep the index size manageable. But if the instance end configuration is set to keep then tasks will be kept in the index even when they are completed. That allows to search for tasks that were already completed.
+
+Tasks are automatically indexed after addon activation. Each task created within the service will be added to the index and 
+by that can be searched for. 
+
+IMPORTANT: User task index is only supported with file system, db and mongodb persistence
+
+=== Index for file system persistence
+
+File system persistence utilizes https://github.com/npgall/cqengine[CQEngine] for efficient indexing and searching. This allows to collected and efficiently search big volumes of tasks.
+
+==== Custom query builder
+
+Custom query builder in file system index addon requires two things to be done:
+
+1. register additional indexes on non yet indexed fields 
+2. define where clause based on incoming parameters
+
+Each custom query builder must implement methods of `io.automatiko.addons.usertasks.index.fs.CQEngineCustomQueryBuilder`
+
+Following is an example building a custom query to filter out by process id.
+
+[source, java]
+----
+import static com.googlecode.cqengine.query.QueryFactory.in;
+
+import java.util.List;
+import java.util.Map;
+
+import com.googlecode.cqengine.attribute.SimpleAttribute;
+import com.googlecode.cqengine.index.suffix.SuffixTreeIndex;
+import com.googlecode.cqengine.query.Query;
+import com.googlecode.cqengine.query.option.QueryOptions;
+
+import io.automatiko.addons.usertasks.index.fs.CQEngineBasedIndex;
+import io.automatiko.addons.usertasks.index.fs.CQEngineCustomQueryBuilder;
+import io.automatiko.addons.usertasks.index.fs.CQEngineUserTaskInfo;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
+@ApplicationScoped// <1>
+public class ByProcessCustomQueryBuilder extends CQEngineCustomQueryBuilder {
+
+    public static final SimpleAttribute<CQEngineUserTaskInfo, String> PROCESS_ID = new SimpleAttribute<>("processId") {// <2>
+        public String getValue(CQEngineUserTaskInfo task, QueryOptions queryOptions) {
+            return task.getProcessId();
+        }
+    };
+
+    public ByProcessCustomQueryBuilder() {
+    }
+
+    @Inject
+    public ByProcessCustomQueryBuilder(CQEngineBasedIndex index) {
+        index.get().addIndex(SuffixTreeIndex.onAttribute(PROCESS_ID));// <3>
+    }
+
+    @Override
+    public Query<CQEngineUserTaskInfo> build(Map<String, List<String>> parameters) {
+
+        return in(PROCESS_ID, parameters.get("pid"));// <4>
+    }
+
+    @Override
+    public String id() {
+        return "byprocess";// <5>
+    }
+
+}
+----
+<1> Make the class a CDI bean so it can be discovered
+<2> Create attribute definition for CQEngine index for given field
+<3> Register new index for `PROCESS_ID` field
+<4> build CQEngine where clause
+<5> Assign unique id for the query builder
+
+==== Configure
+
+To enable user tasks fs index addon add following dependency to your service
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-user-tasks-index-fs-addon</artifactId>
+</dependency>
+----
+
+In addition to that there must be path provided where the index should be stored. Usually this is set in
+`application.properties` of your service but can also be given as system properties or environment variables
+
+[source,plain]
+----
+quarkus.automatiko.index.usertasks.fs.path=/data
+----
+
+The path should point to directory that is writable and upon start a file `automatiko-user-tasks.dat` will be created.
+
+=== Index for data base persistence
+
+Data base index addon creates new table (`USER_TASK_INDEX`) that will keep all user tasks of the service. This table 
+is then queries to get tasks for given user.
+
+==== Custom query builder
+
+Custom query builder in db index addon requires to create a instance of `io.automatiko.addons.usertasks.index.db.DbQueryFilter`
+that provides a `JPQL` where clause and set of values for bind parameters.
+
+Each custom query builder must implement methods of `io.automatiko.addons.usertasks.index.db.DbCustomQueryBuilder`
+
+Following is an example building a custom query to filter out by process id.
+
+[source, java]
+----
+import java.util.List;
+import java.util.Map;
+
+import io.automatiko.addons.usertasks.index.db.DbCustomQueryBuilder;
+import io.automatiko.addons.usertasks.index.db.DbQueryFilter;
+import jakarta.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped // <1>
+public class ByProcessIdDbCustomQueryBuilder extends DbCustomQueryBuilder {
+
+    @Override
+    public DbQueryFilter build(Map<String, List<String>> parameters) {
+
+        return new DbQueryFilter("t.processId = :process", Map.of("process", parameters.get("process").get(0))); // <2>
+    }
+
+    @Override
+    public String id() {
+        return "byProcess"; // <3>
+    }
+
+}
+----
+<1> Make the class a CDI bean so it can be discovered
+<2> Create where clause based on parameters
+<3> Assign unique id for the query builder
+
+==== Configure
+
+To enable user tasks db index addon add following dependency to your service
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-user-tasks-index-db-addon</artifactId>
+</dependency>
+----
+
+=== Index for MongoDB persistence
+
+MongoDB index addon creates new collection `usertasks` in the same database as the service. This collection is the queries to
+find tasks for given user and filter criteria.
+
+==== Custom query builder
+
+Custom query builder in mongodb index addon requires to create `Bson` filters according to MongoDB requirements.
+
+Each custom query builder must implement methods of `io.automatiko.addons.usertasks.index.mongo.MongoDBCustomQueryBuilder`
+
+Following is an example building a custom query to filter out by process id.
+
+[source, java]
+----
+import java.util.List;
+import java.util.Map;
+
+import org.bson.conversions.Bson;
+
+import com.mongodb.client.model.Filters;
+
+import io.automatiko.addons.usertasks.index.mongo.MongoDBCustomQueryBuilder;
+import jakarta.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped // <1>
+public class OrderAmountQuery extends MongoDBCustomQueryBuilder {
+
+    @Override
+    public Bson build(Map<String, List<String>> parameters) {
+        Bson filter = Filters.and(Filters.eq("processId", "orderItems"),
+                Filters.gt("inputs.order.total", Double.parseDouble(parameters.get("amount").get(0)))); // <2>
+        return filter;
+    }
+
+    @Override
+    public String id() {
+        return "orderAmount"; // <3>
+    }
+
+}
+----
+<1> Make the class a CDI bean so it can be discovered
+<2> Create where clause based on parameters as `Bson`
+<3> Assign unique id for the query builder
+
+==== Configure
+
+To enable user tasks db index addon add following dependency to your service
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-user-tasks-index-mongodb-addon</artifactId>
+</dependency>
+----
+
+=== User task index management
+
+When user tasks index addon on is configured it will also provide a management API. API is available under `/management/index/tasks` endpoint. Main usage of this api is to perform initial reindex after index addon was introduced or to resolve any out of sync instances.
+
+This API is by default hidden in OpenAPI and has following capabilities:
+
+* reindex all processes within the service
+* reindex instances of a given process (by id)
+* reindex only a single process instance of a given process (by id)
+

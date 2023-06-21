@@ -1,6 +1,8 @@
 
 package io.automatiko.engine.service.exception;
 
+import java.util.Collections;
+
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
@@ -13,6 +15,6 @@ public class ResourceNotFoundExceptionMapper extends BaseExceptionMapper<NotFoun
     @Override
     public Response toResponse(NotFoundException ex) {
 
-        return notFound(ex.getMessage());
+        return notFound(Collections.singletonMap(MESSAGE, ex.getMessage()));
     }
 }

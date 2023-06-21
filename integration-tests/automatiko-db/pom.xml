@@ -46,6 +46,11 @@
       <groupId>io.automatiko.addons</groupId>
       <artifactId>automatiko-events-elastic-addon</artifactId>
     </dependency>
+    
+    <dependency>
+      <groupId>io.automatiko.addons</groupId>
+      <artifactId>automatiko-user-tasks-index-db-addon</artifactId>
+	</dependency>
 
     <dependency>
       <groupId>io.quarkus</groupId>

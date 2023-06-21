@@ -10,8 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.inject.Inject;
-
 import org.apache.http.util.EntityUtils;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
@@ -22,6 +20,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import jakarta.inject.Inject;
 
 @QuarkusTest
 public class VerificationTest {
@@ -83,6 +82,22 @@ public class VerificationTest {
         assertEquals("Fill in person details", item.getString("name"));
         assertEquals("personInfo", item.getJsonObject("_metadata").getString("referenceName"));
         
+        // check if tasks are indexed in db 
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/index/usertasks")
+        .then().statusCode(200)
+            .body("$.size()", is(1));
+        
+        // check index by using custom query
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/index/usertasks/queries/byProcess?process=omboarding")
+        .then().statusCode(200)
+            .body("$.size()", is(1));
+        
         List<Map<String, String>> taskInfo = given()
                         .accept(ContentType.JSON)
                     .when()
@@ -108,6 +123,12 @@ public class VerificationTest {
         .then()
             .statusCode(200).body("id", is(key), "person", notNullValue());
         
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/index/usertasks")
+        .then().statusCode(200)
+            .body("$.size()", is(1));
         
         taskInfo = given()
                 .accept(ContentType.JSON)
@@ -163,7 +184,14 @@ public class VerificationTest {
         .when()
             .get("/v1/omboarding")
         .then().statusCode(200)
-            .body("$.size()", is(0));        
+            .body("$.size()", is(0));      
+        
+        given()
+            .accept(ContentType.JSON)
+        .when()
+            .get("/index/usertasks")
+        .then().statusCode(200)
+            .body("$.size()", is(0));
     }
     
     @SuppressWarnings("unchecked")

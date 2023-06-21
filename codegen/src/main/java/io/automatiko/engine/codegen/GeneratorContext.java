@@ -124,11 +124,11 @@ public class GeneratorContext {
 
         BlockStmt constructorBody = new BlockStmt();
 
-        // hide automatik api (e.g. process management api) from OpenAPI definition
+        // hide automatiko api (e.g. process management api) from OpenAPI definition
         String includeAutomatikApi = applicationProperties.getProperty("quarkus.automatiko.include-automatiko-api");
         if (!"true".equalsIgnoreCase(includeAutomatikApi)) {
             modifiedApplicationProperties.put("mp.openapi.scan.exclude.classes",
-                    "io.automatiko.engine.addons.process.management.ProcessInstanceManagementResource,io.automatiko.engine.addons.usertasks.management.UserTaskManagementResource,io.automatiko.addons.fault.tolerance.CircuitBreakerResource");
+                    "io.automatiko.engine.addons.process.management.ProcessInstanceManagementResource,io.automatiko.engine.addons.usertasks.management.UserTaskManagementResource,io.automatiko.addons.fault.tolerance.CircuitBreakerResource,io.automatiko.addon.usertasks.index.UserTaskIndexManagementResource");
         }
 
         if (getBuildContext().isGraphQLSupported()) {

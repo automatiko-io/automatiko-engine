@@ -10,8 +10,8 @@ import io.automatiko.engine.api.runtime.process.HumanTaskWorkItem;
 
 public class UserTaskInstanceEventBody {
 
-    public static final String UT_ID_META_DATA = "kogito.usertaskinstance.id";
-    public static final String UT_STATE_META_DATA = "kogito.usertaskinstance.state";
+    public static final String UT_ID_META_DATA = "usertaskinstance.id";
+    public static final String UT_STATE_META_DATA = "usertaskinstance.state";
 
     private String id;
     private String taskName;

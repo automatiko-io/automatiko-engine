@@ -224,7 +224,7 @@
 	let claimTask = function() {
 
 		$.ajax({
-			url : taskActionUrl + '?phase=claim',
+			url : taskActionUrl + (taskActionUrl.includes("?") ? "&" : '?') +  'phase=claim',
 			type : 'POST',
 			dataType : 'json',
 			contentType: 'application/json',
@@ -245,7 +245,7 @@
 	let releaseTask = function() {
 
 		$.ajax({
-			url : taskActionUrl + '?phase=release',
+			url : taskActionUrl + (taskActionUrl.includes("?") ? "&" : '?') +  'phase=release',
 			type : 'POST',
 			dataType : 'json',
 			contentType: 'application/json',
