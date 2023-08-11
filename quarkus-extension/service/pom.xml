@@ -86,7 +86,7 @@
 
   <build>
     <plugins>
-    <plugin>
+      <plugin>
         <groupId>io.smallrye</groupId>
         <artifactId>jandex-maven-plugin</artifactId>
         <executions>
@@ -102,14 +102,6 @@
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-extension-maven-plugin</artifactId>
         <configuration>
-          <parameters>true</parameters>
-          <annotationProcessorPaths>
-            <path>
-              <groupId>io.quarkus</groupId>
-              <artifactId>quarkus-extension-processor</artifactId>
-              <version>${version.io.quarkus}</version>
-            </path>
-          </annotationProcessorPaths>
           <capabilities>
             <provides>io.automatiko.workflow</provides>
           </capabilities>
@@ -125,6 +117,18 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>io.quarkus</groupId>
+              <artifactId>quarkus-extension-processor</artifactId>
+              <version>${version.io.quarkus}</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
       </plugin>
     </plugins>
   </build>

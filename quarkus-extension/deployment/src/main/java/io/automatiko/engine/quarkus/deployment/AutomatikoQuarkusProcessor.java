@@ -204,7 +204,8 @@ public class AutomatikoQuarkusProcessor {
 
             dataEvents.forEach(
                     c -> {
-                        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, c.name().toString()));
+                        reflectiveClass
+                                .produce(ReflectiveClassBuildItem.builder(c.name().toString()).fields().methods().build());
                     });
 
             generatePersistenceInfo(config, pconfig, appPaths, generatedBeans, additionalIndexClass,
@@ -224,38 +225,37 @@ public class AutomatikoQuarkusProcessor {
             BuildProducer<ReflectiveHierarchyIgnoreWarningBuildItem> reflectiveHierarchy,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
 
-        reflectiveClass.produce(
-                new ReflectiveClassBuildItem(true, true, "io.automatiko.engine.api.event.AbstractDataEvent"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "io.automatiko.engine.services.event.AbstractProcessDataEvent"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "io.automatiko.engine.services.event.ProcessInstanceDataEvent"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "io.automatiko.engine.services.event.UserTaskInstanceDataEvent"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "io.automatiko.engine.services.event.VariableInstanceDataEvent"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "io.automatiko.engine.services.event.impl.ProcessInstanceEventBody"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "io.automatiko.engine.services.event.impl.NodeInstanceEventBody"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "io.automatiko.engine.services.event.impl.ProcessErrorEventBody"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "io.automatiko.engine.services.event.impl.VariableInstanceEventBody"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "io.automatiko.engine.services.event.impl.UserTaskInstanceEventBody"));
+        reflectiveClass.produce(ReflectiveClassBuildItem.builder("io.automatiko.engine.api.event.AbstractDataEvent").fields()
+                .methods().build());
+        reflectiveClass.produce(ReflectiveClassBuildItem.builder("io.automatiko.engine.services.event.AbstractProcessDataEvent")
+                .fields().methods().build());
+        reflectiveClass.produce(ReflectiveClassBuildItem.builder("io.automatiko.engine.services.event.ProcessInstanceDataEvent")
+                .fields().methods().build());
+        reflectiveClass.produce(ReflectiveClassBuildItem
+                .builder("io.automatiko.engine.services.event.UserTaskInstanceDataEvent").fields().methods().build());
+        reflectiveClass.produce(ReflectiveClassBuildItem
+                .builder("io.automatiko.engine.services.event.VariableInstanceDataEvent").fields().methods().build());
+        reflectiveClass.produce(ReflectiveClassBuildItem
+                .builder("io.automatiko.engine.services.event.impl.ProcessInstanceEventBody").fields().methods().build());
+        reflectiveClass.produce(ReflectiveClassBuildItem
+                .builder("io.automatiko.engine.services.event.impl.NodeInstanceEventBody").fields().methods().build());
+        reflectiveClass.produce(ReflectiveClassBuildItem
+                .builder("io.automatiko.engine.services.event.impl.ProcessErrorEventBody").fields().methods().build());
+        reflectiveClass.produce(ReflectiveClassBuildItem
+                .builder("io.automatiko.engine.services.event.impl.VariableInstanceEventBody").fields().methods().build());
+        reflectiveClass.produce(ReflectiveClassBuildItem
+                .builder("io.automatiko.engine.services.event.impl.UserTaskInstanceEventBody").fields().methods().build());
 
         reflectiveClass.produce(
-                new ReflectiveClassBuildItem(false, false, "org.mvel2.optimizers.dynamic.DynamicOptimizer"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(false, false,
-                "org.mvel2.optimizers.impl.refl.ReflectiveAccessorOptimizer"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, ArrayList.class.getCanonicalName()));
+                ReflectiveClassBuildItem.builder("org.mvel2.optimizers.dynamic.DynamicOptimizer").fields().methods().build());
+        reflectiveClass.produce(ReflectiveClassBuildItem.builder("org.mvel2.optimizers.impl.refl.ReflectiveAccessorOptimizer")
+                .fields().methods().build());
+        reflectiveClass
+                .produce(ReflectiveClassBuildItem.builder(ArrayList.class.getCanonicalName()).fields().methods().build());
 
-        reflectiveClass.produce(
-                new ReflectiveClassBuildItem(true, true, byte[].class.getName()));
+        reflectiveClass.produce(ReflectiveClassBuildItem.builder(byte[].class.getName()).fields().methods().build());
 
-        reflectiveClass.produce(
-                new ReflectiveClassBuildItem(true, false, BaseWorkItem.class));
+        reflectiveClass.produce(ReflectiveClassBuildItem.builder(BaseWorkItem.class.toString()).fields().methods().build());
 
         List<IndexView> archiveIndexes = new ArrayList<>();
 
@@ -266,13 +266,13 @@ public class AutomatikoQuarkusProcessor {
         CompositeIndex archivesIndex = CompositeIndex.create(archiveIndexes);
 
         // add functions classes found
-        reflectiveClass.produce(
-                new ReflectiveClassBuildItem(true, false, "io.automatiko.engine.services.execution.BaseFunctions"));
+        reflectiveClass.produce(ReflectiveClassBuildItem.builder("io.automatiko.engine.services.execution.BaseFunctions")
+                .fields().methods().build());
         archivesIndex
                 .getAllKnownImplementors(createDotName("io.automatiko.engine.api.Functions")).stream()
                 .map(c -> c.name().toString())
                 .forEach(
-                        c -> reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, c)));
+                        c -> reflectiveClass.produce(ReflectiveClassBuildItem.builder(c).methods().build()));
 
         // DMN related
         DotName classDotName = createDotName(CodeGenConstants.DMN_CLASS);
@@ -297,43 +297,56 @@ public class AutomatikoQuarkusProcessor {
         }
 
         // jackson node classes for serializing JSON tree instances
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "com.fasterxml.jackson.databind.node.TextNode"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "com.fasterxml.jackson.databind.node.BinaryNode"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "com.fasterxml.jackson.databind.node.BooleanNode"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "com.fasterxml.jackson.databind.node.NullNode"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "com.fasterxml.jackson.databind.node.BigIntegerNode"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "com.fasterxml.jackson.databind.node.DecimalNode"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "com.fasterxml.jackson.databind.node.DoubleNode"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "com.fasterxml.jackson.databind.node.FloatNode"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "com.fasterxml.jackson.databind.node.IntNode"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "com.fasterxml.jackson.databind.node.LongNode"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "com.fasterxml.jackson.databind.node.ShortNode"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "com.fasterxml.jackson.databind.node.POJONode"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "com.fasterxml.jackson.databind.node.ObjectNode"));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                "com.fasterxml.jackson.databind.node.ArrayNode"));
+        reflectiveClass.produce(
+                ReflectiveClassBuildItem.builder("com.fasterxml.jackson.databind.node.TextNode").fields().methods().build());
 
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                Long.class.getCanonicalName()));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                Integer.class.getCanonicalName()));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                Boolean.class.getCanonicalName()));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true,
-                String.class.getCanonicalName()));
+        reflectiveClass.produce(
+                ReflectiveClassBuildItem.builder("com.fasterxml.jackson.databind.node.BinaryNode").fields().methods().build());
+
+        reflectiveClass.produce(
+                ReflectiveClassBuildItem.builder("com.fasterxml.jackson.databind.node.BooleanNode").fields().methods().build());
+
+        reflectiveClass.produce(
+                ReflectiveClassBuildItem.builder("com.fasterxml.jackson.databind.node.NullNode").fields().methods().build());
+
+        reflectiveClass.produce(ReflectiveClassBuildItem.builder("com.fasterxml.jackson.databind.node.BigIntegerNode").fields()
+                .methods().build());
+
+        reflectiveClass.produce(
+                ReflectiveClassBuildItem.builder("com.fasterxml.jackson.databind.node.DecimalNode").fields().methods().build());
+
+        reflectiveClass.produce(
+                ReflectiveClassBuildItem.builder("com.fasterxml.jackson.databind.node.DoubleNode").fields().methods().build());
+
+        reflectiveClass.produce(
+                ReflectiveClassBuildItem.builder("com.fasterxml.jackson.databind.node.FloatNode").fields().methods().build());
+
+        reflectiveClass.produce(
+                ReflectiveClassBuildItem.builder("com.fasterxml.jackson.databind.node.IntNode").fields().methods().build());
+
+        reflectiveClass.produce(
+                ReflectiveClassBuildItem.builder("com.fasterxml.jackson.databind.node.LongNode").fields().methods().build());
+
+        reflectiveClass.produce(
+                ReflectiveClassBuildItem.builder("com.fasterxml.jackson.databind.node.ShortNode").fields().methods().build());
+
+        reflectiveClass.produce(
+                ReflectiveClassBuildItem.builder("com.fasterxml.jackson.databind.node.POJONode").fields().methods().build());
+
+        reflectiveClass.produce(
+                ReflectiveClassBuildItem.builder("com.fasterxml.jackson.databind.node.ObjectNode").fields().methods().build());
+
+        reflectiveClass.produce(
+                ReflectiveClassBuildItem.builder("com.fasterxml.jackson.databind.node.ArrayNode").fields().methods().build());
+
+        reflectiveClass.produce(
+                ReflectiveClassBuildItem.builder(Long.class.getCanonicalName()).fields().methods().build());
+        reflectiveClass.produce(
+                ReflectiveClassBuildItem.builder(Integer.class.getCanonicalName()).fields().methods().build());
+        reflectiveClass.produce(
+                ReflectiveClassBuildItem.builder(Boolean.class.getCanonicalName()).fields().methods().build());
+        reflectiveClass.produce(
+                ReflectiveClassBuildItem.builder(String.class.getCanonicalName()).fields().methods().build());
 
         try {
             Enumeration<URL> reflectionConfigs = Thread.currentThread().getContextClassLoader()

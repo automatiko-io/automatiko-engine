@@ -31,7 +31,6 @@ import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.smallrye.openapi.api.OpenApiConfig;
 import io.smallrye.openapi.api.OpenApiConfigImpl;
 import io.smallrye.openapi.runtime.io.schema.SchemaFactory;
-import io.smallrye.openapi.runtime.scanner.SchemaRegistry;
 import io.smallrye.openapi.runtime.scanner.spi.AnnotationScannerContext;
 
 public class AutomatikoFunctionProcessor {
@@ -48,7 +47,7 @@ public class AutomatikoFunctionProcessor {
         ExampleGenerator generator = new ExampleGenerator();
 
         AnnotationScannerContext ctx = buildAnnotationScannerContext(index.getIndex());
-        SchemaRegistry.newInstance(ctx);
+
         Collection<AnnotationInstance> functions = index.getIndex().getAnnotations(createDotName("io.quarkus.funqy.Funq"));
 
         LOGGER.info("************************************************************");
@@ -80,7 +79,6 @@ public class AutomatikoFunctionProcessor {
         }
         LOGGER.info("************************************************************");
 
-        SchemaRegistry.remove();
         return new FeatureBuildItem(FEATURE);
     }
 

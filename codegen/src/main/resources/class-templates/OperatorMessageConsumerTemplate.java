@@ -28,9 +28,6 @@ import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 
-import io.fabric8.kubernetes.api.model.HasMetadata;
-import io.fabric8.kubernetes.internal.KubernetesDeserializer;
-
 @SuppressWarnings({ "unchecked", "rawtypes" })
 @ControllerConfiguration(namespaces=$ControllerParam$, name="$ProcessId$", generationAwareEventProcessing=$GenControllerParam$)
 public class Controller implements Reconciler<$DataType$>, Cleaner<$DataType$>  {
@@ -41,11 +38,7 @@ public class Controller implements Reconciler<$DataType$>, Cleaner<$DataType$>  
 
     Application application;
     
-    
-    @PostConstruct
-    public void init() {
-        KubernetesDeserializer.registerCustomKind(HasMetadata.getApiVersion($DataType$.class), $DataType$.class.getSimpleName(), $DataType$.class);
-    }
+   
 
     @Override
     public DeleteControl cleanup($DataType$ resource, Context context) {

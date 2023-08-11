@@ -1,5 +1,6 @@
 package io.automatiko.engine.quarkus.function.deployment.devconsole;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,7 +14,6 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget.Kind;
 import org.jboss.jandex.MethodInfo;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.automatiko.engine.function.dev.WorkflowFunctionInfo;
@@ -22,25 +22,17 @@ import io.automatiko.engine.quarkus.function.deployment.ExampleGenerator;
 import io.quarkus.deployment.IsDevelopment;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
-import io.quarkus.devconsole.spi.DevConsoleTemplateInfoBuildItem;
 import io.quarkus.devui.spi.page.CardPageBuildItem;
 import io.quarkus.devui.spi.page.Page;
 import io.smallrye.openapi.runtime.io.schema.SchemaFactory;
-import io.smallrye.openapi.runtime.scanner.SchemaRegistry;
 import io.smallrye.openapi.runtime.scanner.spi.AnnotationScannerContext;
 
 public class DevConsoleProcessor {
 
     @BuildStep(onlyIf = IsDevelopment.class)
-    public DevConsoleTemplateInfoBuildItem collectWorkflowInfo(CombinedIndexBuildItem index) throws Exception {
-
-        return new DevConsoleTemplateInfoBuildItem("workflowFunctionInfos", getInfo(index));
-    }
-
-    @BuildStep(onlyIf = IsDevelopment.class)
     CardPageBuildItem create(CombinedIndexBuildItem index) throws Exception {
         CardPageBuildItem cardPageBuildItem = new CardPageBuildItem();
-
+        workaroundMultiModuleDevMode(cardPageBuildItem);
         List<WorkflowFunctionInfo> info = getInfo(index);
 
         cardPageBuildItem.addPage(Page.webComponentPageBuilder()
@@ -54,7 +46,7 @@ public class DevConsoleProcessor {
         return cardPageBuildItem;
     }
 
-    protected List<WorkflowFunctionInfo> getInfo(CombinedIndexBuildItem index) throws JsonProcessingException {
+    protected List<WorkflowFunctionInfo> getInfo(CombinedIndexBuildItem index) {
         Optional<String> host = Optional
                 .of(ConfigProvider.getConfig().getOptionalValue("quarkus.http.host", String.class).orElse("localhost"));
         Optional<Integer> port = Optional
@@ -68,7 +60,6 @@ public class DevConsoleProcessor {
         ObjectMapper mapper = new ObjectMapper();
         ExampleGenerator generator = new ExampleGenerator();
         AnnotationScannerContext ctx = AutomatikoFunctionProcessor.buildAnnotationScannerContext(index.getIndex());
-        SchemaRegistry.newInstance(ctx);
 
         for (AnnotationInstance f : functions) {
             if (f.target().kind().equals(Kind.METHOD)) {
@@ -89,26 +80,45 @@ public class DevConsoleProcessor {
                         .get(mi.parameters().get(0).type().name().local());
 
                 Map<String, Object> example = generator.generate(fSchema, ctx.getOpenApi());
+                try {
+                    String putInstructions = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(example);
 
-                String putInstructions = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(example);
+                    StringBuilder getInstructions = new StringBuilder();
+                    AutomatikoFunctionProcessor.flatMap(null, example).entrySet()
+                            .forEach(e -> getInstructions.append(e.getKey() + "=" + e.getValue() + "&"));
 
-                StringBuilder getInstructions = new StringBuilder();
-                AutomatikoFunctionProcessor.flatMap(null, example).entrySet()
-                        .forEach(e -> getInstructions.append(e.getKey() + "=" + e.getValue() + "&"));
+                    curlGet.append(getInstructions.deleteCharAt(getInstructions.length() - 1).toString());
 
-                curlGet.append(getInstructions.deleteCharAt(getInstructions.length() - 1).toString());
-
-                curlPost.append("-d \"")
-                        .append(putInstructions.toString().replaceAll("\"", "\\\\\\\"").replaceAll("\\s+", "")).append("\"");
-                infos.add(new WorkflowFunctionInfo(mi.name(), path.endsWith("/") ? path + mi.name() : path + "/" + mi.name(),
-                        getInstructions.deleteCharAt(getInstructions.length() - 1).toString(),
-                        curlGet.toString(),
-                        putInstructions,
-                        curlPost.toString()));
+                    curlPost.append("-d \"")
+                            .append(putInstructions.toString().replaceAll("\"", "\\\\\\\"").replaceAll("\\s+", ""))
+                            .append("\"");
+                    infos.add(
+                            new WorkflowFunctionInfo(mi.name(), path.endsWith("/") ? path + mi.name() : path + "/" + mi.name(),
+                                    getInstructions.deleteCharAt(getInstructions.length() - 1).toString(),
+                                    curlGet.toString(),
+                                    putInstructions,
+                                    curlPost.toString()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
-        SchemaRegistry.remove();
 
         return infos;
+    }
+
+    private void workaroundMultiModuleDevMode(CardPageBuildItem cardPageBuildItem) {
+        Class<?> c = CardPageBuildItem.class;
+
+        while (c.getSuperclass() != null) {
+            try {
+                c = c.getSuperclass();
+                Field f = c.getDeclaredField("extensionIdentifier");
+                f.setAccessible(true);
+                f.set(cardPageBuildItem, "io.automatiko.quarkus.automatiko-function");
+            } catch (Exception e) {
+
+            }
+        }
     }
 }

@@ -1,5 +1,6 @@
 ---
 name: "Automatiko Function Flow"
+artifact: ${project.groupId}:${project.artifactId}:${project.version}
 metadata:
   keywords:
   - "FaaS"
@@ -14,4 +15,4 @@ metadata:
   guide: "https://docs.automatiko.io" 
   categories:
   - "workflow-automation"
-  status: "preview"
+  status: "stable"
