@@ -1,5 +1,6 @@
 ---
 name: "Automatiko Service"
+artifact: ${project.groupId}:${project.artifactId}:${project.version}
 metadata:
   keywords:
   - "SaaS"
@@ -11,4 +12,4 @@ metadata:
   guide: "https://docs.automatiko.io"
   categories:
   - "workflow-automation"
-  status: "preview"
+  status: "stable"

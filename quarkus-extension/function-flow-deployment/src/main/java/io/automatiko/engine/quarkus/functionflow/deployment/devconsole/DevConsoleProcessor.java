@@ -1,5 +1,6 @@
 package io.automatiko.engine.quarkus.functionflow.deployment.devconsole;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,25 +27,17 @@ import io.automatiko.engine.quarkus.functionflow.dev.WorkflowFunctionFlowInfo;
 import io.quarkus.deployment.IsDevelopment;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
-import io.quarkus.devconsole.spi.DevConsoleTemplateInfoBuildItem;
 import io.quarkus.devui.spi.page.CardPageBuildItem;
 import io.quarkus.devui.spi.page.Page;
 import io.smallrye.openapi.runtime.io.schema.SchemaFactory;
-import io.smallrye.openapi.runtime.scanner.SchemaRegistry;
 import io.smallrye.openapi.runtime.scanner.spi.AnnotationScannerContext;
 
 public class DevConsoleProcessor {
 
     @BuildStep(onlyIf = IsDevelopment.class)
-    public DevConsoleTemplateInfoBuildItem collectWorkflowInfo(CombinedIndexBuildItem index) throws Exception {
-
-        return new DevConsoleTemplateInfoBuildItem("workflowFunctionFlowInfos", getInfo(index));
-    }
-
-    @BuildStep(onlyIf = IsDevelopment.class)
     CardPageBuildItem create(CombinedIndexBuildItem index) throws Exception {
         CardPageBuildItem cardPageBuildItem = new CardPageBuildItem();
-
+        workaroundMultiModuleDevMode(cardPageBuildItem);
         List<WorkflowFunctionFlowInfo> info = getInfo(index);
 
         cardPageBuildItem.addPage(Page.webComponentPageBuilder()
@@ -69,7 +62,6 @@ public class DevConsoleProcessor {
 
         ExampleGenerator generator = new ExampleGenerator();
         AnnotationScannerContext ctx = AutomatikoFunctionFlowProcessor.buildAnnotationScannerContext(index.getIndex());
-        SchemaRegistry.newInstance(ctx);
 
         for (AnnotationInstance f : functions) {
             if (f.target().kind().equals(Kind.METHOD)) {
@@ -192,8 +184,22 @@ public class DevConsoleProcessor {
                         curlStructured.toString()));
             }
         }
-        SchemaRegistry.remove();
 
         return infos;
+    }
+
+    private void workaroundMultiModuleDevMode(CardPageBuildItem cardPageBuildItem) {
+        Class<?> c = CardPageBuildItem.class;
+
+        while (c.getSuperclass() != null) {
+            try {
+                c = c.getSuperclass();
+                Field f = c.getDeclaredField("extensionIdentifier");
+                f.setAccessible(true);
+                f.set(cardPageBuildItem, "io.automatiko.quarkus.automatiko-function-flow");
+            } catch (Exception e) {
+
+            }
+        }
     }
 }

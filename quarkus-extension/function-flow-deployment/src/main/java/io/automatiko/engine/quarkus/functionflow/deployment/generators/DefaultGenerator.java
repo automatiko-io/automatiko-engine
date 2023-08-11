@@ -28,7 +28,6 @@ import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.pkg.builditem.BuildSystemTargetBuildItem;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.smallrye.openapi.runtime.io.schema.SchemaFactory;
-import io.smallrye.openapi.runtime.scanner.SchemaRegistry;
 import io.smallrye.openapi.runtime.scanner.spi.AnnotationScannerContext;
 
 public class DefaultGenerator implements Generator {
@@ -43,7 +42,6 @@ public class DefaultGenerator implements Generator {
 
         ExampleGenerator generator = new ExampleGenerator();
         AnnotationScannerContext ctx = AutomatikoFunctionFlowProcessor.buildAnnotationScannerContext(index.getIndex());
-        SchemaRegistry.newInstance(ctx);
 
         StringBuilder descriptorFileContent = new StringBuilder();
 
@@ -122,7 +120,6 @@ public class DefaultGenerator implements Generator {
         LOGGER.info("Complete deployment file is located at {}", filePath.toAbsolutePath());
         LOGGER.info("************************************************************");
 
-        SchemaRegistry.remove();
     }
 
     private String sanitizeIdentifier(String name) {

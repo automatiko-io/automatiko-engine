@@ -33,7 +33,6 @@ import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.pkg.builditem.BuildSystemTargetBuildItem;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.smallrye.openapi.runtime.io.schema.SchemaFactory;
-import io.smallrye.openapi.runtime.scanner.SchemaRegistry;
 import io.smallrye.openapi.runtime.scanner.spi.AnnotationScannerContext;
 
 public class GcpPubSubGenerator implements Generator {
@@ -48,7 +47,6 @@ public class GcpPubSubGenerator implements Generator {
 
         ExampleGenerator generator = new ExampleGenerator();
         AnnotationScannerContext ctx = AutomatikoFunctionFlowProcessor.buildAnnotationScannerContext(index.getIndex());
-        SchemaRegistry.newInstance(ctx);
 
         List<String> createCommands = new ArrayList<>();
         List<String> deleteCommands = new ArrayList<>();
@@ -158,6 +156,5 @@ public class GcpPubSubGenerator implements Generator {
         LOGGER.info("Complete undeployment file is located at {}", filePath.toAbsolutePath());
         LOGGER.info("************************************************************");
 
-        SchemaRegistry.remove();
     }
 }
