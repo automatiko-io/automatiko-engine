@@ -2,6 +2,7 @@ package io.automatiko.addons.usertasks.index.mongo;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +60,9 @@ public class MongoDBUserTaskIndexResource implements UserTaskIndexResource {
             String priority, int page, int size, String sortBy, boolean sortAsc, String user, List<String> groups) {
         Collection<UserTaskInfo> result = new ArrayList<>();
         IdentityProvider identityProvider = identitySupplier.buildIdentityProvider(user, groups);
+        if (identityProvider.getName() == null) {
+            return Collections.emptyList();
+        }
         try {
             MongoCollection<UserTaskInfo> usertasks = collection();
             Bson filter;

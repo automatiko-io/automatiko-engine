@@ -51,6 +51,10 @@
           <groupId>de.javakaffee</groupId>
           <artifactId>kryo-serializers</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>com.esotericsoftware</groupId>
+          <artifactId>kryo</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
   </dependencies>

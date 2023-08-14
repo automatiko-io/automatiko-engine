@@ -492,6 +492,7 @@ IMPORTANT: User task index is only supported with file system, db and mongodb pe
 
 File system persistence utilizes https://github.com/npgall/cqengine[CQEngine] for efficient indexing and searching. This allows to collected and efficiently search big volumes of tasks.
 
+
 ==== Custom query builder
 
 Custom query builder in file system index addon requires two things to be done:

@@ -46,6 +46,7 @@ import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Indexer;
 import org.jboss.jandex.MethodInfo;
+import org.jboss.jandex.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,6 +87,7 @@ import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.builditem.LiveReloadBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyIgnoreWarningBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
@@ -223,7 +225,8 @@ public class AutomatikoQuarkusProcessor {
     @BuildStep
     public void reflectiveClassesRegistrationStep(ApplicationArchivesBuildItem archives,
             BuildProducer<ReflectiveHierarchyIgnoreWarningBuildItem> reflectiveHierarchy,
-            BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
+            BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
+            BuildProducer<ReflectiveHierarchyBuildItem> reflectiveClassHierarchy) {
 
         reflectiveClass.produce(ReflectiveClassBuildItem.builder("io.automatiko.engine.api.event.AbstractDataEvent").fields()
                 .methods().build());
@@ -350,7 +353,7 @@ public class AutomatikoQuarkusProcessor {
 
         try {
             Enumeration<URL> reflectionConfigs = Thread.currentThread().getContextClassLoader()
-                    .getResources("automatiko.reflection.classes");
+                    .getResources("/META-INF/automatiko.reflection.classes");
 
             while (reflectionConfigs.hasMoreElements()) {
                 URL url = (URL) reflectionConfigs.nextElement();
@@ -358,8 +361,32 @@ public class AutomatikoQuarkusProcessor {
                 try (InputStream in = url.openStream(); Scanner scanner = new Scanner(in);) {
 
                     while (scanner.hasNextLine()) {
+                        String className = scanner.nextLine();
                         reflectiveClass.produce(
-                                ReflectiveClassBuildItem.builder(scanner.nextLine()).build());
+                                ReflectiveClassBuildItem.builder(className).constructors().methods().fields().build());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Unexpected error while reading reflection config files", e);
+        }
+
+        try {
+            Enumeration<URL> reflectionConfigs = Thread.currentThread().getContextClassLoader()
+                    .getResources("/META-INF/automatiko.reflection.interfaces");
+
+            while (reflectionConfigs.hasMoreElements()) {
+                URL url = (URL) reflectionConfigs.nextElement();
+
+                try (InputStream in = url.openStream(); Scanner scanner = new Scanner(in);) {
+
+                    while (scanner.hasNextLine()) {
+                        String className = scanner.nextLine();
+
+                        reflectiveClassHierarchy.produce(new ReflectiveHierarchyBuildItem.Builder()
+                                .type(Type.create(DotName.createSimple(className), Type.Kind.CLASS))
+                                .source(getClass().getSimpleName() + ">" + className)
+                                .build());
                     }
                 }
             }

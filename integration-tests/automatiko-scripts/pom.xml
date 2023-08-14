@@ -24,11 +24,6 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <dependency>
-        <groupId>org.xerial</groupId>
-        <artifactId>sqlite-jdbc</artifactId>
-        <version>3.42.0.0</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -208,7 +203,6 @@
       </build>
       <properties>
         <quarkus.package.type>native</quarkus.package.type>
-        <quarkus.native.additional-build-args>--initialize-at-run-time=com.googlecode.cqengine.persistence.support.serialization.KryoSerializer\,com.esotericsoftware.kryo.util.ObjectMap</quarkus.native.additional-build-args>
         <quarkus.native.container-build>true</quarkus.native.container-build>
         <quarkus.container-image.build>true</quarkus.container-image.build>
         <quarkus.container-image.insecure>true</quarkus.container-image.insecure>

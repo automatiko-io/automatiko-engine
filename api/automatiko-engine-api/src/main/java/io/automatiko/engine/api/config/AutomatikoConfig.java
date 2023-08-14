@@ -64,4 +64,8 @@ public class AutomatikoConfig {
     public NotificationsConfig notifications() {
         return new NotificationsConfig();
     }
+
+    public IndexConfig index() {
+        return new IndexConfig();
+    }
 }

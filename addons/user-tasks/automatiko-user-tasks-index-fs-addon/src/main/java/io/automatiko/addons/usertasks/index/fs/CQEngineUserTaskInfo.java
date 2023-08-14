@@ -13,7 +13,7 @@ import io.automatiko.addon.usertasks.index.UserTaskInfo;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-@PersistenceConfig(serializer = KryoSerializer.class)
+@PersistenceConfig(serializer = JacksonSerializer.class)
 public class CQEngineUserTaskInfo extends UserTaskInfo {
 
     public static final SimpleAttribute<CQEngineUserTaskInfo, String> TASK_ID = new SimpleAttribute<>("id") {
