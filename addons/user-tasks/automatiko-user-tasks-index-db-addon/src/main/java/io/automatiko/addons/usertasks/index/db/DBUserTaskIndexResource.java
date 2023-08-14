@@ -1,6 +1,7 @@
 package io.automatiko.addons.usertasks.index.db;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,9 @@ public class DBUserTaskIndexResource implements UserTaskIndexResource {
             String priority, int page, int size, String sortBy, boolean sortAsc, String user, List<String> groups) {
 
         IdentityProvider identityProvider = identitySupplier.buildIdentityProvider(user, groups);
+        if (identityProvider.getName() == null) {
+            return Collections.emptyList();
+        }
         try {
             Sort sort = null;
             if (sortBy != null) {

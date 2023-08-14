@@ -7,6 +7,7 @@ import io.automatiko.engine.api.config.AuditConfig;
 import io.automatiko.engine.api.config.AutomatikoConfig;
 import io.automatiko.engine.api.config.ErrorRecoveryConfig;
 import io.automatiko.engine.api.config.FilesConfig;
+import io.automatiko.engine.api.config.IndexConfig;
 import io.automatiko.engine.api.config.JobsConfig;
 import io.automatiko.engine.api.config.NotificationsConfig;
 import io.automatiko.engine.api.config.PersistenceConfig;
@@ -105,6 +106,12 @@ public class AutomatikoRuntimeConfig extends AutomatikoConfig {
     @ConfigItem
     public NotificationRuntimeConfig notifications;
 
+    /**
+     * Configures index support
+     */
+    @ConfigItem
+    public IndexRuntimeConfig index;
+
     @Override
     public Optional<String> serviceUrl() {
         return serviceUrl;
@@ -174,4 +181,10 @@ public class AutomatikoRuntimeConfig extends AutomatikoConfig {
     public NotificationsConfig notifications() {
         return notifications;
     }
+
+    @Override
+    public IndexConfig index() {
+        return index;
+    }
+
 }
