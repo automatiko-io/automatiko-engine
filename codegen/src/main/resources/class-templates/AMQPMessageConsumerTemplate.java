@@ -45,7 +45,7 @@ public class $Type$MessageConsumer {
     public void configure() {
 
     }
-    
+    @io.smallrye.reactive.messaging.annotations.Blocking    
 	public CompletionStage<Void> consume(Message<String> msg) {
 	    metrics.messageReceived(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
 	    final String trigger = "$Trigger$";

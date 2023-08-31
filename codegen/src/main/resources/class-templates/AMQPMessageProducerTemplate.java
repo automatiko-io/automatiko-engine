@@ -53,12 +53,12 @@ public class MessageProducer {
     public void configure() {
 		
     }
-    
+        
 	public void produce(ProcessInstance pi, NodeInstance nodeInstance, $Type$ eventData) {
 	    
         CompletableFuture<Boolean> done = new CompletableFuture<>();
         Supplier<CompletionStage<Void>> ack = () -> {
-            LOGGER.debug("Message {} was successfully publishing by connector {}", MESSAGE, CONNECTOR);
+            LOGGER.info("Message {} was successfully publishing by connector {}", MESSAGE, CONNECTOR);
             done.complete(true);
             metrics.messageProduced(CONNECTOR, MESSAGE, pi.getProcess());
             Supplier<AuditEntry> entry = () -> BaseAuditEntry.messaging(pi, CONNECTOR, MESSAGE, eventData).add("message",

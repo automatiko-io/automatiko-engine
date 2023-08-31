@@ -80,6 +80,26 @@ public class StartOnMessageNodeBuilder extends AbstractNodeBuilder {
     }
 
     /**
+     * Optional acknowledgment mode of messages.
+     * 
+     * Supported values:
+     * 
+     * <ul>
+     * <li>none - no ack at all</li>
+     * <li>manual - manual done on message level (default)</li>
+     * <li>post - after message consumer is done with processing</li>
+     * <li>pre - before message consumer starts processing</li>
+     * </ul>
+     * 
+     * @param mode ack mode
+     * @return the builder
+     */
+    public StartOnMessageNodeBuilder ackMode(String mode) {
+        node.setMetaData("ack-mode", mode);
+        return this;
+    }
+
+    /**
      * Expression to be used to extract correlation key to be used to look up workflow instances for the message
      * 
      * @param expression correlation key expression

@@ -198,8 +198,34 @@ public class CDIDependencyInjectionAnnotator implements DependencyInjectionAnnot
     }
 
     @Override
-    public <T extends NodeWithAnnotations<?>> T withBlocking(T node) {
-        node.addAnnotation("io.smallrye.common.annotation.Blocking");
+    public <T extends NodeWithAnnotations<?>> T withManualMessageAckMode(T node) {
+        node.addAnnotation(new SingleMemberAnnotationExpr(
+                new Name("org.eclipse.microprofile.reactive.messaging.Acknowledgment"),
+                new NameExpr("org.eclipse.microprofile.reactive.messaging.Acknowledgment.Strategy.MANUAL")));
+        return node;
+    }
+
+    @Override
+    public <T extends NodeWithAnnotations<?>> T withPreMessageAckMode(T node) {
+        node.addAnnotation(new SingleMemberAnnotationExpr(
+                new Name("org.eclipse.microprofile.reactive.messaging.Acknowledgment"),
+                new NameExpr("org.eclipse.microprofile.reactive.messaging.Acknowledgment.Strategy.PRE_PROCESSING")));
+        return node;
+    }
+
+    @Override
+    public <T extends NodeWithAnnotations<?>> T withPostMessageAckMode(T node) {
+        node.addAnnotation(new SingleMemberAnnotationExpr(
+                new Name("org.eclipse.microprofile.reactive.messaging.Acknowledgment"),
+                new NameExpr("org.eclipse.microprofile.reactive.messaging.Acknowledgment.Strategy.POST_PROCESSING")));
+        return node;
+    }
+
+    @Override
+    public <T extends NodeWithAnnotations<?>> T withNoneMessageAckMode(T node) {
+        node.addAnnotation(new SingleMemberAnnotationExpr(
+                new Name("org.eclipse.microprofile.reactive.messaging.Acknowledgment"),
+                new NameExpr("org.eclipse.microprofile.reactive.messaging.Acknowledgment.Strategy.NONE")));
         return node;
     }
 }

@@ -268,6 +268,16 @@ be given the event via the message event defined in the workflow.
 NOTE: There is additional correlation used in case of Apache Kafka used as
 message broker - that is the `key` of the kafka record.
 
+== Acknowledgement
+
+Acknowledgement can be configured on message similar to how correlation is defined that is via custom attributes.
+Acknowledgement is defined via custom property named *ack-mode* and can have following values:
+
+- post - the acknowledgement of the incoming message is executed once the produced message is acknowledged.
+- pre - the acknowledgement of the incoming message is executed before the message is processed by the method.
+- manual - the acknowledgement is done by the user.
+- none - No acknowledgment is performed, neither manually or automatically.
+
 == Event payload converters
 
 Messages defined in workflow must have data type configured but sometimes
@@ -342,3 +352,23 @@ Headers can be set as
 - reference to a workflow variable e.g. `myvariable`
 - reference to a function e.g. `buildFileName()` or `buildFileName(id)` where `id` is workflow 
 instance id
+
+== RabbitMQ connector
+
+RabbitMQ integration is provided by `amqp` connector but it requires special setup of the RabbitMQ broker and additional properties.
+
+RabbitMQ broker must be configured with enabled amqp 1.0 plugin - `rabbitmq_amqp1_0`. Details about this plugin can be found https://github.com/rabbitmq/rabbitmq-server/blob/main/deps/rabbitmq_amqp1_0/README.md[here]
+
+In addition, incoming channels must have following property defined:
+
+[source, plain]
+----
+mp.messaging.incoming.{message-name}.durable=false
+----
+
+Outgoing channels must have following properties
+----
+mp.messaging.outgoing.{message-name}.use-anonymous-sender=false
+----
+
+A complete sample project can be found in https://github.com/automatiko-io/automatiko-engine/tree/main/integration-tests/automatiko-rabbitmq[Automatiko integration tests]

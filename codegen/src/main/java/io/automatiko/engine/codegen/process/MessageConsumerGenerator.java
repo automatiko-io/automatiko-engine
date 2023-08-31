@@ -357,13 +357,21 @@ public class MessageConsumerGenerator {
 
             template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("consume"))
                     .forEach(md -> {
-                        if (persistence) {
-                            annotator.withBlocking(md);
-                        }
+
                         annotator.withIncomingMessage(md, sanitizedName);
 
                         if (context.getBuildContext().hasClassAvailable("org.eclipse.microprofile.opentracing.Traced")) {
                             md.addAnnotation("org.eclipse.microprofile.opentracing.Traced");
+                        }
+                        String ackMode = (String) trigger.getContext("ack-mode");
+                        if ("NONE".equalsIgnoreCase(ackMode)) {
+                            annotator.withNoneMessageAckMode(md);
+                        } else if ("MANUAL".equalsIgnoreCase(ackMode)) {
+                            annotator.withManualMessageAckMode(md);
+                        } else if ("PRE".equalsIgnoreCase(ackMode)) {
+                            annotator.withPreMessageAckMode(md);
+                        } else if ("POST".equalsIgnoreCase(ackMode)) {
+                            annotator.withPostMessageAckMode(md);
                         }
                     });
         } else {

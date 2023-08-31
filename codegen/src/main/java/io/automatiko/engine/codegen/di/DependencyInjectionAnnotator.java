@@ -257,13 +257,11 @@ public interface DependencyInjectionAnnotator {
      */
     <T extends NodeWithAnnotations<?>> T withCloudEventMapping(T node, String string, String filter);
 
-    /**
-     * Annotates given node with blocking annotation
-     * 
-     * @param <T>
-     * @param node node to be annotated
-     * @return returns annotated node
-     */
-    <T extends NodeWithAnnotations<?>> T withBlocking(T template);
+    <T extends NodeWithAnnotations<?>> T withManualMessageAckMode(T node);
 
+    <T extends NodeWithAnnotations<?>> T withPreMessageAckMode(T node);
+
+    <T extends NodeWithAnnotations<?>> T withPostMessageAckMode(T node);
+
+    <T extends NodeWithAnnotations<?>> T withNoneMessageAckMode(T node);
 }
