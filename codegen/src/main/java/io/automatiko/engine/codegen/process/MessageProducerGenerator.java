@@ -10,6 +10,7 @@ import static io.automatiko.engine.codegen.CodeGenConstants.JMS_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.OUTGOING_PROP_PREFIX;
+import static io.automatiko.engine.codegen.CodeGenConstants.PULSAR_CONNECTOR;
 import static io.automatiko.engine.codegen.CodegenUtils.interpolateEventTypes;
 import static io.automatiko.engine.codegen.CodegenUtils.interpolateTypes;
 
@@ -212,6 +213,26 @@ public class MessageProducerGenerator {
                     + context.getApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".method")
                             .orElse("POST")
                     + "'");
+        } else if (connector.equals(PULSAR_CONNECTOR)) {
+
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".merge", "true");
+
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".topic",
+                    (String) trigger.getContext("topic", trigger.getName()));
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".schema",
+                    "STRING");
+            context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents",
+                    isServerlessProcess() ? "true" : "false");
+            context.addInstruction(
+                    "Properties for Apache Pulsar based message event '" + trigger.getDescription() + "'");
+            context.addInstruction(
+                    "\t'" + OUTGOING_PROP_PREFIX + sanitizedName
+                            + ".topic' should be used to configure Kafka topic defaults to '"
+                            + trigger.getContext("topic", trigger.getName()) + "'");
+            context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
+                    + ".serviceUrl' should be used to configure Pulsar host that defaults to pulsar://localhost:6650");
+            context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
+                    + ".schema' should be used to configure schema that defaults to STRING");
         }
     }
 
@@ -231,6 +252,8 @@ public class MessageProducerGenerator {
             return "/class-templates/AMQPMessageProducerTemplate.java";
         } else if (connector.equals(HTTP_CONNECTOR)) {
             return "/class-templates/HTTPMessageProducerTemplate.java";
+        } else if (connector.equals(PULSAR_CONNECTOR)) {
+            return "/class-templates/PulsarMessageProducerTemplate.java";
         } else {
             return "/class-templates/MessageProducerTemplate.java";
         }
@@ -551,7 +574,7 @@ public class MessageProducerGenerator {
                     md.setBody(body);
                 });
 
-        // used by Kafka to get key name based on expression
+        // used by Kafka/Pulsar to get key name based on expression
         String keyExpression = (String) trigger.getContext("keyExpression");
         if (keyExpression != null) {
             template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("key"))
