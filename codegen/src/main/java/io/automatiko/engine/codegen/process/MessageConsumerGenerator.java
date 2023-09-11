@@ -10,6 +10,7 @@ import static io.automatiko.engine.codegen.CodeGenConstants.JMS_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.OPERATOR_CONNECTOR;
+import static io.automatiko.engine.codegen.CodeGenConstants.PULSAR_CONNECTOR;
 import static io.automatiko.engine.codegen.CodegenUtils.interpolateTypes;
 import static io.automatiko.engine.codegen.CodegenUtils.isApplicationField;
 import static io.automatiko.engine.codegen.CodegenUtils.isProcessField;
@@ -249,6 +250,27 @@ public class MessageConsumerGenerator {
                     + context.getApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".buffer-size")
                             .orElse("10")
                     + "'");
+        } else if (connector.equals(PULSAR_CONNECTOR)) {
+
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".topic",
+                    (String) trigger.getContext("topic", trigger.getName()));
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".schema", "STRING");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".broadcast", "true");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".failure-strategy", "nack");
+            context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents",
+                    isServerlessProcess() ? "true" : "false");
+
+            context.addInstruction(
+                    "Properties for Apache Pulsar based message event '" + trigger.getDescription() + "'");
+            context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                    + ".serviceUrl' should be used to configure server name, defaults to '"
+                    + context.getApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".serviceUrl")
+                            .orElse("pulsar://localhost:6650")
+                    + "'");
+            context.addInstruction(
+                    "\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                            + ".topic' should be used to configure Apache Pulsar topic defaults to '"
+                            + trigger.getContext("topic", trigger.getName()) + "'");
         }
     }
 
@@ -267,6 +289,8 @@ public class MessageConsumerGenerator {
             return "/class-templates/AMQPMessageConsumerTemplate.java";
         } else if (connector.equals(HTTP_CONNECTOR)) {
             return "/class-templates/HTTPMessageConsumerTemplate.java";
+        } else if (connector.equals(PULSAR_CONNECTOR)) {
+            return "/class-templates/PulsarMessageConsumerTemplate.java";
         } else {
             return "/class-templates/MessageConsumerTemplate.java";
         }

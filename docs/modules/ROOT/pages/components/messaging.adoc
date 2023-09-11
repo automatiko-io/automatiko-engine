@@ -44,12 +44,14 @@ to various 3rd party systems
 |JMS|Messaging and Batch|Allows to use JMS as traditional messaging middleware as part of workflows
 |AMQP|Messaging and Batch|Similar to JMS but more powerful in terms of messaging capabilities
 |HTTP|Messaging and Orchestration|HTTP based messaging that allows to use simple message posting and receiving
+|Apache Pulsar|Event Streams|Preconfigured connector for EventStream use case
+to take advantage of Pulsar messages as the format of the events.
 
 |===
 
 IMPORTANT: In case there is more than one connector defined in the service
 each message definition needs to provide `connector` custom attribute to
-indicate which connector should be used. Allowed values `kafka`, `mqtt`, `camel`, `amqp`, `jms`, `http`
+indicate which connector should be used. Allowed values `kafka`, `mqtt`, `camel`, `amqp`, `jms`, `http`, `pulsar`
 
 == Configuration of the connector
 
@@ -225,8 +227,8 @@ image::messaging-publishing-attr.png[]
 message should be sent to - if not defined name of the message is used - applies to MQTT only
 - *addressExpression* - instructs what is the expected address in the message broker this
 message should be sent to - if not defined name of the message is used - applies to AMQP only
-- *keyExpression* - instructs what is the expected key for a Kafka record being sent - 
-if not defined busienss key is used which can be null and by that no key is set - applies to Apache Kafka only
+- *keyExpression* - instructs what is the expected key for a Kafka/Pulsar message being sent - 
+if not defined business key is used which can be null and by that no key is set - applies to Apache Kafka and Apache Pulsar only
 - *connector* - in case there are multiple connectors used it must be given
  explicitly for every message. Note it is not required if there is only one
  connector - e.g. MQTT or Apache Kafka.

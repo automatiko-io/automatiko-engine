@@ -25,6 +25,8 @@ import static io.automatiko.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.MQTT_CONNECTOR_CLASS;
 import static io.automatiko.engine.codegen.CodeGenConstants.OPERATOR_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.OPERATOR_CONNECTOR_CLASS;
+import static io.automatiko.engine.codegen.CodeGenConstants.PULSAR_CONNECTOR;
+import static io.automatiko.engine.codegen.CodeGenConstants.PULSAR_CONNECTOR_CLASS;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -180,6 +182,8 @@ public class CodegenUtils {
             return JMS_CONNECTOR;
         } else if (context.getBuildContext().hasClassAvailable(HTTP_CONNECTOR_CLASS)) {
             return HTTP_CONNECTOR;
+        } else if (context.getBuildContext().hasClassAvailable(PULSAR_CONNECTOR_CLASS)) {
+            return PULSAR_CONNECTOR;
         }
 
         return "unknown";
@@ -198,6 +202,8 @@ public class CodegenUtils {
             return JMS_CONNECTOR;
         } else if (connector.toLowerCase().endsWith("http")) {
             return HTTP_CONNECTOR;
+        } else if (connector.toLowerCase().endsWith("pulsar")) {
+            return PULSAR_CONNECTOR;
         }
 
         return "unknown";

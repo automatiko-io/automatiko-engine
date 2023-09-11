@@ -45,6 +45,7 @@
     <module>automatiko-amqp</module>
     <module>automatiko-rabbitmq</module>
     <module>automatiko-http</module>
+    <module>automatiko-pulsar</module>
   </modules>
 
   <build>
