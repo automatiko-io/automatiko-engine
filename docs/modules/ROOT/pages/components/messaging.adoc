@@ -46,12 +46,13 @@ to various 3rd party systems
 |HTTP|Messaging and Orchestration|HTTP based messaging that allows to use simple message posting and receiving
 |Apache Pulsar|Event Streams|Preconfigured connector for EventStream use case
 to take advantage of Pulsar messages as the format of the events.
+|RabbitMQ|Messaging and Batch|Similar to AMQP but with additional messaging capabilities
 
 |===
 
 IMPORTANT: In case there is more than one connector defined in the service
 each message definition needs to provide `connector` custom attribute to
-indicate which connector should be used. Allowed values `kafka`, `mqtt`, `camel`, `amqp`, `jms`, `http`, `pulsar`
+indicate which connector should be used. Allowed values `kafka`, `mqtt`, `camel`, `amqp`, `jms`, `http`, `pulsar`, `rabbitmq`
 
 == Configuration of the connector
 
@@ -229,6 +230,8 @@ message should be sent to - if not defined name of the message is used - applies
 message should be sent to - if not defined name of the message is used - applies to AMQP only
 - *keyExpression* - instructs what is the expected key for a Kafka/Pulsar message being sent - 
 if not defined business key is used which can be null and by that no key is set - applies to Apache Kafka and Apache Pulsar only
+- *routingKeyExpression* - instructs what is the expected routing key in the message broker this
+message should be sent to - if not defined name of the message is used - applies to RabbitMQ only
 - *connector* - in case there are multiple connectors used it must be given
  explicitly for every message. Note it is not required if there is only one
  connector - e.g. MQTT or Apache Kafka.
@@ -340,7 +343,7 @@ instance id
 
 == HTTP connector
 
-HTTP connector requies currently explicitly connector to be set as custom attributes of message.
+HTTP connector requires currently explicitly connector to be set as custom attributes of message.
 
  
 Automatiko allows to specify any number of headers via custom attributes of the message.
@@ -356,6 +359,11 @@ Headers can be set as
 instance id
 
 == RabbitMQ connector
+
+
+RabbitMQ is provided as dedicated connector that provides all capabilities of RabitMQ.
+
+=== Using AMQP for RabbitMQ
 
 RabbitMQ integration is provided by `amqp` connector but it requires special setup of the RabbitMQ broker and additional properties.
 

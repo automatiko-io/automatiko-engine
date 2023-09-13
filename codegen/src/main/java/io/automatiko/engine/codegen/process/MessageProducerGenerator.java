@@ -11,6 +11,7 @@ import static io.automatiko.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.OUTGOING_PROP_PREFIX;
 import static io.automatiko.engine.codegen.CodeGenConstants.PULSAR_CONNECTOR;
+import static io.automatiko.engine.codegen.CodeGenConstants.RABBITMQ_CONNECTOR;
 import static io.automatiko.engine.codegen.CodegenUtils.interpolateEventTypes;
 import static io.automatiko.engine.codegen.CodegenUtils.interpolateTypes;
 
@@ -233,6 +234,31 @@ public class MessageProducerGenerator {
                     + ".serviceUrl' should be used to configure Pulsar host that defaults to pulsar://localhost:6650");
             context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
                     + ".schema' should be used to configure schema that defaults to STRING");
+        } else if (connector.equals(RABBITMQ_CONNECTOR)) {
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".merge", "true");
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".queue.name", sanitizedName.toUpperCase());
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".exchange.name", "\\\"\\\"");
+            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".default-routing-key",
+                    "${" + OUTGOING_PROP_PREFIX + sanitizedName + ".queue.name" + "}");
+            context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents",
+                    isServerlessProcess() ? "true" : "false");
+            context.addInstruction(
+                    "Properties for RabbitMQ based message event '" + trigger.getDescription() + "'");
+            context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
+                    + ".queue.name' should be used to configure queue name, defaults to "
+                    + context.getApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".queue.name")
+                            .orElse(sanitizedName.toUpperCase())
+                    + "'");
+            context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
+                    + ".exchange.name' should be used to configure exchange name, defaults to '"
+                    + context.getApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".exchange.name")
+                            .orElse("\"\"")
+                    + "'");
+            context.addInstruction("\t'" + OUTGOING_PROP_PREFIX + sanitizedName
+                    + ".default-routing-key' should be used to configure exchange name, defaults to '"
+                    + context.getApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".default-routing-key")
+                            .orElse("${" + OUTGOING_PROP_PREFIX + sanitizedName + ".queue.name" + "}")
+                    + "'");
         }
     }
 
@@ -254,6 +280,8 @@ public class MessageProducerGenerator {
             return "/class-templates/HTTPMessageProducerTemplate.java";
         } else if (connector.equals(PULSAR_CONNECTOR)) {
             return "/class-templates/PulsarMessageProducerTemplate.java";
+        } else if (connector.equals(RABBITMQ_CONNECTOR)) {
+            return "/class-templates/RabbitMQMessageProducerTemplate.java";
         } else {
             return "/class-templates/MessageProducerTemplate.java";
         }
@@ -613,6 +641,49 @@ public class MessageProducerGenerator {
                             }
                         }
                         body.addStatement(new ReturnStmt(new NameExpr(keyExpression)));
+                        md.setBody(body);
+                    });
+        }
+
+        // used by RabbitMQ to get routing key name based on expression
+        String routingKeyExpression = (String) trigger.getContext("routingKeyExpression");
+        if (routingKeyExpression != null) {
+            template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("routingKey"))
+                    .forEach(md -> {
+                        BlockStmt body = new BlockStmt();
+
+                        ClassOrInterfaceType stringType = new ClassOrInterfaceType(null, String.class.getCanonicalName());
+
+                        if (addressExpression.contains("id")) {
+                            VariableDeclarationExpr idField = new VariableDeclarationExpr(stringType, "id");
+                            body.addStatement(new AssignExpr(idField,
+                                    new MethodCallExpr(new NameExpr("pi"), "getId"), AssignExpr.Operator.ASSIGN));
+                        }
+
+                        if (addressExpression.contains("businessKey")) {
+                            VariableDeclarationExpr businessKeyField = new VariableDeclarationExpr(stringType, "businessKey");
+                            body.addStatement(new AssignExpr(businessKeyField,
+                                    new MethodCallExpr(new NameExpr("pi"), "getCorrelationKey"), AssignExpr.Operator.ASSIGN));
+                        }
+                        VariableScope variableScope = (VariableScope) ((io.automatiko.engine.workflow.process.core.WorkflowProcess) process)
+                                .getDefaultContext(VariableScope.VARIABLE_SCOPE);
+
+                        for (Variable var : variableScope.getVariables()) {
+
+                            if (addressExpression.contains(var.getSanitizedName())) {
+                                ClassOrInterfaceType varType = new ClassOrInterfaceType(null, var.getType().getStringType());
+                                VariableDeclarationExpr v = new VariableDeclarationExpr(
+                                        varType,
+                                        var.getSanitizedName());
+                                body.addStatement(new AssignExpr(v,
+                                        new CastExpr(varType,
+                                                new MethodCallExpr(new MethodCallExpr(new NameExpr("pi"), "getVariables"),
+                                                        "get")
+                                                                .addArgument(new StringLiteralExpr(var.getName()))),
+                                        AssignExpr.Operator.ASSIGN));
+                            }
+                        }
+                        body.addStatement(new ReturnStmt(new NameExpr(routingKeyExpression)));
                         md.setBody(body);
                     });
         }

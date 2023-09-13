@@ -69,6 +69,8 @@ public class StartOnMessageNodeBuilder extends AbstractNodeBuilder {
      * <li>camel</li>
      * <li>http</li>
      * <li>jms</li>
+     * <li>pulsar</li>
+     * <li>rabbitmq</li>
      * </ul>
      * 
      * @param connector one of the supported connectors

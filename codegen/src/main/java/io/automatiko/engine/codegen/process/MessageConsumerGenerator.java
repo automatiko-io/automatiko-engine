@@ -11,6 +11,7 @@ import static io.automatiko.engine.codegen.CodeGenConstants.KAFKA_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.MQTT_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.OPERATOR_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.PULSAR_CONNECTOR;
+import static io.automatiko.engine.codegen.CodeGenConstants.RABBITMQ_CONNECTOR;
 import static io.automatiko.engine.codegen.CodegenUtils.interpolateTypes;
 import static io.automatiko.engine.codegen.CodegenUtils.isApplicationField;
 import static io.automatiko.engine.codegen.CodegenUtils.isProcessField;
@@ -271,6 +272,33 @@ public class MessageConsumerGenerator {
                     "\t'" + INCOMING_PROP_PREFIX + sanitizedName
                             + ".topic' should be used to configure Apache Pulsar topic defaults to '"
                             + trigger.getContext("topic", trigger.getName()) + "'");
+        } else if (connector.equals(RABBITMQ_CONNECTOR)) {
+
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".queue.name", sanitizedName.toUpperCase());
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".failure-strategy", "reject");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".exchange.name", "\\\"\\\"");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".routing-keys",
+                    "${" + INCOMING_PROP_PREFIX + sanitizedName + ".queue.name" + "}");
+            context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".broadcast", "true");
+            context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents",
+                    isServerlessProcess() ? "true" : "false");
+            context.addInstruction(
+                    "Properties for RabbitMQ based message event '" + trigger.getDescription() + "'");
+            context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                    + ".queue.name' should be used to configure queue name, defaults to '"
+                    + context.getApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".queue.name")
+                            .orElse(sanitizedName.toUpperCase())
+                    + "'");
+            context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                    + ".exchange.name' should be used to configure exchange name, defaults to '"
+                    + context.getApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".exchange.name")
+                            .orElse("\"\"")
+                    + "'");
+            context.addInstruction("\t'" + INCOMING_PROP_PREFIX + sanitizedName
+                    + ".routing-keys' should be used to configure exchange name, defaults to '"
+                    + context.getApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".routing-keys")
+                            .orElse("${" + INCOMING_PROP_PREFIX + sanitizedName + ".queue.name" + "}")
+                    + "'");
         }
     }
 
@@ -291,6 +319,8 @@ public class MessageConsumerGenerator {
             return "/class-templates/HTTPMessageConsumerTemplate.java";
         } else if (connector.equals(PULSAR_CONNECTOR)) {
             return "/class-templates/PulsarMessageConsumerTemplate.java";
+        } else if (connector.equals(RABBITMQ_CONNECTOR)) {
+            return "/class-templates/RabbitMQMessageConsumerTemplate.java";
         } else {
             return "/class-templates/MessageConsumerTemplate.java";
         }

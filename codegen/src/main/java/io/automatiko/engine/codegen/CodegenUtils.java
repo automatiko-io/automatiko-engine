@@ -27,6 +27,8 @@ import static io.automatiko.engine.codegen.CodeGenConstants.OPERATOR_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.OPERATOR_CONNECTOR_CLASS;
 import static io.automatiko.engine.codegen.CodeGenConstants.PULSAR_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.PULSAR_CONNECTOR_CLASS;
+import static io.automatiko.engine.codegen.CodeGenConstants.RABBITMQ_CONNECTOR;
+import static io.automatiko.engine.codegen.CodeGenConstants.RABBITMQ_CONNECTOR_CLASS;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -184,6 +186,8 @@ public class CodegenUtils {
             return HTTP_CONNECTOR;
         } else if (context.getBuildContext().hasClassAvailable(PULSAR_CONNECTOR_CLASS)) {
             return PULSAR_CONNECTOR;
+        } else if (context.getBuildContext().hasClassAvailable(RABBITMQ_CONNECTOR_CLASS)) {
+            return RABBITMQ_CONNECTOR;
         }
 
         return "unknown";
@@ -204,6 +208,8 @@ public class CodegenUtils {
             return HTTP_CONNECTOR;
         } else if (connector.toLowerCase().endsWith("pulsar")) {
             return PULSAR_CONNECTOR;
+        } else if (connector.toLowerCase().endsWith("rabbitmq")) {
+            return RABBITMQ_CONNECTOR;
         }
 
         return "unknown";
