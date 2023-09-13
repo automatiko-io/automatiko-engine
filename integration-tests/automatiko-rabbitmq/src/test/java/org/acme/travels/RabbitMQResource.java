@@ -21,7 +21,7 @@ public class RabbitMQResource implements QuarkusTestResourceLifecycleManager {
 
     @Override
     public Map<String, String> start() {
-        container = new RabbitMQContainer(IMAGE_NAME).withPluginsEnabled("rabbitmq_amqp1_0").withExposedPorts(AMQP_PORT)
+        container = new RabbitMQContainer(IMAGE_NAME).withExposedPorts(AMQP_PORT)
                 .waitingFor(Wait.forLogMessage(".*Server startup complete.*\\n", 1))
                 .withLogConsumer(new Slf4jLogConsumer(LOGGER))
                 .withUser("guest", "guest");

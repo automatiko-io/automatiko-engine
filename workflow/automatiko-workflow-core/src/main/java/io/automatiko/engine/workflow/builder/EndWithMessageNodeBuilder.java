@@ -54,6 +54,8 @@ public class EndWithMessageNodeBuilder extends AbstractNodeBuilder {
      * <li>camel</li>
      * <li>http</li>
      * <li>jms</li>
+     * <li>pulsar</li>
+     * <li>rabbitmq</li>
      * </ul>
      * 
      * @param connector one of the supported connectors
@@ -150,6 +152,20 @@ public class EndWithMessageNodeBuilder extends AbstractNodeBuilder {
      */
     public EndWithMessageNodeBuilder amqpAddress(String expression) {
         node.setMetaData("addressExpression", expression);
+        return this;
+    }
+
+    /**
+     * NOTE: Applies to RabbitMQ connector only<br/>
+     * The routing key expression to be used while sending message. It is used when the routing key needs to be calculated and
+     * it is not
+     * a constant that comes from the name of the node
+     * 
+     * @param expression expression to be evaluated to get the topic name
+     * @return the builder
+     */
+    public EndWithMessageNodeBuilder rabbitmqRoutingKey(String expression) {
+        node.setMetaData("routingKeyExpression", expression);
         return this;
     }
 

@@ -30,6 +30,7 @@ public class CodeGenConstants {
     public static final String FUNCTION_FLOW_CONNECTOR = "function-flow";
     public static final String HTTP_CONNECTOR = "quarkus-http";
     public static final String PULSAR_CONNECTOR = "smallrye-pulsar";
+    public static final String RABBITMQ_CONNECTOR = "smallrye-rabbitmq";
 
     public static final String MONGO_PERSISTENCE = "mongodb";
     public static final String CASSANDRA_PERSISTENCE = "cassandra";
@@ -51,6 +52,7 @@ public class CodeGenConstants {
     public static final String OPERATOR_CONNECTOR_CLASS = "io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration";
     public static final String HTTP_CONNECTOR_CLASS = "io.quarkus.reactivemessaging.http.runtime.QuarkusHttpConnector";
     public static final String PULSAR_CONNECTOR_CLASS = "io.smallrye.reactive.messaging.pulsar.PulsarConnector";
+    public static final String RABBITMQ_CONNECTOR_CLASS = "io.smallrye.reactive.messaging.rabbitmq.RabbitMQConnector";
 
     public static final String MP_RESTCLIENT_PROP_URL = "/mp-rest/url";
     public static final String MP_RESTCLIENT_PROP_AUTH_TYPE = "/mp-rest/auth-type";
