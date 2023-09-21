@@ -14,6 +14,8 @@ public interface ApplicationBuildContext {
 
     List<String> classThatImplement(String fqcn);
 
+    boolean hasCapability(String capability);
+
     default boolean isValidationSupported() {
         return hasClassAvailable(CodeGenConstants.VALIDATION_CLASS);
     }
@@ -36,5 +38,9 @@ public interface ApplicationBuildContext {
 
     default boolean isDmnSupported() {
         return hasClassAvailable(CodeGenConstants.DMN_CLASS);
+    }
+
+    default boolean isTracingSupported() {
+        return hasCapability("io.quarkus.opentelemetry.tracer");
     }
 }

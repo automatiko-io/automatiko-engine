@@ -76,6 +76,7 @@ import io.quarkus.bootstrap.classloading.MemoryClassPathElement;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
 import io.quarkus.bootstrap.model.ApplicationModel;
 import io.quarkus.deployment.ApplicationArchive;
+import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.AdditionalIndexedClassesBuildItem;
@@ -128,6 +129,7 @@ public class AutomatikoQuarkusProcessor {
             LaunchModeBuildItem launchMode,
             LiveReloadBuildItem liveReload,
             CurateOutcomeBuildItem curateOutcomeBuildItem,
+            Capabilities capabilities,
             BuildProducer<GeneratedBeanBuildItem> generatedBeans,
             BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexClass,
             BuildProducer<NativeImageResourceBuildItem> resource,
@@ -180,7 +182,7 @@ public class AutomatikoQuarkusProcessor {
 
         AppPaths appPaths = new AppPaths(root.getResolvedPaths());
 
-        ApplicationGenerator appGen = createApplicationGenerator(config, appPaths, archivesIndex,
+        ApplicationGenerator appGen = createApplicationGenerator(capabilities, config, appPaths, archivesIndex,
                 curateOutcomeBuildItem.getApplicationModel(), onlyCodeAssets);
 
         Collection<GeneratedFile> generatedFiles = appGen.generate();
@@ -611,13 +613,14 @@ public class AutomatikoQuarkusProcessor {
         }
     }
 
-    private ApplicationGenerator createApplicationGenerator(AutomatikoBuildTimeConfig config, AppPaths appPaths,
+    private ApplicationGenerator createApplicationGenerator(Capabilities capabilities, AutomatikoBuildTimeConfig config,
+            AppPaths appPaths,
             CompositeIndex archivesIndex, ApplicationModel appModel, boolean onlyCodeAssets) throws IOException {
 
         boolean usePersistence = archivesIndex
                 .getClassByName(createDotName(persistenceFactoryClass)) != null;
 
-        GeneratorContext context = buildContext(config, appPaths, archivesIndex);
+        GeneratorContext context = buildContext(capabilities, config, appPaths, archivesIndex);
 
         ApplicationGenerator appGen = new ApplicationGenerator(config.packageName().orElse(DEFAULT_PACKAGE_NAME),
                 new File(appPaths.getFirstProjectPath().toFile(), "target"))
@@ -771,7 +774,8 @@ public class AutomatikoQuarkusProcessor {
         return DotName.createComponentized(lastDollarName, name, true);
     }
 
-    private GeneratorContext buildContext(AutomatikoBuildTimeConfig config, AppPaths appPaths, IndexView index) {
+    private GeneratorContext buildContext(Capabilities capabilities, AutomatikoBuildTimeConfig config, AppPaths appPaths,
+            IndexView index) {
         GeneratorContext generationContext = QuarkusGeneratorContext.ofResourcePath(appPaths.getResourceFiles()[0],
                 appPaths.getFirstClassesPath().toFile());
 
@@ -783,7 +787,7 @@ public class AutomatikoQuarkusProcessor {
                 }, className -> {
                     return index.getAllKnownImplementors(createDotName(className)).stream().map(c -> c.name().toString())
                             .collect(Collectors.toList());
-                }));
+                }, capability -> capabilities.isPresent(capability)));
 
         return AutomatikoBuildData.create(config, generationContext).getGenerationContext();
     }

@@ -319,8 +319,8 @@ public class MessageProducerGenerator {
                     md.getParameters().stream().filter(p -> p.getNameAsString().equals(EVENT_DATA_VAR))
                             .forEach(p -> p.setType(trigger.getDataType()));
 
-                    if (context.getBuildContext().hasClassAvailable("org.eclipse.microprofile.opentracing.Traced")) {
-                        md.addAnnotation("org.eclipse.microprofile.opentracing.Traced");
+                    if (context.getBuildContext().isTracingSupported()) {
+                        md.addAnnotation("io.opentelemetry.instrumentation.annotations.WithSpan");
                     }
                 });
         template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("configure"))

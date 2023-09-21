@@ -331,8 +331,7 @@ public abstract class AbstractResourceGenerator {
             //            template.findAll(FieldDeclaration.class, CodegenUtils::isIdentitySupplierField)
             //                    .forEach(fd -> annotator.withInjection(fd));
 
-            boolean tracingAvailable = context.getBuildContext()
-                    .hasClassAvailable("org.eclipse.microprofile.opentracing.Traced");
+            boolean tracingAvailable = context.getBuildContext().isTracingSupported();
 
             if (tracingAvailable) {
 
