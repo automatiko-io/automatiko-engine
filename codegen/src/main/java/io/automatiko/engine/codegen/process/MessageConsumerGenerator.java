@@ -414,8 +414,8 @@ public class MessageConsumerGenerator {
 
                         annotator.withIncomingMessage(md, sanitizedName);
 
-                        if (context.getBuildContext().hasClassAvailable("org.eclipse.microprofile.opentracing.Traced")) {
-                            md.addAnnotation("org.eclipse.microprofile.opentracing.Traced");
+                        if (context.getBuildContext().isTracingSupported()) {
+                            md.addAnnotation("io.opentelemetry.instrumentation.annotations.WithSpan");
                         }
                         String ackMode = (String) trigger.getContext("ack-mode");
                         if ("NONE".equalsIgnoreCase(ackMode)) {

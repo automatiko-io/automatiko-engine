@@ -19,6 +19,8 @@ public class CodeGenConstants {
 
     public static final String DMN_CLASS = "io.automatiko.engine.decision.dmn.DmnDecisionModel";
 
+    public static final String TRACING_CLASS = "io.quarkus.opentelemetry.runtime.tracing.cdi.WithSpanInterceptor";
+
     public static final String INCOMING_PROP_PREFIX = "mp.messaging.incoming.";
     public static final String OUTGOING_PROP_PREFIX = "mp.messaging.outgoing.";
     public static final String MQTT_CONNECTOR = "smallrye-mqtt";

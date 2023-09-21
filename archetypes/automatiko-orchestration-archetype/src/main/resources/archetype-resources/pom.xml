@@ -52,7 +52,7 @@
 
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-smallrye-opentracing</artifactId>
+      <artifactId>quarkus-opentelemetry</artifactId>
     </dependency>
     
     <!-- automatiko process management addon - optional -->

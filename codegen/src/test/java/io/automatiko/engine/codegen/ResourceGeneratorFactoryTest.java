@@ -44,7 +44,7 @@ class ResourceGeneratorFactoryTest {
     void testCreateQuarkus(@Mock GeneratorContext generatorContext) {
         when(generatorContext.getBuildContext())
                 .thenReturn(new QuarkusApplicationBuildContext(new AutomatikoBuildConfig(), p -> true,
-                        c -> Collections.emptyList()));
+                        c -> Collections.emptyList(), capability -> false));
         Optional<AbstractResourceGenerator> context = tested.create(generatorContext, process, MODEL_FQCN, PROCESS_FQCN,
                 APP_CANONICAL_NAME);
         assertThat(context.isPresent()).isTrue();
@@ -57,7 +57,7 @@ class ResourceGeneratorFactoryTest {
                 .thenReturn(Optional.of("reactive"));
         when(generatorContext.getBuildContext())
                 .thenReturn(new QuarkusApplicationBuildContext(new AutomatikoBuildConfig(), p -> true,
-                        c -> Collections.emptyList()));
+                        c -> Collections.emptyList(), capability -> false));
 
         Optional<AbstractResourceGenerator> context = tested.create(generatorContext, process, MODEL_FQCN, PROCESS_FQCN,
                 APP_CANONICAL_NAME);

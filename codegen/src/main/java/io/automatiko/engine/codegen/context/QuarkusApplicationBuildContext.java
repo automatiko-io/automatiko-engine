@@ -12,12 +12,15 @@ public class QuarkusApplicationBuildContext implements ApplicationBuildContext {
     private AutomatikoBuildConfig config;
     private Predicate<String> classAvailabilityResolver;
     private Function<String, List<String>> implementationFinder;
+    private Predicate<String> capabilityResolver;
 
     public QuarkusApplicationBuildContext(AutomatikoBuildConfig config, Predicate<String> classAvailabilityResolver,
-            Function<String, List<String>> implementationFinder) {
+            Function<String, List<String>> implementationFinder,
+            Predicate<String> capabilityResolver) {
         this.config = config;
         this.classAvailabilityResolver = classAvailabilityResolver;
         this.implementationFinder = implementationFinder;
+        this.capabilityResolver = capabilityResolver;
     }
 
     @Override
@@ -33,5 +36,10 @@ public class QuarkusApplicationBuildContext implements ApplicationBuildContext {
     @Override
     public List<String> classThatImplement(String fqcn) {
         return implementationFinder.apply(fqcn);
+    }
+
+    @Override
+    public boolean hasCapability(String capability) {
+        return capabilityResolver.test(capability);
     }
 }

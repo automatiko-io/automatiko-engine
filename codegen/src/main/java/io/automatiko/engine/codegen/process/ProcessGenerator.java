@@ -333,8 +333,7 @@ public class ProcessGenerator {
                 ClassOrInterfaceDeclaration clazz = handler.findFirst(ClassOrInterfaceDeclaration.class).get();
                 if (useInjection()) {
 
-                    boolean tracingAvailable = context.getBuildContext()
-                            .hasClassAvailable("org.eclipse.microprofile.opentracing.Traced");
+                    boolean tracingAvailable = context.getBuildContext().isTracingSupported();
 
                     if (tracingAvailable) {
 
@@ -346,7 +345,7 @@ public class ProcessGenerator {
                                 .filter(md -> md.getNameAsString().equals("executeWorkItem"))
                                 .forEach(md -> {
                                     // add Traced nnotation on method level
-                                    md.addAnnotation("org.eclipse.microprofile.opentracing.Traced");
+                                    md.addAnnotation("io.opentelemetry.instrumentation.annotations.WithSpan");
                                     // next update method body to include extra tags
                                     BlockStmt mbody = md.getBody().get();
                                     MethodCallExpr tracer = new MethodCallExpr(new NameExpr("tracer"), "addTags")
