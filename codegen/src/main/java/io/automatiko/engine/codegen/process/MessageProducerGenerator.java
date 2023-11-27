@@ -197,8 +197,8 @@ public class MessageProducerGenerator {
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".url",
                     (String) trigger.getContext("url", "http://localhost:8080/" + sanitizedName));
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".merge", "true");
-            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".serializer",
-                    "io.quarkus.reactivemessaging.http.runtime.serializers.StringSerializer");
+            //            context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".serializer",
+            //                    "io.quarkus.reactivemessaging.http.runtime.serializers.StringSerializer");
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".method", "POST");
             context.setApplicationProperty("quarkus.automatiko.messaging.as-cloudevents",
                     isServerlessProcess() ? "true" : "false");
