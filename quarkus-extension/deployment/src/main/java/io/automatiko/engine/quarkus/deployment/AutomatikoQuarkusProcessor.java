@@ -568,7 +568,8 @@ public class AutomatikoQuarkusProcessor {
                         Collections.singleton(JavaFileObject.Kind.CLASS), true);
                 for (JavaFileObject jfo : compiledClasses) {
 
-                    String clazz = jfo.getName().replaceFirst(buildDir.toString() + "/", "");
+                	
+                    String clazz = jfo.getName().replace(buildDir.toString() + File.separator, "");
                     clazz = toClassName(clazz);
                     byte[] content = IoUtils.readBytesFromInputStream(jfo.openInputStream());
                     generatedBeans.produce(bif.apply(clazz, content));
@@ -718,7 +719,7 @@ public class AutomatikoQuarkusProcessor {
         } else if (sourceName.endsWith(".class")) {
             sourceName = sourceName.substring(0, sourceName.length() - 6);
         }
-        return sourceName.replace('/', '.');
+        return sourceName.replace('/', '.').replace('\\', '.');
     }
 
     private void writeGeneratedFile(GeneratedFile f, String location) throws IOException {
