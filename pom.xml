@@ -136,7 +136,7 @@
     <version.org.junit>5.9.2</version.org.junit>
     <version.org.junit.jupiter>${version.org.junit}</version.org.junit.jupiter>
     <version.org.junit.vintage>${version.org.junit}</version.org.junit.vintage>
-    <version.ch.qos.logback>1.2.9</version.ch.qos.logback>
+    <version.ch.qos.logback>1.3.12</version.ch.qos.logback>
     <version.org.mockito>5.1.1</version.org.mockito>
     <version.org.mvel>2.4.7.Final</version.org.mvel>
     <version.org.kie-dmn>8.38.0.Final</version.org.kie-dmn>
