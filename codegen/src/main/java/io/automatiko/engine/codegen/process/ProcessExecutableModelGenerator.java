@@ -53,7 +53,7 @@ public class ProcessExecutableModelGenerator {
     }
 
     private String getCompiledClassName(Path fileNameRelative) {
-        return fileNameRelative.toString().replace("/", ".").replace(".java", "");
+        return fileNameRelative.toString().replace(".java", "").replace("/", ".");
     }
 
     public String extractedProcessId() {
