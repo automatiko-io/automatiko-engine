@@ -40,6 +40,13 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.azureservices</groupId>
+        <artifactId>quarkus-azure-services-bom</artifactId>
+        <version>${version.io.quarkiverse.azure-services}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
