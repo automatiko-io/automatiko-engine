@@ -76,7 +76,15 @@
       <groupId>io.automatiko.addons</groupId>
       <artifactId>automatiko-files-mongodb-addon</artifactId>
     </dependency>
-    -->    
+    -->   
+    
+    <!-- enable to use Azure BlobStore as files storage -->
+    <!--
+    <dependency>
+      <groupId>io.automatiko.addons</groupId>
+      <artifactId>automatiko-files-azure-blob-addon</artifactId>
+    </dependency>
+    -->   
 
     <dependency>
       <groupId>io.quarkus</groupId>

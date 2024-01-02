@@ -21,4 +21,9 @@ public class FilesConfig {
         return new MongodbFilesConfig() {
         };
     }
+
+    public AzureFilesConfig azure() {
+        return new AzureFilesConfig() {
+        };
+    }
 }

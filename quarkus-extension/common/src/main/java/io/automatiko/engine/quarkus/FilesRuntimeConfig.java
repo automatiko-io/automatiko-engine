@@ -1,5 +1,6 @@
 package io.automatiko.engine.quarkus;
 
+import io.automatiko.engine.api.config.AzureFilesConfig;
 import io.automatiko.engine.api.config.FileSystemFilesConfig;
 import io.automatiko.engine.api.config.FilesConfig;
 import io.automatiko.engine.api.config.GoogleStorageFilesConfig;
@@ -35,6 +36,12 @@ public class FilesRuntimeConfig extends FilesConfig {
     @ConfigItem
     public MongodbFilesRuntimeConfig mongodb;
 
+    /**
+     * Provides configuration of Azure BlobStore based files
+     */
+    @ConfigItem
+    public AzureFilesRuntimeConfig azure;
+
     @Override
     public FileSystemFilesConfig fs() {
         return fs;
@@ -55,4 +62,8 @@ public class FilesRuntimeConfig extends FilesConfig {
         return mongodb;
     }
 
+    @Override
+    public AzureFilesConfig azure() {
+        return azure;
+    }
 }

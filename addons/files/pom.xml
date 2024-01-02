@@ -15,5 +15,6 @@
     <module>automatiko-files-s3-addon</module>
     <module>automatiko-files-google-storage-addon</module>
     <module>automatiko-files-mongodb-addon</module>
+    <module>automatiko-files-azure-blob-addon</module>
   </modules>
 </project>
