@@ -132,8 +132,12 @@ public abstract class AutomatikoCompilationProvider implements CompilationProvid
             fileManager.setLocation(StandardLocation.CLASS_PATH, context.getClasspath());
             fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singleton(outputDirectory));
 
-            CompilerFlags compilerFlags = new CompilerFlags(COMPILER_OPTIONS, context.getCompilerOptions("java"),
-                    context.getReleaseJavaVersion(), context.getSourceJavaVersion(), context.getTargetJvmVersion());
+            CompilerFlags compilerFlags = new CompilerFlags(COMPILER_OPTIONS,
+                    context.getCompilerOptions("java"),
+                    context.getReleaseJavaVersion(),
+                    context.getSourceJavaVersion(),
+                    context.getTargetJvmVersion(),
+                    context.getAnnotationProcessors());
 
             Iterable<? extends JavaFileObject> sources = fileManager.getJavaFileObjectsFromFiles(filesToCompile);
             JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics,

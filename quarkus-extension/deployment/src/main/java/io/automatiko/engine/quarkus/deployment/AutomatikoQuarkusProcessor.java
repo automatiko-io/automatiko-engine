@@ -97,7 +97,6 @@ import io.quarkus.deployment.dev.testing.TestListenerBuildItem;
 import io.quarkus.deployment.dev.testing.TestRunListener;
 import io.quarkus.deployment.index.IndexingUtil;
 import io.quarkus.deployment.pkg.PackageConfig;
-import io.quarkus.deployment.pkg.PackageConfig.BuiltInType;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.quarkus.maven.dependency.ResolvedDependency;
 import io.quarkus.paths.PathCollection;
@@ -550,7 +549,8 @@ public class AutomatikoQuarkusProcessor {
                 sources.add(new SourceCode(fileName, new String(entry.contents())));
 
                 String location = generatedClassesDir;
-                if (launchMode == LaunchMode.DEVELOPMENT || config.type.equals(BuiltInType.MUTABLE_JAR.getValue())) {
+                if (launchMode == LaunchMode.DEVELOPMENT
+                        || config.jar().type().equals(PackageConfig.JarConfig.JarType.MUTABLE_JAR)) {
                     location = Paths.get(buildDir.toString()).toString();
 
                 }
@@ -568,7 +568,6 @@ public class AutomatikoQuarkusProcessor {
                         Collections.singleton(JavaFileObject.Kind.CLASS), true);
                 for (JavaFileObject jfo : compiledClasses) {
 
-                	
                     String clazz = jfo.getName().replace(buildDir.toString() + File.separator, "");
                     clazz = toClassName(clazz);
                     byte[] content = IoUtils.readBytesFromInputStream(jfo.openInputStream());
