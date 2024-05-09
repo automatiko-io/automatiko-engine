@@ -27,11 +27,7 @@
     <!-- required for automatiko as service -->
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy-reactive-deployment</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy-reactive-jackson-deployment</artifactId>
+      <artifactId>quarkus-rest-jackson-deployment</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
