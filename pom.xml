@@ -63,7 +63,7 @@
     <version.maven>3.8.1</version.maven>
     <version.maven.plugin>3.4</version.maven.plugin>
     <version.native2ascii.plugin>1.0-beta-1</version.native2ascii.plugin>
-    <version.plexus>1.6</version.plexus>
+    <version.plexus>2.1.1</version.plexus>
     <version.plexus.classworld>2.5.2</version.plexus.classworld>
     <version.plugin.plugin>3.6.0</version.plugin.plugin>
     <version.project.sources.plugin>0.3</version.project.sources.plugin>
