@@ -15,7 +15,7 @@
   <description>Automatiko engine test suite</description>
 
   <properties>
-    <wiremock.version>2.35.0</wiremock.version>
+    <wiremock.version>2.35.2</wiremock.version>
   </properties>
 
   <modules>
