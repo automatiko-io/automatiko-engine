@@ -143,7 +143,7 @@
     <version.org.kie-dmn>8.38.0.Final</version.org.kie-dmn>
     <version.org.reflections>0.9.11</version.org.reflections>
     <version.org.slf4j>2.0.6</version.org.slf4j>
-    <version.testcontainers>1.17.6</version.testcontainers>
+    <version.testcontainers>1.19.8</version.testcontainers>
     <version.xmlunit>2.10.0</version.xmlunit>
     <version.org.openapitools>6.0.1</version.org.openapitools>
 
