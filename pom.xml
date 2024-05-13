@@ -58,7 +58,7 @@
     <version.jandex.plugin>3.1.2</version.jandex.plugin>
     <version.jar.plugin>3.1.0</version.jar.plugin>
     <version.javadoc.plugin>3.0.1</version.javadoc.plugin>
-    <version.archetype.plugin>3.0.1</version.archetype.plugin>
+    <version.archetype.plugin>3.2.1</version.archetype.plugin>
     <version.enforcer.plugin>3.0.0-M2</version.enforcer.plugin>
     <version.maven>3.8.1</version.maven>
     <version.maven.plugin>3.4</version.maven.plugin>
