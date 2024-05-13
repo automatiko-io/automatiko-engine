@@ -75,7 +75,7 @@
     <version.surefire.report.plugin>2.6</version.surefire.report.plugin>
     <version.swagger.plugin>2.1.0</version.swagger.plugin>
     <version.taglist.plugin>2.4</version.taglist.plugin>
-    <version.versions.plugin>2.1</version.versions.plugin>
+    <version.versions.plugin>2.16.2</version.versions.plugin>
     <version.jayway.jsonpath>2.6.0</version.jayway.jsonpath>
     <version.net.thisptr.jackson-jq>0.0.13</version.net.thisptr.jackson-jq>
 
