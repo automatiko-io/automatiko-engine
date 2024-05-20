@@ -109,7 +109,7 @@
     <version.io.quarkus>3.10.0</version.io.quarkus>
     <version.io.restassured>5.3.0</version.io.restassured>
     <version.io.smallrye.reactive>4.21.0</version.io.smallrye.reactive>
-    <version.org.eclipse.microprofile.metrics>4.0.1</version.org.eclipse.microprofile.metrics>
+    <version.org.eclipse.microprofile.metrics>5.1.1</version.org.eclipse.microprofile.metrics>
     <version.org.eclipse.microprofile.rest.client>3.0.1</version.org.eclipse.microprofile.rest.client>
     <version.org.eclipse.microprofile.config>3.0.3</version.org.eclipse.microprofile.config>
     <version.org.eclipse.microprofile.openapi>3.1.1</version.org.eclipse.microprofile.openapi>
