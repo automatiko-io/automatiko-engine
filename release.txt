@@ -1,6 +1,6 @@
 1. Change project versions
 
-mvn -B -N -e versions:set -DnewVersion="0.33.0" -DallowSnapshots=false -DgenerateBackupPoms=false
+mvn -B -N -e versions:set -DnewVersion="0.34.0" -DallowSnapshots=false -DgenerateBackupPoms=false
 
 2. Update version for documentation
 
