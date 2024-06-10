@@ -90,7 +90,7 @@
     <version.com.thoughtworks.xstream>1.4.20</version.com.thoughtworks.xstream>
     <version.javassist>3.29.0-GA</version.javassist>
     <version.org.jfree.svg>5.0.4</version.org.jfree.svg>
-    <version.org.jgrapht>1.5.1</version.org.jgrapht>
+    <version.org.jgrapht>1.5.2</version.org.jgrapht>
     
     <version.jakarta.activation>2.1.1</version.jakarta.activation>
     <version.jakarta.annotation-api>3.0.0</version.jakarta.annotation-api>
