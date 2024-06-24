@@ -83,7 +83,7 @@
     <version.ch.obermuhlner>2.0.1</version.ch.obermuhlner>
     <version.com.fasterxml.jackson>2.17.1</version.com.fasterxml.jackson>
     <version.com.github.haifengl.smile>1.5.2</version.com.github.haifengl.smile>
-    <version.com.github.javaparser>3.25.5</version.com.github.javaparser>
+    <version.com.github.javaparser>3.26.1</version.com.github.javaparser>
     <version.com.github.victools>4.12.1</version.com.github.victools>
     <version.com.google.protobuf>3.19.6</version.com.google.protobuf>
     <version.org.graalvm.nativeimage>22.3.0</version.org.graalvm.nativeimage>
