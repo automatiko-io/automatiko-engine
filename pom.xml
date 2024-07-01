@@ -117,7 +117,7 @@
     <version.io.javaoperatorsdk>6.7.1</version.io.javaoperatorsdk>
     <version.io.quarkiverse.googlecloudservices>2.9.0</version.io.quarkiverse.googlecloudservices>
     <version.com.datastax.oss.quarkus>1.2.0</version.com.datastax.oss.quarkus>
-    <version.com.datastax.oss>4.15.0</version.com.datastax.oss>
+    <version.com.datastax.oss>4.17.0</version.com.datastax.oss>
     <version.org.apache.camel.quarkus>3.11.0</version.org.apache.camel.quarkus>
     <version.io.quarkiverse.reactivemessaging.http>2.2.0</version.io.quarkiverse.reactivemessaging.http>
     <version.io.quarkiverse.amazonservices>2.15.0</version.io.quarkiverse.amazonservices>
