@@ -148,7 +148,7 @@
     <version.org.openapitools>6.0.1</version.org.openapitools>
 
     <!-- SW -->
-    <version.io.serverlessworkflow>4.0.2.Final</version.io.serverlessworkflow>
+    <version.io.serverlessworkflow>5.0.0.Final</version.io.serverlessworkflow>
 
   </properties>
 
