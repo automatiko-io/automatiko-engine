@@ -42,7 +42,7 @@
     <tests.failsafe.include>**/*IT.java</tests.failsafe.include>
 
     <!-- plugin versions -->
-    <version.antapacheregexp>1.8.2</version.antapacheregexp>
+    <version.antapacheregexp>1.10.14</version.antapacheregexp>
     <version.antrun.plugin>3.1.0</version.antrun.plugin>
     <version.asciidoctor.plugin>1.5.2.1</version.asciidoctor.plugin>
     <version.build.helper.plugin>3.0.0</version.build.helper.plugin>    
