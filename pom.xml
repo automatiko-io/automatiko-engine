@@ -80,7 +80,7 @@
     <version.net.thisptr.jackson-jq>0.0.13</version.net.thisptr.jackson-jq>
 
     <!-- dependencies versions -->
-    <version.ch.obermuhlner>2.0.1</version.ch.obermuhlner>
+    <version.ch.obermuhlner>2.3.2</version.ch.obermuhlner>
     <version.com.fasterxml.jackson>2.17.1</version.com.fasterxml.jackson>
     <version.com.github.haifengl.smile>1.5.2</version.com.github.haifengl.smile>
     <version.com.github.javaparser>3.26.1</version.com.github.javaparser>
