@@ -125,7 +125,7 @@
     <version.io.quarkiverse.jdbc-sqlite>3.0.5</version.io.quarkiverse.jdbc-sqlite>
     <version.com.googlecode.cqengine>3.6.0</version.com.googlecode.cqengine>
 
-    <version.com.cronutils>9.1.6</version.com.cronutils>
+    <version.com.cronutils>9.2.1</version.com.cronutils>
 
     <version.org.antlr>3.5.3</version.org.antlr>
     <version.org.antlr4>4.13.1</version.org.antlr4>
