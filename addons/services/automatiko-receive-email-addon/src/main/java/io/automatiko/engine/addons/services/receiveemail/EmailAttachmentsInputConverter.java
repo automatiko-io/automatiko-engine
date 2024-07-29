@@ -13,6 +13,7 @@ import io.automatiko.engine.api.io.InputConverter;
 import io.automatiko.engine.workflow.file.ByteArrayFile;
 import jakarta.activation.DataHandler;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.mail.internet.MimeUtility;
 
 @ApplicationScoped
 public class EmailAttachmentsInputConverter implements InputConverter<List<ByteArrayFile>> {
@@ -38,6 +39,7 @@ public class EmailAttachmentsInputConverter implements InputConverter<List<ByteA
                         // get the content and convert it to byte[]
 
                         try {
+                            filename = MimeUtility.decodeText(filename);
                             byte[] data = mailMessage.getExchange().getContext().getTypeConverter()
                                     .convertTo(byte[].class, dh.getInputStream());
 
