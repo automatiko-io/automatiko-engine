@@ -3,15 +3,15 @@ package io.automatiko.engine.addons.services.receiveemail;
 import java.io.IOException;
 import java.util.Map;
 
-import jakarta.activation.DataHandler;
-import jakarta.enterprise.context.ApplicationScoped;
-
 import org.apache.camel.TypeConversionException;
 import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.component.mail.MailMessage;
 
 import io.automatiko.engine.api.io.InputConverter;
 import io.automatiko.engine.workflow.file.ByteArrayFile;
+import jakarta.activation.DataHandler;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.mail.internet.MimeUtility;
 
 @ApplicationScoped
 public class EmailAttachmentInputConverter implements InputConverter<ByteArrayFile> {
@@ -34,6 +34,7 @@ public class EmailAttachmentInputConverter implements InputConverter<ByteArrayFi
                         // get the content and convert it to byte[]
 
                         try {
+                            filename = MimeUtility.decodeText(filename);
                             byte[] data = mailMessage.getExchange().getContext().getTypeConverter()
                                     .convertTo(byte[].class, dh.getInputStream());
 

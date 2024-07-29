@@ -7,11 +7,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.activation.DataHandler;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.mail.Address;
-import jakarta.mail.Message.RecipientType;
-
 import org.apache.camel.TypeConversionException;
 import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.component.mail.MailMessage;
@@ -19,6 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.io.InputConverter;
+import jakarta.activation.DataHandler;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.mail.Address;
+import jakarta.mail.Message.RecipientType;
+import jakarta.mail.internet.MimeUtility;
 
 @SuppressWarnings({ "unchecked" })
 @ApplicationScoped
@@ -53,6 +53,7 @@ public class EmailInputConverter implements InputConverter<EmailMessage> {
                             // get the content and convert it to byte[]
 
                             try {
+                                filename = MimeUtility.decodeText(filename);
                                 byte[] data = mailMessage.getExchange().getContext().getTypeConverter()
                                         .convertTo(byte[].class, dh.getInputStream());
 
