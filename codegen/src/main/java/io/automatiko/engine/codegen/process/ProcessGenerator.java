@@ -438,12 +438,14 @@ public class ProcessGenerator {
                             } else if (!descriptor.implementation().equalsIgnoreCase("##webservice")
                                     && !fd.getVariable(0).getNameAsString().equals("completionHandler")) {
                                 BlockStmt constructorBody = new BlockStmt();
-                                AssignExpr assignExpr = new AssignExpr(
-                                        new FieldAccessExpr(new ThisExpr(), fd.getVariable(0).getNameAsString()),
-                                        new ObjectCreationExpr().setType(fd.getVariable(0).getType().toString()),
-                                        AssignExpr.Operator.ASSIGN);
+                                if (!useInjection()) {
+                                    AssignExpr assignExpr = new AssignExpr(
+                                            new FieldAccessExpr(new ThisExpr(), fd.getVariable(0).getNameAsString()),
+                                            new ObjectCreationExpr().setType(fd.getVariable(0).getType().toString()),
+                                            AssignExpr.Operator.ASSIGN);
 
-                                constructorBody.addStatement(assignExpr);
+                                    constructorBody.addStatement(assignExpr);
+                                }
                                 clazz.addConstructor(Keyword.PUBLIC).setBody(constructorBody);
                             }
                         });
