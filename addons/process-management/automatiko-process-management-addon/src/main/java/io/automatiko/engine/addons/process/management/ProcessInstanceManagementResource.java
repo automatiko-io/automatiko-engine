@@ -12,21 +12,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import jakarta.enterprise.inject.Instance;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.ResponseBuilder;
-import jakarta.ws.rs.core.Response.Status;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -66,6 +51,20 @@ import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.json.JsonArchiveBuilder;
 import io.automatiko.engine.workflow.process.core.WorkflowProcess;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.core.Response.Status;
 
 @Tag(name = "Process Management", description = "Process management operations on top of the service", externalDocs = @ExternalDocumentation(description = "Manangement UI", url = "/management/processes/ui"))
 @Path("/management/processes")
@@ -78,27 +77,35 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
 
     private String serviceUrl;
 
+    private String resourcePathPrefix;
+
     // CDI
     public ProcessInstanceManagementResource() {
-        this((Map<String, Process<?>>) null, null, null, Optional.empty());
+        this((Map<String, Process<?>>) null, null, null, Optional.empty(), Optional.empty());
     }
 
     public ProcessInstanceManagementResource(Map<String, Process<?>> process, Application application,
             IdentitySupplier identitySupplier,
-            @ConfigProperty(name = "quarkus.automatiko.service-url") Optional<String> serviceUrl) {
+            @ConfigProperty(name = "quarkus.automatiko.service-url") Optional<String> serviceUrl,
+            @ConfigProperty(name = "quarkus.automatiko.resource-path-prefix") Optional<String> resourcePathPrefix) {
         super(process, application);
         this.identitySupplier = identitySupplier;
         this.exporter = new ProcessInstanceExporter(processData);
         this.serviceUrl = serviceUrl.orElse(null);
+        this.resourcePathPrefix = resourcePathPrefix.orElse("");
     }
 
     @Inject
     public ProcessInstanceManagementResource(Application application, Instance<Process<?>> availableProcesses,
-            IdentitySupplier identitySupplier) {
+            IdentitySupplier identitySupplier,
+            @ConfigProperty(name = "quarkus.automatiko.service-url") Optional<String> serviceUrl,
+            @ConfigProperty(name = "quarkus.automatiko.resource-path-prefix") Optional<String> resourcePathPrefix) {
         super(availableProcesses == null ? Collections.emptyMap()
                 : availableProcesses.stream().collect(Collectors.toMap(p -> p.id(), p -> p)), application);
         this.identitySupplier = identitySupplier;
         this.exporter = new ProcessInstanceExporter(processData);
+        this.serviceUrl = serviceUrl.orElse(null);
+        this.resourcePathPrefix = resourcePathPrefix.orElse("");
     }
 
     @Override
@@ -157,7 +164,8 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
                 collected.add(new ProcessDTO(id, process.version(), process.name(),
                         process.description(),
                         (serviceUrl == null ? ""
-                                : serviceUrl) + "/" + pathprefix + ((AbstractProcess<?>) process).process().getId()
+                                : serviceUrl) + resourcePathPrefix + "/" + pathprefix
+                                + ((AbstractProcess<?>) process).process().getId()
                                 + "/image",
                         process.instances().size()));
             }

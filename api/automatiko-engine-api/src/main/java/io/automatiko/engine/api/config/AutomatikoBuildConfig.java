@@ -8,6 +8,10 @@ public class AutomatikoBuildConfig {
         return Optional.empty();
     };
 
+    public Optional<String> resourcePathPrefix() {
+        return Optional.empty();
+    };
+
     public Optional<Boolean> includeAutomatikoApi() {
         return Optional.empty();
     };

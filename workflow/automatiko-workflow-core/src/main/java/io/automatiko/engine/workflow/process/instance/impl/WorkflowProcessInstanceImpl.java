@@ -1176,6 +1176,12 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
 
     @Override
     public void setReferenceFromRoot(String referenceFromRoot) {
+        // reference prefix is set when api endpoints have a prefix and it is in format /path/subpath
+        String referencePefix = (String) getProcess().getMetaData().getOrDefault("referencePrefix", "");
+        if (!referencePefix.isBlank()) {
+            // when set, string the leading / and add ending / so the path is complete and without duplicated /
+            referencePefix = referencePefix.substring(1) + "/";
+        }
         if (this.referenceFromRoot != null) {
             return;
         }
@@ -1188,7 +1194,7 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
             }
             this.referenceFromRoot = referenceFromRoot + getProcessId() + "/" + parentProcessInstanceId + getId() + "/";
         } else {
-            this.referenceFromRoot = version() + getProcessId() + "/" + getId() + "/";
+            this.referenceFromRoot = referencePefix + version() + getProcessId() + "/" + getId() + "/";
         }
     }
 

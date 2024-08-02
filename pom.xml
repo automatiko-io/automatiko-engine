@@ -696,7 +696,7 @@
               <configuration>
                 <rules>
                   <requireMavenVersion>
-                    <version>${version.maven}</version>
+                    <version>[${version.maven},)</version>
                   </requireMavenVersion>
                   <requireJavaVersion>
                     <version>${version.jdk}</version>

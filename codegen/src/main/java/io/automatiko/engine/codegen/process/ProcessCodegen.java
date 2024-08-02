@@ -426,6 +426,8 @@ public class ProcessCodegen extends AbstractGenerator {
             if (context.getBuildContext().isUserTaskMgmtSupported()) {
                 entry.getValue().getMetaData().put("UserTaskMgmt", "true");
             }
+            entry.getValue().getMetaData().put("referencePrefix",
+                    context.getApplicationProperty("quarkus.automatiko.resource-path-prefix").orElse(""));
 
             Set<String> classImports = ((io.automatiko.engine.workflow.process.core.WorkflowProcess) entry.getValue())
                     .getImports();
