@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -20,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -188,14 +190,15 @@ public class AutomatikoQuarkusProcessor {
 
         Collection<GeneratedFile> javaFiles = generatedFiles.stream().filter(f -> f.relativePath().endsWith(".java"))
                 .collect(Collectors.toCollection(ArrayList::new));
-        writeGeneratedFiles(appPaths, generatedFiles);
+        String sourceFolder = sourceFolder(appGen);
+        writeGeneratedFiles(sourceFolder, appPaths, generatedFiles);
 
         if (!javaFiles.isEmpty()) {
 
             Indexer automatikoIndexer = new Indexer();
             Set<DotName> automatikoIndex = new HashSet<>();
 
-            compile(appPaths, curateOutcomeBuildItem.getApplicationModel(), javaFiles, launchMode.getLaunchMode(),
+            compile(appGen, appPaths, curateOutcomeBuildItem.getApplicationModel(), javaFiles, launchMode.getLaunchMode(),
                     generatedBeans, additionalIndexClass, (className, data) -> {
                         return generateBeanBuildItem(archivesIndex, automatikoIndexer, automatikoIndex, className, data);
                     }, pconfig);
@@ -211,7 +214,7 @@ public class AutomatikoQuarkusProcessor {
                                 .produce(ReflectiveClassBuildItem.builder(c.name().toString()).fields().methods().build());
                     });
 
-            generatePersistenceInfo(config, pconfig, appPaths, generatedBeans, additionalIndexClass,
+            generatePersistenceInfo(appGen, config, pconfig, appPaths, generatedBeans, additionalIndexClass,
                     CompositeIndex.create(archivesIndex, index), launchMode, resource,
                     curateOutcomeBuildItem);
 
@@ -422,7 +425,8 @@ public class AutomatikoQuarkusProcessor {
         resource.produce(new NativeImageResourceBuildItem("/META-INF/resources/js/automatiko-authorization.js"));
     }
 
-    private void generatePersistenceInfo(AutomatikoBuildTimeConfig config, PackageConfig pconfig, AppPaths appPaths,
+    private void generatePersistenceInfo(ApplicationGenerator appGen, AutomatikoBuildTimeConfig config, PackageConfig pconfig,
+            AppPaths appPaths,
             BuildProducer<GeneratedBeanBuildItem> generatedBeans,
             BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexClass,
             IndexView index, LaunchModeBuildItem launchMode,
@@ -445,10 +449,10 @@ public class AutomatikoQuarkusProcessor {
                 parameters);
 
         if (!generatedFiles.isEmpty()) {
+            String sourceFolder = sourceFolder(appGen);
+            writeGeneratedFiles(sourceFolder, appPaths, generatedFiles);
 
-            writeGeneratedFiles(appPaths, generatedFiles);
-
-            compile(appPaths, curateOutcomeBuildItem.getApplicationModel(), generatedFiles, launchMode.getLaunchMode(),
+            compile(appGen, appPaths, curateOutcomeBuildItem.getApplicationModel(), generatedFiles, launchMode.getLaunchMode(),
                     generatedBeans, additionalIndexClass, GeneratedBeanBuildItem::new, pconfig);
         }
 
@@ -475,7 +479,7 @@ public class AutomatikoQuarkusProcessor {
         return generatedFiles;
     }
 
-    private void writeGeneratedFiles(AppPaths appPaths, Collection<GeneratedFile> resourceFiles) {
+    private void writeGeneratedFiles(String sourceFolder, AppPaths appPaths, Collection<GeneratedFile> resourceFiles) {
         for (Path projectPath : appPaths.projectPaths) {
             String restResourcePath = projectPath.resolve(generatedCustomizableSourcesDir).toString();
             String resourcePath = projectPath.resolve(generatedResourcesDir).toString();
@@ -485,13 +489,13 @@ public class AutomatikoQuarkusProcessor {
             for (GeneratedFile f : resourceFiles) {
                 try {
                     if (f.getType() == GeneratedFile.Type.RESOURCE) {
-                        writeGeneratedFile(f, resourcePath);
+                        writeGeneratedFile(f, sourceFolder, resourcePath);
                     } else if (f.getType() == GeneratedFile.Type.JSON_SCHEMA) {
-                        writeGeneratedFile(f, jsonSchemaPath);
+                        writeGeneratedFile(f, sourceFolder, jsonSchemaPath);
                     } else if (f.getType().isCustomizable()) {
-                        writeGeneratedFile(f, restResourcePath);
+                        writeGeneratedFile(f, sourceFolder, restResourcePath);
                     } else {
-                        writeGeneratedFile(f, sourcePath);
+                        writeGeneratedFile(f, sourceFolder, sourcePath);
                     }
                 } catch (IOException e) {
                     logger.warn(String.format("Could not write file '%s'", f.toString()), e);
@@ -508,7 +512,8 @@ public class AutomatikoQuarkusProcessor {
     }
 
     @SuppressWarnings("unchecked")
-    private void compile(AppPaths appPaths, ApplicationModel appModel, Collection<GeneratedFile> generatedFiles,
+    private void compile(ApplicationGenerator appGen, AppPaths appPaths, ApplicationModel appModel,
+            Collection<GeneratedFile> generatedFiles,
             LaunchMode launchMode, BuildProducer<GeneratedBeanBuildItem> generatedBeans,
             BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexClassProducer,
             BiFunction<String, byte[], GeneratedBeanBuildItem> bif, PackageConfig config) throws Exception {
@@ -541,10 +546,10 @@ public class AutomatikoQuarkusProcessor {
             }
 
             fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singleton(buildDir));
-
+            String sourceFolder = sourceFolder(appGen);
             for (GeneratedFile entry : generatedFiles) {
-                String generatedClassFile = entry.relativePath().replace("src/main/java/", "");
-                String fileName = toRuntimeSource(toClassName(generatedClassFile));
+                String generatedClassFile = entry.relativePath().replace(sourceFolder + "/", "");
+                String fileName = toRuntimeSource(sourceFolder, toClassName(generatedClassFile));
 
                 sources.add(new SourceCode(fileName, new String(entry.contents())));
 
@@ -555,7 +560,7 @@ public class AutomatikoQuarkusProcessor {
 
                 }
 
-                writeGeneratedFile(entry, location);
+                writeGeneratedFile(entry, sourceFolder, location);
             }
 
             CompilationTask task = compiler.getTask(null, fileManager, diagnosticsCollector, options, null, sources);
@@ -653,9 +658,29 @@ public class AutomatikoQuarkusProcessor {
                 ClassInfo clazz = workflowBuilderClass.target().asClass();
 
                 String fqcn = clazz.name().toString();
+                String sourceFolder = sourceFolder(appGen);
+
+                String projects = appGen.context().getApplicationProperty("automatiko.source.projects")
+                        .orElse(null);
+                List<Path> projectPaths = new ArrayList<>();
+                projectPaths.addAll(Arrays.asList(appPaths.getProjectPaths()));
+                if (projects != null) {
+                    String[] extraProjectPaths = projects.split(",");
+                    for (String extraPath : extraProjectPaths) {
+                        projectPaths.add(Paths.get(extraPath));
+                    }
+                }
+                Optional<String> sourceFile = projectPaths.stream()
+                        .map(projectPath -> projectPath + "/" + sourceFolder + "/" + fqcn.replace(".", "/") + ".java")
+                        .filter(p -> Files.exists(Paths.get(p))).findFirst();
+
+                if (sourceFile.isEmpty()) {
+                    logger.warn("Unable to locate source file for fqcn {}", fqcn);
+                    continue;
+                }
 
                 LambdaParser
-                        .parseLambdas(appPaths.getFirstProjectPath() + "/src/main/java/" + fqcn.replace(".", "/") + ".java");
+                        .parseLambdas(sourceFile.get());
 
                 try {
                     Class<?> builderClass = Class.forName(fqcn, true, Thread.currentThread().getContextClassLoader());
@@ -705,8 +730,8 @@ public class AutomatikoQuarkusProcessor {
         appGen.withGenerator(generator).withMonitoring(useMonitoring);
     }
 
-    private String toRuntimeSource(String className) {
-        return "src/main/java/" + className.replace('.', '/') + ".java";
+    private String toRuntimeSource(String sourceFolder, String className) {
+        return sourceFolder + "/" + className.replace('.', '/') + ".java";
     }
 
     private String toClassName(String sourceName) {
@@ -721,12 +746,12 @@ public class AutomatikoQuarkusProcessor {
         return sourceName.replace('/', '.').replace('\\', '.');
     }
 
-    private void writeGeneratedFile(GeneratedFile f, String location) throws IOException {
+    private void writeGeneratedFile(GeneratedFile f, String sourceFolder, String location) throws IOException {
         if (location == null) {
             return;
         }
 
-        String generatedClassFile = f.relativePath().replace("src/main/java", "");
+        String generatedClassFile = f.relativePath().replace(sourceFolder, "");
 
         Path sourceFilePath = pathOf(location, generatedClassFile);
         Path classFilePath = pathOf(location, generatedClassFile.replaceAll("\\.java", ".class"));
@@ -893,5 +918,15 @@ public class AutomatikoQuarkusProcessor {
             return contents;
         }
 
+    }
+
+    private String sourceFolder(ApplicationGenerator appGen) {
+        String sourceFolder = appGen.context().getApplicationProperty("automatiko.source.folder")
+                .orElse("/src/main/java");
+        if (sourceFolder.startsWith("/")) {
+            sourceFolder = sourceFolder.substring(1);
+        }
+
+        return sourceFolder;
     }
 }
