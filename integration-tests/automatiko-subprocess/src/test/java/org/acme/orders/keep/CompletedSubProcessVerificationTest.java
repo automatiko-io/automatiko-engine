@@ -36,7 +36,7 @@ public class CompletedSubProcessVerificationTest {
             .accept(ContentType.JSON)
             .body(addPayload)
             .when()
-                .post("/v1_0/orders")
+                .post("/api/workflows/v1_0/orders")
             .then()
                 //.log().body(true)
                 .statusCode(200)
@@ -46,7 +46,7 @@ public class CompletedSubProcessVerificationTest {
         given()
             .accept(ContentType.JSON)
         .when()
-            .get("/v1_0/orders")
+            .get("/api/workflows/v1_0/orders")
         .then().statusCode(200)
             .body("$.size()", is(1));
         
@@ -54,7 +54,7 @@ public class CompletedSubProcessVerificationTest {
         given()
             .accept(ContentType.JSON)
         .when()
-            .get("/v1_0/orders/" + id + "/orderItems")
+            .get("/api/workflows/v1_0/orders/" + id + "/orderItems")
         .then()
             .statusCode(200)
             .body("$.size()", is(1));  
@@ -63,7 +63,7 @@ public class CompletedSubProcessVerificationTest {
         List<Map<String, String>> taskInfo = given()
                 .accept(ContentType.JSON)
             .when()
-                .get("/v1_0/orders/" + id + "/tasks?user=john")
+                .get("/api/workflows/v1_0/orders/" + id + "/tasks?user=john")
             .then()
                 .statusCode(200)
                 .extract().as(List.class);
@@ -81,7 +81,7 @@ public class CompletedSubProcessVerificationTest {
             .accept(ContentType.JSON)
             .body(payload)
         .when()
-            .post("/v1_0/orders/" + id + "/orderItems/john/" + taskName + "/" + taskId + "?user=john")
+            .post("/api/workflows/v1_0/orders/" + id + "/orderItems/john/" + taskName + "/" + taskId + "?user=john")
         .then()
             .statusCode(200).body("id", is("john"));
         
@@ -89,7 +89,7 @@ public class CompletedSubProcessVerificationTest {
         given()
             .accept(ContentType.JSON)
         .when()
-            .get("/v1_0/orders/" + id + "/orderItems/john/acceptance")
+            .get("/api/workflows/v1_0/orders/" + id + "/orderItems/john/acceptance")
         .then()
             .statusCode(200)
             .body("$.size()", is(1))
@@ -98,7 +98,7 @@ public class CompletedSubProcessVerificationTest {
         taskInfo = given()
                 .accept(ContentType.JSON)
             .when()
-                .get("/v1_0/orders/" + id + "/tasks?user=john")
+                .get("/api/workflows/v1_0/orders/" + id + "/tasks?user=john")
             .then()
                 .statusCode(200)
                 .extract().as(List.class);
@@ -120,7 +120,7 @@ public class CompletedSubProcessVerificationTest {
         given()
             .accept(ContentType.JSON)
         .when()
-            .get("/v1_0/orders")
+            .get("/api/workflows/v1_0/orders")
         .then().statusCode(200)
             .log().body()
             .body("$.size()", is(1));  
@@ -142,14 +142,14 @@ public class CompletedSubProcessVerificationTest {
         given()
             .accept(ContentType.JSON)
         .when()
-            .delete("/v1_0/orders/" + id)
+            .delete("/api/workflows/v1_0/orders/" + id)
         .then()
             .statusCode(200);
         
         given()
             .accept(ContentType.JSON)
         .when()
-            .get("/v1_0/orders")
+            .get("/api/workflows/v1_0/orders")
         .then().statusCode(200)
             .body("$.size()", is(0));        
     }

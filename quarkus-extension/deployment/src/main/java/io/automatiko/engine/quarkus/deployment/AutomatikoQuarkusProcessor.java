@@ -660,7 +660,7 @@ public class AutomatikoQuarkusProcessor {
                 String fqcn = clazz.name().toString();
                 String sourceFolder = sourceFolder(appGen);
 
-                String projects = appGen.context().getApplicationProperty("automatiko.source.projects")
+                String projects = appGen.context().getApplicationProperty("quarkus.automatiko.project-paths")
                         .orElse(null);
                 List<Path> projectPaths = new ArrayList<>();
                 projectPaths.addAll(Arrays.asList(appPaths.getProjectPaths()));
@@ -921,7 +921,7 @@ public class AutomatikoQuarkusProcessor {
     }
 
     private String sourceFolder(ApplicationGenerator appGen) {
-        String sourceFolder = appGen.context().getApplicationProperty("automatiko.source.folder")
+        String sourceFolder = appGen.context().getApplicationProperty("quarkus.automatiko.source-folder")
                 .orElse("/src/main/java");
         if (sourceFolder.startsWith("/")) {
             sourceFolder = sourceFolder.substring(1);

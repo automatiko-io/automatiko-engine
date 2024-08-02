@@ -196,6 +196,28 @@ public abstract class AbstractResourceGenerator {
 
                     });
         }
+
+        Optional<String> resourcePathPrefix = context.getApplicationProperty("quarkus.automatiko.resource-path-prefix");
+
+        if (resourcePathPrefix.isPresent()) {
+            ClassOrInterfaceDeclaration template = clazz.findFirst(ClassOrInterfaceDeclaration.class)
+                    .orElseThrow(() -> new NoSuchElementException(
+                            "Compilation unit doesn't contain a class or interface declaration!"));
+
+            template.findAll(ClassOrInterfaceDeclaration.class, md -> md.getAnnotationByName("Path").isPresent())
+                    .forEach(md -> {
+
+                        AnnotationExpr pathAnotation = md.getAnnotationByName("Path").get();
+
+                        String value = pathAnotation.asSingleMemberAnnotationExpr().getMemberValue()
+                                .toStringLiteralExpr().get().getValue();
+
+                        pathAnotation.asSingleMemberAnnotationExpr()
+                                .setMemberValue(new StringLiteralExpr(resourcePathPrefix.get() + value));
+
+                    });
+        }
+
         ImportsOrganizer.organize(clazz);
         return clazz.toString();
     }

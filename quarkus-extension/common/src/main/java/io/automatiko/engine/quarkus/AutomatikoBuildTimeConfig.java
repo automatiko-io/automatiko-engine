@@ -11,7 +11,7 @@ import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
 
-@ConfigRoot(name = "automatiko", phase = ConfigPhase.BUILD_TIME)
+@ConfigRoot(name = "automatiko", phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
 public class AutomatikoBuildTimeConfig extends AutomatikoBuildConfig {
 
     /**
@@ -19,6 +19,12 @@ public class AutomatikoBuildTimeConfig extends AutomatikoBuildConfig {
      */
     @ConfigItem
     public Optional<String> packageName;
+
+    /**
+     * Specifies resource path prefix that should be used by REST apis
+     */
+    @ConfigItem
+    public Optional<String> resourcePathPrefix;
 
     /**
      * Determines if the Automatiko API should be included in OpenAPI definitions, defaults to false
@@ -59,6 +65,10 @@ public class AutomatikoBuildTimeConfig extends AutomatikoBuildConfig {
     public Optional<String> packageName() {
         return packageName;
     }
+
+    public Optional<String> resourcePathPrefix() {
+        return resourcePathPrefix;
+    };
 
     public Optional<Boolean> includeAutomatikoApi() {
         return includeAutomatikoApi;

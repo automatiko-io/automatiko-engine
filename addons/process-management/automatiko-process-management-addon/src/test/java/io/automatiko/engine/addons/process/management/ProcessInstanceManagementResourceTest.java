@@ -18,12 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.ResponseBuilder;
-import jakarta.ws.rs.core.Response.Status;
-import jakarta.ws.rs.core.Response.StatusType;
-import jakarta.ws.rs.ext.RuntimeDelegate;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +38,11 @@ import io.automatiko.engine.api.workflow.ProcessInstances;
 import io.automatiko.engine.services.identity.StaticIdentityProvider;
 import io.automatiko.engine.services.uow.CollectingUnitOfWorkFactory;
 import io.automatiko.engine.services.uow.DefaultUnitOfWorkManager;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.StatusType;
+import jakarta.ws.rs.ext.RuntimeDelegate;
 
 @ExtendWith(MockitoExtension.class)
 public class ProcessInstanceManagementResourceTest {
@@ -108,7 +107,8 @@ public class ProcessInstanceManagementResourceTest {
                 return new StaticIdentityProvider("test");
             }
         };
-        resource = spy(new ProcessInstanceManagementResource(processes, application, identitySupplier, Optional.empty()));
+        resource = spy(new ProcessInstanceManagementResource(processes, application, identitySupplier, Optional.empty(),
+                Optional.empty()));
     }
 
     @Test
