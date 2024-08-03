@@ -27,6 +27,18 @@ public class AutomatikoBuildTimeConfig extends AutomatikoBuildConfig {
     public Optional<String> resourcePathPrefix;
 
     /**
+     * Specifies source folder in case it is not default maven based project structure
+     */
+    @ConfigItem
+    public Optional<String> sourceFolder;
+
+    /**
+     * Specifies additional folders where project sources can be found, e.g. when workflows are defined in sub module
+     */
+    @ConfigItem
+    public Optional<String> projectPaths;
+
+    /**
      * Determines if the Automatiko API should be included in OpenAPI definitions, defaults to false
      */
     @ConfigItem
@@ -68,6 +80,14 @@ public class AutomatikoBuildTimeConfig extends AutomatikoBuildConfig {
 
     public Optional<String> resourcePathPrefix() {
         return resourcePathPrefix;
+    };
+
+    public Optional<String> sourceFolder() {
+        return sourceFolder;
+    };
+
+    public Optional<String> projectPaths() {
+        return projectPaths;
     };
 
     public Optional<Boolean> includeAutomatikoApi() {

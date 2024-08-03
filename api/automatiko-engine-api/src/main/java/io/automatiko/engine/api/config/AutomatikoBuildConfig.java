@@ -12,6 +12,14 @@ public class AutomatikoBuildConfig {
         return Optional.empty();
     };
 
+    public Optional<String> sourceFolder() {
+        return Optional.empty();
+    };
+
+    public Optional<String> projectPaths() {
+        return Optional.empty();
+    };
+
     public Optional<Boolean> includeAutomatikoApi() {
         return Optional.empty();
     };
