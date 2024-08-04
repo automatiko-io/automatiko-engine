@@ -56,6 +56,7 @@ public class EndWithMessageNodeBuilder extends AbstractNodeBuilder {
      * <li>jms</li>
      * <li>pulsar</li>
      * <li>rabbitmq</li>
+     * <li>direct</li>
      * </ul>
      * 
      * @param connector one of the supported connectors
@@ -63,6 +64,17 @@ public class EndWithMessageNodeBuilder extends AbstractNodeBuilder {
      */
     public EndWithMessageNodeBuilder connector(String connector) {
         node.setMetaData("connector", connector);
+        return this;
+    }
+
+    /**
+     * Name of the channel to use, mainly for direct connector
+     * 
+     * @param name name of the channel
+     * @return the builder
+     */
+    public EndWithMessageNodeBuilder channel(String name) {
+        node.setMetaData(Metadata.TRIGGER_REF, name);
         return this;
     }
 

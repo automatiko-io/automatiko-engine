@@ -4,6 +4,7 @@ package io.automatiko.engine.codegen.process;
 import static com.github.javaparser.StaticJavaParser.parse;
 import static io.automatiko.engine.codegen.CodeGenConstants.AMQP_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.CAMEL_CONNECTOR;
+import static io.automatiko.engine.codegen.CodeGenConstants.DIRECT_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.HTTP_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.INCOMING_PROP_PREFIX;
 import static io.automatiko.engine.codegen.CodeGenConstants.JMS_CONNECTOR;
@@ -299,6 +300,8 @@ public class MessageConsumerGenerator {
                     + context.getApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".routing-keys")
                             .orElse("${" + INCOMING_PROP_PREFIX + sanitizedName + ".queue.name" + "}")
                     + "'");
+        } else if (connector.equals(DIRECT_CONNECTOR)) {
+
         }
     }
 
@@ -321,6 +324,8 @@ public class MessageConsumerGenerator {
             return "/class-templates/PulsarMessageConsumerTemplate.java";
         } else if (connector.equals(RABBITMQ_CONNECTOR)) {
             return "/class-templates/RabbitMQMessageConsumerTemplate.java";
+        } else if (connector.equals(DIRECT_CONNECTOR)) {
+            return "/class-templates/DirectMessageConsumerTemplate.java";
         } else {
             return "/class-templates/MessageConsumerTemplate.java";
         }
@@ -331,7 +336,7 @@ public class MessageConsumerGenerator {
         String connector = CodegenUtils.getConnector(INCOMING_PROP_PREFIX + sanitizedName + ".connector", context,
                 (String) trigger.getContext("connector"));
 
-        if (connector != null && !OPERATOR_CONNECTOR.equals(connector)) {
+        if (connector != null && !OPERATOR_CONNECTOR.equals(connector) && !DIRECT_CONNECTOR.equals(connector)) {
 
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".connector", connector);
             appendConnectorSpecificProperties(connector);

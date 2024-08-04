@@ -22,6 +22,18 @@ import io.automatiko.engine.workflow.process.executable.core.ExecutableProcess;
  */
 public class WorkflowBuilder {
 
+    public class Connectors {
+        public static final String KAFKA = "kafka";
+        public static final String MQTT = "mqtt";
+        public static final String AMQP = "amqp";
+        public static final String CAMEL = "camel";
+        public static final String JMS = "jms";
+        public static final String HTTP = "http";
+        public static final String PULSAR = "pulsar";
+        public static final String RABBITMQ = "rabbitmq";
+        public static final String DIRECT = "direct";
+    }
+
     protected Map<String, List<String>> diagram = new LinkedHashMap<>();
 
     protected final ExecutableProcess process;
