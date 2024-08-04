@@ -4,6 +4,7 @@ package io.automatiko.engine.codegen.process;
 import static com.github.javaparser.StaticJavaParser.parse;
 import static io.automatiko.engine.codegen.CodeGenConstants.AMQP_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.CAMEL_CONNECTOR;
+import static io.automatiko.engine.codegen.CodeGenConstants.DIRECT_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.FUNCTION_FLOW_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.HTTP_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.JMS_CONNECTOR;
@@ -282,6 +283,8 @@ public class MessageProducerGenerator {
             return "/class-templates/PulsarMessageProducerTemplate.java";
         } else if (connector.equals(RABBITMQ_CONNECTOR)) {
             return "/class-templates/RabbitMQMessageProducerTemplate.java";
+        } else if (connector.equals(DIRECT_CONNECTOR)) {
+            return "/class-templates/DirectMessageProducerTemplate.java";
         } else {
             return "/class-templates/MessageProducerTemplate.java";
         }
@@ -292,7 +295,7 @@ public class MessageProducerGenerator {
         String sanitizedName = CodegenUtils.triggerSanitizedName(trigger, process.getVersion());
         String connector = CodegenUtils.getConnector(OUTGOING_PROP_PREFIX + sanitizedName + ".connector", context,
                 (String) trigger.getContext("connector"));
-        if (connector != null) {
+        if (connector != null && !DIRECT_CONNECTOR.equals(connector)) {
 
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".connector", connector);
 

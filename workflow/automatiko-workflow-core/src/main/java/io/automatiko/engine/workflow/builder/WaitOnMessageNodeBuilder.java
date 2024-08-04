@@ -69,6 +69,7 @@ public class WaitOnMessageNodeBuilder extends AbstractNodeBuilder {
      * <li>jms</li>
      * <li>pulsar</li>
      * <li>rabbitmq</li>
+     * <li>direct</li>
      * </ul>
      * 
      * @param connector one of the supported connectors
@@ -118,6 +119,30 @@ public class WaitOnMessageNodeBuilder extends AbstractNodeBuilder {
      */
     public WaitOnMessageNodeBuilder filter(String expression) {
         node.setMetaData(Metadata.TRIGGER_FILTER_EXPR, expression);
+        return this;
+    }
+
+    /**
+     * Filter expression to be used to identify if given message should be processed
+     * 
+     * @param expression the filter expression
+     * @return the builder
+     */
+    public <T> WaitOnMessageNodeBuilder filter(Filter<T> filter) {
+
+        node.setMetaData(Metadata.TRIGGER_FILTER_EXPR,
+                BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()));
+        return this;
+    }
+
+    /**
+     * Name of the channel to use, mainly for direct connector
+     * 
+     * @param name name of the channel
+     * @return the builder
+     */
+    public WaitOnMessageNodeBuilder channel(String name) {
+        node.setMetaData(Metadata.TRIGGER_REF, name);
         return this;
     }
 

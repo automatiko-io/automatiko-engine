@@ -47,6 +47,7 @@ to various 3rd party systems
 |Apache Pulsar|Event Streams|Preconfigured connector for EventStream use case
 to take advantage of Pulsar messages as the format of the events.
 |RabbitMQ|Messaging and Batch|Similar to AMQP but with additional messaging capabilities
+|Direct|Messaging and async processing|Reactive messaging based async invocation
 
 |===
 
@@ -157,9 +158,10 @@ event to extract correlation value to be used to find matching workflow instance
 - *connector* - in case there are multiple connectors used it must be given
  explicitly for every message. Note it is not required if there is only one
  connector - e.g. MQTT or Apache Kafka.
- - *filterExpression* - allows to pass a function/expression that will have access 
+- *filterExpression* - allows to pass a function/expression that will have access 
  to message payload (already converted) and message itself to check if given message
  is accepted or not. By default all messages are accepted.
+- *channel* - specifies what channel should be used for this message - by default name of the node is used - only applies to direct connector
 
 image::messaging-definition-general.png[]
 
@@ -235,6 +237,7 @@ message should be sent to - if not defined name of the message is used - applies
 - *connector* - in case there are multiple connectors used it must be given
  explicitly for every message. Note it is not required if there is only one
  connector - e.g. MQTT or Apache Kafka.
+- *channel* - specifies what channel should be used for this message - by default name of the node is used - only applies to direct connector
 
 IMPORTANT: `topicExpression` provides an flexible way to define location where
 the event should be published - it is dedicated to *MQTT*, 

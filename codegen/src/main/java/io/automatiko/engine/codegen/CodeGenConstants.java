@@ -33,6 +33,7 @@ public class CodeGenConstants {
     public static final String HTTP_CONNECTOR = "quarkus-http";
     public static final String PULSAR_CONNECTOR = "smallrye-pulsar";
     public static final String RABBITMQ_CONNECTOR = "smallrye-rabbitmq";
+    public static final String DIRECT_CONNECTOR = "direct";
 
     public static final String MONGO_PERSISTENCE = "mongodb";
     public static final String CASSANDRA_PERSISTENCE = "cassandra";

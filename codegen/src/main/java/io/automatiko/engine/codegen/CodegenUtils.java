@@ -9,6 +9,7 @@ import static io.automatiko.engine.codegen.CodeGenConstants.CASSANDRA_PERSISTENC
 import static io.automatiko.engine.codegen.CodeGenConstants.CASSANDRA_PERSISTENCE_CLASS;
 import static io.automatiko.engine.codegen.CodeGenConstants.DB_PERSISTENCE;
 import static io.automatiko.engine.codegen.CodeGenConstants.DB_PERSISTENCE_CLASS;
+import static io.automatiko.engine.codegen.CodeGenConstants.DIRECT_CONNECTOR;
 import static io.automatiko.engine.codegen.CodeGenConstants.DYNAMODB_PERSISTENCE;
 import static io.automatiko.engine.codegen.CodeGenConstants.DYNAMODB_PERSISTENCE_CLASS;
 import static io.automatiko.engine.codegen.CodeGenConstants.FS_PERSISTENCE;
@@ -210,6 +211,8 @@ public class CodegenUtils {
             return PULSAR_CONNECTOR;
         } else if (connector.toLowerCase().endsWith("rabbitmq")) {
             return RABBITMQ_CONNECTOR;
+        } else if (connector.toLowerCase().endsWith("direct")) {
+            return DIRECT_CONNECTOR;
         }
 
         return "unknown";
