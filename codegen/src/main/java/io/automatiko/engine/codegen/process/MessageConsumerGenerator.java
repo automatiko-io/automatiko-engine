@@ -578,11 +578,6 @@ public class MessageConsumerGenerator {
                 return false;
         } else if (!trigger.getName().equals(other.trigger.getName()))
             return false;
-        if (resourceClazzName == null) {
-            if (other.resourceClazzName != null)
-                return false;
-        } else if (!resourceClazzName.equals(other.resourceClazzName))
-            return false;
         return true;
     }
 
