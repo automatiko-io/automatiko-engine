@@ -60,7 +60,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-@org.eclipse.microprofile.openapi.annotations.tags.Tag(name="$processname$", description="$processdocumentation$")
 @Path("/$name$")
 public class $Type$Resource {
 
