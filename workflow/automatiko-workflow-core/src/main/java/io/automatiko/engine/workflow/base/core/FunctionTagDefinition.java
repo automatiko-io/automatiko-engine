@@ -23,7 +23,13 @@ public class FunctionTagDefinition extends TagDefinition {
             io.automatiko.engine.workflow.base.core.context.ProcessContext ctx = new io.automatiko.engine.workflow.base.core.context.ProcessContext(
                     ((WorkflowProcessInstanceImpl) instance).getProcessRuntime());
             ctx.setProcessInstance(instance);
-            return function.apply(expression, ctx);
+            Object value = function.apply(expression, ctx);
+
+            if (value == null) {
+                return null;
+            }
+
+            return value.toString();
         } catch (Exception e) {
             return null;
         }

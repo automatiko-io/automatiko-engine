@@ -1151,7 +1151,8 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
                                         Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(exp);
                                         while (matcher.find()) {
                                             String paramName = matcher.group(1);
-                                            Object value = MVEL.executeExpression(exp, vars.getVariables());
+                                            Object value = MVEL.executeExpression(MVEL.compileExpression(paramName),
+                                                    vars.getVariables());
                                             replacements.put(paramName, value);
                                         }
                                         for (Map.Entry<String, Object> replacement : replacements.entrySet()) {

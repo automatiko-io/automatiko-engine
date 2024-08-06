@@ -114,6 +114,19 @@ public class StartOnMessageNodeBuilder extends AbstractNodeBuilder {
     }
 
     /**
+     * Expression to be used to extract correlation key to be used to look up workflow instances for the message
+     * 
+     * @param expression the correlation key expression
+     * @return the builder
+     */
+    public <T> StartOnMessageNodeBuilder correlation(Correlation<T> expression) {
+
+        node.setMetaData(Metadata.TRIGGER_CORRELATION_EXPR,
+                BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()));
+        return this;
+    }
+
+    /**
      * Filter expression to be used to identify if given message should be processed
      * 
      * @param expression the filter expression
@@ -144,7 +157,7 @@ public class StartOnMessageNodeBuilder extends AbstractNodeBuilder {
      * @return the builder
      */
     public StartOnMessageNodeBuilder channel(String name) {
-        node.setMetaData(Metadata.TRIGGER_REF, name);
+        node.setMetaData(Metadata.TRIGGER_CHANNEL, name);
         return this;
     }
 

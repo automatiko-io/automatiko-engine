@@ -5,6 +5,7 @@ public class Metadata {
 
     public static final String ACTION = "Action";
     public static final String TRIGGER_REF = "TriggerRef";
+    public static final String TRIGGER_CHANNEL = "TriggerChannel";
     public static final String TRIGGER_SOURCE_ATTR = "TriggerSource";
     public static final String TRIGGER_TYPE_ATTR = "TriggerTypeAttr";
     public static final String REF = "Ref";

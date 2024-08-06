@@ -4,6 +4,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.eclipse.microprofile.config.ConfigProvider;
+
 import io.automatiko.engine.api.decision.DecisionConfig;
 import io.automatiko.engine.api.workflow.ProcessConfig;
 
@@ -30,4 +32,7 @@ public class ApplicationConfig implements io.automatiko.engine.api.Config {
         ).collect(Collectors.toList());
     }
 
+    protected boolean isPersistenceDisabled() {
+        return ConfigProvider.getConfig().getOptionalValue("quarkus.automatiko.persistence.disabled", Boolean.class).orElse(false);
+    }
 }

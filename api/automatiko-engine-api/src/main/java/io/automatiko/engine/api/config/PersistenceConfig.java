@@ -5,6 +5,13 @@ import java.util.Optional;
 public class PersistenceConfig {
 
     /**
+     * Determines if persistence is enabled
+     */
+    public Optional<Boolean> disabled() {
+        return Optional.empty();
+    }
+
+    /**
      * Determines the type of persistence to be used
      */
     public Optional<String> type() {

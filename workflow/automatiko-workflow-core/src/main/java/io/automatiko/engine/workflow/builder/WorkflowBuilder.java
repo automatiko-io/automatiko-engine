@@ -187,7 +187,9 @@ public class WorkflowBuilder {
      */
     public WorkflowBuilder tags(String... tags) {
         if (tags != null && tags.length > 0) {
-            process.setMetaData("tags", Stream.of(tags).collect(Collectors.joining(",")));
+            String existingTags = (String) process.getMetaData("tags");
+            process.setMetaData("tags",
+                    (existingTags == null ? "" : existingTags + ",") + Stream.of(tags).collect(Collectors.joining(",")));
         }
         return this;
     }
@@ -270,7 +272,12 @@ public class WorkflowBuilder {
         variable.setMetaData("type", type.getCanonicalName());
 
         if (tags != null && tags.length > 0) {
-            variable.setMetaData("tags", Stream.of(tags).collect(Collectors.joining(",")));
+            String variableTags = Stream.of(tags).collect(Collectors.joining(","));
+            variable.setMetaData("tags", variableTags);
+
+            if (variableTags.contains(Variable.BUSINESS_RELEVANT_TAG)) {
+                this.tags("#{" + name + "}");
+            }
         }
 
         process.getVariableScope().getVariables().add(variable);
@@ -309,7 +316,12 @@ public class WorkflowBuilder {
         variable.setMetaData("type", type.getType().getTypeName());
 
         if (tags != null && tags.length > 0) {
-            variable.setMetaData("tags", Stream.of(tags).collect(Collectors.joining(",")));
+            String variableTags = Stream.of(tags).collect(Collectors.joining(","));
+            variable.setMetaData("tags", variableTags);
+
+            if (variableTags.contains(Variable.BUSINESS_RELEVANT_TAG)) {
+                this.tags("#{" + name + "}");
+            }
         }
 
         process.getVariableScope().getVariables().add(variable);
@@ -331,7 +343,43 @@ public class WorkflowBuilder {
         variable.setType(new ObjectDataType(type));
 
         if (tags != null && tags.length > 0) {
-            variable.setMetaData("tags", Stream.of(tags).collect(Collectors.joining(",")));
+            String variableTags = Stream.of(tags).collect(Collectors.joining(","));
+            variable.setMetaData("tags", variableTags);
+
+            if (variableTags.contains(Variable.BUSINESS_RELEVANT_TAG)) {
+                this.tags("#{" + name + "}");
+            }
+        }
+
+        process.getVariableScope().getVariables().add(variable);
+        return this;
+    }
+
+    /**
+     * Adds data object to the workflow definition
+     * 
+     * @param name name of the data object that can be later on referenced by
+     * @param type type of the data object
+     * @param tags optional (non null tags) to be assigned to the data object e.g. output, input, required, etc
+     * @return the builder
+     */
+    public WorkflowBuilder dataObject(String name, String valueExpression, Class<?> type, String... tags) {
+        Variable variable = new Variable();
+        variable.setId(name);
+        variable.setName(name);
+        variable.setType(new ObjectDataType(type));
+
+        if (tags != null && tags.length > 0) {
+            String variableTags = Stream.of(tags).collect(Collectors.joining(","));
+            variable.setMetaData("tags", variableTags);
+
+            if (variableTags.contains(Variable.BUSINESS_RELEVANT_TAG)) {
+                this.tags("#{" + name + "}");
+            }
+        }
+
+        if (valueExpression != null) {
+            variable.setMetaData("value", "#{" + valueExpression + "}");
         }
 
         process.getVariableScope().getVariables().add(variable);
@@ -578,9 +626,9 @@ public class WorkflowBuilder {
      * @return the builder
      */
     public StartOnMessageNodeBuilder additionalPathOnMessage(String name) {
-        new AdditionalPathNodeBuilder(name, this).event("Message-on_message_" + name);
+        new AdditionalPathNodeBuilder(name, this).event("Message-" + name);
 
-        return startOnMessage("on_message_" + name);
+        return startOnMessage(name);
     }
 
     /**
@@ -592,7 +640,7 @@ public class WorkflowBuilder {
      * @return the builder
      */
     public StartOnMessageNodeBuilder additionalPathOnMessage(String name, boolean abortAfter) {
-        new AdditionalPathNodeBuilder(name, this).event("Message-on_message_" + name);
+        new AdditionalPathNodeBuilder(name, this).event("Message-" + name);
 
         return new StartOnMessageNodeBuilder(name, this, abortAfter);
     }

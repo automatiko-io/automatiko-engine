@@ -73,21 +73,26 @@ public class $Type$MessageConsumer {
                     event =  new $DataEventType$(header(record, "ce_specversion"), header(record, "ce_id"), header(record, "ce_source"), header(record, "ce_type"), header(record, "ce_subject"), header(record, "ce_time"), eventData);
                     cloudEventsExtensions(msg, event);
                 }
-                                
-                correlation = correlation(event, msg);  
                 accepted = acceptedEvent(event, msg);
+                if (!accepted) {
+                    metrics.messageRejected(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
+                    LOGGER.debug("Message has been rejected by filter expression");
+                    return msg.ack();
+                }
+                correlation = correlation(event, msg);                  
             } else {
                 eventData = convert(msg, $DataType$.class);
                 model = new $Type$();  
                 
-                correlation = correlation(eventData, msg); 
                 accepted = acceptedPayload(eventData, msg);
+                if (!accepted) {
+                    metrics.messageRejected(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
+                    LOGGER.debug("Message has been rejected by filter expression");
+                    return msg.ack();
+                }
+                correlation = correlation(eventData, msg);                 
             }   
-            if (!accepted) {
-                metrics.messageRejected(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
-                LOGGER.debug("Message has been rejected by filter expression");
-                return msg.ack();
-            }
+            
             IdentityProvider.set(new TrustedIdentityProvider("System<messaging>"));
             io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {                
                 

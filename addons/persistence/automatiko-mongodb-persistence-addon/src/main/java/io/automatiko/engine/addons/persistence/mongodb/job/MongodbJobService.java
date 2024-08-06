@@ -20,11 +20,10 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import jakarta.annotation.Priority;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.Observes;
-import jakarta.inject.Inject;
-import jakarta.interceptor.Interceptor;
+import org.bson.Document;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.mongodb.MongoWriteConcernException;
 import com.mongodb.MongoWriteException;
@@ -35,11 +34,6 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.result.UpdateResult;
-
-import org.bson.Document;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.Model;
@@ -65,6 +59,12 @@ import io.automatiko.engine.workflow.base.core.timer.CronExpirationTime;
 import io.automatiko.engine.workflow.base.core.timer.NoOpExpirationTime;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+import jakarta.interceptor.Interceptor;
 
 @ApplicationScoped
 public class MongodbJobService implements JobsService {
@@ -103,88 +103,103 @@ public class MongodbJobService implements JobsService {
     private Optional<Integer> threads;
 
     @Inject
-    public MongodbJobService(MongoClient mongoClient,
+    public MongodbJobService(Instance<MongoClient> mongoClient,
             Processes processes, Application application, Auditor auditor,
+            @ConfigProperty(name = "quarkus.automatiko.persistence.disabled") Optional<Boolean> persistenceDisabled,
             @ConfigProperty(name = MongodbJobsConfig.DATABASE_KEY) Optional<String> database,
             @ConfigProperty(name = MongodbJobsConfig.INTERVAL_KEY) Optional<Long> interval,
             @ConfigProperty(name = MongodbJobsConfig.THREADS_KEY) Optional<Integer> threads) {
-        this.mongoClient = mongoClient;
-        this.database = database;
-        this.interval = interval;
-        this.threads = threads;
 
-        processes.processIds().forEach(id -> mappedProcesses.put(id, processes.processById(id)));
+        if (!persistenceDisabled.orElse(false)) {
+            this.mongoClient = mongoClient.get();
+            this.database = database;
+            this.interval = interval;
+            this.threads = threads;
 
-        this.unitOfWorkManager = application.unitOfWorkManager();
-        this.auditor = auditor;
+            processes.processIds().forEach(id -> mappedProcesses.put(id, processes.processById(id)));
 
-        this.scheduler = new ScheduledThreadPoolExecutor(this.threads.orElse(1),
-                r -> new Thread(r, "automatiko-jobs-executor"));
-        this.loadScheduler = new ScheduledThreadPoolExecutor(1, r -> new Thread(r, "automatiko-jobs-loader"));
+            this.unitOfWorkManager = application.unitOfWorkManager();
+            this.auditor = auditor;
+
+            this.scheduler = new ScheduledThreadPoolExecutor(this.threads.orElse(1),
+                    r -> new Thread(r, "automatiko-jobs-executor"));
+            this.loadScheduler = new ScheduledThreadPoolExecutor(1, r -> new Thread(r, "automatiko-jobs-loader"));
+        } else {
+            this.mongoClient = null;
+            this.unitOfWorkManager = null;
+            this.auditor = null;
+            this.scheduler = null;
+            this.loadScheduler = null;
+        }
     }
 
     public void start(@Observes @Priority(Interceptor.Priority.LIBRARY_AFTER) StartupEvent event) {
+        if (this.mongoClient != null) {
+            collection().createIndex(Indexes.ascending(INSTANCE_ID_FIELD));
+            collection().createIndex(Indexes.descending(FIRE_AT_FIELD));
 
-        collection().createIndex(Indexes.ascending(INSTANCE_ID_FIELD));
-        collection().createIndex(Indexes.descending(FIRE_AT_FIELD));
+            loadScheduler.scheduleAtFixedRate(() -> {
+                try {
+                    long next = LocalDateTime.now().plus(Duration.ofMinutes(interval.orElse(10L)))
+                            .atZone(ZoneId.systemDefault()).toInstant()
+                            .toEpochMilli();
 
-        loadScheduler.scheduleAtFixedRate(() -> {
-            try {
-                long next = LocalDateTime.now().plus(Duration.ofMinutes(interval.orElse(10L)))
-                        .atZone(ZoneId.systemDefault()).toInstant()
-                        .toEpochMilli();
+                    FindIterable<Document> jobs = collection().find(lt(FIRE_AT_FIELD, next));
 
-                FindIterable<Document> jobs = collection().find(lt(FIRE_AT_FIELD, next));
+                    for (Document job : jobs) {
 
-                for (Document job : jobs) {
+                        if (job.getString(OWNER_INSTANCE_ID_FIELD) == null) {
+                            ProcessJobDescription description = ProcessJobDescription.of(build(job.getString(EXPRESSION_FIELD)),
+                                    null,
+                                    job.getString(OWNER_DEF_ID_FIELD));
 
-                    if (job.getString(OWNER_INSTANCE_ID_FIELD) == null) {
-                        ProcessJobDescription description = ProcessJobDescription.of(build(job.getString(EXPRESSION_FIELD)),
-                                null,
-                                job.getString(OWNER_DEF_ID_FIELD));
+                            scheduledJobs.computeIfAbsent(job.getString(INSTANCE_ID_FIELD), k -> {
+                                return log(job.getString(INSTANCE_ID_FIELD),
+                                        scheduler.schedule(new StartProcessOnExpiredTimer(job.getString(INSTANCE_ID_FIELD),
+                                                job.getString(OWNER_DEF_ID_FIELD), -1, description),
+                                                Duration.between(LocalDateTime.now(),
+                                                        ZonedDateTime.ofInstant(
+                                                                Instant.ofEpochMilli(job.getLong(FIRE_AT_FIELD)),
+                                                                ZoneId.systemDefault()))
+                                                        .toMillis(),
+                                                TimeUnit.MILLISECONDS));
+                            });
+                        } else {
+                            ProcessInstanceJobDescription description = ProcessInstanceJobDescription.of(
+                                    job.getString(INSTANCE_ID_FIELD),
+                                    job.getString(TRIGGER_TYPE_FIELD),
+                                    build(job.getString(EXPRESSION_FIELD)), job.getString(OWNER_INSTANCE_ID_FIELD),
+                                    job.getString(OWNER_DEF_ID_FIELD), null);
 
-                        scheduledJobs.computeIfAbsent(job.getString(INSTANCE_ID_FIELD), k -> {
-                            return log(job.getString(INSTANCE_ID_FIELD),
-                                    scheduler.schedule(new StartProcessOnExpiredTimer(job.getString(INSTANCE_ID_FIELD),
-                                            job.getString(OWNER_DEF_ID_FIELD), -1, description),
-                                            Duration.between(LocalDateTime.now(),
-                                                    ZonedDateTime.ofInstant(
-                                                            Instant.ofEpochMilli(job.getLong(FIRE_AT_FIELD)),
-                                                            ZoneId.systemDefault()))
-                                                    .toMillis(),
-                                            TimeUnit.MILLISECONDS));
-                        });
-                    } else {
-                        ProcessInstanceJobDescription description = ProcessInstanceJobDescription.of(
-                                job.getString(INSTANCE_ID_FIELD),
-                                job.getString(TRIGGER_TYPE_FIELD),
-                                build(job.getString(EXPRESSION_FIELD)), job.getString(OWNER_INSTANCE_ID_FIELD),
-                                job.getString(OWNER_DEF_ID_FIELD), null);
-
-                        scheduledJobs.computeIfAbsent(job.getString(INSTANCE_ID_FIELD), k -> {
-                            return log(job.getString(INSTANCE_ID_FIELD), scheduler.schedule(
-                                    new SignalProcessInstanceOnExpiredTimer(job.getString(INSTANCE_ID_FIELD),
-                                            job.getString(TRIGGER_TYPE_FIELD),
-                                            job.getString(OWNER_DEF_ID_FIELD),
-                                            job.getString(OWNER_INSTANCE_ID_FIELD),
-                                            job.getInteger(FIRE_LIMIT_FIELD), description),
-                                    Duration.between(LocalDateTime.now(), ZonedDateTime.ofInstant(
-                                            Instant.ofEpochMilli(job.getLong(FIRE_AT_FIELD)),
-                                            ZoneId.systemDefault())).toMillis(),
-                                    TimeUnit.MILLISECONDS));
-                        });
+                            scheduledJobs.computeIfAbsent(job.getString(INSTANCE_ID_FIELD), k -> {
+                                return log(job.getString(INSTANCE_ID_FIELD), scheduler.schedule(
+                                        new SignalProcessInstanceOnExpiredTimer(job.getString(INSTANCE_ID_FIELD),
+                                                job.getString(TRIGGER_TYPE_FIELD),
+                                                job.getString(OWNER_DEF_ID_FIELD),
+                                                job.getString(OWNER_INSTANCE_ID_FIELD),
+                                                job.getInteger(FIRE_LIMIT_FIELD), description),
+                                        Duration.between(LocalDateTime.now(), ZonedDateTime.ofInstant(
+                                                Instant.ofEpochMilli(job.getLong(FIRE_AT_FIELD)),
+                                                ZoneId.systemDefault())).toMillis(),
+                                        TimeUnit.MILLISECONDS));
+                            });
+                        }
                     }
+                } catch (Exception e) {
+                    LOGGER.error("Error while loading jobs from cassandra", e);
                 }
-            } catch (Exception e) {
-                LOGGER.error("Error while loading jobs from cassandra", e);
-            }
-        }, 1, interval.orElse(10L) * 60, TimeUnit.SECONDS);
+            }, 1, interval.orElse(10L) * 60, TimeUnit.SECONDS);
+        }
     }
 
     public void shutdown(@Observes ShutdownEvent event) {
-        this.loadScheduler.shutdownNow();
+        if (loadScheduler != null) {
+            this.loadScheduler.shutdownNow();
+        }
 
-        this.scheduler.shutdown();
+        if (scheduler != null) {
+            this.scheduler.shutdown();
+        }
     }
 
     @Override

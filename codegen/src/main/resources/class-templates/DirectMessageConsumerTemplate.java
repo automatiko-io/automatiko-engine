@@ -56,9 +56,7 @@ public class $Type$MessageConsumer {
             
             
             eventData = convert(msg, $DataType$.class);
-            model = new $Type$();  
-            
-            correlation = correlationPayload(eventData, msg); 
+            model = new $Type$();              
             
             boolean accepted = acceptedPayload(eventData, msg);
                  
@@ -67,6 +65,9 @@ public class $Type$MessageConsumer {
                 LOGGER.debug("Message has been rejected by filter expression");
                 return msg.ack();
             }
+
+            correlation = correlationPayload(eventData, msg); 
+            
             io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             	
             	if (correlation != null) {
