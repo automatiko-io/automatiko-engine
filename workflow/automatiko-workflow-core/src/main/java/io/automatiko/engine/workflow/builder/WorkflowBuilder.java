@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -99,7 +100,7 @@ public class WorkflowBuilder {
         process.setPackageName("org.acme.test");
 
         if (description != null) {
-            process.setMetaData("description", description);
+            process.setMetaData("Documentation", description);
         }
 
         return new WorkflowBuilder(process);
@@ -150,7 +151,7 @@ public class WorkflowBuilder {
         process.setPackageName("org.acme.test");
 
         if (description != null) {
-            process.setMetaData("description", description);
+            process.setMetaData("Documentation", description);
         }
 
         return new WorkflowBuilder(process);
@@ -191,6 +192,19 @@ public class WorkflowBuilder {
             process.setMetaData("tags",
                     (existingTags == null ? "" : existingTags + ",") + Stream.of(tags).collect(Collectors.joining(",")));
         }
+        return this;
+    }
+
+    /**
+     * Sets category of the workflow that is used to group workflows at documentation level
+     * 
+     * @param category not null name of the category
+     * @return the builder
+     */
+    public WorkflowBuilder category(String category, String description) {
+        Objects.requireNonNull(category, "Category must not be null");
+        process.setMetaData("category", category);
+        process.setMetaData("categoryDescription", description);
         return this;
     }
 

@@ -230,6 +230,14 @@ public abstract class AbstractResourceGenerator {
         ClassOrInterfaceDeclaration template = clazz.findFirst(ClassOrInterfaceDeclaration.class).orElseThrow(
                 () -> new NoSuchElementException("Compilation unit doesn't contain a class or interface declaration!"));
 
+        String category = (String) process.getMetaData().getOrDefault("category", process.getName());
+        String categoryDescription = (String) process.getMetaData().getOrDefault("categoryDescription",
+                process.getMetaData().getOrDefault("Documentation", processName).toString());
+
+        template.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.tags.Tag"),
+                NodeList.nodeList(new MemberValuePair("name", new StringLiteralExpr(category)),
+                        new MemberValuePair("description", new StringLiteralExpr(categoryDescription)))));
+
         template.setName(resourceClazzName);
         AtomicInteger index = new AtomicInteger(0);
         AtomicInteger uindex = new AtomicInteger(0);
