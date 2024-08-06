@@ -18,16 +18,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.regex.Matcher;
 
+import org.mvel2.MVEL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.definition.process.Node;
 import io.automatiko.engine.api.definition.process.NodeContainer;
+import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.api.runtime.process.ProcessContext;
 import io.automatiko.engine.api.workflow.datatype.DataType;
 import io.automatiko.engine.workflow.base.core.ContextContainer;
 import io.automatiko.engine.workflow.base.core.FunctionTagDefinition;
+import io.automatiko.engine.workflow.base.core.Process;
 import io.automatiko.engine.workflow.base.core.StaticTagDefinition;
 import io.automatiko.engine.workflow.base.core.TagDefinition;
 import io.automatiko.engine.workflow.base.core.context.exception.ActionExceptionHandler;
@@ -62,6 +66,7 @@ import io.automatiko.engine.workflow.process.executable.core.factory.EventSubPro
 import io.automatiko.engine.workflow.process.executable.core.factory.StartNodeFactory;
 import io.automatiko.engine.workflow.process.executable.core.factory.VariableFactory;
 import io.automatiko.engine.workflow.process.executable.core.validation.ExecutableProcessValidator;
+import io.automatiko.engine.workflow.util.PatternConstants;
 
 public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
 
@@ -232,6 +237,9 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
         ExecutableProcess process = getExecutableProcess();
         linkBoundaryEvents(process);
         postProcessNodes(process, process);
+
+        // process tags if any defined
+        processTags(process);
         return this;
     }
 
@@ -531,6 +539,42 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
                 }
             }
         }
+    }
+
+    protected void processTags(WorkflowProcess process) {
+        String tags = (String) process.getMetaData().get("tags");
+        List<TagDefinition> tagDefinitions = new ArrayList<TagDefinition>();
+        if (tags != null) {
+            String[] tagList = tags.split(",");
+            int counter = 0;
+            for (String tag : tagList) {
+                boolean isExpression = PatternConstants.PARAMETER_MATCHER.matcher(tag).matches();
+
+                if (isExpression) {
+                    tagDefinitions
+                            .add(new FunctionTagDefinition(String.valueOf(++counter), tag,
+                                    (exp, vars) -> {
+                                        Map<String, Object> replacements = new HashMap<>();
+                                        Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(exp);
+                                        while (matcher.find()) {
+                                            String paramName = matcher.group(1);
+                                            Object value = MVEL.executeExpression(MVEL.compileExpression(paramName),
+                                                    vars.getVariables());
+                                            replacements.put(paramName, value);
+                                        }
+                                        for (Map.Entry<String, Object> replacement : replacements.entrySet()) {
+                                            exp = exp.replace("#{" + replacement.getKey() + "}",
+                                                    replacement.getValue().toString());
+                                        }
+
+                                        return exp;
+                                    }));
+                } else {
+                    tagDefinitions.add(new StaticTagDefinition(String.valueOf(++counter), tag));
+                }
+            }
+        }
+        ((Process) process).setTagDefinitions(tagDefinitions);
     }
 
     private void processEventSubprocessStartNode(ExecutableProcess process, StartNode subNode,

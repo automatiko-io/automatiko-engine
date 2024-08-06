@@ -51,6 +51,7 @@ import com.github.javaparser.ast.type.Type;
 
 import io.automatiko.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatiko.engine.workflow.compiler.canonical.TriggerMetaData;
+import io.automatiko.engine.workflow.process.executable.core.Metadata;
 
 public class CodegenUtils {
 
@@ -150,7 +151,17 @@ public class CodegenUtils {
 
     public static MethodDeclaration extractOptionalInjection(String type, String fieldName, String defaultMethod,
             DependencyInjectionAnnotator annotator) {
+        return extractOptionalInjection(type, fieldName, defaultMethod, annotator, null);
+    }
+
+    public static MethodDeclaration extractOptionalInjection(String type, String fieldName, String defaultMethod,
+            DependencyInjectionAnnotator annotator, IfStmt disabledStatement) {
         BlockStmt body = new BlockStmt();
+
+        if (disabledStatement != null) {
+            body.addStatement(disabledStatement);
+        }
+
         MethodDeclaration extractMethod = new MethodDeclaration().addModifier(Modifier.Keyword.PROTECTED)
                 .setName("extract_" + fieldName).setType(type).setBody(body);
         Expression condition = annotator.optionalInstanceExists(fieldName);
@@ -219,6 +230,14 @@ public class CodegenUtils {
     }
 
     public static String triggerSanitizedName(TriggerMetaData trigger, String version) {
+
+        // check if node information is available in the context and use it to extract the channel name if exists
+        String channel = (String) trigger.getContext(Metadata.TRIGGER_CHANNEL);
+        // channel is explicitly used to name the channel for incoming/outgoing annotation
+        if (channel != null) {
+            return channel;
+        }
+
         return trigger.getName().replaceAll("/", "-").replaceAll("\\+", "x").replaceAll("#", "any") + version(version);
     }
 

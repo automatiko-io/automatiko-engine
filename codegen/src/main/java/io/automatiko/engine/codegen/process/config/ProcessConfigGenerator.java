@@ -24,6 +24,7 @@ import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
@@ -172,12 +173,15 @@ public class ProcessConfigGenerator {
             members.add(extractOptionalInjection(UnitOfWorkManager.class.getCanonicalName(), VAR_UNIT_OF_WORK_MANAGER,
                     VAR_DEFAULT_UNIT_OF_WORK_MANAGER, annotator));
             members.add(extractOptionalInjection(JobsService.class.getCanonicalName(), VAR_JOBS_SERVICE,
-                    VAR_DEFAULT_JOBS_SEVICE, annotator));
+                    VAR_DEFAULT_JOBS_SEVICE, annotator,
+                    new IfStmt(new MethodCallExpr(null, "isPersistenceDisabled"), new ReturnStmt(new NullLiteralExpr()),
+                            null)));
             members.add(extractOptionalInjection(VariableInitializer.class.getCanonicalName(), VAR_VARIABLE_INITIALIZER,
                     VAR_DEFAULT_VARIABLE_INITIALIZER, annotator));
             members.add(extractOptionalInjection("io.automatiko.engine.api.workflow.ProcessInstancesFactory",
-                    VAR_INSTANCE_FACTORY, VAR_DEFAULT_INSTANCE_FACTORY, annotator));
-
+                    VAR_INSTANCE_FACTORY, VAR_DEFAULT_INSTANCE_FACTORY, annotator,
+                    new IfStmt(new MethodCallExpr(null, "isPersistenceDisabled"), new ReturnStmt(new NullLiteralExpr()),
+                            null)));
             members.add(generateExtractEventListenerConfigMethod());
             members.add(generateMergeEventListenerConfigMethod());
         } else {

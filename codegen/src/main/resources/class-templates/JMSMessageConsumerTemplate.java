@@ -73,21 +73,26 @@ public class $Type$MessageConsumer {
                     event =  new $DataEventType$(appProperty(msg, "ce_specversion"), appProperty(msg, "ce_id"), appProperty(msg, "ce_source"), appProperty(msg, "ce_type"), appProperty(msg, "ce_subject"), appProperty(msg, "ce_time"), eventData);
                     cloudEventsExtensions(msg, event);
                 }
-                
-                correlation = correlationEvent(event, msg);
                 accepted = acceptedEvent(event, msg);
+                if (!accepted) {
+                    metrics.messageRejected(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
+                    LOGGER.debug("Message has been rejected by filter expression");
+                    return msg.ack();
+                }
+                correlation = correlationEvent(event, msg);                
             } else {
                 eventData = convert(msg, $DataType$.class);
                 model = new $Type$();  
                 
-                correlation = correlationPayload(eventData, msg); 
                 accepted = acceptedPayload(eventData, msg);
+                if (!accepted) {
+                    metrics.messageRejected(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
+                    LOGGER.debug("Message has been rejected by filter expression");
+                    return msg.ack();
+                }
+                correlation = correlationPayload(eventData, msg);                 
             }       
-            if (!accepted) {
-                metrics.messageRejected(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
-                LOGGER.debug("Message has been rejected by filter expression");
-                return msg.ack();
-            }
+            
             io.automatiko.engine.services.uow.UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
             	
             	if (correlation != null) {

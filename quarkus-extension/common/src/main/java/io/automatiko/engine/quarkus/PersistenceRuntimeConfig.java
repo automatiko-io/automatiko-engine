@@ -11,6 +11,12 @@ import io.quarkus.runtime.annotations.ConfigItem;
 public class PersistenceRuntimeConfig extends PersistenceConfig {
 
     /**
+     * Determines if persistence is enabled
+     */
+    @ConfigItem
+    public Optional<Boolean> disabled;
+
+    /**
      * Determines the type of persistence to be used
      */
     @ConfigItem
@@ -57,6 +63,10 @@ public class PersistenceRuntimeConfig extends PersistenceConfig {
      */
     @ConfigItem
     public TransactionLogRuntimeConfig transactionLog;
+
+    public Optional<Boolean> disabled() {
+        return disabled;
+    }
 
     @Override
     public Optional<String> type() {
