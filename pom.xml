@@ -45,7 +45,7 @@
     <version.antapacheregexp>1.10.14</version.antapacheregexp>
     <version.antrun.plugin>3.1.0</version.antrun.plugin>
     <version.asciidoctor.plugin>1.5.2.1</version.asciidoctor.plugin>
-    <version.build.helper.plugin>3.0.0</version.build.helper.plugin>    
+    <version.build.helper.plugin>3.0.0</version.build.helper.plugin>
     <version.clean.plugin>3.4.0</version.clean.plugin>
     <version.compiler.plugin>3.13.0</version.compiler.plugin>
     <version.copyrename.plugin>1.0</version.copyrename.plugin>
@@ -55,7 +55,7 @@
     <version.findbugs.plugin>3.0.5</version.findbugs.plugin>
     <version.install.plugin>3.1.2</version.install.plugin>
     <version.invoker.plugin>2.0.0</version.invoker.plugin>
-    <version.jandex.plugin>3.1.2</version.jandex.plugin>
+    <version.jandex.plugin>3.2.0</version.jandex.plugin>
     <version.jar.plugin>3.1.0</version.jar.plugin>
     <version.javadoc.plugin>3.8.0</version.javadoc.plugin>
     <version.archetype.plugin>3.2.1</version.archetype.plugin>
@@ -91,7 +91,7 @@
     <version.javassist>3.29.0-GA</version.javassist>
     <version.org.jfree.svg>5.0.6</version.org.jfree.svg>
     <version.org.jgrapht>1.5.2</version.org.jgrapht>
-    
+
     <version.jakarta.activation>2.1.1</version.jakarta.activation>
     <version.jakarta.annotation-api>3.0.0</version.jakarta.annotation-api>
     <version.jakarta.enterprise.cdi-api>4.1.0</version.jakarta.enterprise.cdi-api>
@@ -101,24 +101,24 @@
     <version.jakarta.websocket-api>2.1.0</version.jakarta.websocket-api>
     <version.jakarta.xml.bind-api>4.0.0</version.jakarta.xml.bind-api>
     <version.jaxb-runtime>4.0.5</version.jaxb-runtime>
-    
+
     <version.json-unit-assertj>3.4.1</version.json-unit-assertj>
     <version.net.java.dev.glazedlists>1.8.0</version.net.java.dev.glazedlists>
 
-    <version.io.cloudevents>4.0.1</version.io.cloudevents>    
-    <version.io.quarkus>3.11.0</version.io.quarkus>
+    <version.io.cloudevents>4.0.1</version.io.cloudevents>
+    <version.io.quarkus>3.13.0</version.io.quarkus>
     <version.io.restassured>5.5.0</version.io.restassured>
-    <version.io.smallrye.reactive>4.21.0</version.io.smallrye.reactive>
+    <version.io.smallrye.reactive>4.23.0</version.io.smallrye.reactive>
     <version.org.eclipse.microprofile.metrics>4.0.1</version.org.eclipse.microprofile.metrics>
     <version.org.eclipse.microprofile.rest.client>3.0.1</version.org.eclipse.microprofile.rest.client>
     <version.org.eclipse.microprofile.config>3.1</version.org.eclipse.microprofile.config>
     <version.org.eclipse.microprofile.openapi>3.1.1</version.org.eclipse.microprofile.openapi>
 
     <version.io.javaoperatorsdk>6.7.1</version.io.javaoperatorsdk>
-    <version.io.quarkiverse.googlecloudservices>2.9.0</version.io.quarkiverse.googlecloudservices>
+    <version.io.quarkiverse.googlecloudservices>2.10.0</version.io.quarkiverse.googlecloudservices>
     <version.com.datastax.oss.quarkus>1.2.0</version.com.datastax.oss.quarkus>
     <version.com.datastax.oss>4.17.0</version.com.datastax.oss>
-    <version.org.apache.camel.quarkus>3.11.0</version.org.apache.camel.quarkus>
+    <version.org.apache.camel.quarkus>3.13.0</version.org.apache.camel.quarkus>
     <version.io.quarkiverse.reactivemessaging.http>2.2.0</version.io.quarkiverse.reactivemessaging.http>
     <version.io.quarkiverse.amazonservices>2.16.0</version.io.quarkiverse.amazonservices>
     <version.io.quarkiverse.azure-services>1.0.5</version.io.quarkiverse.azure-services>
@@ -305,8 +305,8 @@
         <groupId>com.github.javaparser</groupId>
         <artifactId>javaparser-core</artifactId>
         <version>${version.com.github.javaparser}</version>
-      </dependency>     
-      
+      </dependency>
+
       <dependency>
         <groupId>net.thisptr</groupId>
         <artifactId>jackson-jq</artifactId>
@@ -320,13 +320,13 @@
         <version>${version.org.openapitools}</version>
       </dependency>
 
-      
+
       <dependency>
         <groupId>jakarta.ws.rs</groupId>
         <artifactId>jakarta.ws.rs-api</artifactId>
         <version>${version.jakarta.ws.rs.jakarta-rs-api}</version>
       </dependency>
-      
+
           <!-- svg image generation -->
       <dependency>
         <groupId>org.jfree</groupId>
@@ -343,7 +343,7 @@
         <artifactId>jgrapht-ext</artifactId>
         <version>${version.org.jgrapht}</version>
       </dependency>
-      
+
       <!-- user task index for file system-->
   	  <dependency>
 	    <groupId>io.quarkiverse.jdbc</groupId>
@@ -576,7 +576,7 @@
             <groupId>jakarta.enterprise</groupId>
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
             <version>${version.jakarta.enterprise.cdi-api}</version>
-        </dependency>    
+        </dependency>
 
       <!-- predictions/machine learning related -->
       <dependency>
@@ -639,7 +639,7 @@
         <artifactId>serverlessworkflow-diagram</artifactId>
         <version>${version.io.serverlessworkflow}</version>
       </dependency>
-      
+
       <!-- quarkiverse dependencies -->
       <dependency>
         <groupId>io.quarkiverse.reactivemessaging.http</groupId>
