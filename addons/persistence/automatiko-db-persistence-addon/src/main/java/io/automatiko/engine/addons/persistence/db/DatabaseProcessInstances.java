@@ -149,7 +149,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
                 .map(e -> {
                     try {
                         if (mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK) {
-                            JpaOperations.INSTANCE.getEntityManager().lock(e, determineLockMode(mode));
+                            JpaOperations.INSTANCE.getEntityManager(type).lock(e, determineLockMode(mode));
                         }
 
                         return audit(unmarshallInstance(mode, ((ProcessInstanceEntity) e)));
@@ -170,7 +170,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
                 .map(e -> {
                     try {
                         if (mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK) {
-                            JpaOperations.INSTANCE.getEntityManager().lock(e, determineLockMode(mode));
+                            JpaOperations.INSTANCE.getEntityManager(type).lock(e, determineLockMode(mode));
                         }
 
                         return audit(unmarshallInstance(mode, ((ProcessInstanceEntity) e)));
@@ -202,7 +202,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
                 .map(e -> {
                     try {
                         if (mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK) {
-                            JpaOperations.INSTANCE.getEntityManager().lock(e, determineLockMode(mode));
+                            JpaOperations.INSTANCE.getEntityManager(type).lock(e, determineLockMode(mode));
                         }
                         return audit(unmarshallInstance(mode, ((ProcessInstanceEntity) e)));
                     } catch (AccessDeniedException ex) {
@@ -223,7 +223,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
                 .map(e -> {
                     try {
                         if (mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK) {
-                            JpaOperations.INSTANCE.getEntityManager().lock(e, determineLockMode(mode));
+                            JpaOperations.INSTANCE.getEntityManager(type).lock(e, determineLockMode(mode));
                         }
                         return audit(unmarshallInstance(mode, ((ProcessInstanceEntity) e)));
                     } catch (AccessDeniedException ex) {
