@@ -18,17 +18,11 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import jakarta.annotation.Priority;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.Observes;
-import jakarta.inject.Inject;
-import jakarta.interceptor.Interceptor;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.Model;
@@ -53,6 +47,11 @@ import io.automatiko.engine.workflow.base.core.timer.CronExpirationTime;
 import io.automatiko.engine.workflow.base.core.timer.NoOpExpirationTime;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
+import jakarta.interceptor.Interceptor;
 
 @ApplicationScoped
 public class FileSystemBasedJobService implements JobsService {
@@ -75,26 +74,35 @@ public class FileSystemBasedJobService implements JobsService {
 
     @Inject
     public FileSystemBasedJobService(
+            @ConfigProperty(name = "quarkus.automatiko.persistence.disabled") Optional<Boolean> persistenceDisabled,
             @ConfigProperty(name = "quarkus.automatiko.jobs.filesystem.path", defaultValue = ".") String storage,
             @ConfigProperty(name = "quarkus.automatiko.jobs.filesystem.threads", defaultValue = "1") int threads,
             Processes processes, Application application, Auditor auditor) {
-        this.storage = storage;
-        processes.processIds().forEach(id -> mappedProcesses.put(id, processes.processById(id)));
+        if (!persistenceDisabled.orElse(false)) {
+            this.storage = storage;
+            processes.processIds().forEach(id -> mappedProcesses.put(id, processes.processById(id)));
 
-        this.unitOfWorkManager = application.unitOfWorkManager();
-        this.auditor = auditor;
+            this.unitOfWorkManager = application.unitOfWorkManager();
+            this.auditor = auditor;
 
-        this.scheduler = new ScheduledThreadPoolExecutor(threads, r -> new Thread(r, "automatiko-jobs-executor"));
+            this.scheduler = new ScheduledThreadPoolExecutor(threads, r -> new Thread(r, "automatiko-jobs-executor"));
+        } else {
+            this.unitOfWorkManager = null;
+            this.auditor = null;
+            this.scheduler = null;
+        }
     }
 
     public void scheduleOnLoad(@Observes @Priority(Interceptor.Priority.LIBRARY_AFTER) StartupEvent event) {
-        Path start = Paths.get(storage);
+        if (scheduler != null) {
+            Path start = Paths.get(storage);
 
-        try {
-            Files.createDirectories(start);
-            Files.newDirectoryStream(start).forEach(this::loadAndSchedule);
-        } catch (IOException e) {
-            LOGGER.warn("Unable to load stored scheduled jobs", e);
+            try {
+                Files.createDirectories(start);
+                Files.newDirectoryStream(start).forEach(this::loadAndSchedule);
+            } catch (IOException e) {
+                LOGGER.warn("Unable to load stored scheduled jobs", e);
+            }
         }
     }
 
@@ -219,10 +227,12 @@ public class FileSystemBasedJobService implements JobsService {
     }
 
     public void shutown(@Observes ShutdownEvent event) {
-        scheduledJobs.values().forEach(job -> job.cancel(false));
-        scheduledJobs.clear();
+        if (scheduler != null) {
+            scheduledJobs.values().forEach(job -> job.cancel(false));
+            scheduledJobs.clear();
 
-        scheduler.shutdownNow();
+            scheduler.shutdownNow();
+        }
     }
 
     protected void storeScheduledJob(ScheduledJob job) {

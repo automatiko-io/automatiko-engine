@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -62,7 +63,8 @@ public class FileSystemBasedJobServiceTest {
             return Mockito.mock(ProcessInstances.class);
         });
 
-        FileSystemBasedJobService jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application, auditor);
+        FileSystemBasedJobService jobs = new FileSystemBasedJobService(Optional.empty(), "target/jobs", 1, processes,
+                application, auditor);
 
         ProcessInstanceJobDescription processInstanceJobDescription = ProcessInstanceJobDescription.of(123,
                 DurationExpirationTime.after(500), "processInstanceId", "processId", "1");
@@ -90,7 +92,8 @@ public class FileSystemBasedJobServiceTest {
             return Mockito.mock(ProcessInstances.class);
         });
 
-        FileSystemBasedJobService jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application, auditor);
+        FileSystemBasedJobService jobs = new FileSystemBasedJobService(Optional.empty(), "target/jobs", 1, processes,
+                application, auditor);
 
         ProcessInstanceJobDescription processInstanceJobDescription = ProcessInstanceJobDescription.of(123,
                 DurationExpirationTime.after(100), "processInstanceId", "processId", "1");
@@ -99,7 +102,7 @@ public class FileSystemBasedJobServiceTest {
 
         jobs.shutown(null);
 
-        jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application, auditor);
+        jobs = new FileSystemBasedJobService(Optional.empty(), "target/jobs", 1, processes, application, auditor);
         jobs.scheduleOnLoad(null);
 
         boolean achieved = latch.await(2, TimeUnit.SECONDS);
@@ -122,7 +125,8 @@ public class FileSystemBasedJobServiceTest {
             return Mockito.mock(ProcessInstances.class);
         });
 
-        FileSystemBasedJobService jobs = new FileSystemBasedJobService("target/jobs", 1, processes, application, auditor);
+        FileSystemBasedJobService jobs = new FileSystemBasedJobService(Optional.empty(), "target/jobs", 1, processes,
+                application, auditor);
 
         ProcessInstanceJobDescription processInstanceJobDescription = ProcessInstanceJobDescription.of(123,
                 DurationExpirationTime.after(500), "processInstanceId", "processId", "1");

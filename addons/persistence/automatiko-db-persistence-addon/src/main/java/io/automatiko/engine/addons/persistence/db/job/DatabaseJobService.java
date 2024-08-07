@@ -15,12 +15,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import jakarta.annotation.Priority;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.Observes;
-import jakarta.inject.Inject;
-import jakarta.interceptor.Interceptor;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.context.ManagedExecutor;
 import org.slf4j.Logger;
@@ -51,6 +45,11 @@ import io.automatiko.engine.workflow.base.core.timer.CronExpirationTime;
 import io.automatiko.engine.workflow.base.core.timer.NoOpExpirationTime;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
+import jakarta.interceptor.Interceptor;
 
 @ApplicationScoped
 public class DatabaseJobService implements JobsService {
@@ -74,59 +73,75 @@ public class DatabaseJobService implements JobsService {
 
     @Inject
     public DatabaseJobService(ManagedExecutor exec,
+            @ConfigProperty(name = "quarkus.automatiko.persistence.disabled") Optional<Boolean> persistenceDisabled,
             @ConfigProperty(name = "quarkus.automatiko.jobs.db.interval", defaultValue = "10") Long interval,
             @ConfigProperty(name = "quarkus.automatiko.jobs.db.threads", defaultValue = "1") int threads,
             Processes processes, Application application, Auditor auditor) {
-        this.exec = exec;
-        this.interval = interval;
-        processes.processIds().forEach(id -> mappedProcesses.put(id, processes.processById(id)));
+        if (!persistenceDisabled.orElse(false)) {
+            this.exec = exec;
+            this.interval = interval;
+            processes.processIds().forEach(id -> mappedProcesses.put(id, processes.processById(id)));
 
-        this.unitOfWorkManager = application.unitOfWorkManager();
-        this.auditor = auditor;
+            this.unitOfWorkManager = application.unitOfWorkManager();
+            this.auditor = auditor;
 
-        this.scheduler = new ScheduledThreadPoolExecutor(threads, r -> new Thread(r, "automatiko-jobs-executor"));
-        this.loadScheduler = new ScheduledThreadPoolExecutor(1, r -> new Thread(r, "automatiko-jobs-loader"));
+            this.scheduler = new ScheduledThreadPoolExecutor(threads, r -> new Thread(r, "automatiko-jobs-executor"));
+            this.loadScheduler = new ScheduledThreadPoolExecutor(1, r -> new Thread(r, "automatiko-jobs-loader"));
+        } else {
+            this.interval = null;
+            this.unitOfWorkManager = null;
+            this.auditor = null;
+            this.scheduler = null;
+            this.loadScheduler = null;
+        }
     }
 
     public void start(@Observes @Priority(Interceptor.Priority.LIBRARY_AFTER) StartupEvent event) {
-        loadScheduler.scheduleAtFixedRate(() -> {
-            UnitOfWorkExecutor.executeInUnitOfWork(unitOfWorkManager, () -> {
-                LocalDateTime next = LocalDateTime.now().plus(Duration.ofMinutes(interval));
-                List<JobInstanceEntity> jobs = JobInstanceEntity.loadJobs(next);
-                LOGGER.debug("Loaded jobs ({}) to be executed before {}", jobs.size(), next);
-                for (JobInstanceEntity job : jobs) {
+        if (loadScheduler != null) {
+            loadScheduler.scheduleAtFixedRate(() -> {
+                UnitOfWorkExecutor.executeInUnitOfWork(unitOfWorkManager, () -> {
+                    LocalDateTime next = LocalDateTime.now().plus(Duration.ofMinutes(interval));
+                    List<JobInstanceEntity> jobs = JobInstanceEntity.loadJobs(next);
+                    LOGGER.debug("Loaded jobs ({}) to be executed before {}", jobs.size(), next);
+                    for (JobInstanceEntity job : jobs) {
 
-                    if (job.ownerInstanceId == null) {
-                        ProcessJobDescription description = ProcessJobDescription.of(build(job), null, job.ownerDefinitionId);
-                        scheduledJobs.computeIfAbsent(job.id, k -> {
-                            return log(job.id, scheduler.schedule(new StartProcessOnExpiredTimer(job.id,
-                                    job.ownerDefinitionId, -1, description),
-                                    Duration.between(LocalDateTime.now(), job.expirationTime).toMillis(),
-                                    TimeUnit.MILLISECONDS));
-                        });
-                    } else {
-                        ProcessInstanceJobDescription description = ProcessInstanceJobDescription.of(job.id, job.triggerType,
-                                build(job), job.ownerInstanceId, job.ownerDefinitionId, null);
-                        scheduledJobs.computeIfAbsent(job.id, k -> {
-                            return log(job.id, scheduler.schedule(
-                                    new SignalProcessInstanceOnExpiredTimer(job.id, job.triggerType,
-                                            job.ownerDefinitionId,
-                                            job.ownerInstanceId, job.limit, description),
-                                    Duration.between(LocalDateTime.now(), job.expirationTime).toMillis(),
-                                    TimeUnit.MILLISECONDS));
-                        });
+                        if (job.ownerInstanceId == null) {
+                            ProcessJobDescription description = ProcessJobDescription.of(build(job), null,
+                                    job.ownerDefinitionId);
+                            scheduledJobs.computeIfAbsent(job.id, k -> {
+                                return log(job.id, scheduler.schedule(new StartProcessOnExpiredTimer(job.id,
+                                        job.ownerDefinitionId, -1, description),
+                                        Duration.between(LocalDateTime.now(), job.expirationTime).toMillis(),
+                                        TimeUnit.MILLISECONDS));
+                            });
+                        } else {
+                            ProcessInstanceJobDescription description = ProcessInstanceJobDescription.of(job.id,
+                                    job.triggerType,
+                                    build(job), job.ownerInstanceId, job.ownerDefinitionId, null);
+                            scheduledJobs.computeIfAbsent(job.id, k -> {
+                                return log(job.id, scheduler.schedule(
+                                        new SignalProcessInstanceOnExpiredTimer(job.id, job.triggerType,
+                                                job.ownerDefinitionId,
+                                                job.ownerInstanceId, job.limit, description),
+                                        Duration.between(LocalDateTime.now(), job.expirationTime).toMillis(),
+                                        TimeUnit.MILLISECONDS));
+                            });
+                        }
                     }
-                }
-                return null;
-            });
+                    return null;
+                });
 
-        }, 1, interval * 60, TimeUnit.SECONDS);
+            }, 1, interval * 60, TimeUnit.SECONDS);
+        }
     }
 
     public void shutdown(@Observes ShutdownEvent event) {
-        this.loadScheduler.shutdownNow();
-
-        this.scheduler.shutdown();
+        if (loadScheduler != null) {
+            this.loadScheduler.shutdownNow();
+        }
+        if (scheduler != null) {
+            this.scheduler.shutdown();
+        }
     }
 
     @Override
