@@ -19,12 +19,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import jakarta.annotation.Priority;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.Observes;
-import jakarta.inject.Inject;
-import jakarta.interceptor.Interceptor;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +46,11 @@ import io.automatiko.engine.workflow.base.core.timer.CronExpirationTime;
 import io.automatiko.engine.workflow.base.core.timer.NoOpExpirationTime;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
+import jakarta.interceptor.Interceptor;
 import software.amazon.awssdk.core.waiters.WaiterResponse;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeAction;
@@ -125,97 +124,114 @@ public class DynamoDBJobService implements JobsService {
     @Inject
     public DynamoDBJobService(DynamoDbClient dynamodb,
             Processes processes, Application application, Auditor auditor,
+            @ConfigProperty(name = "quarkus.automatiko.persistence.disabled") Optional<Boolean> persistenceDisabled,
             @ConfigProperty(name = DynamoDBJobsConfig.CREATE_TABLES_KEY) Optional<Boolean> createTables,
             @ConfigProperty(name = DynamoDBJobsConfig.READ_CAPACITY_KEY) Optional<Long> readCapacity,
             @ConfigProperty(name = DynamoDBJobsConfig.WRITE_CAPACITY_KEY) Optional<Long> writeCapacity,
             @ConfigProperty(name = DynamoDBJobsConfig.INTERVAL_KEY) Optional<Long> interval,
             @ConfigProperty(name = DynamoDBJobsConfig.THREADS_KEY) Optional<Integer> threads) {
-        this.dynamodb = dynamodb;
-        this.createTables = createTables;
-        this.readCapacity = readCapacity;
-        this.writeCapacity = writeCapacity;
-        this.interval = interval;
-        this.threads = threads;
 
-        processes.processIds().forEach(id -> mappedProcesses.put(id, processes.processById(id)));
+        if (!persistenceDisabled.orElse(false)) {
+            this.dynamodb = dynamodb;
+            this.createTables = createTables;
+            this.readCapacity = readCapacity;
+            this.writeCapacity = writeCapacity;
+            this.interval = interval;
+            this.threads = threads;
 
-        if (this.createTables.orElse(Boolean.TRUE)) {
-            createTable();
+            processes.processIds().forEach(id -> mappedProcesses.put(id, processes.processById(id)));
+
+            if (this.createTables.orElse(Boolean.TRUE)) {
+                createTable();
+            }
+
+            this.unitOfWorkManager = application.unitOfWorkManager();
+
+            this.auditor = auditor;
+
+            this.scheduler = new ScheduledThreadPoolExecutor(this.threads.orElse(1),
+                    r -> new Thread(r, "automatiko-jobs-executor"));
+            this.loadScheduler = new ScheduledThreadPoolExecutor(1, r -> new Thread(r, "automatiko-jobs-loader"));
+        } else {
+            this.dynamodb = null;
+            this.unitOfWorkManager = null;
+            this.auditor = null;
+            this.scheduler = null;
+            this.loadScheduler = null;
         }
-
-        this.unitOfWorkManager = application.unitOfWorkManager();
-
-        this.auditor = auditor;
-
-        this.scheduler = new ScheduledThreadPoolExecutor(this.threads.orElse(1),
-                r -> new Thread(r, "automatiko-jobs-executor"));
-        this.loadScheduler = new ScheduledThreadPoolExecutor(1, r -> new Thread(r, "automatiko-jobs-loader"));
     }
 
     public void start(@Observes @Priority(Interceptor.Priority.LIBRARY_AFTER) StartupEvent event) {
-        loadScheduler.scheduleAtFixedRate(() -> {
-            try {
-                long next = LocalDateTime.now().plus(Duration.ofMinutes(interval.orElse(10L)))
-                        .atZone(ZoneId.systemDefault()).toInstant()
-                        .toEpochMilli();
-                Map<String, AttributeValue> attrValues = new HashMap<String, AttributeValue>();
-                attrValues.put(":value", AttributeValue.builder().n(Long.toString(next)).build());
-                ScanRequest query = ScanRequest.builder().tableName(tableName)
-                        .projectionExpression(INSTANCE_ID_FIELD + "," + FIRE_AT_FIELD + "," + OWNER_INSTANCE_ID_FIELD + ","
-                                + OWNER_DEF_ID_FIELD + "," +
-                                TRIGGER_TYPE_FIELD + "," + FIRE_LIMIT_FIELD + "," + REPEAT_INTERVAL_FIELD)
-                        .filterExpression(FIRE_AT_FIELD + " < :value").expressionAttributeValues(attrValues).build();
+        if (dynamodb != null) {
+            loadScheduler.scheduleAtFixedRate(() -> {
+                try {
+                    long next = LocalDateTime.now().plus(Duration.ofMinutes(interval.orElse(10L)))
+                            .atZone(ZoneId.systemDefault()).toInstant()
+                            .toEpochMilli();
+                    Map<String, AttributeValue> attrValues = new HashMap<String, AttributeValue>();
+                    attrValues.put(":value", AttributeValue.builder().n(Long.toString(next)).build());
+                    ScanRequest query = ScanRequest.builder().tableName(tableName)
+                            .projectionExpression(INSTANCE_ID_FIELD + "," + FIRE_AT_FIELD + "," + OWNER_INSTANCE_ID_FIELD + ","
+                                    + OWNER_DEF_ID_FIELD + "," +
+                                    TRIGGER_TYPE_FIELD + "," + FIRE_LIMIT_FIELD + "," + REPEAT_INTERVAL_FIELD)
+                            .filterExpression(FIRE_AT_FIELD + " < :value").expressionAttributeValues(attrValues).build();
 
-                List<Map<String, AttributeValue>> jobs = dynamodb.scan(query).items();
-                LOGGER.debug("Loaded jobs ({}) to be executed before {}", jobs.size(), next);
-                for (Map<String, AttributeValue> job : jobs) {
+                    List<Map<String, AttributeValue>> jobs = dynamodb.scan(query).items();
+                    LOGGER.debug("Loaded jobs ({}) to be executed before {}", jobs.size(), next);
+                    for (Map<String, AttributeValue> job : jobs) {
 
-                    if (job.get(OWNER_INSTANCE_ID_FIELD) == null) {
-                        ProcessJobDescription description = ProcessJobDescription.of(build(job.get(EXPRESSION_FIELD).s()), null,
-                                job.get(OWNER_DEF_ID_FIELD).s());
+                        if (job.get(OWNER_INSTANCE_ID_FIELD) == null) {
+                            ProcessJobDescription description = ProcessJobDescription.of(build(job.get(EXPRESSION_FIELD).s()),
+                                    null,
+                                    job.get(OWNER_DEF_ID_FIELD).s());
 
-                        scheduledJobs.computeIfAbsent(job.get(INSTANCE_ID_FIELD).s(), k -> {
-                            return log(job.get(INSTANCE_ID_FIELD).s(),
-                                    scheduler.schedule(new StartProcessOnExpiredTimer(job.get(INSTANCE_ID_FIELD).s(),
-                                            job.get(OWNER_DEF_ID_FIELD).s(), -1, description),
-                                            Duration.between(LocalDateTime.now(),
-                                                    ZonedDateTime.ofInstant(
-                                                            Instant.ofEpochMilli(Long.parseLong(job.get(FIRE_AT_FIELD).n())),
-                                                            ZoneId.systemDefault()))
-                                                    .toMillis(),
-                                            TimeUnit.MILLISECONDS));
-                        });
-                    } else {
-                        ProcessInstanceJobDescription description = ProcessInstanceJobDescription.of(
-                                job.get(INSTANCE_ID_FIELD).s(),
-                                job.get(TRIGGER_TYPE_FIELD).s(),
-                                build(job.get(EXPRESSION_FIELD).s()), job.get(OWNER_INSTANCE_ID_FIELD).s(),
-                                job.get(OWNER_DEF_ID_FIELD).s(), null);
+                            scheduledJobs.computeIfAbsent(job.get(INSTANCE_ID_FIELD).s(), k -> {
+                                return log(job.get(INSTANCE_ID_FIELD).s(),
+                                        scheduler.schedule(new StartProcessOnExpiredTimer(job.get(INSTANCE_ID_FIELD).s(),
+                                                job.get(OWNER_DEF_ID_FIELD).s(), -1, description),
+                                                Duration.between(LocalDateTime.now(),
+                                                        ZonedDateTime.ofInstant(
+                                                                Instant.ofEpochMilli(
+                                                                        Long.parseLong(job.get(FIRE_AT_FIELD).n())),
+                                                                ZoneId.systemDefault()))
+                                                        .toMillis(),
+                                                TimeUnit.MILLISECONDS));
+                            });
+                        } else {
+                            ProcessInstanceJobDescription description = ProcessInstanceJobDescription.of(
+                                    job.get(INSTANCE_ID_FIELD).s(),
+                                    job.get(TRIGGER_TYPE_FIELD).s(),
+                                    build(job.get(EXPRESSION_FIELD).s()), job.get(OWNER_INSTANCE_ID_FIELD).s(),
+                                    job.get(OWNER_DEF_ID_FIELD).s(), null);
 
-                        scheduledJobs.computeIfAbsent(job.get(INSTANCE_ID_FIELD).s(), k -> {
-                            return log(job.get(INSTANCE_ID_FIELD).s(), scheduler.schedule(
-                                    new SignalProcessInstanceOnExpiredTimer(job.get(INSTANCE_ID_FIELD).s(),
-                                            job.get(TRIGGER_TYPE_FIELD).s(),
-                                            job.get(OWNER_DEF_ID_FIELD).s(),
-                                            job.get(OWNER_INSTANCE_ID_FIELD).s(),
-                                            Integer.parseInt(job.get(FIRE_LIMIT_FIELD).n()), description),
-                                    Duration.between(LocalDateTime.now(), ZonedDateTime.ofInstant(
-                                            Instant.ofEpochMilli(Long.parseLong(job.get(FIRE_AT_FIELD).n())),
-                                            ZoneId.systemDefault())).toMillis(),
-                                    TimeUnit.MILLISECONDS));
-                        });
+                            scheduledJobs.computeIfAbsent(job.get(INSTANCE_ID_FIELD).s(), k -> {
+                                return log(job.get(INSTANCE_ID_FIELD).s(), scheduler.schedule(
+                                        new SignalProcessInstanceOnExpiredTimer(job.get(INSTANCE_ID_FIELD).s(),
+                                                job.get(TRIGGER_TYPE_FIELD).s(),
+                                                job.get(OWNER_DEF_ID_FIELD).s(),
+                                                job.get(OWNER_INSTANCE_ID_FIELD).s(),
+                                                Integer.parseInt(job.get(FIRE_LIMIT_FIELD).n()), description),
+                                        Duration.between(LocalDateTime.now(), ZonedDateTime.ofInstant(
+                                                Instant.ofEpochMilli(Long.parseLong(job.get(FIRE_AT_FIELD).n())),
+                                                ZoneId.systemDefault())).toMillis(),
+                                        TimeUnit.MILLISECONDS));
+                            });
+                        }
                     }
+                } catch (Exception e) {
+                    LOGGER.error("Error while loading jobs from dynamodb", e);
                 }
-            } catch (Exception e) {
-                LOGGER.error("Error while loading jobs from dynamodb", e);
-            }
-        }, 1, interval.orElse(10L) * 60, TimeUnit.SECONDS);
+            }, 1, interval.orElse(10L) * 60, TimeUnit.SECONDS);
+        }
     }
 
     public void shutdown(@Observes ShutdownEvent event) {
-        this.loadScheduler.shutdownNow();
-
-        this.scheduler.shutdown();
+        if (loadScheduler != null) {
+            this.loadScheduler.shutdownNow();
+        }
+        if (scheduler != null) {
+            this.scheduler.shutdown();
+        }
     }
 
     @Override
