@@ -13,7 +13,7 @@
   <description>User Task Management AddOn for Automatiko Engine</description>
 
   <properties>
-    <java.module.name>io.automatiko.addons.user-tasks.management</java.module.name>
+    <java.module.name>io.automatiko.addons.usertasks.management</java.module.name>
   </properties>
   
     <dependencies>

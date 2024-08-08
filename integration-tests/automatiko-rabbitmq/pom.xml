@@ -13,7 +13,9 @@
   <artifactId>automatiko-rabbitmq</artifactId>
   <name>Automatiko :: Tests Suite :: RabbitMQ messaging invocation sample</name>
   <description>Automatiko RabbitMQ invocation sample service</description>
-
+  <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.rabbitmq</java.module.name>
+  </properties>
 
   <dependencyManagement>
     <dependencies>

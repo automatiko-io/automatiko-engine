@@ -13,7 +13,9 @@
   <artifactId>automatiko-dynamo</artifactId>
   <name>Automatiko :: Tests Suite :: DynamoDB storage invocation sample</name>
   <description>Automatiko DynamoDB invocation sample service</description>
-
+  <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.dynamo</java.module.name>
+  </properties>
 
   <dependencyManagement>
     <dependencies>

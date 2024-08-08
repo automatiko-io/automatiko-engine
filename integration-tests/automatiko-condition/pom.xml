@@ -13,7 +13,9 @@
   <artifactId>automatiko-condition</artifactId>
   <name>Automatiko :: Tests Suite :: Conditional invocation sample</name>
   <description>Automatiko conditional invocation sample service</description>
-
+  <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.condition</java.module.name>
+  </properties>
 
   <dependencyManagement>
     <dependencies>

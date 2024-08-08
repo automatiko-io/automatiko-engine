@@ -15,6 +15,10 @@
 
   <name>Automatiko Engine :: Quarkus Extension :: Integration Tests</name>
   <description>Integration tests for Quarkus Extension for Automatiko Engine</description>
+  
+  <properties>
+    <java.module.name>io.automatiko.quarkus.extension.integrationtests</java.module.name>
+  </properties>
 
   <dependencies>
     <dependency>

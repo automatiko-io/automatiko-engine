@@ -13,7 +13,9 @@
   <artifactId>automatiko-services</artifactId>
   <name>Automatiko :: Tests Suite :: Addon Services samples</name>
   <description>Automatiko Addon Services invocation sample service</description>
-
+  <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.services</java.module.name>
+  </properties>
 
   <dependencyManagement>
     <dependencies>

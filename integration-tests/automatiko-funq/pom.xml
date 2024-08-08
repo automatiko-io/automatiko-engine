@@ -10,7 +10,9 @@
 
   <name>Automatiko :: Tests Suite :: Function integration sample</name>
   <description>Automatiko Function integration sample service</description>
-
+  <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.funq</java.module.name>
+  </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>

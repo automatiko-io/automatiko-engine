@@ -13,7 +13,9 @@
   <artifactId>automatiko-scripts</artifactId>
   <name>Automatiko :: Tests Suite :: Scripts invocation sample</name>
   <description>Automatiko script invocation sample service</description>
-
+  <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.scripts</java.module.name>
+  </properties>
 
   <dependencyManagement>
     <dependencies>

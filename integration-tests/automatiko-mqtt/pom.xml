@@ -14,7 +14,9 @@
 
   <name>Automatiko :: Tests Suite :: MQTT integration sample</name>
   <description>Automatiko MQTT integration sample service</description>
-
+  <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.mqtt</java.module.name>
+  </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>

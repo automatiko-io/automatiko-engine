@@ -12,6 +12,9 @@
 	<artifactId>automatiko-jms</artifactId>
 	<name>Automatiko :: Tests Suite :: JMS messaging invocation sample</name>
 	<description>Automatiko JMS invocation sample service</description>
+  <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.jms</java.module.name>
+  </properties>	
 	<dependencyManagement>
 		<dependencies>
 			<dependency>

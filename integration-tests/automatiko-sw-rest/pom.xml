@@ -13,7 +13,9 @@
   <artifactId>automatiko-sw-rest</artifactId>
   <name>Automatiko :: Tests Suite :: automatiko-sw-rest</name>
   <description>Automatiko SW REST invocation</description>
-
+  <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.swrest</java.module.name>
+  </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>

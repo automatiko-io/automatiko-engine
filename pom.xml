@@ -56,11 +56,11 @@
     <version.install.plugin>3.1.2</version.install.plugin>
     <version.invoker.plugin>2.0.0</version.invoker.plugin>
     <version.jandex.plugin>3.2.0</version.jandex.plugin>
-    <version.jar.plugin>3.1.0</version.jar.plugin>
+    <version.jar.plugin>3.4.2</version.jar.plugin>
     <version.javadoc.plugin>3.8.0</version.javadoc.plugin>
     <version.archetype.plugin>3.2.1</version.archetype.plugin>
     <version.enforcer.plugin>3.5.0</version.enforcer.plugin>
-    <version.maven>3.8.1</version.maven>
+    <version.maven>3.8.6</version.maven>
     <version.maven.plugin>3.13.1</version.maven.plugin>
     <version.native2ascii.plugin>1.0-beta-1</version.native2ascii.plugin>
     <version.plexus>2.1.1</version.plexus>
@@ -114,7 +114,7 @@
     <version.org.eclipse.microprofile.config>3.1</version.org.eclipse.microprofile.config>
     <version.org.eclipse.microprofile.openapi>3.1.1</version.org.eclipse.microprofile.openapi>
 
-    <version.io.javaoperatorsdk>6.7.1</version.io.javaoperatorsdk>
+    <version.io.javaoperatorsdk>6.7.2</version.io.javaoperatorsdk>
     <version.io.quarkiverse.googlecloudservices>2.10.0</version.io.quarkiverse.googlecloudservices>
     <version.com.datastax.oss.quarkus>1.2.0</version.com.datastax.oss.quarkus>
     <version.com.datastax.oss>4.17.0</version.com.datastax.oss>

@@ -13,7 +13,9 @@
   <artifactId>automatiko-cassandra</artifactId>
   <name>Automatiko :: Tests Suite :: Apache Cassandra storage invocation sample</name>
   <description>Automatiko Apache Cassandra invocation sample service</description>
-
+  <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.cassandra</java.module.name>
+  </properties>
 
   <dependencyManagement>
     <dependencies>

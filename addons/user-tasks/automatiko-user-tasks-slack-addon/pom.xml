@@ -10,7 +10,7 @@
   <description>User Task Slack AddOn for Automatiko Engine</description>
 
   <properties>
-    <java.module.name>io.automatiko.addons.user-tasks.slack</java.module.name>
+    <java.module.name>io.automatiko.addons.usertasks.slack</java.module.name>
   </properties>
 
   <dependencies>

@@ -9,7 +9,9 @@
   
   <name>Automatiko :: Tests Suite :: Include models via dependency sample</name>
   <description>Automatiko Include models via dependency sample service</description>
-  
+    <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.includeservice</java.module.name>
+  </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>

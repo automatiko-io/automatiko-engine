@@ -14,7 +14,9 @@
 
   <name>Automatiko :: Tests Suite :: Decision (DMN) invocation sample</name>
   <description>Automatiko decision (DMN) invocation sample service</description>
-
+  <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.decision</java.module.name>
+  </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>
