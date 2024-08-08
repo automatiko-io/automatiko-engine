@@ -14,7 +14,9 @@
   <name>Automatiko :: Tests Suite :: HTTP messaging invocation sample</name>
   <description>Automatiko HTTP invocation sample service</description>
 
-
+  <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.http</java.module.name>
+  </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>

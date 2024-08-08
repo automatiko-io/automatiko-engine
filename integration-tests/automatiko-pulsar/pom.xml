@@ -14,7 +14,9 @@
 
   <name>Automatiko :: Tests Suite :: Pulsar integration sample</name>
   <description>Automatiko Pulsar integration sample service</description>
-
+  <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.pulsar</java.module.name>
+  </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>

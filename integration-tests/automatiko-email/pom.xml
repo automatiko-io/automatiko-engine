@@ -14,7 +14,9 @@
   <artifactId>automatiko-email</artifactId>
   <name>Automatiko :: Tests Suite :: Email integration sample</name>
   <description>Automatiko Email integration sample service</description>
-
+  <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.email</java.module.name>
+  </properties>
 
   <dependencyManagement>
     <dependencies>

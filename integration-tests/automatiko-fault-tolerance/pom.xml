@@ -13,7 +13,9 @@
   <artifactId>automatiko-fault-tolerance</artifactId>
   <name>Automatiko :: Tests Suite :: Process invocation via Fault Tolerance sample</name>
   <description>Automatiko Fault Tolerance invocation sample service</description>
-
+  <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.faulttolerance</java.module.name>
+  </properties>
 
   <dependencyManagement>
     <dependencies>

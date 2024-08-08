@@ -10,7 +10,7 @@
   <description>User Task Microsoft Teams AddOn for Automatiko Engine</description>
 
   <properties>
-    <java.module.name>io.automatiko.addons.user-tasks.teams</java.module.name>
+    <java.module.name>io.automatiko.addons.usertasks.teams</java.module.name>
   </properties>
 
   <dependencies>

@@ -12,7 +12,7 @@
   <description>User Task Notifications Common for Automatiko Engine</description>
 
   <properties>
-    <java.module.name>io.automatiko.addons.user-tasks.notifications</java.module.name>
+    <java.module.name>io.automatiko.addons.user.tasks.notifications</java.module.name>
   </properties>
   
   <dependencies>

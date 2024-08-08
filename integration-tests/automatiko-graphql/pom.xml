@@ -13,7 +13,9 @@
   <artifactId>automatiko-graphql</artifactId>
   <name>Automatiko :: Tests Suite :: Process invocation via GraphQL sample</name>
   <description>Automatiko GraphQL invocation sample service</description>
-
+  <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.graphql</java.module.name>
+  </properties>
 
   <dependencyManagement>
     <dependencies>

@@ -14,7 +14,9 @@
 
   <name>Automatiko :: Tests Suite :: Subprocess invocation sample</name>
   <description>Automatiko subprocess invocation sample service</description>
-
+  <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.subprocess</java.module.name>
+  </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>

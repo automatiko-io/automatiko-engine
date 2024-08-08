@@ -14,7 +14,9 @@
 
   <name>Automatiko :: Tests Suite :: Timer invocation sample</name>
   <description>Automatiko timer invocation sample service</description>
-
+  <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.timer</java.module.name>
+  </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>

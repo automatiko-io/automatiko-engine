@@ -9,5 +9,7 @@
   
   <name>Automatiko :: Tests Suite :: Include models Shared module</name>
   <description>Automatiko Include models via dependency Shared module</description>
-  
+    <properties>
+    <java.module.name>io.automatiko.engine.integrationtests.includeone</java.module.name>
+  </properties>
 </project>
