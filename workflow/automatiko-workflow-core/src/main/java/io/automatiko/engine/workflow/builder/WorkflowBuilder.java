@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -299,6 +300,75 @@ public class WorkflowBuilder {
     }
 
     /**
+     * Adds list data object to the workflow definition and returns it so it can be used in expressions
+     * 
+     * @param name name of the data object
+     * @param valueExpression expression to initialize the data object with
+     * @param type type of the list elements
+     * @param tags optional tags
+     * @return the builder
+     */
+    public <T> WorkflowBuilder listDataObject(String name, Supplier<T> valueExpression, Class<T> type, String... tags) {
+        Variable variable = new Variable();
+        variable.setId(name);
+        variable.setName(name);
+        variable.setType(new ObjectDataType(List.class, List.class.getCanonicalName() + "<" + type.getCanonicalName() + ">"));
+        variable.setMetaData("type", type.getCanonicalName());
+
+        if (tags != null && tags.length > 0) {
+            String variableTags = Stream.of(tags).collect(Collectors.joining(","));
+            variable.setMetaData("tags", variableTags);
+
+            if (variableTags.contains(Variable.BUSINESS_RELEVANT_TAG)) {
+                this.tags("#{" + name + "}");
+            }
+        }
+        if (valueExpression != null) {
+            variable.setMetaData(Variable.DEFAULT_VALUE,
+                    "#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()) + "}");
+        }
+        process.getVariableScope().getVariables().add(variable);
+        return this;
+    }
+
+    /**
+     * Adds list data object to the workflow definition and returns it so it can be used in expressions
+     * 
+     * @param name name of the data object
+     * @param valueExpression expression to initialize the data object with
+     * @param type type of the list elements
+     * @param tags optional tags
+     * @return the builder
+     */
+    public <T> WorkflowBuilder listDataObject(String name, String valueExpression, Class<T> type, String... tags) {
+        Variable variable = new Variable();
+        variable.setId(name);
+        variable.setName(name);
+        variable.setType(new ObjectDataType(List.class, List.class.getCanonicalName() + "<" + type.getCanonicalName() + ">"));
+        variable.setMetaData("type", type.getCanonicalName());
+
+        if (tags != null && tags.length > 0) {
+            String variableTags = Stream.of(tags).collect(Collectors.joining(","));
+            variable.setMetaData("tags", variableTags);
+
+            if (variableTags.contains(Variable.BUSINESS_RELEVANT_TAG)) {
+                this.tags("#{" + name + "}");
+            }
+        }
+        if (valueExpression != null) {
+            variable.setMetaData("value",
+                    "#{" + valueExpression + "}");
+        }
+        process.getVariableScope().getVariables().add(variable);
+        return this;
+    }
+
+    public <T> List<T> listDataObject(Class<T> type, String name, Supplier<T> valueExpression, String... tags) {
+        listDataObject(name, valueExpression, type, tags);
+        return null;
+    }
+
+    /**
      * Adds parameterized data object to the workflow definition and returns it so it can be used in expressions
      * 
      * @param <T> data type
@@ -373,6 +443,7 @@ public class WorkflowBuilder {
      * Adds data object to the workflow definition
      * 
      * @param name name of the data object that can be later on referenced by
+     * @param valueExpression expression to initialize the data object with
      * @param type type of the data object
      * @param tags optional (non null tags) to be assigned to the data object e.g. output, input, required, etc
      * @return the builder
@@ -393,11 +464,59 @@ public class WorkflowBuilder {
         }
 
         if (valueExpression != null) {
-            variable.setMetaData("value", "#{" + valueExpression + "}");
+            variable.setMetaData(Variable.DEFAULT_VALUE, "#{" + valueExpression + "}");
         }
 
         process.getVariableScope().getVariables().add(variable);
         return this;
+    }
+
+    /**
+     * Adds data object to the workflow definition
+     * 
+     * @param name name of the data object that can be later on referenced by
+     * @param valueExpression expression to initialize the data object with
+     * @param type type of the data object
+     * @param tags optional (non null tags) to be assigned to the data object e.g. output, input, required, etc
+     * @return the builder
+     */
+    public <T> WorkflowBuilder dataObject(String name, Supplier<T> valueExpression, Class<T> type, String... tags) {
+        Variable variable = new Variable();
+        variable.setId(name);
+        variable.setName(name);
+        variable.setType(new ObjectDataType(type));
+
+        if (tags != null && tags.length > 0) {
+            String variableTags = Stream.of(tags).collect(Collectors.joining(","));
+            variable.setMetaData("tags", variableTags);
+
+            if (variableTags.contains(Variable.BUSINESS_RELEVANT_TAG)) {
+                this.tags("#{" + name + "}");
+            }
+        }
+
+        if (valueExpression != null) {
+            variable.setMetaData(Variable.DEFAULT_VALUE,
+                    "#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()) + "}");
+        }
+
+        process.getVariableScope().getVariables().add(variable);
+        return this;
+    }
+
+    /**
+     * Adds parameterized data object to the workflow definition and returns it so it can be used in expressions
+     * 
+     * @param <T> data type
+     * @param type type of the data objects
+     * @param name name of the data object
+     * @param valueExpression expression to initialize the data object with
+     * @param tags optional tags
+     * @return return null as it only records the definition
+     */
+    public <T> T dataObject(Class<T> type, String name, Supplier<T> valueExpression, String... tags) {
+        dataObject(name, valueExpression, type, tags);
+        return null;
     }
 
     /**

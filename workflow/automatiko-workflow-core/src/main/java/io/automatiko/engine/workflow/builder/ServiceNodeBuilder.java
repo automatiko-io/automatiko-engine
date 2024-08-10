@@ -299,6 +299,20 @@ public class ServiceNodeBuilder extends AbstractNodeBuilder {
     }
 
     /**
+     * Adds error handling node that allows to move to different path in case of an error
+     * 
+     * @param errorCodes list of codes to listen on
+     * @return the builder
+     */
+    @SuppressWarnings("unchecked")
+    public ErrorNodeBuilder onError(Class<? extends Throwable>... exceptions) {
+        workflowBuilder.putOnContext(getNode());
+        workflowBuilder.putBuilderOnContext(null);
+        return new ErrorNodeBuilder("error on " + node.getName(), (String) this.node.getMetaData("UniqueId"), workflowBuilder)
+                .errorCodes(Stream.of(exceptions).map(c -> c.getName()).toArray(String[]::new));
+    }
+
+    /**
      * Configures the maximum amount of time the node will wait to get response from the service.
      * In case it is not successfully within that time it will abort the operation and throw error with <code>408</code> error
      * code.

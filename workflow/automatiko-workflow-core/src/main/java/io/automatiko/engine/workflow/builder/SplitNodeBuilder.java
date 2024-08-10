@@ -47,6 +47,20 @@ public class SplitNodeBuilder extends AbstractNodeBuilder {
         return workflowBuilder;
     }
 
+    public WorkflowBuilder otherwise() {
+        workflowBuilder.putOnContext(getNode());
+        workflowBuilder.putBuilderOnContext(this);
+
+        this.returnValueConstraint = new ReturnValueConstraintEvaluator();
+        returnValueConstraint.setDialect("java");
+        returnValueConstraint.setName("");
+        returnValueConstraint.setPriority(1);
+        returnValueConstraint.setDefault(true);
+        returnValueConstraint.setConstraint("true");
+
+        return workflowBuilder;
+    }
+
     @Override
     protected void apply(Connection connection) {
         node.setConstraint(connection, returnValueConstraint);
