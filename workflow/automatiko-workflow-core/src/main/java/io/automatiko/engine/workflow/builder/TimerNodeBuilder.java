@@ -33,7 +33,7 @@ public class TimerNodeBuilder extends AbstractNodeBuilder {
         this.node.setTimer(timer);
         workflowBuilder.container().addNode(node);
 
-        contect();
+        connect();
     }
 
     /**

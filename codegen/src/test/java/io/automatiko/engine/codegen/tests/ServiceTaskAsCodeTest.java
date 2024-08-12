@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -270,7 +271,8 @@ public class ServiceTaskAsCodeTest extends AbstractCodegenTest {
         ServiceNodeBuilder service = builder.service("greet");
 
         service.toDataObject("outItem",
-                service.type(HelloService.class).hello(service.fromDataObject("item"))).repeat("input", "item", "output").then()
+                service.type(HelloService.class).hello(service.fromDataObject("item"))).repeat("input", "item", "output")
+                .endRepeatAndThen()
                 .end("that's it");
 
         Application app = generateCode(List.of(builder.get()));
@@ -309,7 +311,7 @@ public class ServiceTaskAsCodeTest extends AbstractCodegenTest {
 
         service.toDataObject("greeting",
                 service.type(HelloService.class).hello(service.fromDataObject("name")))
-                .repeat("input", "name", "output", "greeting").then()
+                .repeat("input", "name", "output", "greeting").endRepeatAndThen()
                 .end("that's it");
 
         Application app = generateCode(List.of(builder.get()));
@@ -346,7 +348,7 @@ public class ServiceTaskAsCodeTest extends AbstractCodegenTest {
         ServiceNodeBuilder service = builder.service("greet");
 
         service.repeat("input").type(HelloService.class).hello(service.fromDataObject("item"));
-        service.then().end("that's it");
+        service.endRepeatAndThen().end("that's it");
 
         Application app = generateCode(List.of(builder.get()));
         assertThat(app).isNotNull();
@@ -381,7 +383,7 @@ public class ServiceTaskAsCodeTest extends AbstractCodegenTest {
 
         service.repeat(() -> java.util.List.of("one", "two", "three"), "name").type(HelloService.class)
                 .hello(service.fromDataObject("name"));
-        service.then().end("that's it");
+        service.endRepeatAndThen().end("that's it");
 
         Application app = generateCode(List.of(builder.get()));
         assertThat(app).isNotNull();
@@ -417,7 +419,7 @@ public class ServiceTaskAsCodeTest extends AbstractCodegenTest {
 
         service.toDataObject("outItem",
                 service.type(HelloService.class).hello(service.fromDataObject("item")))
-                .repeat(() -> java.util.List.of("one", "two", "three"), () -> output).then()
+                .repeat(() -> java.util.List.of("one", "two", "three"), () -> output).endRepeatAndThen()
                 .end("that's it");
 
         Application app = generateCode(List.of(builder.get()));
@@ -456,8 +458,11 @@ public class ServiceTaskAsCodeTest extends AbstractCodegenTest {
 
         service.toDataObject("outItem",
                 service.type(HelloService.class).hello(service.fromDataObject("item")))
-                .repeat(() -> java.util.List.of("one", "two", "three"), () -> person.getStringList()).then()
-                .end("that's it");
+                .repeat(() -> java.util.List.of("one", "two", "three"), () -> person.getStringList())
+                .onError(RuntimeException.class).retry(5, TimeUnit.SECONDS, 3)
+                .then()
+                .end("error handled");
+        service.endRepeatAndThen().end("that's it");
 
         Application app = generateCode(List.of(builder.get()));
         assertThat(app).isNotNull();
@@ -482,6 +487,56 @@ public class ServiceTaskAsCodeTest extends AbstractCodegenTest {
     }
 
     @Test
+    public void testBasicServiceProcessTaskRepeatedErrorHandling() throws Exception {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("ServiceProcess", "test workflow as code")
+                .dataObject("input", List.class);
+
+        PersonWithList person = builder.dataObject(PersonWithList.class, "person");
+
+        builder.start("start here").then()
+                .log("execute script", "Hello world {}{}", "input", "\"!\"").then()
+                .printout("execute script", "\"Hello world \" + input").then();
+
+        ServiceNodeBuilder service = builder.service("greet");
+
+        service.toDataObject("outItem",
+                service.type(HelloService.class).helloEverySecondFailed(service.fromDataObject("item")))
+                .repeat(() -> java.util.List.of("one", "two", "three"), () -> person.getStringList())
+                .onError(RuntimeException.class).retry(2, TimeUnit.SECONDS, 3)
+                .then()
+                .end("error handled");
+        service.endRepeatAndThen()
+                .end("that's it");
+
+        Application app = generateCode(List.of(builder.get()));
+        assertThat(app).isNotNull();
+        //        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("that's it", 1);
+        //        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+        //
+        //        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+        //
+        //        Model m = p.createModel();
+        //        Map<String, Object> parameters = new HashMap<>();
+        //        parameters.put("person", new PersonWithList("test", 0, false, new ArrayList<>(), null, null, null));
+        //        m.fromMap(parameters);
+        //
+        //        ProcessInstance<?> processInstance = p.createInstance(m);
+        //        processInstance.start();
+        //
+        //        boolean completed = listener.waitTillCompleted(5000);
+        //        assertThat(completed).isTrue();
+        //
+        //        assertThat(processInstance.startDate()).isNotNull();
+        //        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        //        Model result = (Model) processInstance.variables();
+        //        assertThat(result.toMap()).hasSize(2).containsKeys("input", "person");
+        //
+        //        assertThat(result.toMap().get("person")).isNotNull().extracting("stringList").asList().contains("Hello one!",
+        //                "Hello two!", "Hello three!");
+    }
+
+    @Test
     public void testBasicServiceProcessTaskRepeatedMultipleArgs() throws Exception {
 
         WorkflowBuilder builder = WorkflowBuilder.newWorkflow("ServiceProcess", "test workflow as code")
@@ -499,7 +554,7 @@ public class ServiceTaskAsCodeTest extends AbstractCodegenTest {
         service.toDataObject("outItem",
                 service.type(HelloService.class).helloOutput(service.expressionAsInput(() -> p.getName()),
                         service.expressionAsInput(() -> p.getAge())))
-                .repeat("input", "p", "output").then()
+                .repeat("input", "p", "output").endRepeatAndThen()
                 .end("that's it");
 
         Application app = generateCode(List.of(builder.get()));

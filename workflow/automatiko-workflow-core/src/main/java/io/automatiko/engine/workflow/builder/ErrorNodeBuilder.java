@@ -38,7 +38,7 @@ public class ErrorNodeBuilder extends AbstractNodeBuilder {
         this.node.setMetaData("AttachedTo", attachedTo);
         this.node.setMetaData("HasErrorEvent", true);
 
-        workflowBuilder.container().addNode(node);
+        this.workflowBuilder.container().addNode(node);
 
         Node source = this.workflowBuilder.fetchFromContext();
         if (source != null) {

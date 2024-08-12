@@ -12,14 +12,19 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import io.automatiko.engine.workflow.base.core.Work;
+import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
 import io.automatiko.engine.workflow.base.core.impl.ParameterDefinitionImpl;
 import io.automatiko.engine.workflow.base.core.impl.WorkImpl;
 import io.automatiko.engine.workflow.base.core.timer.DateTimeUtils;
 import io.automatiko.engine.workflow.process.core.Node;
+import io.automatiko.engine.workflow.process.core.impl.ConnectionImpl;
 import io.automatiko.engine.workflow.process.core.impl.NodeImpl;
+import io.automatiko.engine.workflow.process.core.node.CompositeContextNode;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
+import io.automatiko.engine.workflow.process.core.node.EndNode;
 import io.automatiko.engine.workflow.process.core.node.ForEachNode;
+import io.automatiko.engine.workflow.process.core.node.StartNode;
 import io.automatiko.engine.workflow.process.core.node.WorkItemNode;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
@@ -54,7 +59,7 @@ public class ServiceNodeBuilder extends AbstractNodeBuilder {
 
         workflowBuilder.container().addNode(node);
 
-        contect();
+        connect();
     }
 
     /**
@@ -294,8 +299,9 @@ public class ServiceNodeBuilder extends AbstractNodeBuilder {
     public ErrorNodeBuilder onError(String... errorCodes) {
         workflowBuilder.putOnContext(getNode());
         workflowBuilder.putBuilderOnContext(null);
-        return new ErrorNodeBuilder("error on " + node.getName(), (String) this.node.getMetaData("UniqueId"), workflowBuilder)
-                .errorCodes(errorCodes);
+        return new ErrorNodeBuilder("error on " + node.getName(), (String) this.node.getMetaData("UniqueId"),
+                workflowBuilder)
+                        .errorCodes(errorCodes);
     }
 
     /**
@@ -304,12 +310,13 @@ public class ServiceNodeBuilder extends AbstractNodeBuilder {
      * @param errorCodes list of codes to listen on
      * @return the builder
      */
-    @SuppressWarnings("unchecked")
-    public ErrorNodeBuilder onError(Class<? extends Throwable>... exceptions) {
+    @SafeVarargs
+    public final ErrorNodeBuilder onError(Class<? extends Throwable>... exceptions) {
         workflowBuilder.putOnContext(getNode());
         workflowBuilder.putBuilderOnContext(null);
-        return new ErrorNodeBuilder("error on " + node.getName(), (String) this.node.getMetaData("UniqueId"), workflowBuilder)
-                .errorCodes(Stream.of(exceptions).map(c -> c.getName()).toArray(String[]::new));
+        return new ErrorNodeBuilder("error on " + node.getName(), (String) this.node.getMetaData("UniqueId"),
+                workflowBuilder)
+                        .errorCodes(Stream.of(exceptions).map(c -> c.getName()).toArray(String[]::new));
     }
 
     /**
@@ -683,19 +690,58 @@ public class ServiceNodeBuilder extends AbstractNodeBuilder {
             forEachNode.setOutputVariable(outputName, new ObjectDataType());
             forEachNode.setOutputCollectionExpression(toDataObject);
         }
+        CompositeContextNode subProcessNode = new CompositeContextNode();
+        VariableScope variableScope = new VariableScope();
+        subProcessNode.addContext(variableScope);
+        subProcessNode.setDefaultContext(variableScope);
+        subProcessNode.setAutoComplete(true);
+        subProcessNode.setMetaData("hidden", true);
+        subProcessNode.setName(node.getName() + " (Wrapper)");
+        subProcessNode.setCancelRemainingInstances(false);
 
-        forEachNode.addNode(origNode);
+        StartNode startNode = new StartNode();
+        startNode.setName("");
+        startNode.setMetaData("UniqueId", origNode.getMetaData().get("UniqueId") + ":start");
+        startNode.setMetaData("hidden", true);
+        subProcessNode.addNode(startNode);
 
-        forEachNode.linkIncomingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE, node.getId(),
+        subProcessNode.addNode(origNode);
+
+        EndNode endNode = new EndNode();
+        endNode.setName("");
+        endNode.setMetaData("UniqueId", origNode.getMetaData().get("UniqueId") + ":end");
+        endNode.setMetaData("hidden", true);
+        subProcessNode.addNode(endNode);
+
+        ConnectionImpl connection = new ConnectionImpl(startNode, Node.CONNECTION_DEFAULT_TYPE, origNode,
+                Node.CONNECTION_DEFAULT_TYPE);
+        connection.setMetaData("UniqueId", "SequenceFlow_" + origNode.getMetaData().get("UniqueId") + ":start");
+
+        ConnectionImpl connection3 = new ConnectionImpl(origNode, Node.CONNECTION_DEFAULT_TYPE, endNode,
+                Node.CONNECTION_DEFAULT_TYPE);
+        connection3.setMetaData("UniqueId", "SequenceFlow_" + origNode.getMetaData().get("UniqueId") + ":end");
+
+        forEachNode.addNode(subProcessNode);
+
+        forEachNode.linkIncomingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE, subProcessNode.getId(),
                 NodeImpl.CONNECTION_DEFAULT_TYPE);
-        forEachNode.linkOutgoingConnections(node.getId(), NodeImpl.CONNECTION_DEFAULT_TYPE,
+        forEachNode.linkOutgoingConnections(subProcessNode.getId(), NodeImpl.CONNECTION_DEFAULT_TYPE,
                 NodeImpl.CONNECTION_DEFAULT_TYPE);
 
         workflowBuilder.container().addNode(forEachNode);
 
-        contect();
+        connect();
+
+        workflowBuilder.container(subProcessNode);
 
         return this;
+    }
+
+    public WorkflowBuilder endRepeatAndThen() {
+        workflowBuilder.putOnContext(forEachNode);
+        workflowBuilder.putBuilderOnContext(null);
+        workflowBuilder.container(workflowBuilder.get());
+        return workflowBuilder;
     }
 
     @Override

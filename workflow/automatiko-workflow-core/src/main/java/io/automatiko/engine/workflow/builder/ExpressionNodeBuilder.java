@@ -23,7 +23,7 @@ public class ExpressionNodeBuilder extends AbstractNodeBuilder {
         this.node.setMetaData("UniqueId", generateUiqueId(this.node));
 
         workflowBuilder.container().addNode(node);
-        contect();
+        connect();
     }
 
     protected ExpressionNodeBuilder expression(String expression) {

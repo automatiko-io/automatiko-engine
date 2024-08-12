@@ -37,7 +37,7 @@ public class SendMessageNodeBuilder extends AbstractNodeBuilder {
 
         workflowBuilder.container().addNode(node);
 
-        contect();
+        connect();
     }
 
     /**
@@ -327,7 +327,7 @@ public class SendMessageNodeBuilder extends AbstractNodeBuilder {
 
         workflowBuilder.container().addNode(forEachNode);
 
-        contect();
+        connect();
 
         return this;
     }

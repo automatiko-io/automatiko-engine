@@ -125,7 +125,6 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
     protected void createLayoutIfMissing() {
         Map<String, List<String>> diagramInfo = (Map<String, List<String>>) this.workFlowProcess.getMetaData()
                 .get("DiagramInfo");
-
         if (diagramInfo != null) {
 
             ListenableGraph<String, DefaultEdge> g = new DefaultListenableGraph<>(
@@ -182,14 +181,14 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
 
             Map<String, mxICell> layedout = jgxAdapter.getVertexToCellMap();
 
-            Map<String, Node> nodesById = this.workFlowProcess.getNodesRecursively().stream().map(n -> {
+            Map<String, Node> nodesById = this.workFlowProcess.getNodesRecursively().stream().flatMap(n -> {
                 if (n instanceof ForEachNode) {
-                    return ((ForEachNode) n).getCompositeNode().getNodes()[0];
+                    n = ((ForEachNode) n).getCompositeNode().getNodes()[0];
                 }
                 if (n instanceof CompositeNode) {
-                    return ((CompositeNode) n).getNodes()[0];
+                    return Stream.of(((CompositeNode) n).getNodes());
                 }
-                return n;
+                return Stream.of(n);
             }).collect(Collectors.toMap(n -> (String) n.getMetaData().get("UniqueId"), node -> node, (k1, k2) -> k1));
 
             for (String node : sort(layedout.keySet())) {
@@ -318,6 +317,9 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
     }
 
     protected Node processCompositeNode(Node node, Map<String, mxICell> layedout) {
+        if (node.getMetaData().containsKey("hidden")) {
+            return null;
+        }
         if (hasCoordinates(node)) {
             return node;
         }
@@ -401,6 +403,12 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
                 toId = (String) ((Node) ((Node) conn.getTo().getParentContainer()).getParentContainer())
                         .getOutgoingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE).get(0).getTo()
                         .getMetaData().get("UniqueId");
+                to = layedout.get(toId);
+            } else if (toId.endsWith(":end")) { // special case when foreach with composite node is used then lookup node that actually is wrapped by for each
+                toId = (String) (((Node) ((Node) ((Node) conn.getTo().getParentContainer()).getParentContainer())
+                        .getParentContainer()))
+                                .getOutgoingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE).get(0).getTo()
+                                .getMetaData().get("UniqueId");
                 to = layedout.get(toId);
             }
             if (to == null) {
@@ -533,6 +541,9 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
     }
 
     protected void buildStartEvent(int x, int y, StartNode node, SVGGraphics2D g2) throws IOException {
+        if (node.getMetaData().containsKey("hidden")) {
+            return;
+        }
         setNodeId(node, g2);
         x += x(node);
         y += y(node);
@@ -560,6 +571,9 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
     }
 
     protected void buildEndEvent(int x, int y, EndNode node, SVGGraphics2D g2) throws IOException {
+        if (node.getMetaData().containsKey("hidden")) {
+            return;
+        }
         setNodeId(node, g2);
         x += x(node);
         y += y(node);

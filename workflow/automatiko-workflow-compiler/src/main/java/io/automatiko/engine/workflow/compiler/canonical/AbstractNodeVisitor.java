@@ -74,7 +74,9 @@ public abstract class AbstractNodeVisitor<T extends Node> extends AbstractVisito
     }
 
     protected String getNodeId(T node) {
-        return getNodeKey() + node.getId();
+        String parentId = node.getParentContainer() instanceof WorkflowProcess ? ""
+                : String.valueOf(node.getParentContainer().getNodes().length);
+        return getNodeKey() + node.getId() + parentId;
     }
 
     public void visitNode(WorkflowProcess process, String factoryField, T node, BlockStmt body,

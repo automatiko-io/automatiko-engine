@@ -42,7 +42,7 @@ public class WaitOnMessageNodeBuilder extends AbstractNodeBuilder {
 
         workflowBuilder.container().addNode(node);
 
-        contect();
+        connect();
     }
 
     /**
