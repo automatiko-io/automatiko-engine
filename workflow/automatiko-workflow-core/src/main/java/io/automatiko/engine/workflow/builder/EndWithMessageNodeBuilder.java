@@ -29,7 +29,7 @@ public class EndWithMessageNodeBuilder extends AbstractNodeBuilder {
 
         workflowBuilder.container().addNode(node);
 
-        contect();
+        connect();
     }
 
     /**

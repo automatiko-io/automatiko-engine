@@ -31,7 +31,7 @@ public class EndWithErrorNodeBuilder extends AbstractNodeBuilder {
 
         workflowBuilder.container().addNode(node);
 
-        contect();
+        connect();
     }
 
     public EndWithErrorNodeBuilder errorCode(String errorCode) {

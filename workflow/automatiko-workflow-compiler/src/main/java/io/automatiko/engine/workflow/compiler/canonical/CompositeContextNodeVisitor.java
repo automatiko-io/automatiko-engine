@@ -79,6 +79,8 @@ public class CompositeContextNodeVisitor<T extends CompositeContextNode> extends
         }
         body.addStatement(getFactoryMethod(getNodeId(node), CompositeContextNodeFactory.METHOD_AUTO_COMPLETE,
                 new BooleanLiteralExpr(node.isAutoComplete())));
+        body.addStatement(getFactoryMethod(getNodeId(node), CompositeContextNodeFactory.METHOD_CANCEL_REMAINING_INSTANCES,
+                new BooleanLiteralExpr(node.isCancelRemainingInstances())));
         visitNodes(process, getNodeId(node), node.getNodes(), body, scope, metadata);
         visitConnections(getNodeId(node), node.getNodes(), body);
         body.addStatement(getDoneMethod(getNodeId(node)));

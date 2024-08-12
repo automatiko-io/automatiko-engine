@@ -32,12 +32,11 @@ public abstract class AbstractNodeBuilder {
     }
 
     protected void diagramItem(Node source, Node node) {
-
         workflowBuilder.appendDiagramItem((String) source.getMetaData().get("UniqueId"),
                 (String) node.getMetaData().get("UniqueId"));
     }
 
-    protected void contect() {
+    protected void connect() {
 
         Node source = this.workflowBuilder.fetchFromContext();
         if (source != null) {
@@ -166,7 +165,7 @@ public abstract class AbstractNodeBuilder {
         JoinNodeBuilder joinBuilder;
         if (workflowBuilder.joins.containsKey(name)) {
             joinBuilder = workflowBuilder.joins.get(name);
-            joinBuilder.contect();
+            joinBuilder.connect();
 
         } else {
 

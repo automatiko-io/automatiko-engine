@@ -50,7 +50,7 @@ public class SubWorkflowNodeBuilder extends AbstractNodeBuilder {
 
         workflowBuilder.container().addNode(node);
 
-        contect();
+        connect();
     }
 
     public SubWorkflowNodeBuilder dataObjectAsInput(String name) {
@@ -479,7 +479,7 @@ public class SubWorkflowNodeBuilder extends AbstractNodeBuilder {
 
         workflowBuilder.container().addNode(forEachNode);
 
-        contect();
+        connect();
 
         return this;
     }

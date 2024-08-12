@@ -36,7 +36,9 @@ public class ProcessNodeLocator {
     }
 
     public static void collectFaultNodes(Collection<FaultNode> collected, Node node) {
-
+        if (node == null) {
+            return;
+        }
         List<Connection> connections = node.getOutgoingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE);
 
         for (Connection connection : connections) {

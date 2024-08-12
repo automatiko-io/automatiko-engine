@@ -24,7 +24,7 @@ public class SplitNodeBuilder extends AbstractNodeBuilder {
 
         workflowBuilder.container().addNode(node);
 
-        contect();
+        connect();
     }
 
     public WorkflowBuilder when(Supplier<Boolean> expression) {

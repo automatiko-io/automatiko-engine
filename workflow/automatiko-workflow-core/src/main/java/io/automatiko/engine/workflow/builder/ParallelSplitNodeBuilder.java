@@ -18,7 +18,7 @@ public class ParallelSplitNodeBuilder extends AbstractNodeBuilder {
 
         workflowBuilder.container().addNode(node);
 
-        contect();
+        connect();
     }
 
     @Override

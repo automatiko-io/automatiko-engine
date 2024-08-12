@@ -28,6 +28,7 @@ public class CompositeContextNodeFactory extends ExecutableNodeContainerFactory 
     public static final String METHOD_LINK_INCOMING_CONNECTIONS = "linkIncomingConnections";
     public static final String METHOD_LINK_OUTGOING_CONNECTIONS = "linkOutgoingConnections";
     public static final String METHOD_AUTO_COMPLETE = "autoComplete";
+    public static final String METHOD_CANCEL_REMAINING_INSTANCES = "cancelRemainingInstances";
 
     public static final String METHOD_JQ_IN_MAPPING = "inMappingWithJqAssignment";
     public static final String METHOD_JQ_OUT_MAPPING = "outMappingWithJqAssignment";
@@ -123,6 +124,11 @@ public class CompositeContextNodeFactory extends ExecutableNodeContainerFactory 
 
     public CompositeContextNodeFactory autoComplete(boolean autoComplete) {
         getCompositeNode().setAutoComplete(autoComplete);
+        return this;
+    }
+
+    public CompositeContextNodeFactory cancelRemainingInstances(boolean cancelRemainingInstances) {
+        getCompositeNode().setCancelRemainingInstances(cancelRemainingInstances);
         return this;
     }
 

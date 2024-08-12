@@ -18,7 +18,7 @@ public class EventSplitNodeBuilder extends AbstractNodeBuilder {
 
         workflowBuilder.container().addNode(node);
 
-        contect();
+        connect();
     }
 
     public TimerNodeBuilder onTimer(String name) {

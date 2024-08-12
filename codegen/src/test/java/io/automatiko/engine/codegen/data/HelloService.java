@@ -10,6 +10,8 @@ import io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError;
 
 public class HelloService {
 
+    private int counter = 0;
+
     public String hello(String name) {
         System.out.println("Service invoked with " + name.toString() + " on service " + this.toString());
         return "Hello " + name + "!";
@@ -73,5 +75,14 @@ public class HelloService {
         }
 
         return hello(name);
+    }
+
+    public String helloEverySecondFailed(String name) {
+        System.out.println("Service invoked with " + name.toString() + " on service " + this.toString() + " ---- " + counter++);
+        if (counter % 2 != 0) {
+            throw new RuntimeException("Test exception");
+        }
+
+        return "Hello " + name + "!";
     }
 }
