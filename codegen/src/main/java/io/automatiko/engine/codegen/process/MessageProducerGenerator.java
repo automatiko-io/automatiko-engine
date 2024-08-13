@@ -46,6 +46,7 @@ import io.automatiko.engine.services.execution.BaseFunctions;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
+import io.automatiko.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
 import io.automatiko.engine.workflow.compiler.canonical.TriggerMetaData;
 import io.automatiko.engine.workflow.process.executable.core.Metadata;
 
@@ -310,6 +311,17 @@ public class MessageProducerGenerator {
         clazz.addImport(new ImportDeclaration(BaseFunctions.class.getCanonicalName(), true, true));
         context.getBuildContext().classThatImplement(Functions.class.getCanonicalName())
                 .forEach(c -> clazz.addImport(new ImportDeclaration(c, true, true)));
+
+        VariableScope processVariableScope = (VariableScope) ((io.automatiko.engine.workflow.process.core.WorkflowProcess) process)
+                .getDefaultContext(VariableScope.VARIABLE_SCOPE);
+
+        for (Variable var : processVariableScope.getVariables()) {
+            if (var.getType() instanceof ObjectDataType && var.getType().getClassType() != null) {
+                Class<?> varType = var.getType().getClassType();
+
+                clazz.addImport(varType.getCanonicalName());
+            }
+        }
 
         ClassOrInterfaceDeclaration template = clazz.findFirst(ClassOrInterfaceDeclaration.class).get();
         template.setName(resourceClazzName);

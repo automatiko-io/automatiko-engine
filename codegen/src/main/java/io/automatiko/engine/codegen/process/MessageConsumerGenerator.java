@@ -49,6 +49,9 @@ import io.automatiko.engine.codegen.ImportsOrganizer;
 import io.automatiko.engine.codegen.di.DependencyInjectionAnnotator;
 import io.automatiko.engine.services.execution.BaseFunctions;
 import io.automatiko.engine.services.utils.StringUtils;
+import io.automatiko.engine.workflow.base.core.context.variable.Variable;
+import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
+import io.automatiko.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
 import io.automatiko.engine.workflow.compiler.canonical.TriggerMetaData;
 
 public class MessageConsumerGenerator {
@@ -350,6 +353,17 @@ public class MessageConsumerGenerator {
         CompilationUnit clazz = parse(this.getClass().getResourceAsStream(consumerTemplate(connector)));
         clazz.setPackageDeclaration(process.getPackageName());
         clazz.addImport(modelfqcn);
+
+        VariableScope variableScope = (VariableScope) ((io.automatiko.engine.workflow.process.core.WorkflowProcess) process)
+                .getDefaultContext(VariableScope.VARIABLE_SCOPE);
+
+        for (Variable var : variableScope.getVariables()) {
+            if (var.getType() instanceof ObjectDataType && var.getType().getClassType() != null) {
+                Class<?> varType = var.getType().getClassType();
+
+                clazz.addImport(varType.getCanonicalName());
+            }
+        }
 
         // add functions so they can be easily accessed in message consumer classes
         clazz.addImport(new ImportDeclaration(BaseFunctions.class.getCanonicalName(), true, true));

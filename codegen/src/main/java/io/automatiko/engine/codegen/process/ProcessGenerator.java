@@ -64,6 +64,9 @@ import io.automatiko.engine.codegen.process.image.SvgProcessImageGenerator;
 import io.automatiko.engine.services.execution.BaseFunctions;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.AbstractProcess;
+import io.automatiko.engine.workflow.base.core.context.variable.Variable;
+import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
+import io.automatiko.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
 import io.automatiko.engine.workflow.compiler.canonical.ProcessMetaData;
 import io.automatiko.engine.workflow.compiler.canonical.TriggerMetaData;
 import io.automatiko.engine.workflow.compiler.canonical.UserTaskModelMetaData;
@@ -158,7 +161,16 @@ public class ProcessGenerator {
             compilationUnit.addImport(new ImportDeclaration(c, true, true));
             compilationUnit.addImport(new ImportDeclaration(c, false, false));
         });
+        VariableScope variableScope = (VariableScope) ((io.automatiko.engine.workflow.process.core.WorkflowProcess) process)
+                .getDefaultContext(VariableScope.VARIABLE_SCOPE);
 
+        for (Variable var : variableScope.getVariables()) {
+            if (var.getType() instanceof ObjectDataType && var.getType().getClassType() != null) {
+                Class<?> varType = var.getType().getClassType();
+
+                compilationUnit.addImport(varType.getCanonicalName());
+            }
+        }
         compilationUnit.getTypes().add(classDeclaration(compilationUnit));
         return compilationUnit;
     }

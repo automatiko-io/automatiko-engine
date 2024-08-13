@@ -18,6 +18,9 @@ import org.slf4j.LoggerFactory;
 import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.workflow.base.core.Context;
 import io.automatiko.engine.workflow.base.core.context.AbstractContext;
+import io.automatiko.engine.workflow.base.core.context.variable.Variable;
+import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
+import io.automatiko.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
 import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 
 public class MvelExpressionEvaluator extends AbstractContext implements ExpressionEvaluator<VariableResolverFactory> {
@@ -33,7 +36,18 @@ public class MvelExpressionEvaluator extends AbstractContext implements Expressi
     public MvelExpressionEvaluator(io.automatiko.engine.api.definition.process.Process process) {
 
         Set<String> imports = ((WorkflowProcess) process).getImports();
+        VariableScope processVariableScope = (VariableScope) ((io.automatiko.engine.workflow.process.core.WorkflowProcess) process)
+                .getDefaultContext(VariableScope.VARIABLE_SCOPE);
 
+        if (processVariableScope != null && processVariableScope.getVariables() != null) {
+            for (Variable var : processVariableScope.getVariables()) {
+                if (var.getType() instanceof ObjectDataType && var.getType().getClassType() != null) {
+                    Class<?> varType = var.getType().getClassType();
+
+                    imports.add(varType.getCanonicalName());
+                }
+            }
+        }
         addImports(imports);
     }
 
