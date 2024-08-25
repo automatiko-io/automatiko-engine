@@ -46,6 +46,7 @@
     <module>automatiko-rabbitmq</module>
     <module>automatiko-http</module>
     <module>automatiko-pulsar</module>
+    <module>automatiko-workflow-java-dsl</module>
   </modules>
 
   <build>

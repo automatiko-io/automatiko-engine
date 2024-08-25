@@ -245,6 +245,29 @@ public class WorkflowBuilder {
     }
 
     /**
+     * Sets end of instance strategy to keep for this workflow meaning will keep completed workflow instances
+     * 
+     * @return the builder
+     */
+    public WorkflowBuilder withKeepEndOfInstanceStrategy() {
+        process.setMetaData("endOfInstanceStrategy", "keep");
+
+        return this;
+    }
+
+    /**
+     * Sets end of instance strategy to archive for this workflow meaning will archive automatically completed workflow
+     * instances
+     * 
+     * @return the builder
+     */
+    public WorkflowBuilder withArchiveEndOfInstanceStrategy() {
+        process.setMetaData("endOfInstanceStrategy", "archive");
+
+        return this;
+    }
+
+    /**
      * Adds data object to the workflow definition and returns it so it can be used in expressions
      * 
      * @param type type of the data object
