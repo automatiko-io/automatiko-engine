@@ -38,6 +38,7 @@ import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
+import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.SuperExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
@@ -578,7 +579,11 @@ public class ProcessGenerator {
                                     NodeList.nodeList(
                                             new ClassOrInterfaceType(null, WorkItemHandler.class.getCanonicalName()))),
                             "handlers")
-                    .addParameter(EndOfInstanceStrategy.class.getCanonicalName(), "strategy")
+                    .addParameter(new Parameter(new ClassOrInterfaceType(null, EndOfInstanceStrategy.class
+                            .getCanonicalName()), "strategy").addAnnotation(new SingleMemberAnnotationExpr(
+                                    new Name("jakarta.inject.Named"),
+                                    new StringLiteralExpr(
+                                            (String) process.getMetaData().getOrDefault("endOfInstanceStrategy", "default")))))
 
                     .setBody(new BlockStmt()
                             // super(module.config().process())
