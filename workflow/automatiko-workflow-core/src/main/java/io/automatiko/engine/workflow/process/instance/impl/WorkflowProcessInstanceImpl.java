@@ -62,6 +62,7 @@ import io.automatiko.engine.api.workflow.flexible.Milestone;
 import io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError;
 import io.automatiko.engine.services.correlation.CorrelationKey;
 import io.automatiko.engine.services.time.TimerInstance;
+import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.base.core.ContextContainer;
 import io.automatiko.engine.workflow.base.core.Process;
 import io.automatiko.engine.workflow.base.core.TagDefinition;
@@ -1176,8 +1177,16 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
 
     @Override
     public void setReferenceFromRoot(String referenceFromRoot) {
+        String processId = getProcessId();
+        String referenceFormat = (String) getProcess().getMetaData().getOrDefault("referenceFormat", "");
+        if ("dash".equalsIgnoreCase(referenceFormat)) {
+            processId = StringUtils.toDashCase(processId);
+        } else if ("camel".equalsIgnoreCase(referenceFormat)) {
+            processId = StringUtils.toCamelCase(processId);
+        }
         // reference prefix is set when api endpoints have a prefix and it is in format /path/subpath
         String referencePefix = (String) getProcess().getMetaData().getOrDefault("referencePrefix", "");
+
         if (!referencePefix.isBlank()) {
             // when set, string the leading / and add ending / so the path is complete and without duplicated /
             referencePefix = referencePefix.substring(1) + "/";
@@ -1192,9 +1201,9 @@ public abstract class WorkflowProcessInstanceImpl extends ProcessInstanceImpl
             } else {
                 parentProcessInstanceId = "";
             }
-            this.referenceFromRoot = referenceFromRoot + getProcessId() + "/" + parentProcessInstanceId + getId() + "/";
+            this.referenceFromRoot = referenceFromRoot + processId + "/" + parentProcessInstanceId + getId() + "/";
         } else {
-            this.referenceFromRoot = referencePefix + version() + getProcessId() + "/" + getId() + "/";
+            this.referenceFromRoot = referencePefix + version() + processId + "/" + getId() + "/";
         }
     }
 

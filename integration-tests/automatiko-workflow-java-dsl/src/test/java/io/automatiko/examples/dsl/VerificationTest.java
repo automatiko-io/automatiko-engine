@@ -82,7 +82,7 @@ public class VerificationTest {
                 .accept(ContentType.JSON)
                 .body(addPayload)
                 .when()
-                .post("/splitAndJoin")
+                .post("/split-and-join")
                 .then()
                 //.log().body(true)
                 .statusCode(200)
@@ -91,7 +91,7 @@ public class VerificationTest {
         given()
                 .accept(ContentType.JSON)
                 .when()
-                .get("/splitAndJoin")
+                .get("/split-and-join")
                 .then().statusCode(200)
                 .body("$.size()", is(0));
     }
@@ -128,7 +128,7 @@ public class VerificationTest {
                 .accept(ContentType.JSON)
                 .body(addPayload)
                 .when()
-                .post("/v1/restService")
+                .post("/v1/rest-service")
                 .then()
                 //.log().body(true)
                 .statusCode(200)
@@ -137,7 +137,7 @@ public class VerificationTest {
         given()
                 .accept(ContentType.JSON)
                 .when()
-                .get("/v1/restService")
+                .get("/v1/rest-service")
                 .then().statusCode(200)
                 .body("$.size()", is(0));
 
@@ -147,7 +147,7 @@ public class VerificationTest {
                 .accept(ContentType.JSON)
                 .body(addPayload)
                 .when()
-                .post("/v1/restService")
+                .post("/v1/rest-service")
                 .then()
                 //.log().body(true)
                 .statusCode(200)
@@ -156,7 +156,7 @@ public class VerificationTest {
         given()
                 .accept(ContentType.JSON)
                 .when()
-                .get("/v1/restService")
+                .get("/v1/rest-service")
                 .then().statusCode(200)
                 .body("$.size()", is(0));
     }
@@ -171,7 +171,7 @@ public class VerificationTest {
                 .accept(ContentType.JSON)
                 .body(addPayload)
                 .when()
-                .post("/userTasks")
+                .post("/user-tasks")
                 .then()
                 //.log().body(true)
                 .statusCode(200)
@@ -181,7 +181,7 @@ public class VerificationTest {
         List<Map<String, String>> taskInfo = given()
                 .accept(ContentType.JSON)
                 .when()
-                .get("/userTasks/" + id + "/tasks?user=john")
+                .get("/user-tasks/" + id + "/tasks?user=john")
                 .then()
 
                 .statusCode(200)
@@ -192,14 +192,14 @@ public class VerificationTest {
         String taskId = taskInfo.get(0).get("id");
         String taskName = taskInfo.get(0).get("name");
 
-        assertEquals("firstTask", taskName);
+        assertEquals("first-task", taskName);
 
         String payload = "{\"value\" : \"task completed\"}";
         given().contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
                 .body(payload)
                 .when()
-                .post("/userTasks/" + id + "/" + taskName + "/" + taskId + "?user=john")
+                .post("/user-tasks/" + id + "/" + taskName + "/" + taskId + "?user=john")
                 .then()
                 .log().body(true)
                 .statusCode(200);
@@ -207,7 +207,7 @@ public class VerificationTest {
         taskInfo = given()
                 .accept(ContentType.JSON)
                 .when()
-                .get("/userTasks/" + id + "/tasks?user=john")
+                .get("/user-tasks/" + id + "/tasks?user=john")
                 .then()
 
                 .statusCode(200)
@@ -218,21 +218,21 @@ public class VerificationTest {
         taskId = taskInfo.get(0).get("id");
         taskName = taskInfo.get(0).get("name");
 
-        assertEquals("secondTask", taskName);
+        assertEquals("second-task", taskName);
 
         payload = "{}";
         given().contentType(ContentType.JSON)
                 .accept(ContentType.JSON)
                 .body(payload)
                 .when()
-                .post("/userTasks/" + id + "/" + taskName + "/" + taskId + "?user=john")
+                .post("/user-tasks/" + id + "/" + taskName + "/" + taskId + "?user=john")
                 .then()
                 .statusCode(200);
 
         given()
                 .accept(ContentType.JSON)
                 .when()
-                .get("/userTasks")
+                .get("/user-tasks")
                 .then().statusCode(200)
                 .body("$.size()", is(0));
     }

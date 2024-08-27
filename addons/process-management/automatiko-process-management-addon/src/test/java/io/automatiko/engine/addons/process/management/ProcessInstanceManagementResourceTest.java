@@ -108,7 +108,7 @@ public class ProcessInstanceManagementResourceTest {
             }
         };
         resource = spy(new ProcessInstanceManagementResource(processes, application, identitySupplier, Optional.empty(),
-                Optional.empty()));
+                Optional.empty(), Optional.empty()));
     }
 
     @Test

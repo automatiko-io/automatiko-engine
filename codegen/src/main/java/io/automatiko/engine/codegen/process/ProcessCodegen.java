@@ -69,6 +69,7 @@ import io.automatiko.engine.workflow.compiler.canonical.UserTaskModelMetaData;
 import io.automatiko.engine.workflow.compiler.xml.SemanticModules;
 import io.automatiko.engine.workflow.compiler.xml.XmlProcessReader;
 import io.automatiko.engine.workflow.process.core.node.SubProcessNode;
+import io.automatiko.engine.workflow.process.core.node.WorkItemNode;
 import io.automatiko.engine.workflow.serverless.parser.ServerlessWorkflowParser;
 
 /**
@@ -428,6 +429,30 @@ public class ProcessCodegen extends AbstractGenerator {
             }
             entry.getValue().getMetaData().put("referencePrefix",
                     context.getApplicationProperty("quarkus.automatiko.resource-path-prefix").orElse(""));
+
+            String resourcePathFormat = context.getApplicationProperty("quarkus.automatiko.resource-path-format").orElse(null);
+
+            if (resourcePathFormat != null) {
+                entry.getValue().getMetaData().put("referenceFormat", resourcePathFormat);
+
+                if ("dash".equalsIgnoreCase(resourcePathFormat)) {
+                    entry.getValue().getNodesRecursively().stream().filter(node -> node instanceof WorkItemNode)
+                            .map(WorkItemNode.class::cast).forEach(wiNode -> {
+                                String taskName = (String) wiNode.getWork().getParameter("TaskName");
+                                if (taskName != null) {
+                                    wiNode.getWork().setParameter("TaskName", StringUtils.toDashCase(taskName));
+                                }
+                            });
+                } else if ("camel".equalsIgnoreCase(resourcePathFormat)) {
+                    entry.getValue().getNodesRecursively().stream().filter(node -> node instanceof WorkItemNode)
+                            .map(WorkItemNode.class::cast).forEach(wiNode -> {
+                                String taskName = (String) wiNode.getWork().getParameter("TaskName");
+                                if (taskName != null) {
+                                    wiNode.getWork().setParameter("TaskName", StringUtils.toCamelCase(taskName));
+                                }
+                            });
+                }
+            }
 
             Set<String> classImports = ((io.automatiko.engine.workflow.process.core.WorkflowProcess) entry.getValue())
                     .getImports();

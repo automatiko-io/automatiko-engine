@@ -27,6 +27,17 @@ public class AutomatikoBuildTimeConfig extends AutomatikoBuildConfig {
     public Optional<String> resourcePathPrefix;
 
     /**
+     * Specifies resource path format that should be used by REST apis - supported values are:
+     * <ul>
+     * <li>dash</li>
+     * <li>camel</li>
+     * </ul>
+     * If not set no change will be applied which usually will be camel case format.
+     */
+    @ConfigItem
+    public Optional<String> resourcePathFormat;
+
+    /**
      * Specifies source folder in case it is not default maven based project structure
      */
     @ConfigItem
@@ -80,6 +91,10 @@ public class AutomatikoBuildTimeConfig extends AutomatikoBuildConfig {
 
     public Optional<String> resourcePathPrefix() {
         return resourcePathPrefix;
+    };
+
+    public Optional<String> resourcePathFormat() {
+        return resourcePathFormat;
     };
 
     public Optional<String> sourceFolder() {

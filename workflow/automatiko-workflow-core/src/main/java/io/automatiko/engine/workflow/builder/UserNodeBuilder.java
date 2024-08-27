@@ -46,7 +46,7 @@ public class UserNodeBuilder extends AbstractNodeBuilder {
         this.work = this.node.getWork();
         work.setName("Human Task");
 
-        this.work.setParameter("TaskName", toCamelCase(name));
+        this.work.setParameter("TaskName", StringUtils.toCamelCase(name));
 
         workflowBuilder.container().addNode(node);
 
@@ -690,24 +690,4 @@ public class UserNodeBuilder extends AbstractNodeBuilder {
         ((Map<String, String>) this.node.getMetaData(Metadata.DATA_OUTPUTS)).put(name, type);
     }
 
-    private String toCamelCase(String name) {
-        if (name == null) {
-            return null;
-        }
-
-        StringBuilder converted = new StringBuilder();
-        int index = 0;
-        for (String item : name.split("[\\W_]+")) {
-
-            if (index == 0) {
-                converted.append(item.toLowerCase());
-            } else {
-                converted.append(StringUtils.capitalize(item.toLowerCase()));
-            }
-
-            index++;
-        }
-
-        return converted.toString();
-    }
 }
