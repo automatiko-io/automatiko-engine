@@ -12,6 +12,10 @@ public class AutomatikoBuildConfig {
         return Optional.empty();
     };
 
+    public Optional<String> resourcePathFormat() {
+        return Optional.empty();
+    };
+
     public Optional<String> sourceFolder() {
         return Optional.empty();
     };

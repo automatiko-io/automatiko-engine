@@ -44,6 +44,7 @@ import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.api.workflow.VariableNotFoundException;
 import io.automatiko.engine.services.uow.UnitOfWorkExecutor;
 import io.automatiko.engine.services.utils.IoUtils;
+import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.AbstractProcess;
 import io.automatiko.engine.workflow.AbstractProcessInstance;
 import io.automatiko.engine.workflow.base.core.ContextContainer;
@@ -79,33 +80,39 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
 
     private String resourcePathPrefix;
 
+    private String resourcePathFormat;
+
     // CDI
     public ProcessInstanceManagementResource() {
-        this((Map<String, Process<?>>) null, null, null, Optional.empty(), Optional.empty());
+        this((Map<String, Process<?>>) null, null, null, Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     public ProcessInstanceManagementResource(Map<String, Process<?>> process, Application application,
             IdentitySupplier identitySupplier,
             @ConfigProperty(name = "quarkus.automatiko.service-url") Optional<String> serviceUrl,
-            @ConfigProperty(name = "quarkus.automatiko.resource-path-prefix") Optional<String> resourcePathPrefix) {
+            @ConfigProperty(name = "quarkus.automatiko.resource-path-prefix") Optional<String> resourcePathPrefix,
+            @ConfigProperty(name = "quarkus.automatiko.resource-path-format") Optional<String> resourcePathFormat) {
         super(process, application);
         this.identitySupplier = identitySupplier;
         this.exporter = new ProcessInstanceExporter(processData);
         this.serviceUrl = serviceUrl.orElse(null);
         this.resourcePathPrefix = resourcePathPrefix.orElse("");
+        this.resourcePathFormat = resourcePathFormat.orElse("");
     }
 
     @Inject
     public ProcessInstanceManagementResource(Application application, Instance<Process<?>> availableProcesses,
             IdentitySupplier identitySupplier,
             @ConfigProperty(name = "quarkus.automatiko.service-url") Optional<String> serviceUrl,
-            @ConfigProperty(name = "quarkus.automatiko.resource-path-prefix") Optional<String> resourcePathPrefix) {
+            @ConfigProperty(name = "quarkus.automatiko.resource-path-prefix") Optional<String> resourcePathPrefix,
+            @ConfigProperty(name = "quarkus.automatiko.resource-path-format") Optional<String> resourcePathFormat) {
         super(availableProcesses == null ? Collections.emptyMap()
                 : availableProcesses.stream().collect(Collectors.toMap(p -> p.id(), p -> p)), application);
         this.identitySupplier = identitySupplier;
         this.exporter = new ProcessInstanceExporter(processData);
         this.serviceUrl = serviceUrl.orElse(null);
         this.resourcePathPrefix = resourcePathPrefix.orElse("");
+        this.resourcePathFormat = resourcePathFormat.orElse("");
     }
 
     @Override
@@ -160,12 +167,17 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
                 if (process.version() != null) {
                     pathprefix = "v" + process.version().replaceAll("\\.", "_") + "/";
                 }
-
+                String pathId = id;
+                if ("dash".equalsIgnoreCase(resourcePathFormat)) {
+                    pathId = StringUtils.toDashCase(((AbstractProcess<?>) process).process().getId());
+                } else if ("camel".equalsIgnoreCase(resourcePathFormat)) {
+                    pathId = StringUtils.toCamelCase(((AbstractProcess<?>) process).process().getId());
+                }
                 collected.add(new ProcessDTO(id, process.version(), process.name(),
                         process.description(),
                         (serviceUrl == null ? ""
                                 : serviceUrl) + resourcePathPrefix + "/" + pathprefix
-                                + ((AbstractProcess<?>) process).process().getId()
+                                + pathId
                                 + "/image",
                         process.instances().size()));
             }

@@ -19,6 +19,7 @@ import io.automatiko.engine.api.workflow.ProcessInstanceExecutionException;
 import io.automatiko.engine.api.workflow.ProcessInstanceReadMode;
 import io.automatiko.engine.api.workflow.WorkItem;
 import io.automatiko.engine.services.uow.UnitOfWorkExecutor;
+import io.automatiko.engine.services.utils.StringUtils;
 
 public abstract class BaseProcessInstanceManagementResource<T> implements ProcessInstanceManagement<T> {
 
@@ -34,6 +35,11 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
     public BaseProcessInstanceManagementResource(Map<String, Process<?>> processData, Application application) {
         this.processData = processData;
         this.application = application;
+
+        for (String processId : new ArrayList<>(processData.keySet())) {
+            this.processData.put(StringUtils.toDashCase(processId), this.processData.get(processId));
+            this.processData.putIfAbsent(StringUtils.toCamelCase(processId), this.processData.get(processId));
+        }
     }
 
     public T doGetInstanceInError(String processId, String processInstanceId) {

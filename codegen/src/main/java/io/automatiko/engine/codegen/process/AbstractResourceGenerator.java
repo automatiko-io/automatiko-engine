@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -214,6 +215,59 @@ public abstract class AbstractResourceGenerator {
 
                         pathAnotation.asSingleMemberAnnotationExpr()
                                 .setMemberValue(new StringLiteralExpr(resourcePathPrefix.get() + value));
+
+                    });
+        }
+
+        Optional<String> resourcePathFormat = context.getApplicationProperty("quarkus.automatiko.resource-path-format");
+
+        if (resourcePathFormat.isPresent()) {
+            ClassOrInterfaceDeclaration template = clazz.findFirst(ClassOrInterfaceDeclaration.class)
+                    .orElseThrow(() -> new NoSuchElementException(
+                            "Compilation unit doesn't contain a class or interface declaration!"));
+
+            template.findAll(ClassOrInterfaceDeclaration.class, md -> md.getAnnotationByName("Path").isPresent())
+                    .forEach(md -> {
+
+                        AnnotationExpr pathAnotation = md.getAnnotationByName("Path").get();
+
+                        String value = pathAnotation.asSingleMemberAnnotationExpr().getMemberValue()
+                                .toStringLiteralExpr().get().getValue();
+                        value = Stream.of(value.split("/")).map(item -> {
+                            if (resourcePathFormat.get().equals("dash")) {
+                                return StringUtils.toDashCase(item);
+                            } else if (resourcePathFormat.get().equals("camel")) {
+                                return StringUtils.toCamelCase(item);
+                            }
+                            return item;
+                        }).collect(Collectors.joining("/"));
+
+                        pathAnotation.asSingleMemberAnnotationExpr()
+                                .setMemberValue(new StringLiteralExpr(value));
+
+                    });
+
+            template.findAll(MethodDeclaration.class, md -> md.getAnnotationByName("Path").isPresent())
+                    .forEach(md -> {
+
+                        AnnotationExpr pathAnotation = md.getAnnotationByName("Path").get();
+
+                        String value = pathAnotation.asSingleMemberAnnotationExpr().getMemberValue()
+                                .toStringLiteralExpr().get().getValue();
+                        value = Stream.of(value.split("/")).map(item -> {
+                            if (item.startsWith("{") && item.endsWith("}")) {
+                                return item;
+                            }
+                            if (resourcePathFormat.get().equals("dash")) {
+                                return StringUtils.toDashCase(item);
+                            } else if (resourcePathFormat.get().equals("camel")) {
+                                return StringUtils.toCamelCase(item);
+                            }
+                            return item;
+                        }).collect(Collectors.joining("/"));
+
+                        pathAnotation.asSingleMemberAnnotationExpr()
+                                .setMemberValue(new StringLiteralExpr(value));
 
                     });
         }
@@ -684,7 +738,7 @@ public abstract class AbstractResourceGenerator {
     }
 
     private String sanitizeName(String name) {
-        return name.replaceAll("\\s", "_").replaceAll("\\.", "_");
+        return name.replaceAll("\\s", "_").replaceAll("\\.", "_").replaceAll("-", "_");
     }
 
     public String generatedFilePath() {
