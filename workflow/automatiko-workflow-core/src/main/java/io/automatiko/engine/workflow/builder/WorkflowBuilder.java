@@ -210,6 +210,31 @@ public class WorkflowBuilder {
     }
 
     /**
+     * Sets security roles to be applied for the service api created for given workflow
+     * 
+     * @param roles not null names of roles to be set
+     * @return the builder
+     */
+    public WorkflowBuilder securityRoles(String... roles) {
+        Objects.requireNonNull(roles, "Roles must not be null");
+        process.setMetaData("securityRoles", Stream.of(roles).collect(Collectors.joining(",")));
+        return this;
+    }
+
+    /**
+     * Sets access policy to be used for this workflow to protect access. It references name of the
+     * <code>io.automatiko.engine.api.auth.AccessPolicy</code>
+     * 
+     * @param policy not null name of the policy implementation
+     * @return the builder
+     */
+    public WorkflowBuilder accessPolicy(String policy) {
+        Objects.requireNonNull(policy, "policy name must not be null");
+        process.setMetaData("accessPolicy", policy);
+        return this;
+    }
+
+    /**
      * Aborts workflow instance inn case it is not completed within given duration expressed as ISO 8601 duration format.
      * For example <code>P5D</code> stands for 5 days, which will abort workflow instance after 5 days from the starting time
      * 
