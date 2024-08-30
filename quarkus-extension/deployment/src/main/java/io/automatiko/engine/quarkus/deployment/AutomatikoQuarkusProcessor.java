@@ -651,11 +651,22 @@ public class AutomatikoQuarkusProcessor {
             List<String> dependencies, CompositeIndex index, boolean onlyCodeAssets)
             throws IOException {
         DotName workflowBuilderDotName = createDotName(workflowsBuilderClass);
-        List<AnnotationInstance> workflowBuilderClasses = index.getAnnotations(createDotName(workflowsAnnotationClass));
+        DotName workflowsAnnotationClassDotName = createDotName(workflowsAnnotationClass);
+        List<AnnotationInstance> workflowBuilderClasses = index.getAnnotations(workflowsAnnotationClassDotName);
         List<Process> processes = new ArrayList<Process>();
         if (workflowBuilderClasses != null && !workflowBuilderClasses.isEmpty()) {
             for (AnnotationInstance workflowBuilderClass : workflowBuilderClasses) {
                 ClassInfo clazz = workflowBuilderClass.target().asClass();
+
+                String category = workflowBuilderClass.value("category") != null
+                        ? workflowBuilderClass.value("category").asString()
+                        : "";
+                String categoryDescription = workflowBuilderClass.value("categoryDescription") != null
+                        ? workflowBuilderClass.value("categoryDescription").asString()
+                        : "";
+                String resourcePathPrefix = workflowBuilderClass.value("resourcePathPrefix") != null
+                        ? workflowBuilderClass.value("resourcePathPrefix").asString()
+                        : "";
 
                 String fqcn = clazz.name().toString();
                 String sourceFolder = sourceFolder(appGen);
@@ -699,6 +710,16 @@ public class AutomatikoQuarkusProcessor {
                         WorkflowBuilder builder = (WorkflowBuilder) method.invoke(workflowsBuilderInstance);
                         ExecutableProcess process = builder.get();
                         process.setPackageName(builderClass.getPackageName());
+
+                        // sets the category from annotation if not already set workflow
+                        if (process.getMetaData("category") == null && !category.isBlank()) {
+                            process.setMetaData("category", category);
+                            process.setMetaData("categoryDescription", categoryDescription);
+                        }
+
+                        if (!resourcePathPrefix.isBlank()) {
+                            process.setMetaData("referencePrefix", resourcePathPrefix);
+                        }
                         processes.add(process);
                     }
 

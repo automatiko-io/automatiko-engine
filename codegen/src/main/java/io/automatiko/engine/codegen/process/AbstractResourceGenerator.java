@@ -198,7 +198,10 @@ public abstract class AbstractResourceGenerator {
                     });
         }
 
-        Optional<String> resourcePathPrefix = context.getApplicationProperty("quarkus.automatiko.resource-path-prefix");
+        // path prefix can be provided via property in the application.properties or by process itself
+        Optional<String> resourcePathPrefix = process.getMetaData().get("referencePrefix") != null
+                ? Optional.of((String) process.getMetaData().get("referencePrefix"))
+                : context.getApplicationProperty("quarkus.automatiko.resource-path-prefix");
 
         if (resourcePathPrefix.isPresent()) {
             ClassOrInterfaceDeclaration template = clazz.findFirst(ClassOrInterfaceDeclaration.class)

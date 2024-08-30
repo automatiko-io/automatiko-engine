@@ -171,7 +171,7 @@ public class VerificationTest {
                 .accept(ContentType.JSON)
                 .body(addPayload)
                 .when()
-                .post("/user-tasks")
+                .post("/samples/user-tasks")
                 .then()
                 //.log().body(true)
                 .statusCode(200)
@@ -181,7 +181,7 @@ public class VerificationTest {
         List<Map<String, String>> taskInfo = given()
                 .accept(ContentType.JSON)
                 .when()
-                .get("/user-tasks/" + id + "/tasks?user=john")
+                .get("/samples/user-tasks/" + id + "/tasks?user=john")
                 .then()
 
                 .statusCode(200)
@@ -199,7 +199,7 @@ public class VerificationTest {
                 .accept(ContentType.JSON)
                 .body(payload)
                 .when()
-                .post("/user-tasks/" + id + "/" + taskName + "/" + taskId + "?user=john")
+                .post("/samples/user-tasks/" + id + "/" + taskName + "/" + taskId + "?user=john")
                 .then()
                 .log().body(true)
                 .statusCode(200);
@@ -207,7 +207,7 @@ public class VerificationTest {
         taskInfo = given()
                 .accept(ContentType.JSON)
                 .when()
-                .get("/user-tasks/" + id + "/tasks?user=john")
+                .get("/samples/user-tasks/" + id + "/tasks?user=john")
                 .then()
 
                 .statusCode(200)
@@ -225,14 +225,14 @@ public class VerificationTest {
                 .accept(ContentType.JSON)
                 .body(payload)
                 .when()
-                .post("/user-tasks/" + id + "/" + taskName + "/" + taskId + "?user=john")
+                .post("/samples/user-tasks/" + id + "/" + taskName + "/" + taskId + "?user=john")
                 .then()
                 .statusCode(200);
 
         given()
                 .accept(ContentType.JSON)
                 .when()
-                .get("/user-tasks")
+                .get("/samples/user-tasks")
                 .then().statusCode(200)
                 .body("$.size()", is(0));
     }

@@ -427,7 +427,7 @@ public class ProcessCodegen extends AbstractGenerator {
             if (context.getBuildContext().isUserTaskMgmtSupported()) {
                 entry.getValue().getMetaData().put("UserTaskMgmt", "true");
             }
-            entry.getValue().getMetaData().put("referencePrefix",
+            entry.getValue().getMetaData().putIfAbsent("referencePrefix",
                     context.getApplicationProperty("quarkus.automatiko.resource-path-prefix").orElse(""));
 
             String resourcePathFormat = context.getApplicationProperty("quarkus.automatiko.resource-path-format").orElse(null);
