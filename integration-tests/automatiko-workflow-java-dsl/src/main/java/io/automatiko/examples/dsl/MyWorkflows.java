@@ -103,19 +103,4 @@ public class MyWorkflows {
         return builder;
     }
 
-    public WorkflowBuilder userTasks() {
-
-        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("userTasks", "Sample workflow with user tasks")
-                .dataObject("x", Integer.class)
-                .dataObject("y", String.class);
-
-        builder.start("start here").then()
-                .user("First Task").description("A description of the task")
-                .users("john").outputToDataObject("value", "y").then()
-                .user("Second Task").users("john").dataObjectAsInput("x").then()
-                .end("done");
-
-        return builder;
-    }
-
 }
