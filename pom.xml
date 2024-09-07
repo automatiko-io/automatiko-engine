@@ -55,7 +55,7 @@
     <version.findbugs.plugin>3.0.5</version.findbugs.plugin>
     <version.install.plugin>3.1.3</version.install.plugin>
     <version.invoker.plugin>3.8.0</version.invoker.plugin>
-    <version.jandex.plugin>3.2.0</version.jandex.plugin>
+    <version.jandex.plugin>3.2.2</version.jandex.plugin>
     <version.jar.plugin>3.4.2</version.jar.plugin>
     <version.javadoc.plugin>3.8.0</version.javadoc.plugin>
     <version.archetype.plugin>3.2.1</version.archetype.plugin>
