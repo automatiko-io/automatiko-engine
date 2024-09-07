@@ -678,7 +678,10 @@ public class AutomatikoQuarkusProcessor {
                 if (projects != null) {
                     String[] extraProjectPaths = projects.split(",");
                     for (String extraPath : extraProjectPaths) {
-                        projectPaths.add(Paths.get(extraPath));
+
+                        for (Path projectPath : projectPaths.toArray(Path[]::new)) {
+                            projectPaths.add(Paths.get(projectPath.toString(), extraPath).normalize());
+                        }
                     }
                 }
                 Optional<String> sourceFile = projectPaths.stream()
