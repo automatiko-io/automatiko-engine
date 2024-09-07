@@ -131,7 +131,7 @@ public class AbstractCodegenTest {
         }
 
         if (logger.isDebugEnabled()) {
-            Path temp = Files.createTempDirectory("automatik-temp-dir");
+            Path temp = Files.createTempDirectory("automatiko-temp-dir");
             logger.debug("Dumping generated files in " + temp);
             for (GeneratedFile entry : generatedFiles) {
                 Path fpath = temp.resolve(entry.relativePath());

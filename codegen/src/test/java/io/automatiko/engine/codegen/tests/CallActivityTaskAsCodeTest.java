@@ -322,7 +322,7 @@ public class CallActivityTaskAsCodeTest extends AbstractCodegenTest {
                 .literalAsInput("x", 100).expressionAsInput("y", String.class, () -> item)
                 .outputToDataObject("y", "b").outputToDataObject("x", "a")
                 .repeat(() -> java.util.List.of("one", "two"))
-                .then().end("done");
+                .endRepeatAndThen().end("done");
         Application app = generateCode(List.of(builder.get(), builderSub.get()));
         assertThat(app).isNotNull();
 
@@ -394,7 +394,7 @@ public class CallActivityTaskAsCodeTest extends AbstractCodegenTest {
                 .expressionAsInput("y", String.class, () -> item)
                 .repeat(() -> java.util.List.of("one", "two"), () -> outputs)
                 .outputToDataObject("y", "outItem")
-                .then().end("done");
+                .endRepeatAndThen().end("done");
         Application app = generateCode(List.of(builder.get(), builderSub.get()));
         assertThat(app).isNotNull();
 
@@ -463,7 +463,7 @@ public class CallActivityTaskAsCodeTest extends AbstractCodegenTest {
                 .expressionAsInput("y", String.class, () -> person.getName())
                 .repeat("inputs", "person", "outputs", "updatedName")
                 .outputToDataObject("y", "updatedName")
-                .then().end("done");
+                .endRepeatAndThen().end("done");
         Application app = generateCode(List.of(builder.get(), builderSub.get()));
         assertThat(app).isNotNull();
 
