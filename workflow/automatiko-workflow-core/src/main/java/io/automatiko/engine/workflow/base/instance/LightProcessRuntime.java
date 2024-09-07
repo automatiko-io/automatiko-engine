@@ -179,7 +179,12 @@ public class LightProcessRuntime implements InternalProcessRuntime {
         temp.putAll(pi.getVariables());
         String uuid;
         if (correlationKey != null) {
-            uuid = UUID.nameUUIDFromBytes(correlationKey.toExternalForm().getBytes(StandardCharsets.UTF_8)).toString();
+            try {
+                uuid = UUID.fromString(correlationKey.toExternalForm()).toString();
+            } catch (IllegalArgumentException e) {
+                uuid = UUID.nameUUIDFromBytes(correlationKey.toExternalForm().getBytes(StandardCharsets.UTF_8)).toString();
+            }
+
             ((WorkflowProcessInstanceImpl) pi).setCorrelationKey(correlationKey.toExternalForm());
         } else {
 
@@ -193,7 +198,12 @@ public class LightProcessRuntime implements InternalProcessRuntime {
 
             if (businessKeyVar.isPresent()) {
                 Object businessKey = businessKeyVar.get();
-                uuid = UUID.nameUUIDFromBytes(businessKey.toString().getBytes(StandardCharsets.UTF_8)).toString();
+                try {
+                    uuid = UUID.fromString(businessKey.toString()).toString();
+                } catch (IllegalArgumentException e) {
+                    uuid = UUID.nameUUIDFromBytes(businessKey.toString().getBytes(StandardCharsets.UTF_8)).toString();
+                }
+
                 ((WorkflowProcessInstanceImpl) pi).setCorrelationKey(businessKey.toString());
             } else {
 
