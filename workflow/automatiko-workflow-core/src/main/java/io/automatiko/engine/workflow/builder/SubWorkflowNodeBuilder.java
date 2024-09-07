@@ -13,9 +13,13 @@ import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.base.core.context.variable.VariableScope;
 import io.automatiko.engine.workflow.base.core.datatype.impl.type.ObjectDataType;
 import io.automatiko.engine.workflow.process.core.Node;
+import io.automatiko.engine.workflow.process.core.impl.ConnectionImpl;
 import io.automatiko.engine.workflow.process.core.impl.NodeImpl;
+import io.automatiko.engine.workflow.process.core.node.CompositeContextNode;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
+import io.automatiko.engine.workflow.process.core.node.EndNode;
 import io.automatiko.engine.workflow.process.core.node.ForEachNode;
+import io.automatiko.engine.workflow.process.core.node.StartNode;
 import io.automatiko.engine.workflow.process.core.node.SubProcessNode;
 import io.automatiko.engine.workflow.process.executable.core.Metadata;
 
@@ -442,18 +446,46 @@ public class SubWorkflowNodeBuilder extends AbstractNodeBuilder {
         forEachNode.setName("Repeat of " + getNode().getName());
         forEachNode.setMetaData("UniqueId", origNode.getMetaData().get("UniqueId"));
         forEachNode.setCollectionExpression(dataObjectName);
-
         forEachNode.setVariable(inputName, new ObjectDataType(resolveItemType(dataObjectName)));
 
         if (toDataObject != null) {
-
             forEachNode.setOutputVariable(outputName, new ObjectDataType(resolveItemType(toDataObject)));
             forEachNode.setOutputCollectionExpression(toDataObject);
         }
+        CompositeContextNode subProcessNode = new CompositeContextNode();
+        VariableScope variableScope = new VariableScope();
+        subProcessNode.addContext(variableScope);
+        subProcessNode.setDefaultContext(variableScope);
+        subProcessNode.setAutoComplete(true);
+        subProcessNode.setMetaData("hidden", true);
+        subProcessNode.setName(node.getName() + " (Wrapper)");
+        subProcessNode.setCancelRemainingInstances(false);
 
-        forEachNode.addNode(origNode);
+        StartNode startNode = new StartNode();
+        startNode.setName("");
+        startNode.setMetaData("UniqueId", origNode.getMetaData().get("UniqueId") + ":start");
+        startNode.setMetaData("hidden", true);
+        subProcessNode.addNode(startNode);
 
-        VariableScope variableScope = ((VariableScope) forEachNode.getCompositeNode()
+        subProcessNode.addNode(origNode);
+
+        EndNode endNode = new EndNode();
+        endNode.setName("");
+        endNode.setMetaData("UniqueId", origNode.getMetaData().get("UniqueId") + ":end");
+        endNode.setMetaData("hidden", true);
+        subProcessNode.addNode(endNode);
+
+        ConnectionImpl connection = new ConnectionImpl(startNode, Node.CONNECTION_DEFAULT_TYPE, origNode,
+                Node.CONNECTION_DEFAULT_TYPE);
+        connection.setMetaData("UniqueId", "SequenceFlow_" + origNode.getMetaData().get("UniqueId") + ":start");
+
+        ConnectionImpl connection3 = new ConnectionImpl(origNode, Node.CONNECTION_DEFAULT_TYPE, endNode,
+                Node.CONNECTION_DEFAULT_TYPE);
+        connection3.setMetaData("UniqueId", "SequenceFlow_" + origNode.getMetaData().get("UniqueId") + ":end");
+
+        forEachNode.addNode(subProcessNode);
+
+        variableScope = ((VariableScope) forEachNode.getCompositeNode()
                 .getDefaultContext(VariableScope.VARIABLE_SCOPE));
 
         for (DataAssociation in : ((SubProcessNode) origNode).getInAssociations()) {
@@ -472,16 +504,25 @@ public class SubWorkflowNodeBuilder extends AbstractNodeBuilder {
             }
         }
 
-        forEachNode.linkIncomingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE, node.getId(),
+        forEachNode.linkIncomingConnections(NodeImpl.CONNECTION_DEFAULT_TYPE, subProcessNode.getId(),
                 NodeImpl.CONNECTION_DEFAULT_TYPE);
-        forEachNode.linkOutgoingConnections(node.getId(), NodeImpl.CONNECTION_DEFAULT_TYPE,
+        forEachNode.linkOutgoingConnections(subProcessNode.getId(), NodeImpl.CONNECTION_DEFAULT_TYPE,
                 NodeImpl.CONNECTION_DEFAULT_TYPE);
 
         workflowBuilder.container().addNode(forEachNode);
 
         connect();
 
+        workflowBuilder.container(subProcessNode);
+
         return this;
+    }
+
+    public WorkflowBuilder endRepeatAndThen() {
+        workflowBuilder.putOnContext(forEachNode);
+        workflowBuilder.putBuilderOnContext(null);
+        workflowBuilder.container(workflowBuilder.get());
+        return workflowBuilder;
     }
 
     @Override
