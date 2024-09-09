@@ -43,7 +43,7 @@
     <dependency>
       <groupId>io.quarkiverse.azureservices</groupId>
       <artifactId>quarkus-azure-storage-blob</artifactId>
-      <version>1.0.6</version>
+      <version>1.0.7</version>
     </dependency>
   </dependencies>
   <build>
