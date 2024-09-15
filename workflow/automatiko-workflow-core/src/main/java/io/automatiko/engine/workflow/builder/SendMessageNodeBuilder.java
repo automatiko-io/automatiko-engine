@@ -342,6 +342,25 @@ public class SendMessageNodeBuilder extends AbstractNodeBuilder {
     }
 
     /**
+     * Sets cloud events as message format for this message for this node
+     * 
+     * @return the builder
+     */
+    public SendMessageNodeBuilder cloudEvents() {
+        return (SendMessageNodeBuilder) super.customAttribute("cloudEvents", true);
+    }
+
+    /**
+     * Sets binary cloud events as message structure for this message for this node
+     * 
+     * @return the builder
+     */
+    public SendMessageNodeBuilder cloudEventsBinary() {
+        cloudEvents();
+        return (SendMessageNodeBuilder) super.customAttribute("cloudEventsBinary", true);
+    }
+
+    /**
      * Sets custom attribute for this node
      * 
      * @param name name of the attribute, must not be null

@@ -17,6 +17,7 @@ import static io.automatiko.engine.codegen.CodegenUtils.interpolateEventTypes;
 import static io.automatiko.engine.codegen.CodegenUtils.interpolateTypes;
 
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
@@ -25,6 +26,7 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -731,10 +733,36 @@ public class MessageProducerGenerator {
                     });
 
             template.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("useCloudEvents"))
-                    .forEach(fd -> annotator.withConfigInjection(fd, "quarkus.automatiko.messaging.as-cloudevents"));
+                    .forEach(fd -> {
+
+                        Object cloudEvents = trigger.getContext("cloudEvents");
+                        if (cloudEvents == null) {
+                            annotator.withConfigInjection(fd, "quarkus.automatiko.messaging.as-cloudevents");
+                        } else {
+                            fd.getVariable(0)
+                                    .setInitializer(new MethodCallExpr(
+                                            new NameExpr(Optional.class.getCanonicalName()),
+                                            "of")
+                                                    .addArgument(new BooleanLiteralExpr(
+                                                            Boolean.parseBoolean(cloudEvents.toString()))));
+                        }
+                    });
 
             template.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("useCloudEventsBinary"))
-                    .forEach(fd -> annotator.withConfigInjection(fd, "quarkus.automatiko.messaging.as-cloudevents-binary"));
+                    .forEach(fd -> {
+
+                        Object cloudEvents = trigger.getContext("cloudEventsBinary");
+                        if (cloudEvents == null) {
+                            annotator.withConfigInjection(fd, "quarkus.automatiko.messaging.as-cloudevents-binary");
+                        } else {
+                            fd.getVariable(0)
+                                    .setInitializer(new MethodCallExpr(
+                                            new NameExpr(Optional.class.getCanonicalName()),
+                                            "of")
+                                                    .addArgument(new BooleanLiteralExpr(
+                                                            Boolean.parseBoolean(cloudEvents.toString()))));
+                        }
+                    });
 
         }
         // add connector and message name as static fields of the class

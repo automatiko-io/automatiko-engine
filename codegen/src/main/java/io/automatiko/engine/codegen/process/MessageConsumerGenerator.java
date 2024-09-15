@@ -17,6 +17,7 @@ import static io.automatiko.engine.codegen.CodegenUtils.interpolateTypes;
 import static io.automatiko.engine.codegen.CodegenUtils.isApplicationField;
 import static io.automatiko.engine.codegen.CodegenUtils.isProcessField;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -426,7 +427,19 @@ public class MessageConsumerGenerator {
                     });
 
             template.findAll(FieldDeclaration.class, fd -> fd.getVariable(0).getNameAsString().equals("useCloudEvents"))
-                    .forEach(fd -> annotator.withConfigInjection(fd, "quarkus.automatiko.messaging.as-cloudevents"));
+                    .forEach(fd -> {
+                        Object cloudEvents = trigger.getContext("cloudEvents");
+                        if (cloudEvents == null) {
+                            annotator.withConfigInjection(fd, "quarkus.automatiko.messaging.as-cloudevents");
+                        } else {
+                            fd.getVariable(0)
+                                    .setInitializer(new MethodCallExpr(
+                                            new NameExpr(Optional.class.getCanonicalName()),
+                                            "of")
+                                                    .addArgument(new BooleanLiteralExpr(
+                                                            Boolean.parseBoolean(cloudEvents.toString()))));
+                        }
+                    });
 
             template.findAll(MethodDeclaration.class).stream().filter(md -> md.getNameAsString().equals("consume"))
                     .forEach(md -> {

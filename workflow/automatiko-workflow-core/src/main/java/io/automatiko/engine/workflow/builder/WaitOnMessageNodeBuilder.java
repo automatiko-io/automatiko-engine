@@ -294,6 +294,15 @@ public class WaitOnMessageNodeBuilder extends AbstractNodeBuilder {
     }
 
     /**
+     * Sets cloud events as message format for this message for this node
+     * 
+     * @return the builder
+     */
+    public WaitOnMessageNodeBuilder cloudEvents() {
+        return (WaitOnMessageNodeBuilder) super.customAttribute("cloudEvents", true);
+    }
+
+    /**
      * Sets custom attribute for this node
      * 
      * @param name name of the attribute, must not be null
