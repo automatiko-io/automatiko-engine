@@ -224,6 +224,25 @@ public class EndWithMessageNodeBuilder extends AbstractNodeBuilder {
     }
 
     /**
+     * Sets cloud events as message format for this message for this node
+     * 
+     * @return the builder
+     */
+    public EndWithMessageNodeBuilder cloudEvents() {
+        return (EndWithMessageNodeBuilder) super.customAttribute("cloudEvents", true);
+    }
+
+    /**
+     * Sets binary cloud events as message structure for this message for this node
+     * 
+     * @return the builder
+     */
+    public EndWithMessageNodeBuilder cloudEventsBinary() {
+        cloudEvents();
+        return (EndWithMessageNodeBuilder) super.customAttribute("cloudEventsBinary", true);
+    }
+
+    /**
      * Sets custom attribute for this node
      * 
      * @param name name of the attribute, must not be null
