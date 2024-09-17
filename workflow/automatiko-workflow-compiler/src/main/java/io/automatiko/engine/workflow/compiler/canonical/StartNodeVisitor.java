@@ -36,6 +36,7 @@ import io.automatiko.engine.workflow.process.core.node.Assignment;
 import io.automatiko.engine.workflow.process.core.node.ConstraintTrigger;
 import io.automatiko.engine.workflow.process.core.node.DataAssociation;
 import io.automatiko.engine.workflow.process.core.node.StartNode;
+import io.automatiko.engine.workflow.process.executable.core.ExecutableProcess;
 import io.automatiko.engine.workflow.process.executable.core.factory.StartNodeFactory;
 import io.automatiko.engine.workflow.util.PatternConstants;
 
@@ -119,8 +120,8 @@ public class StartNodeVisitor extends AbstractNodeVisitor<StartNode> {
 
             handleTrigger(node, nodeMetaData, body, variableScope, metadata);
 
-        } else {
-            // since there is start node without trigger then make sure it is startable
+        } else if (node.getParentContainer() instanceof ExecutableProcess) {
+            // since there is start node without trigger then make sure it is startable only when this is a top level start node
             metadata.setStartable(true);
         }
 
