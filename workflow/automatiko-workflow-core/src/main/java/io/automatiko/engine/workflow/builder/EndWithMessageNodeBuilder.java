@@ -74,7 +74,7 @@ public class EndWithMessageNodeBuilder extends AbstractNodeBuilder {
      * @return the builder
      */
     public EndWithMessageNodeBuilder channel(String name) {
-        node.setMetaData(Metadata.TRIGGER_REF, name);
+        node.setMetaData(Metadata.TRIGGER_CHANNEL, name);
         return this;
     }
 
