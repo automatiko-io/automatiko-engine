@@ -12,28 +12,37 @@ import io.automatiko.engine.codegen.GeneratorContext;
 
 public class QuarkusGeneratorContext extends GeneratorContext {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(QuarkusGeneratorContext.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(QuarkusGeneratorContext.class);
 
-	protected QuarkusGeneratorContext(Properties properties, File resourcePath, File classesPath) {
-		super(properties, resourcePath, classesPath);
+    protected QuarkusGeneratorContext(Properties properties, File resourcePath, File classesPath) {
+        super(properties, resourcePath, classesPath);
 
-	}
+    }
 
-	@Override
-	public void setApplicationProperty(String property, String value) {
-		super.setApplicationProperty(property, value);
+    @Override
+    public void setApplicationProperty(String property, String value) {
+        super.setApplicationProperty(property, value);
 
-	}
+    }
 
-	public static GeneratorContext ofResourcePath(File resourcePath, File classesPath) {
-		Properties applicationProperties = new Properties();
+    public static GeneratorContext ofResourcePath(File resourcePath, File classesPath) {
+        Properties applicationProperties = new Properties();
 
-		try (FileReader fileReader = new FileReader(new File(resourcePath, APPLICATION_PROPERTIES_FILE_NAME))) {
-			applicationProperties.load(fileReader);
-		} catch (IOException ioe) {
-			LOGGER.debug("Unable to load '" + APPLICATION_PROPERTIES_FILE_NAME + "'.");
-		}
+        try (FileReader fileReader = new FileReader(new File(resourcePath, APPLICATION_PROPERTIES_FILE_NAME))) {
+            applicationProperties.load(fileReader);
+        } catch (IOException ioe) {
+            LOGGER.debug("Unable to load '" + APPLICATION_PROPERTIES_FILE_NAME + "'.");
+        }
+        // check if there is test version of the application.properties and load it on top of main
+        File testResourcePath = new File(resourcePath.toString().replace("main", "test"), APPLICATION_PROPERTIES_FILE_NAME);
+        if (testResourcePath.exists()) {
+            try (FileReader fileReader = new FileReader(testResourcePath)) {
+                applicationProperties.load(fileReader);
+            } catch (IOException ioe) {
+                LOGGER.debug("Unable to load '" + APPLICATION_PROPERTIES_FILE_NAME + "'.");
+            }
+        }
 
-		return new QuarkusGeneratorContext(applicationProperties, resourcePath, classesPath);
-	}
+        return new QuarkusGeneratorContext(applicationProperties, resourcePath, classesPath);
+    }
 }

@@ -79,7 +79,7 @@ public class GeneratorContext {
     private Map<String, ProcessMetaData> processes = new ConcurrentHashMap<String, ProcessMetaData>();
 
     private Map<String, Map<String, Object>> generators = new ConcurrentHashMap<>();
-    
+
     private Map<Path, Path> classToSource = new HashMap<>();
 
     private List<String> instructions = new ArrayList<String>();
