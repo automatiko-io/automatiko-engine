@@ -197,6 +197,22 @@ public class WorkflowBuilder {
     }
 
     /**
+     * Adds tag to the workflow definition as expression
+     * 
+     * @param tags non null tags to be assigned to the workflow definition
+     * @return the builder
+     */
+    public WorkflowBuilder tags(Supplier<String> tagExpression) {
+        if (tagExpression != null) {
+            String expression = "#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()) + "}";
+            String existingTags = (String) process.getMetaData("tags");
+            process.setMetaData("tags",
+                    (existingTags == null ? "" : existingTags + ",") + expression);
+        }
+        return this;
+    }
+
+    /**
      * Sets category of the workflow that is used to group workflows at documentation level
      * 
      * @param category not null name of the category
@@ -412,7 +428,25 @@ public class WorkflowBuilder {
     }
 
     public <T> List<T> listDataObject(Class<T> type, String name, Supplier<T> valueExpression, String... tags) {
-        listDataObject(name, valueExpression, type, tags);
+        Variable variable = new Variable();
+        variable.setId(name);
+        variable.setName(name);
+        variable.setType(new ObjectDataType(List.class, List.class.getCanonicalName() + "<" + type.getCanonicalName() + ">"));
+        variable.setMetaData("type", type.getCanonicalName());
+
+        if (tags != null && tags.length > 0) {
+            String variableTags = Stream.of(tags).collect(Collectors.joining(","));
+            variable.setMetaData("tags", variableTags);
+
+            if (variableTags.contains(Variable.BUSINESS_RELEVANT_TAG)) {
+                this.tags("#{" + name + "}");
+            }
+        }
+        if (valueExpression != null) {
+            variable.setMetaData(Variable.DEFAULT_VALUE,
+                    "#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()) + "}");
+        }
+        process.getVariableScope().getVariables().add(variable);
         return null;
     }
 
@@ -544,8 +578,13 @@ public class WorkflowBuilder {
         }
 
         if (valueExpression != null) {
+
+            StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[2];
+            String method = stackTraceElement.getMethodName();
+            String expression = BuilderContext.get(method);
             variable.setMetaData(Variable.DEFAULT_VALUE,
-                    "#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()) + "}");
+                    "#{" + expression + "}");
+
         }
 
         process.getVariableScope().getVariables().add(variable);
@@ -563,7 +602,31 @@ public class WorkflowBuilder {
      * @return return null as it only records the definition
      */
     public <T> T dataObject(Class<T> type, String name, Supplier<T> valueExpression, String... tags) {
-        dataObject(name, valueExpression, type, tags);
+        Variable variable = new Variable();
+        variable.setId(name);
+        variable.setName(name);
+        variable.setType(new ObjectDataType(type));
+
+        if (tags != null && tags.length > 0) {
+            String variableTags = Stream.of(tags).collect(Collectors.joining(","));
+            variable.setMetaData("tags", variableTags);
+
+            if (variableTags.contains(Variable.BUSINESS_RELEVANT_TAG)) {
+                this.tags("#{" + name + "}");
+            }
+        }
+
+        if (valueExpression != null) {
+
+            StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[2];
+            String method = stackTraceElement.getMethodName();
+            String expression = BuilderContext.get(method);
+            variable.setMetaData(Variable.DEFAULT_VALUE,
+                    "#{" + expression + "}");
+
+        }
+
+        process.getVariableScope().getVariables().add(variable);
         return null;
     }
 
