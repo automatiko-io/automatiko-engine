@@ -9,9 +9,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Alternative;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +27,8 @@ import io.automatiko.engine.api.workflow.Processes;
 import io.automatiko.engine.services.time.TimerInstance;
 import io.automatiko.engine.services.uow.UnitOfWorkExecutor;
 import io.automatiko.engine.workflow.Sig;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Alternative;
 
 @Alternative
 @ApplicationScoped
@@ -119,10 +118,10 @@ public class TestJobService implements JobsService {
         int limit = job.expirationTime().repeatLimit();
         try {
             LOGGER.debug("Job {} started", job.id());
-
-            Process process = mappedProcesses.get(job.processId());
+            String processId = processId(job);
+            Process process = mappedProcesses.get(processId);
             if (process == null) {
-                LOGGER.warn("No process found for process id {}", job.processId());
+                LOGGER.warn("No process found for process id {}", processId);
                 return;
             }
             IdentityProvider.set(new TrustedIdentityProvider("System<timer>"));
@@ -159,9 +158,10 @@ public class TestJobService implements JobsService {
             throw new IllegalArgumentException("Job with id " + jobId + " not found");
         }
         try {
-            Process<?> process = mappedProcesses.get(job.processId());
+            String processId = processId(job);
+            Process<?> process = mappedProcesses.get(processId);
             if (process == null) {
-                LOGGER.warn("No process found for process id {}", job.processId());
+                LOGGER.warn("No process found for process id {}", processId);
                 return;
             }
             IdentityProvider.set(new TrustedIdentityProvider("System<timer>"));
@@ -196,4 +196,23 @@ public class TestJobService implements JobsService {
         }
     }
 
+    private String processId(ProcessJobDescription job) {
+        String processId = job.processId();
+
+        if (job.processVersion() != null && !job.processVersion().isBlank()) {
+            processId += "_" + job.processVersion();
+        }
+
+        return processId;
+    }
+
+    private String processId(ProcessInstanceJobDescription job) {
+        String processId = job.processId();
+
+        if (job.processVersion() != null && !job.processVersion().isBlank()) {
+            processId += "_" + job.processVersion();
+        }
+
+        return processId;
+    }
 }
