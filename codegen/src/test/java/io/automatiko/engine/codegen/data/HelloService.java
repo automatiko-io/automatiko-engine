@@ -1,6 +1,7 @@
 
 package io.automatiko.engine.codegen.data;
 
+import java.util.Arrays;
 import java.util.Date;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -84,5 +85,11 @@ public class HelloService {
         }
 
         return "Hello " + name + "!";
+    }
+
+    public String helloWithVarargs(String name, String... extra) {
+        System.out
+                .println("Service invoked with " + name.toString() + " on service " + this.toString() + Arrays.toString(extra));
+        return "Hello " + name + " " + Arrays.toString(extra) + "!";
     }
 }

@@ -104,14 +104,59 @@ public class ServiceNodeBuilder extends AbstractNodeBuilder {
                 if (node.getWork().getParameter("Operation") != null) {
                     return null;
                 }
-                int index = 0;
-                for (Parameter parameter : thisMethod.getParameters()) {
+                if (thisMethod.isVarArgs()) {
+                    int providedParamsSize = inputDefs.size();
 
-                    String name = parameter.getName();
+                    if (providedParamsSize == thisMethod.getParameters().length) {
+                        // process all as regular methods
+                        int index = 0;
+                        for (Parameter parameter : thisMethod.getParameters()) {
 
-                    BiConsumer<String, Class<?>> register = inputDefs.get(index);
-                    register.accept(name, parameter.getType());
-                    index++;
+                            String name = parameter.getName();
+
+                            BiConsumer<String, Class<?>> register = inputDefs.get(index);
+                            register.accept(name, parameter.getType());
+                            index++;
+                        }
+                    } else if (providedParamsSize < thisMethod.getParameters().length) {
+                        // process without last parameter that represents varargs
+
+                        Parameter[] parameters = thisMethod.getParameters();
+                        for (int index = 0; index < providedParamsSize; index++) {
+
+                            String name = parameters[index].getName();
+
+                            BiConsumer<String, Class<?>> register = inputDefs.get(index);
+                            register.accept(name, parameters[index].getType());
+                        }
+                    } else {
+                        // process non varargs as normal and remaining as array
+                        Parameter[] parameters = thisMethod.getParameters();
+                        for (int index = 0; index < parameters.length - 1; index++) {
+
+                            String name = parameters[index].getName();
+
+                            BiConsumer<String, Class<?>> register = inputDefs.get(index);
+                            register.accept(name, parameters[index].getType());
+                        }
+                        int lastParamIndex = parameters.length - 1;
+                        for (int index = lastParamIndex; index < providedParamsSize; index++) {
+                            String name = parameters[lastParamIndex].getName() + "_" + index;
+
+                            BiConsumer<String, Class<?>> register = inputDefs.get(index);
+                            register.accept(name, parameters[lastParamIndex].getType());
+                        }
+                    }
+                } else {
+                    int index = 0;
+                    for (Parameter parameter : thisMethod.getParameters()) {
+
+                        String name = parameter.getName();
+
+                        BiConsumer<String, Class<?>> register = inputDefs.get(index);
+                        register.accept(name, parameter.getType());
+                        index++;
+                    }
                 }
 
                 node.getWork().setParameter("Operation", thisMethod.getName());

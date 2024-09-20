@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -215,7 +216,8 @@ public class ServiceTaskAsCodeTest extends AbstractCodegenTest {
         assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
         Model result = (Model) processInstance.variables();
         assertThat(result.toMap()).hasSize(2).containsKeys("name", "greetings");
-        assertThat(result.toMap().get("greetings")).isNotNull().asList().hasSize(1).contains("Hello Mary!");
+        assertThat(result.toMap().get("greetings")).isNotNull().asInstanceOf(InstanceOfAssertFactories.LIST).hasSize(1)
+                .contains("Hello Mary!");
     }
 
     @Test
@@ -254,7 +256,7 @@ public class ServiceTaskAsCodeTest extends AbstractCodegenTest {
         assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
         Model result = (Model) processInstance.variables();
         assertThat(result.toMap()).hasSize(2).containsKeys("name", "greetings");
-        assertThat(result.toMap().get("greetings")).isNotNull().asList().hasSize(0);
+        assertThat(result.toMap().get("greetings")).isNotNull().asInstanceOf(InstanceOfAssertFactories.LIST).hasSize(0);
     }
 
     @Test
@@ -293,7 +295,8 @@ public class ServiceTaskAsCodeTest extends AbstractCodegenTest {
         Model result = (Model) processInstance.variables();
         assertThat(result.toMap()).hasSize(2).containsKeys("input", "output");
 
-        assertThat(result.toMap().get("output")).isNotNull().asList().contains("Hello one!", "Hello two!", "Hello three!");
+        assertThat(result.toMap().get("output")).isNotNull().asInstanceOf(InstanceOfAssertFactories.LIST).contains("Hello one!",
+                "Hello two!", "Hello three!");
     }
 
     @Test
@@ -332,7 +335,8 @@ public class ServiceTaskAsCodeTest extends AbstractCodegenTest {
         Model result = (Model) processInstance.variables();
         assertThat(result.toMap()).hasSize(2).containsKeys("input", "output");
 
-        assertThat(result.toMap().get("output")).isNotNull().asList().contains("Hello one!", "Hello two!", "Hello three!");
+        assertThat(result.toMap().get("output")).isNotNull().asInstanceOf(InstanceOfAssertFactories.LIST).contains("Hello one!",
+                "Hello two!", "Hello three!");
     }
 
     @Test
@@ -439,7 +443,8 @@ public class ServiceTaskAsCodeTest extends AbstractCodegenTest {
         Model result = (Model) processInstance.variables();
         assertThat(result.toMap()).hasSize(2).containsKeys("input", "output");
 
-        assertThat(result.toMap().get("output")).isNotNull().asList().contains("Hello one!", "Hello two!", "Hello three!");
+        assertThat(result.toMap().get("output")).isNotNull().asInstanceOf(InstanceOfAssertFactories.LIST).contains("Hello one!",
+                "Hello two!", "Hello three!");
     }
 
     @Test
@@ -482,8 +487,9 @@ public class ServiceTaskAsCodeTest extends AbstractCodegenTest {
         Model result = (Model) processInstance.variables();
         assertThat(result.toMap()).hasSize(2).containsKeys("input", "person");
 
-        assertThat(result.toMap().get("person")).isNotNull().extracting("stringList").asList().contains("Hello one!",
-                "Hello two!", "Hello three!");
+        assertThat(result.toMap().get("person")).isNotNull().extracting("stringList")
+                .asInstanceOf(InstanceOfAssertFactories.LIST).contains("Hello one!",
+                        "Hello two!", "Hello three!");
     }
 
     @Test
@@ -575,7 +581,125 @@ public class ServiceTaskAsCodeTest extends AbstractCodegenTest {
         Model result = (Model) processInstance.variables();
         assertThat(result.toMap()).hasSize(2).containsKeys("input", "output");
 
-        assertThat(result.toMap().get("output")).isNotNull().asList().contains("Hello one 10!", "Hello two 20!",
+        assertThat(result.toMap().get("output")).isNotNull().asInstanceOf(InstanceOfAssertFactories.LIST).contains(
+                "Hello one 10!", "Hello two 20!",
                 "Hello three 30!");
+    }
+
+    @Test
+    public void testBasicServiceProcessTaskWithVarargsMissing() throws Exception {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("ServiceProcess", "test workflow as code")
+                .dataObject("name", String.class)
+                .dataObject("greeting", String.class);
+
+        builder.start("start here").then()
+                .log("execute script", "Hello world {}{}", "name", "\"!\"").then()
+                .printout("execute script", "\"Hello world \" + name").then();
+
+        ServiceNodeBuilder service = builder.service("greet");
+
+        service.toDataObject("greeting",
+                service.type(HelloService.class).helloWithVarargs(service.fromDataObject("name")))
+                .then()
+                .end("that's it");
+
+        Application app = generateCode(List.of(builder.get()));
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("name", "john");
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(2).containsKeys("name", "greeting");
+        assertThat(result.toMap().get("greeting")).isNotNull().isEqualTo("Hello john []!");
+    }
+
+    @Test
+    public void testBasicServiceProcessTaskWithVarargsSingle() throws Exception {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("ServiceProcess", "test workflow as code")
+                .dataObject("name", String.class)
+                .dataObject("greeting", String.class);
+
+        builder.start("start here").then()
+                .log("execute script", "Hello world {}{}", "name", "\"!\"").then()
+                .printout("execute script", "\"Hello world \" + name").then();
+
+        ServiceNodeBuilder service = builder.service("greet");
+
+        service.toDataObject("greeting",
+                service.type(HelloService.class).helloWithVarargs(service.fromDataObject("name"),
+                        service.literalAsInput("aaaa")))
+                .then()
+                .end("that's it");
+
+        Application app = generateCode(List.of(builder.get()));
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("name", "john");
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(2).containsKeys("name", "greeting");
+        assertThat(result.toMap().get("greeting")).isNotNull().isEqualTo("Hello john [aaaa]!");
+    }
+
+    @Test
+    public void testBasicServiceProcessTaskWithVarargsMany() throws Exception {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("ServiceProcess", "test workflow as code")
+                .dataObject("name", String.class)
+                .dataObject("greeting", String.class);
+
+        builder.start("start here").then()
+                .log("execute script", "Hello world {}{}", "name", "\"!\"").then()
+                .printout("execute script", "\"Hello world \" + name").then();
+
+        ServiceNodeBuilder service = builder.service("greet");
+
+        service.toDataObject("greeting",
+                service.type(HelloService.class).helloWithVarargs(service.fromDataObject("name"),
+                        service.literalAsInput("aaaa"),
+                        service.literalAsInput("vvv")))
+                .then()
+                .end("that's it");
+
+        Application app = generateCode(List.of(builder.get()));
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("name", "john");
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(2).containsKeys("name", "greeting");
+        assertThat(result.toMap().get("greeting")).isNotNull().isEqualTo("Hello john [aaaa, vvv]!");
     }
 }
