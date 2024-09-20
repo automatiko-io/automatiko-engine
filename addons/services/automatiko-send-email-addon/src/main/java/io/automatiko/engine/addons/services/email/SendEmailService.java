@@ -1,11 +1,10 @@
 package io.automatiko.engine.addons.services.email;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -16,6 +15,8 @@ import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import io.quarkus.qute.Engine;
 import io.quarkus.qute.Template;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 @ApplicationScoped
 @SuppressWarnings("unchecked")
@@ -44,24 +45,39 @@ public class SendEmailService {
      * In case of error a <code>ServiceExecutionError</code> will be thrown with error code set to <code>sendEmailFailure</code>
      * so it can be used within workflow definition to handle it
      * 
+     * @param tos list of recipients
+     * @param subject subject of the email
+     * @param body body of the email
+     * @param attachments optional attachments
+     */
+    public void sendSimple(String tos, String subject, String body, File<byte[]>... attachments) {
+        sendSimple(Arrays.asList(tos.split(",")), subject, body, attachments);
+    }
+
+    /**
+     * Sends email to the given list of recipients with given subject and body.
+     * Optionally given attachments will be put on the message as well
+     * 
+     * In case of error a <code>ServiceExecutionError</code> will be thrown with error code set to <code>sendEmailFailure</code>
+     * so it can be used within workflow definition to handle it
+     * 
      * @param tos comma separated list of recipients
      * @param subject subject of the email
      * @param body body of the email
      * @param attachments optional attachments
      */
-
-    public void sendSimple(String tos, String subject, String body, File<byte[]>... attachments) {
+    public void sendSimple(List<String> tos, String subject, String body, File<byte[]>... attachments) {
         try {
-            for (String to : tos.split(",")) {
+            for (String to : tos) {
                 Mail mail = Mail.withHtml(to, subject, body);
-
-                for (File<byte[]> attachment : attachments) {
-                    if (attachment == null) {
-                        continue;
+                if (attachments != null) {
+                    for (File<byte[]> attachment : attachments) {
+                        if (attachment == null) {
+                            continue;
+                        }
+                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                     }
-                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
-
                 mailer.send(mail);
             }
         } catch (Exception e) {
@@ -82,19 +98,37 @@ public class SendEmailService {
      * @param body body of the email
      * @param attachments optional attachments
      */
-
     public void sendSimpleCorrelated(String correlation, String tos, String subject, String body, File<byte[]>... attachments) {
+        sendSimpleCorrelated(correlation, Arrays.asList(tos.split(",")), subject, body, attachments);
+    }
+
+    /**
+     * Sends email to the given list of recipients with given subject and body.
+     * Optionally given attachments will be put on the message as well
+     * 
+     * In case of error a <code>ServiceExecutionError</code> will be thrown with error code set to <code>sendEmailFailure</code>
+     * so it can be used within workflow definition to handle it
+     * 
+     * @param correlation correlation information to be attached to the message
+     * @param tos list of recipients
+     * @param subject subject of the email
+     * @param body body of the email
+     * @param attachments optional attachments
+     */
+    public void sendSimpleCorrelated(String correlation, List<String> tos, String subject, String body,
+            File<byte[]>... attachments) {
         try {
-            for (String to : tos.split(",")) {
+            for (String to : tos) {
                 Mail mail = Mail.withHtml(to, subject, body);
 
-                for (File<byte[]> attachment : attachments) {
-                    if (attachment == null) {
-                        continue;
+                if (attachments != null) {
+                    for (File<byte[]> attachment : attachments) {
+                        if (attachment == null) {
+                            continue;
+                        }
+                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                     }
-                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
-
                 mail.addHeader("Message-ID", EmailUtils.messageIdWithCorrelation(correlation, host.orElse("localhost")));
 
                 mailer.send(mail);
@@ -118,21 +152,38 @@ public class SendEmailService {
      * @param attachments optional attachments
      */
     public void sendSimpleWithCC(String tos, String ccs, String subject, String body, File<byte[]>... attachments) {
+        sendSimpleWithCC(Arrays.asList(tos.split(",")), Arrays.asList(ccs.split(",")), subject, body, attachments);
+    }
+
+    /**
+     * Sends email to the given list of recipients and cc recipients with given subject and body.
+     * Optionally given attachments will be put on the message as well
+     * 
+     * In case of error a <code>ServiceExecutionError</code> will be thrown with error code set to <code>sendEmailFailure</code>
+     * so it can be used within workflow definition to handle it
+     * 
+     * @param tosc list of recipients
+     * @param ccs list of CC recipients
+     * @param subject subject of the email
+     * @param body body of the email
+     * @param attachments optional attachments
+     */
+    public void sendSimpleWithCC(List<String> tos, List<String> ccs, String subject, String body, File<byte[]>... attachments) {
         try {
-            for (String to : tos.split(",")) {
+            for (String to : tos) {
                 Mail mail = Mail.withHtml(to, subject, body);
 
-                for (String cc : ccs.split(",")) {
+                for (String cc : ccs) {
                     mail.addCc(cc);
                 }
-
-                for (File<byte[]> attachment : attachments) {
-                    if (attachment == null) {
-                        continue;
+                if (attachments != null) {
+                    for (File<byte[]> attachment : attachments) {
+                        if (attachment == null) {
+                            continue;
+                        }
+                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                     }
-                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
-
                 mailer.send(mail);
             }
         } catch (Exception e) {
@@ -154,21 +205,39 @@ public class SendEmailService {
      * @param attachments optional attachments
      */
     public void sendSimpleWithBCC(String tos, String bccs, String subject, String body, File<byte[]>... attachments) {
+        sendSimpleWithBCC(Arrays.asList(tos.split(",")), Arrays.asList(bccs.split(",")), subject, body, attachments);
+    }
+
+    /**
+     * Sends email to the given list of recipients and cc recipients with given subject and body.
+     * Optionally given attachments will be put on the message as well
+     * 
+     * In case of error a <code>ServiceExecutionError</code> will be thrown with error code set to <code>sendEmailFailure</code>
+     * so it can be used within workflow definition to handle it
+     * 
+     * @param tosc list of recipients
+     * @param bccs list of BCC recipients
+     * @param subject subject of the email
+     * @param body body of the email
+     * @param attachments optional attachments
+     */
+    public void sendSimpleWithBCC(List<String> tos, List<String> bccs, String subject, String body,
+            File<byte[]>... attachments) {
         try {
-            for (String to : tos.split(",")) {
+            for (String to : tos) {
                 Mail mail = Mail.withHtml(to, subject, body);
 
-                for (String bcc : bccs.split(",")) {
+                for (String bcc : bccs) {
                     mail.addBcc(bcc);
                 }
-
-                for (File<byte[]> attachment : attachments) {
-                    if (attachment == null) {
-                        continue;
+                if (attachments != null) {
+                    for (File<byte[]> attachment : attachments) {
+                        if (attachment == null) {
+                            continue;
+                        }
+                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                     }
-                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
-
                 mailer.send(mail);
             }
         } catch (Exception e) {
@@ -192,21 +261,41 @@ public class SendEmailService {
      */
     public void sendSimpleCorrelatedWithCC(String correlation, String tos, String ccs, String subject, String body,
             File<byte[]>... attachments) {
+        sendSimpleCorrelatedWithCC(correlation, Arrays.asList(tos.split(",")), Arrays.asList(ccs.split(",")), subject, body,
+                attachments);
+    }
+
+    /**
+     * Sends email to the given list of recipients and cc recipients with given subject and body.
+     * Optionally given attachments will be put on the message as well
+     * 
+     * In case of error a <code>ServiceExecutionError</code> will be thrown with error code set to <code>sendEmailFailure</code>
+     * so it can be used within workflow definition to handle it
+     * 
+     * @param correlation correlation information to be attached to the message
+     * @param tosc list of recipients
+     * @param ccs list of CC recipients
+     * @param subject subject of the email
+     * @param body body of the email
+     * @param attachments optional attachments
+     */
+    public void sendSimpleCorrelatedWithCC(String correlation, List<String> tos, List<String> ccs, String subject, String body,
+            File<byte[]>... attachments) {
         try {
-            for (String to : tos.split(",")) {
+            for (String to : tos) {
                 Mail mail = Mail.withHtml(to, subject, body);
 
-                for (String cc : ccs.split(",")) {
+                for (String cc : ccs) {
                     mail.addCc(cc);
                 }
-
-                for (File<byte[]> attachment : attachments) {
-                    if (attachment == null) {
-                        continue;
+                if (attachments != null) {
+                    for (File<byte[]> attachment : attachments) {
+                        if (attachment == null) {
+                            continue;
+                        }
+                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                     }
-                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
-
                 mail.addHeader("Message-ID", EmailUtils.messageIdWithCorrelation(correlation, host.orElse("localhost")));
 
                 mailer.send(mail);
@@ -232,21 +321,42 @@ public class SendEmailService {
      */
     public void sendSimpleCorrelatedWithBCC(String correlation, String tos, String bccs, String subject, String body,
             File<byte[]>... attachments) {
+        sendSimpleCorrelatedWithBCC(correlation, Arrays.asList(tos.split(",")), Arrays.asList(bccs.split(",")), subject, body,
+                attachments);
+    }
+
+    /**
+     * Sends email to the given list of recipients and cc recipients with given subject and body.
+     * Optionally given attachments will be put on the message as well
+     * 
+     * In case of error a <code>ServiceExecutionError</code> will be thrown with error code set to <code>sendEmailFailure</code>
+     * so it can be used within workflow definition to handle it
+     * 
+     * @param correlation correlation information to be attached to the message
+     * @param tosc list of recipients
+     * @param bccs list of BCC recipients
+     * @param subject subject of the email
+     * @param body body of the email
+     * @param attachments optional attachments
+     */
+    public void sendSimpleCorrelatedWithBCC(String correlation, List<String> tos, List<String> bccs, String subject,
+            String body,
+            File<byte[]>... attachments) {
         try {
-            for (String to : tos.split(",")) {
+            for (String to : tos) {
                 Mail mail = Mail.withHtml(to, subject, body);
 
-                for (String bcc : bccs.split(",")) {
+                for (String bcc : bccs) {
                     mail.addBcc(bcc);
                 }
-
-                for (File<byte[]> attachment : attachments) {
-                    if (attachment == null) {
-                        continue;
+                if (attachments != null) {
+                    for (File<byte[]> attachment : attachments) {
+                        if (attachment == null) {
+                            continue;
+                        }
+                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                     }
-                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
-
                 mail.addHeader("Message-ID", EmailUtils.messageIdWithCorrelation(correlation, host.orElse("localhost")));
 
                 mailer.send(mail);
@@ -273,19 +383,42 @@ public class SendEmailService {
      * @param attachments optional attachments
      */
     public void send(String tos, String subject, String templateName, Object body, File<byte[]>... attachments) {
+        send(Arrays.asList(tos.split(",")), subject, templateName, body, attachments);
+    }
+
+    /**
+     * Sends email to the given list of recipients with given subject and body that is created based on the given template.
+     * Optionally given attachments will be put on the message as well
+     * 
+     * In case of error a <code>ServiceExecutionError</code> will be thrown with error code set to <code>sendEmailFailure</code>
+     * so it can be used within workflow definition to handle it
+     * 
+     * In case template cannot be found with given name a <code>ServiceExecutionError</code> will
+     * be thrown with error code set to <code>emailTemplateNotFound</code>
+     * 
+     * @param tos list of recipients
+     * @param subject subject of the email
+     * @param templateName name of the email template to be used to create the body of the email message
+     * @param body body of the email
+     * @param attachments optional attachments
+     */
+    public void send(List<String> tos, String subject, String templateName, Object body, File<byte[]>... attachments) {
         Template template = getTemplate(templateName);
         try {
             Map<String, Object> templateData = new HashMap<>();
             templateData.put("body", body);
 
             String content = template.instance().data(templateData).render();
-            for (String to : tos.split(",")) {
+            for (String to : tos) {
                 Mail mail = Mail.withHtml(to, subject, content);
-                for (File<byte[]> attachment : attachments) {
-                    if (attachment == null) {
-                        continue;
+
+                if (attachments != null) {
+                    for (File<byte[]> attachment : attachments) {
+                        if (attachment == null) {
+                            continue;
+                        }
+                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                     }
-                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
                 mailer.send(mail);
             }
@@ -313,21 +446,44 @@ public class SendEmailService {
      */
     public void sendCorrelated(String correlation, String tos, String subject, String templateName, Object body,
             File<byte[]>... attachments) {
+        sendCorrelated(correlation, Arrays.asList(tos.split(",")), subject, templateName, body, attachments);
+    }
+
+    /**
+     * Sends email to the given list of recipients with given subject and body that is created based on the given template.
+     * Optionally given attachments will be put on the message as well
+     * 
+     * In case of error a <code>ServiceExecutionError</code> will be thrown with error code set to <code>sendEmailFailure</code>
+     * so it can be used within workflow definition to handle it
+     * 
+     * In case template cannot be found with given name a <code>ServiceExecutionError</code> will
+     * be thrown with error code set to <code>emailTemplateNotFound</code>
+     * 
+     * @param correlation correlation information to be attached to the message
+     * @param tos list of recipients
+     * @param subject subject of the email
+     * @param templateName name of the email template to be used to create the body of the email message
+     * @param body body of the email
+     * @param attachments optional attachments
+     */
+    public void sendCorrelated(String correlation, List<String> tos, String subject, String templateName, Object body,
+            File<byte[]>... attachments) {
         Template template = getTemplate(templateName);
         try {
             Map<String, Object> templateData = new HashMap<>();
             templateData.put("body", body);
 
             String content = template.instance().data(templateData).render();
-            for (String to : tos.split(",")) {
+            for (String to : tos) {
                 Mail mail = Mail.withHtml(to, subject, content);
-                for (File<byte[]> attachment : attachments) {
-                    if (attachment == null) {
-                        continue;
+                if (attachments != null) {
+                    for (File<byte[]> attachment : attachments) {
+                        if (attachment == null) {
+                            continue;
+                        }
+                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                     }
-                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
-
                 mail.addHeader("Message-ID", EmailUtils.messageIdWithCorrelation(correlation, host.orElse("localhost")));
 
                 mailer.send(mail);
@@ -357,24 +513,49 @@ public class SendEmailService {
      */
     public void sendWithCC(String tos, String ccs, String subject, String templateName, Object body,
             File<byte[]>... attachments) {
+        sendWithCC(Arrays.asList(tos.split(",")), Arrays.asList(ccs.split(",")), subject, templateName, body, attachments);
+    }
+
+    /**
+     * Sends email to the given list of recipients and cc recipients with given subject and body that is created based on the
+     * given template.
+     * Optionally given attachments will be put on the message as well
+     * 
+     * In case of error a <code>ServiceExecutionError</code> will be thrown with error code set to <code>sendEmailFailure</code>
+     * so it can be used within workflow definition to handle it
+     * 
+     * In case template cannot be found with given name a <code>ServiceExecutionError</code> will
+     * be thrown with error code set to <code>emailTemplateNotFound</code>
+     * 
+     * @param tos list of recipients
+     * @param ccs list of CC recipients
+     * @param subject subject of the email
+     * @param templateName name of the email template to be used to create the body of the email message
+     * @param body body of the email
+     * @param attachments optional attachments
+     */
+    public void sendWithCC(List<String> tos, List<String> ccs, String subject, String templateName, Object body,
+            File<byte[]>... attachments) {
         Template template = getTemplate(templateName);
         try {
             Map<String, Object> templateData = new HashMap<>();
             templateData.put("body", body);
 
             String content = template.instance().data(templateData).render();
-            for (String to : tos.split(",")) {
+            for (String to : tos) {
                 Mail mail = Mail.withHtml(to, subject, content);
 
-                for (String cc : ccs.split(",")) {
+                for (String cc : ccs) {
                     mail.addCc(cc);
                 }
 
-                for (File<byte[]> attachment : attachments) {
-                    if (attachment == null) {
-                        continue;
+                if (attachments != null) {
+                    for (File<byte[]> attachment : attachments) {
+                        if (attachment == null) {
+                            continue;
+                        }
+                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                     }
-                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
                 mailer.send(mail);
             }
@@ -403,24 +584,49 @@ public class SendEmailService {
      */
     public void sendWithBCC(String tos, String bccs, String subject, String templateName, Object body,
             File<byte[]>... attachments) {
+        sendWithBCC(Arrays.asList(tos.split(",")), Arrays.asList(bccs.split(",")), subject, templateName, body, attachments);
+    }
+
+    /**
+     * Sends email to the given list of recipients and cc recipients with given subject and body that is created based on the
+     * given template.
+     * Optionally given attachments will be put on the message as well
+     * 
+     * In case of error a <code>ServiceExecutionError</code> will be thrown with error code set to <code>sendEmailFailure</code>
+     * so it can be used within workflow definition to handle it
+     * 
+     * In case template cannot be found with given name a <code>ServiceExecutionError</code> will
+     * be thrown with error code set to <code>emailTemplateNotFound</code>
+     * 
+     * @param tos list of recipients
+     * @param bccs list of BCC recipients
+     * @param subject subject of the email
+     * @param templateName name of the email template to be used to create the body of the email message
+     * @param body body of the email
+     * @param attachments optional attachments
+     */
+    public void sendWithBCC(List<String> tos, List<String> bccs, String subject, String templateName, Object body,
+            File<byte[]>... attachments) {
         Template template = getTemplate(templateName);
         try {
             Map<String, Object> templateData = new HashMap<>();
             templateData.put("body", body);
 
             String content = template.instance().data(templateData).render();
-            for (String to : tos.split(",")) {
+            for (String to : tos) {
                 Mail mail = Mail.withHtml(to, subject, content);
 
-                for (String bcc : bccs.split(",")) {
+                for (String bcc : bccs) {
                     mail.addBcc(bcc);
                 }
 
-                for (File<byte[]> attachment : attachments) {
-                    if (attachment == null) {
-                        continue;
+                if (attachments != null) {
+                    for (File<byte[]> attachment : attachments) {
+                        if (attachment == null) {
+                            continue;
+                        }
+                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                     }
-                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
                 mailer.send(mail);
             }
@@ -451,26 +657,54 @@ public class SendEmailService {
     public void sendCorrelatedWithCC(String correlation, String tos, String ccs, String subject, String templateName,
             Object body,
             File<byte[]>... attachments) {
+        sendCorrelatedWithCC(correlation, Arrays.asList(tos.split(",")), Arrays.asList(ccs.split(",")), subject, templateName,
+                body, attachments);
+    }
+
+    /**
+     * Sends email to the given list of recipients and cc recipients with given subject and body that is created based on the
+     * given template.
+     * Optionally given attachments will be put on the message as well
+     * 
+     * In case of error a <code>ServiceExecutionError</code> will be thrown with error code set to <code>sendEmailFailure</code>
+     * so it can be used within workflow definition to handle it
+     * 
+     * In case template cannot be found with given name a <code>ServiceExecutionError</code> will
+     * be thrown with error code set to <code>emailTemplateNotFound</code>
+     * 
+     * @param correlation correlation information to be attached to the message
+     * @param tos list of recipients
+     * @param ccs list of CC recipients
+     * @param subject subject of the email
+     * @param templateName name of the email template to be used to create the body of the email message
+     * @param body body of the email
+     * @param attachments optional attachments
+     */
+    public void sendCorrelatedWithCC(String correlation, List<String> tos, List<String> ccs, String subject,
+            String templateName,
+            Object body,
+            File<byte[]>... attachments) {
         Template template = getTemplate(templateName);
         try {
             Map<String, Object> templateData = new HashMap<>();
             templateData.put("body", body);
 
             String content = template.instance().data(templateData).render();
-            for (String to : tos.split(",")) {
+            for (String to : tos) {
                 Mail mail = Mail.withHtml(to, subject, content);
 
-                for (String cc : ccs.split(",")) {
+                for (String cc : ccs) {
                     mail.addCc(cc);
                 }
 
-                for (File<byte[]> attachment : attachments) {
-                    if (attachment == null) {
-                        continue;
+                if (attachments != null) {
+                    for (File<byte[]> attachment : attachments) {
+                        if (attachment == null) {
+                            continue;
+                        }
+                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                     }
-                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
-
                 mail.addHeader("Message-ID", EmailUtils.messageIdWithCorrelation(correlation, host.orElse("localhost")));
 
                 mailer.send(mail);
@@ -502,26 +736,53 @@ public class SendEmailService {
     public void sendCorrelatedWithBCC(String correlation, String tos, String bccs, String subject, String templateName,
             Object body,
             File<byte[]>... attachments) {
+        sendCorrelatedWithBCC(correlation, Arrays.asList(tos.split(",")), Arrays.asList(bccs.split(",")), subject, templateName,
+                body, attachments);
+    }
+
+    /**
+     * Sends email to the given list of recipients and cc recipients with given subject and body that is created based on the
+     * given template.
+     * Optionally given attachments will be put on the message as well
+     * 
+     * In case of error a <code>ServiceExecutionError</code> will be thrown with error code set to <code>sendEmailFailure</code>
+     * so it can be used within workflow definition to handle it
+     * 
+     * In case template cannot be found with given name a <code>ServiceExecutionError</code> will
+     * be thrown with error code set to <code>emailTemplateNotFound</code>
+     * 
+     * @param correlation correlation information to be attached to the message
+     * @param tos list of recipients
+     * @param bccs list of BCC recipients
+     * @param subject subject of the email
+     * @param templateName name of the email template to be used to create the body of the email message
+     * @param body body of the email
+     * @param attachments optional attachments
+     */
+    public void sendCorrelatedWithBCC(String correlation, List<String> tos, List<String> bccs, String subject,
+            String templateName,
+            Object body,
+            File<byte[]>... attachments) {
         Template template = getTemplate(templateName);
         try {
             Map<String, Object> templateData = new HashMap<>();
             templateData.put("body", body);
 
             String content = template.instance().data(templateData).render();
-            for (String to : tos.split(",")) {
+            for (String to : tos) {
                 Mail mail = Mail.withHtml(to, subject, content);
 
-                for (String bcc : bccs.split(",")) {
+                for (String bcc : bccs) {
                     mail.addBcc(bcc);
                 }
-
-                for (File<byte[]> attachment : attachments) {
-                    if (attachment == null) {
-                        continue;
+                if (attachments != null) {
+                    for (File<byte[]> attachment : attachments) {
+                        if (attachment == null) {
+                            continue;
+                        }
+                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                     }
-                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
                 }
-
                 mail.addHeader("Message-ID", EmailUtils.messageIdWithCorrelation(correlation, host.orElse("localhost")));
 
                 mailer.send(mail);
