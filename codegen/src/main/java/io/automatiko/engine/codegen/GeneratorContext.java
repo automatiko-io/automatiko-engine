@@ -73,6 +73,8 @@ public class GeneratorContext {
     private File resourcePath;
     private File classesPath;
 
+    private Optional<String> packageName = Optional.empty();
+
     private Properties applicationProperties = new Properties();
     private Map<String, String> modifiedApplicationProperties = new LinkedHashMap<String, String>();
 
@@ -114,12 +116,12 @@ public class GeneratorContext {
         }
     }
 
-    public CompilationUnit write(String packageName) {
+    public CompilationUnit write() {
 
         CompilationUnit clazz = parse(
                 this.getClass().getResourceAsStream("/class-templates/config/ConfigPropertiesTemplate.java"));
 
-        clazz.setPackageDeclaration(packageName);
+        clazz.setPackageDeclaration("io.automatiko.application.app");
         ClassOrInterfaceDeclaration template = clazz.findFirst(ClassOrInterfaceDeclaration.class).get();
 
         BlockStmt constructorBody = new BlockStmt();
@@ -282,6 +284,14 @@ public class GeneratorContext {
 
     public List<String> getInstructions() {
         return this.instructions;
+    }
+
+    public Optional<String> getPackageName() {
+        return packageName;
+    }
+
+    public void withPackageName(String packageName) {
+        this.packageName = Optional.of(packageName);
     }
 
     public void logInstructions() {

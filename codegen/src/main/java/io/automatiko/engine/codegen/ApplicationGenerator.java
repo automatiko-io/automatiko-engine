@@ -200,7 +200,7 @@ public class ApplicationGenerator {
         }
 
         if (context != null) {
-            CompilationUnit cp = context.write(DEFAULT_PACKAGE_NAME);
+            CompilationUnit cp = context.write();
 
             String packageName = cp.getPackageDeclaration().map(pd -> pd.getName().toString()).orElse("");
             String clazzName = packageName + "."

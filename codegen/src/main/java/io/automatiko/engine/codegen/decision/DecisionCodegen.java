@@ -170,7 +170,8 @@ public class DecisionCodegen extends AbstractGenerator {
         this.resources = resources;
 
         // set default package name
-        setPackageName(ApplicationGenerator.DEFAULT_PACKAGE_NAME);
+        setPackageName(context == null ? ApplicationGenerator.DEFAULT_PACKAGE_NAME
+                : context.getPackageName().orElse(ApplicationGenerator.DEFAULT_PACKAGE_NAME));
         this.moduleGenerator = new DecisionContainerGenerator(applicationCanonicalName, resources);
     }
 

@@ -342,7 +342,8 @@ public class ProcessGenerator {
 
             processMetaData.getGeneratedHandlers().forEach((name, descriptor) -> {
 
-                CompilationUnit handler = descriptor.generateHandlerClassForService();
+                CompilationUnit handler = descriptor
+                        .generateHandlerClassForService(context.getPackageName().orElse("io.automatiko.engine.app.handlers"));
                 ClassOrInterfaceDeclaration clazz = handler.findFirst(ClassOrInterfaceDeclaration.class).get();
                 if (useInjection()) {
 
