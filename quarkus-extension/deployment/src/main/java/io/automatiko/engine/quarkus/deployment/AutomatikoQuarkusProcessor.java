@@ -407,7 +407,8 @@ public class AutomatikoQuarkusProcessor {
     }
 
     @BuildStep
-    public void serviceProviderRegistrationStep(BuildProducer<ServiceProviderBuildItem> providerProducer) {
+    public void serviceProviderRegistrationStep(AutomatikoBuildTimeConfig config,
+            BuildProducer<ServiceProviderBuildItem> providerProducer) {
 
         providerProducer.produce(new ServiceProviderBuildItem(AutomatikoConfigProperties.class.getCanonicalName(),
                 "io.automatiko.application.app.GeneratedAutomatikoConfigProperties"));
@@ -712,7 +713,7 @@ public class AutomatikoQuarkusProcessor {
 
                         WorkflowBuilder builder = (WorkflowBuilder) method.invoke(workflowsBuilderInstance);
                         ExecutableProcess process = builder.get();
-                        process.setPackageName(builderClass.getPackageName());
+                        process.setPackageName(builderClass.getPackageName() + ".generated");
 
                         // sets the category from annotation if not already set workflow
                         if (process.getMetaData("category") == null && !category.isBlank()) {
@@ -827,6 +828,7 @@ public class AutomatikoQuarkusProcessor {
             IndexView index) {
         GeneratorContext generationContext = QuarkusGeneratorContext.ofResourcePath(appPaths.getResourceFiles()[0],
                 appPaths.getFirstClassesPath().toFile());
+        generationContext.withPackageName(config.packageName().orElse(DEFAULT_PACKAGE_NAME));
 
         generationContext
                 .withBuildContext(new QuarkusApplicationBuildContext(config, className -> {

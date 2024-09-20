@@ -302,7 +302,8 @@ public class ProcessCodegen extends AbstractGenerator {
         }
 
         // set default package name
-        setPackageName(ApplicationGenerator.DEFAULT_PACKAGE_NAME);
+        setPackageName(context == null ? ApplicationGenerator.DEFAULT_PACKAGE_NAME
+                : context.getPackageName().orElse(ApplicationGenerator.DEFAULT_PACKAGE_NAME));
         contextClassLoader = Thread.currentThread().getContextClassLoader();
 
         resourceGeneratorFactory = new DefaultResourceGeneratorFactory();

@@ -202,8 +202,8 @@ public class ServiceTaskDescriptor {
         return String.format("%s_%s_%s_%s_Handler", interfaceName, operationName, processId, nodeName);
     }
 
-    public CompilationUnit generateHandlerClassForService() {
-        CompilationUnit compilationUnit = new CompilationUnit("io.automatiko.engine.app.handlers");
+    public CompilationUnit generateHandlerClassForService(String packageName) {
+        CompilationUnit compilationUnit = new CompilationUnit(packageName);
 
         compilationUnit.getTypes().add(classDeclaration());
 
