@@ -18,6 +18,7 @@ import org.xml.sax.SAXException;
 import io.automatiko.engine.api.definition.process.Node;
 import io.automatiko.engine.api.definition.process.NodeContainer;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
+import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.workflow.base.core.ContextContainer;
 import io.automatiko.engine.workflow.base.core.FunctionTagDefinition;
 import io.automatiko.engine.workflow.base.core.Process;
@@ -63,6 +64,7 @@ import io.automatiko.engine.workflow.process.core.impl.ConsequenceAction;
 import io.automatiko.engine.workflow.process.core.impl.ConstraintImpl;
 import io.automatiko.engine.workflow.process.core.impl.ExtendedNodeImpl;
 import io.automatiko.engine.workflow.process.core.impl.NodeImpl;
+import io.automatiko.engine.workflow.process.core.impl.WorkflowProcessImpl;
 import io.automatiko.engine.workflow.process.core.node.ActionNode;
 import io.automatiko.engine.workflow.process.core.node.BoundaryEventNode;
 import io.automatiko.engine.workflow.process.core.node.CompositeContextNode;
@@ -1134,6 +1136,7 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
 
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected void processTags(WorkflowProcess process) {
         String tags = (String) process.getMetaData().get("tags");
         List<TagDefinition> tagDefinitions = new ArrayList<TagDefinition>();
@@ -1151,8 +1154,10 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
                                         Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(exp);
                                         while (matcher.find()) {
                                             String paramName = matcher.group(1);
-                                            Object value = MVEL.executeExpression(MVEL.compileExpression(paramName),
-                                                    vars.getVariables());
+                                            ExpressionEvaluator evaluator = (ExpressionEvaluator) ((WorkflowProcessImpl) process)
+                                                    .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+
+                                            Object value = evaluator.evaluate(paramName, vars.getVariables());
                                             replacements.put(paramName, value);
                                         }
                                         for (Map.Entry<String, Object> replacement : replacements.entrySet()) {
