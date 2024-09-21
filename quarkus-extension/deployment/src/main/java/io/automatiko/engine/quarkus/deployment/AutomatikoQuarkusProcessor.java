@@ -114,8 +114,8 @@ public class AutomatikoQuarkusProcessor {
             "target/generated-resources/automatiko");
 
     private static final String generatedSourcesDir = "target/generated-sources/automatiko/";
-    private static final String generatedCustomizableSourcesDir = System
-            .getProperty("io.automatiko.codegen.sources.directory", "target/generated-sources/automatiko/");
+    private static final String generatedTestSourcesDir = "target/generated-test-sources/automatiko/";
+
     private static final Logger logger = LoggerFactory.getLogger(AutomatikoQuarkusProcessor.class);
     private final transient String generatedClassesDir = System.getProperty("quarkus.debug.generated-classes-dir");
     private final transient String persistenceFactoryClass = "io.automatiko.engine.addons.persistence.AbstractProcessInstancesFactory";
@@ -191,7 +191,7 @@ public class AutomatikoQuarkusProcessor {
         Collection<GeneratedFile> javaFiles = generatedFiles.stream().filter(f -> f.relativePath().endsWith(".java"))
                 .collect(Collectors.toCollection(ArrayList::new));
         String sourceFolder = sourceFolder(appGen);
-        writeGeneratedFiles(sourceFolder, appPaths, generatedFiles);
+        writeGeneratedFiles(appGen, sourceFolder, appPaths, generatedFiles);
 
         if (!javaFiles.isEmpty()) {
 
@@ -451,7 +451,7 @@ public class AutomatikoQuarkusProcessor {
 
         if (!generatedFiles.isEmpty()) {
             String sourceFolder = sourceFolder(appGen);
-            writeGeneratedFiles(sourceFolder, appPaths, generatedFiles);
+            writeGeneratedFiles(appGen, sourceFolder, appPaths, generatedFiles);
 
             compile(appGen, appPaths, curateOutcomeBuildItem.getApplicationModel(), generatedFiles, launchMode.getLaunchMode(),
                     generatedBeans, additionalIndexClass, GeneratedBeanBuildItem::new, pconfig);
@@ -480,12 +480,15 @@ public class AutomatikoQuarkusProcessor {
         return generatedFiles;
     }
 
-    private void writeGeneratedFiles(String sourceFolder, AppPaths appPaths, Collection<GeneratedFile> resourceFiles) {
+    private void writeGeneratedFiles(ApplicationGenerator appGen, String sourceFolder, AppPaths appPaths,
+            Collection<GeneratedFile> resourceFiles) {
+        String generateToFolder = System.getProperty("automatiko.testOnly") != null ? generatedTestSourcesDir
+                : generatedSourcesDir;
         for (Path projectPath : appPaths.projectPaths) {
-            String restResourcePath = projectPath.resolve(generatedCustomizableSourcesDir).toString();
+
             String resourcePath = projectPath.resolve(generatedResourcesDir).toString();
             String jsonSchemaPath = projectPath.resolve(generatedResourcesDir).resolve("jsonSchema").toString();
-            String sourcePath = projectPath.resolve(generatedSourcesDir).toString();
+            String sourcePath = projectPath.resolve(generateToFolder).toString();
 
             for (GeneratedFile f : resourceFiles) {
                 try {
@@ -493,8 +496,6 @@ public class AutomatikoQuarkusProcessor {
                         writeGeneratedFile(f, sourceFolder, resourcePath);
                     } else if (f.getType() == GeneratedFile.Type.JSON_SCHEMA) {
                         writeGeneratedFile(f, sourceFolder, jsonSchemaPath);
-                    } else if (f.getType().isCustomizable()) {
-                        writeGeneratedFile(f, sourceFolder, restResourcePath);
                     } else {
                         writeGeneratedFile(f, sourceFolder, sourcePath);
                     }
@@ -544,6 +545,11 @@ public class AutomatikoQuarkusProcessor {
             File buildDir = appPaths.getFirstClassesPath().toFile();
             if (buildDir.isFile()) {
                 buildDir = new File(buildDir.getParentFile(), "classes");
+
+            }
+            // if environment is configured with test only write all generated and compiled classes into the test-classes folder
+            if (System.getProperty("automatiko.testOnly") != null) {
+                buildDir = new File(buildDir.getParentFile(), "test-classes");
             }
 
             fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singleton(buildDir));
