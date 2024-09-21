@@ -1,5 +1,7 @@
 package io.automatiko.engine.workflow.builder;
 
+import java.time.Duration;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -209,6 +211,34 @@ public class WorkflowBuilder {
             process.setMetaData("tags",
                     (existingTags == null ? "" : existingTags + ",") + expression);
         }
+        return this;
+    }
+
+    /**
+     * Sets expiration of the workflow instance that instructs to remove the instance from storage after
+     * <code>expiresAfter</code>
+     * after completion
+     * 
+     * @param expiresAfter not null duration
+     * @return the builder
+     */
+    public WorkflowBuilder expiresAfter(Duration expiresAfter) {
+        Objects.requireNonNull(expiresAfter, "expiresAfter must not be null");
+        process.setMetaData("expiresAfter", expiresAfter.toString());
+        return this;
+    }
+
+    /**
+     * Sets expiration of the workflow instance that instructs to remove the instance from storage after
+     * <code>expiresAfter</code>
+     * after completion
+     * 
+     * @param expiresAfter not null period
+     * @return the builder
+     */
+    public WorkflowBuilder expiresAfter(Period expiresAfter) {
+        Objects.requireNonNull(expiresAfter, "expiresAfter must not be null");
+        process.setMetaData("expiresAfter", expiresAfter.toString());
         return this;
     }
 
