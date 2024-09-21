@@ -356,7 +356,7 @@ public abstract class AbstractResourceGenerator {
             });
         });
 
-        if (userTasks != null) {
+        if (userTasks != null && !userTasks.isEmpty()) {
 
             CompilationUnit userTaskClazz = parse(this.getClass().getResourceAsStream(getUserTaskResourceTemplate()));
 
@@ -394,11 +394,6 @@ public abstract class AbstractResourceGenerator {
                 }
 
             }
-        } else {
-            // no user tasks remove the list tasks method
-            Optional<MethodDeclaration> createResourceMethod = template.findAll(MethodDeclaration.class).stream()
-                    .filter(md -> md.getNameAsString().equals("getTasks_" + processName)).findFirst();
-            createResourceMethod.ifPresent(template::remove);
         }
 
         template.findAll(StringLiteralExpr.class).forEach(this::interpolateStrings);
@@ -528,6 +523,16 @@ public abstract class AbstractResourceGenerator {
 
         enableValidation(template);
         securityAnnotated(template);
+
+        if (!hasUserTask(this)) {
+
+            // no user tasks remove the list tasks method
+            Optional<MethodDeclaration> getTasksResourceMethod = template.findAll(MethodDeclaration.class).stream()
+                    .filter(md -> md.getNameAsString().equals("getTasks_" + processName)).findFirst();
+            getTasksResourceMethod.ifPresent(template::remove);
+
+        }
+
         try {
             template.getMembers().sort(new BodyDeclarationComparator());
         } catch (IllegalArgumentException e) {
@@ -535,6 +540,23 @@ public abstract class AbstractResourceGenerator {
         }
 
         return clazz;
+    }
+
+    protected boolean hasUserTask(AbstractResourceGenerator genarator) {
+        boolean hasUserTasks = genarator.userTasks != null && !genarator.userTasks.isEmpty();
+        if (hasUserTasks) {
+            return true;
+        }
+        if (!genarator.subprocesses.isEmpty()) {
+            for (AbstractResourceGenerator subgenarator : genarator.subprocesses) {
+                boolean subHasUserTask = hasUserTask(subgenarator);
+                if (subHasUserTask) {
+                    return true;
+                }
+            }
+        }
+
+        return hasUserTasks;
     }
 
     protected void addDefinedError(Collection<FaultNode> errors, MethodDeclaration cloned) {
