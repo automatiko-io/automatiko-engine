@@ -394,6 +394,11 @@ public abstract class AbstractResourceGenerator {
                 }
 
             }
+        } else {
+            // no user tasks remove the list tasks method
+            Optional<MethodDeclaration> createResourceMethod = template.findAll(MethodDeclaration.class).stream()
+                    .filter(md -> md.getNameAsString().equals("getTasks_" + processName)).findFirst();
+            createResourceMethod.ifPresent(template::remove);
         }
 
         template.findAll(StringLiteralExpr.class).forEach(this::interpolateStrings);
