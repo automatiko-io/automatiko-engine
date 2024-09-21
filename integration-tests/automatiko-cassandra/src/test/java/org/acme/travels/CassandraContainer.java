@@ -20,7 +20,7 @@ public class CassandraContainer implements QuarkusTestResourceLifecycleManager {
     @SuppressWarnings("resource")
     @Override
     public Map<String, String> start() {
-        cassandra = new FixedHostPortGenericContainer<>("launcher.gcr.io/google/cassandra3").withFixedExposedPort(9042, 9042)
+        cassandra = new FixedHostPortGenericContainer<>("cassandra:3.11.2").withFixedExposedPort(9042, 9042)
                 // wait for the server to be fully started
                 .waitingFor(Wait.forLogMessage(".*\\bStarting listening for CQL clients\\b.*", 1))
                 .withLogConsumer(new Slf4jLogConsumer(LOGGER));
