@@ -39,6 +39,7 @@ public abstract class BaseProcessInstanceManagementResource<T> implements Proces
         for (String processId : new ArrayList<>(processData.keySet())) {
             this.processData.put(StringUtils.toDashCase(processId), this.processData.get(processId));
             this.processData.putIfAbsent(StringUtils.toCamelCase(processId), this.processData.get(processId));
+            this.processData.putIfAbsent(processId, this.processData.get(processId));
         }
     }
 
