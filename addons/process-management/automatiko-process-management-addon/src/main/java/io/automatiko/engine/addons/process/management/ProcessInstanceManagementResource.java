@@ -156,7 +156,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
         try {
             identitySupplier.buildIdentityProvider(user, groups);
             for (Process<?> process : processData.values().stream().distinct().toList()) {
-                String id = process.id();
+                String id = ((AbstractProcess<?>) process).process().getId();
 
                 if (!WorkflowProcess.PUBLIC_VISIBILITY
                         .equals(((WorkflowProcess) ((AbstractProcess<?>) process).process()).getVisibility())) {
@@ -173,7 +173,7 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
                 } else if ("camel".equalsIgnoreCase(resourcePathFormat)) {
                     pathId = StringUtils.toCamelCase(((AbstractProcess<?>) process).process().getId());
                 }
-                collected.add(new ProcessDTO(id, process.version(), process.name(),
+                collected.add(new ProcessDTO(process.id(), process.version(), process.name(),
                         process.description(),
                         (serviceUrl == null ? ""
                                 : serviceUrl) + resourcePathPrefix + "/" + pathprefix
