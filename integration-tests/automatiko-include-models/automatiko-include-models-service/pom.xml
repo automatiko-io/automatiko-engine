@@ -3,7 +3,7 @@
   <parent>
     <groupId>io.automatiko.tests</groupId>
     <artifactId>automatiko-include-models</artifactId>
-    <version>0.0.0-SNAPSHOT</version>
+    <version>0.36.0</version>
   </parent>
   <artifactId>automatiko-include-models-service</artifactId>
   
