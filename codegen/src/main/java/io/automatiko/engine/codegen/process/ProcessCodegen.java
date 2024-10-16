@@ -520,23 +520,27 @@ public class ProcessCodegen extends AbstractGenerator {
                         execModelGen.className(),
                         applicationCanonicalName).withDependencyInjection(annotator));
             } else if (isServiceProject()) {
+
                 if (isPublic(workFlowProcess)) {
+                    Optional<String> isRestEnabled = context.getApplicationProperty("quarkus.automatiko.rest.enabled");
 
-                    // Creating and adding the ResourceGenerator
-                    resourceGeneratorFactory
-                            .create(context(), workFlowProcess, modelClassGenerator.className(), execModelGen.className(),
-                                    applicationCanonicalName)
-                            .map(r -> r.withDependencyInjection(annotator).withParentProcess(null).withPersistence(persistence)
-                                    .withUserTasks(processIdToUserTaskModel.get(execModelGen.getProcessId()))
-                                    .withPathPrefix("{id}").withSignals(metaData.getSignals(),
-                                            metaData.getSignalNodes())
-                                    .withTriggers(metaData.isStartable(), metaData.isDynamic())
-                                    .withSubProcesses(populateSubprocesses(workFlowProcess,
-                                            processIdToMetadata.get(execModelGen.getProcessId()), processIdToMetadata,
-                                            processIdToModelGenerator, processExecutableModelGenerators,
-                                            processIdToUserTaskModel)))
-                            .ifPresent(rgs::add);
-
+                    if (Boolean.parseBoolean(isRestEnabled.orElse("true"))) {
+                        // Creating and adding the ResourceGenerator
+                        resourceGeneratorFactory
+                                .create(context(), workFlowProcess, modelClassGenerator.className(), execModelGen.className(),
+                                        applicationCanonicalName)
+                                .map(r -> r.withDependencyInjection(annotator).withParentProcess(null)
+                                        .withPersistence(persistence)
+                                        .withUserTasks(processIdToUserTaskModel.get(execModelGen.getProcessId()))
+                                        .withPathPrefix("{id}").withSignals(metaData.getSignals(),
+                                                metaData.getSignalNodes())
+                                        .withTriggers(metaData.isStartable(), metaData.isDynamic())
+                                        .withSubProcesses(populateSubprocesses(workFlowProcess,
+                                                processIdToMetadata.get(execModelGen.getProcessId()), processIdToMetadata,
+                                                processIdToModelGenerator, processExecutableModelGenerators,
+                                                processIdToUserTaskModel)))
+                                .ifPresent(rgs::add);
+                    }
                     if (context.getBuildContext().isGraphQLSupported()) {
                         GraphQLResourceGenerator graphqlGenerator = new GraphQLResourceGenerator(context(), workFlowProcess,
                                 modelClassGenerator.className(), execModelGen.className(),

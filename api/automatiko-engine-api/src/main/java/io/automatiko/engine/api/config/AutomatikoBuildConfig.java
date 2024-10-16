@@ -47,4 +47,8 @@ public class AutomatikoBuildConfig {
     public JobsBuildConfig jobs() {
         return new JobsBuildConfig();
     }
+
+    public RestBuildConfig rest() {
+        return new RestBuildConfig();
+    }
 }

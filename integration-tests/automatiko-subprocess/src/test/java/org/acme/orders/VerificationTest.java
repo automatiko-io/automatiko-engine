@@ -51,6 +51,16 @@ public class VerificationTest {
             .statusCode(200)
             .body("$.size()", is(1));  
         
+        // update the variables using dedicated endpoint        
+        given()
+        .contentType(ContentType.JSON)
+        .accept(ContentType.JSON)
+        .body(addPayload)
+        .when()
+            .put("/api/workflows/v1_0/orders/" + id)
+        .then()
+            .statusCode(200); 
+        
         // and one task coming from it
         List<Map<String, String>> taskInfo = given()
                 .accept(ContentType.JSON)
