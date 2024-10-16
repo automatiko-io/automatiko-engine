@@ -7,6 +7,7 @@ import io.automatiko.engine.api.config.JobsBuildConfig;
 import io.automatiko.engine.api.config.MessagingBuildConfig;
 import io.automatiko.engine.api.config.MetricsBuildConfig;
 import io.automatiko.engine.api.config.PersistenceBuildConfig;
+import io.automatiko.engine.api.config.RestBuildConfig;
 import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
@@ -85,6 +86,12 @@ public class AutomatikoBuildTimeConfig extends AutomatikoBuildConfig {
     @ConfigItem
     public JobsBuildTimeConfig jobs;
 
+    /**
+     * Configures rest
+     */
+    @ConfigItem
+    public RestBuildTimeConfig rest;
+
     public Optional<String> packageName() {
         return packageName;
     }
@@ -127,6 +134,11 @@ public class AutomatikoBuildTimeConfig extends AutomatikoBuildConfig {
 
     public JobsBuildConfig jobs() {
         return jobs;
+    }
+
+    @Override
+    public RestBuildConfig rest() {
+        return rest;
     }
 
 }

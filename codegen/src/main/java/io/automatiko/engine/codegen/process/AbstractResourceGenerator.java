@@ -412,11 +412,6 @@ public abstract class AbstractResourceGenerator {
             template.findAll(FieldDeclaration.class, CodegenUtils::isProcessField).stream()
                     .filter(fd -> fd.getVariable(0).getNameAsString().startsWith("subprocess_"))
                     .forEach(fd -> annotator.withNamedInjection(fd, processId + version));
-            //
-            //            template.findAll(FieldDeclaration.class, CodegenUtils::isApplicationField)
-            //                    .forEach(fd -> annotator.withInjection(fd));
-            //            template.findAll(FieldDeclaration.class, CodegenUtils::isIdentitySupplierField)
-            //                    .forEach(fd -> annotator.withInjection(fd));
 
             boolean tracingAvailable = context.getBuildContext().isTracingSupported();
 
@@ -533,6 +528,16 @@ public abstract class AbstractResourceGenerator {
 
         }
 
+        Optional<String> updateModelMethodValue = context.getApplicationProperty("quarkus.automatiko.rest.update-data-method");
+        // if update method config param is given apply it on update model methods
+
+        if (updateModelMethodValue.isPresent()) {
+            template.findAll(MethodDeclaration.class).stream()
+                    .filter(md -> md.getNameAsString().equals("updateModel_" + processName)).forEach(updateModelMethod -> {
+                        updateModelMethod.getAnnotationByName("POST").get().remove();
+                        updateModelMethod.addAnnotation("jakarta.ws.rs." + updateModelMethodValue.get().toUpperCase());
+                    });
+        }
         try {
             template.getMembers().sort(new BodyDeclarationComparator());
         } catch (IllegalArgumentException e) {
