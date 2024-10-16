@@ -310,6 +310,7 @@ message Variable {
     optional int32 strategy_index = 2;
     optional bytes value = 3;
     optional string data_type = 4;
+    optional string data_types = 5;
 }
 
 
