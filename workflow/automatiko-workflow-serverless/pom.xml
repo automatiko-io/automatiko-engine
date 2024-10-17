@@ -5,7 +5,7 @@
   <parent>
     <groupId>io.automatiko.workflow</groupId>
     <artifactId>workflow</artifactId>
-    <version>0.36.0</version>
+    <version>0.37.0</version>
   </parent>
 
   <groupId>io.automatiko.workflow</groupId>

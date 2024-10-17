@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.automatiko.tests</groupId>
     <artifactId>integration-tests</artifactId>
-    <version>0.36.0</version>
+    <version>0.37.0</version>
   </parent>
   <artifactId>automatiko-decision</artifactId>
 
