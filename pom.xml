@@ -102,7 +102,7 @@
     <version.jakarta.xml.bind-api>4.0.0</version.jakarta.xml.bind-api>
     <version.jaxb-runtime>4.0.5</version.jaxb-runtime>
 
-    <version.json-unit-assertj>3.4.1</version.json-unit-assertj>
+    <version.json-unit-assertj>3.5.0</version.json-unit-assertj>
     <version.net.java.dev.glazedlists>1.8.0</version.net.java.dev.glazedlists>
 
     <version.io.cloudevents>4.0.1</version.io.cloudevents>
