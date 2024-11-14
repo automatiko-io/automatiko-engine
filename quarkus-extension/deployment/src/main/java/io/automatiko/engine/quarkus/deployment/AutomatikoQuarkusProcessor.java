@@ -593,7 +593,7 @@ public class AutomatikoQuarkusProcessor {
                 if (Thread.currentThread().getContextClassLoader() instanceof QuarkusClassLoader) {
                     QuarkusClassLoader cl = (QuarkusClassLoader) Thread.currentThread().getContextClassLoader();
 
-                    Field f = cl.getClass().getDeclaredField("elements");
+                    Field f = cl.getClass().getDeclaredField("normalPriorityElements");
                     f.setAccessible(true);
                     List<ClassPathElement> element = (List<ClassPathElement>) f.get(cl);
 
@@ -606,7 +606,7 @@ public class AutomatikoQuarkusProcessor {
 
                     });
 
-                    f = cl.getClass().getDeclaredField("state");
+                    f = cl.getClass().getDeclaredField("classPathResourceIndex");
                     f.setAccessible(true);
                     f.set(cl, null);
                 }

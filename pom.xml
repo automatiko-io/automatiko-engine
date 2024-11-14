@@ -81,7 +81,7 @@
 
     <!-- dependencies versions -->
     <version.ch.obermuhlner>2.3.2</version.ch.obermuhlner>
-    <version.com.fasterxml.jackson>2.17.2</version.com.fasterxml.jackson>
+    <version.com.fasterxml.jackson>2.18.1</version.com.fasterxml.jackson>
     <version.com.github.haifengl.smile>1.5.2</version.com.github.haifengl.smile>
     <version.com.github.javaparser>3.26.2</version.com.github.javaparser>
     <version.com.github.victools>4.36.0</version.com.github.victools>
@@ -106,21 +106,21 @@
     <version.net.java.dev.glazedlists>1.8.0</version.net.java.dev.glazedlists>
 
     <version.io.cloudevents>4.0.1</version.io.cloudevents>
-    <version.io.quarkus>3.15.1</version.io.quarkus>
+    <version.io.quarkus>3.16.3</version.io.quarkus>
     <version.io.restassured>5.5.0</version.io.restassured>
-    <version.io.smallrye.reactive>4.24.0</version.io.smallrye.reactive>
+    <version.io.smallrye.reactive>4.25.0</version.io.smallrye.reactive>
     <version.org.eclipse.microprofile.metrics>4.0.1</version.org.eclipse.microprofile.metrics>
     <version.org.eclipse.microprofile.rest.client>3.0.1</version.org.eclipse.microprofile.rest.client>
     <version.org.eclipse.microprofile.config>3.1</version.org.eclipse.microprofile.config>
     <version.org.eclipse.microprofile.openapi>3.1.1</version.org.eclipse.microprofile.openapi>
 
-    <version.io.javaoperatorsdk>6.8.3</version.io.javaoperatorsdk>
+    <version.io.javaoperatorsdk>6.8.4</version.io.javaoperatorsdk>
     <version.io.quarkiverse.googlecloudservices>2.13.0</version.io.quarkiverse.googlecloudservices>
     <version.com.datastax.oss.quarkus>1.2.0</version.com.datastax.oss.quarkus>
     <version.com.datastax.oss>4.17.0</version.com.datastax.oss>
-    <version.org.apache.camel.quarkus>3.15.0</version.org.apache.camel.quarkus>
+    <version.org.apache.camel.quarkus>3.16.0</version.org.apache.camel.quarkus>
     <version.io.quarkiverse.reactivemessaging.http>2.4.1</version.io.quarkiverse.reactivemessaging.http>
-    <version.io.quarkiverse.amazonservices>2.18.1</version.io.quarkiverse.amazonservices>
+    <version.io.quarkiverse.amazonservices>2.19.0</version.io.quarkiverse.amazonservices>
     <version.io.quarkiverse.azure-services>1.0.7</version.io.quarkiverse.azure-services>
     <version.io.quarkiverse.jdbc-sqlite>3.0.10</version.io.quarkiverse.jdbc-sqlite>
     <version.com.googlecode.cqengine>3.6.0</version.com.googlecode.cqengine>
