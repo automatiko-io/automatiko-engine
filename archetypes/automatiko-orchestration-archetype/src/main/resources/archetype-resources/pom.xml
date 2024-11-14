@@ -47,7 +47,7 @@
     
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-rest-client-reactive</artifactId>
+      <artifactId>quarkus-rest-client</artifactId>
     </dependency>
 
     <dependency>

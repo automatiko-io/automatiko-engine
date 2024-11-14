@@ -40,7 +40,7 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-smallrye-reactive-messaging-pulsar</artifactId>
+      <artifactId>quarkus-messaging-pulsar</artifactId>
     </dependency>
 
     <dependency>
