@@ -57,7 +57,7 @@
     <version.invoker.plugin>3.8.1</version.invoker.plugin>
     <version.jandex.plugin>3.2.3</version.jandex.plugin>
     <version.jar.plugin>3.4.2</version.jar.plugin>
-    <version.javadoc.plugin>3.8.0</version.javadoc.plugin>
+    <version.javadoc.plugin>3.11.2</version.javadoc.plugin>
     <version.archetype.plugin>3.3.1</version.archetype.plugin>
     <version.enforcer.plugin>3.5.0</version.enforcer.plugin>
     <version.maven>3.8.6</version.maven>
@@ -71,7 +71,7 @@
     <version.site.plugin>3.21.0</version.site.plugin>
     <version.shade.plugin>3.0.0</version.shade.plugin>
     <version.source.plugin>3.0.1</version.source.plugin>
-    <version.surefire.plugin>3.5.1</version.surefire.plugin> <!-- minimum required by JUnit 5 -->
+    <version.surefire.plugin>3.5.2</version.surefire.plugin> <!-- minimum required by JUnit 5 -->
     <version.surefire.report.plugin>2.6</version.surefire.report.plugin>
     <version.swagger.plugin>2.1.0</version.swagger.plugin>
     <version.taglist.plugin>2.4</version.taglist.plugin>
@@ -98,29 +98,29 @@
     <version.jakarta.inject-api>2.0.1</version.jakarta.inject-api>
     <version.jakarta.json.bind-api>3.0.1</version.jakarta.json.bind-api>
     <version.jakarta.validation-api>3.1.0</version.jakarta.validation-api>
-    <version.jakarta.websocket-api>2.1.0</version.jakarta.websocket-api>
-    <version.jakarta.xml.bind-api>4.0.0</version.jakarta.xml.bind-api>
+    <version.jakarta.websocket-api>2.1.1</version.jakarta.websocket-api>
+    <version.jakarta.xml.bind-api>4.0.2</version.jakarta.xml.bind-api>
     <version.jaxb-runtime>4.0.5</version.jaxb-runtime>
 
     <version.json-unit-assertj>4.0.0</version.json-unit-assertj>
     <version.net.java.dev.glazedlists>1.8.0</version.net.java.dev.glazedlists>
 
     <version.io.cloudevents>4.0.1</version.io.cloudevents>
-    <version.io.quarkus>3.16.3</version.io.quarkus>
+    <version.io.quarkus>3.17.3</version.io.quarkus>
     <version.io.restassured>5.5.0</version.io.restassured>
     <version.io.smallrye.reactive>4.25.0</version.io.smallrye.reactive>
     <version.org.eclipse.microprofile.metrics>4.0.1</version.org.eclipse.microprofile.metrics>
-    <version.org.eclipse.microprofile.rest.client>3.0.1</version.org.eclipse.microprofile.rest.client>
+    <version.org.eclipse.microprofile.rest.client>4.0</version.org.eclipse.microprofile.rest.client>
     <version.org.eclipse.microprofile.config>3.1</version.org.eclipse.microprofile.config>
-    <version.org.eclipse.microprofile.openapi>3.1.1</version.org.eclipse.microprofile.openapi>
+    <version.org.eclipse.microprofile.openapi>4.0.2</version.org.eclipse.microprofile.openapi>
 
-    <version.io.javaoperatorsdk>6.8.4</version.io.javaoperatorsdk>
+    <version.io.javaoperatorsdk>6.9.1</version.io.javaoperatorsdk>
     <version.io.quarkiverse.googlecloudservices>2.13.0</version.io.quarkiverse.googlecloudservices>
     <version.com.datastax.oss.quarkus>1.2.0</version.com.datastax.oss.quarkus>
     <version.com.datastax.oss>4.17.0</version.com.datastax.oss>
-    <version.org.apache.camel.quarkus>3.16.0</version.org.apache.camel.quarkus>
+    <version.org.apache.camel.quarkus>3.17.0</version.org.apache.camel.quarkus>
     <version.io.quarkiverse.reactivemessaging.http>2.4.1</version.io.quarkiverse.reactivemessaging.http>
-    <version.io.quarkiverse.amazonservices>3.1.0</version.io.quarkiverse.amazonservices>
+    <version.io.quarkiverse.amazonservices>3.2.0</version.io.quarkiverse.amazonservices>
     <version.io.quarkiverse.azure-services>1.0.7</version.io.quarkiverse.azure-services>
     <version.io.quarkiverse.jdbc-sqlite>3.0.11</version.io.quarkiverse.jdbc-sqlite>
     <version.com.googlecode.cqengine>3.6.0</version.com.googlecode.cqengine>
@@ -137,7 +137,7 @@
     <version.org.junit>5.10.3</version.org.junit>
     <version.org.junit.jupiter>${version.org.junit}</version.org.junit.jupiter>
     <version.org.junit.vintage>${version.org.junit}</version.org.junit.vintage>
-    <version.ch.qos.logback>1.5.11</version.ch.qos.logback>
+    <version.ch.qos.logback>1.5.12</version.ch.qos.logback>
     <version.org.mockito>5.14.2</version.org.mockito>
     <version.org.mvel>2.5.2.Final</version.org.mvel>
     <version.org.kie-dmn>8.38.0.Final</version.org.kie-dmn>

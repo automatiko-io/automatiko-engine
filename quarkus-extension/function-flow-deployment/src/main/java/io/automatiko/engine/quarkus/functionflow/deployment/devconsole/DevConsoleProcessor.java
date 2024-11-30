@@ -3,7 +3,6 @@ package io.automatiko.engine.quarkus.functionflow.deployment.devconsole;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +87,7 @@ public class DevConsoleProcessor {
                     includeSubjectAttribute = true;
                 }
                 SchemaFactory.typeToSchema(ctx,
-                        mi.parameters().get(0).type(), null, Collections.emptyList());
+                        mi.parameters().get(0).type(), null);
                 Schema fSchema = ctx.getOpenApi().getComponents().getSchemas().get(param.name().local());
 
                 String payload = generator.generate(fSchema, ctx.getOpenApi());
