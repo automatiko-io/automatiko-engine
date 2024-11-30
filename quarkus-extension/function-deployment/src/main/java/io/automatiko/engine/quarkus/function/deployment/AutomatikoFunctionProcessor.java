@@ -61,7 +61,7 @@ public class AutomatikoFunctionProcessor {
                 // create function trigger descriptor for every found function
 
                 SchemaFactory.typeToSchema(ctx,
-                        mi.parameters().get(0).type(), null, Collections.emptyList());
+                        mi.parameters().get(0).type(), null);
                 Schema fSchema = ctx.getOpenApi().getComponents().getSchemas()
                         .get(mi.parameters().get(0).type().name().local());
 
