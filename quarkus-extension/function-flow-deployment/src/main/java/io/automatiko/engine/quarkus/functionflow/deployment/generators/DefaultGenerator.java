@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.stream.Stream;
 
 import org.eclipse.microprofile.openapi.models.media.Schema;
@@ -95,7 +94,7 @@ public class DefaultGenerator implements Generator {
                 }
 
                 SchemaFactory.typeToSchema(ctx,
-                        mi.parameters().get(0).type(), null, Collections.emptyList());
+                        mi.parameters().get(0).type(), null);
                 Schema fSchema = ctx.getOpenApi().getComponents().getSchemas().get(param.name().local());
                 LOGGER.info(
                         "Function \"{}\" will accept POST requests on / endpoint with following payload ",
