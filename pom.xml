@@ -87,7 +87,7 @@
     <version.com.github.victools>4.36.0</version.com.github.victools>
     <version.com.google.protobuf>3.25.5</version.com.google.protobuf>
     <version.org.graalvm.nativeimage>24.1.0</version.org.graalvm.nativeimage>
-    <version.com.thoughtworks.xstream>1.4.20</version.com.thoughtworks.xstream>
+    <version.com.thoughtworks.xstream>1.4.21</version.com.thoughtworks.xstream>
     <version.javassist>3.29.0-GA</version.javassist>
     <version.org.jfree.svg>5.0.6</version.org.jfree.svg>
     <version.org.jgrapht>1.5.2</version.org.jgrapht>
