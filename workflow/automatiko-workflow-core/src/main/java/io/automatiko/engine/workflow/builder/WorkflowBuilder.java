@@ -214,6 +214,23 @@ public class WorkflowBuilder {
         return this;
     }
 
+    public WorkflowBuilder instanceName(String instanceName) {
+        if (instanceName != null && !instanceName.isBlank()) {
+            process.setMetaData("customDescription", instanceName);
+        }
+
+        return this;
+    }
+
+    public WorkflowBuilder instanceName(Supplier<String> instanceNameExpression) {
+        if (instanceNameExpression != null) {
+            String expression = "#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()) + "}";
+            process.setMetaData("customDescription", expression);
+        }
+
+        return this;
+    }
+
     /**
      * Sets expiration of the workflow instance that instructs to remove the instance from storage after
      * <code>expiresAfter</code>
