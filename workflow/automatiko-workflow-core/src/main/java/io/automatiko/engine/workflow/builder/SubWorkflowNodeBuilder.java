@@ -458,6 +458,7 @@ public class SubWorkflowNodeBuilder extends AbstractNodeBuilder {
         subProcessNode.setDefaultContext(variableScope);
         subProcessNode.setAutoComplete(true);
         subProcessNode.setMetaData("hidden", true);
+        subProcessNode.setMetaData("UniqueId", origNode.getMetaData().get("UniqueId") + ":container");
         subProcessNode.setName(node.getName() + " (Wrapper)");
         subProcessNode.setCancelRemainingInstances(false);
 
