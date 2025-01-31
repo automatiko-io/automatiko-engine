@@ -761,8 +761,8 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
             }
             processInstance.setProcess(process);
         }
-        processInstance.setDescription(_instance.getDescription());
         processInstance.internalSetState(_instance.getState());
+        processInstance.setDescription(_instance.getDescription());
         processInstance.setParentProcessInstanceId(_instance.getParentProcessInstanceId());
         processInstance.setRootProcessInstanceId(_instance.getRootProcessInstanceId());
         processInstance.setRootProcessId(_instance.getRootProcessId());
