@@ -152,6 +152,29 @@ public abstract class AbstractNodeBuilder {
         return thenJoin(name, Join.TYPE_AND);
     }
 
+    /**
+     * Completes building current node and allows to add new node
+     * 
+     * @return the workflow builder
+     */
+    public WorkflowBuilder endSplit() {
+        workflowBuilder.putBuilderOnContext(null);
+        return this.workflowBuilder;
+    }
+
+    /**
+     * Sets custom unique id for this node
+     * 
+     * NOTE: This is highly important property so make sure you set it with unique id across entire workflow
+     * 
+     * @param uniqueId uniqueId id for this node
+     * @return the builder
+     */
+    public AbstractNodeBuilder customUniqueId(String uniqueId) {
+        getNode().setMetaData("UniqueId", uniqueId);
+        return this;
+    }
+
     protected AbstractNodeBuilder customAttribute(String name, Object value) {
         if (name != null && value != null) {
             getNode().setMetaData(name, value);
