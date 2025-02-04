@@ -281,12 +281,25 @@ public class DynamoDBJobService implements JobsService {
 
             auditor.publish(entry);
         }
-        PutItemRequest request = PutItemRequest.builder()
+
+        Map<String, AttributeValue> keyToGet = new HashMap<String, AttributeValue>();
+
+        keyToGet.put(INSTANCE_ID_FIELD, AttributeValue.builder().s(description.id()).build());
+
+        GetItemRequest request = GetItemRequest.builder()
+                .key(keyToGet)
                 .tableName(tableName)
-                .item(itemValues)
                 .build();
 
-        dynamodb.putItem(request);
+        boolean exists = dynamodb.getItem(request).hasItem();
+        if (!exists) {
+            PutItemRequest requestPut = PutItemRequest.builder()
+                    .tableName(tableName)
+                    .item(itemValues)
+                    .build();
+
+            dynamodb.putItem(requestPut);
+        }
         if (description.expirationTime().get().toLocalDateTime()
                 .isBefore(LocalDateTime.now().plusMinutes(interval.orElse(10L)))) {
 
