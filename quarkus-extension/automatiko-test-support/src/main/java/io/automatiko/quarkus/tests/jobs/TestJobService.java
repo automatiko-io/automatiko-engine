@@ -107,6 +107,13 @@ public class TestJobService implements JobsService {
                 .filter(pjob -> pjob.processId().equals(processId)).collect(Collectors.toList());
     }
 
+    public List<ProcessInstanceJobDescription> processInstanceJobs(String processId, String processVersion) {
+        return jobs.values().stream().filter(job -> job instanceof ProcessInstanceJobDescription)
+                .map(ProcessInstanceJobDescription.class::cast)
+                .filter(pjob -> pjob.processId().equals(processId) && processVersion.equals(pjob.processVersion()))
+                .collect(Collectors.toList());
+    }
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void triggerProcessJob(String jobId) {
 
@@ -118,7 +125,7 @@ public class TestJobService implements JobsService {
         int limit = job.expirationTime().repeatLimit();
         try {
             LOGGER.debug("Job {} started", job.id());
-            String processId = processId(job);
+            String processId = job.processId();
             Process process = mappedProcesses.get(processId);
             if (process == null) {
                 LOGGER.warn("No process found for process id {}", processId);
@@ -194,16 +201,6 @@ public class TestJobService implements JobsService {
                 jobs.remove(jobId);
             }
         }
-    }
-
-    private String processId(ProcessJobDescription job) {
-        String processId = job.processId();
-
-        if (job.processVersion() != null && !job.processVersion().isBlank()) {
-            processId += "_" + job.processVersion();
-        }
-
-        return processId;
     }
 
     private String processId(ProcessInstanceJobDescription job) {

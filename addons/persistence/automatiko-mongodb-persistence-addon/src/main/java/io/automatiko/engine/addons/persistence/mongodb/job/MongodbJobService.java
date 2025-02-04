@@ -31,6 +31,7 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.result.UpdateResult;
@@ -237,7 +238,10 @@ public class MongodbJobService implements JobsService {
 
             auditor.publish(entry);
         }
-        collection().insertOne(job);
+        Document replaced = collection().findOneAndReplace(Filters.eq(INSTANCE_ID_FIELD, description.id()), job);
+        if (replaced == null) {
+            collection().insertOne(job);
+        }
         if (description.expirationTime().get().toLocalDateTime()
                 .isBefore(LocalDateTime.now().plusMinutes(interval.orElse(10L)))) {
 
@@ -291,7 +295,10 @@ public class MongodbJobService implements JobsService {
             auditor.publish(entry);
         }
 
-        collection().insertOne(job);
+        Document replaced = collection().findOneAndReplace(Filters.eq(INSTANCE_ID_FIELD, description.id()), job);
+        if (replaced == null) {
+            collection().insertOne(job);
+        }
 
         if (description.expirationTime().get().toLocalDateTime()
                 .isBefore(LocalDateTime.now().plusMinutes(interval.orElse(10L)))) {

@@ -253,7 +253,15 @@ public class CassandraJobService implements JobsService {
 
             auditor.publish(entry);
         }
-        cqlSession.execute(insert.build());
+        Select select = selectFrom(keyspace.orElse("automatiko"), tableName).column(INSTANCE_ID_FIELD)
+                .whereColumn(INSTANCE_ID_FIELD).isEqualTo(literal(description.id()));
+
+        ResultSet rs = cqlSession.execute(select.build());
+        Row row = rs.one();
+
+        if (row == null) {
+            cqlSession.execute(description.id());
+        }
         if (description.expirationTime().get().toLocalDateTime()
                 .isBefore(LocalDateTime.now().plusMinutes(interval.orElse(10L)))) {
 
