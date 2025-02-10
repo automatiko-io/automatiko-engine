@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.automatiko.tests</groupId>
     <artifactId>integration-tests</artifactId>
-    <version>0.39.2</version>
+    <version>0.0.0-SNAPSHOT</version>
   </parent>
   <artifactId>automatiko-scripts</artifactId>
   <name>Automatiko :: Tests Suite :: Scripts invocation sample</name>
