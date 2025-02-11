@@ -27,9 +27,10 @@ import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
+import io.javaoperatorsdk.operator.api.config.informer.Informer;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
-@ControllerConfiguration(namespaces=$ControllerParam$, name="$ProcessId$", generationAwareEventProcessing=$GenControllerParam$)
+@ControllerConfiguration(informer = @Informer(namespaces=$ControllerParam$), name="$ProcessId$", generationAwareEventProcessing=$GenControllerParam$)
 public class Controller implements Reconciler<$DataType$>, Cleaner<$DataType$>  {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("MessageConsumer");
@@ -118,7 +119,7 @@ public class Controller implements Reconciler<$DataType$>, Cleaner<$DataType$>  
                             return UpdateControl.noUpdate();
                         }
                         LOGGER.debug("Signalled and returned updated {} that requires update of the custom resource", updated);
-                        return UpdateControl.updateResourceAndStatus(updated);
+                        return UpdateControl.patchResourceAndStatus(updated);
                     }
                 }
                 if (canStartInstance()) {
@@ -135,7 +136,7 @@ public class Controller implements Reconciler<$DataType$>, Cleaner<$DataType$>  
                         return UpdateControl.noUpdate();
                     }
                     LOGGER.debug("New instance started and with the need to update custom resource");
-                    return UpdateControl.updateResourceAndStatus(updated);
+                    return UpdateControl.patchResourceAndStatus(updated);
                 } else {
                     LOGGER.warn(
                             "Received message without reference id and no correlation is set/matched, for trigger not capable of starting new instance '{}'",

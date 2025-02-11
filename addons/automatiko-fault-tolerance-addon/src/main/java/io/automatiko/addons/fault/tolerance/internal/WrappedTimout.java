@@ -6,8 +6,9 @@ import org.eclipse.microprofile.faulttolerance.exceptions.TimeoutException;
 
 import io.automatiko.engine.api.workflow.ServiceExecutionError;
 import io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError;
+import io.smallrye.faulttolerance.core.FaultToleranceContext;
 import io.smallrye.faulttolerance.core.FaultToleranceStrategy;
-import io.smallrye.faulttolerance.core.InvocationContext;
+import io.smallrye.faulttolerance.core.Future;
 
 public class WrappedTimout<V> implements FaultToleranceStrategy<V> {
 
@@ -18,10 +19,11 @@ public class WrappedTimout<V> implements FaultToleranceStrategy<V> {
     }
 
     @Override
-    public V apply(InvocationContext<V> ctx) throws Exception {
+    public Future<V> apply(FaultToleranceContext<V> ctx) {
 
         try {
-            return delegate.apply(ctx);
+            V value = delegate.apply(ctx).awaitBlocking();
+            return Future.of(value);
         } catch (WorkItemExecutionError e) {
             throw new ServiceExecutionError(e.getMessage(), e.getErrorCode(), e.getErrorDetails(), e.getErrorData());
         } catch (TimeoutException e) {
