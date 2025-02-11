@@ -9,8 +9,9 @@ import org.eclipse.microprofile.faulttolerance.exceptions.TimeoutException;
 import io.automatiko.addons.fault.tolerance.CircuitClosedEvent;
 import io.automatiko.engine.api.workflow.ServiceExecutionError;
 import io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError;
+import io.smallrye.faulttolerance.core.FaultToleranceContext;
 import io.smallrye.faulttolerance.core.FaultToleranceStrategy;
-import io.smallrye.faulttolerance.core.InvocationContext;
+import io.smallrye.faulttolerance.core.Future;
 import io.smallrye.faulttolerance.core.circuit.breaker.CircuitBreakerEvents;
 
 public class NotifyingCircuitBreaker<V> implements FaultToleranceStrategy<V> {
@@ -26,7 +27,7 @@ public class NotifyingCircuitBreaker<V> implements FaultToleranceStrategy<V> {
     }
 
     @Override
-    public V apply(InvocationContext<V> ctx) throws Exception {
+    public Future<V> apply(FaultToleranceContext<V> ctx) {
         ctx.registerEventHandler(CircuitBreakerEvents.StateTransition.class, e -> {
 
             if (e.targetState.equals(CircuitBreakerEvents.StateTransition.TO_CLOSED.targetState)) {
@@ -34,7 +35,8 @@ public class NotifyingCircuitBreaker<V> implements FaultToleranceStrategy<V> {
             }
         });
         try {
-            return delegate.apply(ctx);
+            V value = delegate.apply(ctx).awaitBlocking();
+            return Future.of(value);
         } catch (WorkItemExecutionError e) {
             throw new ServiceExecutionError(e.getMessage(), e.getErrorCode(), name, e.getErrorData());
         } catch (CircuitBreakerOpenException e) {
