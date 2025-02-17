@@ -346,4 +346,5 @@ public interface ProcessInstance<T> {
      */
     ArchivedProcessInstance archive(ArchiveBuilder builder);
 
+    boolean isConnected();
 }

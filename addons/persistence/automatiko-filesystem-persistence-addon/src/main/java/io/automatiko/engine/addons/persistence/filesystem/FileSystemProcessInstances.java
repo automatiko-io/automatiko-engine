@@ -615,7 +615,6 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
 
     @Override
     public ExportedProcessInstance exportInstance(ProcessInstance instance, boolean abort) {
-
         ExportedProcessInstance exported = marshaller.exportProcessInstance(audit(instance));
 
         if (abort) {
@@ -661,6 +660,7 @@ public class FileSystemProcessInstances implements MutableProcessInstances {
         Path processInstanceLock = Paths.get(storage.toString(), "." + id + ".lock");
 
         try {
+
             Files.createFile(processInstanceLock);
 
         } catch (FileAlreadyExistsException e) {
