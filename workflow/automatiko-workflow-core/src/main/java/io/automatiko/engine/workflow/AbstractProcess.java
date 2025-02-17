@@ -321,10 +321,15 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
 
         @Override
         public void signalEvent(String type, Object event) {
+
             if (type.startsWith("processInstanceCompleted:")) {
                 io.automatiko.engine.api.runtime.process.ProcessInstance pi = (io.automatiko.engine.api.runtime.process.ProcessInstance) event;
+
                 if (!id().equals(pi.getProcessId()) && pi.getParentProcessInstanceId() != null) {
-                    instances().findById(pi.getParentProcessInstanceId()).ifPresent(p -> p.send(Sig.of(type, event)));
+                    instances().findById(pi.getParentProcessInstanceId(), ProcessInstanceReadMode.MUTABLE_WITH_LOCK)
+                            .ifPresent(p -> {
+                                p.send(Sig.of(type, event));
+                            });
                 }
             }
         }
