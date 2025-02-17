@@ -106,8 +106,8 @@ public class DatabaseJobService implements JobsService {
                     for (JobInstanceEntity job : jobs) {
 
                         if (job.ownerInstanceId == null) {
-                            ProcessJobDescription description = ProcessJobDescription.of(build(job), null,
-                                    job.ownerDefinitionId);
+                            ProcessJobDescription description = ProcessJobDescription.of(build(job), job.ownerDefinitionId,
+                                    null);
                             scheduledJobs.computeIfAbsent(job.id, k -> {
                                 return log(job.id, scheduler.schedule(new StartProcessOnExpiredTimer(job.id,
                                         job.ownerDefinitionId, -1, description),

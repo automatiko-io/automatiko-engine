@@ -125,7 +125,7 @@ public class FileSystemBasedJobService implements JobsService {
 
             auditor.publish(entry);
             scheduledJob = new ScheduledJob(description.id(),
-                    description.processId() + version(description.processVersion()), false,
+                    description.processId(), false,
                     description.expirationTime().repeatLimit(), description.expirationTime().repeatInterval(),
                     description.expirationTime().get(), description.expirationTime().expression());
         } else {
@@ -151,7 +151,7 @@ public class FileSystemBasedJobService implements JobsService {
         if (description.expirationTime().repeatInterval() != null) {
             future = scheduler.scheduleAtFixedRate(
                     new SignalProcessInstanceOnExpiredTimer(description.id(), description.triggerType(),
-                            description.processId() + version(description.processVersion()),
+                            description.processId(),
                             description.processInstanceId(), false, description.expirationTime().repeatLimit(), description),
                     calculateDelay(description.expirationTime().get()), description.expirationTime().repeatInterval(),
                     TimeUnit.MILLISECONDS);

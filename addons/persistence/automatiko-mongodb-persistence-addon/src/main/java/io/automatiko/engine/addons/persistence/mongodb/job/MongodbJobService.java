@@ -32,6 +32,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.result.UpdateResult;
@@ -151,8 +152,8 @@ public class MongodbJobService implements JobsService {
 
                         if (job.getString(OWNER_INSTANCE_ID_FIELD) == null) {
                             ProcessJobDescription description = ProcessJobDescription.of(build(job.getString(EXPRESSION_FIELD)),
-                                    null,
-                                    job.getString(OWNER_DEF_ID_FIELD));
+                                    job.getString(OWNER_DEF_ID_FIELD),
+                                    null);
 
                             scheduledJobs.computeIfAbsent(job.getString(INSTANCE_ID_FIELD), k -> {
                                 return log(job.getString(INSTANCE_ID_FIELD),
@@ -209,7 +210,7 @@ public class MongodbJobService implements JobsService {
         Document job = new Document();
         if (description.expirationTime().repeatInterval() != null) {
             job.append(INSTANCE_ID_FIELD, description.id())
-                    .append(OWNER_DEF_ID_FIELD, description.processId() + version(description.processVersion()))
+                    .append(OWNER_DEF_ID_FIELD, description.processId())
                     .append(STATUS_FIELD, "scheduled")
                     .append(FIRE_AT_FIELD,
                             description.expirationTime().get().toLocalDateTime().atZone(ZoneId.systemDefault())
@@ -225,7 +226,7 @@ public class MongodbJobService implements JobsService {
         } else {
 
             job.append(INSTANCE_ID_FIELD, description.id())
-                    .append(OWNER_DEF_ID_FIELD, description.processId() + version(description.processVersion()))
+                    .append(OWNER_DEF_ID_FIELD, description.processId())
                     .append(STATUS_FIELD, "scheduled")
                     .append(FIRE_AT_FIELD,
                             description.expirationTime().get().toLocalDateTime().atZone(ZoneId.systemDefault())
@@ -238,10 +239,9 @@ public class MongodbJobService implements JobsService {
 
             auditor.publish(entry);
         }
-        Document replaced = collection().findOneAndReplace(Filters.eq(INSTANCE_ID_FIELD, description.id()), job);
-        if (replaced == null) {
-            collection().insertOne(job);
-        }
+        collection().findOneAndReplace(Filters.eq(INSTANCE_ID_FIELD, description.id()), job,
+                new FindOneAndReplaceOptions().upsert(true));
+
         if (description.expirationTime().get().toLocalDateTime()
                 .isBefore(LocalDateTime.now().plusMinutes(interval.orElse(10L)))) {
 
@@ -295,10 +295,8 @@ public class MongodbJobService implements JobsService {
             auditor.publish(entry);
         }
 
-        Document replaced = collection().findOneAndReplace(Filters.eq(INSTANCE_ID_FIELD, description.id()), job);
-        if (replaced == null) {
-            collection().insertOne(job);
-        }
+        collection().findOneAndReplace(Filters.eq(INSTANCE_ID_FIELD, description.id()), job,
+                new FindOneAndReplaceOptions().upsert(true));
 
         if (description.expirationTime().get().toLocalDateTime()
                 .isBefore(LocalDateTime.now().plusMinutes(interval.orElse(10L)))) {
