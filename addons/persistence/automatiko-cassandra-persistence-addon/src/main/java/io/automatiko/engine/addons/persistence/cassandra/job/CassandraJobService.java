@@ -166,8 +166,8 @@ public class CassandraJobService implements JobsService {
 
                         if (job.getString(OWNER_INSTANCE_ID_FIELD) == null) {
                             ProcessJobDescription description = ProcessJobDescription.of(build(job.getString(EXPRESSION_FIELD)),
-                                    null,
-                                    job.getString(OWNER_DEF_ID_FIELD));
+                                    job.getString(OWNER_DEF_ID_FIELD),
+                                    null);
 
                             scheduledJobs.computeIfAbsent(job.getString(INSTANCE_ID_FIELD), k -> {
                                 return log(job.getString(INSTANCE_ID_FIELD),
@@ -224,7 +224,7 @@ public class CassandraJobService implements JobsService {
         if (description.expirationTime().repeatInterval() != null) {
             insert = insertInto(keyspace.orElse("automatiko"), tableName)
                     .value(INSTANCE_ID_FIELD, literal(description.id()))
-                    .value(OWNER_DEF_ID_FIELD, literal(description.processId() + version(description.processVersion())))
+                    .value(OWNER_DEF_ID_FIELD, literal(description.processId()))
                     .value(STATUS_FIELD, literal("scheduled"))
                     .value(FIRE_AT_FIELD,
                             literal(description.expirationTime().get().toLocalDateTime().atZone(ZoneId.systemDefault())
@@ -240,7 +240,7 @@ public class CassandraJobService implements JobsService {
         } else {
             insert = insertInto(keyspace.orElse("automatiko"), tableName)
                     .value(INSTANCE_ID_FIELD, literal(description.id()))
-                    .value(OWNER_DEF_ID_FIELD, literal(description.processId() + version(description.processVersion())))
+                    .value(OWNER_DEF_ID_FIELD, literal(description.processId()))
                     .value(STATUS_FIELD, literal("scheduled"))
                     .value(FIRE_AT_FIELD,
                             literal(description.expirationTime().get().toLocalDateTime().atZone(ZoneId.systemDefault())

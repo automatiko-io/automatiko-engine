@@ -182,8 +182,7 @@ public class DynamoDBJobService implements JobsService {
 
                         if (job.get(OWNER_INSTANCE_ID_FIELD) == null) {
                             ProcessJobDescription description = ProcessJobDescription.of(build(job.get(EXPRESSION_FIELD).s()),
-                                    null,
-                                    job.get(OWNER_DEF_ID_FIELD).s());
+                                    job.get(OWNER_DEF_ID_FIELD).s(), null);
 
                             scheduledJobs.computeIfAbsent(job.get(INSTANCE_ID_FIELD).s(), k -> {
                                 return log(job.get(INSTANCE_ID_FIELD).s(),
@@ -241,7 +240,7 @@ public class DynamoDBJobService implements JobsService {
         if (description.expirationTime().repeatInterval() != null) {
             itemValues.put(INSTANCE_ID_FIELD, AttributeValue.builder().s(description.id()).build());
             itemValues.put(OWNER_DEF_ID_FIELD,
-                    AttributeValue.builder().s(description.processId() + version(description.processVersion())).build());
+                    AttributeValue.builder().s(description.processId()).build());
             itemValues.put(STATUS_FIELD, AttributeValue.builder().s("scheduled").build());
             itemValues.put(FIRE_AT_FIELD,
                     AttributeValue.builder()
@@ -263,7 +262,7 @@ public class DynamoDBJobService implements JobsService {
         } else {
             itemValues.put(INSTANCE_ID_FIELD, AttributeValue.builder().s(description.id()).build());
             itemValues.put(OWNER_DEF_ID_FIELD,
-                    AttributeValue.builder().s(description.processId() + version(description.processVersion())).build());
+                    AttributeValue.builder().s(description.processId()).build());
             itemValues.put(STATUS_FIELD, AttributeValue.builder().s("scheduled").build());
             itemValues.put(FIRE_AT_FIELD,
                     AttributeValue.builder()
