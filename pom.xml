@@ -107,7 +107,7 @@
 
     <version.io.cloudevents>4.0.1</version.io.cloudevents>
     <version.io.quarkus>3.18.3</version.io.quarkus>
-    <version.io.restassured>5.5.0</version.io.restassured>
+    <version.io.restassured>5.5.1</version.io.restassured>
     <version.io.smallrye.reactive>4.27.0</version.io.smallrye.reactive>
     <version.org.eclipse.microprofile.metrics>4.0.1</version.org.eclipse.microprofile.metrics>
     <version.org.eclipse.microprofile.rest.client>4.0</version.org.eclipse.microprofile.rest.client>
