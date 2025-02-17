@@ -162,15 +162,22 @@ public class CollectingUnitOfWork implements UnitOfWork {
         @Override
         public Optional<?> findById(String id, int status, ProcessInstanceReadMode mode) {
             if (local.containsKey(id)) {
-                return Optional.of(local.get(id));
+
+                boolean isConnected = ((ProcessInstance<?>) local.get(id)).isConnected();
+                if (isConnected) {
+                    return Optional.of(local.get(id));
+                }
             }
             if (id.contains(":")) {
                 if (local.containsKey(id.split(":")[1])) {
                     ProcessInstance pi = local.get(id.split(":")[1]);
-                    if (pi.status() == status) {
-                        return Optional.of(pi);
-                    } else {
-                        return Optional.empty();
+                    boolean isConnected = pi.isConnected();
+                    if (isConnected) {
+                        if (pi.status() == status) {
+                            return Optional.of(pi);
+                        } else {
+                            return Optional.empty();
+                        }
                     }
                 }
             }
@@ -180,6 +187,7 @@ public class CollectingUnitOfWork implements UnitOfWork {
             if (found.isPresent()) {
                 ProcessInstance<?> pi = (ProcessInstance<?>) found.get();
                 addToCache(id, pi);
+                addToCache(pi.id(), pi);
             }
 
             return found;
@@ -238,6 +246,7 @@ public class CollectingUnitOfWork implements UnitOfWork {
         @Override
         public void release(String id, ProcessInstance pi) {
             delegate.release(id, pi);
+            local.remove(id);
         }
 
         protected void addToCache(String id, ProcessInstance<?> pi) {

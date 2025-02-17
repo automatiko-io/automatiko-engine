@@ -908,6 +908,10 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         return visibleTo;
     }
 
+    public boolean isConnected() {
+        return this.rt != null;
+    }
+
     protected Set<String> setVisibleTo() {
 
         Set<String> visibleTo = new HashSet<>();

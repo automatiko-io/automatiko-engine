@@ -404,5 +404,9 @@ public class ServerlessProcessInstance extends AbstractProcessInstance<Serverles
             return null;
         }
 
+        @Override
+        public boolean isConnected() {
+            return false;
+        }
     }
 }

@@ -401,5 +401,10 @@ public class BpmnProcessInstance extends AbstractProcessInstance<BpmnVariables> 
         public Object abortData() {
             return null;
         }
+
+        @Override
+        public boolean isConnected() {
+            return false;
+        }
     }
 }
