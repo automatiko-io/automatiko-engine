@@ -10,8 +10,16 @@ import jakarta.mail.MessagingException;
 public class ReceiveEmailFunctions implements Functions {
 
     public static String replyMessageId(Message<?> message) {
-        MailMessage mailMesage = (MailMessage) ((io.smallrye.reactive.messaging.camel.CamelMessage<?>) message).getExchange()
+        org.apache.camel.Message camelMessage = ((io.smallrye.reactive.messaging.camel.CamelMessage<?>) message).getExchange()
                 .getIn();
+
+        MailMessage mailMesage = null;
+
+        if (camelMessage instanceof MailMessage) {
+            mailMesage = (MailMessage) camelMessage;
+        } else {
+            mailMesage = (MailMessage) camelMessage.copy();
+        }
 
         String inReplyMessageId = mailMesage.getMessageId();
         try {

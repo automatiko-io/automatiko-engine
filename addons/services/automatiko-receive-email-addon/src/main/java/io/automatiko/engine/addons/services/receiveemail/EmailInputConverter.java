@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.camel.Message;
 import org.apache.camel.TypeConversionException;
 import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.component.mail.MailMessage;
@@ -28,9 +29,17 @@ public class EmailInputConverter implements InputConverter<EmailMessage> {
 
     @Override
     public EmailMessage convert(Object input) {
-        if (input instanceof MailMessage) {
 
-            MailMessage mailMessage = (MailMessage) input;
+        MailMessage mailMessage = null;
+
+        if (input instanceof MailMessage) {
+            mailMessage = (MailMessage) input;
+        } else {
+            mailMessage = (MailMessage) ((Message) input).copy();
+        }
+
+        if (mailMessage instanceof MailMessage) {
+
             try {
                 EmailMessage email = new EmailMessage();
                 email.setFrom(toStringAddress(mailMessage.getOriginalMessage().getFrom()));
