@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.camel.Message;
 import org.apache.camel.TypeConversionException;
 import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.component.mail.MailMessage;
@@ -21,9 +22,15 @@ public class EmailAttachmentsInputConverter implements InputConverter<List<ByteA
     @Override
     public List<ByteArrayFile> convert(Object input) {
         List<ByteArrayFile> files = new ArrayList<ByteArrayFile>();
-        if (input instanceof MailMessage) {
+        MailMessage mailMessage = null;
 
-            MailMessage mailMessage = (MailMessage) input;
+        if (input instanceof MailMessage) {
+            mailMessage = (MailMessage) input;
+        } else {
+            mailMessage = (MailMessage) ((Message) input).copy();
+        }
+
+        if (mailMessage instanceof MailMessage) {
 
             mailMessage.getMessageId();
 

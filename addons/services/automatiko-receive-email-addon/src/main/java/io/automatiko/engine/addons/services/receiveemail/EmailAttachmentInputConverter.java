@@ -3,6 +3,7 @@ package io.automatiko.engine.addons.services.receiveemail;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.camel.Message;
 import org.apache.camel.TypeConversionException;
 import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.component.mail.MailMessage;
@@ -18,9 +19,15 @@ public class EmailAttachmentInputConverter implements InputConverter<ByteArrayFi
 
     @Override
     public ByteArrayFile convert(Object input) {
-        if (input instanceof MailMessage) {
+        MailMessage mailMessage = null;
 
-            MailMessage mailMessage = (MailMessage) input;
+        if (input instanceof MailMessage) {
+            mailMessage = (MailMessage) input;
+        } else {
+            mailMessage = (MailMessage) ((Message) input).copy();
+        }
+
+        if (mailMessage instanceof MailMessage) {
 
             AttachmentMessage attachmentMessage = mailMessage.getExchange().getMessage(AttachmentMessage.class);
             if (attachmentMessage != null) {
