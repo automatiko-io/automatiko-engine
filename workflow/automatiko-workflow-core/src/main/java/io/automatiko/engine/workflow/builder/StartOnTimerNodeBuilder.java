@@ -1,6 +1,7 @@
 package io.automatiko.engine.workflow.builder;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import io.automatiko.engine.workflow.base.core.timer.Timer;
 import io.automatiko.engine.workflow.process.core.Node;
@@ -62,6 +63,22 @@ public class StartOnTimerNodeBuilder extends AbstractNodeBuilder {
     }
 
     /**
+     * Delays execution for the given amount of time expressed in ISO 8601 format that is calculated from the expression e.g.
+     * <code>PT10M</code> which stands for 5
+     * minutes
+     * 
+     * @param expression expression to calculate time expression in ISO 8601
+     * @return the builder
+     */
+    public StartOnTimerNodeBuilder afterFromExpression(Supplier<String> expression) {
+        this.timer.setTimeType(Timer.TIME_DURATION);
+        this.timer.setDelay(
+                "#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                        + "}");
+        return this;
+    }
+
+    /**
      * Starts new instance based on given amount of time expressed in time unit
      * 
      * @param amount amount of time to wait before moving on
@@ -86,6 +103,21 @@ public class StartOnTimerNodeBuilder extends AbstractNodeBuilder {
     public StartOnTimerNodeBuilder every(String isoExpression) {
         this.timer.setTimeType(Timer.TIME_CYCLE);
         this.timer.setDelay(isoExpression);
+        return this;
+    }
+
+    /**
+     * Repeats execution based on given amount of time expressed in ISO 8601 format that is calculated from the expression
+     * e.g. <code>R/PT10M</code> which stands for every 5 minutes
+     * 
+     * @param expression expression to calculate time expression in ISO 8601
+     * @return the builder
+     */
+    public StartOnTimerNodeBuilder everyFromExpression(Supplier<String> expression) {
+        this.timer.setTimeType(Timer.TIME_CYCLE);
+        this.timer.setDelay(
+                "#{" + BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()).replace("\"", "\\\"")
+                        + "}");
         return this;
     }
 

@@ -188,7 +188,7 @@ public class MongodbJobService implements JobsService {
                         }
                     }
                 } catch (Exception e) {
-                    LOGGER.error("Error while loading jobs from cassandra", e);
+                    LOGGER.error("Error while loading jobs from mongodb", e);
                 }
             }, 1, interval.orElse(10L) * 60, TimeUnit.SECONDS);
         }

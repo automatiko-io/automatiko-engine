@@ -378,6 +378,43 @@ public class UserTaskAsCodeTest extends AbstractCodegenTest {
     }
 
     @Test
+    public void testUserTaskProcesWithAdditionalOnTimerExpression() throws Exception {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("UserTasksProcess", "test workflow with user task")
+                .dataObject("x", Integer.class)
+                .dataObject("y", String.class);
+
+        builder.start("start here").then().user("FirstTask").description("Hello #{todayDate()} task")
+                .users("john").outputToDataObject("value", "y")
+                .then().user("SecondTask").users("john").dataObjectAsInput("x").then().end("done");
+
+        builder.additionalPathOnTimer("on timeout").everyFromExpression(() -> "R3/PT1S").then().log("Log timeout", "on timeout")
+                .then()
+                .end("completed");
+
+        Application app = generateCode(List.of(builder.get()));
+        assertThat(app).isNotNull();
+
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("on timeout", 3);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+
+        Process<? extends Model> p = app.processes().processById("UserTasksProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("x", 10);
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        boolean completed = listener.waitTillCompleted(5000);
+        assertThat(completed).isTrue();
+
+        processInstance.abort();
+    }
+
+    @Test
     public void testBasicUserTaskProcessUsersAsExpression() throws Exception {
 
         WorkflowBuilder builder = WorkflowBuilder.newWorkflow("UserTasksProcess", "test workflow with user task")
