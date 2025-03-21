@@ -18,7 +18,6 @@ import com.mongodb.client.model.FindOneAndReplaceOptions;
 
 import io.automatiko.addon.usertasks.index.UserTask;
 import io.automatiko.addon.usertasks.index.UserTaskInfo;
-import io.automatiko.engine.api.config.MongodbPersistenceConfig;
 import io.automatiko.engine.api.event.DataEvent;
 import io.automatiko.engine.api.event.EventPublisher;
 import io.automatiko.engine.services.event.UserTaskInstanceDataEvent;
@@ -31,6 +30,8 @@ import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class MongoDBUserTaskEventPublisher implements EventPublisher {
+
+    public static final String DATABASE_KEY = "quarkus.automatiko.persistence.mongodb.database";
 
     private MongoClient mongoClient;
 
@@ -46,7 +47,7 @@ public class MongoDBUserTaskEventPublisher implements EventPublisher {
     public MongoDBUserTaskEventPublisher(MongoClient mongoClient, ObjectMapper mapper,
             @ConfigProperty(name = "quarkus.automatiko.service-url") Optional<String> serviceUrl,
             @ConfigProperty(name = "quarkus.automatiko.on-instance-end") Optional<String> onInstanceEnd,
-            @ConfigProperty(name = MongodbPersistenceConfig.DATABASE_KEY) Optional<String> database) {
+            @ConfigProperty(name = DATABASE_KEY) Optional<String> database) {
         this.mongoClient = mongoClient;
         this.database = database;
         this.mapper = mapper;

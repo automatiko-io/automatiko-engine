@@ -29,7 +29,6 @@ import io.automatiko.engine.api.audit.AuditEntry;
 import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.TrustedIdentityProvider;
-import io.automatiko.engine.api.config.DynamoDBJobsConfig;
 import io.automatiko.engine.api.jobs.ExpirationTime;
 import io.automatiko.engine.api.jobs.JobsService;
 import io.automatiko.engine.api.jobs.ProcessInstanceJobDescription;
@@ -86,6 +85,12 @@ public class DynamoDBJobService implements JobsService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DynamoDBJobService.class);
 
+    public static final String CREATE_TABLES_KEY = "quarkus.automatiko.jobs.dynamodb.create-tables";
+    public static final String READ_CAPACITY_KEY = "quarkus.automatiko.jobs.dynamodb.read-capacity";
+    public static final String WRITE_CAPACITY_KEY = "quarkus.automatiko.jobs.dynamodb.write-capacity";
+    public static final String INTERVAL_KEY = "quarkus.automatiko.jobs.dynamodb.interval";
+    public static final String THREADS_KEY = "quarkus.automatiko.jobs.dynamodb.threads";
+
     private static final String INSTANCE_ID_FIELD = "JobInstanceId";
     private static final String FIRE_AT_FIELD = "JobFireAt";
     private static final String OWNER_INSTANCE_ID_FIELD = "JobOwnerInstanceId";
@@ -125,11 +130,11 @@ public class DynamoDBJobService implements JobsService {
     public DynamoDBJobService(DynamoDbClient dynamodb,
             Processes processes, Application application, Auditor auditor,
             @ConfigProperty(name = "quarkus.automatiko.persistence.disabled") Optional<Boolean> persistenceDisabled,
-            @ConfigProperty(name = DynamoDBJobsConfig.CREATE_TABLES_KEY) Optional<Boolean> createTables,
-            @ConfigProperty(name = DynamoDBJobsConfig.READ_CAPACITY_KEY) Optional<Long> readCapacity,
-            @ConfigProperty(name = DynamoDBJobsConfig.WRITE_CAPACITY_KEY) Optional<Long> writeCapacity,
-            @ConfigProperty(name = DynamoDBJobsConfig.INTERVAL_KEY) Optional<Long> interval,
-            @ConfigProperty(name = DynamoDBJobsConfig.THREADS_KEY) Optional<Integer> threads) {
+            @ConfigProperty(name = CREATE_TABLES_KEY) Optional<Boolean> createTables,
+            @ConfigProperty(name = READ_CAPACITY_KEY) Optional<Long> readCapacity,
+            @ConfigProperty(name = WRITE_CAPACITY_KEY) Optional<Long> writeCapacity,
+            @ConfigProperty(name = INTERVAL_KEY) Optional<Long> interval,
+            @ConfigProperty(name = THREADS_KEY) Optional<Integer> threads) {
 
         if (!persistenceDisabled.orElse(false)) {
             this.dynamodb = dynamodb;

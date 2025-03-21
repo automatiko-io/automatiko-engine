@@ -43,7 +43,6 @@ import io.automatiko.engine.api.audit.AuditEntry;
 import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.TrustedIdentityProvider;
-import io.automatiko.engine.api.config.MongodbJobsConfig;
 import io.automatiko.engine.api.jobs.ExpirationTime;
 import io.automatiko.engine.api.jobs.JobsService;
 import io.automatiko.engine.api.jobs.ProcessInstanceJobDescription;
@@ -70,6 +69,9 @@ import jakarta.interceptor.Interceptor;
 
 @ApplicationScoped
 public class MongodbJobService implements JobsService {
+    public static final String DATABASE_KEY = "quarkus.automatiko.jobs.mongodb.database";
+    public static final String INTERVAL_KEY = "quarkus.automatiko.jobs.mongodb.interval";
+    public static final String THREADS_KEY = "quarkus.automatiko.jobs.mongodb.threads";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MongodbJobService.class);
 
@@ -108,9 +110,9 @@ public class MongodbJobService implements JobsService {
     public MongodbJobService(Instance<MongoClient> mongoClient,
             Processes processes, Application application, Auditor auditor,
             @ConfigProperty(name = "quarkus.automatiko.persistence.disabled") Optional<Boolean> persistenceDisabled,
-            @ConfigProperty(name = MongodbJobsConfig.DATABASE_KEY) Optional<String> database,
-            @ConfigProperty(name = MongodbJobsConfig.INTERVAL_KEY) Optional<Long> interval,
-            @ConfigProperty(name = MongodbJobsConfig.THREADS_KEY) Optional<Integer> threads) {
+            @ConfigProperty(name = DATABASE_KEY) Optional<String> database,
+            @ConfigProperty(name = INTERVAL_KEY) Optional<Long> interval,
+            @ConfigProperty(name = THREADS_KEY) Optional<Integer> threads) {
 
         if (!persistenceDisabled.orElse(false)) {
             this.mongoClient = mongoClient.get();
