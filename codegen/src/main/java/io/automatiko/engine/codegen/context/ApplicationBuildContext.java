@@ -3,12 +3,12 @@ package io.automatiko.engine.codegen.context;
 
 import java.util.List;
 
-import io.automatiko.engine.api.config.AutomatikoBuildConfig;
 import io.automatiko.engine.codegen.CodeGenConstants;
+import io.automatiko.engine.quarkus.AutomatikoBuildTimeConfig;
 
 public interface ApplicationBuildContext {
 
-    AutomatikoBuildConfig config();
+    AutomatikoBuildTimeConfig config();
 
     boolean hasClassAvailable(String fqcn);
 

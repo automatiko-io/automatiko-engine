@@ -49,6 +49,10 @@
       <groupId>io.automatiko.workflow</groupId>
       <artifactId>automatiko-workflow-serverless</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.automatiko.quarkus</groupId>
+      <artifactId>automatiko-common</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>io.automatiko.decision</groupId>

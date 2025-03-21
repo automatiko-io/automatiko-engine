@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,10 +34,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.api.Application;
-import io.automatiko.engine.api.config.AutomatikoBuildConfig;
 import io.automatiko.engine.codegen.context.QuarkusApplicationBuildContext;
 import io.automatiko.engine.codegen.decision.DecisionCodegen;
 import io.automatiko.engine.codegen.process.ProcessCodegen;
+import io.automatiko.engine.quarkus.AutomatikoBuildTimeConfig;
+import io.automatiko.engine.quarkus.DatabasePersistenceBuildTimeConfig;
+import io.automatiko.engine.quarkus.JobsBuildTimeConfig;
+import io.automatiko.engine.quarkus.MessagingBuildTimeConfig;
+import io.automatiko.engine.quarkus.MetricsBuildTimeConfig;
+import io.automatiko.engine.quarkus.PersistenceBuildTimeConfig;
+import io.automatiko.engine.quarkus.RestBuildTimeConfig;
 
 public class AbstractCodegenTest {
 
@@ -45,7 +52,85 @@ public class AbstractCodegenTest {
     private ClassLoader classloader;
     private Path compilationOutcome;
 
-    protected AutomatikoBuildConfig config = new AutomatikoBuildConfig();
+    protected AutomatikoBuildTimeConfig config = new AutomatikoBuildTimeConfig() {
+
+        @Override
+        public Optional<String> packageName() {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<String> resourcePathPrefix() {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<String> resourcePathFormat() {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<String> sourceFolder() {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<String> projectPaths() {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<Boolean> includeAutomatikoApi() {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<String> targetDeployment() {
+            return Optional.empty();
+        }
+
+        @Override
+        public MetricsBuildTimeConfig metrics() {
+            return null;
+        }
+
+        @Override
+        public MessagingBuildTimeConfig messaging() {
+            return null;
+        }
+
+        @Override
+        public PersistenceBuildTimeConfig persistence() {
+            return new PersistenceBuildTimeConfig() {
+
+                @Override
+                public Optional<String> type() {
+                    return Optional.empty();
+                }
+
+                @Override
+                public DatabasePersistenceBuildTimeConfig database() {
+                    return new DatabasePersistenceBuildTimeConfig() {
+
+                        @Override
+                        public Optional<Boolean> removeAtCompletion() {
+                            return Optional.empty();
+                        }
+                    };
+                }
+            };
+        }
+
+        @Override
+        public JobsBuildTimeConfig jobs() {
+            return null;
+        }
+
+        @Override
+        public RestBuildTimeConfig rest() {
+            return null;
+        }
+    };
 
     private boolean testService;
 

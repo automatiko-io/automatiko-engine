@@ -2,23 +2,17 @@ package io.automatiko.engine.quarkus;
 
 import java.util.Optional;
 
-import io.automatiko.engine.api.config.AuditConfig;
 import io.quarkus.runtime.annotations.ConfigGroup;
-import io.quarkus.runtime.annotations.ConfigItem;
+import io.smallrye.config.WithDefault;
 
 @ConfigGroup
-public class AuditRuntimeConfig extends AuditConfig {
+public interface AuditRuntimeConfig {
 
     /**
      * Enables auditing, by default it is disabled
      */
-    @ConfigItem(defaultValue = "false")
-    public boolean enabled;
-
-    @Override
-    public boolean enabled() {
-        return enabled;
-    }
+    @WithDefault("false")
+    boolean enabled();
 
     /**
      * Comma separated types of audit entries that should be included. By default all are included
@@ -26,13 +20,7 @@ public class AuditRuntimeConfig extends AuditConfig {
      * Supported types are:
      * workflow,workflow_node,workflow_variable,workflow_persistence_read,workflow_persistence_write,messaging,timer
      */
-    @ConfigItem
-    public Optional<String> included;
-
-    @Override
-    public Optional<String> included() {
-        return included;
-    }
+    Optional<String> included();
 
     /**
      * Comma separated types of audit entries that should be excluded. By default none are excluded
@@ -40,22 +28,11 @@ public class AuditRuntimeConfig extends AuditConfig {
      * Supported types are:
      * workflow,workflow_node,workflow_variable,workflow_persistence_read,workflow_persistence_write,messaging,timer
      */
-    @ConfigItem
-    public Optional<String> excluded;
-
-    @Override
-    public Optional<String> excluded() {
-        return excluded;
-    }
+    Optional<String> excluded();
 
     /**
      * Configures format of audit entries, available formats are: plain (default) and json
      */
-    @ConfigItem
-    public Optional<String> format;
+    Optional<String> format();
 
-    @Override
-    public Optional<String> format() {
-        return format;
-    }
 }

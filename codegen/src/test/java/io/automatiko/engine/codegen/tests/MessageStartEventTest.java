@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,13 +19,18 @@ import org.junit.jupiter.api.Test;
 import io.automatiko.engine.api.Application;
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.SecurityPolicy;
-import io.automatiko.engine.api.config.AutomatikoBuildConfig;
-import io.automatiko.engine.api.config.MessagingBuildConfig;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstance;
 import io.automatiko.engine.api.workflow.WorkItem;
 import io.automatiko.engine.api.workflow.workitem.Policy;
 import io.automatiko.engine.codegen.AbstractCodegenTest;
+import io.automatiko.engine.quarkus.AutomatikoBuildTimeConfig;
+import io.automatiko.engine.quarkus.DatabasePersistenceBuildTimeConfig;
+import io.automatiko.engine.quarkus.JobsBuildTimeConfig;
+import io.automatiko.engine.quarkus.MessagingBuildTimeConfig;
+import io.automatiko.engine.quarkus.MetricsBuildTimeConfig;
+import io.automatiko.engine.quarkus.PersistenceBuildTimeConfig;
+import io.automatiko.engine.quarkus.RestBuildTimeConfig;
 import io.automatiko.engine.services.identity.StaticIdentityProvider;
 import io.automatiko.engine.workflow.Sig;
 
@@ -35,15 +41,103 @@ public class MessageStartEventTest extends AbstractCodegenTest {
     @BeforeEach
     public void setup() {
 
-        this.config = new AutomatikoBuildConfig() {
+        this.config = new AutomatikoBuildTimeConfig() {
             @Override
-            public MessagingBuildConfig messaging() {
-                return new MessagingBuildConfig() {
+            public MessagingBuildTimeConfig messaging() {
+                return new MessagingBuildTimeConfig() {
                     @Override
                     public boolean asCloudevents() {
                         return false;
                     }
+
+                    @Override
+                    public boolean asCloudeventsBinary() {
+
+                        return false;
+                    }
                 };
+            }
+
+            @Override
+            public Optional<String> packageName() {
+
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<String> resourcePathPrefix() {
+
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<String> resourcePathFormat() {
+
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<String> sourceFolder() {
+
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<String> projectPaths() {
+
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<Boolean> includeAutomatikoApi() {
+
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<String> targetDeployment() {
+
+                return Optional.empty();
+            }
+
+            @Override
+            public MetricsBuildTimeConfig metrics() {
+
+                return null;
+            }
+
+            @Override
+            public PersistenceBuildTimeConfig persistence() {
+                return new PersistenceBuildTimeConfig() {
+
+                    @Override
+                    public Optional<String> type() {
+                        return Optional.empty();
+                    }
+
+                    @Override
+                    public DatabasePersistenceBuildTimeConfig database() {
+                        return new DatabasePersistenceBuildTimeConfig() {
+
+                            @Override
+                            public Optional<Boolean> removeAtCompletion() {
+                                return Optional.empty();
+                            }
+                        };
+                    }
+                };
+            }
+
+            @Override
+            public JobsBuildTimeConfig jobs() {
+
+                return null;
+            }
+
+            @Override
+            public RestBuildTimeConfig rest() {
+
+                return null;
             }
         };
     }

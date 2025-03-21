@@ -1,20 +1,15 @@
 package io.automatiko.engine.quarkus;
 
-import io.automatiko.engine.api.config.MetricsBuildConfig;
 import io.quarkus.runtime.annotations.ConfigGroup;
-import io.quarkus.runtime.annotations.ConfigItem;
+import io.smallrye.config.WithDefault;
 
 @ConfigGroup
-public class MetricsBuildTimeConfig extends MetricsBuildConfig {
+public interface MetricsBuildTimeConfig {
 
-	/**
-	 * Enables metrics for automatik
-	 */
-	@ConfigItem(defaultValue = "false")
-	public boolean enabled;
+    /**
+     * Enables metrics for automatik
+     */
+    @WithDefault("false")
+    boolean enabled();
 
-	@Override
-	public boolean enabled() {
-		return enabled;
-	}
 }
