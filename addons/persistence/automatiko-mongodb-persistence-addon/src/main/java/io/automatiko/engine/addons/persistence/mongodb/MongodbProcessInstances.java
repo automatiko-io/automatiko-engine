@@ -21,15 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.IndexOptions;
-import com.mongodb.client.model.Indexes;
-import com.mongodb.client.model.Projections;
-import com.mongodb.client.model.Updates;
-
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.Document;
@@ -39,12 +30,20 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
+import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.Updates;
+
 import io.automatiko.engine.addons.persistence.common.JacksonObjectMarshallingStrategy;
 import io.automatiko.engine.addons.persistence.common.tlog.TransactionLogImpl;
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.audit.AuditEntry;
 import io.automatiko.engine.api.audit.Auditor;
-import io.automatiko.engine.api.config.MongodbPersistenceConfig;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatiko.engine.api.uow.TransactionLog;
 import io.automatiko.engine.api.uow.TransactionLogStore;
@@ -68,6 +67,11 @@ import io.automatiko.engine.workflow.process.core.WorkflowProcess;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class MongodbProcessInstances implements MutableProcessInstances {
+
+    public static final String DATABASE_KEY = "quarkus.automatiko.persistence.mongodb.database";
+    public static final String LOCK_TIMEOUT_KEY = "quarkus.automatiko.persistence.mongodb.lock-timeout";
+    public static final String LOCK_LIMIT_KEY = "quarkus.automatiko.persistence.mongodb.lock-limit";
+    public static final String LOCK_WAIT_KEY = "quarkus.automatiko.persistence.mongodb.lock-wait";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MongodbProcessInstances.class);
 
@@ -115,7 +119,7 @@ public class MongodbProcessInstances implements MutableProcessInstances {
 
     public MongodbProcessInstances(Process<? extends Model> process, MongoClient mongoClient,
             StoredDataCodec codec, TransactionLogStore store, Auditor auditor,
-            @ConfigProperty(name = MongodbPersistenceConfig.DATABASE_KEY) Optional<String> database,
+            @ConfigProperty(name = DATABASE_KEY) Optional<String> database,
             Optional<Integer> lockTimeout,
             Optional<Integer> lockLimit, Optional<Integer> lockWait) {
         this.process = process;

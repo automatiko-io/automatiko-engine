@@ -26,7 +26,6 @@ import io.automatiko.addon.usertasks.index.UserTaskIndexResource;
 import io.automatiko.addon.usertasks.index.UserTaskInfo;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.IdentitySupplier;
-import io.automatiko.engine.api.config.MongodbPersistenceConfig;
 import io.quarkus.arc.All;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -35,6 +34,8 @@ import jakarta.ws.rs.core.UriInfo;
 
 @ApplicationScoped
 public class MongoDBUserTaskIndexResource implements UserTaskIndexResource {
+
+    public static final String DATABASE_KEY = "quarkus.automatiko.persistence.mongodb.database";
 
     private MongoClient mongoClient;
 
@@ -46,7 +47,7 @@ public class MongoDBUserTaskIndexResource implements UserTaskIndexResource {
 
     @Inject
     public MongoDBUserTaskIndexResource(MongoClient mongoClient, IdentitySupplier identitySupplier,
-            @ConfigProperty(name = MongodbPersistenceConfig.DATABASE_KEY) Optional<String> database,
+            @ConfigProperty(name = DATABASE_KEY) Optional<String> database,
             @All List<MongoDBCustomQueryBuilder> queries) {
         this.identitySupplier = identitySupplier;
         this.mongoClient = mongoClient;

@@ -8,9 +8,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
@@ -21,15 +18,21 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.automatiko.engine.api.config.ElasticEventsConfig;
 import io.automatiko.engine.api.event.DataEvent;
 import io.automatiko.engine.api.event.EventPublisher;
 import io.automatiko.engine.services.event.ProcessInstanceDataEvent;
 import io.automatiko.engine.services.event.UserTaskInstanceDataEvent;
 import io.automatiko.engine.services.event.impl.NodeInstanceEventBody;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class ElasticEventPublisher implements EventPublisher {
+
+    public static final String AUDIT_KEY = "quarkus.automatiko.events.elastic.audit";
+    public static final String INSTANCE_KEY = "quarkus.automatiko.events.elastic.instance";
+    public static final String TASKS_KEY = "quarkus.automatiko.events.elastic.tasks";
+    public static final String AUDIT_INDEX_KEY = "quarkus.automatiko.events.elastic.audit-index";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticEventPublisher.class);
 
@@ -47,10 +50,10 @@ public class ElasticEventPublisher implements EventPublisher {
 
     @Inject
     public ElasticEventPublisher(RestClient restClient, ObjectMapper mapper,
-            @ConfigProperty(name = ElasticEventsConfig.AUDIT_KEY) Optional<Boolean> audit,
-            @ConfigProperty(name = ElasticEventsConfig.INSTANCE_KEY) Optional<Boolean> instance,
-            @ConfigProperty(name = ElasticEventsConfig.TASKS_KEY) Optional<Boolean> tasks,
-            @ConfigProperty(name = ElasticEventsConfig.AUDIT_INDEX_KEY) Optional<String> auditIndex) {
+            @ConfigProperty(name = AUDIT_KEY) Optional<Boolean> audit,
+            @ConfigProperty(name = INSTANCE_KEY) Optional<Boolean> instance,
+            @ConfigProperty(name = TASKS_KEY) Optional<Boolean> tasks,
+            @ConfigProperty(name = AUDIT_INDEX_KEY) Optional<String> auditIndex) {
         this.restClient = restClient;
         this.mapper = mapper;
         this.audit = audit;

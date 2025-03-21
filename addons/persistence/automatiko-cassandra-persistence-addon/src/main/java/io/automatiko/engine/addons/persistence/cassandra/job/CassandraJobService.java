@@ -47,7 +47,6 @@ import io.automatiko.engine.api.audit.AuditEntry;
 import io.automatiko.engine.api.audit.Auditor;
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.TrustedIdentityProvider;
-import io.automatiko.engine.api.config.CassandraJobsConfig;
 import io.automatiko.engine.api.jobs.ExpirationTime;
 import io.automatiko.engine.api.jobs.JobsService;
 import io.automatiko.engine.api.jobs.ProcessInstanceJobDescription;
@@ -73,6 +72,12 @@ import jakarta.interceptor.Interceptor;
 
 @ApplicationScoped
 public class CassandraJobService implements JobsService {
+
+    public static final String CREATE_KEYSPACE_KEY = "quarkus.automatiko.jobs.cassandra.create-keyspace";
+    public static final String CREATE_TABLES_KEY = "quarkus.automatiko.jobs.cassandra.create-tables";
+    public static final String KEYSPACE_KEY = "quarkus.automatiko.jobs.cassandra.keyspace";
+    public static final String INTERVAL_KEY = "quarkus.automatiko.jobs.cassandra.interval";
+    public static final String THREADS_KEY = "quarkus.automatiko.jobs.cassandra.threads";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CassandraJobService.class);
 
@@ -114,11 +119,11 @@ public class CassandraJobService implements JobsService {
     @Inject
     public CassandraJobService(CqlSession cqlSession, Processes processes, Application application, Auditor auditor,
             @ConfigProperty(name = "quarkus.automatiko.persistence.disabled") Optional<Boolean> persistenceDisabled,
-            @ConfigProperty(name = CassandraJobsConfig.CREATE_KEYSPACE_KEY) Optional<Boolean> createKeyspace,
-            @ConfigProperty(name = CassandraJobsConfig.CREATE_TABLES_KEY) Optional<Boolean> createTables,
-            @ConfigProperty(name = CassandraJobsConfig.KEYSPACE_KEY) Optional<String> keyspace,
-            @ConfigProperty(name = CassandraJobsConfig.INTERVAL_KEY) Optional<Long> interval,
-            @ConfigProperty(name = CassandraJobsConfig.THREADS_KEY) Optional<Integer> threads) {
+            @ConfigProperty(name = CREATE_KEYSPACE_KEY) Optional<Boolean> createKeyspace,
+            @ConfigProperty(name = CREATE_TABLES_KEY) Optional<Boolean> createTables,
+            @ConfigProperty(name = KEYSPACE_KEY) Optional<String> keyspace,
+            @ConfigProperty(name = INTERVAL_KEY) Optional<Long> interval,
+            @ConfigProperty(name = THREADS_KEY) Optional<Integer> threads) {
 
         this.createKeyspace = createKeyspace;
         this.createTables = createTables;

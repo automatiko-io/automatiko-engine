@@ -5,9 +5,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +14,16 @@ import io.automatiko.engine.api.audit.AuditEntry;
 import io.automatiko.engine.api.audit.AuditEntryFilter;
 import io.automatiko.engine.api.audit.AuditStore;
 import io.automatiko.engine.api.audit.Auditor;
-import io.automatiko.engine.api.config.AuditConfig;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class AuditorImpl implements Auditor {
+
+    public static final String ENABLED_KEY = "quarkus.automatiko.audit.enabled";
+    public static final String INCLUDED_KEY = "quarkus.automatiko.audit.included";
+    public static final String EXCLUDED_KEY = "quarkus.automatiko.audit.excluded";
+    public static final String FORMAT_KEY = "quarkus.automatiko.audit.format";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuditorImpl.class);
 
@@ -35,10 +38,10 @@ public class AuditorImpl implements Auditor {
 
     @Inject
     public AuditorImpl(AuditStore store, Application application, AuditEntryFilter filter,
-            @ConfigProperty(name = AuditConfig.ENABLED_KEY) Optional<Boolean> enabled,
-            @ConfigProperty(name = AuditConfig.FORMAT_KEY) Optional<String> format,
-            @ConfigProperty(name = AuditConfig.INCLUDED_KEY) Optional<String> includes,
-            @ConfigProperty(name = AuditConfig.EXCLUDED_KEY) Optional<String> excludes) {
+            @ConfigProperty(name = ENABLED_KEY) Optional<Boolean> enabled,
+            @ConfigProperty(name = FORMAT_KEY) Optional<String> format,
+            @ConfigProperty(name = INCLUDED_KEY) Optional<String> includes,
+            @ConfigProperty(name = EXCLUDED_KEY) Optional<String> excludes) {
         this.store = store;
         this.enabled = enabled.orElse(false);
         this.application = application;

@@ -6,10 +6,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.websocket.Session;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,15 +14,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.SecurityPolicy;
-import io.automatiko.engine.api.config.WebsocketEventsConfig;
 import io.automatiko.engine.api.event.DataEvent;
 import io.automatiko.engine.api.event.EventPublisher;
 import io.automatiko.engine.api.runtime.process.HumanTaskWorkItem;
 import io.automatiko.engine.services.event.ProcessInstanceDataEvent;
 import io.automatiko.engine.services.event.UserTaskInstanceDataEvent;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.websocket.Session;
 
 @ApplicationScoped
 public class WebSocketEventPublisher implements EventPublisher {
+
+    public static final String INSTANCE_KEY = "quarkus.automatiko.events.websocket.instance";
+    public static final String TASKS_KEY = "quarkus.automatiko.events.websocket.tasks";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketEventPublisher.class);
 
@@ -40,8 +41,8 @@ public class WebSocketEventPublisher implements EventPublisher {
 
     @Inject
     public WebSocketEventPublisher(ObjectMapper json,
-            @ConfigProperty(name = WebsocketEventsConfig.INSTANCE_KEY) Optional<Boolean> instance,
-            @ConfigProperty(name = WebsocketEventsConfig.TASKS_KEY) Optional<Boolean> tasks) {
+            @ConfigProperty(name = INSTANCE_KEY) Optional<Boolean> instance,
+            @ConfigProperty(name = TASKS_KEY) Optional<Boolean> tasks) {
         this.json = json;
         this.instance = instance;
         this.tasks = tasks;

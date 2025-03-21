@@ -37,10 +37,6 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import io.automatiko.engine.api.audit.Auditor;
-import io.automatiko.engine.api.config.CassandraPersistenceConfig;
-import io.automatiko.engine.api.config.DynamoDBPersistenceConfig;
-import io.automatiko.engine.api.config.FileSystemPersistenceConfig;
-import io.automatiko.engine.api.config.MongodbPersistenceConfig;
 import io.automatiko.engine.api.uow.TransactionLogStore;
 import io.automatiko.engine.api.workflow.encrypt.StoredDataCodec;
 import io.automatiko.engine.codegen.AbstractGenerator;
@@ -52,6 +48,24 @@ import io.automatiko.engine.codegen.GeneratedFile;
 import io.automatiko.engine.codegen.di.DependencyInjectionAnnotator;
 
 public class PersistenceGenerator extends AbstractGenerator {
+
+    public static final String FS_PATH_KEY = "quarkus.automatiko.persistence.filesystem.path";
+    public static final String FS_LOCK_TIMEOUT_KEY = "quarkus.automatiko.persistence.filesystem.lock-timeout";
+    public static final String FS_LOCK_LIMIT_KEY = "quarkus.automatiko.persistence.filesystem.lock-limit";
+    public static final String FS_LOCK_WAIT_KEY = "quarkus.automatiko.persistence.filesystem.lock-wait";
+
+    public static final String DYNAMODB_CREATE_TABLES_KEY = "quarkus.automatiko.persistence.dynamodb.create-tables";
+    public static final String DYNAMODB_READ_CAPACITY_KEY = "quarkus.automatiko.persistence.dynamodb.read-capacity";
+    public static final String DYNAMODB_WRITE_CAPACITY_KEY = "quarkus.automatiko.persistence.dynamodb.write-capacity";
+
+    public static final String CASSANDRA_CREATE_KEYSPACE_KEY = "quarkus.automatiko.persistence.cassandra.create-keyspace";
+    public static final String CASSANDRA_CREATE_TABLES_KEY = "quarkus.automatiko.persistence.cassandra.create-tables";
+    public static final String CASSANDRA_KEYSPACE_KEY = "quarkus.automatiko.persistence.cassandra.keyspace";
+
+    public static final String MONGO_DATABASE_KEY = "quarkus.automatiko.persistence.mongodb.database";
+    public static final String MONGO_LOCK_TIMEOUT_KEY = "quarkus.automatiko.persistence.mongodb.lock-timeout";
+    public static final String MONGO_LOCK_LIMIT_KEY = "quarkus.automatiko.persistence.mongodb.lock-limit";
+    public static final String MONGO_LOCK_WAIT_KEY = "quarkus.automatiko.persistence.mongodb.lock-wait";
 
     private static final String FILESYSTEM_PERSISTENCE_TYPE = "filesystem";
     private static final String DB_PERSISTENCE_TYPE = "db";
@@ -182,10 +196,10 @@ public class PersistenceGenerator extends AbstractGenerator {
         if (useInjection()) {
             annotator.withApplicationComponent(persistenceProviderClazz);
 
-            annotator.withConfig(path, FileSystemPersistenceConfig.PATH_KEY);
-            annotator.withConfig(configuredLockTimeout, FileSystemPersistenceConfig.LOCK_TIMEOUT_KEY);
-            annotator.withConfig(configuredLockLimit, FileSystemPersistenceConfig.LOCK_LIMIT_KEY);
-            annotator.withConfig(configuredLockWait, FileSystemPersistenceConfig.LOCK_WAIT_KEY);
+            annotator.withConfig(path, FS_PATH_KEY);
+            annotator.withConfig(configuredLockTimeout, FS_LOCK_TIMEOUT_KEY);
+            annotator.withConfig(configuredLockLimit, FS_LOCK_LIMIT_KEY);
+            annotator.withConfig(configuredLockWait, FS_LOCK_WAIT_KEY);
 
             FieldDeclaration pathField = new FieldDeclaration()
                     .addVariable(
@@ -286,9 +300,9 @@ public class PersistenceGenerator extends AbstractGenerator {
             annotator.withApplicationComponent(persistenceProviderClazz);
             annotator.withInjection(constructor);
 
-            annotator.withConfig(createTables, DynamoDBPersistenceConfig.CREATE_TABLES_KEY);
-            annotator.withConfig(readCapacity, DynamoDBPersistenceConfig.READ_CAPACITY_KEY);
-            annotator.withConfig(writeCapacity, DynamoDBPersistenceConfig.WRITE_CAPACITY_KEY);
+            annotator.withConfig(createTables, DYNAMODB_CREATE_TABLES_KEY);
+            annotator.withConfig(readCapacity, DYNAMODB_READ_CAPACITY_KEY);
+            annotator.withConfig(writeCapacity, DYNAMODB_WRITE_CAPACITY_KEY);
 
             addCodecComponents(persistenceProviderClazz);
 
@@ -342,9 +356,9 @@ public class PersistenceGenerator extends AbstractGenerator {
             annotator.withApplicationComponent(persistenceProviderClazz);
             annotator.withInjection(constructor);
 
-            annotator.withConfig(createKeyspace, CassandraPersistenceConfig.CREATE_KEYSPACE_KEY);
-            annotator.withConfig(createTables, CassandraPersistenceConfig.CREATE_TABLES_KEY);
-            annotator.withConfig(keyspace, CassandraPersistenceConfig.KEYSPACE_KEY);
+            annotator.withConfig(createKeyspace, CASSANDRA_CREATE_KEYSPACE_KEY);
+            annotator.withConfig(createTables, CASSANDRA_CREATE_TABLES_KEY);
+            annotator.withConfig(keyspace, CASSANDRA_KEYSPACE_KEY);
 
             addCodecComponents(persistenceProviderClazz);
 
@@ -409,10 +423,10 @@ public class PersistenceGenerator extends AbstractGenerator {
             annotator.withApplicationComponent(persistenceProviderClazz);
             annotator.withInjection(constructor);
 
-            annotator.withConfig(database, MongodbPersistenceConfig.DATABASE_KEY);
-            annotator.withConfig(configuredLockTimeout, MongodbPersistenceConfig.LOCK_TIMEOUT_KEY);
-            annotator.withConfig(configuredLockLimit, MongodbPersistenceConfig.LOCK_LIMIT_KEY);
-            annotator.withConfig(configuredLockWait, MongodbPersistenceConfig.LOCK_WAIT_KEY);
+            annotator.withConfig(database, MONGO_DATABASE_KEY);
+            annotator.withConfig(configuredLockTimeout, MONGO_LOCK_TIMEOUT_KEY);
+            annotator.withConfig(configuredLockLimit, MONGO_LOCK_LIMIT_KEY);
+            annotator.withConfig(configuredLockWait, MONGO_LOCK_WAIT_KEY);
 
             addCodecComponents(persistenceProviderClazz);
 
