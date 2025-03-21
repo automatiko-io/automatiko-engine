@@ -2,21 +2,13 @@ package io.automatiko.engine.quarkus;
 
 import java.util.Optional;
 
-import io.automatiko.engine.api.config.HttpJobsConfig;
 import io.quarkus.runtime.annotations.ConfigGroup;
-import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
-public class HttpJobsRuntimeConfig extends HttpJobsConfig {
+public interface HttpJobsRuntimeConfig {
 
-	/**
-	 * File system path to be used as storage location
-	 */
-	@ConfigItem
-	public Optional<String> url;
-
-	@Override
-	public String url() {
-		return url.orElse(null);
-	}
+    /**
+     * File system path to be used as storage location
+     */
+    Optional<String> url();
 }

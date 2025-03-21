@@ -472,7 +472,7 @@ public class AutomatikoQuarkusProcessor {
                     new File(projectPath.toFile(), "target"), modelClasses, usePersistence,
                     Thread.currentThread().getContextClassLoader());
             persistenceGenerator.setDependencyInjection(new CDIDependencyInjectionAnnotator());
-            persistenceGenerator.setPackageName(config.packageName.orElse(DEFAULT_PACKAGE_NAME));
+            persistenceGenerator.setPackageName(config.packageName().orElse(DEFAULT_PACKAGE_NAME));
             persistenceGenerator.setContext(AutomatikoBuildData.get().getGenerationContext());
 
             generatedFiles.addAll(persistenceGenerator.generate());

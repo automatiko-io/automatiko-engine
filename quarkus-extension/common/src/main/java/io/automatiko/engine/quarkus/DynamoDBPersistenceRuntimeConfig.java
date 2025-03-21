@@ -2,43 +2,24 @@ package io.automatiko.engine.quarkus;
 
 import java.util.Optional;
 
-import io.automatiko.engine.api.config.DynamoDBPersistenceConfig;
 import io.quarkus.runtime.annotations.ConfigGroup;
-import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
-public class DynamoDBPersistenceRuntimeConfig extends DynamoDBPersistenceConfig {
+public interface DynamoDBPersistenceRuntimeConfig {
 
     /**
      * Indicates if tables should be created during startup
      */
-    @ConfigItem
-    public Optional<Boolean> createTables;
+    Optional<Boolean> createTables();
 
     /**
      * Specifies the read capacity, if not set defaults to 10
      */
-    @ConfigItem
-    public Optional<Long> readCapacity;
+    Optional<Long> readCapacity();
 
     /**
      * Specifies the write capacity, if not set defaults to 10
      */
-    @ConfigItem
-    public Optional<Long> writeCapacity;
+    Optional<Long> writeCapacity();
 
-    @Override
-    public Optional<Boolean> createTables() {
-        return createTables;
-    }
-
-    @Override
-    public Optional<Long> readCapacity() {
-        return readCapacity;
-    }
-
-    @Override
-    public Optional<Long> writeCapacity() {
-        return writeCapacity;
-    }
 }

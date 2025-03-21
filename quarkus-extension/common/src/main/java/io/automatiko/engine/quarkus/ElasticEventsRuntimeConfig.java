@@ -2,55 +2,29 @@ package io.automatiko.engine.quarkus;
 
 import java.util.Optional;
 
-import io.automatiko.engine.api.config.ElasticEventsConfig;
 import io.quarkus.runtime.annotations.ConfigGroup;
-import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
-public class ElasticEventsRuntimeConfig extends ElasticEventsConfig {
+public interface ElasticEventsRuntimeConfig {
 
     /**
      * Indicates if the audit log events are enabled
      */
-    @ConfigItem
-    public Optional<Boolean> audit;
+    Optional<Boolean> audit();
 
     /**
      * Indicates if the instance events are enabled
      */
-    @ConfigItem
-    public Optional<Boolean> instance;
+    Optional<Boolean> instance();
 
     /**
      * Indicates if the user task events are enabled
      */
-    @ConfigItem
-    public Optional<Boolean> tasks;
+    Optional<Boolean> tasks();
 
     /**
      * Determines the name of the audit index in Elastic
      */
-    @ConfigItem
-    public Optional<String> auditIndex;
-
-    @Override
-    public Optional<Boolean> audit() {
-        return audit;
-    }
-
-    @Override
-    public Optional<Boolean> instance() {
-        return instance;
-    }
-
-    @Override
-    public Optional<Boolean> tasks() {
-        return tasks;
-    }
-
-    @Override
-    public Optional<String> auditIndex() {
-        return auditIndex;
-    }
+    Optional<String> auditIndex();
 
 }

@@ -14,12 +14,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import io.automatiko.engine.api.config.AutomatikoBuildConfig;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.codegen.context.QuarkusApplicationBuildContext;
 import io.automatiko.engine.codegen.process.AbstractResourceGenerator;
 import io.automatiko.engine.codegen.process.ReactiveResourceGenerator;
 import io.automatiko.engine.codegen.process.ResourceGenerator;
+import io.automatiko.engine.quarkus.AutomatikoBuildTimeConfig;
 
 @ExtendWith(MockitoExtension.class)
 class ResourceGeneratorFactoryTest {
@@ -33,6 +33,9 @@ class ResourceGeneratorFactoryTest {
     @Mock
     private WorkflowProcess process;
 
+    @Mock
+    private AutomatikoBuildTimeConfig config;
+
     @BeforeEach
     public void setUp() {
         lenient().when(process.getId()).thenReturn("process.id");
@@ -43,7 +46,7 @@ class ResourceGeneratorFactoryTest {
     @Test
     void testCreateQuarkus(@Mock GeneratorContext generatorContext) {
         when(generatorContext.getBuildContext())
-                .thenReturn(new QuarkusApplicationBuildContext(new AutomatikoBuildConfig(), p -> true,
+                .thenReturn(new QuarkusApplicationBuildContext(config, p -> true,
                         c -> Collections.emptyList(), capability -> false));
         Optional<AbstractResourceGenerator> context = tested.create(generatorContext, process, MODEL_FQCN, PROCESS_FQCN,
                 APP_CANONICAL_NAME);
@@ -56,7 +59,7 @@ class ResourceGeneratorFactoryTest {
         when(generatorContext.getApplicationProperty(GeneratorConfig.REST_RESOURCE_TYPE_PROP))
                 .thenReturn(Optional.of("reactive"));
         when(generatorContext.getBuildContext())
-                .thenReturn(new QuarkusApplicationBuildContext(new AutomatikoBuildConfig(), p -> true,
+                .thenReturn(new QuarkusApplicationBuildContext(config, p -> true,
                         c -> Collections.emptyList(), capability -> false));
 
         Optional<AbstractResourceGenerator> context = tested.create(generatorContext, process, MODEL_FQCN, PROCESS_FQCN,

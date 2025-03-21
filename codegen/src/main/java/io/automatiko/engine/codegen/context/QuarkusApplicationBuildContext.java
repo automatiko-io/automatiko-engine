@@ -5,16 +5,16 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import io.automatiko.engine.api.config.AutomatikoBuildConfig;
+import io.automatiko.engine.quarkus.AutomatikoBuildTimeConfig;
 
 public class QuarkusApplicationBuildContext implements ApplicationBuildContext {
 
-    private AutomatikoBuildConfig config;
+    private AutomatikoBuildTimeConfig config;
     private Predicate<String> classAvailabilityResolver;
     private Function<String, List<String>> implementationFinder;
     private Predicate<String> capabilityResolver;
 
-    public QuarkusApplicationBuildContext(AutomatikoBuildConfig config, Predicate<String> classAvailabilityResolver,
+    public QuarkusApplicationBuildContext(AutomatikoBuildTimeConfig config, Predicate<String> classAvailabilityResolver,
             Function<String, List<String>> implementationFinder,
             Predicate<String> capabilityResolver) {
         this.config = config;
@@ -29,7 +29,7 @@ public class QuarkusApplicationBuildContext implements ApplicationBuildContext {
     }
 
     @Override
-    public AutomatikoBuildConfig config() {
+    public AutomatikoBuildTimeConfig config() {
         return config;
     }
 

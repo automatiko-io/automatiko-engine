@@ -1,32 +1,21 @@
 package io.automatiko.engine.quarkus;
 
-import io.automatiko.engine.api.config.MessagingBuildConfig;
 import io.quarkus.runtime.annotations.ConfigGroup;
-import io.quarkus.runtime.annotations.ConfigItem;
+import io.smallrye.config.WithDefault;
 
 @ConfigGroup
-public class MessagingBuildTimeConfig extends MessagingBuildConfig {
+public interface MessagingBuildTimeConfig {
 
     /**
      * Enables cloud event format for messages
      */
-    @ConfigItem
-    public boolean asCloudevents;
+    @WithDefault("false")
+    boolean asCloudevents();
 
     /**
      * Instructs to use binary binding mode for cloud event for messages
      */
-    @ConfigItem
-    public boolean asCloudeventsBinary;
-
-    @Override
-    public boolean asCloudevents() {
-        return asCloudevents;
-    }
-
-    @Override
-    public boolean asCloudeventsBinary() {
-        return asCloudeventsBinary;
-    }
+    @WithDefault("false")
+    boolean asCloudeventsBinary();
 
 }
