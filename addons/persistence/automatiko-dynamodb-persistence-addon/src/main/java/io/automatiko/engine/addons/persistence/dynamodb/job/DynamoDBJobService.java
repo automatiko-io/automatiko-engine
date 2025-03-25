@@ -2,7 +2,6 @@ package io.automatiko.engine.addons.persistence.dynamodb.job;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -101,6 +100,8 @@ public class DynamoDBJobService implements JobsService {
     private static final String REPEAT_INTERVAL_FIELD = "JobRepeatInterval";
     private static final String EXPRESSION_FIELD = "JobExpression";
 
+    protected static final ZoneId UTC_ZONE = ZoneId.of("UTC");
+
     protected final DynamoDbClient dynamodb;
 
     protected final UnitOfWorkManager unitOfWorkManager;
@@ -170,8 +171,8 @@ public class DynamoDBJobService implements JobsService {
         if (dynamodb != null) {
             loadScheduler.scheduleAtFixedRate(() -> {
                 try {
-                    long next = LocalDateTime.now().plus(Duration.ofMinutes(interval.orElse(10L)))
-                            .atZone(ZoneId.systemDefault()).toInstant()
+                    long next = ZonedDateTime.now(UTC_ZONE).plus(Duration.ofMinutes(interval.orElse(10L)))
+                            .toInstant()
                             .toEpochMilli();
                     Map<String, AttributeValue> attrValues = new HashMap<String, AttributeValue>();
                     attrValues.put(":value", AttributeValue.builder().n(Long.toString(next)).build());
@@ -193,11 +194,11 @@ public class DynamoDBJobService implements JobsService {
                                 return log(job.get(INSTANCE_ID_FIELD).s(),
                                         scheduler.schedule(new StartProcessOnExpiredTimer(job.get(INSTANCE_ID_FIELD).s(),
                                                 job.get(OWNER_DEF_ID_FIELD).s(), -1, description),
-                                                Duration.between(LocalDateTime.now(),
+                                                Duration.between(ZonedDateTime.now(UTC_ZONE),
                                                         ZonedDateTime.ofInstant(
                                                                 Instant.ofEpochMilli(
                                                                         Long.parseLong(job.get(FIRE_AT_FIELD).n())),
-                                                                ZoneId.systemDefault()))
+                                                                UTC_ZONE))
                                                         .toMillis(),
                                                 TimeUnit.MILLISECONDS));
                             });
@@ -215,9 +216,9 @@ public class DynamoDBJobService implements JobsService {
                                                 job.get(OWNER_DEF_ID_FIELD).s(),
                                                 job.get(OWNER_INSTANCE_ID_FIELD).s(),
                                                 Integer.parseInt(job.get(FIRE_LIMIT_FIELD).n()), description),
-                                        Duration.between(LocalDateTime.now(), ZonedDateTime.ofInstant(
+                                        Duration.between(ZonedDateTime.now(UTC_ZONE), ZonedDateTime.ofInstant(
                                                 Instant.ofEpochMilli(Long.parseLong(job.get(FIRE_AT_FIELD).n())),
-                                                ZoneId.systemDefault())).toMillis(),
+                                                UTC_ZONE)).toMillis(),
                                         TimeUnit.MILLISECONDS));
                             });
                         }
@@ -249,7 +250,7 @@ public class DynamoDBJobService implements JobsService {
             itemValues.put(STATUS_FIELD, AttributeValue.builder().s("scheduled").build());
             itemValues.put(FIRE_AT_FIELD,
                     AttributeValue.builder()
-                            .n(Long.toString(description.expirationTime().get().toLocalDateTime().atZone(ZoneId.systemDefault())
+                            .n(Long.toString(description.expirationTime().get().withZoneSameInstant(UTC_ZONE)
                                     .toInstant()
                                     .toEpochMilli()))
                             .build());
@@ -271,7 +272,7 @@ public class DynamoDBJobService implements JobsService {
             itemValues.put(STATUS_FIELD, AttributeValue.builder().s("scheduled").build());
             itemValues.put(FIRE_AT_FIELD,
                     AttributeValue.builder()
-                            .n(Long.toString(description.expirationTime().get().toLocalDateTime().atZone(ZoneId.systemDefault())
+                            .n(Long.toString(description.expirationTime().get().withZoneSameInstant(UTC_ZONE)
                                     .toInstant()
                                     .toEpochMilli()))
                             .build());
@@ -304,8 +305,8 @@ public class DynamoDBJobService implements JobsService {
 
             dynamodb.putItem(requestPut);
         }
-        if (description.expirationTime().get().toLocalDateTime()
-                .isBefore(LocalDateTime.now().plusMinutes(interval.orElse(10L)))) {
+        if (description.expirationTime().get().withZoneSameInstant(UTC_ZONE)
+                .isBefore(ZonedDateTime.now(UTC_ZONE).plusMinutes(interval.orElse(10L)))) {
 
             scheduledJobs.computeIfAbsent(description.id(), k -> {
                 return scheduler.schedule(processJobByDescription(description),
@@ -329,7 +330,7 @@ public class DynamoDBJobService implements JobsService {
             itemValues.put(STATUS_FIELD, AttributeValue.builder().s("scheduled").build());
             itemValues.put(FIRE_AT_FIELD,
                     AttributeValue.builder()
-                            .n(Long.toString(description.expirationTime().get().toLocalDateTime().atZone(ZoneId.systemDefault())
+                            .n(Long.toString(description.expirationTime().get().withZoneSameInstant(UTC_ZONE)
                                     .toInstant()
                                     .toEpochMilli()))
                             .build());
@@ -354,7 +355,7 @@ public class DynamoDBJobService implements JobsService {
             itemValues.put(STATUS_FIELD, AttributeValue.builder().s("scheduled").build());
             itemValues.put(FIRE_AT_FIELD,
                     AttributeValue.builder()
-                            .n(Long.toString(description.expirationTime().get().toLocalDateTime().atZone(ZoneId.systemDefault())
+                            .n(Long.toString(description.expirationTime().get().withZoneSameInstant(UTC_ZONE)
                                     .toInstant()
                                     .toEpochMilli()))
                             .build());
@@ -377,8 +378,8 @@ public class DynamoDBJobService implements JobsService {
 
         dynamodb.putItem(request);
 
-        if (description.expirationTime().get().toLocalDateTime()
-                .isBefore(LocalDateTime.now().plusMinutes(interval.orElse(10L)))) {
+        if (description.expirationTime().get().withZoneSameInstant(UTC_ZONE)
+                .isBefore(ZonedDateTime.now(UTC_ZONE).plusMinutes(interval.orElse(10L)))) {
 
             scheduledJobs.computeIfAbsent(description.id(), k -> {
                 return log(description.id(), scheduler.schedule(
@@ -453,7 +454,7 @@ public class DynamoDBJobService implements JobsService {
         if (returnedItem != null) {
             Long fireAt = Long.valueOf(returnedItem.get(FIRE_AT_FIELD).n());
 
-            return ZonedDateTime.ofInstant(Instant.ofEpochMilli(fireAt), ZoneId.systemDefault());
+            return ZonedDateTime.ofInstant(Instant.ofEpochMilli(fireAt), UTC_ZONE);
         } else {
             return null;
         }
@@ -507,7 +508,7 @@ public class DynamoDBJobService implements JobsService {
         Long repeat = Long.parseLong(job.get(REPEAT_INTERVAL_FIELD).n());
         ZonedDateTime fireTime = ZonedDateTime.ofInstant(
                 Instant.ofEpochMilli(Long.parseLong(job.get(FIRE_AT_FIELD).n())),
-                ZoneId.systemDefault());
+                UTC_ZONE);
 
         Map<String, AttributeValueUpdate> updatedValues = new HashMap<String, AttributeValueUpdate>();
         updatedValues.put(FIRE_AT_FIELD, AttributeValueUpdate.builder()
@@ -540,7 +541,7 @@ public class DynamoDBJobService implements JobsService {
                 return log(job.get(INSTANCE_ID_FIELD).s(),
                         scheduler.schedule(new StartProcessOnExpiredTimer(job.get(INSTANCE_ID_FIELD).s(),
                                 job.get(OWNER_DEF_ID_FIELD).s(), limit, description),
-                                Duration.between(LocalDateTime.now(), fireTime).toMillis(),
+                                Duration.between(ZonedDateTime.now(UTC_ZONE), fireTime).toMillis(),
                                 TimeUnit.MILLISECONDS));
             });
         } else {
@@ -555,7 +556,7 @@ public class DynamoDBJobService implements JobsService {
                                 job.get(TRIGGER_TYPE_FIELD).s(),
                                 job.get(OWNER_DEF_ID_FIELD).s(),
                                 job.get(OWNER_INSTANCE_ID_FIELD).s(), limit, description),
-                        Duration.between(LocalDateTime.now(), fireTime).toMillis(), repeat,
+                        Duration.between(ZonedDateTime.now(UTC_ZONE), fireTime).toMillis(), repeat,
                         TimeUnit.MILLISECONDS));
             });
         }

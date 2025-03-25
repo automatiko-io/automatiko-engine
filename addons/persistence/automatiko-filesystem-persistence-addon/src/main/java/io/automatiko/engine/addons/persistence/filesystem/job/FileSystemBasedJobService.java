@@ -59,6 +59,8 @@ public class FileSystemBasedJobService implements JobsService {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemBasedJobService.class);
     private static final String TRIGGER = "timer";
 
+    protected static final ZoneId UTC_ZONE = ZoneId.of("UTC");
+
     private String storage;
 
     protected final UnitOfWorkManager unitOfWorkManager;
@@ -219,7 +221,7 @@ public class FileSystemBasedJobService implements JobsService {
             long remainingTime = scheduled.getDelay(TimeUnit.MILLISECONDS);
             if (remainingTime > 0) {
                 return ZonedDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis() + remainingTime),
-                        ZoneId.systemDefault());
+                        UTC_ZONE);
             }
         }
 
