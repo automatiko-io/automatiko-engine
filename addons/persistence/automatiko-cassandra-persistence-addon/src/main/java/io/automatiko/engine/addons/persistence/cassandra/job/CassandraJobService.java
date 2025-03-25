@@ -8,7 +8,6 @@ import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createKeysp
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -91,6 +90,8 @@ public class CassandraJobService implements JobsService {
     private static final String REPEAT_INTERVAL_FIELD = "JobRepeatInterval";
     private static final String EXPRESSION_FIELD = "JobExpression";
 
+    protected static final ZoneId UTC_ZONE = ZoneId.of("UTC");
+
     protected final CqlSession cqlSession;
 
     protected final UnitOfWorkManager unitOfWorkManager;
@@ -158,8 +159,8 @@ public class CassandraJobService implements JobsService {
         if (this.cqlSession != null) {
             loadScheduler.scheduleAtFixedRate(() -> {
                 try {
-                    long next = LocalDateTime.now().plus(Duration.ofMinutes(interval.orElse(10L)))
-                            .atZone(ZoneId.systemDefault()).toInstant()
+                    long next = ZonedDateTime.now(UTC_ZONE).plus(Duration.ofMinutes(interval.orElse(10L)))
+                            .toInstant()
                             .toEpochMilli();
                     Select select = selectFrom(keyspace.orElse("automatiko"), tableName).all()
                             .whereColumn(FIRE_AT_FIELD).isLessThan(literal(next)).allowFiltering();
@@ -178,10 +179,10 @@ public class CassandraJobService implements JobsService {
                                 return log(job.getString(INSTANCE_ID_FIELD),
                                         scheduler.schedule(new StartProcessOnExpiredTimer(job.getString(INSTANCE_ID_FIELD),
                                                 job.getString(OWNER_DEF_ID_FIELD), -1, description),
-                                                Duration.between(LocalDateTime.now(),
+                                                Duration.between(ZonedDateTime.now(UTC_ZONE),
                                                         ZonedDateTime.ofInstant(
                                                                 Instant.ofEpochMilli(job.getLong(FIRE_AT_FIELD)),
-                                                                ZoneId.systemDefault()))
+                                                                UTC_ZONE))
                                                         .toMillis(),
                                                 TimeUnit.MILLISECONDS));
                             });
@@ -199,9 +200,9 @@ public class CassandraJobService implements JobsService {
                                                 job.getString(OWNER_DEF_ID_FIELD),
                                                 job.getString(OWNER_INSTANCE_ID_FIELD),
                                                 job.getInt(FIRE_LIMIT_FIELD), description),
-                                        Duration.between(LocalDateTime.now(), ZonedDateTime.ofInstant(
+                                        Duration.between(ZonedDateTime.now(UTC_ZONE), ZonedDateTime.ofInstant(
                                                 Instant.ofEpochMilli(job.getLong(FIRE_AT_FIELD)),
-                                                ZoneId.systemDefault())).toMillis(),
+                                                UTC_ZONE)).toMillis(),
                                         TimeUnit.MILLISECONDS));
                             });
                         }
@@ -232,7 +233,7 @@ public class CassandraJobService implements JobsService {
                     .value(OWNER_DEF_ID_FIELD, literal(description.processId()))
                     .value(STATUS_FIELD, literal("scheduled"))
                     .value(FIRE_AT_FIELD,
-                            literal(description.expirationTime().get().toLocalDateTime().atZone(ZoneId.systemDefault())
+                            literal(description.expirationTime().get().withZoneSameInstant(UTC_ZONE)
                                     .toInstant()
                                     .toEpochMilli()))
                     .value(FIRE_LIMIT_FIELD, literal(description.expirationTime().repeatLimit()))
@@ -248,7 +249,7 @@ public class CassandraJobService implements JobsService {
                     .value(OWNER_DEF_ID_FIELD, literal(description.processId()))
                     .value(STATUS_FIELD, literal("scheduled"))
                     .value(FIRE_AT_FIELD,
-                            literal(description.expirationTime().get().toLocalDateTime().atZone(ZoneId.systemDefault())
+                            literal(description.expirationTime().get().withZoneSameInstant(UTC_ZONE)
                                     .toInstant()
                                     .toEpochMilli()))
                     .value(FIRE_LIMIT_FIELD, literal(description.expirationTime().repeatLimit()))
@@ -267,8 +268,8 @@ public class CassandraJobService implements JobsService {
         if (row == null) {
             cqlSession.execute(description.id());
         }
-        if (description.expirationTime().get().toLocalDateTime()
-                .isBefore(LocalDateTime.now().plusMinutes(interval.orElse(10L)))) {
+        if (description.expirationTime().get().withZoneSameInstant(UTC_ZONE)
+                .isBefore(ZonedDateTime.now(UTC_ZONE).plusMinutes(interval.orElse(10L)))) {
 
             scheduledJobs.computeIfAbsent(description.id(), k -> {
                 return scheduler.schedule(processJobByDescription(description),
@@ -292,7 +293,7 @@ public class CassandraJobService implements JobsService {
                     .value(OWNER_INSTANCE_ID_FIELD, literal(description.processInstanceId()))
                     .value(STATUS_FIELD, literal("scheduled"))
                     .value(FIRE_AT_FIELD,
-                            literal(description.expirationTime().get().toLocalDateTime().atZone(ZoneId.systemDefault())
+                            literal(description.expirationTime().get().withZoneSameInstant(UTC_ZONE)
                                     .toInstant()
                                     .toEpochMilli()))
                     .value(FIRE_LIMIT_FIELD, literal(description.expirationTime().repeatLimit()))
@@ -310,7 +311,7 @@ public class CassandraJobService implements JobsService {
                     .value(OWNER_INSTANCE_ID_FIELD, literal(description.processInstanceId()))
                     .value(STATUS_FIELD, literal("scheduled"))
                     .value(FIRE_AT_FIELD,
-                            literal(description.expirationTime().get().toLocalDateTime().atZone(ZoneId.systemDefault())
+                            literal(description.expirationTime().get().withZoneSameInstant(UTC_ZONE)
                                     .toInstant()
                                     .toEpochMilli()))
                     .value(FIRE_LIMIT_FIELD, literal(description.expirationTime().repeatLimit()))
@@ -323,8 +324,8 @@ public class CassandraJobService implements JobsService {
 
         cqlSession.execute(insert.build());
 
-        if (description.expirationTime().get().toLocalDateTime()
-                .isBefore(LocalDateTime.now().plusMinutes(interval.orElse(10L)))) {
+        if (description.expirationTime().get().withZoneSameInstant(UTC_ZONE)
+                .isBefore(ZonedDateTime.now(UTC_ZONE).plusMinutes(interval.orElse(10L)))) {
 
             scheduledJobs.computeIfAbsent(description.id(), k -> {
                 return log(description.id(), scheduler.schedule(
@@ -357,7 +358,7 @@ public class CassandraJobService implements JobsService {
         if (row != null) {
             Long fireAt = row.getLong(FIRE_AT_FIELD);
 
-            return ZonedDateTime.ofInstant(Instant.ofEpochMilli(fireAt), ZoneId.systemDefault());
+            return ZonedDateTime.ofInstant(Instant.ofEpochMilli(fireAt), UTC_ZONE);
 
         } else {
             return null;
@@ -428,7 +429,7 @@ public class CassandraJobService implements JobsService {
             Long repeat = job.getLong(REPEAT_INTERVAL_FIELD);
             ZonedDateTime fireTime = ZonedDateTime.ofInstant(
                     Instant.ofEpochMilli(job.getLong(FIRE_AT_FIELD)),
-                    ZoneId.systemDefault());
+                    UTC_ZONE);
 
             SimpleStatement statement = QueryBuilder.update(keyspace.orElse("automatiko"), tableName)
                     .setColumn(STATUS_FIELD, literal("scheduled"))
@@ -447,7 +448,7 @@ public class CassandraJobService implements JobsService {
                     return log(job.getString(INSTANCE_ID_FIELD),
                             scheduler.schedule(new StartProcessOnExpiredTimer(job.getString(INSTANCE_ID_FIELD),
                                     job.getString(OWNER_DEF_ID_FIELD), limit, description),
-                                    Duration.between(LocalDateTime.now(), fireTime).toMillis(),
+                                    Duration.between(ZonedDateTime.now(UTC_ZONE), fireTime).toMillis(),
                                     TimeUnit.MILLISECONDS));
                 });
             } else {
@@ -462,7 +463,7 @@ public class CassandraJobService implements JobsService {
                                     job.getString(TRIGGER_TYPE_FIELD),
                                     job.getString(OWNER_DEF_ID_FIELD),
                                     job.getString(OWNER_INSTANCE_ID_FIELD), limit, description),
-                            Duration.between(LocalDateTime.now(), fireTime).toMillis(), repeat,
+                            Duration.between(ZonedDateTime.now(UTC_ZONE), fireTime).toMillis(), repeat,
                             TimeUnit.MILLISECONDS));
                 });
             }

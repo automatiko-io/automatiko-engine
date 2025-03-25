@@ -56,6 +56,8 @@ public class DatabaseJobService implements JobsService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseJobService.class);
 
+    protected static final ZoneId UTC_ZONE = ZoneId.of("UTC");
+
     protected final Long interval;
 
     protected final UnitOfWorkManager unitOfWorkManager;
@@ -268,7 +270,7 @@ public class DatabaseJobService implements JobsService {
         if (found == null) {
 
         }
-        return ZonedDateTime.of(found.expirationTime, ZoneId.systemDefault());
+        return ZonedDateTime.of(found.expirationTime, UTC_ZONE);
     }
 
     protected long calculateDelay(ZonedDateTime expirationDate) {

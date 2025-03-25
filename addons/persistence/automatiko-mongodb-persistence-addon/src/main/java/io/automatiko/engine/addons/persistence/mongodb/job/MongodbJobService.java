@@ -7,7 +7,6 @@ import static com.mongodb.client.model.Updates.set;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -100,6 +99,8 @@ public class MongodbJobService implements JobsService {
 
     protected final String tableName = "atk_jobs";
 
+    protected static final ZoneId UTC_ZONE = ZoneId.of("UTC");
+
     private Optional<String> database;
 
     private Optional<Long> interval;
@@ -144,8 +145,8 @@ public class MongodbJobService implements JobsService {
 
             loadScheduler.scheduleAtFixedRate(() -> {
                 try {
-                    long next = LocalDateTime.now().plus(Duration.ofMinutes(interval.orElse(10L)))
-                            .atZone(ZoneId.systemDefault()).toInstant()
+                    long next = ZonedDateTime.now(UTC_ZONE).plus(Duration.ofMinutes(interval.orElse(10L)))
+                            .toInstant()
                             .toEpochMilli();
 
                     FindIterable<Document> jobs = collection().find(lt(FIRE_AT_FIELD, next));
@@ -161,10 +162,10 @@ public class MongodbJobService implements JobsService {
                                 return log(job.getString(INSTANCE_ID_FIELD),
                                         scheduler.schedule(new StartProcessOnExpiredTimer(job.getString(INSTANCE_ID_FIELD),
                                                 job.getString(OWNER_DEF_ID_FIELD), -1, description),
-                                                Duration.between(LocalDateTime.now(),
+                                                Duration.between(ZonedDateTime.now(UTC_ZONE),
                                                         ZonedDateTime.ofInstant(
                                                                 Instant.ofEpochMilli(job.getLong(FIRE_AT_FIELD)),
-                                                                ZoneId.systemDefault()))
+                                                                UTC_ZONE))
                                                         .toMillis(),
                                                 TimeUnit.MILLISECONDS));
                             });
@@ -182,9 +183,9 @@ public class MongodbJobService implements JobsService {
                                                 job.getString(OWNER_DEF_ID_FIELD),
                                                 job.getString(OWNER_INSTANCE_ID_FIELD),
                                                 job.getInteger(FIRE_LIMIT_FIELD), description),
-                                        Duration.between(LocalDateTime.now(), ZonedDateTime.ofInstant(
+                                        Duration.between(ZonedDateTime.now(UTC_ZONE), ZonedDateTime.ofInstant(
                                                 Instant.ofEpochMilli(job.getLong(FIRE_AT_FIELD)),
-                                                ZoneId.systemDefault())).toMillis(),
+                                                UTC_ZONE)).toMillis(),
                                         TimeUnit.MILLISECONDS));
                             });
                         }
@@ -215,7 +216,7 @@ public class MongodbJobService implements JobsService {
                     .append(OWNER_DEF_ID_FIELD, description.processId())
                     .append(STATUS_FIELD, "scheduled")
                     .append(FIRE_AT_FIELD,
-                            description.expirationTime().get().toLocalDateTime().atZone(ZoneId.systemDefault())
+                            description.expirationTime().get().withZoneSameInstant(UTC_ZONE)
                                     .toInstant()
                                     .toEpochMilli())
                     .append(FIRE_LIMIT_FIELD, description.expirationTime().repeatLimit())
@@ -231,7 +232,7 @@ public class MongodbJobService implements JobsService {
                     .append(OWNER_DEF_ID_FIELD, description.processId())
                     .append(STATUS_FIELD, "scheduled")
                     .append(FIRE_AT_FIELD,
-                            description.expirationTime().get().toLocalDateTime().atZone(ZoneId.systemDefault())
+                            description.expirationTime().get().withZoneSameInstant(UTC_ZONE)
                                     .toInstant()
                                     .toEpochMilli())
                     .append(FIRE_LIMIT_FIELD, description.expirationTime().repeatLimit())
@@ -244,8 +245,8 @@ public class MongodbJobService implements JobsService {
         collection().findOneAndReplace(Filters.eq(INSTANCE_ID_FIELD, description.id()), job,
                 new FindOneAndReplaceOptions().upsert(true));
 
-        if (description.expirationTime().get().toLocalDateTime()
-                .isBefore(LocalDateTime.now().plusMinutes(interval.orElse(10L)))) {
+        if (description.expirationTime().get().withZoneSameInstant(UTC_ZONE)
+                .isBefore(ZonedDateTime.now(UTC_ZONE).plusMinutes(interval.orElse(10L)))) {
 
             scheduledJobs.computeIfAbsent(description.id(), k -> {
                 return scheduler.schedule(processJobByDescription(description),
@@ -268,7 +269,7 @@ public class MongodbJobService implements JobsService {
                     .append(OWNER_INSTANCE_ID_FIELD, description.processInstanceId())
                     .append(STATUS_FIELD, "scheduled")
                     .append(FIRE_AT_FIELD,
-                            description.expirationTime().get().toLocalDateTime().atZone(ZoneId.systemDefault())
+                            description.expirationTime().get().withZoneSameInstant(UTC_ZONE)
                                     .toInstant()
                                     .toEpochMilli())
                     .append(FIRE_LIMIT_FIELD, description.expirationTime().repeatLimit())
@@ -286,7 +287,7 @@ public class MongodbJobService implements JobsService {
                     .append(OWNER_INSTANCE_ID_FIELD, description.processInstanceId())
                     .append(STATUS_FIELD, "scheduled")
                     .append(FIRE_AT_FIELD,
-                            description.expirationTime().get().toLocalDateTime().atZone(ZoneId.systemDefault())
+                            description.expirationTime().get().withZoneSameInstant(UTC_ZONE)
                                     .toInstant()
                                     .toEpochMilli())
                     .append(FIRE_LIMIT_FIELD, description.expirationTime().repeatLimit())
@@ -300,8 +301,8 @@ public class MongodbJobService implements JobsService {
         collection().findOneAndReplace(Filters.eq(INSTANCE_ID_FIELD, description.id()), job,
                 new FindOneAndReplaceOptions().upsert(true));
 
-        if (description.expirationTime().get().toLocalDateTime()
-                .isBefore(LocalDateTime.now().plusMinutes(interval.orElse(10L)))) {
+        if (description.expirationTime().get().withZoneSameInstant(UTC_ZONE)
+                .isBefore(ZonedDateTime.now(UTC_ZONE).plusMinutes(interval.orElse(10L)))) {
 
             scheduledJobs.computeIfAbsent(description.id(), k -> {
                 return log(description.id(), scheduler.schedule(
@@ -359,7 +360,7 @@ public class MongodbJobService implements JobsService {
         if (found != null) {
             Long fireAt = found.getLong(FIRE_AT_FIELD);
 
-            return ZonedDateTime.ofInstant(Instant.ofEpochMilli(fireAt), ZoneId.systemDefault());
+            return ZonedDateTime.ofInstant(Instant.ofEpochMilli(fireAt), UTC_ZONE);
 
         } else {
             return null;
@@ -401,7 +402,7 @@ public class MongodbJobService implements JobsService {
             Long repeat = job.getLong(REPEAT_INTERVAL_FIELD);
             ZonedDateTime fireTime = ZonedDateTime.ofInstant(
                     Instant.ofEpochMilli(job.getLong(FIRE_AT_FIELD)),
-                    ZoneId.systemDefault());
+                    UTC_ZONE);
 
             job.put(STATUS_FIELD, "scheduled");
             job.put(FIRE_LIMIT_FIELD, limit);
@@ -417,7 +418,7 @@ public class MongodbJobService implements JobsService {
                     return log(job.getString(INSTANCE_ID_FIELD),
                             scheduler.schedule(new StartProcessOnExpiredTimer(job.getString(INSTANCE_ID_FIELD),
                                     job.getString(OWNER_DEF_ID_FIELD), limit, description),
-                                    Duration.between(LocalDateTime.now(), fireTime).toMillis(),
+                                    Duration.between(ZonedDateTime.now(UTC_ZONE), fireTime).toMillis(),
                                     TimeUnit.MILLISECONDS));
                 });
             } else {
@@ -432,7 +433,7 @@ public class MongodbJobService implements JobsService {
                                     job.getString(TRIGGER_TYPE_FIELD),
                                     job.getString(OWNER_DEF_ID_FIELD),
                                     job.getString(OWNER_INSTANCE_ID_FIELD), limit, description),
-                            Duration.between(LocalDateTime.now(), fireTime).toMillis(), repeat,
+                            Duration.between(ZonedDateTime.now(UTC_ZONE), fireTime).toMillis(), repeat,
                             TimeUnit.MILLISECONDS));
                 });
             }
