@@ -106,7 +106,7 @@
     <version.net.java.dev.glazedlists>1.8.0</version.net.java.dev.glazedlists>
 
     <version.io.cloudevents>4.0.1</version.io.cloudevents>
-    <version.io.quarkus>3.21.0</version.io.quarkus>
+    <version.io.quarkus>3.21.2</version.io.quarkus>
     <version.io.restassured>5.5.1</version.io.restassured>
     <version.io.smallrye.reactive>4.27.0</version.io.smallrye.reactive>
     <version.org.eclipse.microprofile.metrics>4.0.1</version.org.eclipse.microprofile.metrics>
@@ -134,9 +134,8 @@
     <version.org.hamcrest>3.0</version.org.hamcrest> <!-- else old version coming from Mockito wins and breaks tests -->
     <version.jakarta.ws.rs.jakarta-rs-api>4.0.0</version.jakarta.ws.rs.jakarta-rs-api>
     <version.org.junit.minor>6.2</version.org.junit.minor> <!-- so that org.junit.platform and org.junit can share the same minor version -->
-    <version.org.junit>5.10.3</version.org.junit>
+    <version.org.junit>5.12.1</version.org.junit>
     <version.org.junit.jupiter>${version.org.junit}</version.org.junit.jupiter>
-    <version.org.junit.vintage>${version.org.junit}</version.org.junit.vintage>
     <version.ch.qos.logback>1.5.18</version.ch.qos.logback>
     <version.org.mockito>5.17.0</version.org.mockito>
     <version.org.mvel>2.5.2.Final</version.org.mvel>
@@ -363,8 +362,7 @@
         <scope>test</scope>
       </dependency>
 
-      <dependency> <!-- TODO move this dep into surefire-plugin when all modules are migrated
-          to JUnit 5 -->
+      <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-engine</artifactId>
         <version>${version.org.junit.jupiter}</version>
