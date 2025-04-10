@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.automatiko.tests</groupId>
     <artifactId>integration-tests</artifactId>
-    <version>0.0.0-SNAPSHOT</version>
+    <version>0.42.0</version>
   </parent>
   <artifactId>automatiko-condition</artifactId>
   <name>Automatiko :: Tests Suite :: Conditional invocation sample</name>
