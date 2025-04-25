@@ -664,6 +664,13 @@ public class MongodbProcessInstances implements MutableProcessInstances {
 
             locked = collection().findOneAndUpdate(lockFilter, Updates.set(LOCK_FIELD, System.currentTimeMillis()));
 
+            if (locked == null) {
+                // check if instance actually exists and if not return early without need to wait
+                if (!exists(id)) {
+                    return null;
+                }
+            }
+
             limit += configuredLockWait;
         }
 
