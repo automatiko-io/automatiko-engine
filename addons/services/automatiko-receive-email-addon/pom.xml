@@ -3,7 +3,7 @@
   <parent>
     <groupId>io.automatiko.addons.services</groupId>
     <artifactId>services</artifactId>
-    <version>0.0.0-SNAPSHOT</version>
+    <version>0.42.2</version>
   </parent>
   
   <groupId>io.automatiko.addons.services</groupId>
