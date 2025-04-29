@@ -122,6 +122,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         lock();
 
         if (!this.process.accessPolicy().canCreateInstance(IdentityProvider.get())) {
+            unlock(true);
             throw new AccessDeniedException("Access is denied to create new instance of process " + process.name());
         }
         setCorrelationKey(businessKey);
@@ -187,6 +188,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         unbind(variables, processInstance.getVariables());
 
         if (!this.process.accessPolicy().canReadInstance(IdentityProvider.get(), this)) {
+            unlock(true);
             throw new AccessDeniedException("Access is denied to access instance " + this.id);
         }
         reconnect();
@@ -348,6 +350,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     public void abort() {
         lock();
         if (!this.process.accessPolicy().canDeleteInstance(IdentityProvider.get(), this)) {
+            unlock(true);
             throw new AccessDeniedException("Access is denied to delete instance " + this.id);
         }
         String pid = processInstance().getId();
@@ -373,6 +376,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     public <S> void send(Signal<S> signal) {
         lock();
         if (!this.process.accessPolicy().canSignalInstance(IdentityProvider.get(), this)) {
+            unlock(true);
             throw new AccessDeniedException("Access is denied to signal instance " + this.id);
         }
 
@@ -486,6 +490,7 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
     public void updateVariables(T updates) {
         lock();
         if (!this.process.accessPolicy().canUpdateInstance(IdentityProvider.get(), this)) {
+            unlock(true);
             throw new AccessDeniedException("Access is denied to update instance " + this.id);
         }
         try {
