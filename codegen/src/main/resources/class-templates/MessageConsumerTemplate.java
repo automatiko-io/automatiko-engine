@@ -111,7 +111,9 @@ public class $Type$MessageConsumer {
         } catch (Exception e) {
         	LOGGER.error("Error when consuming message for process {}", process.id(), e);
         	return msg.nack(e);            
-        }                
+        } finally {
+            IdentityProvider.set(null);
+        }               
     }
 	
 	protected String correlationPayload(Object eventData, Message<byte[]> message) {

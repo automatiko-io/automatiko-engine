@@ -136,6 +136,8 @@ public class $Type$MessageConsumer {
             metrics.messageFailed(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
         	LOGGER.error("Error when consuming message for process {}", process.id(), e);
         	return msg.nack(e);            
+        } finally {
+            IdentityProvider.set(null);
         }                
     }
 	
