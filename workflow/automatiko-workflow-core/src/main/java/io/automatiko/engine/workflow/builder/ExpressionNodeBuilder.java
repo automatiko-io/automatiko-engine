@@ -39,6 +39,11 @@ public class ExpressionNodeBuilder extends AbstractNodeBuilder {
 
     }
 
+    protected ExpressionNodeBuilder set(String name, Object value) {
+        return expression("context.setVariable(\"" + name + "\", " + value + ");");
+
+    }
+
     protected ExpressionNodeBuilder log(String text, String... values) {
         String valuesString = Stream.of(values).collect(Collectors.joining(","));
         if (!valuesString.isEmpty()) {
