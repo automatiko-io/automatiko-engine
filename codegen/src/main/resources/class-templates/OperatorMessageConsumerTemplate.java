@@ -77,6 +77,8 @@ public class Controller implements Reconciler<$DataType$>, Cleaner<$DataType$>  
             });
         } catch(Throwable t) {
             LOGGER.error("Encountered problems while deleting instance", t);
+        } finally {
+            IdentityProvider.set(null);
         }
         return DeleteControl.defaultDelete();
 
