@@ -81,7 +81,7 @@
 
     <!-- dependencies versions -->
     <version.ch.obermuhlner>2.3.2</version.ch.obermuhlner>
-    <version.com.fasterxml.jackson>2.18.3</version.com.fasterxml.jackson>
+    <version.com.fasterxml.jackson>2.19.0</version.com.fasterxml.jackson>
     <version.com.github.haifengl.smile>1.5.2</version.com.github.haifengl.smile>
     <version.com.github.javaparser>3.26.4</version.com.github.javaparser>
     <version.com.github.victools>4.38.0</version.com.github.victools>
