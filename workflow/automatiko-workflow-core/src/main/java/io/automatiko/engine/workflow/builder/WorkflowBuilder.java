@@ -771,6 +771,19 @@ public class WorkflowBuilder {
     }
 
     /**
+     * Adds an expression node (aka script) that will set data object given by name to the value returned by the expression
+     * 
+     * @param name name of the node
+     * @param dataObject name of the data object to set
+     * @param expression expression that produces value to be assigned to the data object
+     * @return the builder
+     */
+    public ExpressionNodeBuilder set(String name, String dataObject, Supplier<Object> expression) {
+        return new ExpressionNodeBuilder(name, this)
+                .set(dataObject, BuilderContext.get(Thread.currentThread().getStackTrace()[2].getMethodName()));
+    }
+
+    /**
      * A short cut method to add expression node that is going to log given text and values
      * The text is expected to use <code>{}</code> as place holder for each value
      * 
