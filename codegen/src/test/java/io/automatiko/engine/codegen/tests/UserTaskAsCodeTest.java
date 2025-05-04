@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -28,6 +29,7 @@ import io.automatiko.engine.services.identity.StaticIdentityProvider;
 import io.automatiko.engine.workflow.DefaultProcessEventListenerConfig;
 import io.automatiko.engine.workflow.base.core.context.variable.Variable;
 import io.automatiko.engine.workflow.builder.BuilderContext;
+import io.automatiko.engine.workflow.builder.UserNodeBuilder;
 import io.automatiko.engine.workflow.builder.WorkflowBuilder;
 import io.automatiko.engine.workflow.compiler.util.NodeLeftCountDownProcessEventListener;
 
@@ -559,6 +561,293 @@ public class UserTaskAsCodeTest extends AbstractCodegenTest {
         processInstance.completeWorkItem(workItems.get(0).getId(), Map.of("value", "test2"), securityPolicyMary);
         assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
         assertThat(((Model) processInstance.variables()).toMap().get("outputs")).asList().contains("test", "test2");
+
+    }
+
+    @Test
+    public void testBasicUserTaskProcessWithOnTimeout() throws Exception {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("UserTasksProcess", "test workflow with user task")
+                .dataObject("x", Integer.class)
+                .dataObject("y", String.class);
+
+        UserNodeBuilder userNode = builder.start("start here").then().user("FirstTask").description("Hello #{todayDate()} task")
+                .users("john").outputToDataObject("value", "y")
+                .then().user("SecondTask").users("john").dataObjectAsInput("x");
+        userNode.onTimeout().after(500, TimeUnit.MILLISECONDS).then().log("log", "timer called").then().end("end on timeout");
+        userNode.then().end("done");
+
+        Application app = generateCode(List.of(builder.get()));
+        assertThat(app).isNotNull();
+
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("end on timeout", 1);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+
+        Process<? extends Model> p = app.processes().processById("UserTasksProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("x", 10);
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        List<WorkItem> workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("firsttask", workItems.get(0).getName());
+        assertEquals("Hello " + BaseFunctions.todayDate() + " task", workItems.get(0).getDescription());
+
+        processInstance.completeWorkItem(workItems.get(0).getId(), Map.of("value", "test"), securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+        assertThat(((Model) processInstance.variables()).toMap()).containsEntry("y", "test");
+
+        workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("secondtask", workItems.get(0).getName());
+        assertEquals("", workItems.get(0).getDescription());
+        assertThat(workItems.get(0).getParameters()).containsEntry("x", 10);
+
+        processInstance.completeWorkItem(workItems.get(0).getId(), null, securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+
+        // another instance to be completed by timeout
+        m = p.createModel();
+        parameters = new HashMap<>();
+        parameters.put("x", 10);
+        m.fromMap(parameters);
+
+        processInstance = p.createInstance(m);
+        processInstance.start();
+
+        workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("firsttask", workItems.get(0).getName());
+        assertEquals("Hello " + BaseFunctions.todayDate() + " task", workItems.get(0).getDescription());
+
+        processInstance.completeWorkItem(workItems.get(0).getId(), Map.of("value", "test"), securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+        assertThat(((Model) processInstance.variables()).toMap()).containsEntry("y", "test");
+
+        workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("secondtask", workItems.get(0).getName());
+
+        boolean completed = listener.waitTillCompleted(5000);
+        assertThat(completed).isTrue();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+
+    }
+
+    @Test
+    public void testBasicUserTaskProcessWithOnTimeoutExpression() throws Exception {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("UserTasksProcess", "test workflow with user task")
+                .dataObject("x", Integer.class)
+                .dataObject("y", String.class)
+                .dataObject("timeout", String.class);
+
+        UserNodeBuilder userNode = builder.start("start here").then().user("FirstTask").description("Hello #{todayDate()} task")
+                .users("john").outputToDataObject("value", "y")
+                .then().user("SecondTask").users("john").dataObjectAsInput("x");
+        userNode.onTimeout().afterFromExpression(() -> java.time.Duration.ofSeconds(1).toString()).then()
+                .log("log", "timer called")
+                .then().end("end on timeout");
+        userNode.then().end("done");
+
+        Application app = generateCode(List.of(builder.get()));
+        assertThat(app).isNotNull();
+
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("end on timeout", 1);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+
+        Process<? extends Model> p = app.processes().processById("UserTasksProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("x", 10);
+        parameters.put("timeout", "PT1S");
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        List<WorkItem> workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("firsttask", workItems.get(0).getName());
+        assertEquals("Hello " + BaseFunctions.todayDate() + " task", workItems.get(0).getDescription());
+
+        processInstance.completeWorkItem(workItems.get(0).getId(), Map.of("value", "test"), securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+        assertThat(((Model) processInstance.variables()).toMap()).containsEntry("y", "test");
+
+        workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("secondtask", workItems.get(0).getName());
+        assertEquals("", workItems.get(0).getDescription());
+        assertThat(workItems.get(0).getParameters()).containsEntry("x", 10);
+
+        processInstance.completeWorkItem(workItems.get(0).getId(), null, securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+
+        // another instance to be completed by timeout
+        m = p.createModel();
+        parameters = new HashMap<>();
+        parameters.put("x", 10);
+        parameters.put("timeout", "PT1S");
+        m.fromMap(parameters);
+
+        processInstance = p.createInstance(m);
+        processInstance.start();
+
+        workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("firsttask", workItems.get(0).getName());
+        assertEquals("Hello " + BaseFunctions.todayDate() + " task", workItems.get(0).getDescription());
+
+        processInstance.completeWorkItem(workItems.get(0).getId(), Map.of("value", "test"), securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+        assertThat(((Model) processInstance.variables()).toMap()).containsEntry("y", "test");
+
+        workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("secondtask", workItems.get(0).getName());
+
+        boolean completed = listener.waitTillCompleted(5000);
+        assertThat(completed).isTrue();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+
+    }
+
+    @Test
+    public void testBasicUserTaskProcessWithOnTimeoutExpressionRepeat() throws Exception {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("UserTasksProcess", "test workflow with user task")
+                .dataObject("x", Integer.class)
+                .dataObject("y", String.class)
+                .dataObject("timeout", String.class);
+
+        UserNodeBuilder userNode = builder.start("start here").then()
+                .set("set x", "x", () -> 20).then()
+                .user("FirstTask").description("Hello #{todayDate()} task")
+                .users("john").outputToDataObject("value", "y")
+                .then().user("SecondTask").users("john").dataObjectAsInput("x");
+        userNode.onTimeout(false).everyFromExpression("timeout").then()
+                .log("log", "timer called")
+                .then().end("end on timeout");
+        userNode.then().end("done");
+
+        Application app = generateCode(List.of(builder.get()));
+        assertThat(app).isNotNull();
+
+        NodeLeftCountDownProcessEventListener listener = new NodeLeftCountDownProcessEventListener("end on timeout", 3);
+        ((DefaultProcessEventListenerConfig) app.config().process().processEventListeners()).register(listener);
+
+        Process<? extends Model> p = app.processes().processById("UserTasksProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("x", 10);
+        parameters.put("timeout", "R3/PT1S");
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        List<WorkItem> workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("firsttask", workItems.get(0).getName());
+        assertEquals("Hello " + BaseFunctions.todayDate() + " task", workItems.get(0).getDescription());
+
+        processInstance.completeWorkItem(workItems.get(0).getId(), Map.of("value", "test"), securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+        assertThat(((Model) processInstance.variables()).toMap()).containsEntry("y", "test");
+
+        workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("secondtask", workItems.get(0).getName());
+        assertEquals("", workItems.get(0).getDescription());
+        assertThat(workItems.get(0).getParameters()).containsEntry("x", 20);
+
+        processInstance.completeWorkItem(workItems.get(0).getId(), null, securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+
+        // another instance to be completed by timeout
+        m = p.createModel();
+        parameters = new HashMap<>();
+        parameters.put("x", 10);
+        parameters.put("timeout", "R3/PT1S");
+        m.fromMap(parameters);
+
+        processInstance = p.createInstance(m);
+        processInstance.start();
+
+        workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("firsttask", workItems.get(0).getName());
+        assertEquals("Hello " + BaseFunctions.todayDate() + " task", workItems.get(0).getDescription());
+
+        processInstance.completeWorkItem(workItems.get(0).getId(), Map.of("value", "test"), securityPolicy);
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+        assertThat(((Model) processInstance.variables()).toMap()).containsEntry("y", "test");
+
+        workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("secondtask", workItems.get(0).getName());
+
+        boolean completed = listener.waitTillCompleted(5000);
+        assertThat(completed).isTrue();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        processInstance.abort();
+    }
+
+    @Test
+    public void testBasicUserTaskProcessSetValue() throws Exception {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("UserTasksProcess", "test workflow with user task")
+                .dataObject("x", Integer.class)
+                .dataObject("y", Person.class);
+
+        builder.start("start here").then().set("set y", "y", () -> new Person("john", 12)).then()
+                .user("FirstTask").description("Hello #{todayDate()} task")
+                .users("john")
+                .then().end("done");
+
+        Application app = generateCode(List.of(builder.get()));
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("UserTasksProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("x", 10);
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_ACTIVE);
+
+        List<WorkItem> workItems = processInstance.workItems(securityPolicy);
+        assertEquals(1, workItems.size());
+        assertEquals("firsttask", workItems.get(0).getName());
+        assertEquals("Hello " + BaseFunctions.todayDate() + " task", workItems.get(0).getDescription());
+
+        processInstance.completeWorkItem(workItems.get(0).getId(), Map.of("value", "test"), securityPolicy);
+
+        assertThat(((Model) processInstance.variables()).toMap().get("y")).isEqualTo(new Person("john", 12));
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
 
     }
 }
