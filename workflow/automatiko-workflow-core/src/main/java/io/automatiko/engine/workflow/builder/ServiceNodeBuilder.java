@@ -789,6 +789,34 @@ public class ServiceNodeBuilder extends AbstractNodeBuilder {
         return workflowBuilder;
     }
 
+    /**
+     * Creates alternative path in case this node has not been completed within defined timeout. By default this node is
+     * automatically canceled and its following nodes will not be executed
+     * 
+     * @return the builder
+     */
+    public OnTimeoutNodeBuilder onTimeout() {
+
+        workflowBuilder.putOnContext(getNode());
+        workflowBuilder.putBuilderOnContext(null);
+        return new OnTimeoutNodeBuilder("timeout on " + node.getName(), (String) this.node.getMetaData("UniqueId"),
+                workflowBuilder, true);
+    }
+
+    /**
+     * Creates alternative path in case this node has not been completed within defined timeout. Cancellation of this node is
+     * controlled by <code>cancelActivity</code> argument
+     * 
+     * @return the builder
+     */
+    public OnTimeoutNodeBuilder onTimeout(boolean cancelActivity) {
+
+        workflowBuilder.putOnContext(getNode());
+        workflowBuilder.putBuilderOnContext(null);
+        return new OnTimeoutNodeBuilder("timeout on " + node.getName(), (String) this.node.getMetaData("UniqueId"),
+                workflowBuilder, cancelActivity);
+    }
+
     @Override
     protected Node getNode() {
         if (forEachNode != null) {

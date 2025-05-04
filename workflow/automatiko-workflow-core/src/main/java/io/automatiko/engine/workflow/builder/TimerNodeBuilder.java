@@ -50,7 +50,7 @@ public class TimerNodeBuilder extends AbstractNodeBuilder {
     }
 
     /**
-     * Delays execution for the given amount of time expressed in ISO 8601 format e.g. <code>PT10M</code> which stands for 5
+     * Delays execution for the given amount of time expressed in ISO 8601 format e.g. <code>PT10M</code> which stands for 10
      * minutes
      * 
      * @param isoExpression Expression ISO 8601 time expression
@@ -64,7 +64,7 @@ public class TimerNodeBuilder extends AbstractNodeBuilder {
 
     /**
      * Delays execution for the given amount of time expressed in ISO 8601 format that is calculated from the expression e.g.
-     * <code>PT10M</code> which stands for 5
+     * <code>PT10M</code> which stands for 10
      * minutes
      * 
      * @param expression expression to calculate time expression in ISO 8601
@@ -79,7 +79,7 @@ public class TimerNodeBuilder extends AbstractNodeBuilder {
 
     /**
      * Delays execution for the given amount of time expressed in ISO 8601 format that is calculated from the expression e.g.
-     * <code>PT10M</code> which stands for 5
+     * <code>PT10M</code> which stands for 10
      * minutes
      * 
      * @param expression expression to calculate time expression in ISO 8601
@@ -184,7 +184,7 @@ public class TimerNodeBuilder extends AbstractNodeBuilder {
 
     /**
      * Repeats execution based on given amount of time expressed in ISO 8601 format e.g. <code>R/PT10M</code> which stands for
-     * every 5 minutes
+     * every 10 minutes
      * 
      * @param isoExpression Expression ISO 8601 time expression
      * @return the builder
@@ -197,7 +197,7 @@ public class TimerNodeBuilder extends AbstractNodeBuilder {
 
     /**
      * Repeats execution based on given amount of time expressed in ISO 8601 format that is calculated from the expression
-     * e.g. <code>R/PT10M</code> which stands for every 5 minutes
+     * e.g. <code>R/PT10M</code> which stands for every 10 minutes
      * 
      * @param expression expression to calculate time expression in ISO 8601
      * @return the builder
@@ -211,7 +211,7 @@ public class TimerNodeBuilder extends AbstractNodeBuilder {
 
     /**
      * Repeats execution based on given amount of time expressed in ISO 8601 format that is calculated from the expression
-     * e.g. <code>R/PT10M</code> which stands for every 5 minutes
+     * e.g. <code>R/PT10M</code> which stands for every 10 minutes
      * 
      * @param expression expression to calculate time expression in ISO 8601
      * @return the builder

@@ -368,7 +368,12 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
         if (timeDuration != null) {
             timer.setDelay(timeDuration);
             timer.setTimeType(Timer.TIME_DURATION);
-            compositeNode.addTimer(timer, timerAction("Timer-" + attachedTo + "-" + timeDuration + "-" + node.getId()));
+
+            ConsequenceAction consequenceAction = createJavaAction(
+                    new SignalProcessInstanceAction("Timer-" + attachedTo + "-" + timeDuration + "-" + node.getId(),
+                            kcontext -> kcontext.getNodeInstance().getId(),
+                            SignalProcessInstanceAction.PROCESS_INSTANCE_SCOPE));
+            compositeNode.addTimer(timer, consequenceAction);
         } else if (timeCycle != null) {
             int index = timeCycle.indexOf("###");
             if (index != -1) {
@@ -378,12 +383,21 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
             }
             timer.setDelay(timeCycle);
             timer.setTimeType(Timer.TIME_CYCLE);
-            compositeNode.addTimer(timer, timerAction("Timer-" + attachedTo + "-" + timeCycle
-                    + (timer.getPeriod() == null ? "" : "###" + timer.getPeriod()) + "-" + node.getId()));
+            String finalTimeCycle = timeCycle;
+            ConsequenceAction action = createJavaAction(new SignalProcessInstanceAction(
+                    "Timer-" + attachedTo + "-" + finalTimeCycle
+                            + (timer.getPeriod() == null ? "" : "###" + timer.getPeriod()) + "-" + node.getId(),
+                    kcontext -> kcontext.getNodeInstance().getId(),
+                    SignalProcessInstanceAction.PROCESS_INSTANCE_SCOPE));
+            compositeNode.addTimer(timer, action);
         } else if (timeDate != null) {
             timer.setDate(timeDate);
             timer.setTimeType(Timer.TIME_DATE);
-            compositeNode.addTimer(timer, timerAction("Timer-" + attachedTo + "-" + timeDate + "-" + node.getId()));
+            ConsequenceAction action = createJavaAction(
+                    new SignalProcessInstanceAction("Timer-" + attachedTo + "-" + timeDate + "-" + node.getId(),
+                            kcontext -> kcontext.getNodeInstance().getId(),
+                            SignalProcessInstanceAction.PROCESS_INSTANCE_SCOPE));
+            compositeNode.addTimer(timer, action);
         }
 
         if (cancelActivity) {
@@ -699,6 +713,14 @@ public class ExecutableProcessFactory extends ExecutableNodeContainerFactory {
                     + ")" + " is not supported!");
         }
         scope.setExceptionHandler(compensationHandlerId, handler);
+    }
+
+    protected ConsequenceAction createJavaAction(Action action) {
+        ConsequenceAction consequenceAction = new ConsequenceAction("java", "");
+        consequenceAction.setMetaData("Action", action);
+
+        return consequenceAction;
+
     }
 
 }
