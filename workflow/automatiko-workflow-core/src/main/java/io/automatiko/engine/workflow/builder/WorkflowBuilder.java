@@ -48,6 +48,8 @@ public class WorkflowBuilder {
 
     protected Node currentNode;
 
+    protected AdditionalPathNodeBuilder currentAdditionalPath;
+
     protected AbstractNodeBuilder currentBuilder;
 
     protected Map<String, JoinNodeBuilder> joins = new HashMap<>();
@@ -903,7 +905,7 @@ public class WorkflowBuilder {
      * @return the builder
      */
     public StartOnTimerNodeBuilder additionalPathOnTimer(String name) {
-        new AdditionalPathNodeBuilder(name, this);
+        this.currentAdditionalPath = new AdditionalPathNodeBuilder(name, this);
 
         return startOnTimer("on timeout");
     }
@@ -917,7 +919,7 @@ public class WorkflowBuilder {
      * @return the builder
      */
     public StartOnTimerNodeBuilder additionalPathOnTimer(String name, boolean abortAfter) {
-        new AdditionalPathNodeBuilder(name, this);
+        this.currentAdditionalPath = new AdditionalPathNodeBuilder(name, this);
 
         return new StartOnTimerNodeBuilder(name, this, abortAfter);
     }
@@ -930,7 +932,7 @@ public class WorkflowBuilder {
      * @return the builder
      */
     public StartOnMessageNodeBuilder additionalPathOnMessage(String name) {
-        new AdditionalPathNodeBuilder(name, this).event("Message-" + name);
+        this.currentAdditionalPath = new AdditionalPathNodeBuilder(name, this).event("Message-" + name);
 
         return startOnMessage(name);
     }
@@ -944,9 +946,48 @@ public class WorkflowBuilder {
      * @return the builder
      */
     public StartOnMessageNodeBuilder additionalPathOnMessage(String name, boolean abortAfter) {
-        new AdditionalPathNodeBuilder(name, this).event("Message-" + name);
+        this.currentAdditionalPath = new AdditionalPathNodeBuilder(name, this).event("Message-" + name);
 
         return new StartOnMessageNodeBuilder(name, this, abortAfter);
+    }
+
+    /**
+     * Adds an additional path node that allows to have separate workflow path
+     * that starts based on incoming signal
+     * 
+     * @param name name of the node
+     * @return the builder
+     */
+    public StartOnSignalNodeBuilder additionalPathOnSignal(String name) {
+
+        return additionalPathOnSignal(name, false);
+    }
+
+    /**
+     * Adds an additional path node that allows to have separate workflow path
+     * that starts based on incoming signal
+     * 
+     * @param name name of the node
+     * @param abortAfter indicates if the main workflow instance should be aborted once the additional path completes
+     * @return the builder
+     */
+    public StartOnSignalNodeBuilder additionalPathOnSignal(String name, boolean abortAfter) {
+        this.currentAdditionalPath = new AdditionalPathNodeBuilder(name, this).event("Message-" + name);
+
+        return new StartOnSignalNodeBuilder(name, this, abortAfter);
+    }
+
+    /**
+     * Ends current additional path if any is active otherwise throws {@link IllegalStateException}
+     * 
+     * @return the builder
+     */
+    public WorkflowBuilder endAdditionalPath() {
+        if (this.currentAdditionalPath == null) {
+            throw new IllegalStateException("No additional path active");
+        }
+        this.currentAdditionalPath.end();
+        return this;
     }
 
     /*
