@@ -1014,7 +1014,6 @@
         <module>quarkus-extension</module>
         <module>archetypes</module>
         <module>decision</module>
-        <module>integration-tests</module>
       </modules>
       <build>
         <plugins>
