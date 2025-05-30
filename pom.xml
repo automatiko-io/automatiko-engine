@@ -987,9 +987,7 @@
     <profile>
       <id>main</id>
       <activation>
-        <property>
-          <name>!quick</name>
-        </property>
+	    <activeByDefault>true</activeByDefault>
       </activation>
       <modules>
         <module>bom</module>
