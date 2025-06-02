@@ -51,7 +51,7 @@
     <version.copyrename.plugin>1.0</version.copyrename.plugin>
     <version.dependency.plugin>3.8.1</version.dependency.plugin>
     <version.deploy.plugin>3.1.4</version.deploy.plugin>
-    <version.exec.plugin>3.5.0</version.exec.plugin>
+    <version.exec.plugin>3.5.1</version.exec.plugin>
     <version.findbugs.plugin>3.0.5</version.findbugs.plugin>
     <version.install.plugin>3.1.4</version.install.plugin>
     <version.invoker.plugin>3.9.0</version.invoker.plugin>
