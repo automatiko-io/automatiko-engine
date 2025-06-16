@@ -60,7 +60,7 @@
     <version.javadoc.plugin>3.11.2</version.javadoc.plugin>
     <version.archetype.plugin>3.3.1</version.archetype.plugin>
     <version.enforcer.plugin>3.5.0</version.enforcer.plugin>
-    <version.maven>3.8.6</version.maven>
+    <version.maven>3.9.10</version.maven>
     <version.maven.plugin>3.15.1</version.maven.plugin>
     <version.native2ascii.plugin>1.0-beta-1</version.native2ascii.plugin>
     <version.plexus>2.1.1</version.plexus>
