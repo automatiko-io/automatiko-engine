@@ -133,7 +133,7 @@ public class DatabaseProcessInstances implements MutableProcessInstances<Process
         if (mode == ProcessInstanceReadMode.MUTABLE_WITH_LOCK) {
             return LockModeType.PESSIMISTIC_WRITE;
         }
-        return null;
+        return LockModeType.NONE;
     }
 
     @Override

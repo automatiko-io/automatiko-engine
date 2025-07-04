@@ -130,7 +130,7 @@ public class DBUserTaskIndexResource implements UserTaskIndexResource {
         parameters.put("user", identityProvider.getName());
         parameters.put("groups", identityProvider.getRoles());
 
-        String authFilter = "from UserTaskInfoEntity t left join t.potentialUsers pu left join t.potentialGroups pg where (:user not member of t.excludedUsers) and (:user member of t.potentialUsers or pg in (:groups) or t.actualOwner = :user or (size(pg) < 1 and size(pu) < 1)) and ";
+        String authFilter = "select t from UserTaskInfoEntity t left join t.potentialUsers pu left join t.potentialGroups pg where (:user not member of t.excludedUsers) and (:user member of t.potentialUsers or pg in (:groups) or t.actualOwner = :user or (size(pg) < 1 and size(pu) < 1)) and ";
 
         return authFilter;
 
