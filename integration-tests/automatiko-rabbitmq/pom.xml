@@ -8,7 +8,7 @@
   <parent>
     <groupId>io.automatiko.tests</groupId>
     <artifactId>integration-tests</artifactId>
-    <version>0.0.0-SNAPSHOT</version>
+    <version>0.45.1</version>
   </parent>
   <artifactId>automatiko-rabbitmq</artifactId>
   <name>Automatiko :: Tests Suite :: RabbitMQ messaging invocation sample</name>
