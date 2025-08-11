@@ -97,6 +97,7 @@ public class EmailNotificationEmitter implements NotificationEmitter {
         templateData.put("processId", humanTask.getProcessInstance().getProcessId());
         templateData.put("processName", humanTask.getProcessInstance().getProcessName());
         templateData.put("inputs", humanTask.getParameters());
+        templateData.put("body", humanTask.getParameters());
 
         int count = 0;
         for (Entry<String, String> address : addresses.entrySet()) {
