@@ -112,7 +112,7 @@
     <version.org.eclipse.microprofile.metrics>4.0.1</version.org.eclipse.microprofile.metrics>
     <version.org.eclipse.microprofile.rest.client>4.0</version.org.eclipse.microprofile.rest.client>
     <version.org.eclipse.microprofile.config>3.1</version.org.eclipse.microprofile.config>
-    <version.org.eclipse.microprofile.openapi>4.0.2</version.org.eclipse.microprofile.openapi>
+    <version.org.eclipse.microprofile.openapi>4.1</version.org.eclipse.microprofile.openapi>
 
     <version.io.javaoperatorsdk>7.2.0</version.io.javaoperatorsdk>
     <version.io.quarkiverse.googlecloudservices>2.18.0</version.io.quarkiverse.googlecloudservices>
