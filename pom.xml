@@ -77,7 +77,7 @@
     <version.taglist.plugin>2.4</version.taglist.plugin>
     <version.versions.plugin>2.18.0</version.versions.plugin>
     <version.jayway.jsonpath>2.6.0</version.jayway.jsonpath>
-    <version.net.thisptr.jackson-jq>0.0.13</version.net.thisptr.jackson-jq>
+    <version.net.thisptr.jackson-jq>1.5.0</version.net.thisptr.jackson-jq>
 
     <!-- dependencies versions -->
     <version.ch.obermuhlner>2.3.2</version.ch.obermuhlner>
