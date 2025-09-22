@@ -129,7 +129,7 @@
 
     <version.org.antlr>3.5.3</version.org.antlr>
     <version.org.antlr4>4.13.2</version.org.antlr4>
-    <version.org.assertj>3.27.4</version.org.assertj>
+    <version.org.assertj>3.27.6</version.org.assertj>
     <version.org.eclipse.jdt>3.19.0</version.org.eclipse.jdt>
     <version.org.hamcrest>3.0</version.org.hamcrest> <!-- else old version coming from Mockito wins and breaks tests -->
     <version.jakarta.ws.rs.jakarta-rs-api>4.0.0</version.jakarta.ws.rs.jakarta-rs-api>
