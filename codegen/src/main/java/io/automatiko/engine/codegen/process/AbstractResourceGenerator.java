@@ -294,6 +294,13 @@ public abstract class AbstractResourceGenerator {
         template.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.tags.Tag"),
                 NodeList.nodeList(new MemberValuePair("name", new StringLiteralExpr(category)),
                         new MemberValuePair("description", new StringLiteralExpr(categoryDescription)))));
+        
+        
+        String securityScheme = (String) process.getMetaData().get("securityScheme");
+        if (securityScheme != null && !securityScheme.isBlank()) {
+            template.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement"),
+                    NodeList.nodeList(new MemberValuePair("name", new StringLiteralExpr(securityScheme)))));
+        }
 
         template.setName(resourceClazzName);
         AtomicInteger index = new AtomicInteger(0);

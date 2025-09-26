@@ -234,6 +234,20 @@ public class WorkflowBuilder {
     }
 
     /**
+     * Sets security scheme that should be used as requirement on REST resource classes.
+     * 
+     * @param securityScheme name of the security scheme to set as security requirement
+     * @return the builder
+     */
+    public WorkflowBuilder securityScheme(String securityScheme) {
+        if (securityScheme != null && !securityScheme.isBlank()) {
+            process.setMetaData("securityScheme", securityScheme);
+        }
+
+        return this;
+    }
+
+    /**
      * Sets expiration of the workflow instance that instructs to remove the instance from storage after
      * <code>expiresAfter</code>
      * after completion
