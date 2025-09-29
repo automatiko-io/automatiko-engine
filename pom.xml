@@ -57,7 +57,7 @@
     <version.invoker.plugin>3.9.1</version.invoker.plugin>
     <version.jandex.plugin>3.4.0</version.jandex.plugin>
     <version.jar.plugin>3.4.2</version.jar.plugin>
-    <version.javadoc.plugin>3.11.3</version.javadoc.plugin>
+    <version.javadoc.plugin>3.12.0</version.javadoc.plugin>
     <version.archetype.plugin>3.4.0</version.archetype.plugin>
     <version.enforcer.plugin>3.6.1</version.enforcer.plugin>
     <version.maven>3.8.6</version.maven>
