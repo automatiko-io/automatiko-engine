@@ -741,6 +741,7 @@ public class ServiceNodeBuilder extends AbstractNodeBuilder {
         subProcessNode.setDefaultContext(variableScope);
         subProcessNode.setAutoComplete(true);
         subProcessNode.setMetaData("hidden", true);
+        subProcessNode.setMetaData("UniqueId", origNode.getMetaData().get("UniqueId") + ":wrapper");
         subProcessNode.setName(node.getName() + " (Wrapper)");
         subProcessNode.setCancelRemainingInstances(false);
 

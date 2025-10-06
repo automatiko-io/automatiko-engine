@@ -945,6 +945,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                 if (_node.getContent().getComposite().getVariableCount() > 0) {
                     Context variableScope = ((io.automatiko.engine.workflow.base.core.Process) ((io.automatiko.engine.workflow.base.instance.ProcessInstance) processInstance)
                             .getProcess()).getDefaultContext(VariableScope.VARIABLE_SCOPE);
+
                     VariableScopeInstance variableScopeInstance = (VariableScopeInstance) ((CompositeContextNodeInstance) nodeInstance)
                             .getContextInstance(variableScope);
                     for (AutomatikoMessages.Variable _variable : _node.getContent().getComposite().getVariableList()) {
@@ -955,6 +956,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                             throw new IllegalArgumentException("Could not reload variable " + _variable.getName());
                         }
                     }
+
                 }
                 if (_node.getContent().getComposite().getIterationLevelsCount() > 0) {
 
@@ -992,6 +994,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                         .getNodeInstanceList()) {
                     context.parameterObject = _instance;
                     readNodeInstance(context, (ForEachNodeInstance) nodeInstance, processInstance);
+
                     VariableScopeInstance variableScopeInstance = (VariableScopeInstance) ((ForEachNodeInstance) nodeInstance)
                             .getContextInstance(VariableScope.VARIABLE_SCOPE);
                     for (AutomatikoMessages.Variable _variable : _node.getContent().getForEach().getVariableList()) {
@@ -1002,6 +1005,7 @@ public abstract class AbstractProtobufProcessInstanceMarshaller implements Proce
                             throw new IllegalArgumentException("Could not reload variable " + _variable.getName());
                         }
                     }
+
                     if (_node.getContent().getForEach().getIterationLevelsCount() > 0) {
 
                         for (AutomatikoMessages.IterationLevel _level : _node.getContent().getForEach()
