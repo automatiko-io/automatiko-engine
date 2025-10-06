@@ -40,6 +40,7 @@ import com.github.javaparser.ast.type.UnknownType;
 
 import io.automatiko.engine.api.definition.process.Connection;
 import io.automatiko.engine.api.definition.process.Node;
+import io.automatiko.engine.api.definition.process.NodeContainer;
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.services.utils.StringUtils;
 import io.automatiko.engine.workflow.base.core.context.variable.Mappable;
@@ -75,8 +76,19 @@ public abstract class AbstractNodeVisitor<T extends Node> extends AbstractVisito
 
     protected String getNodeId(T node) {
         String parentId = node.getParentContainer() instanceof WorkflowProcess ? ""
-                : String.valueOf(node.getParentContainer().getNodes().length);
+                : parentIdentifier(node);
         return getNodeKey() + node.getId() + parentId;
+    }
+
+    protected String parentIdentifier(T node) {
+        String id = "";
+        NodeContainer container = node.getParentContainer();
+        while (!(container instanceof WorkflowProcess)) {
+
+            id += String.valueOf(((Node) container).getId() + node.getParentContainer().getNodes().length);
+            container = ((Node) container).getParentContainer();
+        }
+        return id;
     }
 
     public void visitNode(WorkflowProcess process, String factoryField, T node, BlockStmt body,
