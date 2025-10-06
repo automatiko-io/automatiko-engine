@@ -178,6 +178,9 @@ public abstract class NodeInstanceImpl
                             node = available;
                             this.nodeId = node.getId();
                             return node;
+                        } else if (nodeDefinitionId.startsWith("_jbpm-unique-")) {
+                            // auto generated id not possible to verify as it changes dynamically on each model change
+                            return node;
                         }
                     }
                     // otherwise throw a meaningful exception that will provide root cause information
@@ -187,8 +190,7 @@ public abstract class NodeInstanceImpl
 
             return node;
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Unknown node id: " + this.nodeId + " for node instance " + getUniqueId()
-                    + " for process instance " + this.processInstance, e);
+            return null;
         }
     }
 

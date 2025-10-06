@@ -283,10 +283,10 @@ public class SvgBpmnProcessImageGenerator implements SvgProcessImageGenerator {
 
             Node node1 = workFlowProcess.getNodesRecursively().stream()
                     .filter(n -> n.getMetaData().getOrDefault("UniqueId", "").equals(id1))
-                    .findFirst().get();
+                    .findFirst().orElse(null);
             Node node2 = workFlowProcess.getNodesRecursively().stream()
                     .filter(n -> n.getMetaData().getOrDefault("UniqueId", "").equals(id2))
-                    .findFirst().get();
+                    .findFirst().orElse(null);
 
             if (node1 instanceof BoundaryEventNode && node2 instanceof BoundaryEventNode) {
                 return 0;

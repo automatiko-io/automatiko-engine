@@ -839,10 +839,14 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
     public String buildReferenceId() {
         StringBuilder builder = new StringBuilder();
         if (getWorkItem() != null) {
-            builder.append("/" + getProcessInstance().getReferenceFromRoot())
-                    .append(sanitizeName((String) getWorkItem().getParameters().getOrDefault("TaskName", getNodeName())))
-                    .append("/")
-                    .append(getWorkItem().getId());
+            try {
+                builder.append("/" + getProcessInstance().getReferenceFromRoot())
+                        .append(sanitizeName((String) getWorkItem().getParameters().getOrDefault("TaskName", getNodeName())))
+                        .append("/")
+                        .append(getWorkItem().getId());
+            } catch (Exception e) {
+                // avoid failing on missing node information
+            }
         }
         return builder.toString();
     }
@@ -865,20 +869,24 @@ public class WorkItemNodeInstance extends StateBasedNodeInstance implements Even
 
     public String buildFormLink() {
         if (getProcessInstance().getProcess().getMetaData().containsKey("UserTaskMgmt")) {
-            String parentProcessInstanceId = getProcessInstance().getParentProcessInstanceId();
-            if (parentProcessInstanceId != null && !parentProcessInstanceId.isEmpty()) {
-                parentProcessInstanceId += ":";
-            } else {
-                parentProcessInstanceId = "";
+            try {
+                String parentProcessInstanceId = getProcessInstance().getParentProcessInstanceId();
+                if (parentProcessInstanceId != null && !parentProcessInstanceId.isEmpty()) {
+                    parentProcessInstanceId += ":";
+                } else {
+                    parentProcessInstanceId = "";
+                }
+                String version = version(getProcessInstance().getProcess().getVersion());
+                String encoded = Base64.getEncoder().encodeToString((getProcessInstance().getProcessId() + version + "|"
+                        + parentProcessInstanceId + getProcessInstance().getId() + "|" + getWorkItemId() + "|")
+                                .getBytes(StandardCharsets.UTF_8));
+                return "/management/tasks/link/" + encoded;
+            } catch (Exception e) {
+                // avoid failing on missing node information
             }
-            String version = version(getProcessInstance().getProcess().getVersion());
-            String encoded = Base64.getEncoder().encodeToString((getProcessInstance().getProcessId() + version + "|"
-                    + parentProcessInstanceId + getProcessInstance().getId() + "|" + getWorkItemId() + "|")
-                            .getBytes(StandardCharsets.UTF_8));
-            return "/management/tasks/link/" + encoded;
-        } else {
-            return null;
         }
+        return null;
+
     }
 
     protected String version(String version) {
