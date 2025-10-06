@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import io.automatiko.engine.api.auth.IdentityProvider;
 import io.automatiko.engine.api.auth.SecurityPolicy;
@@ -14,6 +15,8 @@ public class InstanceMetadata {
     private String id;
     private String businessKey;
     private String description;
+
+    private String errors;
 
     private int state;
 
@@ -31,7 +34,7 @@ public class InstanceMetadata {
     }
 
     private InstanceMetadata(String id, String businessKey, String description, int state, Collection<String> tags,
-            Set<Link> links, Date startDate, Date endDate, Date expiredAtDate) {
+            Set<Link> links, Date startDate, Date endDate, Date expiredAtDate, String errors) {
         this.id = id;
         this.businessKey = businessKey;
         this.description = description;
@@ -41,6 +44,7 @@ public class InstanceMetadata {
         this.startDate = startDate;
         this.endDate = endDate;
         this.expiredAtDate = expiredAtDate;
+        this.errors = errors;
     }
 
     public String getId() {
@@ -115,6 +119,14 @@ public class InstanceMetadata {
         this.expiredAtDate = expiredAtDate;
     }
 
+    public String getErrors() {
+        return errors;
+    }
+
+    public void setErrors(String errors) {
+        this.errors = errors;
+    }
+
     public static InstanceMetadata of(ProcessInstance<?> instance) {
         Set<Link> links = new HashSet<>();
         for (WorkItem task : instance.workItems(SecurityPolicy.of(IdentityProvider.get()))) {
@@ -133,8 +145,15 @@ public class InstanceMetadata {
             });
         }
 
+        String errorsInfo = null;
+
+        if (instance.status() == ProcessInstance.STATE_ERROR) {
+            errorsInfo = instance.errors().stream().map(error -> error.errorMessages()).collect(Collectors.joining("|"));
+        }
+
         return new InstanceMetadata(instance.id(), instance.businessKey(), instance.description(), instance.status(),
-                instance.tags().values(), links, instance.startDate(), instance.endDate(), instance.expiresAtDate());
+                instance.tags().values(), links, instance.startDate(), instance.endDate(), instance.expiresAtDate(),
+                errorsInfo);
     }
 
     public static class Link {
