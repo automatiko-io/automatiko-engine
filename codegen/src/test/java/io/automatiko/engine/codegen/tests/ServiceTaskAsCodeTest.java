@@ -448,6 +448,52 @@ public class ServiceTaskAsCodeTest extends AbstractCodegenTest {
     }
 
     @Test
+    public void testBasicServiceProcessTaskRepeatedExpressionManyLoops() throws Exception {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("ServiceProcess", "test workflow as code")
+                .dataObject("input", List.class);
+
+        List<?> output = builder.dataObject(List.class, "output");
+
+        builder.start("start here").then()
+                .log("execute script", "Hello world {}{}", "input", "\"!\"").then()
+                .printout("execute script", "\"Hello world \" + input").then();
+
+        ServiceNodeBuilder service = builder.service("greet");
+
+        service.toDataObject("outItem",
+                service.type(HelloService.class).hello(service.fromDataObject("item")))
+                .repeat(() -> java.util.List.of("one", "two", "three"), () -> output).endRepeatAndThen();
+
+        ServiceNodeBuilder service2 = builder.service("greet");
+
+        service2.toDataObject("outItem",
+                service2.type(HelloService.class).hello(service2.fromDataObject("item")))
+                .repeat(() -> java.util.List.of("one", "two", "three"), () -> output).endRepeatAndThen()
+                .end("that's it");
+
+        Application app = generateCode(List.of(builder.get()));
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("ServiceProcess");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start();
+
+        assertThat(processInstance.startDate()).isNotNull();
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(2).containsKeys("input", "output");
+
+        assertThat(result.toMap().get("output")).isNotNull().asInstanceOf(InstanceOfAssertFactories.LIST).contains("Hello one!",
+                "Hello two!", "Hello three!");
+    }
+
+    @Test
     public void testBasicServiceProcessTaskRepeatedNestedExpression() throws Exception {
 
         WorkflowBuilder builder = WorkflowBuilder.newWorkflow("ServiceProcess", "test workflow as code")
