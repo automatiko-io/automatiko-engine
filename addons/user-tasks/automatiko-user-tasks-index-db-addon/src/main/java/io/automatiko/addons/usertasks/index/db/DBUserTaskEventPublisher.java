@@ -41,7 +41,13 @@ public class DBUserTaskEventPublisher implements EventPublisher {
             UserTaskInstanceDataEvent uevent = (UserTaskInstanceDataEvent) event;
             UserTaskInstanceEventBody data = uevent.getData();
 
-            UserTaskInfoEntity task = new UserTaskInfoEntity();
+            UserTaskInfoEntity task = null;
+            if(keepCompleted){
+                task = UserTaskInfoEntity.findById(data.getId());
+            }
+            if(task == null){
+                task = new UserTaskInfoEntity();
+            }
 
             task.setId(data.getId());
             task.setTaskName(data.getTaskName());
