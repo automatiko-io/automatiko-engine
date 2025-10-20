@@ -100,7 +100,7 @@
     <version.jakarta.validation-api>3.1.1</version.jakarta.validation-api>
     <version.jakarta.websocket-api>2.1.1</version.jakarta.websocket-api>
     <version.jakarta.xml.bind-api>4.0.4</version.jakarta.xml.bind-api>
-    <version.jaxb-runtime>4.0.5</version.jaxb-runtime>
+    <version.jaxb-runtime>4.0.6</version.jaxb-runtime>
 
     <version.json-unit-assertj>4.1.1</version.json-unit-assertj>
     <version.net.java.dev.glazedlists>1.8.0</version.net.java.dev.glazedlists>
