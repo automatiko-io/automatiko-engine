@@ -68,18 +68,21 @@ public class SendEmailService {
      */
     public void sendSimple(List<String> tos, String subject, String body, File<byte[]>... attachments) {
         try {
-            for (String to : tos) {
-                Mail mail = Mail.withHtml(to, subject, body);
-                if (attachments != null) {
-                    for (File<byte[]> attachment : attachments) {
-                        if (attachment == null) {
-                            continue;
-                        }
-                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
-                    }
-                }
-                mailer.send(mail);
+            Mail mail = new Mail().setSubject(subject).setHtml(body);
+
+            if (tos != null) {
+                mail.setTo(tos);
             }
+
+            if (attachments != null) {
+                for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
+                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
+                }
+            }
+            mailer.send(mail);
         } catch (Exception e) {
             throw new ServiceExecutionError("sendEmailFailure", e.getMessage(), e);
         }
@@ -118,21 +121,23 @@ public class SendEmailService {
     public void sendSimpleCorrelated(String correlation, List<String> tos, String subject, String body,
             File<byte[]>... attachments) {
         try {
-            for (String to : tos) {
-                Mail mail = Mail.withHtml(to, subject, body);
 
-                if (attachments != null) {
-                    for (File<byte[]> attachment : attachments) {
-                        if (attachment == null) {
-                            continue;
-                        }
-                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
-                    }
-                }
-                mail.addHeader("Message-ID", EmailUtils.messageIdWithCorrelation(correlation, host.orElse("localhost")));
-
-                mailer.send(mail);
+            Mail mail = new Mail().setSubject(subject).setHtml(body);
+            if (tos != null) {
+                mail.setTo(tos);
             }
+            if (attachments != null) {
+                for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
+                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
+                }
+            }
+            mail.addHeader("Message-ID", EmailUtils.messageIdWithCorrelation(correlation, host.orElse("localhost")));
+
+            mailer.send(mail);
+
         } catch (Exception e) {
             throw new ServiceExecutionError("sendEmailFailure", e.getMessage(), e);
         }
@@ -170,22 +175,26 @@ public class SendEmailService {
      */
     public void sendSimpleWithCC(List<String> tos, List<String> ccs, String subject, String body, File<byte[]>... attachments) {
         try {
-            for (String to : tos) {
-                Mail mail = Mail.withHtml(to, subject, body);
 
-                for (String cc : ccs) {
-                    mail.addCc(cc);
-                }
-                if (attachments != null) {
-                    for (File<byte[]> attachment : attachments) {
-                        if (attachment == null) {
-                            continue;
-                        }
-                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
-                    }
-                }
-                mailer.send(mail);
+            Mail mail = new Mail().setSubject(subject).setHtml(body);
+
+            if (tos != null) {
+                mail.setTo(tos);
             }
+
+            if (ccs != null) {
+                mail.setCc(ccs);
+            }
+            if (attachments != null) {
+                for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
+                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
+                }
+            }
+            mailer.send(mail);
+
         } catch (Exception e) {
             throw new ServiceExecutionError("sendEmailFailure", e.getMessage(), e);
         }
@@ -224,22 +233,25 @@ public class SendEmailService {
     public void sendSimpleWithBCC(List<String> tos, List<String> bccs, String subject, String body,
             File<byte[]>... attachments) {
         try {
-            for (String to : tos) {
-                Mail mail = Mail.withHtml(to, subject, body);
+            Mail mail = new Mail().setSubject(subject).setHtml(body);
 
-                for (String bcc : bccs) {
-                    mail.addBcc(bcc);
-                }
-                if (attachments != null) {
-                    for (File<byte[]> attachment : attachments) {
-                        if (attachment == null) {
-                            continue;
-                        }
-                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
-                    }
-                }
-                mailer.send(mail);
+            if (tos != null) {
+                mail.setTo(tos);
             }
+
+            if (bccs != null) {
+                mail.setBcc(bccs);
+            }
+            if (attachments != null) {
+                for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
+                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
+                }
+            }
+            mailer.send(mail);
+
         } catch (Exception e) {
             throw new ServiceExecutionError("sendEmailFailure", e.getMessage(), e);
         }
@@ -282,24 +294,27 @@ public class SendEmailService {
     public void sendSimpleCorrelatedWithCC(String correlation, List<String> tos, List<String> ccs, String subject, String body,
             File<byte[]>... attachments) {
         try {
-            for (String to : tos) {
-                Mail mail = Mail.withHtml(to, subject, body);
+            Mail mail = new Mail().setSubject(subject).setHtml(body);
 
-                for (String cc : ccs) {
-                    mail.addCc(cc);
-                }
-                if (attachments != null) {
-                    for (File<byte[]> attachment : attachments) {
-                        if (attachment == null) {
-                            continue;
-                        }
-                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
-                    }
-                }
-                mail.addHeader("Message-ID", EmailUtils.messageIdWithCorrelation(correlation, host.orElse("localhost")));
-
-                mailer.send(mail);
+            if (tos != null) {
+                mail.setTo(tos);
             }
+
+            if (ccs != null) {
+                mail.setCc(ccs);
+            }
+            if (attachments != null) {
+                for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
+                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
+                }
+            }
+            mail.addHeader("Message-ID", EmailUtils.messageIdWithCorrelation(correlation, host.orElse("localhost")));
+
+            mailer.send(mail);
+
         } catch (Exception e) {
             throw new ServiceExecutionError("sendEmailFailure", e.getMessage(), e);
         }
@@ -343,24 +358,26 @@ public class SendEmailService {
             String body,
             File<byte[]>... attachments) {
         try {
-            for (String to : tos) {
-                Mail mail = Mail.withHtml(to, subject, body);
+            Mail mail = new Mail().setSubject(subject).setHtml(body);
 
-                for (String bcc : bccs) {
-                    mail.addBcc(bcc);
-                }
-                if (attachments != null) {
-                    for (File<byte[]> attachment : attachments) {
-                        if (attachment == null) {
-                            continue;
-                        }
-                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
-                    }
-                }
-                mail.addHeader("Message-ID", EmailUtils.messageIdWithCorrelation(correlation, host.orElse("localhost")));
-
-                mailer.send(mail);
+            if (tos != null) {
+                mail.setTo(tos);
             }
+            if (bccs != null) {
+                mail.setBcc(bccs);
+            }
+            if (attachments != null) {
+                for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
+                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
+                }
+            }
+            mail.addHeader("Message-ID", EmailUtils.messageIdWithCorrelation(correlation, host.orElse("localhost")));
+
+            mailer.send(mail);
+
         } catch (Exception e) {
             throw new ServiceExecutionError("sendEmailFailure", e.getMessage(), e);
         }
@@ -409,19 +426,22 @@ public class SendEmailService {
             templateData.put("body", body);
 
             String content = template.instance().data(templateData).render();
-            for (String to : tos) {
-                Mail mail = Mail.withHtml(to, subject, content);
+            Mail mail = new Mail().setSubject(subject).setHtml(content);
 
-                if (attachments != null) {
-                    for (File<byte[]> attachment : attachments) {
-                        if (attachment == null) {
-                            continue;
-                        }
-                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
-                    }
-                }
-                mailer.send(mail);
+            if (tos != null) {
+                mail.setTo(tos);
             }
+
+            if (attachments != null) {
+                for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
+                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
+                }
+            }
+            mailer.send(mail);
+
         } catch (Exception e) {
             throw new ServiceExecutionError("sendEmailFailure", e.getMessage(), e);
         }
@@ -474,20 +494,24 @@ public class SendEmailService {
             templateData.put("body", body);
 
             String content = template.instance().data(templateData).render();
-            for (String to : tos) {
-                Mail mail = Mail.withHtml(to, subject, content);
-                if (attachments != null) {
-                    for (File<byte[]> attachment : attachments) {
-                        if (attachment == null) {
-                            continue;
-                        }
-                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
-                    }
-                }
-                mail.addHeader("Message-ID", EmailUtils.messageIdWithCorrelation(correlation, host.orElse("localhost")));
+            Mail mail = new Mail().setSubject(subject).setHtml(content);
 
-                mailer.send(mail);
+            if (tos != null) {
+                mail.setTo(tos);
             }
+
+            if (attachments != null) {
+                for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
+                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
+                }
+            }
+            mail.addHeader("Message-ID", EmailUtils.messageIdWithCorrelation(correlation, host.orElse("localhost")));
+
+            mailer.send(mail);
+
         } catch (Exception e) {
             throw new ServiceExecutionError("sendEmailFailure", e.getMessage(), e);
         }
@@ -542,23 +566,26 @@ public class SendEmailService {
             templateData.put("body", body);
 
             String content = template.instance().data(templateData).render();
-            for (String to : tos) {
-                Mail mail = Mail.withHtml(to, subject, content);
+            Mail mail = new Mail().setSubject(subject).setHtml(content);
 
-                for (String cc : ccs) {
-                    mail.addCc(cc);
-                }
-
-                if (attachments != null) {
-                    for (File<byte[]> attachment : attachments) {
-                        if (attachment == null) {
-                            continue;
-                        }
-                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
-                    }
-                }
-                mailer.send(mail);
+            if (tos != null) {
+                mail.setTo(tos);
             }
+
+            if (ccs != null) {
+                mail.setCc(ccs);
+            }
+
+            if (attachments != null) {
+                for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
+                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
+                }
+            }
+            mailer.send(mail);
+
         } catch (Exception e) {
             throw new ServiceExecutionError("sendEmailFailure", e.getMessage(), e);
         }
@@ -613,23 +640,26 @@ public class SendEmailService {
             templateData.put("body", body);
 
             String content = template.instance().data(templateData).render();
-            for (String to : tos) {
-                Mail mail = Mail.withHtml(to, subject, content);
+            Mail mail = new Mail().setSubject(subject).setHtml(content);
 
-                for (String bcc : bccs) {
-                    mail.addBcc(bcc);
-                }
-
-                if (attachments != null) {
-                    for (File<byte[]> attachment : attachments) {
-                        if (attachment == null) {
-                            continue;
-                        }
-                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
-                    }
-                }
-                mailer.send(mail);
+            if (tos != null) {
+                mail.setTo(tos);
             }
+
+            if (bccs != null) {
+                mail.setBcc(bccs);
+            }
+
+            if (attachments != null) {
+                for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
+                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
+                }
+            }
+            mailer.send(mail);
+
         } catch (Exception e) {
             throw new ServiceExecutionError("sendEmailFailure", e.getMessage(), e);
         }
@@ -690,25 +720,28 @@ public class SendEmailService {
             templateData.put("body", body);
 
             String content = template.instance().data(templateData).render();
-            for (String to : tos) {
-                Mail mail = Mail.withHtml(to, subject, content);
+            Mail mail = new Mail().setSubject(subject).setHtml(content);
 
-                for (String cc : ccs) {
-                    mail.addCc(cc);
-                }
-
-                if (attachments != null) {
-                    for (File<byte[]> attachment : attachments) {
-                        if (attachment == null) {
-                            continue;
-                        }
-                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
-                    }
-                }
-                mail.addHeader("Message-ID", EmailUtils.messageIdWithCorrelation(correlation, host.orElse("localhost")));
-
-                mailer.send(mail);
+            if (tos != null) {
+                mail.setTo(tos);
             }
+
+            if (ccs != null) {
+                mail.setCc(ccs);
+            }
+
+            if (attachments != null) {
+                for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
+                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
+                }
+            }
+            mail.addHeader("Message-ID", EmailUtils.messageIdWithCorrelation(correlation, host.orElse("localhost")));
+
+            mailer.send(mail);
+
         } catch (Exception e) {
             throw new ServiceExecutionError("sendEmailFailure", e.getMessage(), e);
         }
@@ -769,24 +802,27 @@ public class SendEmailService {
             templateData.put("body", body);
 
             String content = template.instance().data(templateData).render();
-            for (String to : tos) {
-                Mail mail = Mail.withHtml(to, subject, content);
+            Mail mail = new Mail().setSubject(subject).setHtml(content);
 
-                for (String bcc : bccs) {
-                    mail.addBcc(bcc);
-                }
-                if (attachments != null) {
-                    for (File<byte[]> attachment : attachments) {
-                        if (attachment == null) {
-                            continue;
-                        }
-                        mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
-                    }
-                }
-                mail.addHeader("Message-ID", EmailUtils.messageIdWithCorrelation(correlation, host.orElse("localhost")));
-
-                mailer.send(mail);
+            if (tos != null) {
+                mail.setTo(tos);
             }
+
+            if (bccs != null) {
+                mail.setBcc(bccs);
+            }
+            if (attachments != null) {
+                for (File<byte[]> attachment : attachments) {
+                    if (attachment == null) {
+                        continue;
+                    }
+                    mail.addAttachment(attachment.name(), attachment.content(), attachment.type());
+                }
+            }
+            mail.addHeader("Message-ID", EmailUtils.messageIdWithCorrelation(correlation, host.orElse("localhost")));
+
+            mailer.send(mail);
+
         } catch (Exception e) {
             throw new ServiceExecutionError("sendEmailFailure", e.getMessage(), e);
         }
