@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.automatiko.engine.api.workflow.WorkItem;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public class BaseWorkItem implements WorkItem {
 
     private final String id;

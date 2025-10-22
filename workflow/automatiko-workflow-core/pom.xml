@@ -107,6 +107,11 @@
       <groupId>net.thisptr</groupId>
       <artifactId>jackson-jq</artifactId>
     </dependency>
+	
+	<dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-core</artifactId>
+    </dependency>
 
     <!-- test -->
     <dependency>
