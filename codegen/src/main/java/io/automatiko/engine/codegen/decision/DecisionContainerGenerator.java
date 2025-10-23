@@ -76,11 +76,29 @@ public class DecisionContainerGenerator extends AbstractApplicationSection {
                 }
             }
 
+            int chunkSize = 1000;
+            var dmnContent = new ObjectCreationExpr(null, new ClassOrInterfaceType(null, StringBuilder.class.getCanonicalName()), new NodeList<>());
+            var sw = true;
+            MethodCallExpr lastCall = null;
+            for (int i = 0; i < decisionContent.length(); i += chunkSize) {
+                int end = Math.min(decisionContent.length(), i + chunkSize);
+                var chunk = decisionContent.substring(i, end);
+                
+                if(sw) {
+                    lastCall = new MethodCallExpr(dmnContent, "append");
+                    lastCall.addArgument(new StringLiteralExpr().setString(chunk));
+                    sw = false;
+                }else {
+                    lastCall = new MethodCallExpr(lastCall, "append");
+                    lastCall.addArgument(new StringLiteralExpr().setString(chunk));
+                }
+            }
+
             String decisionMethodName = "decision_" + index;
             BlockStmt body = new BlockStmt();
             ObjectCreationExpr newbyteResource = new ObjectCreationExpr(null,
                     new ClassOrInterfaceType(null, ByteArrayResource.class.getCanonicalName()),
-                    NodeList.nodeList(new MethodCallExpr(new StringLiteralExpr().setString(decisionContent), "getBytes")));
+                    NodeList.nodeList(new MethodCallExpr(new MethodCallExpr(lastCall, "toString"), "getBytes")));
             body.addStatement(new ReturnStmt(newbyteResource));
             MethodDeclaration dmnResourceMethod = new MethodDeclaration().setName(decisionMethodName)
                     .setType(ByteArrayResource.class.getCanonicalName())
