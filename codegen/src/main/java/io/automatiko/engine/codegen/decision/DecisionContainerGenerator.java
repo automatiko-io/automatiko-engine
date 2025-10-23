@@ -1,11 +1,7 @@
 
 package io.automatiko.engine.codegen.decision;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +18,6 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
-import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -30,12 +25,9 @@ import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.Statement;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import io.automatiko.engine.api.decision.DecisionModels;
 import io.automatiko.engine.codegen.AbstractApplicationSection;
-import io.automatiko.engine.services.io.ByteArrayResource;
-import io.automatiko.engine.services.utils.IoUtils;
 
 public class DecisionContainerGenerator extends AbstractApplicationSection {
 
@@ -58,32 +50,19 @@ public class DecisionContainerGenerator extends AbstractApplicationSection {
         ClassOrInterfaceDeclaration typeDeclaration = (ClassOrInterfaceDeclaration) clazz.getTypes().get(0);
         for (DMNResource resource : resources) {
             String source = resource.getDmnModel().getResource().getSourcePath();
-            Path relativizedPath = Paths.get(source);
-            String decisionContent;
-            try {
-                decisionContent = Files.readString(relativizedPath);
-            } catch (IOException e) {
-
-                try {
-                    InputStream input = Thread.currentThread().getContextClassLoader().getResourceAsStream(source);
-                    if (input == null) {
-                        input = Thread.currentThread().getContextClassLoader().getResourceAsStream("/" + source);
-
-                    }
-                    decisionContent = new String(IoUtils.readBytesFromInputStream(input));
-                } catch (IOException e1) {
-                    throw new RuntimeException(e);
-                }
-            }
 
             String decisionMethodName = "decision_" + index;
             BlockStmt body = new BlockStmt();
-            ObjectCreationExpr newbyteResource = new ObjectCreationExpr(null,
-                    new ClassOrInterfaceType(null, ByteArrayResource.class.getCanonicalName()),
-                    NodeList.nodeList(new MethodCallExpr(new StringLiteralExpr().setString(decisionContent), "getBytes")));
-            body.addStatement(new ReturnStmt(newbyteResource));
+
+            String classpathPath = source.replace(resource.getPath().toString(), "");
+            if (classpathPath.startsWith(File.separator)) {
+                classpathPath = classpathPath.substring(1);
+            }
+
+            body.addStatement(
+                    new ReturnStmt(new StringLiteralExpr(classpathPath)));
             MethodDeclaration dmnResourceMethod = new MethodDeclaration().setName(decisionMethodName)
-                    .setType(ByteArrayResource.class.getCanonicalName())
+                    .setType(String.class.getCanonicalName())
                     .setModifiers(Keyword.PRIVATE, Keyword.STATIC)
                     .setBody(body);
 
