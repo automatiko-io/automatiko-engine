@@ -294,11 +294,11 @@ public abstract class AbstractResourceGenerator {
         template.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.tags.Tag"),
                 NodeList.nodeList(new MemberValuePair("name", new StringLiteralExpr(category)),
                         new MemberValuePair("description", new StringLiteralExpr(categoryDescription)))));
-        
-        
+
         String securityScheme = (String) process.getMetaData().get("securityScheme");
         if (securityScheme != null && !securityScheme.isBlank()) {
-            template.addAnnotation(new NormalAnnotationExpr(new Name("org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement"),
+            template.addAnnotation(new NormalAnnotationExpr(
+                    new Name("org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement"),
                     NodeList.nodeList(new MemberValuePair("name", new StringLiteralExpr(securityScheme)))));
         }
 
@@ -506,10 +506,14 @@ public abstract class AbstractResourceGenerator {
                 template.addMember(cloned);
             });
 
-            subunit.findFirst(ClassOrInterfaceDeclaration.class).get().findAll(FieldDeclaration.class).forEach(fd -> {
-                FieldDeclaration cloned = fd.clone();
-                template.addMember(cloned);
-            });
+            subunit.findFirst(ClassOrInterfaceDeclaration.class).get()
+                    .findAll(FieldDeclaration.class,
+                            // avoid coping tracer as it will cause duplicated fields
+                            f -> f.getVariables().isNonEmpty() && !f.getVariable(0).getNameAsString().equals("tracer"))
+                    .forEach(fd -> {
+                        FieldDeclaration cloned = fd.clone();
+                        template.addMember(cloned);
+                    });
 
             if (subunit.getPackageDeclaration().isPresent() && !subunit.getPackageDeclaration().get().getNameAsString()
                     .equals(clazz.getPackageDeclaration().get().getNameAsString())) {
