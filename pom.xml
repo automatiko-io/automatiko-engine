@@ -59,7 +59,7 @@
     <version.jar.plugin>3.4.2</version.jar.plugin>
     <version.javadoc.plugin>3.12.0</version.javadoc.plugin>
     <version.archetype.plugin>3.4.0</version.archetype.plugin>
-    <version.enforcer.plugin>3.6.1</version.enforcer.plugin>
+    <version.enforcer.plugin>3.6.2</version.enforcer.plugin>
     <version.maven>3.8.6</version.maven>
     <version.maven.plugin>3.15.1</version.maven.plugin>
     <version.native2ascii.plugin>1.0-beta-1</version.native2ascii.plugin>
