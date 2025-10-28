@@ -198,10 +198,11 @@ public class AutomatikoQuarkusProcessor {
             Indexer automatikoIndexer = new Indexer();
             Set<DotName> automatikoIndex = new HashSet<>();
 
+            Set<String> processed = new HashSet<>();
             compile(appGen, appPaths, curateOutcomeBuildItem.getApplicationModel(), javaFiles, launchMode.getLaunchMode(),
                     generatedBeans, additionalIndexClass, (className, data) -> {
                         return generateBeanBuildItem(archivesIndex, automatikoIndexer, automatikoIndex, className, data);
-                    }, pconfig);
+                    }, pconfig, processed);
 
             Index index = automatikoIndexer.complete();
 
@@ -216,7 +217,7 @@ public class AutomatikoQuarkusProcessor {
 
             generatePersistenceInfo(appGen, config, pconfig, appPaths, generatedBeans, additionalIndexClass,
                     CompositeIndex.create(archivesIndex, index), launchMode, resource,
-                    curateOutcomeBuildItem);
+                    curateOutcomeBuildItem, processed);
 
         }
     }
@@ -431,7 +432,8 @@ public class AutomatikoQuarkusProcessor {
             BuildProducer<GeneratedBeanBuildItem> generatedBeans,
             BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexClass,
             IndexView index, LaunchModeBuildItem launchMode,
-            BuildProducer<NativeImageResourceBuildItem> resource, CurateOutcomeBuildItem curateOutcomeBuildItem)
+            BuildProducer<NativeImageResourceBuildItem> resource, CurateOutcomeBuildItem curateOutcomeBuildItem,
+            Set<String> processed)
             throws Exception {
 
         ClassInfo persistenceClass = index.getClassByName(createDotName(persistenceFactoryClass));
@@ -454,7 +456,7 @@ public class AutomatikoQuarkusProcessor {
             writeGeneratedFiles(appGen, sourceFolder, appPaths, generatedFiles);
 
             compile(appGen, appPaths, curateOutcomeBuildItem.getApplicationModel(), generatedFiles, launchMode.getLaunchMode(),
-                    generatedBeans, additionalIndexClass, GeneratedBeanBuildItem::new, pconfig);
+                    generatedBeans, additionalIndexClass, GeneratedBeanBuildItem::new, pconfig, processed);
         }
 
     }
@@ -518,7 +520,8 @@ public class AutomatikoQuarkusProcessor {
             Collection<GeneratedFile> generatedFiles,
             LaunchMode launchMode, BuildProducer<GeneratedBeanBuildItem> generatedBeans,
             BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexClassProducer,
-            BiFunction<String, byte[], GeneratedBeanBuildItem> bif, PackageConfig config) throws Exception {
+            BiFunction<String, byte[], GeneratedBeanBuildItem> bif, PackageConfig config, Set<String> processed)
+            throws Exception {
         List<JavaFileObject> sources = new ArrayList<JavaFileObject>();
         List<String> classpaths = new ArrayList<String>();
 
@@ -583,7 +586,9 @@ public class AutomatikoQuarkusProcessor {
                     String clazz = jfo.getName().replace(buildDir.toString() + File.separator, "");
                     clazz = toClassName(clazz);
                     byte[] content = IoUtils.readBytesFromInputStream(jfo.openInputStream());
-                    generatedBeans.produce(bif.apply(clazz, content));
+                    if (processed.add(clazz)) {
+                        generatedBeans.produce(bif.apply(clazz, content));
+                    }
 
                     classesToIndex.add(clazz);
                     classes.put(clazz, content);
