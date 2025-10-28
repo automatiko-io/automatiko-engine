@@ -8,6 +8,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -561,7 +562,7 @@ public class AutomatikoQuarkusProcessor {
                 String generatedClassFile = entry.relativePath().replace(sourceFolder + "/", "");
                 String fileName = toRuntimeSource(sourceFolder, toClassName(generatedClassFile));
 
-                sources.add(new SourceCode(fileName, new String(entry.contents())));
+                sources.add(new SourceCode(fileName, new String(entry.contents(), StandardCharsets.UTF_8)));
 
                 String location = generatedClassesDir;
                 if (launchMode == LaunchMode.DEVELOPMENT
