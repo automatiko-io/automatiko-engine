@@ -1,6 +1,6 @@
 name: main
 title: Automatiko Documentation
-version: 0.0.0
+version: 0.47.0
 start_page: ROOT:about.adoc
 nav:
  - modules/ROOT/nav.adoc
