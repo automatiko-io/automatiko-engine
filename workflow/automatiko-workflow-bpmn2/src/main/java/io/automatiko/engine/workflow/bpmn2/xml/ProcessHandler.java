@@ -90,7 +90,7 @@ import io.automatiko.engine.workflow.process.executable.core.validation.Executab
 import io.automatiko.engine.workflow.util.PatternConstants;
 
 public class ProcessHandler extends BaseAbstractHandler implements Handler {
-
+    private static final String AUTOMATIKO_URI = System.getProperty("automatiko.uri", "https://automatiko.io");
     private static final Logger logger = LoggerFactory.getLogger(ProcessHandler.class);
 
     public static final String CONNECTIONS = "BPMN.Connections";
@@ -133,9 +133,9 @@ public class ProcessHandler extends BaseAbstractHandler implements Handler {
         String name = attrs.getValue("name");
         String visibility = attrs.getValue("processType");
         String executable = attrs.getValue("isExecutable");
-        String packageName = attrs.getValue("https://automatiko.io", "packageName");
-        String dynamic = attrs.getValue("https://automatiko.io", "adHoc");
-        String version = attrs.getValue("https://automatiko.io", "version");
+        String packageName = attrs.getValue(AUTOMATIKO_URI, "packageName");
+        String dynamic = attrs.getValue(AUTOMATIKO_URI, "adHoc");
+        String version = attrs.getValue(AUTOMATIKO_URI, "version");
 
         ExecutableProcess process = new ExecutableProcess();
         process.setAutoComplete(true);
