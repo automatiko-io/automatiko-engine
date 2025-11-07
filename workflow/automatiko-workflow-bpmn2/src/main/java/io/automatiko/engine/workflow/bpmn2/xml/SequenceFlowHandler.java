@@ -23,7 +23,7 @@ import io.automatiko.engine.workflow.process.core.node.CompositeNode;
 import io.automatiko.engine.workflow.process.executable.core.ExecutableProcess;
 
 public class SequenceFlowHandler extends BaseAbstractHandler implements Handler {
-
+	private static final String AUTOMATIKO_URI = System.getProperty("automatiko.uri", "https://automatiko.io");
 	public SequenceFlowHandler() {
 		initValidParents();
 		initValidPeers();
@@ -58,7 +58,7 @@ public class SequenceFlowHandler extends BaseAbstractHandler implements Handler 
 		final String targetRef = attrs.getValue("targetRef");
 		final String bendpoints = attrs.getValue("g:bendpoints");
 		final String name = attrs.getValue("name");
-		final String priority = attrs.getValue("https://automatiko.io", "priority");
+		final String priority = attrs.getValue(AUTOMATIKO_URI, "priority");
 
 		NodeContainer nodeContainer = (NodeContainer) parser.getParent();
 

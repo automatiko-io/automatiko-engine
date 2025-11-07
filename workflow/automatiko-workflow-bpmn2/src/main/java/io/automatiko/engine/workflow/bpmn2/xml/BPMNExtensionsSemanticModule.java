@@ -5,7 +5,7 @@ import io.automatiko.engine.workflow.compiler.xml.DefaultSemanticModule;
 
 public class BPMNExtensionsSemanticModule extends DefaultSemanticModule {
 
-    public static final String BPMN2_EXTENSIONS_URI = "https://automatiko.io";
+    public static final String BPMN2_EXTENSIONS_URI = System.getProperty("automatiko.uri", "https://automatiko.io");
 
     public BPMNExtensionsSemanticModule() {
         super(BPMN2_EXTENSIONS_URI);
