@@ -25,6 +25,7 @@ import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.Statement;
+import com.github.javaparser.utils.StringEscapeUtils;
 
 import io.automatiko.engine.api.decision.DecisionModels;
 import io.automatiko.engine.codegen.AbstractApplicationSection;
@@ -60,7 +61,7 @@ public class DecisionContainerGenerator extends AbstractApplicationSection {
             }
 
             body.addStatement(
-                    new ReturnStmt(new StringLiteralExpr(classpathPath)));
+                    new ReturnStmt(new StringLiteralExpr(StringEscapeUtils.escapeJava(classpathPath))));
             MethodDeclaration dmnResourceMethod = new MethodDeclaration().setName(decisionMethodName)
                     .setType(String.class.getCanonicalName())
                     .setModifiers(Keyword.PRIVATE, Keyword.STATIC)
