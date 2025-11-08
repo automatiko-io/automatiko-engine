@@ -49,6 +49,7 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.utils.StringEscapeUtils;
 
 import io.automatiko.engine.api.definition.process.WorkflowProcess;
 import io.automatiko.engine.codegen.GeneratorContext;
@@ -267,7 +268,7 @@ public class OpenAPIClientGenerator {
 
                         if (filename.endsWith(".java")) {
                             // remove the absolute path prefix that is based on java tmp dir
-                            String name = filename.substring(TEMP_PATH.length(), filename.lastIndexOf(".")).replaceAll("/",
+                            String name = filename.substring(TEMP_PATH.length(), filename.lastIndexOf(".")).replaceAll(StringEscapeUtils.escapeJava(File.separator),
                                     ".");
                             if (name.startsWith(".")) {
                                 name = name.substring(1);
