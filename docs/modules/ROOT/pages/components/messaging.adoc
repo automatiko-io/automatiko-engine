@@ -162,6 +162,7 @@ event to extract correlation value to be used to find matching workflow instance
  to message payload (already converted) and message itself to check if given message
  is accepted or not. By default all messages are accepted.
 - *channel* - specifies what channel should be used for this message - by default name of the node is used - only applies to direct connector
+- *mergeMode* - specifies that channel can receive messages from multiple producers. The value of this attribute should be one of following: `MERGE`, `ONE`, `CONCAT`. See more details about merge in the https://smallrye.io/smallrye-reactive-messaging/latest/concepts/merge[reactive messaging documentation].
 
 image::messaging-definition-general.png[]
 

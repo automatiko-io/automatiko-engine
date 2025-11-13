@@ -101,6 +101,38 @@ public class WaitOnMessageNodeBuilder extends AbstractNodeBuilder {
     }
 
     /**
+     * Configures merge of multiple channels using merge mode - gets all the messages as they come, without any defined order.
+     * Messages from different producers may be interleaved
+     * 
+     * @return the builder
+     */
+    public WaitOnMessageNodeBuilder mergeChannels() {
+        node.setMetaData("mergeMode", "MERGE");
+        return this;
+    }
+
+    /**
+     * Configures merge of multiple channels using one mode - picks a single producer, discarding the other producer
+     * 
+     * @return the builder
+     */
+    public WaitOnMessageNodeBuilder pickOneFromChannels() {
+        node.setMetaData("mergeMode", "ONE");
+        return this;
+    }
+
+    /**
+     * Configures merge of multiple channels using concat mode - concatenates the producers. The messages from one producer are
+     * received until the messages from other producers are received
+     * 
+     * @return the builder
+     */
+    public WaitOnMessageNodeBuilder concatChannels() {
+        node.setMetaData("mergeMode", "CONCAT");
+        return this;
+    }
+
+    /**
      * Expression to be used to extract correlation key to be used to look up workflow instances for the message
      * 
      * @param expression correlation key expression
