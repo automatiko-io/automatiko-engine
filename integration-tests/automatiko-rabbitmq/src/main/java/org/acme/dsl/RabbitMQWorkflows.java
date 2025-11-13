@@ -15,7 +15,7 @@ public class RabbitMQWorkflows {
                 "Sample workflow that uses AMQPfor integration with other systems");
         Person person = builder.dataObject(Person.class, "person", Variable.INTERNAL_TAG);
 
-        builder.startOnMessage("dslperson").connector("rabbitmq").ackMode("pre")
+        builder.startOnMessage("dslperson").connector("rabbitmq").ackMode("pre").mergeChannels()
                 .toDataObject("person")
                 .then().log("person processed", "Here is a person {}", "person")
                 .then().expression("change values", () -> {
