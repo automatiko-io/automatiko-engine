@@ -79,6 +79,16 @@ public class EndWithMessageNodeBuilder extends AbstractNodeBuilder {
     }
 
     /**
+     * Disables auto configuration of the connector for given producer. Requires manual configuration via property files
+     * 
+     * @return the builder
+     */
+    public EndWithMessageNodeBuilder disableAutoConfiguration() {
+        node.setMetaData("autoConfiguration", "false");
+        return this;
+    }
+
+    /**
      * Maps given data object to the payload of the message
      * 
      * @param name name of the data object

@@ -344,7 +344,9 @@ public class MessageConsumerGenerator {
         String connector = CodegenUtils.getConnector(INCOMING_PROP_PREFIX + sanitizedName + ".connector", context,
                 (String) trigger.getContext("connector"));
 
-        if (connector != null && !OPERATOR_CONNECTOR.equals(connector) && !DIRECT_CONNECTOR.equals(connector)) {
+        boolean autoConfiguration = Boolean.parseBoolean(trigger.getContext("autoConfiguration", "true").toString());
+        if (autoConfiguration && connector != null && !OPERATOR_CONNECTOR.equals(connector)
+                && !DIRECT_CONNECTOR.equals(connector)) {
 
             context.setApplicationProperty(INCOMING_PROP_PREFIX + sanitizedName + ".connector", connector);
             appendConnectorSpecificProperties(connector);

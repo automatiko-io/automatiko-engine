@@ -133,6 +133,16 @@ public class WaitOnMessageNodeBuilder extends AbstractNodeBuilder {
     }
 
     /**
+     * Disables auto configuration of the connector for given consumer. Requires manual configuration via property files
+     * 
+     * @return the builder
+     */
+    public WaitOnMessageNodeBuilder disableAutoConfiguration() {
+        node.setMetaData("autoConfiguration", "false");
+        return this;
+    }
+
+    /**
      * Expression to be used to extract correlation key to be used to look up workflow instances for the message
      * 
      * @param expression correlation key expression
