@@ -298,7 +298,8 @@ public class MessageProducerGenerator {
         String sanitizedName = CodegenUtils.triggerSanitizedName(trigger, process.getVersion());
         String connector = CodegenUtils.getConnector(OUTGOING_PROP_PREFIX + sanitizedName + ".connector", context,
                 (String) trigger.getContext("connector"));
-        if (connector != null && !DIRECT_CONNECTOR.equals(connector)) {
+        boolean autoConfiguration = Boolean.parseBoolean(trigger.getContext("autoConfiguration", "true").toString());
+        if (autoConfiguration && connector != null && !DIRECT_CONNECTOR.equals(connector)) {
 
             context.setApplicationProperty(OUTGOING_PROP_PREFIX + sanitizedName + ".connector", connector);
 
