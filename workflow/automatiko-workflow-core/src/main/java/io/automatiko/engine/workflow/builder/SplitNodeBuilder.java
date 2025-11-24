@@ -1,6 +1,6 @@
 package io.automatiko.engine.workflow.builder;
 
-import com.google.common.base.Supplier;
+import java.util.function.Supplier;
 
 import io.automatiko.engine.api.definition.process.Connection;
 import io.automatiko.engine.workflow.base.instance.impl.ReturnValueConstraintEvaluator;
