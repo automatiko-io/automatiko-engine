@@ -67,7 +67,7 @@
     <version.plexus.classworld>2.9.0</version.plexus.classworld>
     <version.plugin.plugin>3.15.2</version.plugin.plugin>
     <version.project.sources.plugin>1.1</version.project.sources.plugin>
-    <version.resources.plugin>3.3.1</version.resources.plugin>
+    <version.resources.plugin>3.4.0</version.resources.plugin>
     <version.site.plugin>3.21.0</version.site.plugin>
     <version.shade.plugin>3.0.0</version.shade.plugin>
     <version.source.plugin>3.3.1</version.source.plugin>
