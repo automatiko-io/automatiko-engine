@@ -8,9 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.regex.Matcher;
 
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.auth.AccessPolicy;
+import io.automatiko.engine.api.expression.ExpressionEvaluator;
 import io.automatiko.engine.api.jobs.DurationExpirationTime;
 import io.automatiko.engine.api.jobs.ExactExpirationTime;
 import io.automatiko.engine.api.jobs.ExpirationTime;
@@ -36,6 +38,7 @@ import io.automatiko.engine.services.signal.EventListenerResolver;
 import io.automatiko.engine.services.signal.LightSignalManager;
 import io.automatiko.engine.workflow.auth.AccessPolicyFactory;
 import io.automatiko.engine.workflow.auth.AllowAllAccessPolicy;
+import io.automatiko.engine.workflow.base.core.impl.ProcessImpl;
 import io.automatiko.engine.workflow.base.core.timer.CronExpirationTime;
 import io.automatiko.engine.workflow.base.core.timer.DateTimeUtils;
 import io.automatiko.engine.workflow.base.core.timer.Timer;
@@ -47,6 +50,7 @@ import io.automatiko.engine.workflow.base.instance.impl.end.RemoveEndOfInstanceS
 import io.automatiko.engine.workflow.lock.LockManager;
 import io.automatiko.engine.workflow.process.core.impl.WorkflowProcessImpl;
 import io.automatiko.engine.workflow.process.core.node.StartNode;
+import io.automatiko.engine.workflow.util.PatternConstants;
 
 @SuppressWarnings("unchecked")
 public abstract class AbstractProcess<T extends Model> implements Process<T> {
@@ -209,9 +213,10 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
                 if (CronExpirationTime.isCronExpression(timer.getDelay())) {
                     return CronExpirationTime.of(timer.getDelay());
                 } else {
+                    String delay = resolveExpression(timer.getDelay());
 
                     // when using ISO date/time period is not set
-                    long[] repeatValues = DateTimeUtils.parseRepeatableDateTime(timer.getDelay());
+                    long[] repeatValues = DateTimeUtils.parseRepeatableDateTime(delay);
                     if (repeatValues.length == 3) {
                         int parsedReapedCount = (int) repeatValues[0];
                         if (parsedReapedCount <= -1) {
@@ -226,13 +231,16 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
                 }
 
             case Timer.TIME_DURATION:
-                long duration = DateTimeUtils.parseDuration(timer.getDelay());
+                String delay = resolveExpression(timer.getDelay());
+                long duration = DateTimeUtils.parseDuration(delay);
                 return DurationExpirationTime.repeat(duration);
 
             case Timer.TIME_DATE:
 
                 try {
-                    return ExactExpirationTime.of(timer.getDate());
+                    String value = resolveExpression(timer.getDate());
+
+                    return ExactExpirationTime.of(value);
                 } catch (DateTimeParseException e) {
                     throw new WorkItemExecutionError("Parsing of date and time for timer failed",
                             "DateTimeParseFailure",
@@ -242,6 +250,22 @@ public abstract class AbstractProcess<T extends Model> implements Process<T> {
             default:
                 throw new UnsupportedOperationException("Not supported timer definition");
         }
+    }
+
+    protected String resolveExpression(String expression) {
+        Matcher matcher = PatternConstants.PARAMETER_MATCHER.matcher(expression);
+
+        if (matcher.find()) {
+            ExpressionEvaluator evaluator = (ExpressionEvaluator) ((ProcessImpl) this.process)
+                    .getDefaultContext(ExpressionEvaluator.EXPRESSION_EVALUATOR);
+
+            Object value = evaluator.evaluate(matcher.group(1), Map.of());
+            if (value != null) {
+                expression = value.toString();
+            }
+        }
+
+        return expression;
     }
 
     public io.automatiko.engine.api.definition.process.Process process() {
