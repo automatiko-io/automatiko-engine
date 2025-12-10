@@ -151,7 +151,8 @@ public class ExecutableProcess extends WorkflowProcessImpl {
                     && (startNode != null && startNode.getTriggers() == null && startNode.getTimer() == null)) {
                 // ignore start nodes that are event based
                 if ((((StartNode) node).getTriggers() == null || ((StartNode) node).getTriggers().isEmpty())
-                        && ((StartNode) node).getTimer() == null) {
+                        && ((StartNode) node).getTimer() == null
+                        && !node.getMetaData().containsKey("TriggerType")) {
                     throw new IllegalArgumentException("A RuleFlowProcess cannot have more than one start node!");
                 }
             }

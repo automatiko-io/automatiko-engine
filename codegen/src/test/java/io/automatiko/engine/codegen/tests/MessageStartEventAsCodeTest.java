@@ -26,6 +26,7 @@ import io.automatiko.engine.quarkus.MetricsBuildTimeConfig;
 import io.automatiko.engine.quarkus.PersistenceBuildTimeConfig;
 import io.automatiko.engine.quarkus.RestBuildTimeConfig;
 import io.automatiko.engine.services.identity.StaticIdentityProvider;
+import io.automatiko.engine.workflow.builder.JoinNodeBuilder;
 import io.automatiko.engine.workflow.builder.WorkflowBuilder;
 
 public class MessageStartEventAsCodeTest extends AbstractCodegenTest {
@@ -164,4 +165,38 @@ public class MessageStartEventAsCodeTest extends AbstractCodegenTest {
         assertThat(result.toMap().get("customerId")).isNotNull().isEqualTo("CUS-00998877");
     }
 
+    @Test
+    public void testMessageStartEvenAndNonetProcess() throws Exception {
+
+        WorkflowBuilder builder = WorkflowBuilder.newWorkflow("MessageStartEvent_1", "Workflow with message start");
+        builder.dataObject("customerId", String.class);
+
+        JoinNodeBuilder join = builder
+                .start("none")
+                .thenJoin("join");
+
+        builder
+                .startOnMessage("customers").type(String.class).toDataObject("customerId")
+                .thenJoin("join");
+
+        join.then().log("log message", "Logged customer with id {}", "customerId")
+                .then().end("done");
+
+        Application app = generateCode(List.of(builder.get()));
+        assertThat(app).isNotNull();
+
+        Process<? extends Model> p = app.processes().processById("MessageStartEvent_1");
+
+        Model m = p.createModel();
+        Map<String, Object> parameters = new HashMap<>();
+        m.fromMap(parameters);
+
+        ProcessInstance<?> processInstance = p.createInstance(m);
+        processInstance.start("customers", null, "CUS-00998877");
+
+        assertThat(processInstance.status()).isEqualTo(ProcessInstance.STATE_COMPLETED);
+        Model result = (Model) processInstance.variables();
+        assertThat(result.toMap()).hasSize(1).containsKeys("customerId");
+        assertThat(result.toMap().get("customerId")).isNotNull().isEqualTo("CUS-00998877");
+    }
 }
