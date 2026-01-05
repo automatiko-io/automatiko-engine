@@ -56,7 +56,7 @@
     <version.install.plugin>3.1.4</version.install.plugin>
     <version.invoker.plugin>3.9.1</version.invoker.plugin>
     <version.jandex.plugin>3.5.3</version.jandex.plugin>
-    <version.jar.plugin>3.4.2</version.jar.plugin>
+    <version.jar.plugin>3.5.0</version.jar.plugin>
     <version.javadoc.plugin>3.12.0</version.javadoc.plugin>
     <version.archetype.plugin>3.4.1</version.archetype.plugin>
     <version.enforcer.plugin>3.6.2</version.enforcer.plugin>
