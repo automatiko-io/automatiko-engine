@@ -135,12 +135,14 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         // this applies to business keys only as non business keys process instances id
         // are always unique
         if (correlationKey != null && ((MutableProcessInstances<T>) process.instances()).exists(id)) {
+            unlock(true);
             throw new ProcessInstanceDuplicatedException(correlationKey.getName());
         }
         // add to the instances upon creation so it can be immediately found even if not
         // started
-        ((MutableProcessInstances<T>) process.instances()).create(id, this);
         this.versionTracker = 1;
+        ((MutableProcessInstances<T>) process.instances()).create(id, this);
+
         unbind(variables, processInstance.getVariables());
     }
 

@@ -310,31 +310,62 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
                 return;
             }
 
-            Map<String, AttributeValue> itemValues = new HashMap<String, AttributeValue>();
-            itemValues.put(INSTANCE_ID_FIELD, AttributeValue.builder().s(resolvedId).build());
-            itemValues.put(VERSION_FIELD, AttributeValue.builder()
-                    .n(String.valueOf(((AbstractProcessInstance<?>) instance).getVersionTracker())).build());
-            itemValues.put(STATUS_FIELD, AttributeValue.builder()
-                    .n(String.valueOf(((AbstractProcessInstance<?>) instance).status())).build());
-            itemValues.put(CONTENT_FIELD, AttributeValue.builder().b(SdkBytes.fromByteArray(data)).build());
-            itemValues.put(START_DATE_FIELD, AttributeValue.builder()
-                    .s(DateTimeFormatter.ISO_INSTANT.format(instance.startDate().toInstant())).build());
+            HashMap<String, AttributeValue> itemKey = new HashMap<String, AttributeValue>();
+
+            itemKey.put(INSTANCE_ID_FIELD, AttributeValue.builder().s(resolvedId).build());
+
+            Map<String, AttributeValueUpdate> updatedValues = new HashMap<String, AttributeValueUpdate>();
+            updatedValues.put(CONTENT_FIELD, AttributeValueUpdate.builder()
+                    .value(AttributeValue.builder().b(SdkBytes.fromByteArray(data)).build())
+                    .action(AttributeAction.PUT)
+                    .build());
+
+            updatedValues.put(VERSION_FIELD, AttributeValueUpdate.builder()
+                    .value(AttributeValue.builder()
+                            .n(String.valueOf(((AbstractProcessInstance<?>) instance).getVersionTracker())).build())
+                    .action(AttributeAction.PUT)
+                    .build());
+
+            updatedValues.put(STATUS_FIELD, AttributeValueUpdate.builder()
+                    .value(AttributeValue.builder()
+                            .n(String.valueOf(((AbstractProcessInstance<?>) instance).status())).build())
+                    .action(AttributeAction.PUT)
+                    .build());
+
+            if (instance.endDate() != null) {
+                updatedValues.put(END_DATE_FIELD, AttributeValueUpdate.builder()
+                        .value(AttributeValue.builder()
+                                .n(DateTimeFormatter.ISO_INSTANT.format(instance.endDate().toInstant())).build())
+                        .action(AttributeAction.PUT)
+                        .build());
+
+                if (instance.expiresAtDate() != null) {
+                    updatedValues.put(EXPIRED_AT_FIELD, AttributeValueUpdate.builder()
+                            .value(AttributeValue.builder()
+                                    .n(DateTimeFormatter.ISO_INSTANT.format(instance.expiresAtDate().toInstant())).build())
+                            .action(AttributeAction.PUT)
+                            .build());
+                }
+            }
 
             Collection<String> tags = new ArrayList(instance.tags().values());
             tags.add(resolvedId);
             if (instance.businessKey() != null) {
                 tags.add(instance.businessKey());
             }
-            itemValues.put(TAGS_FIELD, AttributeValue.builder().ss(tags).build());
+            updatedValues.put(TAGS_FIELD, AttributeValueUpdate.builder()
+                    .value(AttributeValue.builder().ss(tags).build())
+                    .action(AttributeAction.PUT)
+                    .build());
 
-            PutItemRequest request = PutItemRequest.builder()
+            UpdateItemRequest request = UpdateItemRequest.builder()
                     .tableName(tableName)
-                    .conditionExpression("attribute_not_exists(" + INSTANCE_ID_FIELD + ")")
-                    .item(itemValues)
+                    .key(itemKey)
+                    .attributeUpdates(updatedValues)
                     .build();
 
             try {
-                dynamodb.putItem(request);
+                dynamodb.updateItem(request);
 
                 Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
                         .add("message", "Workflow instance created in the DynamoDB based data store");
@@ -352,6 +383,32 @@ public class DynamoDBProcessInstances implements MutableProcessInstances {
             }
         } else if (isPending(instance)) {
             if (cachedInstances.putIfAbsent(resolvedId, instance) != null) {
+                throw new ProcessInstanceDuplicatedException(id);
+            }
+
+            Map<String, AttributeValue> itemValues = new HashMap<String, AttributeValue>();
+            itemValues.put(INSTANCE_ID_FIELD, AttributeValue.builder().s(resolvedId).build());
+            itemValues.put(STATUS_FIELD, AttributeValue.builder()
+                    .n(String.valueOf(((AbstractProcessInstance<?>) instance).status())).build());
+            itemValues.put(VERSION_FIELD, AttributeValue.builder()
+                    .n(String.valueOf(((AbstractProcessInstance<?>) instance).getVersionTracker())).build());
+
+            Collection<String> tags = new ArrayList(instance.tags().values());
+            tags.add(resolvedId);
+            if (instance.businessKey() != null) {
+                tags.add(instance.businessKey());
+            }
+            itemValues.put(TAGS_FIELD, AttributeValue.builder().ss(tags).build());
+
+            PutItemRequest request = PutItemRequest.builder()
+                    .tableName(tableName)
+                    .conditionExpression("attribute_not_exists(" + INSTANCE_ID_FIELD + ")")
+                    .item(itemValues)
+                    .build();
+
+            try {
+                dynamodb.putItem(request);
+            } catch (ConditionalCheckFailedException e) {
                 throw new ProcessInstanceDuplicatedException(id);
             }
         } else {

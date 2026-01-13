@@ -37,6 +37,7 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.Updates;
 
 import io.automatiko.engine.addons.persistence.common.JacksonObjectMarshallingStrategy;
@@ -323,7 +324,6 @@ public class MongodbProcessInstances implements MutableProcessInstances {
         LOGGER.debug("exists() called for instance {}", resolvedId);
         Document found = collection().find(eq(INSTANCE_ID_FIELD, resolvedId))
                 .projection(Projections.fields(Projections.include(INSTANCE_ID_FIELD))).first();
-
         return found != null;
     }
 
@@ -332,7 +332,6 @@ public class MongodbProcessInstances implements MutableProcessInstances {
         String resolvedId = resolveId(id, instance);
         try {
             if (isActive(instance)) {
-
                 byte[] data = codec.encode(marshaller.marhsallProcessInstance(instance));
 
                 if (data == null) {
@@ -370,8 +369,7 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                 }
 
                 try {
-                    collection().insertOne(item);
-
+                    collection().replaceOne(eq(INSTANCE_ID_FIELD, resolvedId), item, new ReplaceOptions().upsert(true));
                     Supplier<AuditEntry> entry = () -> BaseAuditEntry.persitenceWrite(instance)
                             .add("message", "Workflow instance created in the MongoDB based data store");
 
@@ -386,6 +384,19 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                 if (cachedInstances.putIfAbsent(resolvedId, instance) != null) {
                     throw new ProcessInstanceDuplicatedException(id);
                 }
+
+                Collection<String> tags = new LinkedHashSet<>(instance.tags().values());
+                tags.add(resolvedId);
+                if (instance.businessKey() != null) {
+                    tags.add(instance.businessKey());
+                }
+                Document item = new Document(INSTANCE_ID_FIELD, resolvedId)
+                        .append(STATUS_FIELD, instance.status())
+                        .append(TAGS_FIELD, tags)
+                        .append(BUSINESS_KEY_FIELD, instance.businessKey())
+                        .append(VERSION_FIELD, ((AbstractProcessInstance<?>) instance).getVersionTracker())
+                        .append(INSTANCE_DESC_FIELD, instance.description());
+                collection().insertOne(item);
             } else {
                 cachedInstances.remove(resolvedId);
                 cachedInstances.remove(id);
@@ -541,7 +552,6 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                                 process);
                 String variablesJson = entity.get(VARIABLES_FIELD, Document.class).toJson();
                 Model model = process.createModel();
-
                 Map<String, Object> loaded = marshallingStrategy.mapper().readValue(variablesJson, model.getClass()).toMap();
                 model.fromMap(loaded);
                 loaded.forEach((k, v) -> {
@@ -552,9 +562,7 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                         variableScopeInstance.internalSetVariable(k, v);
                     }
                 });
-
                 pi = ((AbstractProcess) process).createInstance(wpi, model, entity.getLong(VERSION_FIELD));
-
             } else {
                 WorkflowProcessInstance wpi = marshaller
                         .unmarshallWorkflowProcessInstance(codec.decode(entity.get(CONTENT_FIELD, Binary.class).getData()),
@@ -574,7 +582,6 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                 });
                 pi = ((AbstractProcess) process).createReadOnlyInstance(wpi, model);
             }
-
             return pi;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
