@@ -545,6 +545,14 @@ public class MessageConsumerGenerator {
                 new MethodDeclaration().setName("canStartInstance").setType(Boolean.class).setModifiers(Keyword.PROTECTED)
                         .setBody(new BlockStmt().addStatement(new ReturnStmt(new BooleanLiteralExpr(trigger.isStart())))));
 
+        template.addMember(
+                new MethodDeclaration().setName("allowsSignal").setType(Boolean.class).setModifiers(Keyword.PROTECTED)
+                        .setBody(new BlockStmt()
+                                .addStatement(
+                                        new ReturnStmt(new BooleanLiteralExpr(trigger.getContext("acceptStartSignal") != null
+                                                ? Boolean.parseBoolean(trigger.getContext("acceptStartSignal").toString())
+                                                : !trigger.isStart())))));
+
         // add connector and message name as static fields of the class
         FieldDeclaration connectorField = new FieldDeclaration().setStatic(true).setFinal(true)
                 .addVariable(new VariableDeclarator(new ClassOrInterfaceType(null, "String"), "CONNECTOR",

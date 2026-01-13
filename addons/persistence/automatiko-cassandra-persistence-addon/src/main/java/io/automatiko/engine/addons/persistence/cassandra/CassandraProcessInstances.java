@@ -22,6 +22,9 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
@@ -38,9 +41,6 @@ import com.datastax.oss.driver.api.querybuilder.schema.CreateIndex;
 import com.datastax.oss.driver.api.querybuilder.schema.CreateKeyspace;
 import com.datastax.oss.driver.api.querybuilder.schema.CreateTable;
 import com.datastax.oss.driver.api.querybuilder.select.Select;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.automatiko.engine.addons.persistence.common.JacksonObjectMarshallingStrategy;
 import io.automatiko.engine.addons.persistence.common.tlog.TransactionLogImpl;
@@ -324,22 +324,22 @@ public class CassandraProcessInstances implements MutableProcessInstances {
                 tags.add(instance.businessKey());
             }
 
-            Insert insert = insertInto(keyspace.orElse("automatiko"), tableName)
-                    .value(INSTANCE_ID_FIELD, literal(resolvedId))
-                    .value(VERSION_FIELD, literal(((AbstractProcessInstance<?>) instance).getVersionTracker()))
-                    .value(STATUS_FIELD, literal(((AbstractProcessInstance<?>) instance).status()))
-                    .value(CONTENT_FIELD, bindMarker())
-                    .value(START_DATE_FIELD, literal(instance.startDate().toInstant()))
-                    .value(END_DATE_FIELD,
+            SimpleStatement statement = QueryBuilder.update(keyspace.orElse("automatiko"), tableName)
+                    .setColumn(CONTENT_FIELD, bindMarker())
+                    .setColumn(TAGS_FIELD, bindMarker())
+                    .setColumn(VERSION_FIELD, literal(((AbstractProcessInstance<?>) instance).getVersionTracker()))
+                    .setColumn(STATUS_FIELD, literal(((AbstractProcessInstance<?>) instance).status()))
+                    .setColumn(START_DATE_FIELD, literal(instance.startDate().toInstant()))
+                    .setColumn(END_DATE_FIELD,
                             literal(instance.endDate() == null ? null
                                     : instance.endDate().toInstant()))
-                    .value(EXPIRED_AT_FIELD,
-                            literal(instance.expiresAtDate() == null ? null
-                                    : instance.expiresAtDate().toInstant()))
-                    .value(TAGS_FIELD, bindMarker()).ifNotExists();
+                    .setColumn(EXPIRED_AT_FIELD, literal(instance.expiresAtDate() == null ? null
+                            : instance.expiresAtDate().toInstant()))
+                    .whereColumn(INSTANCE_ID_FIELD).isEqualTo(literal(resolvedId))
+                    .build();
 
             try {
-                ResultSet rs = cqlSession.execute(cqlSession.prepare(insert.build()).bind(ByteBuffer.wrap(data), tags));
+                ResultSet rs = cqlSession.execute(cqlSession.prepare(statement).bind(ByteBuffer.wrap(data), tags));
                 if (!rs.wasApplied()) {
                     throw new ProcessInstanceDuplicatedException(id);
                 }
@@ -361,6 +361,24 @@ public class CassandraProcessInstances implements MutableProcessInstances {
             if (cachedInstances.putIfAbsent(resolvedId, instance) != null) {
                 throw new ProcessInstanceDuplicatedException(id);
             }
+
+            Collection<String> tags = new LinkedHashSet<>(instance.tags().values());
+            tags.add(resolvedId);
+            if (instance.businessKey() != null) {
+                tags.add(instance.businessKey());
+            }
+
+            Insert insert = insertInto(keyspace.orElse("automatiko"), tableName)
+                    .value(INSTANCE_ID_FIELD, literal(resolvedId))
+                    .value(STATUS_FIELD, literal(((AbstractProcessInstance<?>) instance).status()))
+                    .value(VERSION_FIELD, literal(((AbstractProcessInstance<?>) instance).getVersionTracker()))
+                    .value(TAGS_FIELD, bindMarker()).ifNotExists();
+
+            ResultSet rs = cqlSession.execute(cqlSession.prepare(insert.build()).bind(tags));
+            if (!rs.wasApplied()) {
+                throw new ProcessInstanceDuplicatedException(id);
+            }
+
         } else {
             cachedInstances.remove(resolvedId);
             cachedInstances.remove(id);

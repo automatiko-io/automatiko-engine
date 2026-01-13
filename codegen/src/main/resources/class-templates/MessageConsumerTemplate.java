@@ -99,8 +99,10 @@ public class $Type$MessageConsumer {
                     	ProcessInstance<$Type$> pi = process.createInstance(correlation, model);
                     	pi.start(trigger, null, eventData);
                     } catch (ProcessInstanceDuplicatedException e) {
-                    	ProcessInstance<$Type$> pi = process.instances().findById(correlation, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE_WITH_LOCK).get();
-                    	pi.send(Sig.of(trigger, eventData));
+                        if (allowsSignal()) {
+                        	ProcessInstance<$Type$> pi = process.instances().findById(correlation, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE_WITH_LOCK).get();
+                        	pi.send(Sig.of(trigger, eventData));
+                        }
                     }
                     
                     return null;

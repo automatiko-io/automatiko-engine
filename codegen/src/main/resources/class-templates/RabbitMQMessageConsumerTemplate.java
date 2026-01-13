@@ -119,8 +119,10 @@ public class $Type$MessageConsumer {
                     
                     	pi.start(trigger, null, eventData);
                     } catch (ProcessInstanceDuplicatedException e) {
-                    	ProcessInstance<$Type$> pi = process.instances().findById(correlation, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE_WITH_LOCK).get();
-                    	pi.send(Sig.of(trigger, eventData));
+                        if (allowsSignal()) {
+                        	ProcessInstance<$Type$> pi = process.instances().findById(correlation, io.automatiko.engine.api.workflow.ProcessInstanceReadMode.MUTABLE_WITH_LOCK).get();
+                        	pi.send(Sig.of(trigger, eventData));
+                        }
                     }
             	} else {
             	    metrics.messageMissed(CONNECTOR, MESSAGE, ((io.automatiko.engine.workflow.AbstractProcess<?>)process).process());
@@ -158,7 +160,6 @@ public class $Type$MessageConsumer {
     protected boolean acceptedEvent(io.automatiko.engine.api.event.AbstractDataEvent<?> eventData, Message<byte[]> message) {
         return true;
     }
-	
 
 	protected $DataType$ convert(Message<byte[]> message, Class<?> clazz) throws Exception {
         
