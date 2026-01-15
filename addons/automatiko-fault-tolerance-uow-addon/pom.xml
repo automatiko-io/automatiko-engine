@@ -1,0 +1,51 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.automatiko</groupId>
+    <artifactId>addons</artifactId>
+    <version>0.0.0-SNAPSHOT</version>
+  </parent>
+
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-fault-tolerance-uow-addon</artifactId>
+
+  <name>Automatiko Engine :: Add-Ons :: Fault Tolerance UoW</name>
+  <description>Fault Tolerance Unit Of Work AddOn for Automatiko Engine</description>
+
+  <properties>
+    <java.module.name>io.automatiko.addons.fault.uow.tolerance</java.module.name>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.automatiko.engine</groupId>
+      <artifactId>automatiko-engine-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.automatiko.engine</groupId>
+      <artifactId>automatiko-engine-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-smallrye-fault-tolerance</artifactId>
+    </dependency>    
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.smallrye</groupId>
+        <artifactId>jandex-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>make-index</id>
+            <goals>
+              <goal>jandex</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

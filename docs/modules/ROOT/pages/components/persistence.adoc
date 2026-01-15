@@ -409,3 +409,25 @@ Transaction log store can be provided by application developers by implementing
 `io.automatiko.engine.api.uow.TransactionLogStore` interface. In addition there are plans to also implement other
 store implementation out of the box.
 
+== Unit of work timeout
+
+Automatiko by default does not limit the time allowed to perform operations by workflow engine. Meaning each operation that comes to the engine, regardless of the channel (REST api, Messaging etc) will be allowed to execute without any timeout.
+This sometimes can lead to situations where the execution is block infinetely and thus locking resources. Especially important when messaging is involved as this will cause messages not be acknowledged and thus blocked.
+
+Fault tolerance addon comes with timeout based UnitOfWorkManager that allows to to timeout operation when taking too long. By default it is configured with 300 seconds but can also be adjusted via configuration properties.
+
+=== Use it
+
+Add dependency to `automatiko-fault-tolerance-uow-addon` needs to be added to the project.
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.automatiko.addons</groupId>
+  <artifactId>automatiko-fault-tolerance-uow-addon</artifactId>
+</dependency>
+----
+
+This will immediately configure timeout based unit of work manager and thus will guard execution to not exceed 300 seconds.
+
+To change the value use `quarkus.fault-tolerance.\"io.automatiko.addons.fault.tolerance.uow.TimeoutUnitOfWorkManager/execute\".timeout.value` property in your application.properties file with value expressed in seconds.

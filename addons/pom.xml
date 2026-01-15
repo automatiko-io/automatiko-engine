@@ -24,6 +24,7 @@
     <module>services</module>
     <module>automatiko-graphql-addon</module>
     <module>automatiko-fault-tolerance-addon</module>
+    <module>automatiko-fault-tolerance-uow-addon</module>
     <module>files</module>
   </modules>
 

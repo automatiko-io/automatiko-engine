@@ -12,6 +12,7 @@ import io.automatiko.engine.api.uow.UnitOfWorkManager;
 import io.automatiko.engine.api.workflow.ConflictingVersionException;
 import io.automatiko.engine.api.workflow.DefinedProcessErrorException;
 import io.automatiko.engine.api.workflow.ProcessInstanceExecutionException;
+import io.automatiko.engine.api.workflow.workitem.WorkItemExecutionError;
 
 public class UnitOfWorkExecutor {
 
@@ -24,7 +25,7 @@ public class UnitOfWorkExecutor {
         try {
             uow.start();
 
-            result = supplier.get();
+            result = uowManager.execute(supplier);
             uow.end();
 
             return result;
@@ -42,7 +43,12 @@ public class UnitOfWorkExecutor {
                     e.getMessage());
             uow.abort();
             return executeInUnitOfWork(uowManager, supplier);
-        } catch (Exception e) {
+        } catch (WorkItemExecutionError e) {
+            if ("408".equals(e.getErrorCode())) {
+                throw new RuntimeException("Operation timed out", e);
+            }
+            throw e;
+        } catch (Throwable e) {
             e.printStackTrace();
             uow.abort();
             if (e instanceof RuntimeException) {
