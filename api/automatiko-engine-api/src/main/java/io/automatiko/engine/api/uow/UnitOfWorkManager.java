@@ -1,6 +1,8 @@
 
 package io.automatiko.engine.api.uow;
 
+import java.util.function.Supplier;
+
 import io.automatiko.engine.api.event.EventManager;
 
 /**
@@ -12,26 +14,30 @@ import io.automatiko.engine.api.event.EventManager;
  */
 public interface UnitOfWorkManager {
 
-	/**
-	 * Returns current unit of work for this execution context (usually thread).
-	 * 
-	 * @return current unit of work
-	 */
-	UnitOfWork currentUnitOfWork();
+    /**
+     * Returns current unit of work for this execution context (usually thread).
+     * 
+     * @return current unit of work
+     */
+    UnitOfWork currentUnitOfWork();
 
-	/**
-	 * Returns new not started UnitOfWork that is associated with the manager to
-	 * manage it's life cycle.
-	 * 
-	 * @return new, not started unit of work
-	 */
-	UnitOfWork newUnitOfWork();
+    /**
+     * Returns new not started UnitOfWork that is associated with the manager to
+     * manage it's life cycle.
+     * 
+     * @return new, not started unit of work
+     */
+    UnitOfWork newUnitOfWork();
 
-	/**
-	 * Returns instance of the event manager configured for this unit of work
-	 * manager
-	 * 
-	 * @return event manager instance
-	 */
-	EventManager eventManager();
+    /**
+     * Returns instance of the event manager configured for this unit of work
+     * manager
+     * 
+     * @return event manager instance
+     */
+    EventManager eventManager();
+
+    default <T> T execute(Supplier<T> supplier) {
+        return supplier.get();
+    }
 }

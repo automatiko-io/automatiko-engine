@@ -49,6 +49,11 @@
       <groupId>io.automatiko.addons</groupId>
       <artifactId>automatiko-fault-tolerance-addon</artifactId>
     </dependency>
+    
+    <dependency>
+      <groupId>io.automatiko.addons</groupId>
+      <artifactId>automatiko-fault-tolerance-uow-addon</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>io.quarkus</groupId>
