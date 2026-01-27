@@ -37,7 +37,7 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
-    </dependency>   
+    </dependency>
 
     <dependency>
       <groupId>io.automatiko.addons</groupId>
@@ -52,17 +52,17 @@
       <groupId>io.automatiko.addons</groupId>
       <artifactId>automatiko-user-tasks-management-addon</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>io.automatiko.addons</groupId>
       <artifactId>automatiko-user-tasks-email-addon</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>io.automatiko.addons</groupId>
       <artifactId>automatiko-user-tasks-teams-addon</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>io.automatiko.addons</groupId>
       <artifactId>automatiko-user-tasks-slack-addon</artifactId>
@@ -75,7 +75,7 @@
 
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-junit5</artifactId>
+      <artifactId>quarkus-junit</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -102,6 +102,7 @@
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-maven-plugin</artifactId>
         <version>${version.io.quarkus}</version>
+        <extensions>true</extensions>
         <executions>
           <execution>
             <goals>
@@ -128,7 +129,7 @@
         <configuration>
           <skip>true</skip>
         </configuration>
-      </plugin>      
+      </plugin>
     </plugins>
   </build>
   <profiles>
