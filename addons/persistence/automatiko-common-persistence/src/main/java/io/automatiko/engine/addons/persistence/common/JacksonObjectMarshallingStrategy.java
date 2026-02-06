@@ -43,6 +43,8 @@ public class JacksonObjectMarshallingStrategy implements ObjectMarshallingStrate
                     BasicPolymorphicTypeValidator.builder().allowIfSubType(Object.class).build(), DefaultTyping.EVERYTHING,
                     As.PROPERTY);
         }
+        mapper.addHandler(new UnknownTypeProblemHandler());
+
         mapper.registerModule(new ParameterNamesModule())
                 .registerModule(new Jdk8Module())
                 .registerModule(new JavaTimeModule());
