@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ServiceLoader;
 
+import io.automatiko.engine.addons.persistence.jackson.ObjectMapperCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,15 +30,15 @@ public class JacksonObjectMarshallingStrategy implements ObjectMarshallingStrate
 
     protected ObjectMapper mapper;
 
-    private boolean usePolomorfic = true;
+    private boolean usePolymorphic = true;
 
     public JacksonObjectMarshallingStrategy(Process<?> process) {
         if (((AbstractProcess<?>) process).process() instanceof ServerlessExecutableProcess) {
-            this.usePolomorfic = false;
+            this.usePolymorphic = false;
         }
         this.mapper = new ObjectMapper();
         this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        if (usePolomorfic) {
+        if (usePolymorphic) {
             mapper.activateDefaultTyping(
                     BasicPolymorphicTypeValidator.builder().allowIfSubType(Object.class).build(), DefaultTyping.EVERYTHING,
                     As.PROPERTY);
@@ -44,11 +46,15 @@ public class JacksonObjectMarshallingStrategy implements ObjectMarshallingStrate
         mapper.registerModule(new ParameterNamesModule())
                 .registerModule(new Jdk8Module())
                 .registerModule(new JavaTimeModule());
+
+        ServiceLoader<ObjectMapperCustomizer> customizers = ServiceLoader.load(ObjectMapperCustomizer.class);
+        for (ObjectMapperCustomizer customizer : customizers) {
+            customizer.customize(mapper);
+        }
     }
 
     @Override
     public boolean accept(Object object) {
-
         return true;
     }
 
@@ -63,7 +69,7 @@ public class JacksonObjectMarshallingStrategy implements ObjectMarshallingStrate
         if (object.length == 0) {
             return null;
         }
-        if (usePolomorfic) {
+        if (usePolymorphic) {
             return mapper.readValue(log(object), Object.class);
         } else {
             return mapper.readTree(log(object));
