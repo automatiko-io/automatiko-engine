@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import jakarta.enterprise.inject.Instance;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.Document;
@@ -118,7 +119,7 @@ public class MongodbProcessInstances implements MutableProcessInstances {
 
     private int configuredLockWait = DEFAULT_LOCK_WAIT;
 
-    public MongodbProcessInstances(Process<? extends Model> process, MongoClient mongoClient,
+    public MongodbProcessInstances(Process<? extends Model> process, Instance<MongoClient> mongoClient,
             StoredDataCodec codec, TransactionLogStore store, Auditor auditor,
             @ConfigProperty(name = DATABASE_KEY) Optional<String> database,
             Optional<Integer> lockTimeout,
@@ -126,7 +127,7 @@ public class MongodbProcessInstances implements MutableProcessInstances {
         this.process = process;
         this.marshallingStrategy = new JacksonObjectMarshallingStrategy(process);
         this.marshaller = new ProcessInstanceMarshaller(marshallingStrategy);
-        this.mongoClient = mongoClient;
+        this.mongoClient = mongoClient.get();
         this.tableName = process.id();
         this.codec = codec;
         this.auditor = auditor;

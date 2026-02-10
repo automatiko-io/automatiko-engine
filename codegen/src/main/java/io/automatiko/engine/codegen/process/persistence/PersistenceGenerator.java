@@ -46,6 +46,7 @@ import io.automatiko.engine.codegen.CodegenUtils;
 import io.automatiko.engine.codegen.ConfigGenerator;
 import io.automatiko.engine.codegen.GeneratedFile;
 import io.automatiko.engine.codegen.di.DependencyInjectionAnnotator;
+import jakarta.enterprise.inject.Instance;
 
 public class PersistenceGenerator extends AbstractGenerator {
 
@@ -112,7 +113,7 @@ public class PersistenceGenerator extends AbstractGenerator {
 
         if (persistenceType == null) {
             persistenceType = CodegenUtils.discoverPersistenceType(context);
-            // since it was discovered set the properties for completenes
+            // since it was discovered set the properties for completeness
             context.setApplicationProperty("quarkus.automatiko.persistence.type", persistenceType);
             context.setApplicationProperty("quarkus.automatiko.jobs.type", persistenceType);
         }
@@ -387,7 +388,8 @@ public class PersistenceGenerator extends AbstractGenerator {
         persistenceProviderClazz.addConstructor(Keyword.PUBLIC);
 
         ConstructorDeclaration constructor = persistenceProviderClazz.addConstructor(Keyword.PUBLIC)
-                .addParameter("com.mongodb.client.MongoClient", "mongoClient");
+                .addParameter(new ClassOrInterfaceType(null, new SimpleName(Instance.class.getCanonicalName()),
+                        NodeList.nodeList(new ClassOrInterfaceType(null, "com.mongodb.client.MongoClient"))), "mongoClient");
 
         Parameter database = new Parameter(new ClassOrInterfaceType(null, new SimpleName(Optional.class.getCanonicalName()),
                 NodeList.nodeList(new ClassOrInterfaceType(null, "String"))), "database");
