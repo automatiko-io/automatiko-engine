@@ -5,7 +5,7 @@
   <parent>
     <groupId>io.automatiko.quarkus</groupId>
     <artifactId>automatiko-quarkus-parent</artifactId>
-    <version>0.51.0</version>
+    <version>0.51.1</version>
   </parent>
   <artifactId>automatiko-test-support</artifactId>
   <name>Automatiko Engine :: Quarkus Extension :: Test Support</name>
