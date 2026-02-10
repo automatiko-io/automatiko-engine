@@ -9,6 +9,7 @@ import io.automatiko.engine.addons.persistence.mongodb.MongodbProcessInstances;
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.workflow.Process;
 import io.automatiko.engine.api.workflow.ProcessInstancesFactory;
+import jakarta.enterprise.inject.Instance;
 
 /**
  * This class must always have exact FQCN as
@@ -17,7 +18,7 @@ import io.automatiko.engine.api.workflow.ProcessInstancesFactory;
  */
 public abstract class AbstractProcessInstancesFactory implements ProcessInstancesFactory {
 
-    protected MongoClient mongoClient;
+    protected Instance<MongoClient> mongoClient;
 
     protected Optional<String> database;
 
@@ -30,8 +31,8 @@ public abstract class AbstractProcessInstancesFactory implements ProcessInstance
     public AbstractProcessInstancesFactory() {
     }
 
-    public AbstractProcessInstancesFactory(MongoClient mongoClient, Optional<String> database, Optional<Integer> lockTimeout,
-            Optional<Integer> lockLimit, Optional<Integer> lockWait) {
+    public AbstractProcessInstancesFactory(Instance<MongoClient> mongoClient, Optional<String> database, Optional<Integer> lockTimeout,
+                                           Optional<Integer> lockLimit, Optional<Integer> lockWait) {
         this.mongoClient = mongoClient;
         this.database = database;
         this.lockTimeout = lockTimeout;
