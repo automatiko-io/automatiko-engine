@@ -121,12 +121,14 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
         configureLock(businessKey);
         lock();
 
-        if (!this.process.accessPolicy().canCreateInstance(IdentityProvider.get())) {
+        Map<String, Object> map = bind(variables);
+
+        if (!this.process.accessPolicy().canCreateInstance(IdentityProvider.get(), map)) {
             unlock(true);
             throw new AccessDeniedException("Access is denied to create new instance of process " + process.name());
         }
         setCorrelationKey(businessKey);
-        Map<String, Object> map = bind(variables);
+
         String processId = process.process().getId();
         syncProcessInstance((WorkflowProcessInstance) ((CorrelationAwareProcessRuntime) rt)
                 .createProcessInstance(processId, correlationKey, map));
