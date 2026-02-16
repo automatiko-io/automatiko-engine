@@ -84,7 +84,7 @@
     <version.com.fasterxml.jackson>2.21.0</version.com.fasterxml.jackson>
     <version.com.github.haifengl.smile>1.5.2</version.com.github.haifengl.smile>
     <version.com.github.javaparser>3.28.0</version.com.github.javaparser>
-    <version.com.github.victools>4.38.0</version.com.github.victools>
+    <version.com.github.victools>5.0.0</version.com.github.victools>
     <version.com.google.protobuf>4.33.5</version.com.google.protobuf>
     <version.org.graalvm.nativeimage>25.0.2</version.org.graalvm.nativeimage>
     <version.com.thoughtworks.xstream>1.4.21</version.com.thoughtworks.xstream>
