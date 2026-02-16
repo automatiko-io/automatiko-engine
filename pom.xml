@@ -106,7 +106,7 @@
     <version.net.java.dev.glazedlists>1.8.0</version.net.java.dev.glazedlists>
 
     <version.io.cloudevents>4.0.1</version.io.cloudevents>
-    <version.io.quarkus>3.31.2</version.io.quarkus>
+    <version.io.quarkus>3.31.3</version.io.quarkus>
     <version.io.restassured>6.0.0</version.io.restassured>
     <version.io.smallrye.reactive>4.33.0</version.io.smallrye.reactive>
     <version.org.eclipse.microprofile.metrics>4.0.1</version.org.eclipse.microprofile.metrics>
