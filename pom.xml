@@ -134,7 +134,7 @@
     <version.org.hamcrest>3.0</version.org.hamcrest> <!-- else old version coming from Mockito wins and breaks tests -->
     <version.jakarta.ws.rs.jakarta-rs-api>4.0.0</version.jakarta.ws.rs.jakarta-rs-api>    
     <version.org.junit>6.0.2</version.org.junit>
-    <version.ch.qos.logback>1.5.28</version.ch.qos.logback>
+    <version.ch.qos.logback>1.5.32</version.ch.qos.logback>
     <version.org.mockito>5.21.0</version.org.mockito>
     <version.org.mvel>2.5.2.Final</version.org.mvel>
     <version.org.kie-dmn>8.38.0.Final</version.org.kie-dmn>
