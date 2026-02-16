@@ -99,7 +99,7 @@
     <version.jakarta.json.bind-api>3.0.1</version.jakarta.json.bind-api>
     <version.jakarta.validation-api>3.1.1</version.jakarta.validation-api>
     <version.jakarta.websocket-api>2.1.1</version.jakarta.websocket-api>
-    <version.jakarta.xml.bind-api>4.0.4</version.jakarta.xml.bind-api>
+    <version.jakarta.xml.bind-api>4.0.5</version.jakarta.xml.bind-api>
     <version.jaxb-runtime>4.0.6</version.jaxb-runtime>
 
     <version.json-unit-assertj>5.1.0</version.json-unit-assertj>
