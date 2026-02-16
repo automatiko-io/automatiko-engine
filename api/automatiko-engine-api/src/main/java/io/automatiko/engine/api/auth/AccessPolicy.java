@@ -1,5 +1,6 @@
 package io.automatiko.engine.api.auth;
 
+import java.util.Map;
 import java.util.Set;
 
 import io.automatiko.engine.api.workflow.ProcessInstance;
@@ -21,6 +22,18 @@ public interface AccessPolicy<T> {
      * @return true if given identity is allowed to create new instance
      */
     boolean canCreateInstance(IdentityProvider identityProvider);
+
+    /**
+     * Determines if given identity is allowed to create new instances of item this policy
+     * is attached to e.g. creating new process instances
+     * 
+     * @param identityProvider provider that delivers identity information such as name, roles
+     * @param variables variables that are passed to instance upon creation
+     * @return true if given identity is allowed to create new instance
+     */
+    default boolean canCreateInstance(IdentityProvider identityProvider, Map<String, Object> variables) {
+        return canCreateInstance(identityProvider);
+    }
 
     /**
      * Determines if given identity is allowed to read (view) given instance
