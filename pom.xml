@@ -135,7 +135,7 @@
     <version.jakarta.ws.rs.jakarta-rs-api>4.0.0</version.jakarta.ws.rs.jakarta-rs-api>    
     <version.org.junit>6.0.3</version.org.junit>
     <version.ch.qos.logback>1.5.32</version.ch.qos.logback>
-    <version.org.mockito>5.21.0</version.org.mockito>
+    <version.org.mockito>5.23.0</version.org.mockito>
     <version.org.mvel>2.5.2.Final</version.org.mvel>
     <version.org.kie-dmn>8.38.0.Final</version.org.kie-dmn>
     <version.org.reflections>0.10.2</version.org.reflections>
