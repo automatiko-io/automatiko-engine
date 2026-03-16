@@ -75,7 +75,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.5.4</version>
+        <version>3.5.5</version>
         <configuration>
           <systemProperties>
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
@@ -105,7 +105,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
-            <version>3.5.4</version>
+            <version>3.5.5</version>
             <executions>
               <execution>
                 <goals>
@@ -163,7 +163,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
-            <version>3.5.4</version>
+            <version>3.5.5</version>
             <executions>
               <execution>
                 <goals>
