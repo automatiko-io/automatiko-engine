@@ -466,9 +466,9 @@ public class AutomatikoQuarkusProcessor {
             IndexView index, boolean usePersistence, List<String> parameters) {
 
         Collection<ClassInfo> modelClasses = index
-                .getAllKnownImplementors(createDotName(Model.class.getCanonicalName()));
+                .getAllKnownImplementations(createDotName(Model.class.getCanonicalName()));
 
-        Collection<GeneratedFile> generatedFiles = new ArrayList<>();
+        Collection<GeneratedFile> generatedFiles = new HashSet<>();
 
         for (Path projectPath : appPaths.projectPaths) {
             PersistenceGenerator persistenceGenerator = new PersistenceGenerator(
