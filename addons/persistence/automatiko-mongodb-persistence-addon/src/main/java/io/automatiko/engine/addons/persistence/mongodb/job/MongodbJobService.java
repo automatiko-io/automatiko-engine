@@ -441,7 +441,7 @@ public class MongodbJobService implements JobsService {
     }
 
     protected ScheduledFuture<?> log(String jobId, ScheduledFuture<?> future) {
-        LOGGER.info("Next fire of job {} is in {} seconds ", jobId, future.getDelay(TimeUnit.SECONDS));
+        LOGGER.debug("Next fire of job {} is in {} seconds ", jobId, future.getDelay(TimeUnit.SECONDS));
 
         return future;
     }
