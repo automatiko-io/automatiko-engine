@@ -68,6 +68,14 @@ public class JsonExportedProcessInstance extends ExportedProcessInstance<JsonNod
         }
     }
 
+    public static JsonExportedProcessInstance of(String content) {
+        try {
+            return mapper.readValue(content, JsonExportedProcessInstance.class);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public List<Map<String, String>> convertTimers() {
