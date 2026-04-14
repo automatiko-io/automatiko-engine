@@ -105,7 +105,7 @@
     <version.json-unit-assertj>5.1.1</version.json-unit-assertj>
     <version.net.java.dev.glazedlists>1.8.0</version.net.java.dev.glazedlists>
 
-    <version.io.cloudevents>4.0.1</version.io.cloudevents>
+    <version.io.cloudevents>4.0.2</version.io.cloudevents>
     <version.io.quarkus>3.34.3</version.io.quarkus>
     <version.io.restassured>6.0.0</version.io.restassured>
     <version.io.smallrye.reactive>4.34.0</version.io.smallrye.reactive>
