@@ -674,12 +674,13 @@ public class ProcessInstanceManagementResource extends BaseProcessInstanceManage
             @Parameter(description = "Unique identifier of the process", required = true) @PathParam("processId") String processId,
             @Parameter(description = "User identifier as alternative autroization info", required = false, hidden = true) @QueryParam("user") final String user,
             @Parameter(description = "Groups as alternative autroization info", required = false, hidden = true) @QueryParam("group") final List<String> groups,
-            @Parameter(description = "The input model for orders instance", schema = @Schema(type = SchemaType.OBJECT, implementation = Map.class)) JsonExportedProcessInstance instance) {
+            @Parameter(description = "The input model for orders instance", schema = @Schema(type = SchemaType.OBJECT, implementation = Map.class)) String instance) {
 
         identitySupplier.buildIdentityProvider(user, groups);
         return UnitOfWorkExecutor.executeInUnitOfWork(application.unitOfWorkManager(), () -> {
 
-            ProcessInstance<?> pi = exporter.importInstance(instance);
+            JsonExportedProcessInstance jsonInstance = JsonExportedProcessInstance.of(instance);
+            ProcessInstance<?> pi = exporter.importInstance(jsonInstance);
 
             ProcessInstanceDetailsDTO details = new ProcessInstanceDetailsDTO();
             details.setId(pi.id());
