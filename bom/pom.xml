@@ -668,6 +668,13 @@
         <artifactId>smallrye-reactive-messaging-jms</artifactId>
         <version>${version.io.smallrye.reactive}</version>
       </dependency>
+      <!-- kept ahead of version.io.smallrye.reactive: 4.37.0 is the first release compiled
+           against the changed DefaultExchange.getExchangeExtension() signature of camel-core 4.21 -->
+      <dependency>
+        <groupId>io.smallrye.reactive</groupId>
+        <artifactId>smallrye-reactive-messaging-camel</artifactId>
+        <version>${version.io.smallrye.reactive.camel}</version>
+      </dependency>
     </dependencies>
 
   </dependencyManagement>
