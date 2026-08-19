@@ -9,15 +9,15 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.elasticsearch.client.Request;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.client.ResponseListener;
-import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import co.elastic.clients.transport.rest5_client.low_level.Request;
+import co.elastic.clients.transport.rest5_client.low_level.Response;
+import co.elastic.clients.transport.rest5_client.low_level.ResponseListener;
+import co.elastic.clients.transport.rest5_client.low_level.Rest5Client;
 import io.automatiko.engine.api.event.DataEvent;
 import io.automatiko.engine.api.event.EventPublisher;
 import io.automatiko.engine.services.event.ProcessInstanceDataEvent;
@@ -36,7 +36,7 @@ public class ElasticEventPublisher implements EventPublisher {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticEventPublisher.class);
 
-    private RestClient restClient;
+    private Rest5Client restClient;
 
     private ObjectMapper mapper;
 
@@ -49,7 +49,7 @@ public class ElasticEventPublisher implements EventPublisher {
     private Optional<String> auditIndex;
 
     @Inject
-    public ElasticEventPublisher(RestClient restClient, ObjectMapper mapper,
+    public ElasticEventPublisher(Rest5Client restClient, ObjectMapper mapper,
             @ConfigProperty(name = AUDIT_KEY) Optional<Boolean> audit,
             @ConfigProperty(name = INSTANCE_KEY) Optional<Boolean> instance,
             @ConfigProperty(name = TASKS_KEY) Optional<Boolean> tasks,
