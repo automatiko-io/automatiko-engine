@@ -250,7 +250,7 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
-      
+
       <dependency>
         <groupId>io.automatiko.addons</groupId>
         <artifactId>automatiko-user-tasks-notification</artifactId>
@@ -274,7 +274,7 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
-      
+
       <dependency>
         <groupId>io.automatiko.addons</groupId>
         <artifactId>automatiko-user-tasks-slack-addon</artifactId>
@@ -286,7 +286,7 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
-      
+
       <dependency>
         <groupId>io.automatiko.addons</groupId>
         <artifactId>automatiko-user-tasks-teams-addon</artifactId>
@@ -297,7 +297,7 @@
         <artifactId>automatiko-user-tasks-teams-addon</artifactId>
         <version>${project.version}</version>
         <classifier>sources</classifier>
-      </dependency>            
+      </dependency>
 
       <dependency>
         <groupId>io.automatiko.addons</groupId>
@@ -310,7 +310,7 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
-      
+
       <dependency>
         <groupId>io.automatiko.addons</groupId>
         <artifactId>automatiko-user-tasks-index</artifactId>
@@ -355,7 +355,7 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
-      
+
       <dependency>
         <groupId>io.automatiko.addons</groupId>
         <artifactId>automatiko-graphql-addon</artifactId>
@@ -367,7 +367,7 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
-      
+
       <dependency>
        <groupId>io.automatiko.addons</groupId>
         <artifactId>automatiko-fault-tolerance-addon</artifactId>
@@ -379,7 +379,7 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
-      
+
       <dependency>
        <groupId>io.automatiko.addons</groupId>
         <artifactId>automatiko-fault-tolerance-uow-addon</artifactId>
@@ -391,7 +391,7 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
-      
+
       <dependency>
         <groupId>io.automatiko.addons</groupId>
         <artifactId>automatiko-files-filesystem-addon</artifactId>
@@ -460,7 +460,7 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
-      
+
       <dependency>
         <groupId>io.automatiko.addons.services</groupId>
         <artifactId>automatiko-receive-email-addon</artifactId>
@@ -649,7 +649,7 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
-      
+
       <dependency>
         <groupId>io.automatiko.quarkus</groupId>
         <artifactId>automatiko-test-support</artifactId>
@@ -661,19 +661,12 @@
         <version>${project.version}</version>
         <classifier>sources</classifier>
       </dependency>
-      
+
       <!-- third party dependencies -->
       <dependency>
         <groupId>io.smallrye.reactive</groupId>
         <artifactId>smallrye-reactive-messaging-jms</artifactId>
         <version>${version.io.smallrye.reactive}</version>
-      </dependency>
-      <!-- kept ahead of version.io.smallrye.reactive: 4.37.0 is the first release compiled
-           against the changed DefaultExchange.getExchangeExtension() signature of camel-core 4.21 -->
-      <dependency>
-        <groupId>io.smallrye.reactive</groupId>
-        <artifactId>smallrye-reactive-messaging-camel</artifactId>
-        <version>${version.io.smallrye.reactive.camel}</version>
       </dependency>
     </dependencies>
 
