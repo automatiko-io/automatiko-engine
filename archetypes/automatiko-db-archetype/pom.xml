@@ -16,6 +16,13 @@
   <name>Automatiko Engine :: Maven Archetypes :: Database</name>
   <description>Automatiko Service for database record Archetype</description>
 
+  <properties>
+    <!-- An archetype jar already is the sources: the -sources.jar produced here is a
+      byte-for-byte duplicate of the archetype artifact, so publishing it only burns
+      Maven Central file-count quota. -->
+    <maven.source.skip>true</maven.source.skip>
+  </properties>
+
   <build>
     <!-- default directory (test-classes) confuses @QuarkusTest -->
     <!-- see https://github.com/quarkusio/quarkus/issues/9162   -->

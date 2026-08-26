@@ -823,19 +823,6 @@
                 </archive>
               </configuration>
             </execution>
-            <execution>
-              <id>test-jar</id>
-              <goals>
-                <goal>test-jar</goal>
-              </goals>
-              <configuration>
-                <skipIfEmpty>true</skipIfEmpty>
-                <excludes>
-                  <exclude>**/logback-test.xml</exclude>
-                  <exclude>**/jndi.properties</exclude>
-                </excludes>
-              </configuration>
-            </execution>
           </executions>
           <configuration>
             <archive>
@@ -855,12 +842,6 @@
               <id>attach-sources</id>
               <goals>
                 <goal>jar-no-fork</goal>
-              </goals>
-            </execution>
-            <execution>
-              <id>attach-test-sources</id>
-              <goals>
-                <goal>test-jar-no-fork</goal>
               </goals>
             </execution>
           </executions>
@@ -946,8 +927,8 @@
 
     <plugins>
       <plugin>
-        <!-- Entry needed to create test-jars even for packaging types war,
-          bundle, ... -->
+        <!-- Entry needed to apply the shared manifest configuration to all
+          packaging types -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
       </plugin>
@@ -1053,6 +1034,17 @@
 	          <configuration>
 	             <publishingServerId>central-portal</publishingServerId>
 	             <autoPublish>true</autoPublish>
+	             <!-- Maven Central publishing limits are counted per published file, and
+	                  signatures/checksums count too. Requesting only the checksums Central
+	                  actually requires (MD5 + SHA1) instead of the default (which adds
+	                  SHA256 + SHA512) removes two files per artifact - a third of the
+	                  release. See https://central.sonatype.org/publish/maven-central-publishing-limits/ -->
+	             <checksums>required</checksums>
+	             <!-- Modules that are part of the build but of no use to consumers -->
+	             <excludeArtifacts>
+	                <excludeArtifact>automatiko-quarkus-integration-test</excludeArtifact>
+	                <excludeArtifact>archetypes</excludeArtifact>
+	             </excludeArtifacts>
 	          </configuration>
 	        </plugin>
         </plugins>
