@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.openapitools.codegen.ClientOptInput;
+import org.openapitools.codegen.CodegenConstants;
 import org.openapitools.codegen.CodegenOperation;
 import org.openapitools.codegen.DefaultGenerator;
 import org.openapitools.codegen.Generator;
@@ -234,7 +235,7 @@ public class OpenAPIClientGenerator {
         }
 
         codegen.setOutputDir(TEMP_PATH);
-        codegen.additionalProperties().put(JavaJAXRSSpecServerCodegen.INTERFACE_ONLY, true);
+        codegen.additionalProperties().put(CodegenConstants.INTERFACE_ONLY, true);
         codegen.additionalProperties().put(JavaJAXRSSpecServerCodegen.USE_BEANVALIDATION, false);
         codegen.additionalProperties().put(JavaJAXRSSpecServerCodegen.USE_SWAGGER_ANNOTATIONS, false);
         codegen.additionalProperties().put(JavaJAXRSSpecServerCodegen.GENERATE_POM, false);
@@ -268,7 +269,8 @@ public class OpenAPIClientGenerator {
 
                         if (filename.endsWith(".java")) {
                             // remove the absolute path prefix that is based on java tmp dir
-                            String name = filename.substring(TEMP_PATH.length(), filename.lastIndexOf(".")).replaceAll(StringEscapeUtils.escapeJava(File.separator),
+                            String name = filename.substring(TEMP_PATH.length(), filename.lastIndexOf(".")).replaceAll(
+                                    StringEscapeUtils.escapeJava(File.separator),
                                     ".");
                             if (name.startsWith(".")) {
                                 name = name.substring(1);
