@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import jakarta.enterprise.inject.Instance;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.Document;
@@ -46,6 +45,7 @@ import io.automatiko.engine.addons.persistence.common.tlog.TransactionLogImpl;
 import io.automatiko.engine.api.Model;
 import io.automatiko.engine.api.audit.AuditEntry;
 import io.automatiko.engine.api.audit.Auditor;
+import io.automatiko.engine.api.auth.AccessDeniedException;
 import io.automatiko.engine.api.runtime.process.WorkflowProcessInstance;
 import io.automatiko.engine.api.uow.TransactionLog;
 import io.automatiko.engine.api.uow.TransactionLogStore;
@@ -66,6 +66,7 @@ import io.automatiko.engine.workflow.base.instance.context.variable.VariableScop
 import io.automatiko.engine.workflow.base.instance.impl.ProcessInstanceImpl;
 import io.automatiko.engine.workflow.marshalling.ProcessInstanceMarshaller;
 import io.automatiko.engine.workflow.process.core.WorkflowProcess;
+import jakarta.enterprise.inject.Instance;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class MongodbProcessInstances implements MutableProcessInstances {
@@ -210,10 +211,15 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                     .skip(calculatePage(page, size))
                     .limit(size)
                     .forEach(item -> {
-                        found.add(audit(unmarshallInstance(mode, item)));
-                        Document locked = findAndLock(item.getString(INSTANCE_ID_FIELD));
 
-                        found.add(unmarshallInstance(mode, locked));
+                        try {
+                            Document locked = findAndLock(item.getString(INSTANCE_ID_FIELD));
+
+                            found.add(unmarshallInstance(mode, locked));
+                        } catch (AccessDeniedException e) {
+                        } catch (Exception e) {
+                            LOGGER.warn("Unexpected error during load of instance", e);
+                        }
                     });
         } else {
 
@@ -223,7 +229,14 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                             .fields(Projections.include(INSTANCE_ID_FIELD, CONTENT_FIELD, VERSION_FIELD, VARIABLES_FIELD)))
                     .skip(calculatePage(page, size))
                     .limit(size)
-                    .forEach(item -> found.add(audit(unmarshallInstance(mode, item))));
+                    .forEach(item -> {
+                        try {
+                            found.add(audit(unmarshallInstance(mode, item)));
+                        } catch (AccessDeniedException e) {
+                        } catch (Exception e) {
+                            LOGGER.warn("Unexpected error during load of instance", e);
+                        }
+                    });
         }
         return found;
     }
@@ -238,10 +251,14 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                     .skip(calculatePage(page, size))
                     .limit(size)
                     .forEach(item -> {
-                        found.add(audit(unmarshallInstance(mode, item)));
-                        Document locked = findAndLock(item.getString(INSTANCE_ID_FIELD));
+                        try {
+                            Document locked = findAndLock(item.getString(INSTANCE_ID_FIELD));
 
-                        found.add(unmarshallInstance(mode, locked));
+                            found.add(unmarshallInstance(mode, locked));
+                        } catch (AccessDeniedException e) {
+                        } catch (Exception e) {
+                            LOGGER.warn("Unexpected error during load of instance", e);
+                        }
                     });
         } else {
 
@@ -250,7 +267,15 @@ public class MongodbProcessInstances implements MutableProcessInstances {
                             .fields(Projections.include(INSTANCE_ID_FIELD, CONTENT_FIELD, VERSION_FIELD, VARIABLES_FIELD)))
                     .skip(calculatePage(page, size))
                     .limit(size)
-                    .forEach(item -> found.add(audit(unmarshallInstance(mode, item))));
+                    .forEach(item -> {
+
+                        try {
+                            found.add(audit(unmarshallInstance(mode, item)));
+                        } catch (AccessDeniedException e) {
+                        } catch (Exception e) {
+                            LOGGER.warn("Unexpected error during load of instance", e);
+                        }
+                    });
         }
         return found;
     }
