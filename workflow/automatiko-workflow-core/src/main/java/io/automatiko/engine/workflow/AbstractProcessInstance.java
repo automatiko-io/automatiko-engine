@@ -357,22 +357,27 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
             unlock(true);
             throw new AccessDeniedException("Access is denied to delete instance " + this.id);
         }
-        String pid = processInstance().getId();
-        unbind(variables, processInstance().getVariables());
-        this.getProcessRuntime().abortProcessInstance(pid);
-        this.status = processInstance.getState();
-        this.visibleTo = setVisibleTo();
-        // apply end of instance strategy on completion
-        process.endOfInstanceStrategy().perform(this);
-        if (process.endOfInstanceStrategy().shouldInstanceBeUpdated()) {
-            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi),
-                    pi -> ((MutableProcessInstances<T>) process.instances()).release(pi.id(), pi));
+        try {
+            String pid = processInstance().getId();
+            unbind(variables, processInstance().getVariables());
+            this.getProcessRuntime().abortProcessInstance(pid);
+            this.status = processInstance.getState();
+            this.visibleTo = setVisibleTo();
+            // apply end of instance strategy on completion
+            process.endOfInstanceStrategy().perform(this);
+            if (process.endOfInstanceStrategy().shouldInstanceBeUpdated()) {
+                addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).update(pi.id(), pi),
+                        pi -> ((MutableProcessInstances<T>) process.instances()).release(pi.id(), pi));
+            }
+            if (process.endOfInstanceStrategy().shouldInstanceBeRemoved()) {
+                addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi),
+                        pi -> ((MutableProcessInstances<T>) process.instances()).release(pi.id(), pi));
+            }
+            unlock(true);
+        } catch (Throwable e) {
+            ((MutableProcessInstances<T>) process.instances()).release(id(), this);
+            throw e;
         }
-        if (process.endOfInstanceStrategy().shouldInstanceBeRemoved()) {
-            addToUnitOfWork(pi -> ((MutableProcessInstances<T>) process.instances()).remove(pi.id(), pi),
-                    pi -> ((MutableProcessInstances<T>) process.instances()).release(pi.id(), pi));
-        }
-        unlock(true);
 
     }
 
@@ -383,13 +388,16 @@ public abstract class AbstractProcessInstance<T extends Model> implements Proces
             unlock(true);
             throw new AccessDeniedException("Access is denied to signal instance " + this.id);
         }
-
-        if (signal.referenceId() != null) {
-            ((WorkflowProcessInstanceImpl) processInstance()).setReferenceId(signal.referenceId());
+        try {
+            if (signal.referenceId() != null) {
+                ((WorkflowProcessInstanceImpl) processInstance()).setReferenceId(signal.referenceId());
+            }
+            processInstance().signalEvent(signal.channel(), signal.payload());
+            removeOnFinish();
+        } catch (Throwable e) {
+            ((MutableProcessInstances<T>) process.instances()).release(id(), this);
+            throw e;
         }
-        processInstance().signalEvent(signal.channel(), signal.payload());
-        removeOnFinish();
-
     }
 
     @Override
